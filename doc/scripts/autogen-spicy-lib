@@ -6,7 +6,7 @@
 awk -v "target=$1" -v "ns=$2" '
     # Collect comments.
     /^##/    {
-              gsub("^## *", "", $0);
+              gsub("^## ?", "", $0);
 
               if ( comment == "" )
                   comment = $0;

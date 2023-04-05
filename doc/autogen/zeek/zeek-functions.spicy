@@ -90,7 +90,7 @@ This function will return an error
 - if not called from a protocol analyzer, or
 - the requested child protocol analyzer is unknown, or
 - creation of a child analyzer of the requested type was prevented by a
-previous call of `disable_analyzer` with `prevent=T`
+  previous call of `disable_analyzer` with `prevent=T`
 
 analyzer: type of analyzer to instantiate, specified through its Zeek-side
 name (similar to what Zeek's signature action `enable` takes).
