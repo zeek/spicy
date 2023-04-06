@@ -76,13 +76,13 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
 
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
 
-        // We emit globals as pointers with dynamic allocation so that we can
-        // control the life time of the values, in particular wrt destruction
-        // when the runtime shuts down.
+        // We emit globals as optionals so that we can control the life time of
+        // the values, in particular wrt destruction when the runtime shuts
+        // down.
         for ( const auto& g : globals ) {
             auto cxx_g = g;
             cxx_g.id = cxx::ID{ns, g.id.local()};
-            cxx_g.type = fmt("std::unique_ptr<%s>", g.type);
+            cxx_g.type = fmt("std::optional<%s>", g.type);
             cxx_g.init = {};
             cxx_g.linkage = "extern";
             unit->add(cxx_g);
@@ -116,18 +116,17 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
         else {
             for ( const auto& g : globals ) {
                 auto cxx_g = g;
-                cxx_g.type = fmt("std::unique_ptr<%s>", g.type);
-                cxx_g.init =
-                    fmt("std::make_unique<%s>()",
-                        g.type); // initialize to a default value at first to match semantics of dynamic globals
+                cxx_g.type = fmt("std::optional<%s>", g.type);
+                cxx_g.init = "{}";
                 unit->add(cxx_g);
 
                 if ( g.init )
                     // Initialize to actual value
-                    body.addStatement(fmt("::%s::%s = std::make_unique<%s>(%s)", ns, g.id.local(), g.type, *g.init));
+                    body.addStatement(fmt("::%s::%s = %s", ns, g.id.local(), *g.init));
                 else if ( g.args.size() )
-                    body.addStatement(
-                        fmt("::%s::%s = std::make_unique<%s>(%s)", ns, g.id.local(), g.type, util::join(g.args, ", ")));
+                    body.addStatement(fmt("::%s::%s = {%s}", ns, g.id.local(), util::join(g.args, ", ")));
+                else
+                    body.addStatement(fmt("::%s::%s = %s{}", ns, g.id.local(), g.type));
             }
         }
 

@@ -9,11 +9,11 @@
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Bar {
-    extern std::unique_ptr<std::string> bar;
+    extern std::optional<std::string> bar;
 }
 
 namespace __hlt::Foo {
-    std::unique_ptr<std::string> foo = std::make_unique<std::string>();
+    std::optional<std::string> foo = {};
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
@@ -24,7 +24,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo.reset();; }
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo = std::make_unique<std::string>(std::string("Foo!")); }
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo = std::string("Foo!"); }
 
 extern void __hlt::Foo::__init_module() {
       __location__("foo.hlt:10:1");
@@ -51,7 +51,7 @@ extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModul
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Bar {
-    std::unique_ptr<std::string> bar = std::make_unique<std::string>();
+    std::optional<std::string> bar = {};
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
@@ -59,14 +59,14 @@ namespace __hlt::Bar {
 }
 
 namespace __hlt::Foo {
-    extern std::unique_ptr<std::string> foo;
+    extern std::optional<std::string> foo;
 }
 
 HILTI_PRE_INIT(__hlt::Bar::__register_module)
 
 extern void __hlt::Bar::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar.reset();; }
 
-extern void __hlt::Bar::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar = std::make_unique<std::string>(std::string("Bar!")); }
+extern void __hlt::Bar::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar = std::string("Bar!"); }
 
 extern void __hlt::Bar::__init_module() {
       __location__("bar.hlt:10:1");

@@ -9,7 +9,7 @@
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    static std::unique_ptr<std::string> X = std::make_unique<std::string>();
+    static std::optional<std::string> X = {};
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
@@ -20,7 +20,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X.reset();; }
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X = std::make_unique<std::string>(std::string("Hello, world!")); }
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X = std::string("Hello, world!"); }
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/globals.hlt:16:1");

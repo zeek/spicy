@@ -17,8 +17,8 @@ assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    static std::unique_ptr<double> d = std::make_unique<double>();
-    static std::unique_ptr<double> r = std::make_unique<double>();
+    static std::optional<double> d = {};
+    static std::optional<double> r = {};
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
@@ -32,7 +32,10 @@ extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) {
     ::__hlt::Foo::r.reset();;
 }
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::r = std::make_unique<double>(0x1.999999999999ap-4); }
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
+    ::__hlt::Foo::d = double{};
+    ::__hlt::Foo::r = 0x1.999999999999ap-4;
+}
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/nops.hlt:11:1");
