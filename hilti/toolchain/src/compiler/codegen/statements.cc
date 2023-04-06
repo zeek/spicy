@@ -12,11 +12,11 @@ using util::fmt;
 
 using namespace hilti::detail;
 
-inline auto traceStatement(CodeGen* cg, cxx::Block* b, const Statement& s) {
+inline auto traceStatement(CodeGen* cg, cxx::Block* b, const Statement& s, bool skip_location = false) {
     if ( s.isA<statement::Block>() )
         return;
 
-    if ( cg->options().track_location && s.meta().location() )
+    if ( cg->options().track_location && s.meta().location() && ! skip_location )
         b->addStatement(fmt("  __location__(\"%s\")", s.meta().location()));
 
     if ( cg->options().debug_trace )
@@ -85,9 +85,13 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         if ( level == 0 ) {
             ++level;
 
+            std::optional<Location> prev_location;
+
             for ( const auto& s : n.statements() ) {
-                traceStatement(cg, block, s);
+                traceStatement(cg, block, s, prev_location && s.meta().location() == prev_location);
+
                 dispatch(s);
+                prev_location = s.meta().location();
             }
 
             --level;
