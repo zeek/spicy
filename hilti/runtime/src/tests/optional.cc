@@ -3,6 +3,7 @@
 #include <optional>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/logging.h>
 #include <hilti/rt/types/null.h>
 #include <hilti/rt/types/optional.h>
 
@@ -12,23 +13,27 @@ TEST_SUITE_BEGIN("optional");
 
 TEST_CASE("value") {
     SUBCASE("rvalue") {
-        CHECK_THROWS_WITH_AS(optional::value(std::optional<int>(), "foo.spicy"), "unset optional value (foo.spicy)",
+        debug::setLocation("foo.spicy");
+        CHECK_THROWS_WITH_AS(optional::value(std::optional<int>()), "unset optional value (foo.spicy)",
                              const UnsetOptional&);
 
-        CHECK_EQ(optional::value(std::optional<int>(0), "foo.spicy"), 0);
+        CHECK_EQ(optional::value(std::optional<int>(0)), 0);
+        debug::setLocation(nullptr);
     }
 
     SUBCASE("lvalue") {
+        debug::setLocation("foo.spicy");
         auto o = std::optional<int>();
 
-        CHECK_THROWS_WITH_AS(optional::value(o, "foo.spicy"), "unset optional value (foo.spicy)", const UnsetOptional&);
+        CHECK_THROWS_WITH_AS(optional::value(o), "unset optional value (foo.spicy)", const UnsetOptional&);
 
         o = 0;
-        auto& v = optional::value(o, "foo.spicy");
+        auto& v = optional::value(o);
         CHECK_EQ(v, 0);
 
         v += 42;
         CHECK_EQ(*o, 42);
+        debug::setLocation(nullptr);
     }
 }
 

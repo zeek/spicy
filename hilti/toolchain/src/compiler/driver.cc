@@ -36,10 +36,13 @@ inline const DebugStream Driver("driver");
 } // namespace hilti::logging::debug
 
 constexpr int OPT_CXX_LINK = 1000;
+constexpr int OPT_CXX_ENABLE_DYNAMIC_GLOBALS = 1001;
 
 static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
                                               {"show-backtraces", required_argument, nullptr, 'B'},
                                               {"compiler-debug", required_argument, nullptr, 'D'},
+                                              {"cxx-enable-dynamic-globals", no_argument, nullptr,
+                                               OPT_CXX_ENABLE_DYNAMIC_GLOBALS},
                                               {"cxx-link", required_argument, nullptr, OPT_CXX_LINK},
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
@@ -405,6 +408,8 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 break;
 
             case OPT_CXX_LINK: _compiler_options.cxx_link.emplace_back(optarg); break;
+
+            case OPT_CXX_ENABLE_DYNAMIC_GLOBALS: _compiler_options.cxx_enable_dynamic_globals = true; break;
 
             case 'h': usage(); return Nothing();
 

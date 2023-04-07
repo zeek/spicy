@@ -25,7 +25,10 @@ public:
         debug::setLocation(_location.c_str());
     }
 
-    ~TestLocation() { context::detail::current() = _prev; }
+    ~TestLocation() {
+        context::detail::current() = _prev;
+        debug::setLocation(nullptr);
+    }
 
 private:
     std::string _location;

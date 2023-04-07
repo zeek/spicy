@@ -9,13 +9,8 @@
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
-        std::string X{};
-        template<typename F> void __visit(F _) const { _("X", X); }
-    };
-
-    inline unsigned int __globals_index;
-    static inline auto __globals() { return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
+    static std::optional<std::string> X = {};
+    extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
     extern void __register_module();
@@ -23,17 +18,16 @@ namespace __hlt::Foo {
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
-    ::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index);
-    __globals()->X = std::string("Hello, world!");
-}
+extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X.reset();; }
+
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X = std::string("Hello, world!"); }
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/globals.hlt:16:1");
-    ::hilti::rt::print(Foo::__globals()->X, ::hilti::rt::Bool(true));
+    ::hilti::rt::print((*__hlt::Foo::X), ::hilti::rt::Bool(true));
 }
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, &__init_globals, nullptr, &__globals_index}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, &__init_globals, &__destroy_globals, nullptr}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/globals.hlt","version":1}

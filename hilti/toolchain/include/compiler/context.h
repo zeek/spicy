@@ -48,6 +48,8 @@ struct Options {
         cxx_include_paths;             /**< additional C++ directories to search for #include files */
     bool keep_tmps = false;            /**< if true, do not remove generated files on exit */
     std::vector<std::string> cxx_link; /**< additional static archives or shared libraries to link during JIT */
+    bool cxx_enable_dynamic_globals =
+        false; /**< if true, allocate globals dynamically at runtime for (future) thread safety */
 
     /**
      * Retrieves the value for an auxiliary option.

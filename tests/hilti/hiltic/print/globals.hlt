@@ -1,7 +1,11 @@
 # @TEST-GROUP: no-jit
-# @TEST-EXEC: ${HILTIC} -g -c %INPUT >output
+# @TEST-EXEC: ${HILTIC} -g -c --cxx-enable-dynamic-globals %INPUT >output
 # @TEST-EXEC: ${HILTIC} -l %INPUT >>output
 # @TEST-EXEC: btest-diff output
+#
+# @TEST-EXEC: ${HILTIC} -g -c %INPUT >output2
+# @TEST-EXEC: ${HILTIC} -l %INPUT >>output2
+# @TEST-EXEC: btest-diff output2
 
 module Foo {
 

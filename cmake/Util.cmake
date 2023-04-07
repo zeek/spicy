@@ -208,4 +208,10 @@ macro (BISON_TARGET_PP Name BisonInput BisonOutput)
 
     # Invoke the actual Bison processing.
     bison_target(${args})
+
+    # Suppress warnings in generated code.
+    # cmake-format: off
+    # (cmake-format and cmake-lint don't agree on how this line should be formatted).
+    set_source_files_properties(${BisonOutput} PROPERTIES COMPILE_FLAGS "-Wno-unused-but-set-variable")
+    # cmake-format: on
 endmacro ()

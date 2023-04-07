@@ -14,7 +14,7 @@ namespace __hlt::Foo {
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr}); }
+extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr, nullptr}); }
 
 /* __HILTI_LINKER_V1__
 {"module":"Foo","namespace":"__hlt::Foo","path":"<...>/empty.hlt","version":1}

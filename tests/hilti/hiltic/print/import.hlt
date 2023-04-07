@@ -1,7 +1,11 @@
 # @TEST-GROUP: no-jit
-# @TEST-EXEC: ${HILTIC} -g -c foo.hlt bar.hlt >output
+# @TEST-EXEC: ${HILTIC} -g -c --cxx-enable-dynamic-globals foo.hlt bar.hlt >output
 # @TEST-EXEC: ${HILTIC} -l foo.hlt bar.hlt >>output
 # @TEST-EXEC: btest-diff output
+#
+# @TEST-EXEC: ${HILTIC} -g -c foo.hlt bar.hlt >output2
+# @TEST-EXEC: ${HILTIC} -l foo.hlt bar.hlt >>output2
+# @TEST-EXEC: btest-diff output2
 
 @TEST-START-FILE foo.hlt
 

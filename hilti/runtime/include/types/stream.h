@@ -979,9 +979,9 @@ inline SafeConstIterator::SafeConstIterator(const UnsafeConstIterator& i)
  * iterators; no data is copied. That makes the view cheap to create and pass
  * around. Because of the use of safe containers, it'll also be caught if the
  * underlying stream instances goes away, or if accesses outside of
- * currendtly valid range occur.
+ * currently valid range occur.
  */
-class View {
+class View final {
 public:
     using Byte = stream::Byte;
     using Chain = stream::detail::Chain;
@@ -994,8 +994,8 @@ public:
     /** Constructor. */
     View() = default;
 
-    /** Destructor. Virtual to force creation of vtable for consistent RTTI. */
-    virtual ~View();
+    /** Destructor. */
+    ~View() = default;
 
     /** Constructor for static view bracketed through two iterators. */
     explicit View(SafeConstIterator begin, SafeConstIterator end) : _begin(std::move(begin)), _end(std::move(end)) {
@@ -1382,6 +1382,8 @@ private:
             throw InvalidIterator("view has invalid end");
     }
 
+    virtual void _force_vtable(); // force creation of consistent vtable for RTTI; not used otherwise
+
     // Common backend for backward searching.
     std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& needle, UnsafeConstIterator i) const;
 
@@ -1391,6 +1393,27 @@ private:
     SafeConstIterator _begin;
     std::optional<SafeConstIterator> _end;
 };
+
+inline Size View::size() const {
+    // Because our end offset may point beyond what's currently
+    // available, we need to take the actual end in account to return
+    // the number of actually available bytes.
+
+    if ( ! _begin.chain() )
+        return 0;
+
+    auto tail = _begin.chain()->tail();
+    if ( ! tail )
+        return 0;
+
+    if ( _begin.offset() > tail->endOffset() )
+        return 0;
+
+    if ( ! _end || _end->offset() >= tail->endOffset() )
+        return tail->endOffset() - _begin.offset();
+    else
+        return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
+}
 
 inline std::ostream& operator<<(std::ostream& out, const View& x) { return out << hilti::rt::to_string_for_print(x); }
 } // namespace stream

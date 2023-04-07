@@ -40,6 +40,129 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
     std::vector<cxx::declaration::Global> globals;
     std::vector<cxx::declaration::Constant> constants;
 
+    // Helper creating function to access dynamically allocated globals, if needed.
+    void createGlobalsAccessorFunction(const Node& module, const ID& module_id, cxx::Unit* unit) {
+        if ( ! cg->options().cxx_enable_dynamic_globals )
+            // Access to globals is direct, no need for function.
+            return;
+
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
+        auto t = cxx::declaration::Type{{ns, "__globals_t"}, cxxGlobalsType()};
+
+        auto idx = cxx::declaration::Global{.id = {ns, "__globals_index"}, .type = "unsigned int", .linkage = "inline"};
+
+        unit->add(idx);
+        unit->add(t);
+
+        auto body = cxx::Block();
+        body.addStatement("return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
+
+        auto body_decl = cxx::declaration::Function{
+            .result = "auto",
+            .id = {ns, "__globals"},
+            .args = {},
+            .linkage = "static",
+            .inline_body = body,
+        };
+
+        unit->add(body_decl);
+    }
+
+    // Helper adding declarations for module's globals, if needed.
+    void createGlobalsDeclarations(const Node& module, const ID& module_id, cxx::Unit* unit) {
+        if ( cg->options().cxx_enable_dynamic_globals )
+            // Access to globals goes through dynamic accessor function; no need for declarations.
+            return;
+
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
+
+        // We emit globals as optionals so that we can control the life time of
+        // the values, in particular wrt destruction when the runtime shuts
+        // down.
+        for ( const auto& g : globals ) {
+            auto cxx_g = g;
+            cxx_g.id = cxx::ID{ns, g.id.local()};
+            cxx_g.type = fmt("std::optional<%s>", g.type);
+            cxx_g.init = {};
+            cxx_g.linkage = "extern";
+            unit->add(cxx_g);
+        }
+    }
+
+    // Helper creating function initializing the module's globals.
+    void createInitGlobals(const Node& module, const ID& module_id, cxx::Unit* unit) {
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
+        auto id = cxx::ID{ns, "__init_globals"};
+
+        auto body_decl =
+            cxx::declaration::Function{.result = cg->compile(type::void_, codegen::TypeUsage::FunctionResult),
+                                       .id = id,
+                                       .args = {{.id = "ctx", .type = "::hilti::rt::Context*"}},
+                                       .linkage = "extern"};
+
+        auto body = cxx::Block();
+        cg->pushCxxBlock(&body);
+
+        if ( cg->options().cxx_enable_dynamic_globals ) {
+            body.addStatement("::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index)");
+
+            for ( auto g : globals ) {
+                if ( g.init )
+                    body.addStatement(fmt("__globals()->%s = %s", g.id.local(), *g.init));
+                else if ( g.args.size() )
+                    body.addStatement(fmt("__globals()->%s = {%s}", g.id.local(), util::join(g.args, ", ")));
+            }
+        }
+        else {
+            for ( const auto& g : globals ) {
+                auto cxx_g = g;
+                cxx_g.type = fmt("std::optional<%s>", g.type);
+                cxx_g.init = "{}";
+                unit->add(cxx_g);
+
+                if ( g.init )
+                    // Initialize to actual value
+                    body.addStatement(fmt("::%s::%s = %s", ns, g.id.local(), *g.init));
+                else if ( g.args.size() )
+                    body.addStatement(fmt("::%s::%s = {%s}", ns, g.id.local(), util::join(g.args, ", ")));
+                else
+                    body.addStatement(fmt("::%s::%s = %s{}", ns, g.id.local(), g.type));
+            }
+        }
+
+        cg->popCxxBlock();
+
+        auto body_impl = cxx::Function{.declaration = body_decl, .body = std::move(body)};
+        unit->add(body_decl);
+        unit->add(body_impl);
+    }
+
+    // Helpers creating function destroying the module's globals, if needed.
+    void createDestroyGlobals(const Node& module, const ID& module_id, cxx::Unit* unit) {
+        if ( cg->options().cxx_enable_dynamic_globals )
+            // Will be implicitly destroyed at termination by the runtime.
+            return;
+
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
+        auto id = cxx::ID{ns, "__destroy_globals"};
+
+        auto body_decl =
+            cxx::declaration::Function{.result = cg->compile(type::void_, codegen::TypeUsage::FunctionResult),
+                                       .id = id,
+                                       .args = {{.id = "ctx", .type = "::hilti::rt::Context*"}},
+                                       .linkage = "extern"};
+
+        auto body = cxx::Block();
+        cg->pushCxxBlock(&body);
+
+        for ( const auto& g : globals )
+            body.addStatement(fmt("::%s::%s.reset();", ns, g.id.local()));
+
+        auto body_impl = cxx::Function{.declaration = body_decl, .body = std::move(body)};
+        unit->add(body_decl);
+        unit->add(body_impl);
+    }
+
     static void addDeclarations(CodeGen* cg, const Node& module, const ID& module_id, cxx::Unit* unit,
                                 bool include_implementation) {
         auto v = GlobalsVisitor(cg, include_implementation);
@@ -49,65 +172,19 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
         for ( const auto& i : module.children() )
             v.dispatch(i);
 
-        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
-
         for ( const auto& c : v.constants )
             unit->add(c);
 
         if ( ! v.globals.empty() ) {
-            if ( include_implementation )
+            v.createGlobalsAccessorFunction(module, module_id, unit);
+
+            if ( include_implementation ) {
                 unit->setUsesGlobals();
-
-            auto t = cxx::declaration::Type{{ns, "__globals_t"}, v.cxxGlobalsType()};
-
-            auto idx =
-                cxx::declaration::Global{.id = {ns, "__globals_index"}, .type = "unsigned int", .linkage = "inline"};
-
-            unit->add(idx);
-            unit->add(t);
-
-            auto body = cxx::Block();
-            body.addStatement("return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
-
-            auto body_decl = cxx::declaration::Function{
-                .result = "auto",
-                .id = {ns, "__globals"},
-                .args = {},
-                .linkage = "static",
-                .inline_body = body,
-            };
-
-            unit->add(body_decl);
-        }
-
-        if ( ! v.globals.empty() && include_implementation ) {
-            // Create the initGlobals() function.
-            auto id = cxx::ID{ns, "__init_globals"};
-
-            auto body_decl =
-                cxx::declaration::Function{.result = cg->compile(type::void_, codegen::TypeUsage::FunctionResult),
-                                           .id = id,
-                                           .args = {{.id = "ctx", .type = "::hilti::rt::Context*"}},
-                                           .linkage = "extern"};
-
-            auto body = cxx::Block();
-            cg->pushCxxBlock(&body);
-
-            if ( ! v.globals.empty() )
-                body.addStatement("::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index)");
-
-            for ( auto g : v.globals ) {
-                if ( g.init )
-                    body.addStatement(fmt("__globals()->%s = %s", g.id.local(), *g.init));
-                else if ( g.args.size() )
-                    body.addStatement(fmt("__globals()->%s = {%s}", g.id.local(), util::join(g.args, ", ")));
+                v.createInitGlobals(module, module_id, unit);
+                v.createDestroyGlobals(module, module_id, unit);
             }
-
-            cg->popCxxBlock();
-
-            auto body_impl = cxx::Function{.declaration = body_decl, .body = std::move(body)};
-            unit->add(body_decl);
-            unit->add(body_impl);
+            else
+                v.createGlobalsDeclarations(module, module_id, unit);
         }
     }
 
@@ -129,7 +206,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
                                           .type = cg->compile(n.type(), codegen::TypeUsage::Storage),
                                           .args = std::move(args),
                                           .init = std::move(init),
-                                          .linkage = "extern"};
+                                          .linkage = (n.linkage() == declaration::Linkage::Public ? "" : "static")};
 
         globals.push_back(x);
     }

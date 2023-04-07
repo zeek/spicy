@@ -100,18 +100,7 @@ TEST_CASE("debug::location") {
     debug::setLocation(source_location);
 
     CHECK_EQ(debug::location(), source_location);
-}
-
-TEST_CASE("debug::setLocation") {
-    Context context(0);
-    TestContext _(&context);
-
-    REQUIRE_EQ(context.source_location, nullptr);
-
-    const auto source_location = "foo/bar.h";
-    debug::setLocation(source_location);
-
-    CHECK_EQ(context.source_location, source_location);
+    debug::setLocation(nullptr);
 }
 
 TEST_CASE("HILTI_RT_DEBUG") {

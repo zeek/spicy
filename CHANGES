@@ -1,3 +1,30 @@
+1.8.0-dev.79 | 2023-04-07 09:31:18 +0200
+
+  * Avoid some redundant location tracking code. (Robin Sommer, Corelight)
+
+  * Emit Spicy globals as true C++ globals by default. (Robin Sommer, Corelight)
+
+    This improves runtime performance. We retain the original approach
+    through an option: `--cxx-enable-dynamic-globals` now switches back to
+    managing globals through dynamically allocated structs, with each
+    runtime context creating separate instances.
+
+  * Fix compiler warnings. (Robin Sommer, Corelight)
+
+    These have started appearing with recent clangs:
+
+    ```
+    warning: variable 'yynerrs_' set but not used
+    ```
+
+  * Inline `stream::View::size()` and `stream::View::~View()`. (Robin Sommer, Corelight)
+
+  * Move runtime location tracking to dedicated TLS variable. (Robin Sommer, Corelight)
+
+  * Remove custom location tracking that some runtime types were using. (Robin Sommer, Corelight)
+
+  * Apply more fiber tuning. (Robin Sommer, Corelight)
+
 1.8.0-dev.70 | 2023-04-05 10:38:03 +0200
 
   * Bump Zeek docs. (Benjamin Bannier, Corelight)
