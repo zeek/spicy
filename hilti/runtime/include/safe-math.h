@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 //
 // Wrapper around functionality from 3rdparty's safe-math that we need. This
 // needs to be in a separate implementation file because one cannot include

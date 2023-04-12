@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 # Declares a new fuzzer target.
 function (fuzz_parser Name SpicyInput Parser)

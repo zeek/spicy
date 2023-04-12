@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 set(AUTOGEN_H "${PROJECT_BINARY_DIR}/include/hilti/autogen")
 set(AUTOGEN_CC "${PROJECT_BINARY_DIR}/hilti/src/autogen")

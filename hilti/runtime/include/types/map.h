@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 /**
  * A map that mostly builds on std::map, but adds a couple of things:

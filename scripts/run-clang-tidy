@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 usage() {
     echo "Usage: $(basename $0) [--fixit] [-j <proc>] [--clang-tidy-path <clang-tidy>] [--clang-tidy-arg <addl-arg>] <build-directory> [<files>]"
