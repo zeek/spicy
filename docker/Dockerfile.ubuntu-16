@@ -33,8 +33,9 @@ RUN apt-get update \
  # Spicy dependencies.
  && apt-get install -y git ninja-build ccache flex libfl-dev libssl-dev zlib1g-dev make llvm-11-dev clang-11 libclang-11-dev libc++-11-dev bison \
  # Spicy doc dependencies.
+ # NOTE: We pin btest since btest>=1.0 requires python-3.7 while this system only has python-3.5.
  && apt-get install -y --no-install-recommends python3 python3-pip python3-sphinx python3-sphinx-rtd-theme python3-setuptools python3-wheel doxygen \
- && pip3 install "btest>=0.66" pre-commit \
+ && pip3 install "btest==0.71" pre-commit \
  # Cleanup.
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
