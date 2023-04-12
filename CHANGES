@@ -1,3 +1,17 @@
+1.8.0-dev.81 | 2023-04-12 09:11:00 +0200
+
+  * GH-1416: Fix build with gcc13 development snapshot. (Benjamin Bannier, Corelight)
+
+    This patch bumps 3rdparty/reproc to a version including
+    DaanDeMeyer/reproc@0b23d88894ccedde04537fa23ea55cb2f8365342
+    so Spicy can be build with a gcc13 development snapshot. We do not bump
+    to the latest development snapshot since
+    DaanDeMeyer/reproc@51540e1d1f7be2a82f9f4ae80c41232205b6b0ab changed the
+    process ownership semantics which would require changes on our side; we
+    will tackle that once upstream has committed to an API in a release.
+
+    This patch does not add CI for gcc13 since it is not yet released.
+
 1.8.0-dev.79 | 2023-04-07 09:31:18 +0200
 
   * Avoid some redundant location tracking code. (Robin Sommer, Corelight)
