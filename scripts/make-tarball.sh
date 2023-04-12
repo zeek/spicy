@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+
 set -e
 
 cd "$(git rev-parse --show-toplevel)" || exit 1

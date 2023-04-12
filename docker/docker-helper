@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
 #
 # Helper for the Makefile to trigger Docker commands with the desired image.
 

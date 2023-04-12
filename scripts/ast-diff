@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 #
+# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+#
 # A helper script for manual diffing of two AST debug renderings, ignoring any
 # content that's not stable between subsequent executions.
 

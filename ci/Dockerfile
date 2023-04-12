@@ -1,3 +1,5 @@
+# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+
 FROM ubuntu:focal
 
 ARG ZEEK_VERSION="v5.0.5"

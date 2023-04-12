@@ -1,3 +1,5 @@
+// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+
 #include "spicy/ast/types.h"
 
 #include <hilti/ast/types/bytes.h>

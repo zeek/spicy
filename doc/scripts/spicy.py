@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+# Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+
 """X
     The Spicy domain for Sphinx.
 """
