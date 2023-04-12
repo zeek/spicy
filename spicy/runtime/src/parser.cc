@@ -7,6 +7,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 
+#include <spicy/rt/configuration.h>
 #include <spicy/rt/debug.h>
 #include <spicy/rt/global-state.h>
 #include <spicy/rt/parser.h>
@@ -19,12 +20,12 @@ HILTI_EXCEPTION_IMPL(MissingData);
 HILTI_EXCEPTION_IMPL(ParseError)
 
 void spicy::rt::accept_input() {
-    if ( const auto& hook = globalState()->configuration->hook_accept_input )
+    if ( const auto& hook = configuration::get().hook_accept_input )
         (*hook)();
 }
 
 void spicy::rt::decline_input(const std::string& reason) {
-    if ( const auto& hook = globalState()->configuration->hook_decline_input )
+    if ( const auto& hook = configuration::get().hook_decline_input )
         (*hook)(reason);
 }
 
