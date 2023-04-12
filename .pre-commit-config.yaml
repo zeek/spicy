@@ -1,3 +1,5 @@
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+#
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
@@ -8,6 +10,14 @@ repos:
     entry: ./tests/Scripts/3rdparty/checkbashisms.pl
     language: script
     types: ["sh"]
+
+  - id: license
+    name: Check for license headers
+    entry: ./tests/Scripts/license-header.py
+    language: python
+    stages: ["commit"]
+    types: [text]
+    exclude: '^tests|NOTES|README|^(CHANGES|VERSION|scripts/ninja-build-stats|\.gitmodules|\.paths|.*\.(decl|json|rst|t2d))$'
 
   - id: autogen-docs
     name: Check that generated documentation is up-to-date

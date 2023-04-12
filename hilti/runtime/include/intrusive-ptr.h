@@ -1,6 +1,4 @@
-// See the file "COPYING" in the main distribution directory for copyright.
-//
-// This code is adapted from Zeek's IntrusivePtr implementation.
+// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #pragma once
 

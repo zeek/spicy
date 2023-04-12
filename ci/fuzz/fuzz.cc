@@ -1,3 +1,5 @@
+// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -53,6 +55,4 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
 extern "C" int LLVMFuzzerRunDriver(int* argc, char*** argv, int (*UserCb)(const uint8_t* Data, size_t Size));
 
 // We provide our own `main` to avoid linking to hilti-rt's weak `main` symbol.
-int main(int argc, char** argv) {
-    LLVMFuzzerRunDriver(&argc, &argv, LLVMFuzzerTestOneInput);
-}
+int main(int argc, char** argv) { LLVMFuzzerRunDriver(&argc, &argv, LLVMFuzzerTestOneInput); }

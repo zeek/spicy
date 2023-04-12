@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 //
 // This code adapts a number of operators from HILTI's struct type to Spicy's unit type.
 

@@ -1,3 +1,5 @@
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
 from pygments.lexer import RegexLexer, bygroups, include, words, bygroups
 from pygments.token import *
 from sphinx.highlighting import lexers

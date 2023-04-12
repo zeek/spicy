@@ -1,3 +1,27 @@
+1.8.0-dev.87 | 2023-04-12 17:37:26 +0200
+
+  * Bump copyright dates in license headers. (Benjamin Bannier, Corelight)
+
+  * Use diffutils instead of BusyBox `diff` in Alpine CI. (Benjamin Bannier, Corelight)
+
+    The version of `btest` recently published to pypi uses flags which are
+    unsupported by the BusyBox `diff` binary which ships with Alpine by
+    default, see https://github.com/zeek/btest/issues/92. Use `diffutils`
+    instead.
+
+  * Add missing license headers. (Benjamin Bannier, Corelight)
+
+  * Use safe helper to get runtime configuration. (Benjamin Bannier, Corelight)
+
+    We previously would directly access a value from the configuration in
+    the global state in functions for `accept_input` and `decline_input`.
+    This is only safe if the configuration was created previously, but would
+    read uninitialized memory if e.g., a parser using these functions is
+    embedded in code not doing that.
+
+    With this patch we use a safe accessor for the configuration which
+    ensures that it always contains a good value.
+
 1.8.0-dev.81 | 2023-04-12 09:11:00 +0200
 
   * GH-1416: Fix build with gcc13 development snapshot. (Benjamin Bannier, Corelight)

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-
+#
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+#
 # This script regenerates documentation files. Running it again a `main`
 # commit should not produce any changes.
 
