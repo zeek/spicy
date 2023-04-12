@@ -1,3 +1,10 @@
+1.8.0-dev.89 | 2023-04-12 19:40:28 +0200
+
+  * Pin btest version on ubuntu-16 in CI. (Benjamin Bannier, Corelight)
+
+    The recently released btest-1.0 requires python-3.7 while this system
+    has only python-3.5.
+
 1.8.0-dev.87 | 2023-04-12 17:37:26 +0200
 
   * Bump copyright dates in license headers. (Benjamin Bannier, Corelight)
