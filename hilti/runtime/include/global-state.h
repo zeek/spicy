@@ -12,7 +12,7 @@
 #include <hilti/rt/context.h>
 #include <hilti/rt/debug-logger.h>
 #include <hilti/rt/init.h>
-#include <hilti/rt/profiler.h>
+#include <hilti/rt/profiler-state.h>
 
 // We collect all (or most) of the runtime's global state centrally. That's
 // 1st good to see what we have (global state should be minimal) and 2nd

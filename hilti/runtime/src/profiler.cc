@@ -4,7 +4,6 @@
 #include <unordered_map>
 
 #include <hilti/rt/configuration.h>
-#include <hilti/rt/global-state.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/profiler.h>
 #include <hilti/rt/util.h>
