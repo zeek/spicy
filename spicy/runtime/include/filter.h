@@ -126,6 +126,11 @@ void disconnect(UnitType<U>& unit) {
     return disconnect(*unit);
 }
 
+template<typename U>
+void disconnect(hilti::rt::Self<U> unit) {
+    return disconnect(*unit);
+}
+
 /**
  * Connects a filter unit to a unit for transforming parsing. This won't have
  * an observable effect until `filter::init()` is executed (and must be called
@@ -164,6 +169,11 @@ void connect(S& state, UnitRef<F> filter_unit) {
 
 template<typename U, typename F>
 void connect(UnitType<U>& unit, UnitRef<F> filter_unit) {
+    return connect(*unit, filter_unit);
+}
+
+template<typename U, typename F>
+void connect(hilti::rt::Self<U> unit, UnitRef<F> filter_unit) {
     return connect(*unit, filter_unit);
 }
 
@@ -206,6 +216,14 @@ hilti::rt::StrongReference<hilti::rt::Stream> init(
     return init(*unit, data, cur);
 }
 
+template<typename U>
+hilti::rt::StrongReference<hilti::rt::Stream> init(
+    hilti::rt::Self<U> unit,                            // NOLINT(google-runtime-references)
+    hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
+    const hilti::rt::stream::View& cur) {
+    return init(*unit, data, cur);
+}
+
 /**
  * Forward data from a filter unit to the unit it's connected to. A noop if
  * the unit isn't connected as a filter to anything.
@@ -228,6 +246,11 @@ inline void forward(S& state, const hilti::rt::Bytes& data) {
 
 template<typename U>
 inline void forward(UnitType<U>& unit, const hilti::rt::Bytes& data) {
+    return forward(*unit, data);
+}
+
+template<typename U>
+inline void forward(hilti::rt::Self<U> unit, const hilti::rt::Bytes& data) {
     return forward(*unit, data);
 }
 
@@ -255,6 +278,11 @@ inline void forward_eod(UnitType<U>& unit) {
     return forward_eod(*unit);
 }
 
+template<typename U>
+inline void forward_eod(hilti::rt::Self<U> unit) {
+    return forward_eod(*unit);
+}
+
 /**
  * Lets all filters in a list process as much of their pending input as
  * possible. This should be called after new data has been appended to their
@@ -278,6 +306,11 @@ inline void flush(S& state) {
 
 template<typename U>
 inline void flush(UnitType<U>& unit) {
+    flush(*unit);
+}
+
+template<typename U>
+inline void flush(hilti::rt::Self<U> unit) {
     flush(*unit);
 }
 
