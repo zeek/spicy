@@ -281,9 +281,9 @@ public:
      * This is for internal use by the code generator to wrap `this` inside
      * methods into a value reference.
      */
-    static ValueReference self(T* t) {
+    static Self<T> self(T* t) {
         static_assert(std::is_base_of<Controllable<T>, T>::value);
-        return ValueReference(t);
+        return Self<T>(t);
     }
 
 private:

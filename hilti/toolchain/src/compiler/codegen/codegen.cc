@@ -377,7 +377,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             // the type currently.
             d.args.push_back(cxx::declaration::Argument{
                 .id = "__self",
-                .type = fmt("::hilti::rt::ValueReference<%s>&", id_struct_type),
+                .type = fmt("::hilti::rt::Self<%s>", id_struct_type),
             });
 
             // Make any additional types the hook needs known to local unit and linker.

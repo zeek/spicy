@@ -184,8 +184,10 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
 
                             hook.callee.args.push_back(
                                 cxx::declaration::Argument{.id = "__self",
-                                                           .type = cg->compile(type::ValueReference(p.node.as<Type>()),
-                                                                               codegen::TypeUsage::InOutParameter)});
+                                                           .type =
+                                                               fmt("::hilti::rt::Self<%s>",
+                                                                   cg->compile(p.node.as<Type>(),
+                                                                               codegen::TypeUsage::CopyParameter))});
                             cg->unit()->add(hook);
                         }
 

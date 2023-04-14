@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
+
 #include <hilti/rt/json.h>
 
 #include <hilti/base/logger.h>
@@ -336,6 +338,18 @@ std::string cxx::declaration::Local::str() const { return fmtDeclaration(id, typ
 
 std::string cxx::declaration::Global::str() const { return fmtDeclaration(id, type, args, linkage, init); }
 
+// Ad-hoc helper function to turn a `ValueReference` into a `Self`.
+std::optional<cxx::Type> value_ref_to_self(const cxx::Type& x) {
+    auto t = std::string(x);
+    auto starts_with_val = util::startsWith(t, "::hilti::rt::ValueReference<");
+    auto starts_with_const_val = util::startsWith(t, "const ::hilti::rt::ValueReference<");
+    if ( ! (starts_with_val || starts_with_const_val) || ! util::endsWith(t, ">&") )
+        return {};
+
+    return fmt("::hilti::rt::Self<%s>",
+               rt::rtrim(rt::ltrim(rt::ltrim(t, "const "), "::hilti::rt::ValueReference<"), ">&"));
+}
+
 std::string cxx::type::Struct::str() const {
     std::vector<std::string> visitor_calls;
 
@@ -423,6 +437,19 @@ std::string cxx::type::Struct::str() const {
                 util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
             auto params_ctor = fmt("inline %s(%s);", type_name, params_ctor_args);
             struct_fields.emplace_back(params_ctor);
+
+            // Add constructor from `self` values.
+            if ( std::any_of(args.begin(), args.end(),
+                             [](const auto& x) { return value_ref_to_self(x.type).has_value(); }) ) {
+                auto pparams_ctor_args = util::join(util::transform(args,
+                                                                    [&](const auto& x) {
+                                                                        auto y = value_ref_to_self(x.type);
+                                                                        return fmt("%s %s", y ? *y : x.type, x.id);
+                                                                    }),
+                                                    ", ");
+                auto pparams_ctor = fmt("inline %s(%s);", type_name, pparams_ctor_args);
+                struct_fields.emplace_back(pparams_ctor);
+            }
         }
     }
 
@@ -506,6 +533,19 @@ std::string cxx::type::Struct::inlineCode() const {
 
         inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
                            init_locals_user(), init_locals_non_user());
+
+        // Constructor from `self` parameters.
+        if ( std::any_of(args.begin(), args.end(),
+                         [](const auto& x) { return value_ref_to_self(x.type).has_value(); }) ) {
+            inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name,
+                               util::join(util::transform(args,
+                                                          [&](const declaration::Argument& x) {
+                                                              auto y = value_ref_to_self(x.type);
+                                                              return fmt("%s %s", y ? *y : x.type, x.id);
+                                                          }),
+                                          ", "),
+                               ctor_inits, init_locals_user(), init_locals_non_user());
+        }
     }
 
     if ( locals_user.size() ) {

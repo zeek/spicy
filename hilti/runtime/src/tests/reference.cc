@@ -41,7 +41,7 @@ TEST_SUITE_BEGIN("ValueReference");
 TEST_CASE("arrow") {
     CHECK_EQ(ValueReference<T>(42)->_x, 42);
 
-    CHECK_THROWS_WITH_AS((void)ValueReference<T>::self(nullptr)->_x, "attempt to access null reference",
+    CHECK_THROWS_WITH_AS((void)ValueReference(ValueReference<T>::self(nullptr))->_x, "attempt to access null reference",
                          const NullReference&);
 }
 
@@ -80,15 +80,16 @@ TEST_CASE("asSharedPtr") {
     SUBCASE("non-owning") {
         auto ptr = std::make_shared<T>(42);
 
-        REQUIRE(ValueReference<T>::self(ptr.get()).asSharedPtr());
-        CHECK_EQ(*ValueReference<T>::self(ptr.get()).asSharedPtr(), *ptr);
+        ValueReference<T> h = ValueReference<T>::self(ptr.get());
+        REQUIRE(h.asSharedPtr());
+        CHECK_EQ(*h.asSharedPtr(), *ptr);
 
-        CHECK_THROWS_WITH_AS(ValueReference<T>::self(nullptr).asSharedPtr(), "unexpected state of value reference",
-                             const IllegalReference&);
+        ValueReference<T> i = ValueReference<T>::self(nullptr);
+        CHECK_THROWS_WITH_AS(i.asSharedPtr(), "unexpected state of value reference", const IllegalReference&);
 
         T x(42);
-        CHECK_THROWS_WITH_AS(ValueReference<T>::self(&x).asSharedPtr(), "reference to non-heap instance",
-                             const IllegalReference&);
+        ValueReference<T> j = ValueReference<T>::self(&x);
+        CHECK_THROWS_WITH_AS(j.asSharedPtr(), "reference to non-heap instance", const IllegalReference&);
     }
 }
 
@@ -123,7 +124,7 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
         SUBCASE("other uninitialized") {
             // This test only makes sense if `U` is a `Controllable`, i.e., for `T` for our instantiations.
             if constexpr ( std::is_same_v<U, T> ) {
-                const auto ref1 = ValueReference<U>::self(nullptr);
+                const ValueReference<U> ref1 = ValueReference<U>::self(nullptr);
                 REQUIRE_EQ(ref1.get(), nullptr);
 
                 const ValueReference<U>& ref2(ref1);
@@ -147,7 +148,7 @@ TEST_CASE("deref") {
     T x(42);
     SUBCASE("mutable") {
         CHECK_EQ(*ValueReference<T>(x), x);
-        CHECK_THROWS_WITH_AS(*ValueReference<T>::self(nullptr), "attempt to access null reference",
+        CHECK_THROWS_WITH_AS(*ValueReference(ValueReference<T>::self(nullptr)), "attempt to access null reference",
                              const NullReference&);
     }
 
@@ -158,7 +159,7 @@ TEST_CASE("deref") {
         }
 
         {
-            const auto ref = ValueReference<T>::self(nullptr);
+            const ValueReference ref = ValueReference<T>::self(nullptr);
             CHECK_THROWS_WITH_AS(*ref, "attempt to access null reference", const NullReference&);
         }
     }
@@ -174,10 +175,10 @@ TEST_CASE("get") {
         CHECK_EQ(*ValueReference<T>(x).get(), x);
         CHECK_NE(ValueReference<T>(x).get(), nullptr);
 
-        CHECK_EQ(ValueReference<T>::self(&x).get(), &x);
+        CHECK_EQ(ValueReference<T>(ValueReference<T>::self(&x)).get(), &x);
     }
 
-    SUBCASE("invalid value") { CHECK_EQ(ValueReference<T>::self(nullptr).get(), nullptr); }
+    SUBCASE("invalid value") { CHECK_EQ(ValueReference<T>(ValueReference<T>::self(nullptr)).get(), nullptr); }
 }
 
 TEST_CASE("isNull") {
@@ -185,8 +186,8 @@ TEST_CASE("isNull") {
 
     CHECK_FALSE(ValueReference<T>().isNull());
     CHECK_FALSE(ValueReference<T>(x).isNull());
-    CHECK_FALSE(ValueReference<T>::self(&x).isNull());
-    CHECK(ValueReference<T>::self(nullptr).isNull());
+    CHECK_FALSE(ValueReference<T>(ValueReference<T>::self(&x)).isNull());
+    CHECK(ValueReference<T>(ValueReference<T>::self(nullptr)).isNull());
 }
 
 TEST_CASE("reset") {
