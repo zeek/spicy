@@ -1,3 +1,27 @@
+1.8.0-dev.93 | 2023-04-14 10:39:02 +0200
+
+  * Implement `View::data` with `Bytes::append`. (Benjamin Bannier, Corelight)
+
+  * GH-7: Avoid unneeded temporaries when appending `View` to `Bytes`. (Benjamin Bannier, Corelight)
+
+    We used `View::data` to constructs a new `Bytes` to append from. Since
+    we cannot reuse the temporary in the append but have to copy the data
+    this introduced unneeded overhead. This patch inlines the low-level
+    `View` block iteration into `Bytes::append`.
+
+    I looked at this coming from zeek/spicy-dns#7, and with that particular
+    test case where many small views are appended the speedup is only ~1.5%.
+    I suspect the speedup to be bigger the bigger the view we append.
+
+    In order to amortize reallocation costs I also looked into aggressively
+    reserving capacity in the different `append` overloads, e.g., if the new
+    size is bigger than the current capacity, reserve double the needed
+    capacity in anticipation of more append operations to come. This did not
+    make a noticeable difference, probably due to the underlying
+    `std::string::append` already doing something similar.
+
+  * Bump Zeek docs. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.89 | 2023-04-12 19:40:28 +0200
 
   * Pin btest version on ubuntu-16 in CI. (Benjamin Bannier, Corelight)
