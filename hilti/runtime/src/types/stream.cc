@@ -350,7 +350,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
     }
 }
 
-void View::_force_vtable() { }
+void View::_force_vtable() {}
 
 bool View::startsWith(const Bytes& b) const {
     _ensureValid();
@@ -467,10 +467,7 @@ void Stream::append(const char* data, size_t len) {
 
 Bytes stream::View::data() const {
     Bytes s;
-
-    for ( auto block = firstBlock(); block; block = nextBlock(block) )
-        s.append(std::string(reinterpret_cast<const char*>(block->start), block->size));
-
+    s.append(*this);
     return s;
 }
 
