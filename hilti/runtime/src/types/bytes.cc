@@ -211,7 +211,10 @@ Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
     return groups.at(group);
 }
 
-void Bytes::append(const stream::View& view) { Base::append(view.data()); }
+void Bytes::append(const stream::View& view) {
+    for ( auto block = view.firstBlock(); block; block = view.nextBlock(block) )
+        Base::append(reinterpret_cast<const char*>(block->start), block->size);
+}
 
 namespace hilti::rt::detail::adl {
 std::string to_string(const Bytes& x, tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
