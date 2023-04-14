@@ -21,20 +21,25 @@ namespace optional {
 
 struct Unset : public std::exception {}; // Internal exception to signal access to optional that may expectedly by unset
 
+namespace detail {
+extern __attribute__((noreturn)) void throw_unset();
+extern __attribute__((noreturn)) void throw_unset_optional();
+} // namespace detail
+
 template<class T>
 inline auto& value(const std::optional<T>& t) {
     if ( t.has_value() )
         return t.value();
-
-    throw UnsetOptional("unset optional value");
+    else
+        detail::throw_unset_optional();
 }
 
 template<class T>
 inline auto& value(std::optional<T>& t) {
     if ( t.has_value() )
         return t.value();
-
-    throw UnsetOptional("unset optional value");
+    else
+        detail::throw_unset_optional();
 }
 
 template<class T>
@@ -57,8 +62,8 @@ template<class T>
 inline auto& tryValue(const std::optional<T>& t) {
     if ( t.has_value() )
         return t.value();
-
-    throw Unset();
+    else
+        detail::throw_unset();
 }
 
 } // namespace optional
