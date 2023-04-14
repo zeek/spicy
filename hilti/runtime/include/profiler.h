@@ -98,7 +98,7 @@ namespace profiler {
  * @return profiler instance representing the active measurement
  */
 inline std::optional<Profiler> start(std::string_view name) {
-    if ( ::hilti::rt::detail::globalState()->profiling_enabled )
+    if ( ::hilti::rt::detail::unsafeGlobalState()->profiling_enabled )
         return Profiler(name);
     else
         return {};

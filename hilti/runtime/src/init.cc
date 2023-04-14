@@ -62,7 +62,7 @@ void hilti::rt::init() {
 }
 
 void hilti::rt::done() {
-    if ( ! globalState() )
+    if ( ! __global_state )
         return;
 
     HILTI_RT_DEBUG("libhilti", "shutting down runtime");

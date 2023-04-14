@@ -97,6 +97,17 @@ inline auto globalState() {
     return createGlobalState();
 }
 
+/**
+ * Returns the current global configuration without checking if it's already
+ * initialized. This is only safe to use if the runtime is already fully
+ * initialized, and should be left to internal use only where performance
+ * matters.
+ */
+inline const GlobalState* unsafeGlobalState() {
+    assert(__global_state);
+    return __global_state;
+}
+
 /** Returns the current context's array of HILTI global variables. */
 inline auto hiltiGlobals() {
     assert(context::detail::current());
