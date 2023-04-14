@@ -635,7 +635,7 @@ void detail::yield() {
     context::detail::get()->resumable = r;
 }
 
-void detail::checkStack() {
+void detail::trackStack() {
     auto* fiber = context::detail::get()->fiber.current;
 
     if ( fiber->type() == Fiber::Type::Main )
@@ -645,9 +645,6 @@ void detail::checkStack() {
         if ( auto size = fiber->stackBuffer().activeSize(); size > detail::Fiber::_max_stack_size )
             detail::Fiber::_max_stack_size = size;
     }
-
-    if ( fiber->stackBuffer().liveRemainingSize() < configuration::get().fiber_min_stack_size )
-        throw StackSizeExceeded("not enough stack space remaining");
 }
 
 detail::Fiber::Statistics detail::Fiber::statistics() {

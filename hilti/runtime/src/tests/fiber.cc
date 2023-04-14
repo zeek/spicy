@@ -7,6 +7,7 @@
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
+#include <hilti/rt/fiber-check-stack.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/result.h>
 

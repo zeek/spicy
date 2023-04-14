@@ -14,6 +14,7 @@
 
 #include <hilti/rt/any.h>
 #include <hilti/rt/autogen/config.h>
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/util.h>
@@ -39,13 +40,8 @@ using Handle = detail::Fiber;
 
 namespace detail {
 
-/**
- * Checks that the current fiber has sufficient stack space left for
- * executing a function body.
- *
- * \throws StackSizeExceeded if the minimum size is not available
- */
-extern void checkStack();
+/** Helper recording global stack resource usage. */
+extern void trackStack();
 
 /** Context-wide state for managing all fibers associated with that context. */
 struct FiberContext {
@@ -235,7 +231,7 @@ public:
 private:
     friend void ::__fiber_run_trampoline(void* argsp);
     friend void ::__fiber_switch_trampoline(void* argsp);
-    friend void detail::checkStack();
+    friend void detail::trackStack();
 
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
