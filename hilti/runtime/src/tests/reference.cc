@@ -29,7 +29,12 @@ struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
     }
 
     friend bool operator==(const T& a, const T& b) { return a._x == b._x; }
+    friend bool operator!=(const T& a, const T& b) { return a._x == b._x; }
 };
+
+namespace hilti::rt::detail::adl {
+inline std::string to_string(const T& x, adl::tag /*unused*/) { return hilti::rt::to_string(x._x); }
+} // namespace hilti::rt::detail::adl
 
 TEST_SUITE_BEGIN("ValueReference");
 
@@ -791,4 +796,43 @@ TEST_CASE("reset") {
     CHECK_EQ(ref.as<int>(), nullptr);
 }
 
+TEST_SUITE_END();
+
+TEST_SUITE_BEGIN("Self");
+TEST_CASE("from ValueReference") {
+    auto value = reference::make_value<T>(1);
+    REQUIRE(! value.isNull());
+
+    auto self = Self(value);
+    CHECK(self);
+
+    CHECK_EQ(value, self);
+    CHECK_EQ(*value.get(), *self);
+};
+
+TEST_CASE("equality") {
+    int a = 1;
+    int b = 2;
+
+    CHECK_EQ(Self(&a), Self(&a));
+    CHECK_NE(Self(&a), Self(&b));
+}
+
+TEST_CASE("operator bool") {
+    int a = 1;
+    CHECK(Self(&a));
+
+    CHECK(! Self<int>(nullptr));
+}
+
+TEST_CASE("assignment") {
+    int a = 1;
+    auto sa = Self(&a);
+    auto nil = Self<int>(nullptr);
+
+    REQUIRE_NE(sa, nil);
+
+    sa = nil;
+    CHECK_EQ(sa, nil);
+}
 TEST_SUITE_END();

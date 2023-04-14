@@ -15,6 +15,9 @@
 
 namespace hilti::rt {
 
+template<typename T>
+class Self;
+
 /** Base for classes that `ValueReference::self` can receive.  */
 template<typename T>
 using Controllable = std::enable_shared_from_this<T>;
@@ -59,6 +62,8 @@ public:
      * @param t value to initialize new instance with
      */
     ValueReference(T t) : _ptr(std::make_shared<T>(std::move(t))) {}
+
+    ValueReference(Self<T> t) : ValueReference(t.get()) {}
 
     /**
      * Instantiates a new reference from an existing `std::shared_ptr` to a
@@ -655,6 +660,43 @@ private:
     }
 };
 
+/** A none-owning pointer to hold `self` values.
+ *
+ * The intention of this type is to be a fast container for `self` values
+ * managed elsewhere with a lifetime greater than the lifetime of the `Self`.
+ * That this container does not perform any validity checks on the contained
+ * value before e.g., dereferencing it is intentional. */
+template<typename T>
+class Self {
+public:
+    Self() noexcept = default;
+    explicit Self(T* x) noexcept : _data(x) {}
+    explicit Self(const ValueReference<T>& x) noexcept : _data(const_cast<T*>(x.get())) {}
+    Self(ValueReference<T>&& x) = delete;
+    Self(const Self&) noexcept = default;
+    Self(Self&&) noexcept = default;
+
+    Self& operator=(const Self&) noexcept = default;
+    Self& operator=(Self&&) noexcept = default;
+
+    explicit operator bool() const noexcept { return get(); }
+
+    const T& operator*() const noexcept { return *get(); }
+    T& operator*() noexcept { return *get(); }
+
+    const T* operator->() const noexcept { return get(); }
+    T* operator->() noexcept { return get(); }
+
+    const T* get() const noexcept { return _data; }
+    T* get() { return _data; }
+
+    friend bool operator==(const Self<T>& a, const Self<T>& b) noexcept { return a.get() == b.get(); }
+    friend bool operator!=(const Self<T>& a, const Self<T>& b) noexcept { return ! (a == b); }
+
+private:
+    T* _data = nullptr;
+};
+
 /**
  * Type for a generic, non-templated strong reference binding to a StrongReference.
  * This generic version can keep a StrongReference alive, but provides
@@ -737,6 +779,11 @@ inline std::string to_string(const ValueReference<T>& x, adl::tag /*unused*/) {
     return hilti::rt::to_string(*x);
 }
 
+template<typename T>
+inline std::string to_string(const Self<T>& x, adl::tag /*unused*/) {
+    return x ? hilti::rt::to_string(*x) : "Null";
+}
+
 } // namespace detail::adl
 
 // String specialization
@@ -799,6 +846,12 @@ inline std::ostream& operator<<(std::ostream& out, const ValueReference<T>& x) {
 
 template<typename T>
 inline std::ostream& operator<<(std::ostream& out, const WeakReference<T>& x) {
+    out << to_string(x);
+    return out;
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& out, const Self<T>& x) {
     out << to_string(x);
     return out;
 }
