@@ -58,9 +58,6 @@ struct GlobalState {
     /** Profiler's global measurements. */
     std::unordered_map<std::string, profiler::detail::MeasurementState> profilers;
 
-    /** The runtime's configuration. */
-    std::unique_ptr<hilti::rt::Configuration> configuration;
-
     /** Debug logger recording runtime diagnostics. */
     std::unique_ptr<hilti::rt::detail::DebugLogger> debug_logger;
 

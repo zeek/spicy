@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -64,11 +65,34 @@ struct Configuration {
 };
 
 namespace configuration {
+
+namespace detail {
+/** The runtime's configuration singleton. */
+extern std::unique_ptr<hilti::rt::Configuration> __configuration;
+
+/**
+ * Returns the current global configuration without checking if it's already
+ * initialized. This is only safe to use if the runtime is already fully
+ * initialized, and should be left to internal use only where performance
+ * matters.
+ */
+inline const Configuration& unsafeGet() {
+    assert(detail::__configuration);
+    return *detail::__configuration;
+}
+
+} // namespace detail
+
 /**
  * Returns the current global configuration. To change the
  * configuration, modify it and then pass it back to `set()`.
  */
-extern const Configuration& get();
+inline const Configuration& get() {
+    if ( ! detail::__configuration )
+        detail::__configuration = std::make_unique<hilti::rt::Configuration>();
+
+    return *detail::__configuration;
+}
 
 /**
  * Sets new configuration values. Usually one first retrieves the current

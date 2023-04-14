@@ -12,22 +12,17 @@
 using namespace hilti::rt;
 using namespace hilti::rt::detail;
 
+std::unique_ptr<hilti::rt::Configuration> configuration::detail::__configuration;
+
 Configuration::Configuration() {
     auto x = ::getenv("HILTI_DEBUG");
     debug_streams = (x ? x : "");
     cout = std::cout;
 }
 
-const Configuration& configuration::get() {
-    if ( ! globalState()->configuration )
-        globalState()->configuration = std::make_unique<hilti::rt::Configuration>();
-
-    return *globalState()->configuration;
-}
-
 void configuration::set(Configuration cfg) {
     if ( isInitialized() )
         hilti::rt::fatalError("attempt to change configuration after library has already been initialized");
 
-    *globalState()->configuration = std::move(cfg);
+    *detail::__configuration = std::move(cfg);
 }

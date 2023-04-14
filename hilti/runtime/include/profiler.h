@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 
+#include <hilti/rt/configuration.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/profiler-state.h>
 

@@ -28,7 +28,7 @@ inline void checkStack() {
         return;
 
     if ( context::detail::get()->fiber.current->stackBuffer().liveRemainingSize() <
-         configuration::get().fiber_min_stack_size )
+         ::hilti::rt::configuration::detail::unsafeGet().fiber_min_stack_size )
         throw StackSizeExceeded("not enough stack space remaining");
 
     // Do additional book-keeping every 8th time.
