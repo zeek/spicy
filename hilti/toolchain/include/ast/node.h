@@ -858,7 +858,7 @@ std::vector<Node> nodes(T t) {
  */
 template<typename T, typename... Ts>
 std::vector<Node> nodes(T t, Ts... ts) {
-    return util::concat(std::move(nodes(t)), nodes(std::move(ts)...));
+    return util::concat(nodes(t), nodes(std::move(ts)...));
 }
 
 /**
