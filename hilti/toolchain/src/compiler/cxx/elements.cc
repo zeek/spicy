@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <algorithm>
-
 #include <hilti/rt/json.h>
 
 #include <hilti/base/logger.h>
@@ -338,18 +336,6 @@ std::string cxx::declaration::Local::str() const { return fmtDeclaration(id, typ
 
 std::string cxx::declaration::Global::str() const { return fmtDeclaration(id, type, args, linkage, init); }
 
-// Ad-hoc helper function to turn a `ValueReference` into a `Self`.
-std::optional<cxx::Type> value_ref_to_self(const cxx::Type& x) {
-    auto t = std::string(x);
-    auto starts_with_val = util::startsWith(t, "::hilti::rt::ValueReference<");
-    auto starts_with_const_val = util::startsWith(t, "const ::hilti::rt::ValueReference<");
-    if ( ! (starts_with_val || starts_with_const_val) || ! util::endsWith(t, ">&") )
-        return {};
-
-    return fmt("::hilti::rt::Self<%s>",
-               rt::rtrim(rt::ltrim(rt::ltrim(t, "const "), "::hilti::rt::ValueReference<"), ">&"));
-}
-
 std::string cxx::type::Struct::str() const {
     std::vector<std::string> visitor_calls;
 
@@ -433,23 +419,25 @@ std::string cxx::type::Struct::str() const {
 
         if ( args.size() ) {
             // Add dedicated constructor to initialize the struct's arguments.
-            auto params_ctor_args =
-                util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
-            auto params_ctor = fmt("inline %s(%s);", type_name, params_ctor_args);
-            struct_fields.emplace_back(params_ctor);
+            // We use a template to allow construction from not exactly
+            // matching types.
+            int arg = 0;
+            auto params_ctor_args = util::join(util::transform(args,
+                                                               [&](const auto& x) {
+                                                                   bool is_const = util::startsWith(x.type, "const ");
+                                                                   bool is_ref = util::endsWith(x.type, "&");
+                                                                   return fmt("%sT%d%s %s", is_const ? "const " : "",
+                                                                              arg++, is_ref ? "&" : "", x.id);
+                                                               }),
+                                               ", ");
+            std::vector<std::string> template_types;
+            template_types.reserve(args.size());
+            for ( size_t i = 0; i < args.size(); ++i )
+                template_types.emplace_back(fmt("typename T%d", i));
 
-            // Add constructor from `self` values.
-            if ( std::any_of(args.begin(), args.end(),
-                             [](const auto& x) { return value_ref_to_self(x.type).has_value(); }) ) {
-                auto pparams_ctor_args = util::join(util::transform(args,
-                                                                    [&](const auto& x) {
-                                                                        auto y = value_ref_to_self(x.type);
-                                                                        return fmt("%s %s", y ? *y : x.type, x.id);
-                                                                    }),
-                                                    ", ");
-                auto pparams_ctor = fmt("inline %s(%s);", type_name, pparams_ctor_args);
-                struct_fields.emplace_back(pparams_ctor);
-            }
+            auto params_ctor =
+                fmt("template <%s> inline %s(%s);", util::join(template_types, ", "), type_name, params_ctor_args);
+            struct_fields.emplace_back(params_ctor);
         }
     }
 
@@ -523,29 +511,29 @@ std::string cxx::type::Struct::inlineCode() const {
                            init_locals_user(), init_locals_non_user());
 
     if ( args.size() ) {
-        // Create constructor taking the struct's parameters.
-        auto ctor_args =
-            util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
+        // Create constructor taking the struct's parameters. We use a template
+        // to allow construction from not exactly matching types.
+        int arg = 0;
+        auto ctor_args = util::join(util::transform(args,
+                                                    [&](const auto& x) {
+                                                        bool is_const = util::startsWith(x.type, "const ");
+                                                        bool is_ref = util::endsWith(x.type, "&");
+                                                        return fmt("%sT%d%s %s", is_const ? "const " : "", arg++,
+                                                                   is_ref ? "&" : "", x.id);
+                                                    }),
+                                    ", ");
 
         auto ctor_inits =
             util::join(util::transform(args, [&](const auto& x) { return fmt("%s(std::move(%s))", x.id, x.id); }),
                        ", ");
 
-        inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
-                           init_locals_user(), init_locals_non_user());
+        std::vector<std::string> template_types;
+        template_types.reserve(args.size());
+        for ( size_t i = 0; i < args.size(); ++i )
+            template_types.emplace_back(fmt("typename T%d", i));
 
-        // Constructor from `self` parameters.
-        if ( std::any_of(args.begin(), args.end(),
-                         [](const auto& x) { return value_ref_to_self(x.type).has_value(); }) ) {
-            inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name,
-                               util::join(util::transform(args,
-                                                          [&](const declaration::Argument& x) {
-                                                              auto y = value_ref_to_self(x.type);
-                                                              return fmt("%s %s", y ? *y : x.type, x.id);
-                                                          }),
-                                          ", "),
-                               ctor_inits, init_locals_user(), init_locals_non_user());
-        }
+        inline_code += fmt("template <%s> inline %s::%s(%s) : %s {\n%s%s}\n\n", util::join(template_types, ", "),
+                           type_name, type_name, ctor_args, ctor_inits, init_locals_user(), init_locals_non_user());
     }
 
     if ( locals_user.size() ) {
