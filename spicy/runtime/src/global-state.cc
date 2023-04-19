@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <spicy/rt/configuration.h>
 #include <spicy/rt/debug.h>
 #include <spicy/rt/global-state.h>
 #include <spicy/rt/hilti-fwd.h>
