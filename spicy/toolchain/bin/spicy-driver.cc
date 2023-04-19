@@ -62,7 +62,6 @@ public:
 
     void fatalError(const std::string& msg) {
         hilti::logger().error(msg);
-        spicy::rt::done();
         finishRuntime();
         exit(1);
     }
@@ -73,7 +72,6 @@ public:
         if ( error.context().size() )
             hilti::logger().error(error.context());
 
-        spicy::rt::done();
         finishRuntime();
         exit(1);
     }
