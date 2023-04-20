@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include <hilti/rt/any.h>
 #include <hilti/rt/extension-points.h>
@@ -298,44 +299,51 @@ private:
         assert(t);
     }
 
-    const T* _get() const noexcept {
+    inline const T* _get() const noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
-            return (*ptr).get();
-
-        cannot_be_reached();
+        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
+        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
     }
 
-    T* _get() noexcept {
+    inline T* _get() noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
-            return (*ptr).get();
-
-        cannot_be_reached();
+        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
+        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
     }
 
-    const T* _safeGet() const {
+    inline const T* _safeGet() const {
         assert(_ptr.index() != std::variant_npos);
 
-        if ( auto ptr = _get() )
-            return ptr;
+        // If the reference contains a raw pointer it is never null.
+        if ( auto ptr = std::get_if<T*>(&_ptr) )
+            return *ptr;
+
+        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
+            return ptr->get();
 
         throw NullReference("attempt to access null reference");
     }
 
-    T* _safeGet() {
+    inline T* _safeGet() {
         assert(_ptr.index() != std::variant_npos);
 
-        if ( auto ptr = _get() )
-            return ptr;
+        // If the reference contains a raw pointer it is never null.
+        if ( auto ptr = std::get_if<T*>(&_ptr) )
+            return *ptr;
+
+        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
+            return ptr->get();
 
         throw NullReference("attempt to access null reference");
     }
 
+    // In `_safeGet` above we rely on the fact that a default-constructed
+    // `ValueReference` always contains a `shared_ptr`, so it is listed as the
+    // first variant.
     std::variant<std::shared_ptr<T>, T*> _ptr;
 };
 
