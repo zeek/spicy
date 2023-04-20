@@ -17,6 +17,10 @@
 
 namespace hilti::rt {
 
+namespace reference::detail {
+void __attribute__((noreturn)) throw_null();
+} // namespace reference::detail
+
 /** Base for classes that `ValueReference::self` can receive.  */
 template<typename T>
 using Controllable = std::enable_shared_from_this<T>;
@@ -325,7 +329,7 @@ private:
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
             return ptr->get();
 
-        throw NullReference("attempt to access null reference");
+        reference::detail::throw_null();
     }
 
     inline T* _safeGet() {
@@ -338,7 +342,7 @@ private:
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
             return ptr->get();
 
-        throw NullReference("attempt to access null reference");
+        reference::detail::throw_null();
     }
 
     // In `_safeGet` above we rely on the fact that a default-constructed
@@ -493,7 +497,7 @@ public:
 private:
     void _check() const {
         if ( ! *this )
-            throw NullReference("attempt to access null reference");
+            reference::detail::throw_null();
     }
 };
 
@@ -664,7 +668,7 @@ private:
             throw ExpiredReference("attempt to access expired reference");
 
         if ( isNull() )
-            throw NullReference("attempt to access null reference");
+            reference::detail::throw_null();
     }
 };
 
