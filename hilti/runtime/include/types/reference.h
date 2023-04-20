@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <utility>
@@ -278,6 +279,7 @@ public:
      */
     static ValueReference self(T* t) {
         static_assert(std::is_base_of<Controllable<T>, T>::value);
+        assert(t);
         return ValueReference(t);
     }
 
@@ -291,7 +293,10 @@ private:
      * not safe to delete the pointed-to instance while the value reference
      * stays around.
      */
-    explicit ValueReference(T* t) : _ptr(t) { static_assert(std::is_base_of<Controllable<T>, T>::value); }
+    explicit ValueReference(T* t) : _ptr(t) {
+        static_assert(std::is_base_of<Controllable<T>, T>::value);
+        assert(t);
+    }
 
     const T* _get() const noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
