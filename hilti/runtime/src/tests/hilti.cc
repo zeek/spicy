@@ -18,10 +18,10 @@ class TestCout {
 public:
     TestCout() : _prev(std::make_unique<Configuration>()) {
         _prev->cout = _cout;
-        std::swap(detail::globalState()->configuration, _prev);
+        std::swap(configuration::detail::__configuration, _prev);
     }
 
-    ~TestCout() { detail::globalState()->configuration = std::move(_prev); }
+    ~TestCout() { configuration::detail::__configuration = std::move(_prev); }
 
     auto str() const { return _cout.str(); }
 

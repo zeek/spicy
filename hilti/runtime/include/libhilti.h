@@ -13,6 +13,7 @@
 #include <hilti/rt/deferred-expression.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/fiber-check-stack.h>
 #include <hilti/rt/hilti.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/library.h>

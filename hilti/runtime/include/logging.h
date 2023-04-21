@@ -30,8 +30,8 @@ void warning(const std::string& msg);
  */
 #define HILTI_RT_DEBUG(stream, msg)                                                                                    \
     {                                                                                                                  \
-        if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
-             ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream) )                                     \
+        if ( ::hilti::rt::detail::unsafeGlobalState()->debug_logger &&                                                 \
+             ::hilti::rt::detail::unsafeGlobalState()->debug_logger->isEnabled(stream) )                               \
             ::hilti::rt::debug::detail::print(stream, msg);                                                            \
     }
 

@@ -32,7 +32,7 @@ TEST_CASE("init") {
     REQUIRE_NE(detail::__global_state, nullptr);
     CHECK_EQ(detail::__global_state->debug_logger, nullptr);
     CHECK_NE(detail::__global_state->master_context, nullptr);
-    CHECK_NE(detail::__global_state->configuration, nullptr);
+    CHECK_NE(configuration::detail::__configuration, nullptr);
     CHECK(detail::__global_state->runtime_is_initialized);
 }
 

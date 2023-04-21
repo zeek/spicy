@@ -2,9 +2,13 @@
 
 #pragma once
 
+#include <cassert>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
+
+#include <spicy/rt/global-state.h>
 
 namespace spicy::rt {
 
@@ -28,11 +32,31 @@ struct Configuration {
 
 namespace configuration {
 
+namespace detail {
+
+/**
+ * Returns the current global configuration without checking if it's already
+ * initialized. This is only safe to use if the runtime is already fully
+ * initialized, and should be left to internal use only where performance
+ * matters.
+ */
+inline const Configuration& unsafeGet() {
+    assert(rt::detail::globalState()->configuration);
+    return *rt::detail::globalState()->configuration;
+}
+
+} // namespace detail
+
 /**
  * Returns the current global configuration. To change the
  * configuration, modify it and then pass it back to `set()`.
  */
-extern const Configuration& get();
+inline const Configuration& get() {
+    if ( ! rt::detail::globalState()->configuration )
+        rt::detail::globalState()->configuration = std::make_unique<spicy::rt::Configuration>();
+
+    return *rt::detail::globalState()->configuration;
+}
 
 /**
  * Sets new configuration values. Usually one first retrieves the current

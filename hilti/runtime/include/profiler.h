@@ -7,44 +7,18 @@
 #include <optional>
 #include <string>
 
+#include <hilti/rt/configuration.h>
+#include <hilti/rt/global-state.h>
+#include <hilti/rt/profiler-state.h>
+
 namespace hilti::rt {
 
 class Profiler;
 
 namespace profiler {
 
-/**
- * A measurement taken by the profiler.  We use this both for absolute
- * snapshots at a given point of time, as well as as for deltas between two
- * snapshots. When computing relative deltas, the `count` field is not
- * modified, so that we use it to track total numbers of measurements taken.
- *
- *  While right now record only basic execution times, we could extend
- *  measurements later with further information, such as memory usage and cache
- *  statistics.
- */
-struct Measurement {
-    uint64_t count = 0; /**< Number of measurements taken. */
-    uint64_t time = 0;  /**< Measured time in system-specific high resolution clock. */
-
-    Measurement& operator+=(const Measurement& m) {
-        time += m.time;
-        // Don't modify count.
-        return *this;
-    }
-
-    Measurement& operator-=(const Measurement& m) {
-        time -= m.time;
-        // Don't modify count.
-        return *this;
-    }
-
-    Measurement operator+(const Measurement& m) const { return Measurement(*this) += m; }
-    Measurement operator-(const Measurement& m) const { return Measurement(*this) -= m; }
-};
-
-Profiler start(std::string_view name);
-void stop(Profiler& p);
+std::optional<Profiler> start(std::string_view name);
+void stop(std::optional<Profiler>& p);
 
 namespace detail {
 
@@ -55,12 +29,6 @@ extern void init();
 // Internal shutdown function, called from library's `done()`. Produces a final
 // profiling report.
 extern void done();
-
-// Structure for storing global state.
-struct MeasurementState {
-    Measurement m = {};
-    uint64_t instances = 0;
-};
 
 } // namespace detail
 } // namespace profiler
@@ -111,7 +79,7 @@ protected:
     Profiler(std::string_view name) : _name(name), _start(snapshot()) { _register(); }
 
 private:
-    friend Profiler profiler::start(std::string_view name);
+    friend std::optional<Profiler> profiler::start(std::string_view name);
     friend void profiler::detail::done();
 
     void _register() const;
@@ -129,7 +97,12 @@ namespace profiler {
  * @param name descriptive, unique name of the block of code to profile.
  * @return profiler instance representing the active measurement
  */
-inline Profiler start(std::string_view name) { return Profiler(name); }
+inline std::optional<Profiler> start(std::string_view name) {
+    if ( ::hilti::rt::detail::unsafeGlobalState()->profiling_enabled )
+        return Profiler(name);
+    else
+        return {};
+}
 
 /**
  * Stops profiling a block of code, recording the delta between now and when it
@@ -137,7 +110,10 @@ inline Profiler start(std::string_view name) { return Profiler(name); }
  *
  * @param p profiler instance to stop
  */
-inline void stop(Profiler& p) { p.record(Profiler::snapshot()); }
+inline void stop(std::optional<Profiler>& p) {
+    if ( p )
+        p->record(Profiler::snapshot());
+}
 
 /**
  * Retrieves the measurement state for a code block by name, if known.

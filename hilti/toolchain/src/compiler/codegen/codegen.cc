@@ -818,7 +818,7 @@ cxx::Expression CodeGen::startProfiler(const std::string& name, cxx::Block* bloc
 
     assert(block);
     pushCxxBlock(block);
-    auto id = addTmp("profiler", cxx::Type("hilti::rt::Profiler"));
+    auto id = addTmp("profiler", cxx::Type("std::optional<hilti::rt::Profiler>"));
     auto stmt = cxx::Expression(fmt("%s = hilti::rt::profiler::start(\"%s\")", id, name));
 
     if ( insert_at_front )

@@ -20,12 +20,12 @@ HILTI_EXCEPTION_IMPL(MissingData);
 HILTI_EXCEPTION_IMPL(ParseError)
 
 void spicy::rt::accept_input() {
-    if ( const auto& hook = configuration::get().hook_accept_input )
+    if ( const auto& hook = configuration::detail::unsafeGet().hook_accept_input )
         (*hook)();
 }
 
 void spicy::rt::decline_input(const std::string& reason) {
-    if ( const auto& hook = configuration::get().hook_decline_input )
+    if ( const auto& hook = configuration::detail::unsafeGet().hook_decline_input )
         (*hook)(reason);
 }
 

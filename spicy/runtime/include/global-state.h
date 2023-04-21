@@ -2,16 +2,16 @@
 
 #pragma once
 
+#include <cassert>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
-#include <spicy/rt/configuration.h>
-
 namespace spicy::rt {
 struct Parser;
+struct Configuration;
 } // namespace spicy::rt
 
 // We collect all (or most) of the runtime's global state centrally. That's
@@ -75,6 +75,17 @@ inline auto globalState() {
         return __global_state;
 
     return createGlobalState();
+}
+
+/**
+ * Returns the current global configuration without checking if it's already
+ * initialized. This is only safe to use if the runtime is already fully
+ * initialized, and should be left to internal use only where performance
+ * matters.
+ */
+inline const GlobalState* unsafeGlobalState() {
+    assert(__global_state);
+    return __global_state;
 }
 
 } // namespace spicy::rt::detail

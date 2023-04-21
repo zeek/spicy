@@ -39,6 +39,7 @@ set(SOURCES
     src/types/bytes.cc
     src/types/integer.cc
     src/types/port.cc
+    src/types/optional.cc
     src/types/real.cc
     src/types/regexp.cc
     src/types/stream.cc

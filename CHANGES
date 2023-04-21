@@ -1,3 +1,25 @@
+1.8.0-dev.106 | 2023-04-21 12:03:21 +0200
+
+  * Bring new structure of safe/unsafe getters for global/config state to Spicy. (Robin Sommer, Corelight)
+
+  * Fix ordering issue in spicy-driver when shutting down runtime. (Robin Sommer, Corelight)
+
+  * Switch some more places to use unsafe getters for global/config state. (Robin Sommer, Corelight)
+
+  * Speed up access checks for `optional`. (Robin Sommer, Corelight)
+
+  * Provide unsafe fastpath to access global state. (Robin Sommer, Corelight)
+
+  * Move runtime configuration out of central global state. (Robin Sommer, Corelight)
+
+  * Reduce stack checking overhead. (Robin Sommer, Corelight)
+
+  * Reduce overhead of profiler operations when not needed. (Robin Sommer, Corelight)
+
+  * Add fast path to `View::extract()`. (Robin Sommer, Corelight)
+
+  * Inline a couple more stream methods. (Robin Sommer, Corelight)
+
 1.8.0-dev.95 | 2023-04-19 10:13:12 +0200
 
   * Fix gcc-13 warning about pessimizing move. (Benjamin Bannier, Corelight)

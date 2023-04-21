@@ -150,8 +150,8 @@ int main(int argc, char** argv) {
             }
         }
 
-        hilti::rt::done();
         spicy::rt::done();
+        hilti::rt::done();
 
     } catch ( const std::exception& e ) {
         fatalError(prog, hilti::rt::fmt("terminating with uncaught exception of type %s: %s",

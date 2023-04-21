@@ -12,7 +12,7 @@
 #include <hilti/rt/context.h>
 #include <hilti/rt/debug-logger.h>
 #include <hilti/rt/init.h>
-#include <hilti/rt/profiler.h>
+#include <hilti/rt/profiler-state.h>
 
 // We collect all (or most) of the runtime's global state centrally. That's
 // 1st good to see what we have (global state should be minimal) and 2nd
@@ -58,9 +58,6 @@ struct GlobalState {
     /** Profiler's global measurements. */
     std::unordered_map<std::string, profiler::detail::MeasurementState> profilers;
 
-    /** The runtime's configuration. */
-    std::unique_ptr<hilti::rt::Configuration> configuration;
-
     /** Debug logger recording runtime diagnostics. */
     std::unique_ptr<hilti::rt::detail::DebugLogger> debug_logger;
 
@@ -98,6 +95,17 @@ inline auto globalState() {
         return __global_state;
 
     return createGlobalState();
+}
+
+/**
+ * Returns the current global configuration without checking if it's already
+ * initialized. This is only safe to use if the runtime is already fully
+ * initialized, and should be left to internal use only where performance
+ * matters.
+ */
+inline const GlobalState* unsafeGlobalState() {
+    assert(__global_state);
+    return __global_state;
 }
 
 /** Returns the current context's array of HILTI global variables. */

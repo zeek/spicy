@@ -11,13 +11,6 @@
 using namespace spicy::rt;
 using namespace spicy::rt::detail;
 
-const Configuration& configuration::get() {
-    if ( ! globalState()->configuration )
-        globalState()->configuration = std::make_unique<spicy::rt::Configuration>();
-
-    return *globalState()->configuration;
-}
-
 void configuration::set(Configuration cfg) {
     if ( isInitialized() )
         hilti::rt::fatalError("attempt to change configuration after library has already been initialized");

@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -31,9 +32,9 @@ struct Configuration {
     /**
      * Minimum stack size that a fiber must have left for use at beginning of a
      * function's execution. This should leave enough headroom for (1) the
-     * current function to still execute, and (2) safely abort with an
-     * exception if we're getting too low. (It seems that the latter can
-     * require quite a bit of space, hence the large default here.)
+     * current function to still execute and do another call, and (2) safely
+     * abort with an exception if we're getting too low. (It seems that the
+     * latter can require quite a bit of space, hence the large default here.)
      **/
     size_t fiber_min_stack_size = static_cast<size_t>(20 * 1024);
 
@@ -64,11 +65,34 @@ struct Configuration {
 };
 
 namespace configuration {
+
+namespace detail {
+/** The runtime's configuration singleton. */
+extern std::unique_ptr<hilti::rt::Configuration> __configuration;
+
+/**
+ * Returns the current global configuration without checking if it's already
+ * initialized. This is only safe to use if the runtime is already fully
+ * initialized, and should be left to internal use only where performance
+ * matters.
+ */
+inline const Configuration& unsafeGet() {
+    assert(detail::__configuration);
+    return *detail::__configuration;
+}
+
+} // namespace detail
+
 /**
  * Returns the current global configuration. To change the
  * configuration, modify it and then pass it back to `set()`.
  */
-extern const Configuration& get();
+inline const Configuration& get() {
+    if ( ! detail::__configuration )
+        detail::__configuration = std::make_unique<hilti::rt::Configuration>();
+
+    return *detail::__configuration;
+}
 
 /**
  * Sets new configuration values. Usually one first retrieves the current

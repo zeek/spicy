@@ -55,16 +55,16 @@ static const std::string debug_stream_fibers = "fibers";
 // Wrapper similar to HILTI_RT_DEBUG that adds the current fiber to the message.
 #define HILTI_RT_FIBER_DEBUG(tag, msg)                                                                                 \
     {                                                                                                                  \
-        if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
-             ::hilti::rt::detail::globalState()->debug_logger->isEnabled(debug_stream_fibers) )                        \
+        if ( ::hilti::rt::detail::unsafeGlobalState()->debug_logger &&                                                       \
+             ::hilti::rt::detail::unsafeGlobalState()->debug_logger->isEnabled(debug_stream_fibers) )                        \
             ::hilti::rt::debug::detail::print(debug_stream_fibers,                                                     \
                                               fmt("[%s/%s] %s", *context::detail::get()->fiber.current, tag, msg));    \
     }
 
 #define HILTI_RT_FIBER_DEBUG_NO_CONTEXT(tag, msg)                                                                      \
     {                                                                                                                  \
-        if ( ::hilti::rt::detail::globalState()->debug_logger &&                                                       \
-             ::hilti::rt::detail::globalState()->debug_logger->isEnabled(debug_stream_fibers) )                        \
+        if ( ::hilti::rt::detail::unsafeGlobalState()->debug_logger &&                                                       \
+             ::hilti::rt::detail::unsafeGlobalState()->debug_logger->isEnabled(debug_stream_fibers) )                        \
             ::hilti::rt::debug::detail::print(debug_stream_fibers, fmt("[none/%s] %s", tag, msg));                     \
     }
 
@@ -173,7 +173,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
         }
 
         case Type::SwitchTrampoline:
-            if ( ! ::fiber_alloc(_fiber.get(), configuration::get().fiber_individual_stack_size, fiber_bottom_abort,
+            if ( ! ::fiber_alloc(_fiber.get(), configuration::detail::unsafeGet().fiber_individual_stack_size, fiber_bottom_abort,
                                  this, FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
@@ -195,7 +195,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
         }
 
         case Type::IndividualStack: {
-            if ( ! ::fiber_alloc(_fiber.get(), configuration::get().fiber_individual_stack_size, fiber_bottom_abort,
+            if ( ! ::fiber_alloc(_fiber.get(), configuration::detail::unsafeGet().fiber_individual_stack_size, fiber_bottom_abort,
                                  this, FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
@@ -536,7 +536,7 @@ void detail::Fiber::destroy(std::unique_ptr<detail::Fiber> f) {
         return;
 
     auto& cache = context->fiber.cache;
-    if ( cache.size() < configuration::get().fiber_cache_size ) {
+    if ( cache.size() < configuration::detail::unsafeGet().fiber_cache_size ) {
         HILTI_RT_FIBER_DEBUG("destroy", fmt("putting fiber %s back into cache", *f.get()));
         cache.push_back(std::move(f));
         ++_cached_fibers;
@@ -635,7 +635,7 @@ void detail::yield() {
     context::detail::get()->resumable = r;
 }
 
-void detail::checkStack() {
+void detail::trackStack() {
     auto* fiber = context::detail::get()->fiber.current;
 
     if ( fiber->type() == Fiber::Type::Main )
@@ -645,9 +645,6 @@ void detail::checkStack() {
         if ( auto size = fiber->stackBuffer().activeSize(); size > detail::Fiber::_max_stack_size )
             detail::Fiber::_max_stack_size = size;
     }
-
-    if ( fiber->stackBuffer().liveRemainingSize() < configuration::get().fiber_min_stack_size )
-        throw StackSizeExceeded("not enough stack space remaining");
 }
 
 detail::Fiber::Statistics detail::Fiber::statistics() {

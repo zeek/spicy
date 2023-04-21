@@ -23,16 +23,16 @@ void hilti::rt::init() {
     if ( globalState()->runtime_is_initialized )
         return;
 
-    if ( ! globalState()->configuration )
-        globalState()->configuration = std::make_unique<hilti::rt::Configuration>();
+    if ( ! configuration::detail::__configuration )
+        configuration::detail::__configuration = std::make_unique<hilti::rt::Configuration>();
 
-    if ( ! globalState()->configuration->debug_streams.empty() ) {
-        if ( auto debug_out = globalState()->configuration->debug_out )
+    if ( ! configuration::detail::unsafeGet().debug_streams.empty() ) {
+        if ( auto debug_out = configuration::detail::unsafeGet().debug_out )
             globalState()->debug_logger = std::make_unique<hilti::rt::detail::DebugLogger>(*debug_out);
         else
             globalState()->debug_logger = std::make_unique<hilti::rt::detail::DebugLogger>("/dev/stderr");
 
-        globalState()->debug_logger->enable(globalState()->configuration->debug_streams);
+        globalState()->debug_logger->enable(configuration::detail::unsafeGet().debug_streams);
     }
 
     HILTI_RT_DEBUG("libhilti", "initializing runtime");
@@ -62,12 +62,12 @@ void hilti::rt::init() {
 }
 
 void hilti::rt::done() {
-    if ( ! globalState() )
+    if ( ! __global_state )
         return;
 
     HILTI_RT_DEBUG("libhilti", "shutting down runtime");
 
-    if ( globalState()->configuration && globalState()->configuration->report_resource_usage ) {
+    if ( configuration::detail::__configuration && configuration::detail::__configuration->report_resource_usage ) {
         auto stats = rt::resource_usage();
         std::cerr << fmt("# user_time=%.6f sys_time=%.6f memory=%" PRIu64 "\n", stats.user_time, stats.system_time,
                          stats.memory_heap);
