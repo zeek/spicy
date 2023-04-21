@@ -85,7 +85,7 @@ const bool __feat%foo__X6%supports_sinks = True;
 const bool __feat%foo__X6%synchronization = False;
 
 method hook void foo::X1::__on_0x25_init() {
-    cast<uint<64>>((*self.__position) - (*self.__begin));
+    ((*self.__position).offset() - (*self.__begin).offset());
 }
 
 init function void __register_foo_X1() {
