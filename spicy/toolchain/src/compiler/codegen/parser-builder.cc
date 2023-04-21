@@ -1642,6 +1642,77 @@ struct ProductionVisitor
             parseProduction(i);
     }
 
+    void operator()(const production::Skip& p) {
+        auto eod_attr = AttributeSet::find(p.skip().attributes(), "&eod");
+        auto size_attr = AttributeSet::find(p.skip().attributes(), "&size");
+        auto until_attr = AttributeSet::find(p.skip().attributes(), "&until");
+
+        if ( auto c = p.skip().condition() )
+            pushBuilder(builder()->addIf(*c));
+
+        if ( size_attr ) {
+            auto n = builder()->addTmp("skip", *size_attr->valueAsExpression());
+            auto loop = builder()->addWhile(builder::greater(n, builder::integer(0U)));
+            pushBuilder(loop, [&]() {
+                pb->waitForInput(builder::integer(1U), "not enough bytes for skipping", p.location());
+                auto consume = builder()->addTmp("consume", builder::min(builder::size(state().cur),
+                                                                         *size_attr->valueAsExpression()));
+                pb->advanceInput(consume);
+                builder()->addAssign(n, builder::difference(n, consume));
+                builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});
+            });
+        }
+
+        else if ( eod_attr ) {
+            builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
+            pb->waitForEod();
+            pb->advanceInput(builder::size(state().cur));
+        }
+
+        else if ( until_attr ) {
+            Expression until_expr = builder::coerceTo(*until_attr->valueAsExpression(), hilti::type::Bytes());
+            auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+            auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
+
+            auto body = builder()->addWhile(builder::bool_(true));
+            pushBuilder(body, [&]() {
+                pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
+                                 until_expr.meta());
+
+                auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
+                auto found_id = ID("found");
+                auto it_id = ID("it");
+                auto found = builder::id(found_id);
+                auto it = builder::id(it_id);
+                builder()->addLocal(found_id, type::Bool());
+                builder()->addLocal(it_id, type::stream::Iterator());
+                builder()->addAssign(builder::tuple({found, it}), find);
+
+                auto [found_branch, not_found_branch] = builder()->addIfElse(found);
+
+                pushBuilder(found_branch, [&]() {
+                    auto new_it = builder::sum(it, until_bytes_size_var);
+                    pb->advanceInput(new_it);
+                    builder()->addBreak();
+                });
+
+                pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
+            });
+        }
+
+        else
+            hilti::logger().internalError("unexpected skip production");
+
+        if ( p.skip().emitHook() ) {
+            pb->beforeHook();
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", p.skip().id().local())), {}, p.skip().meta());
+            pb->afterHook();
+        }
+
+        if ( p.skip().condition() )
+            popBuilder();
+    }
+
     void operator()(const production::Variable& p) { pb->parseType(p.type(), p.meta(), destination()); }
 
     void operator()(const production::While& p) {

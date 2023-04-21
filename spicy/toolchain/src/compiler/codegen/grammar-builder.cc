@@ -144,6 +144,10 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         return prod;
     }
 
+    Production operator()(const spicy::type::unit::item::Skip& n, position_t p) {
+        return production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), n.meta().location());
+    }
+
     Production operator()(const spicy::type::unit::item::Switch& n, position_t p) {
         auto productionForCase = [this](const spicy::type::unit::item::switch_::Case& c, const std::string& label) {
             std::vector<Production> prods;

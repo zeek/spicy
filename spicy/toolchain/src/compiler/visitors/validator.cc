@@ -498,7 +498,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>() ||
                         f->parseType().isA<type::Void>()) ||
                      f->ctor() )
-                    error("&eod is only valid for bytes, vector, and void fields", p);
+                    error("&eod is only valid for bytes and vector fields", p);
             }
         }
 
@@ -506,7 +506,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             if ( auto f = getAttrField(p) ) {
                 if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>() ||
                         f->parseType().isA<type::Void>()) )
-                    error("&until is only valid for fields of type bytes, vector, or void", p);
+                    error("&until is only valid for fields of type bytes or vector", p);
                 else if ( ! a.hasValue() )
                     error("&until must provide an expression", p);
             }
@@ -702,6 +702,29 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         else
             // I don't think this can actually happen ...
             error("unit field left unresolved", p);
+    }
+
+    void operator()(const spicy::type::unit::item::Skip& s, position_t p) {
+        int cnt = 0;
+        for ( auto a : std::vector<std::string_view>{"&eod", "&size", "&until"} ) {
+            if ( AttributeSet::find(s.attributes(), a) )
+                ++cnt;
+        }
+
+        if ( cnt == 0 )
+            error("skip must use one of &eod, &size, &until", p);
+        else if ( cnt > 1 )
+            error("cannot have more than one of &eod, &size, &until with skip", p);
+
+        for ( const auto& a : s.attributes().attributes() ) {
+            if ( a.tag() != "&eod" && a.tag() != "&size" && a.tag() != "&until" )
+                error(fmt("attribute %s not supported with skip", a.tag()), p);
+
+            if ( a.tag() == "&until" && (! a.hasValue() || ! a.valueAsExpression()->get().type().isA<type::Bytes>()) )
+                error("&until must provide an expression of type bytes", p);
+
+            // &size is generically checked for an expression elsewhere.
+        }
     }
 
     void operator()(const spicy::type::unit::item::Switch& s, position_t p) {

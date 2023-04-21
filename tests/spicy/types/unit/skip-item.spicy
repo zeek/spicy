@@ -1,0 +1,28 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABC\x08\x09\x0a' | spicy-driver test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABC\x08\x09\x0a' | spicy-driver -i 1 test.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Exercise `skip` fields.
+
+module Test;
+
+public type Root = unit {
+    foo: Foo &size=15;
+    x: uint8;
+
+    on %done { print self; }
+};
+
+type Foo = unit {
+    a: uint8;
+    : skip &size=2 { print "skip b"; }
+    c: uint8;
+    : skip &size=2 if ( True );
+    : skip &size=2 if ( False );
+    f: uint8; # == 0x07
+    : skip &until=b"ABC";
+    eod: skip &eod;
+};
+
+on Foo::eod { print "skip eos"; }

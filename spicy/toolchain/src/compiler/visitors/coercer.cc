@@ -31,6 +31,10 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
     void operator()(const hilti::Attribute& n, position_t p) {
         if ( n.tag() == "&size" || n.tag() == "&max-size" ) {
+            if ( ! n.hasValue() )
+                // Caught elsewhere, we don't want to report it here again.
+                return;
+
             if ( auto x = p.node.as<Attribute>().coerceValueTo(hilti::type::UnsignedInteger(64)) ) {
                 if ( *x ) {
                     logChange(p.node, p.node, n.tag().c_str());

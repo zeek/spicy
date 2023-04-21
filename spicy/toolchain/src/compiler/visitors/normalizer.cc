@@ -152,6 +152,9 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         }
 
         NodeRef unit_field_ref = p.findParentRef<type::unit::item::Field>();
+        if ( ! unit_field_ref )
+            unit_field_ref = p.findParentRef<type::unit::item::Skip>();
+
         if ( ! unit_field_ref ) {
             // External or out-of-line hook.
             if ( ! h.id() ) {
@@ -165,7 +168,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                 // for %init/%done/etc. We'll leave that to the validator.
                 return;
 
-            if ( ! unit_field_ref->isA<type::unit::item::Field>() ) {
+            if ( ! unit_field_ref->isA<type::unit::item::Field>() && ! unit_field_ref->isA<type::unit::item::Skip>() ) {
                 p.node.addError(hilti::util::fmt("'%s' is not a unit field", h.id()));
                 return;
             }
@@ -173,7 +176,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
 
         assert(unit_field_ref);
 
-        if ( ! h.unitField() ) {
+        if ( unit_field_ref->isA<type::unit::item::Field>() && ! h.unitField() ) {
             logChange(p.node, unit_field_ref->as<type::unit::Item>());
             p.node.as<Hook>().setFieldRef(std::move(unit_field_ref));
             modified = true;

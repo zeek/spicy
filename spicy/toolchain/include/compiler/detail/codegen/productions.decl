@@ -9,6 +9,7 @@ spicy::detail::codegen::production::Epsilon : isProduction
 spicy::detail::codegen::production::ForEach : isProduction
 spicy::detail::codegen::production::LookAhead : isProduction
 spicy::detail::codegen::production::Sequence : isProduction
+spicy::detail::codegen::production::Skip : isProduction
 spicy::detail::codegen::production::Switch : isProduction
 spicy::detail::codegen::production::TypeLiteral : isProduction
 spicy::detail::codegen::production::Unit : isProduction

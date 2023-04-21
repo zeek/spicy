@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Exercise `skip` field validation.
+
+module Test;
+
+type Foo = unit {
+    : skip;
+    : skip &eod &size=2;
+    : skip &size;
+    : skip &until;
+    : skip &until=2;
+};
