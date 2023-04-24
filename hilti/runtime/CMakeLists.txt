@@ -41,6 +41,7 @@ set(SOURCES
     src/types/port.cc
     src/types/optional.cc
     src/types/real.cc
+    src/types/reference.cc
     src/types/regexp.cc
     src/types/stream.cc
     src/types/string.cc

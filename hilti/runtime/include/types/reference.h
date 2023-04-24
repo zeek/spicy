@@ -2,9 +2,11 @@
 
 #pragma once
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include <hilti/rt/any.h>
 #include <hilti/rt/extension-points.h>
@@ -14,6 +16,10 @@
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
+
+namespace reference::detail {
+void __attribute__((noreturn)) throw_null();
+} // namespace reference::detail
 
 /** Base for classes that `ValueReference::self` can receive.  */
 template<typename T>
@@ -278,6 +284,7 @@ public:
      */
     static ValueReference self(T* t) {
         static_assert(std::is_base_of<Controllable<T>, T>::value);
+        assert(t);
         return ValueReference(t);
     }
 
@@ -291,46 +298,56 @@ private:
      * not safe to delete the pointed-to instance while the value reference
      * stays around.
      */
-    explicit ValueReference(T* t) : _ptr(t) { static_assert(std::is_base_of<Controllable<T>, T>::value); }
+    explicit ValueReference(T* t) : _ptr(t) {
+        static_assert(std::is_base_of<Controllable<T>, T>::value);
+        assert(t);
+    }
 
-    const T* _get() const noexcept {
+    inline const T* _get() const noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
-            return (*ptr).get();
-
-        cannot_be_reached();
+        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
+        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
     }
 
-    T* _get() noexcept {
+    inline T* _get() noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr) )
-            return (*ptr).get();
-
-        cannot_be_reached();
+        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
+        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
     }
 
-    const T* _safeGet() const {
+    inline const T* _safeGet() const {
         assert(_ptr.index() != std::variant_npos);
 
-        if ( auto ptr = _get() )
-            return ptr;
+        // If the reference contains a raw pointer it is never null.
+        if ( auto ptr = std::get_if<T*>(&_ptr) )
+            return *ptr;
 
-        throw NullReference("attempt to access null reference");
+        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
+            return ptr->get();
+
+        reference::detail::throw_null();
     }
 
-    T* _safeGet() {
+    inline T* _safeGet() {
         assert(_ptr.index() != std::variant_npos);
 
-        if ( auto ptr = _get() )
-            return ptr;
+        // If the reference contains a raw pointer it is never null.
+        if ( auto ptr = std::get_if<T*>(&_ptr) )
+            return *ptr;
 
-        throw NullReference("attempt to access null reference");
+        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
+            return ptr->get();
+
+        reference::detail::throw_null();
     }
 
+    // In `_safeGet` above we rely on the fact that a default-constructed
+    // `ValueReference` always contains a `shared_ptr`, so it is listed as the
+    // first variant.
     std::variant<std::shared_ptr<T>, T*> _ptr;
 };
 
@@ -480,7 +497,7 @@ public:
 private:
     void _check() const {
         if ( ! *this )
-            throw NullReference("attempt to access null reference");
+            reference::detail::throw_null();
     }
 };
 
@@ -651,7 +668,7 @@ private:
             throw ExpiredReference("attempt to access expired reference");
 
         if ( isNull() )
-            throw NullReference("attempt to access null reference");
+            reference::detail::throw_null();
     }
 };
 
