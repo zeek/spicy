@@ -1,3 +1,22 @@
+1.8.0-dev.115 | 2023-04-24 10:59:27 +0200
+
+  * Make sure Spicy runtime config is initialized after `spicy::rt::init`. (Benjamin Bannier, Corelight)
+
+    We previously wouldn't explicitly initialize the Spicy runtime
+    configuration but instead rely on `configuration::get` (which implicitly
+    initializes it) to be called somewhere in the driver. This makes it hard
+    to use parsers outside of our drivers, we e.g., saw nullptr derefs in
+    our fuzzer binaries.
+
+    With this patch we force initialization in `spicy::rt::init` which is
+    the documented way to ensure all runtime dependencies are set up
+    correctly.
+
+  * Roll back 3rdparty/reproc downgrade. (Benjamin Bannier, Corelight)
+
+    This appears to have been downgraded to a two year old version by
+    accident.
+
 1.8.0-dev.112 | 2023-04-24 10:10:57 +0200
 
   * Move exception creation out of reference getters. (Benjamin Bannier, Corelight)
