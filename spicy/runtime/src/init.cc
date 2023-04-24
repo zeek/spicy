@@ -5,6 +5,7 @@
 
 #include <hilti/rt/init.h>
 
+#include <spicy/rt/configuration.h>
 #include <spicy/rt/global-state.h>
 #include <spicy/rt/hilti-fwd.h>
 #include <spicy/rt/init.h>
@@ -19,6 +20,9 @@ void spicy::rt::init() {
 
     if ( ! hilti::rt::isInitialized() )
         fatalError("hilti::rt::init() must be called before spicy::rt::init()");
+
+    // Force lazy initialization of Spicy runtime configuration.
+    configuration::get();
 
     HILTI_RT_DEBUG("libspicy", "initializing runtime");
 
