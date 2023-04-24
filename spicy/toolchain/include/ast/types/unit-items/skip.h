@@ -17,7 +17,7 @@ namespace spicy::type::unit::item {
 class Skip : public hilti::NodeBase, public spicy::trait::isUnitItem {
 public:
     Skip(const std::optional<ID>& id, std::optional<AttributeSet> attrs = {},
-         std::optional<hilti::Expression> condition = {}, std::vector<Hook> hooks = {}, Meta m = Meta())
+         std::optional<hilti::Expression> condition = {}, const std::vector<Hook>& hooks = {}, Meta m = Meta())
         : NodeBase(nodes(id ? id : _uniquer.get("skip"), attrs ? std::move(attrs) : AttributeSet(),
                          std::move(condition), std::move(hooks)),
                    std::move(m)),

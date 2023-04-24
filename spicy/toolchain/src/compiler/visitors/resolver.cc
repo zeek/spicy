@@ -268,6 +268,18 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
     }
 
     void operator()(const type::unit::item::UnresolvedField& u, position_t p) {
+        if ( u.type() && u.type()->isA<type::Void>() && u.attributes() ) {
+            // Transparently map void field into skip item.
+            hilti::logger().deprecated(
+                "using `void` fields with attributes is deprecated and support will be removed in a future "
+                "release; replace 'void' with 'skip'",
+                u.meta().location());
+
+            auto skip = type::unit::item::Skip(u.fieldID(), u.attributes(), u.condition(), u.hooks().copy(), u.meta());
+            replaceField(&p, std::move(skip));
+            return;
+        }
+
         if ( const auto& id = u.unresolvedID() ) { // check for unresolved IDs first to overrides the other cases below
             auto resolved = hilti::scope::lookupID<hilti::Declaration>(*id, p, "field");
             if ( ! resolved ) {
