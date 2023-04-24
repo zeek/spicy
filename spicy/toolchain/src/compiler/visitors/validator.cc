@@ -126,10 +126,8 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
     }
 
     if ( pt.isA<type::Void>() ) {
-        if ( const auto& attrs = f.attributes() )
-            for ( const auto& a : attrs->attributes() )
-                if ( a.tag() != "&size" && a.tag() != "&until" && a.tag() != "&eod" )
-                    return hilti::result::Error(fmt("unsupported attribute for field of type void: %s", a));
+        if ( f.attributes() )
+            return hilti::result::Error("no attributes supported for void field");
 
         return hilti::Nothing();
     }
@@ -495,17 +493,14 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
         else if ( a.tag() == "&eod" ) {
             if ( auto f = getAttrField(p) ) {
-                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>() ||
-                        f->parseType().isA<type::Void>()) ||
-                     f->ctor() )
+                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>()) || f->ctor() )
                     error("&eod is only valid for bytes and vector fields", p);
             }
         }
 
         else if ( a.tag() == "&until" ) {
             if ( auto f = getAttrField(p) ) {
-                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>() ||
-                        f->parseType().isA<type::Void>()) )
+                if ( ! (f->parseType().isA<type::Bytes>() || f->parseType().isA<type::Vector>()) )
                     error("&until is only valid for fields of type bytes or vector", p);
                 else if ( ! a.hasValue() )
                     error("&until must provide an expression", p);
@@ -666,9 +661,6 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
         if ( f.sinks().size() && ! f.parseType().isA<type::Bytes>() )
             error("only a bytes field can have sinks attached", p);
-
-        if ( f.parseType().isA<type::Void>() && ! f.isAnonymous() )
-            error("void fields never store a value and cannot be named", p);
 
         if ( const auto& c = f.ctor() ) {
             // Check that constants are of a supported type.

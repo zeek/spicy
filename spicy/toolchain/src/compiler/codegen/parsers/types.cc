@@ -173,47 +173,6 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const hilti::type::Void& t) {
-        if ( auto size = AttributeSet::find(meta.field()->attributes(), "&size") )
-            // Even though we we do not store parsed data, we still need to consume
-            // data in the input stream so that `&size` checks can work.
-            pb->advanceInput(*size->valueAsExpression());
-
-        else if ( auto eod = AttributeSet::find(meta.field()->attributes(), "&eod") ) {
-            pb->waitForEod();
-            pb->advanceInput(builder::size(state().cur));
-        }
-
-        else if ( auto until_attr = AttributeSet::find(meta.field()->attributes(), "&until") ) {
-            Expression until_expr = builder::coerceTo(*until_attr->valueAsExpression(), hilti::type::Bytes());
-            auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
-            auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
-
-            auto body = builder()->addWhile(builder::bool_(true));
-            pushBuilder(body, [&]() {
-                pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
-                                 until_attr->meta());
-
-                auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
-                auto found_id = ID("found");
-                auto it_id = ID("it");
-                auto found = builder::id(found_id);
-                auto it = builder::id(it_id);
-                builder()->addLocal(found_id, type::Bool());
-                builder()->addLocal(it_id, type::stream::Iterator());
-                builder()->addAssign(builder::tuple({found, it}), find);
-
-                auto [found_branch, not_found_branch] = builder()->addIfElse(found);
-
-                pushBuilder(found_branch, [&]() {
-                    auto new_it = builder::sum(it, until_bytes_size_var);
-                    pb->advanceInput(new_it);
-                    builder()->addBreak();
-                });
-
-                pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
-            });
-        }
-
         return hilti::expression::Void();
     }
 

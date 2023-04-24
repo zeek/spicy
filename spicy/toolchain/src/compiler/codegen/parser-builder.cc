@@ -753,7 +753,7 @@ struct ProductionVisitor
             auto exceeded = builder()->addIf(std::move(cond));
             pushBuilder(exceeded, [&]() {
                 // We didn't finish parsing the data, which is an error.
-                if ( ! destination().type().isA<type::Void>() && ! field->isAnonymous() )
+                if ( ! field->isAnonymous() )
                     // Clear the field in case the type parsing has started
                     // to fill it.
                     builder()->addExpression(builder::unset(state().self, field->id()));
@@ -769,7 +769,7 @@ struct ProductionVisitor
             auto insufficient = builder()->addIf(std::move(missing));
             pushBuilder(insufficient, [&]() {
                 // We didn't parse all the data, which is an error.
-                if ( ! destination().type().isA<type::Void>() && ! field->isAnonymous() )
+                if ( ! field->isAnonymous() )
                     // Clear the field in case the type parsing has started
                     // to fill it.
                     builder()->addExpression(builder::unset(state().self, field->id()));
