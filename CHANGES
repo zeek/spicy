@@ -1,3 +1,12 @@
+1.8.0-dev.108 | 2023-04-24 10:10:26 +0200
+
+  * Add fast pass for iterator difference in `offset()`. (Benjamin Bannier, Corelight)
+
+    When generating code for `offset()` we previously would use the
+    difference of safe iterator which has extra code to make sure the two
+    iterators belong to the same stream. This check can never fail when
+    computing `offset()` so use a fast pass in that case.
+
 1.8.0-dev.106 | 2023-04-21 12:03:21 +0200
 
   * Bring new structure of safe/unsafe getters for global/config state to Spicy. (Robin Sommer, Corelight)
