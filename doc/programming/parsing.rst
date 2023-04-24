@@ -295,6 +295,59 @@ corresponding field hook (see :ref:`unit_hooks`) using the reserved
     :exec: printf '\01\02\03' | spicy-driver %INPUT
     :show-with: foo.spicy
 
+Anonymous fields can often be more efficient to process because the
+parser doesn't need to retain their values. In particular for larger
+``bytes`` fields, making them anonymous is recommended where possible
+(unless, even better, they can be fully skipped over; see
+:ref:`skip`).
+
+.. _skip:
+
+Skipping Input
+^^^^^^^^^^^^^^
+
+For cases where your parser just needs to skip over some data, without
+needing access to its content, Spicy provides optimized ``skip``
+fields:
+
+.. spicy-code:: skip.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        x: int8;
+         : skip &size=5;
+        y: int8;
+        on %done { print self; }
+    };
+
+.. spicy-output:: skip.spicy
+    :exec: printf '\01\02\03\04\05\06\07' | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+The following attributes can be used with ``skip`` to specify how much
+data to skip:
+
+``&eod``
+    Skips over all subsequent data until the end of the current input
+    is reached.
+
+``&size=N``
+    Skips over exactly ``N`` bytes.
+
+``&until=DELIM``
+    Skips all input until the specified delimiter is found. ``DELIM``
+    must be of type ``bytes``. The delimiter itself will be discarded
+    as well.
+
+These attributes cannot be combined.
+
+For readability, a ``skip`` field may be named (e.g., ``padding: skip
+&size=3;``), but even with a name, its value cannot be accessed.
+
+``skip`` fields may have conditions and hooks attached, like any other
+fields. However, they do not support ``$$`` in expressions and hook.
+
 .. _id_dollardollar:
 .. _id_self:
 
