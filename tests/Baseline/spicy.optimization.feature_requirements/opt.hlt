@@ -8,7 +8,7 @@ import hilti;
 #     - uses_random_access
 type X1 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    uint<64> __offset &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_0x25_init() ;
@@ -85,7 +85,7 @@ const bool __feat%foo__X6%supports_sinks = True;
 const bool __feat%foo__X6%synchronization = False;
 
 method hook void foo::X1::__on_0x25_init() {
-    ((*self.__position).offset() - (*self.__begin).offset());
+    self.__offset;
 }
 
 init function void __register_foo_X1() {
