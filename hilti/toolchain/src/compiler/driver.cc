@@ -1297,7 +1297,8 @@ void Driver::_dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& 
     HILTI_DEBUG(logging::debug::AstDeclarations,
                 fmt("# [%s] %s", pluginForUnit(unit).get().component, unit->uniqueID()));
 
-    for ( const auto i : visitor::PreOrder<>().walk(unit->module()) ) {
+    auto v = visitor::PreOrder<>();
+    for ( const auto i : v.walk(unit->module()) ) {
         auto decl = i.node.tryAs<Declaration>();
         if ( ! decl )
             continue;
