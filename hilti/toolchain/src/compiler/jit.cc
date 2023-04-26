@@ -21,8 +21,19 @@
 #include <hilti/compiler/detail/cxx/unit.h>
 #include <hilti/compiler/jit.h>
 
+// GCC-13 warns about code in reproc++. This is fixed upstream with
+// DaanDeMeyer/reproc@0b23d88894ccedde04537fa23ea55cb2f8365342, but that patch
+// has not landed in a release yet. Disable the warning if the compiler knows
+// about it.
+//
+// TODO(bbannier): Drop this once reproc puts out a release officially supporting gcc-13.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wchanges-meaning"
 #include <reproc++/drain.hpp>
 #include <reproc++/reproc.hpp>
+#pragma GCC diagnostic pop
 
 using namespace hilti;
 

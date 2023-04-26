@@ -2,7 +2,7 @@
 # to CMake because we directly pick out the pieces where we need
 # them.
 
-option(DOCTEST_NO_INSTALL  "Skip the installation process" ON)
+option(DOCTEST_NO_INSTALL "Skip the installation process" ON)
 add_subdirectory(doctest)
 
 add_subdirectory(justrx)
@@ -29,3 +29,15 @@ set(REPROC_OBJECT_LIBRARIES ON)
 add_subdirectory(reproc)
 set_property(TARGET reproc PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET reproc++ PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+# GCC-13 warns about code in reproc++. This is fixed upstream with
+# DaanDeMeyer/reproc@0b23d88894ccedde04537fa23ea55cb2f8365342, but that patch
+# has not landed in a release yet. Disable the warning if the compiler knows
+# about it.
+#
+# TODO(bbannier): Drop this once reproc puts out a release officially supporting gcc-13.
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-Wno-changes-meaning" _has_no_changes_meaning_flag)
+if (_has_no_changes_meaning_flag)
+    set_property(TARGET reproc++ PROPERTY COMPILE_OPTIONS "-Wno-changes-meaning")
+endif ()
