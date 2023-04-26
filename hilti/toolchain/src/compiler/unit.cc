@@ -461,7 +461,8 @@ void Unit::resetAST() {
 
     HILTI_DEBUG(logging::debug::Compiler, fmt("resetting nodes for module %s", uniqueID()));
 
-    for ( auto&& i : hilti::visitor::PreOrder<>().walk(&*_module) ) {
+    auto v = hilti::visitor::PreOrder<>();
+    for ( auto&& i : v.walk(&*_module) ) {
         i.node.clearScope();
         i.node.clearErrors();
     }

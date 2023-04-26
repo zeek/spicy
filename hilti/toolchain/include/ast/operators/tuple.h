@@ -148,10 +148,14 @@ BEGIN_OPERATOR_CUSTOM(tuple, CustomAssign)
             return;
         }
 
+        const auto& lhs_value = lhs.value();
+        const auto& lhs_type_elements = lhs_type.elements();
+        const auto& rhs_type_elements = rhs_type->elements();
+
         for ( auto j = 0U; j < lhs_type.elements().size(); j++ ) {
-            const auto& lhs_elem = lhs.value()[j];
-            const auto& lhs_elem_type = lhs_type.elements()[j].type();
-            const auto& rhs_elem_type = rhs_type->elements()[j].type();
+            const auto& lhs_elem = lhs_value[j];
+            const auto& lhs_elem_type = lhs_type_elements[j].type();
+            const auto& rhs_elem_type = rhs_type_elements[j].type();
 
             if ( ! lhs_elem.isLhs() )
                 p.node.addError(util::fmt("cannot assign to expression: %s", to_node(lhs_elem)));
