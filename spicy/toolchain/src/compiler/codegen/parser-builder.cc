@@ -1643,11 +1643,11 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Skip& p) {
-        auto eod_attr = AttributeSet::find(p.skip().attributes(), "&eod");
-        auto size_attr = AttributeSet::find(p.skip().attributes(), "&size");
-        auto until_attr = AttributeSet::find(p.skip().attributes(), "&until");
+        auto eod_attr = AttributeSet::find(p.field().attributes(), "&eod");
+        auto size_attr = AttributeSet::find(p.field().attributes(), "&size");
+        auto until_attr = AttributeSet::find(p.field().attributes(), "&until");
 
-        if ( auto c = p.skip().condition() )
+        if ( auto c = p.field().condition() )
             pushBuilder(builder()->addIf(*c));
 
         if ( size_attr ) {
@@ -1703,13 +1703,13 @@ struct ProductionVisitor
         else
             hilti::logger().internalError("unexpected skip production");
 
-        if ( p.skip().emitHook() ) {
+        if ( p.field().emitHook() ) {
             pb->beforeHook();
-            builder()->addMemberCall(state().self, ID(fmt("__on_%s", p.skip().id().local())), {}, p.skip().meta());
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", p.field().id().local())), {}, p.field().meta());
             pb->afterHook();
         }
 
-        if ( p.skip().condition() )
+        if ( p.field().condition() )
             popBuilder();
     }
 
@@ -2110,7 +2110,8 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
         pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 
-    if ( ! field->originalType().isA<spicy::type::Bitfield>() && ! value.type().isA<type::Void>() ) {
+    if ( ! field->originalType().isA<spicy::type::Bitfield>() && ! value.type().isA<type::Void>() &&
+         ! field->isSkip() ) {
         builder()->addDebugMsg("spicy", fmt("%s = %%s", field->id()), {value});
         builder()->addDebugMsg("spicy-verbose", fmt("- setting field '%s' to '%%s'", field->id()), {value});
     }
@@ -2132,7 +2133,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
                 args.push_back(hilti::builder::default_(builder::typeByID("hilti::Captures")));
         }
 
-        if ( value.type().isA<type::Void>() )
+        if ( value.type().isA<type::Void>() || field->isSkip() )
             // Special-case: No value parsed, but still run hook.
             builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), {}, field->meta());
         else

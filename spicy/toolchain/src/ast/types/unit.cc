@@ -17,9 +17,6 @@ static NodeRef _itemByName(const Node& i, const ID& id) {
     if ( auto x = i.tryAs<type::unit::item::Sink>(); x && x->id() == id )
         return NodeRef(i);
 
-    if ( auto x = i.tryAs<type::unit::item::Skip>(); x && x->id() == id )
-        return NodeRef(i);
-
     if ( auto x = i.tryAs<type::unit::item::Switch>() ) {
         for ( const auto& c : x->cases() ) {
             for ( const auto& si : c.itemRefs() ) {

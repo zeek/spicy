@@ -656,6 +656,45 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         auto repeat = f.repeatCount();
         auto is_sub_item = p.parent().isA<spicy::type::unit::item::Field>();
 
+        if ( f.isSkip() ) {
+            // Only allow the field types we support for skipping currently.
+            if ( f.parseType().isA<type::Bytes>() ) {
+                int cnt = 0;
+                for ( auto a : {"&eod", "&size", "&until"} ) {
+                    if ( AttributeSet::find(f.attributes(), a) )
+                        ++cnt;
+                }
+
+                if ( cnt == 0 )
+                    error("skip with bytes must use one of &eod, &size, &until", p);
+                else if ( cnt > 1 )
+                    error("cannot have more than one of &eod, &size, &until with skip for bytes", p);
+
+                if ( f.attributes() ) {
+                    for ( const auto& a : f.attributes()->attributes() ) {
+                        if ( a.tag() != "&eod" && a.tag() != "&size" && a.tag() != "&until" )
+                            error(fmt("attribute %s not supported with skip for bytes", a.tag()), p);
+
+                        if ( a.tag() == "&until" &&
+                             (! a.hasValue() || ! a.valueAsExpression()->get().type().isA<type::Bytes>()) )
+                            error("&until must provide an expression of type bytes", p);
+
+                        // &size is generically checked for an expression elsewhere.
+                    }
+                }
+            }
+            else
+                error("field type does not support 'skip'", p);
+
+            if ( ! f.sinks().empty() )
+                error("skip field cannot have sinks attached", p);
+
+            if ( f.repeatCount() )
+                error("skip field cannot have a repeat count", p);
+
+            return;
+        }
+
         if ( count_attr && (repeat && ! repeat->type().isA<type::Null>()) )
             error("cannot have both `[..]` and &count", p);
 
@@ -694,29 +733,6 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         else
             // I don't think this can actually happen ...
             error("unit field left unresolved", p);
-    }
-
-    void operator()(const spicy::type::unit::item::Skip& s, position_t p) {
-        int cnt = 0;
-        for ( auto a : std::vector<std::string_view>{"&eod", "&size", "&until"} ) {
-            if ( AttributeSet::find(s.attributes(), a) )
-                ++cnt;
-        }
-
-        if ( cnt == 0 )
-            error("skip must use one of &eod, &size, &until", p);
-        else if ( cnt > 1 )
-            error("cannot have more than one of &eod, &size, &until with skip", p);
-
-        for ( const auto& a : s.attributes().attributes() ) {
-            if ( a.tag() != "&eod" && a.tag() != "&size" && a.tag() != "&until" )
-                error(fmt("attribute %s not supported with skip", a.tag()), p);
-
-            if ( a.tag() == "&until" && (! a.hasValue() || ! a.valueAsExpression()->get().type().isA<type::Bytes>()) )
-                error("&until must provide an expression of type bytes", p);
-
-            // &size is generically checked for an expression elsewhere.
-        }
     }
 
     void operator()(const spicy::type::unit::item::Switch& s, position_t p) {

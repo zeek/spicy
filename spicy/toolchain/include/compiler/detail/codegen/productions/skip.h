@@ -7,7 +7,6 @@
 
 #include <hilti/ast/attribute.h>
 
-#include <spicy/ast/types/unit-items/skip.h>
 #include <spicy/compiler/detail/codegen/production.h>
 
 namespace spicy::detail::codegen::production {
@@ -15,20 +14,20 @@ namespace spicy::detail::codegen::production {
 /** A production simply skipping input data. */
 class Skip : public ProductionBase, public spicy::trait::isTerminal {
 public:
-    Skip(const std::string& symbol, const NodeRef& skip, const Location& l = location::None)
-        : ProductionBase(symbol, l), _skip(skip) {}
+    Skip(const std::string& symbol, const NodeRef& field, const Location& l = location::None)
+        : ProductionBase(symbol, l), _field(field) {}
 
-    const auto& skip() const { return _skip.as<type::unit::item::Skip>(); }
-    auto skipRef() const { return NodeRef(_skip); }
+    const auto& field() const { return _field.as<type::unit::item::Field>(); }
+    auto fieldRef() const { return NodeRef(_field); }
 
     spicy::Type type() const { return type::void_; }
     bool nullable() const { return false; }
-    bool eodOk() const { return skip().attributes().has("&eod"); }
+    bool eodOk() const { return field().attributes() && field().attributes()->has("&eod"); }
     bool atomic() const { return true; }
-    std::string render() const { return "skip"; }
+    std::string render() const { return "field"; }
 
 private:
-    Node _skip; // stores a shallow copy of the reference passed into ctor
+    Node _field; // stores a shallow copy of the reference passed into ctor
 };
 
 } // namespace spicy::detail::codegen::production

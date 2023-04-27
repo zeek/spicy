@@ -4,7 +4,6 @@
 
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/sink.h>
-#include <spicy/ast/types/unit-items/skip.h>
 #include <spicy/ast/types/unit-items/switch.h>
 #include <spicy/ast/types/unit-items/unit-hook.h>
 #include <spicy/ast/types/unit-items/unresolved-field.h>

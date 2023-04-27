@@ -39,8 +39,9 @@ namespace {
 // Turns an unresolved field into a resolved field.
 template<typename T>
 auto resolveField(const type::unit::item::UnresolvedField& u, T t) {
-    auto field = type::unit::item::Field(u.fieldID(), std::move(t), u.engine(), u.arguments().copy(), u.repeatCount(),
-                                         u.sinks().copy(), u.attributes(), u.condition(), u.hooks().copy(), u.meta());
+    auto field = type::unit::item::Field(u.fieldID(), std::move(t), u.engine(), u.isSkip(), u.arguments().copy(),
+                                         u.repeatCount(), u.sinks().copy(), u.attributes(), u.condition(),
+                                         u.hooks().copy(), u.meta());
 
     assert(u.index());
     field.setIndex(*u.index());
@@ -269,15 +270,14 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
     void operator()(const type::unit::item::UnresolvedField& u, position_t p) {
         if ( u.type() && u.type()->isA<type::Void>() && u.attributes() ) {
-            // Transparently map void field into skip item.
+            // Transparently map void field into skipping bytes fields.
             hilti::logger().deprecated(
                 "using `void` fields with attributes is deprecated and support will be removed in a future "
-                "release; replace 'void' with 'skip'",
+                "release; replace 'void' with 'skip bytes ...'",
                 u.meta().location());
 
-            auto skip = type::unit::item::Skip(u.fieldID(), u.attributes(), u.condition(), u.hooks().copy(), u.meta());
-            replaceField(&p, std::move(skip));
-            return;
+            p.node.as<type::unit::item::UnresolvedField>().setSkip(true);
+            p.node.as<type::unit::item::UnresolvedField>().setType(type::Bytes());
         }
 
         if ( const auto& id = u.unresolvedID() ) { // check for unresolved IDs first to overrides the other cases below
@@ -295,13 +295,14 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
                 // (which we don't have for pure types).
                 if ( auto unit_type = t->type().tryAs<type::Unit>();
                      unit_type && AttributeSet::has(unit_type->attributes(), "&convert") ) {
-                    auto inner_field = type::unit::item::Field({}, std::move(tt), spicy::Engine::All,
+                    auto inner_field = type::unit::item::Field({}, std::move(tt), spicy::Engine::All, false,
                                                                u.arguments().copy(), {}, {}, {}, {}, {}, u.meta());
                     inner_field.setIndex(*u.index());
 
-                    auto outer_field = type::unit::item::Field(u.fieldID(), std::move(inner_field), u.engine(), {},
-                                                               u.repeatCount(), u.sinks().copy(), u.attributes(),
-                                                               u.condition(), u.hooks().copy(), u.meta());
+                    auto outer_field =
+                        type::unit::item::Field(u.fieldID(), std::move(inner_field), u.engine(), u.isSkip(), {},
+                                                u.repeatCount(), u.sinks().copy(), u.attributes(), u.condition(),
+                                                u.hooks().copy(), u.meta());
 
                     outer_field.setIndex(*u.index());
 

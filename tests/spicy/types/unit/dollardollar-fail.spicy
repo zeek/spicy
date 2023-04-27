@@ -7,7 +7,14 @@ public type X = unit {
     a: uint8 { print $$; }
     on %done { print $$; }
     : void { print $$; }
-    : skip &size=1 { print $$; }
 };
 
 on Test::X::%done { print $$; }
+
+@TEST-START-NEXT
+
+module Test;
+
+public type X = unit {
+    : skip bytes &size=1 { print $$; }
+};

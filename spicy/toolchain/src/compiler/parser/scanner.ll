@@ -22,6 +22,7 @@ using namespace spicy::detail::parser;
 
 %s EXPRESSION
 %s IGNORE_NL
+%s NEW_KEYWORD
 
 %x DOTTED_ID
 %x HOOK_ID
@@ -220,6 +221,9 @@ True                  yylval->build(true); return token::CBOOL;
 None                  return token::NONE;
 Null                  return token::CNULL;
 
+ /* Keywords added later that are recognized only if new keyword mode is enabled. */
+<NEW_KEYWORD>skip     return token::SKIP;
+
 {attribute}           yylval->build(std::string(yytext)); return token::ATTRIBUTE;
 <INITIAL>{property}   yylval->build(std::string(yytext)); return token::PROPERTY;
 {digits}\/(tcp|udp)   yylval->build(std::string(yytext)); return token::CPORT;
@@ -310,6 +314,16 @@ void spicy::detail::parser::Scanner::enableHookIDMode()
 }
 
 void spicy::detail::parser::Scanner::disableHookIDMode()
+{
+    yy_pop_state();
+}
+
+void spicy::detail::parser::Scanner::enableNewKeywordMode()
+{
+    yy_push_state(NEW_KEYWORD);
+}
+
+void spicy::detail::parser::Scanner::disableNewKeywordMode()
 {
     yy_pop_state();
 }

@@ -469,7 +469,7 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
     std::optional<Type> original_field_type;
 
     if ( field ) {
-        if ( ! field->get().parseType().isA<type::Void>() )
+        if ( ! field->get().parseType().isA<type::Void>() && ! field->get().isSkip() )
             original_field_type = field->get().originalType();
 
         is_container = field->get().isContainer();
@@ -478,7 +478,7 @@ std::optional<hilti::declaration::Function> CodeGen::compileHook(
         // Try to locate field by ID.
         if ( auto i = unit.itemByName(id.local()) ) {
             if ( auto f = i->tryAs<type::unit::item::Field>() ) {
-                if ( ! f->parseType().isA<type::Void>() ) {
+                if ( ! f->parseType().isA<type::Void>() && ! f->isSkip() ) {
                     is_container = f->isContainer();
                     field = *f;
                     original_field_type = f->originalType();

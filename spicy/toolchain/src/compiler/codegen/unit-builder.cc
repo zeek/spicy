@@ -35,7 +35,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
     void addField(hilti::declaration::Field f) { fields.emplace_back(std::move(f)); }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
-        if ( ! f.parseType().isA<type::Void>() ) {
+        if ( ! f.parseType().isA<type::Void>() && ! f.isSkip() ) {
             // Create struct field.
             AttributeSet attrs({Attribute("&optional")});
 
@@ -80,24 +80,6 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
 
         if ( auto x = f.item() )
             dispatch(*x);
-    }
-
-    void operator()(const spicy::type::unit::item::Skip& s, const position_t /* p */) {
-        if ( ! s.emitHook() )
-            return;
-
-        // Add hook declaration.
-        if ( auto hook_decl = cg->compileHook(unit, s.id(), {}, false, false, {}, {}, {}, s.meta()) ) {
-            auto nf = hilti::declaration::Field(hook_decl->id().local(), hook_decl->function().type(), {}, s.meta());
-            addField(std::move(nf));
-        }
-
-        // Add hook implementation.
-        for ( auto& h : s.hooks() ) {
-            if ( auto hook_impl = cg->compileHook(unit, ID(*unit.id(), s.id()), {}, false, h.isDebug(),
-                                                  h.ftype().parameters().copy(), h.body(), h.priority(), h.meta()) )
-                cg->addDeclaration(*hook_impl);
-        }
     }
 
     void operator()(const spicy::type::unit::item::Switch& f, const position_t /* p */) {

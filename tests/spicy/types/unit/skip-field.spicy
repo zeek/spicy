@@ -16,13 +16,13 @@ public type Root = unit {
 
 type Foo = unit {
     a: uint8;
-    : skip &size=2 { print "skip b"; }
+    : skip bytes &size=2 { print "skip b"; }
     c: uint8;
-    : skip &size=2 if ( True );
-    : skip &size=2 if ( False );
+    : skip bytes &size=2 if ( True );
+    : skip bytes &size=2 if ( False );
     f: uint8; # == 0x07
-    : skip &until=b"ABC";
-    eod: skip &eod;
+    : skip bytes &until=b"ABC";
+    eod: skip bytes &eod;
 };
 
 on Foo::eod { print "skip eos"; }

@@ -219,6 +219,7 @@ static std::vector<hilti::DocString> _docs;
 %token SHIFTLEFT
 %token SHIFTRIGHT
 %token SINK
+%token SKIP
 %token STOP
 %token STREAM           "stream"
 %token STRING
@@ -299,6 +300,7 @@ static std::vector<hilti::DocString> _docs;
 
 %type <int64_t>  const_sint
 %type <uint64_t> const_uint
+%type <bool>     opt_skip opt_skip_
 
 %%
 
@@ -741,35 +743,19 @@ unit_property : PROPERTY opt_attributes ';'      { $$ = type::unit::item::Proper
               | PROPERTY '=' base_type_no_ref ';'       { $$ = type::unit::item::Property(ID(std::move($1)), hilti::expression::Type_(std::move($3)), {}, false, __loc__); };
 
 
-unit_field    : opt_unit_field_id opt_unit_field_engine base_type  opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 {   if ( $3.isA<type::Vector>() )
+unit_field    : opt_unit_field_id opt_unit_field_engine opt_skip base_type opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 {   if ( $4.isA<type::Vector>() )
                                                          error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__);
+                                                     $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__);
                                                  }
 
-              | opt_unit_field_id opt_unit_field_engine unit_field_ctor opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), {}, std::move($4), std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
+              | opt_unit_field_id opt_unit_field_engine opt_skip unit_field_ctor opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__); }
 
-              | opt_unit_field_id opt_unit_field_engine scoped_id  opt_unit_field_args opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 {
-                                                 if ( $3 == ID("skip") ) { // special-case to avoid introducing a "skip" keyword/token.
-                                                    if ( ! $4.empty() )
-                                                        error(@$, "skip field does not take arguments");
-
-                                                    if ( $5.has_value() )
-                                                        error(@$, "skip field does not take repeat count");
-
-                                                    if ( ! $8.empty() )
-                                                        error(@$, "skip field does not take sinks");
-
-                                                    $$ = spicy::type::unit::item::Skip(std::move($1), std::move($6), std::move($7), std::move($9), __loc__);
-                                                 }
-                                                 else
-                                                    $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($3), std::move($2), std::move($4), std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__);
-                                                }
-
-              | opt_unit_field_id opt_unit_field_engine '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), {}, std::move($6), std::move($9), std::move($7), std::move($8), std::move($10), __loc__); }
+              | opt_unit_field_id opt_unit_field_engine opt_skip scoped_id  opt_unit_field_args opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($4), std::move($2), $3, std::move($5), std::move($6), std::move($9), std::move($7), std::move($8), std::move($10), __loc__); }
+              | opt_unit_field_id opt_unit_field_engine opt_skip '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 { $$ = spicy::type::unit::item::UnresolvedField(std::move($1), std::move($5), std::move($2), $3, {}, std::move($7), std::move($10), std::move($8), std::move($9), std::move($11), __loc__); }
 
 const_sint    : CUINTEGER                        { $$ = check_int64_range($1, true, __loc__); }
               | '+' CUINTEGER                    { $$ = check_int64_range($2, true, __loc__); }
@@ -791,11 +777,11 @@ unit_field_ctor
 
 unit_field_in_container
               : ctor opt_unit_field_args opt_attributes
-                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
+                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, false, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
               | scoped_id opt_unit_field_args opt_unit_field_repeat opt_attributes
-                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($2), std::move($3), {}, std::move($4), {}, {}, __loc__); }
+                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, false, std::move($2), std::move($3), {}, std::move($4), {}, {}, __loc__); }
               | base_type opt_unit_field_repeat opt_unit_field_args opt_attributes
-                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, std::move($3), std::move($2), {}, std::move($4), {}, {}, __loc__); }
+                                                 { $$ = spicy::type::unit::item::UnresolvedField({}, std::move($1), {}, false, std::move($3), std::move($2), {}, std::move($4), {}, {}, __loc__); }
 
 unit_wide_hook : ON unit_hook_id unit_hook       { $$ = spicy::type::unit::item::UnitHook(std::move($2), std::move($3), __loc__); }
 
@@ -808,6 +794,15 @@ opt_unit_field_engine
               | '<'                              { $$ = spicy::Engine::Parser; }
               | '>'                              { $$ = spicy::Engine::Composer; }
               | /* empty */                      { $$ = spicy::Engine::All; } /* Default */
+
+opt_skip      :
+              { driver->enableNewKeywordMode(); }
+              opt_skip_
+              { driver->disableNewKeywordMode(); $$ = $2; }
+
+opt_skip_     :
+                SKIP                             { $$ = true; }
+              | /* empty */                      { $$ = false; }
 
 opt_unit_field_args
               : '(' opt_exprs ')'                { $$ = std::move($2); }

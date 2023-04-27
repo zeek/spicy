@@ -111,6 +111,9 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
     }
 
     Production operator()(const spicy::type::unit::item::Field& n, position_t p) {
+        if ( n.isSkip() )
+            return production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), n.meta().location());
+
         Production prod;
 
         if ( const auto& c = n.ctor() ) {
@@ -142,10 +145,6 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         prod.setMeta(std::move(m));
 
         return prod;
-    }
-
-    Production operator()(const spicy::type::unit::item::Skip& n, position_t p) {
-        return production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), n.meta().location());
     }
 
     Production operator()(const spicy::type::unit::item::Switch& n, position_t p) {
