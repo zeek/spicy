@@ -177,7 +177,7 @@ public:
     void popState() { _states.pop_back(); }
 
     /** Returns the current parsing state. */
-    ParserState state() const { return _states.back(); }
+    const ParserState& state() const { return _states.back(); }
 
     /**
      * Returns an expression referencing the 1st version of a publicly

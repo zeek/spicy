@@ -1,3 +1,15 @@
+1.8.0-dev.121 | 2023-04-27 15:19:08 +0200
+
+  * Suppress uninteresting compiler diagnostic in test stderr diff. (Benjamin Bannier, Corelight)
+
+  * Fix gcc-13 warnings about possibly dangling references. (Benjamin Bannier, Corelight)
+
+  * Roll back 3rdparty/reproc upgrade. (Benjamin Bannier, Corelight)
+
+  * Silence gcc-13 warning for reproc. (Benjamin Bannier, Corelight)
+
+  * Add missing include for `uint64_t`. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.115 | 2023-04-24 10:59:27 +0200
 
   * Make sure Spicy runtime config is initialized after `spicy::rt::init`. (Benjamin Bannier, Corelight)

@@ -2,6 +2,11 @@
 # @TEST-EXEC-FAIL: ${HILTIC} -j false1.hlt >>output 2>&1
 # @TEST-EXEC-FAIL: ${HILTIC} -j false2.hlt >>output 2>&1
 # @TEST-EXEC-FAIL: ${HILTIC} -j false3.hlt >>output 2>&1
+#
+# Since the output might contain compiler diagnostics for generated code, strip
+# out anything but the assertion messages under test.
+# @TEST-EXEC: grep AssertionFailure: output > output2 && mv output2 output
+#
 # @TEST-EXEC: btest-diff output
 
 @TEST-START-FILE true.hlt

@@ -582,9 +582,12 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
         bool changed = false;
         std::vector<Expression> new_elems;
 
+        const auto& lhs_type_elements = lhs_type.elements();
+        const auto& rhs_type_elements = rhs_type->elements();
+
         for ( auto i = 0U; i < lhs_type.elements().size(); i++ ) {
-            const auto& lhs_elem_type = lhs_type.elements()[i].type();
-            auto rhs_elem_type = rhs_type->elements()[i].type();
+            const auto& lhs_elem_type = lhs_type_elements[i].type();
+            auto rhs_elem_type = rhs_type_elements[i].type();
             auto rhs_elem =
                 expression::TypeWrapped(operator_::tuple::Index::Operator().instantiate({n.op1(), builder::integer(i)},
                                                                                         n.meta()),

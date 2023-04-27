@@ -461,7 +461,8 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             return;
 
         // Look for a `return` to infer the return type.
-        for ( const auto i : visitor::PreOrder<>().walk(&p.node) ) {
+        auto v = visitor::PreOrder<>();
+        for ( const auto i : v.walk(&p.node) ) {
             if ( auto x = i.node.tryAs<statement::Return>();
                  x && x->expression() && type::isResolved(x->expression()->type()) ) {
                 const auto& rt = x->expression()->type();
@@ -845,8 +846,9 @@ bool Visitor::resolveCast(const expression::UnresolvedOperator& u, position_t p)
     // We hardcode that a cast<> operator can always perform any
     // legal coercion. This helps in cases where we need to force a
     // specific coercion to take place.
-    const auto& expr = u.operands()[0];
-    const auto& dst = u.operands()[1].as<expression::Type_>().typeValue();
+    const auto& operands = u.operands();
+    const auto& expr = operands[0];
+    const auto& dst = operands[1].as<expression::Type_>().typeValue();
     const auto style = CoercionStyle::TryAllForMatching | CoercionStyle::ContextualConversion;
 
     if ( auto c = hilti::coerceExpression(expr, dst, style) ) {

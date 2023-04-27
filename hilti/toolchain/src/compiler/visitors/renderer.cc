@@ -13,7 +13,8 @@ using util::fmt;
 static void render(const Node& n, std::ostream* out, std::optional<logging::DebugStream> dbg, bool include_scopes) {
     util::timing::Collector _("hilti/renderer");
 
-    for ( const auto i : visitor::PreOrder<>().walk(n) ) {
+    auto v = visitor::PreOrder<>();
+    for ( const auto i : v.walk(n) ) {
         if ( dbg )
             logger().debugSetIndent(*dbg, i.path.size());
 

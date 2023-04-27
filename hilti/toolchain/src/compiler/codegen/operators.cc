@@ -445,7 +445,8 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::result::Error& n) { return fmt("%s.errorOrThrow()", op0(n)); }
 
     result_t operator()(const operator_::generic::Pack& n) {
-        const auto& type = n.op0().as<expression::Ctor>().ctor().as<ctor::Tuple>().value()[0].type();
+        const auto& ctor = n.op0().as<expression::Ctor>().ctor().as<ctor::Tuple>().value();
+        const auto& type = ctor[0].type();
         auto args = tupleArguments(n, n.op0());
         return cg->pack(type, args[0], util::slice(args, 1, -1));
     }
@@ -527,8 +528,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     // Optional
     result_t operator()(const operator_::optional::Deref& n) {
-        return {fmt("::hilti::rt::optional::value(%s)", op0(n)),
-                cxx::Side::LHS};
+        return {fmt("::hilti::rt::optional::value(%s)", op0(n)), cxx::Side::LHS};
     }
 
     /// Port
