@@ -1502,7 +1502,8 @@ void Optimizer::run() {
 
     // Clear cached information which might become outdated due to edits.
     for ( auto& unit : units ) {
-        for ( auto i : hilti::visitor::PreOrder<>().walk(&unit->module()) ) {
+        auto v = hilti::visitor::PreOrder<>();
+        for ( auto i : v.walk(&unit->module()) ) {
             i.node.clearScope();
         }
     }

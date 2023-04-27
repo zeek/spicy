@@ -22,7 +22,8 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
         if ( ops.empty() )
             return type::DocOnly("<unpackable>");
 
-        const auto& data_type = ops[1].type().as<type::Tuple>().elements()[0].type();
+        const auto& elements = ops[1].type().as<type::Tuple>().elements();
+        const auto& data_type = elements[0].type();
         return type::Result(type::Tuple({ops[0].type().as<type::Type_>().typeValue(), data_type}, ops[0].meta()));
     }
 
@@ -36,7 +37,8 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
-        const auto& data_type = i.op1().type().template as<type::Tuple>().elements()[0].type();
+        const auto& elements = i.op1().type().template as<type::Tuple>().elements();
+        const auto& data_type = elements[0].type();
 
         if ( ! (data_type.isA<type::Bytes>() || data_type.isA<type::stream::View>()) )
             p.node.addError("unpack() can be used only with bytes or a stream view as input");

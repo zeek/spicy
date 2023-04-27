@@ -1,3 +1,189 @@
+1.5.3-26 | 2023-04-27 15:20:41 +0200
+
+  * Suppress uninteresting compiler diagnostic in test stderr diff. (Benjamin Bannier, Corelight)
+
+  * Fix gcc-13 warnings about possibly dangling references. (Benjamin Bannier, Corelight)
+
+  * Silence gcc-13 warning for reproc. (Benjamin Bannier, Corelight)
+
+  * Add missing include for `uint64_t`. (Benjamin Bannier, Corelight)
+
+  * Pin spicy-plugin to `release/1.3` for CI. (Benjamin Bannier, Corelight)
+
+  * Guard access to unit `_filters` member with feature flag. (Benjamin Bannier, Corelight)
+
+    The unit `_filters` member is accessed by most low-level functions
+    extracting data from the input, but its value is only interesting if a
+    unit actually supports filters. We had previously annotated `_filters`
+    with a requirement for filter support so any use of it with trigger
+    enabling support. By guarding access with a feature flag we can detect
+    such dependent uses in a subsequent patch.
+
+    (cherry picked from commit 2be508ae6448a64b1f2d6726c6c12f457ed118e7)
+
+  * Extend detection of conditionally used features in optimizer. (Benjamin Bannier, Corelight)
+
+    We previously were only able to detect conditionally used features if
+    the feature flag was an `if` condition. In order to support
+    conditionally used features in expressions (as opposed to statements) we
+    add support for detecting their use under a ternary operator with this
+    patch.
+
+    (cherry picked from commit daf43cebe6973c97a130f59c770a93be0185b32b)
+
+  * Add support for folding ternary operator uses in optimizer. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 35d177d350dd740837fc80b28366ebb8bd64965b)
+
+  * Cache HILTI C++ compilations with ccache in CI. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit caeb036c09ac79342e905b79ae00acd9142b3640)
+
+  * Avoid expensive checked iterator for internal `Bytes` iteration. (Benjamin Bannier, Corelight)
+
+    We previously would go through a checked iterator to iterate a `Bytes`
+    instance. Since none of the iterators were user-provided this was always
+    safe, but incured the performance overhead for checking.
+
+    With this patch we iterate the underlying bytes directly.
+
+    (cherry picked from commit 8afe60ea5484775c0d3329eb23bb18d95878499c)
+
+  * GH-1390: Initialize `Bytes` internal control block for all constructors. (Benjamin Bannier, Corelight)
+
+    `Bytes` inherits constructors from its base class. We previously would
+    not initialize the internal control block for these constructors so some
+    operations involving iterators on such `Bytes` instances would have
+    failed, even thought the controlled object was still valid.
+
+    With this patch we always set up the control block, no matter which
+    constructor is used.
+
+    Closes #1390.
+
+    (cherry picked from commit 71cff50262bd26c3e36cd708c5063e87a77eacbf)
+
+  * Do not force locale on users of libhilti. (Benjamin Bannier, Corelight)
+
+    Setting a locale from a library can interfere negatively with the rest
+    of the application. We previously would set a locale inside
+    `hilti::rt::init`, but we probably do not need it at all.
+
+    (cherry picked from commit 0cae489d23b581e0f883a606ae94b9ac48a04976)
+
+  * Set reupload_on_changes for ccache caches. (Arne Welzel, Corelight)
+
+    Without explicitly setting reupload_on_changes, the caches are never
+    updated due to a constant fingerprint_script.
+
+    Found while looking at the CI output and finding 46Mb being a rather
+    small ccache size.
+
+         echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+         docker_debian11-linux
+         Downloaded 46Mb in 0.484147s.
+         Cache hit for ccache-05b8329b...
+
+    (cherry picked from commit c33d7f6fb64a58e28728cda4e1e91d8b94cd9347)
+
+  * Fix potential use-after-move bug. (Benjamin Bannier, Corelight)
+
+  * GH-1310: Fix ASAN false positive with GCC. (Robin Sommer, Corelight)
+
+    GCC reported false positives during stack switching for strings that
+    were created for debug logging. This moves the affected string into a
+    pre-allocated global constant.
+
+    Closes #1310.
+
+    (cherry picked from commit 17ee047e2b53ae611a9c0472da31cad48dd7d788)
+
+  * Skip clang-specific ASAN flags with other compilers. (Robin Sommer, Corelight)
+
+    (cherry picked from commit 9823e9f41b3a7780cfff396e89e507b01383daa7)
+
+  * Don't instantiate a debug logger if we aren't going to debug log. (Robin Sommer, Corelight)
+
+    This shortcuts the test in `HILTI_RT_DEBUG` to avoid a map lookup
+    every time when we already know we aren't going to log anything.
+
+    I was also wondering if `HILTI_RT_DEBUG` should be `#defined` to empty
+    if we're building a release version. However, being able to create
+    logs in release mode  seems quite helpful, and I believe with just a
+    pointer check now, the overhead should be minimal-—so not changing
+    that.
+
+    (cherry picked from commit 421e550559faee938c974b15bba038d0d80c8020)
+
+  * Simplify extract methods. (Robin Sommer, Corelight)
+
+    That looked like a case of pre-mature optimization.
+
+    (cherry picked from commit 03dcf5487a1e24a710fa3a1c01199cc983ce85d1)
+
+  * Shortcut some offset computations. (Robin Sommer, Corelight)
+
+    (cherry picked from commit 3aa169b8191a16d0ff75030f10b35c9bc4f9754b)
+
+  * GH-1345: Apply alternative fix for #1345. (Robin Sommer, Corelight)
+
+    (cherry picked from commit 7c30652d1a9a6dd6f8d53d9e631c5b630535715e)
+
+  * Revert "Fix pathological performance for `_haveEod` on highly chunked streams." (Robin Sommer, Corelight)
+
+    This reverts commit 9a218491de15bd8eab22f8018a2725a9046e01c4.
+
+    (cherry picked from commit cd4624d2fe2f7bb1fb6c4368d38fc7643dbdb49e)
+
+  * Make `printParserState` cheaper to call if debug logging is disabled. (Benjamin Bannier, Corelight)
+
+    Currently `printParserState` is called at least during synchronization.
+    Previously it would always comput its log message, even if that string
+    was never logged. Since computing this log message involved string
+    formatting it came with a noticeable performance penalty.
+
+    With this patch we only compute the log message if it would actually be
+    logged using our debug log macros.
+
+    (cherry picked from commit 50cf90e515de8ddf7421c8876cdc687d07bb0bce)
+
+  * GH-1367: Use unique filename for all object files generated during JIT. (Benjamin Bannier, Corelight)
+
+    We previously would derive the name of the object file to generate for a
+    given C++ input file directly from the input filename by just replacing
+    the extension. This caused us to generate object files directly next to
+    C++ files added explicitly to the JIT job. Multiple jobs using the same
+    C++ input file could then race on the object file.
+
+    With this patch we make sure that object files are always generated with
+    taking the JIT has into account. We also fix the location of object
+    files to always be in a system temp directory.
+
+    Closes #1367.
+
+    (cherry picked from commit 580443e27d170f62c31de28e4ef3c501423dc4ac)
+
+  * Add stringification to UnitContext. (Benjamin Bannier, Corelight)
+
+    Not adding this in the first place broke e.g., `-X flow` or `-X trace`.
+
+    (cherry picked from commit 7ee860a2bb81962d60864d10090930cc8cb2ea64)
+
+  * Remove potential race during JIT when using `HILTI_CXX_COMPILER_LAUNCHER`. (Benjamin Bannier, Corelight)
+
+    We previously would not create unique names for different JIT
+    invocations if they came from the same directory. This causes issues if
+    the same module is imported into different analyzers where previously we
+    would generate the same C++ and object file name. Different JIT runs
+    could then race on the same output files and e.g., remove each others
+    inputs/outputs. As far as I can tell this was very unlikely to produce
+    incorrect behavior at runtime.
+
+    We now include all input files from a JIT run in the JIT has. With that
+    above race is not possible anymore.
+
+    (cherry picked from commit 709990fe5593284e24822aa898e73ad988217d85)
+
 1.5.3 | 2023-01-20 11:09:15 +0100
 
   * GH-1349: Fix incremental regexp matching for potentially empty results. (Robin Sommer, Corelight)
