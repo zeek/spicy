@@ -1,3 +1,22 @@
+1.5.4 | 2023-04-28 11:24:55 +0200
+
+  * GH-1436: Make sure `Bytes::sub` only throws HILTI exceptions. (Benjamin Bannier, Corelight)
+
+    We previously would directly invoke `Base::substr` which can throw
+    and leak `std::out_of_range`. We now make sure to only throw HILTI
+    exceptions from that function.
+
+    Closes #1436.
+
+    (cherry picked from commit 8a7805b7e79070e168974d5b5b01df37f13728b6)
+
+  * Implement all `Bytes::sub` in terms of bytes offsets. (Benjamin Bannier, Corelight)
+
+    We will use this in a subsequent patch which cleans up exception
+    handling from `std::string::substr`.
+
+    (cherry picked from commit 82324bc4d383d2ba8a916c3cde3c39f2900b7962)
+
 1.5.3-26 | 2023-04-27 15:20:41 +0200
 
   * Suppress uninteresting compiler diagnostic in test stderr diff. (Benjamin Bannier, Corelight)
