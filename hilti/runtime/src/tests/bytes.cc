@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
@@ -317,6 +318,7 @@ TEST_CASE("sub") {
     SUBCASE("end offset") {
         CHECK_EQ(b.sub(0), ""_b);
         CHECK_EQ(b.sub(b.size()), b);
+        CHECK_EQ(b.sub(b.size() + 1024), b);
         CHECK_EQ(b.sub(99), b);
         CHECK_EQ(b.sub(3), "123"_b);
     }
@@ -327,11 +329,15 @@ TEST_CASE("sub") {
         CHECK_EQ(b.sub(0, b.size()), b);
         CHECK_EQ(b.sub(0, 3), "123"_b);
         CHECK_EQ(b.sub(3, 0), "456"_b);
+
+        CHECK_THROWS_WITH_AS(b.sub(b.size() + 1024, b.size() + 2048),
+                             "start index 1030 out of range for bytes with length 6", const OutOfRange);
     }
 
     SUBCASE("end iterator") {
         CHECK_EQ(b.sub(b.begin()), ""_b);
         CHECK_EQ(b.sub(b.end()), b);
+        CHECK_EQ(b.sub(++b.end()), b);
 
         const auto bb = "123"_b;
         CHECK_THROWS_WITH_AS(b.sub(bb.begin()), "start and end iterator cannot belong to different bytes",
@@ -341,6 +347,11 @@ TEST_CASE("sub") {
     SUBCASE("start/end iterator") {
         CHECK_EQ(b.sub(b.begin(), b.end()), b);
         CHECK_EQ(b.sub(b.begin(), b.begin()), ""_b);
+        CHECK_EQ(b.sub(b.end(), b.begin()), ""_b);
+        CHECK_THROWS_WITH_AS(b.sub(++b.end(), ++b.begin()), "start index 7 out of range for bytes with length 6",
+                             const OutOfRange&);
+        CHECK_THROWS_WITH_AS(b.sub(++b.end(), ++b.end()), "start index 7 out of range for bytes with length 6",
+                             const OutOfRange&);
 
         const auto bb = "123"_b;
         // NOLINTNEXTLINE(bugprone-throw-keyword-missing)

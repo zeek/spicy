@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -294,7 +295,13 @@ public:
      * @param offset of one byeond end of subrage
      * @return a `Bytes` instance for the subrange
      */
-    Bytes sub(Offset from, Offset to) const { return {substr(from, to - from)}; }
+    Bytes sub(Offset from, Offset to) const {
+        try {
+            return {substr(from, to - from)};
+        } catch ( const std::out_of_range& ) {
+            throw OutOfRange(fmt("start index %s out of range for bytes with length %d", from, size()));
+        }
+    }
 
     /**
      * Extracts a subrange of bytes from the beginning.
