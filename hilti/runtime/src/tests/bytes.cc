@@ -332,6 +332,10 @@ TEST_CASE("sub") {
     SUBCASE("end iterator") {
         CHECK_EQ(b.sub(b.begin()), ""_b);
         CHECK_EQ(b.sub(b.end()), b);
+
+        const auto bb = "123"_b;
+        CHECK_THROWS_WITH_AS(b.sub(bb.begin()), "start and end iterator cannot belong to different bytes",
+                             const InvalidArgument&);
     }
 
     SUBCASE("start/end iterator") {
@@ -340,8 +344,8 @@ TEST_CASE("sub") {
 
         const auto bb = "123"_b;
         // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-        CHECK_THROWS_WITH_AS(b.sub(b.begin(), bb.begin()),
-                             "cannot perform arithmetic with iterators into different bytes", const InvalidArgument&);
+        CHECK_THROWS_WITH_AS(b.sub(b.begin(), bb.begin()), "start and end iterator cannot belong to different bytes",
+                             const InvalidArgument&);
     }
 }
 

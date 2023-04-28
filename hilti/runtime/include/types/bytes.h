@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/json-fwd.h>
@@ -137,6 +138,8 @@ public:
             throw InvalidArgument("cannot perform arithmetic with iterators into different bytes");
         return a._index - b._index;
     }
+
+    friend class ::hilti::rt::Bytes;
 };
 
 inline std::string to_string(const Iterator& /* i */, rt::detail::adl::tag /*unused*/) { return "<bytes iterator>"; }
@@ -270,7 +273,10 @@ public:
      * @return a `Bytes` instance for the subrange
      */
     Bytes sub(const const_iterator& from, const const_iterator& to) const {
-        return {substr(from - begin(), to - from)};
+        if ( from._control.lock() != to._control.lock() )
+            throw InvalidArgument("start and end iterator cannot belong to different bytes");
+
+        return sub(Offset(from - begin()), to._index);
     }
 
     /**
