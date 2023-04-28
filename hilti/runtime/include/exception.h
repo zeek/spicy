@@ -24,15 +24,15 @@ public:
     /**
      * @param desc message describing the situation
      */
-    Exception(const std::string& desc);
+    Exception(const std::string& desc) : Exception(Internal(), "Exception", desc) {}
 
     /**
      * @param desc message describing the situation
      * @param location string indicating the location of the operation that failed
      */
-    Exception(std::string_view desc, std::string_view location);
+    Exception(std::string_view desc, std::string_view location) : Exception(Internal(), "Exception", desc, location) {}
 
-    Exception() : std::runtime_error("<no error>"){};
+    Exception();
     Exception(const Exception&) = default;
     Exception(Exception&&) noexcept = default;
     Exception& operator=(const Exception&) = default;
@@ -55,8 +55,14 @@ public:
      */
     auto backtrace() const { return _backtrace.backtrace(); }
 
+protected:
+    enum Internal {};
+
+    Exception(Internal, const char* type, const std::string& desc);
+    Exception(Internal, const char* type, std::string_view desc, std::string_view location);
+
 private:
-    Exception(const std::string& what, std::string_view desc, std::string_view location);
+    Exception(Internal, const char* type, const std::string& what, std::string_view desc, std::string_view location);
 
     std::string _description;
     std::string _location;
@@ -68,15 +74,21 @@ inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { retu
 #define HILTI_EXCEPTION(name, base)                                                                                    \
     class name : public ::hilti::rt::base {                                                                            \
     public:                                                                                                            \
-        using ::hilti::rt::base::base;                                                                                 \
+        name(const std::string& desc) : base(Internal(), #name, desc) {}                                               \
+        name(std::string_view desc, std::string_view location) : base(Internal(), #name, desc, location) {}            \
         virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
-    };
+    protected:                                                                                                         \
+        using base::base;                                                                                              \
+    }; // namespace hilti::rt
 
 #define HILTI_EXCEPTION_NS(name, ns, base)                                                                             \
     class name : public ns::base {                                                                                     \
     public:                                                                                                            \
-        using ns::base::base;                                                                                          \
+        name(const std::string& desc) : base(Internal(), #name, desc) {}                                               \
+        name(std::string_view desc, std::string_view location) : base(Internal(), #name, desc, location) {}            \
         virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
+    protected:                                                                                                         \
+        using base::base;                                                                                              \
     };
 
 #define HILTI_EXCEPTION_IMPL(name) name::name::~name() = default;
