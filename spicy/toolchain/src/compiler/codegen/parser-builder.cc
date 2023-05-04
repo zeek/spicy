@@ -2161,7 +2161,7 @@ void ParserBuilder::trimInput(bool force) {
 void ParserBuilder::initializeUnit(const Location& l) {
     const auto& unit = state().unit.get();
 
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(unit, {"uses_offset", "uses_random_access"}, [&]() {
         // Save the current input offset for the raw access methods.
         builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
         builder()->addAssign(builder::member(state().self, ID("__offset")), builder::integer(0));
@@ -2290,7 +2290,7 @@ void ParserBuilder::beforeHook() {
     // https://github.com/zeek/spicy/issues/1108 is fixed.
     builder()->addAssign(builder::member(state().self, ID("__error")), state().error);
 
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(unit, {"uses_offset", "uses_random_access"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__position_update")),
                              builder::optional(hilti::type::stream::Iterator()));
     });
@@ -2299,7 +2299,7 @@ void ParserBuilder::beforeHook() {
 void ParserBuilder::afterHook() {
     const auto& unit = state().unit.get();
 
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(unit, {"uses_offset", "uses_random_access"}, [&]() {
         auto position_update = builder::member(state().self, ID("__position_update"));
         auto advance = builder()->addIf(position_update);
         auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
@@ -2323,7 +2323,7 @@ void ParserBuilder::afterHook() {
 
 void ParserBuilder::saveParsePosition() {
     const auto& unit = state().unit.get();
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(unit, {"uses_offset", "uses_random_access"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__offset")),
                              builder::difference(builder::memberCall(builder::begin(state().cur), "offset", {}),
                                                  builder::memberCall(builder::deref(
