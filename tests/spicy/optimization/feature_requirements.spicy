@@ -9,9 +9,14 @@
 
 module foo;
 
+# Use of offset-dependent code is recognized.
+type X0 = unit {
+    on %init { self.offset(); }
+};
+
 # Use of random-access dependent code is recognized.
 type X1 = unit {
-    on %init { self.offset(); }
+    on %init { self.input(); }
 };
 
 # Unused random-access-dependent code should be removed.

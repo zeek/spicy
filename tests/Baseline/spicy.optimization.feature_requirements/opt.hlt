@@ -4,10 +4,18 @@ module foo {
 import spicy_rt;
 import hilti;
 
-# Type X1 supports the following features:
+# Type X0 supports the following features:
 #     - uses_offset
-type X1 = struct {
+type X0 = struct {
     uint<64> __offset &internal &needed-by-feature="uses_offset";
+    optional<hilti::RecoverableFailure> __error &always-emit &internal;
+    hook void __on_0x25_init() ;
+} &on-heap;
+# Type X1 supports the following features:
+#     - uses_random_access
+type X1 = struct {
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_0x25_init() ;
 } &on-heap;
@@ -51,8 +59,14 @@ type X6 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_X6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 
-const bool __feat%foo__X1%uses_offset = True;
-const bool __feat%foo__X1%uses_random_access = False;
+const bool __feat%foo__X0%uses_offset = True;
+const bool __feat%foo__X0%uses_random_access = False;
+const bool __feat%foo__X0%is_filter = False;
+const bool __feat%foo__X0%supports_filters = False;
+const bool __feat%foo__X0%supports_sinks = False;
+const bool __feat%foo__X0%synchronization = False;
+const bool __feat%foo__X1%uses_offset = False;
+const bool __feat%foo__X1%uses_random_access = True;
 const bool __feat%foo__X1%is_filter = False;
 const bool __feat%foo__X1%supports_filters = False;
 const bool __feat%foo__X1%supports_sinks = False;
@@ -88,8 +102,15 @@ const bool __feat%foo__X6%supports_filters = False;
 const bool __feat%foo__X6%supports_sinks = True;
 const bool __feat%foo__X6%synchronization = False;
 
-method hook void foo::X1::__on_0x25_init() {
+method hook void foo::X0::__on_0x25_init() {
     self.__offset;
+}
+
+init function void __register_foo_X0() {
+}
+
+method hook void foo::X1::__on_0x25_init() {
+    (*(self.__begin));
 }
 
 init function void __register_foo_X1() {
@@ -102,7 +123,7 @@ init function void __register_foo_X3() {
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::X4::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -133,7 +154,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::X4::__parse_foo_X4_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
     default<void>();
@@ -147,13 +168,13 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 }
 
 method extern method view<stream> foo::X4::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
     local value_ref<X4> unit = value_ref(default<X4>())value_ref(default<X4>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
 
     # Begin parsing production: Unit: foo_X4 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -166,14 +187,14 @@ method extern method view<stream> foo::X4::parse1(inout value_ref<stream> data, 
 }
 
 method extern method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
     local value_ref<X4> unit = value_ref(default<X4>())value_ref(default<X4>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(X4));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
 
     # Begin parsing production: Unit: foo_X4 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -186,12 +207,12 @@ method extern method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::Pars
 }
 
 method extern method view<stream> foo::X4::parse2(inout value_ref<X4> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:27:11-29:2"
+    # "<...>/feature_requirements.spicy:32:11-34:2"
 
     # Begin parsing production: Unit: foo_X4 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -216,7 +237,7 @@ method hook void foo::X5::__on_0x25_init() {
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::X5::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -261,7 +282,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::X5::__parse_foo_X5_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
     default<void>();
@@ -275,13 +296,13 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 }
 
 method extern method view<stream> foo::X5::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
     local value_ref<X5> unit = value_ref(default<X5>())value_ref(default<X5>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
 
     # Begin parsing production: Unit: foo_X5 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -294,14 +315,14 @@ method extern method view<stream> foo::X5::parse1(inout value_ref<stream> data, 
 }
 
 method extern method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
     local value_ref<X5> unit = value_ref(default<X5>())value_ref(default<X5>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(X5));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
 
     # Begin parsing production: Unit: foo_X5 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -314,12 +335,12 @@ method extern method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::Pars
 }
 
 method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:31:18-35:2"
+    # "<...>/feature_requirements.spicy:36:18-40:2"
 
     # Begin parsing production: Unit: foo_X5 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -341,7 +362,7 @@ method hook void foo::X6::__on_0x25_init() {
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::X6::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
         hilti::debugIndent("spicy");
@@ -370,7 +391,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 }
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::X6::__parse_foo_X6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
     default<void>();
@@ -382,13 +403,13 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 }
 
 method extern method view<stream> foo::X6::parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
     local value_ref<X6> unit = value_ref(default<X6>())value_ref(default<X6>());
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
 
     # Begin parsing production: Unit: foo_X6 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -401,14 +422,14 @@ method extern method view<stream> foo::X6::parse1(inout value_ref<stream> data, 
 }
 
 method extern method view<stream> foo::X6::parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
     local value_ref<X6> unit = value_ref(default<X6>())value_ref(default<X6>());
     spicy_rt::initializeParsedUnit(gunit, unit, typeinfo(X6));
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
 
     # Begin parsing production: Unit: foo_X6 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
@@ -421,12 +442,12 @@ method extern method view<stream> foo::X6::parse3(inout value_ref<spicy_rt::Pars
 }
 
 method extern method view<stream> foo::X6::parse2(inout value_ref<X6> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
     local view<stream> ncur = cur ? (*cur) : cast<view<stream>>((*data));
     local int<64> lahead = 0;
     local iterator<stream> lahead_end;
     local optional<hilti::RecoverableFailure> error = Null;
-    # "<...>/feature_requirements.spicy:38:11-41:2"
+    # "<...>/feature_requirements.spicy:43:11-46:2"
 
     # Begin parsing production: Unit: foo_X6 ->
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
