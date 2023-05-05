@@ -5,12 +5,10 @@ all: build
 .PHONY: build doc
 
 build:
-	@if [ -e build/Makefile ]; then $(MAKE) -C build; else true; fi
-	@if [ -e build/build.ninja ]; then ninja -C build; else true; fi
+	cmake --build build/
 
 install:
-	@if [ -e build/Makefile ]; then $(MAKE) -C build install; else true; fi
-	@if [ -e build/build.ninja ]; then ninja -C build install; else true; fi
+	cmake --build build/ --target install
 
 doc:
 	$(MAKE) -C doc
