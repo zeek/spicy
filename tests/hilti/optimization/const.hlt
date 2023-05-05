@@ -52,4 +52,14 @@ f && f;
 t ? 1: 0;
 f ? 0: 1;
 
+global bool a = False;
+a || True;
+a || False;
+a && True;
+a && False;
+True || a;
+False || a;
+True && a;
+False && a;
+
 }

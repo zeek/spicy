@@ -858,8 +858,15 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
                 auto lhs = tryAsBoolLiteral(x.op0());
                 auto rhs = tryAsBoolLiteral(x.op1());
 
+                // If both LHS and RHS are literals fold them.
                 if ( lhs && rhs ) {
                     replaceNode(p, builder::bool_(lhs.value() || rhs.value()));
+                    return true;
+                }
+
+                // If the LHS is a literal short-circuit.
+                if ( lhs && lhs.value() ) {
+                    replaceNode(p, builder::bool_(true));
                     return true;
                 }
             }
@@ -876,8 +883,15 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
                 auto lhs = tryAsBoolLiteral(x.op0());
                 auto rhs = tryAsBoolLiteral(x.op1());
 
+                // If both LHS and RHS are literals fold them.
                 if ( lhs && rhs ) {
                     replaceNode(p, builder::bool_(lhs.value() && rhs.value()));
+                    return true;
+                }
+
+                // If the LHS is a literal short-circuit.
+                if ( lhs && ! lhs.value() ) {
+                    replaceNode(p, builder::bool_(false));
                     return true;
                 }
             }
