@@ -13,16 +13,21 @@
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/default.h>
 #include <hilti/ast/declarations/function.h>
+#include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/detail/visitor.h>
+#include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/operators/tuple.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/enum.h>
@@ -1416,6 +1421,165 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
     }
 };
 
+// Optimizer pass which removes dead store and variable declarations.
+struct DeadStoreVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadStoreVisitor> {
+    // We use decl identities here instead of their canonical IDs since for
+    // variables canonical IDs can be ambiguous, #1440. This means that we need
+    // to track names for logging separately.
+    std::unordered_map<uintptr_t, bool> used;
+    std::unordered_map<uintptr_t, ID> names;
+
+    void collect(Node& node) override {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+
+        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "dead stores:");
+            for ( const auto& [id, read] : used ) {
+                if ( ! read ) {
+                    assert(names.count(id));
+                    HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s", names[id]));
+                }
+            }
+        }
+    }
+
+    bool prune(Node& node) {
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = modified || *x;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    bool prune_decls(Node& node) override {
+        _stage = OptimizerVisitor::Stage::PRUNE_DECLS;
+        return prune(node);
+    }
+
+    bool prune_uses(Node& node) override {
+        _stage = Stage::PRUNE_USES;
+        return prune(node);
+    }
+
+    result_t operator()(const Module& m, position_t p) {
+        _current_module = &p.node.as<Module>();
+        return false;
+    }
+
+    result_t operator()(const expression::Assign& x, position_t p) {
+        const auto& target_ = x.target();
+        const auto& target = target_.tryAs<expression::ResolvedID>();
+        if ( ! target )
+            return false;
+
+        const auto& decl = target->declaration();
+        if ( ! decl.isA<declaration::LocalVariable>() && ! decl.isA<declaration::GlobalVariable>() )
+            return false;
+
+        // FIXME(bbannier): do not remove dead stores to struct type variables.
+
+        switch ( _stage ) {
+            case OptimizerVisitor::Stage::PRUNE_USES: {
+                // If the id was not used, drop the assignment.
+                if ( used.count(decl.identity()) && ! used.at(decl.identity()) ) {
+                    HILTI_DEBUG(logging::debug::Optimizer,
+                                util::fmt("removing dead store to '%s' since it is not read (%s)", decl.id(),
+                                          x.meta().location()));
+                    replaceNode(p, x.source());
+                    return true;
+                }
+
+                return false;
+            }
+            case Stage::COLLECT: [[fallthrough]];
+            case OptimizerVisitor::Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto& decl = x.declaration();
+                if ( ! decl.isA<declaration::LocalVariable>() && ! decl.isA<declaration::GlobalVariable>() )
+                    return false;
+
+                auto is_assignment_rhs = [&](const Node& n, position_t p) {
+                    // The node is a LHS in an assignment `x = ...`.
+                    if ( auto parent = p.parent().tryAs<expression::Assign>(); parent && parent->target() == x )
+                        return false;
+
+                    // The ID is not directly used as a LHS in an assignment, but e.g., as a RHS or in some other
+                    // context. We also ignore cases where `x` is in the LHS of a tuple assignment since such
+                    // assignments cannot be removed as easily.
+                    //
+                    // TODO(bbannier): Look into removing tuple assignments if all values on the LHS are dead.
+
+                    return true;
+                };
+
+                used[decl.identity()] |= is_assignment_rhs(x, p);
+                names.insert({decl.identity(), decl.canonicalID()});
+
+                break;
+            }
+            case OptimizerVisitor::Stage::PRUNE_USES:
+            case OptimizerVisitor::Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const statement::Declaration& x, position_t p) {
+        switch ( _stage ) {
+            case OptimizerVisitor::Stage::COLLECT:
+            case OptimizerVisitor::Stage::PRUNE_USES: return false;
+            case OptimizerVisitor::Stage::PRUNE_DECLS: {
+                const auto& decl = x.declaration();
+
+                if ( const auto& local = decl.tryAs<declaration::LocalVariable>() ) {
+                    // Do not attempt to remove declarations of structs since
+                    // they might have additional state attached via hooks.
+                    if ( local->type().isA<type::Struct>() )
+                        break;
+
+                    // If the local is initialized do not remove it to still
+                    // trigger potential RHS side effects.
+                    //
+                    // TODO(bbannier): We should be able to remove at
+                    // side-effect free initializations from e.g., literals.
+                    if ( local->init() )
+                        break;
+                }
+
+                if ( ! used.count(decl.identity()) || ! used[decl.identity()] ) {
+                    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("removing variable '%s' since it is unused (%s)",
+                                                                     decl.id(), x.meta().location()));
+                    removeNode(p);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
 void Optimizer::run() {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1461,6 +1625,7 @@ void Optimizer::run() {
         {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},
          {"functions", []() { return std::make_unique<FunctionVisitor>(); }},
          {"members", []() { return std::make_unique<MemberVisitor>(); }},
+         {"dead_store", []() { return std::make_unique<DeadStoreVisitor>(); }},
          {"types", []() { return std::make_unique<TypeVisitor>(); }}};
 
     // If no user-specified passes are given enable all of them.

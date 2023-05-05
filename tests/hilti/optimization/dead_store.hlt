@@ -1,0 +1,37 @@
+# @TEST-DOC: Checks that dead stores are removed.
+#
+# @TEST-EXEC: hiltic -pg %INPUT -o noopt.hlt
+# @TEST-EXEC: btest-diff noopt.hlt
+#
+# @TEST-EXEC: HILTI_OPTIMIZER_PASSES=dead_store hiltic -p  %INPUT -o opt.hlt -D optimizer >opt.log 2>&1
+# @TEST-EXEC: btest-diff opt.hlt
+# @TEST-EXEC: btest-diff opt.log
+
+module foo {
+import hilti;
+
+public function uint<8> fun() {
+    local uint<8> a;
+    a = uint8(10);
+
+    return uint8(42);
+}
+
+hilti::print(fun(), True);
+
+global uint<8> b;
+b = uint8(10);
+
+# TODO(bbannier): For now tuple assignments are not recognized
+# since they cannot be simplified if not all LHSs are dead.
+global uint<64> x1;
+global uint<64> x2;
+(x1, x2) = (11, 12);
+
+# If an ID appears on the RHS as well the LHS, the RHS is a use.
+global uint<8> c1 = 0;
+global uint<8> c2;
+c2 = c1;
+c1 = c2;
+
+}
