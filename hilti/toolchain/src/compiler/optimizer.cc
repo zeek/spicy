@@ -869,6 +869,18 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
                     replaceNode(p, builder::bool_(true));
                     return true;
                 }
+
+                // If the LHS is some variable and the RHS is a literal `true`
+                // the result is always `true` and we can replace the AND without
+                // removing side-effects.
+                if ( auto lhs = x.op0().tryAs<expression::ResolvedID>();
+                     lhs &&
+                     (lhs->declaration().isA<declaration::GlobalVariable>() ||
+                      lhs->declaration().isA<declaration::LocalVariable>()) &&
+                     rhs && rhs.value() ) {
+                    replaceNode(p, builder::bool_(true));
+                    return true;
+                }
             }
         };
 
@@ -891,6 +903,18 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
 
                 // If the LHS is a literal short-circuit.
                 if ( lhs && ! lhs.value() ) {
+                    replaceNode(p, builder::bool_(false));
+                    return true;
+                }
+
+                // If the LHS is some variable and the RHS is a literal `false`
+                // the result is always `false` and we can replace the AND without
+                // removing side-effects.
+                if ( auto lhs = x.op0().tryAs<expression::ResolvedID>();
+                     lhs &&
+                     (lhs->declaration().isA<declaration::GlobalVariable>() ||
+                      lhs->declaration().isA<declaration::LocalVariable>()) &&
+                     rhs && ! rhs.value() ) {
                     replaceNode(p, builder::bool_(false));
                     return true;
                 }
