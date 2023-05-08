@@ -173,7 +173,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     add_hook("0x25_init", {});
     add_hook("0x25_done", {});
-    add_hook("0x25_error", { builder::parameter("__except", type::String()) });
+    add_hook("0x25_error", {builder::parameter("__except", type::String())});
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
@@ -185,6 +185,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.id() ) {
         ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "_"));
 
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_offset", typeID)), builder::bool_(true)));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(unit.isFilter())));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
@@ -201,13 +202,14 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
              {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
 
     // Fields related to random-access functionality.
-    auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
+    auto attr_uses_offset = Attribute("&needed-by-feature", builder::string("uses_offset"));
+    auto attr_uses_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
     auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                        AttributeSet({Attribute("&internal"), attr_random_access}));
-    auto f2 = hilti::declaration::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                        AttributeSet({Attribute("&internal"), attr_random_access}));
+                                        AttributeSet({Attribute("&internal"), attr_uses_random_access}));
+    auto f2 = hilti::declaration::Field(ID("__offset"), hilti::type::UnsignedInteger(64),
+                                        AttributeSet({Attribute("&internal"), attr_uses_offset}));
     auto f3 = hilti::declaration::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
-                                        AttributeSet({Attribute("&internal"), attr_random_access}));
+                                        AttributeSet({Attribute("&internal"), attr_uses_random_access}));
     v.addField(std::move(f1));
     v.addField(std::move(f2));
     v.addField(std::move(f3));
@@ -345,9 +347,8 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         _pb.builder()->addAssign(builder::id(ID(*unit.id(), "__parser")), parser);
 
         _pb.builder()->addExpression(
-            builder::call("spicy_rt::registerParser",
-                          {builder::id(ID(*unit.id(), "__parser")), builder::scope(),
-                           builder::strong_reference(unit)}));
+            builder::call("spicy_rt::registerParser", {builder::id(ID(*unit.id(), "__parser")), builder::scope(),
+                                                       builder::strong_reference(unit)}));
     });
 
     auto block = _pb.popBuilder()->block();

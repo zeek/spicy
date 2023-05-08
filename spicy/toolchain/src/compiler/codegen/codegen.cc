@@ -201,13 +201,12 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
     }
 
     result_t operator()(const operator_::unit::Offset& n, position_t p) {
-        auto begin = builder::memberCall(builder::deref(builder::member(n.op0(), ID("__begin"))), "offset", {});
-        auto cur = builder::memberCall(builder::deref(builder::member(n.op0(), ID("__position"))), "offset", {});
-        replaceNode(&p, builder::grouping(builder::difference(cur, begin)));
+        replaceNode(&p, builder::member(n.op0(), ID("__offset")));
     }
 
     result_t operator()(const operator_::unit::Position& n, position_t p) {
-        replaceNode(&p, builder::member(n.op0(), ID("__position")));
+        replaceNode(&p, builder::sum(builder::deref(builder::member(n.op0(), "__begin")),
+                                     builder::member(n.op0(), "__offset")));
     }
 
     result_t operator()(const operator_::unit::Input& n, position_t p) {
@@ -222,7 +221,7 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
 
     result_t operator()(const operator_::unit::Find& n, position_t p) {
         auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
-        auto end = builder::deref(builder::member(n.op0(), ID("__position")));
+        auto end = builder::sum(begin, builder::member(n.op0(), ID("__offset")));
         auto needle = argument(n.op2(), 0);
         auto direction = argument(n.op2(), 1, builder::id("spicy::Direction::Forward"));
         auto i = argument(n.op2(), 2, builder::null());

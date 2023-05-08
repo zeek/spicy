@@ -1,3 +1,21 @@
+1.8.0-dev.129 | 2023-05-08 15:20:11 +0200
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
+  * Slightly tweak existing feature requirements test. (Benjamin Bannier, Corelight)
+
+  * GH-1089: Allow to use `offset()` without enabling full random-access support. (Benjamin Bannier, Corelight)
+
+    In particular this allows to use `offset()` while still keeping trimming
+    enabled.
+
+  * GH-1421: Store numerical offset in units instead of iterator for position. (Benjamin Bannier, Corelight)
+
+    We will use this in a subsequent patch to make `offset()` available
+    without having to enable full support for random-access.
+
+    Closes #1421.
+
 1.8.0-dev.124 | 2023-04-28 11:41:21 +0200
 
   * GH-1436: Make sure `Bytes::sub` only throws HILTI exceptions. (Benjamin Bannier, Corelight)

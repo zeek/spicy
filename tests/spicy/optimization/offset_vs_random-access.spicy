@@ -1,0 +1,43 @@
+# @TEST-DOC: Checks that `offset()` can be used without enabling random access functionality.
+
+# For a unit using `offset()` random access is disabled. Trimming is kept on.
+# @TEST-EXEC: spicyc -p offset.spicy -o offset.hlt
+# @TEST-EXEC:   grep -q '#     - uses_offset' offset.hlt
+# @TEST-EXEC: ! grep -q '#     - uses_random_access' offset.hlt
+# @TEST-EXEC: ! grep -q '__trim = False;' offset.hlt
+
+# @TEST-START-FILE offset.spicy
+module foo;
+
+public type X = unit {
+    on %init { print self.offset(); }
+};
+# @TEST-END-FILE
+
+# For a unit using `input()` random access is enabled. Trimming is turned off.
+# @TEST-EXEC: spicyc -p random-access.spicy -o random-access.hlt
+# @TEST-EXEC: ! grep -q '#     - uses_offset' random-access.hlt
+# @TEST-EXEC:   grep -q '#     - uses_random_access' random-access.hlt
+# @TEST-EXEC:   grep -q '__trim = False;' random-access.hlt
+
+# @TEST-START-FILE random-access.spicy
+module foo;
+
+public type X = unit {
+    on %init { print self.input(); }
+};
+# @TEST-END-FILE
+
+# If both random access and offset are used, they are both turned on. Trimming is disabled.
+# @TEST-EXEC: spicyc -p both.spicy -o both.hlt
+# @TEST-EXEC: grep -q '#     - uses_offset' both.hlt
+# @TEST-EXEC: grep -q '#     - uses_random_access' both.hlt
+# @TEST-EXEC: grep -q '__trim = False;' both.hlt
+
+# @TEST-START-FILE both.spicy
+module foo;
+
+public type X = unit {
+    on %init { print self.offset(), self.input(); }
+};
+# @TEST-END-FILE
