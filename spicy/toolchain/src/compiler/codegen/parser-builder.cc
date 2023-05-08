@@ -1052,7 +1052,8 @@ struct ProductionVisitor
 
         switch ( mode ) {
             case LiteralMode::Default:
-            case LiteralMode::Try: {
+            case LiteralMode::Try:
+            case LiteralMode::Skip: {
                 parse();
                 break;
             }
@@ -1643,63 +1644,69 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Skip& p) {
-        auto eod_attr = AttributeSet::find(p.field().attributes(), "&eod");
-        auto size_attr = AttributeSet::find(p.field().attributes(), "&size");
-        auto until_attr = AttributeSet::find(p.field().attributes(), "&until");
-        if ( ! until_attr )
-            until_attr = AttributeSet::find(p.field().attributes(), "&until-including");
-
-        if ( auto c = p.field().condition() )
-            pushBuilder(builder()->addIf(*c));
-
-        if ( size_attr ) {
-            auto n = builder()->addTmp("skip", *size_attr->valueAsExpression());
-            auto loop = builder()->addWhile(builder::greater(n, builder::integer(0U)));
-            pushBuilder(loop, [&]() {
-                pb->waitForInput(builder::integer(1U), "not enough bytes for skipping", p.location());
-                auto consume = builder()->addTmp("consume", builder::min(builder::size(state().cur),
-                                                                         *size_attr->valueAsExpression()));
-                pb->advanceInput(consume);
-                builder()->addAssign(n, builder::difference(n, consume));
-                builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});
-            });
+        if ( const auto& ctor = p.ctor() ){
+            pb->skipLiteral(*ctor);
         }
 
-        else if ( eod_attr ) {
-            builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
-            pb->waitForEod();
-            pb->advanceInput(builder::size(state().cur));
-        }
+        else if ( p.field().parseType().isA<type::Bytes>() ) {
+            auto eod_attr = AttributeSet::find(p.field().attributes(), "&eod");
+            auto size_attr = AttributeSet::find(p.field().attributes(), "&size");
+            auto until_attr = AttributeSet::find(p.field().attributes(), "&until");
+            if ( ! until_attr )
+                until_attr = AttributeSet::find(p.field().attributes(), "&until-including");
 
-        else if ( until_attr ) {
-            Expression until_expr = builder::coerceTo(*until_attr->valueAsExpression(), hilti::type::Bytes());
-            auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
-            auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
+            if ( auto c = p.field().condition() )
+                pushBuilder(builder()->addIf(*c));
 
-            auto body = builder()->addWhile(builder::bool_(true));
-            pushBuilder(body, [&]() {
-                pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
-                                 until_expr.meta());
-
-                auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
-                auto found_id = ID("found");
-                auto it_id = ID("it");
-                auto found = builder::id(found_id);
-                auto it = builder::id(it_id);
-                builder()->addLocal(found_id, type::Bool());
-                builder()->addLocal(it_id, type::stream::Iterator());
-                builder()->addAssign(builder::tuple({found, it}), find);
-
-                auto [found_branch, not_found_branch] = builder()->addIfElse(found);
-
-                pushBuilder(found_branch, [&]() {
-                    auto new_it = builder::sum(it, until_bytes_size_var);
-                    pb->advanceInput(new_it);
-                    builder()->addBreak();
+            if ( size_attr ) {
+                auto n = builder()->addTmp("skip", *size_attr->valueAsExpression());
+                auto loop = builder()->addWhile(builder::greater(n, builder::integer(0U)));
+                pushBuilder(loop, [&]() {
+                    pb->waitForInput(builder::integer(1U), "not enough bytes for skipping", p.location());
+                    auto consume = builder()->addTmp("consume", builder::min(builder::size(state().cur),
+                                                                             *size_attr->valueAsExpression()));
+                    pb->advanceInput(consume);
+                    builder()->addAssign(n, builder::difference(n, consume));
+                    builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});
                 });
+            }
 
-                pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
-            });
+            else if ( eod_attr ) {
+                builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
+                pb->waitForEod();
+                pb->advanceInput(builder::size(state().cur));
+            }
+
+            else if ( until_attr ) {
+                Expression until_expr = builder::coerceTo(*until_attr->valueAsExpression(), hilti::type::Bytes());
+                auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+                auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
+
+                auto body = builder()->addWhile(builder::bool_(true));
+                pushBuilder(body, [&]() {
+                    pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
+                                     until_expr.meta());
+
+                    auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
+                    auto found_id = ID("found");
+                    auto it_id = ID("it");
+                    auto found = builder::id(found_id);
+                    auto it = builder::id(it_id);
+                    builder()->addLocal(found_id, type::Bool());
+                    builder()->addLocal(it_id, type::stream::Iterator());
+                    builder()->addAssign(builder::tuple({found, it}), find);
+
+                    auto [found_branch, not_found_branch] = builder()->addIfElse(found);
+
+                    pushBuilder(found_branch, [&]() {
+                        auto new_it = builder::sum(it, until_bytes_size_var);
+                        pb->advanceInput(new_it);
+                        builder()->addBreak();
+                    });
+
+                    pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
+                });
+            }
         }
 
         else
@@ -2107,11 +2114,11 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
         // set already, and is hence accessible to the condition through
         // "self.<x>".
         auto block = builder()->addBlock();
-        auto cond = block->addTmp("requires", *a.valueAsExpression());
 
         if ( ! field->isSkip() )
             block->addLocal(ID("__dd"), field->ddType(), dd);
 
+        auto cond = block->addTmp("requires", *a.valueAsExpression());
         pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 

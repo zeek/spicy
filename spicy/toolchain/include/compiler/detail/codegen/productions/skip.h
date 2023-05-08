@@ -14,20 +14,25 @@ namespace spicy::detail::codegen::production {
 /** A production simply skipping input data. */
 class Skip : public ProductionBase, public spicy::trait::isTerminal {
 public:
-    Skip(const std::string& symbol, const NodeRef& field, const Location& l = location::None)
-        : ProductionBase(symbol, l), _field(field) {}
+    Skip(const std::string& symbol, const NodeRef& field, std::optional<Production> ctor,
+         const Location& l = location::None)
+        : ProductionBase(symbol, l), _field(field), _ctor(std::move(ctor)) {}
 
     const auto& field() const { return _field.as<type::unit::item::Field>(); }
+    const auto& ctor() const { return _ctor; }
+
     auto fieldRef() const { return NodeRef(_field); }
 
     spicy::Type type() const { return type::void_; }
     bool nullable() const { return false; }
     bool eodOk() const { return field().attributes() && field().attributes()->has("&eod"); }
     bool atomic() const { return true; }
-    std::string render() const { return "field"; }
+
+    std::string render() const { return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : to_string(_field)); }
 
 private:
     Node _field; // stores a shallow copy of the reference passed into ctor
+    std::optional<Production> _ctor;
 };
 
 } // namespace spicy::detail::codegen::production

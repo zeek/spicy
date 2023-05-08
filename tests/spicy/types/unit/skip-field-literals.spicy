@@ -1,0 +1,22 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf 'A   SpicyZeek' | spicy-driver test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf 'A   SpicyZeek' | spicy-driver -i 1 test.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# Ensure we're actually producing Skip productions for fields where we support it
+# @TEST-EXEC: spicyc -p %INPUT | grep 'Begin parsing production: Skip' >skips.txt
+# @TEST-EXEC: btest-diff skips.txt
+#
+# @TEST-DOC: Exercise `skip` fields parsing literals.
+
+module Test;
+
+public type Foo = unit {
+    : skip uint8(65);
+    : skip / */;
+    : skip b"Spicy";
+
+    rest_of_data: bytes &eod;
+
+    on %done { print self; }
+};

@@ -113,19 +113,40 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
     Production operator()(const spicy::type::unit::item::Field& n, position_t p) {
         if ( n.isSkip() ) {
             // For field types that support it, create a dedicated skip production.
-            if ( n.parseType().isA<type::Bytes>() && ! n.repeatCount() ) {
+            std::optional<Production> skip;
+
+            if ( const auto& ctor = n.ctor() ) {
+                auto prod = productionForCtor(*ctor, n.id());
+                auto m = prod.meta();
+                m.setField(NodeRef(currentField().second), true);
+                prod.setMeta(std::move(m));
+                skip = production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), prod, n.meta().location());
+            }
+
+            else if ( n.item() ) {
+                // Skipping not supported
+            }
+
+            else if ( n.parseType().isA<type::Bytes>() ) {
                 auto eod_attr = AttributeSet::find(n.attributes(), "&eod");
                 auto size_attr = AttributeSet::find(n.attributes(), "&size");
                 auto until_attr = AttributeSet::find(n.attributes(), "&until");
                 auto until_including_attr = AttributeSet::find(n.attributes(), "&until-including");
 
-                auto convert_attr = AttributeSet::find(n.attributes(), "&convert");
-                auto requires_attr = AttributeSet::find(n.attributes(), "&requires");
-
-                if ( (eod_attr || size_attr || until_attr || until_including_attr) &&
-                     ! (convert_attr || requires_attr) )
-                    return production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), n.meta().location());
+                if ( eod_attr || size_attr || until_attr || until_including_attr )
+                    skip = production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), {}, n.meta().location());
             }
+
+            if ( n.repeatCount() )
+                skip.reset();
+
+            auto convert_attr = AttributeSet::find(n.attributes(), "&convert");
+            auto requires_attr = AttributeSet::find(n.attributes(), "&requires");
+            if ( convert_attr || requires_attr )
+                skip.reset();
+
+            if ( skip )
+                return std::move(*skip);
         }
 
         Production prod;
