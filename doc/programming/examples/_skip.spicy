@@ -3,7 +3,7 @@ module Test;
 
 public type Foo = unit {
     x: int8;
-     : skip &size=5;
+     : skip bytes &size=5;
     y: int8;
     on %done { print self; }
 };

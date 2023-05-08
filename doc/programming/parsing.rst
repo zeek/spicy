@@ -307,8 +307,8 @@ Skipping Input
 ^^^^^^^^^^^^^^
 
 For cases where your parser just needs to skip over some data, without
-needing access to its content, Spicy provides optimized ``skip``
-fields:
+needing access to its content, Spicy provides a ``skip`` keyword to
+prefix corresponding fields with:
 
 .. spicy-code:: skip.spicy
 
@@ -316,7 +316,7 @@ fields:
 
     public type Foo = unit {
         x: int8;
-         : skip &size=5;
+         : skip bytes &size=5;
         y: int8;
         on %done { print self; }
     };
@@ -325,28 +325,15 @@ fields:
     :exec: printf '\01\02\03\04\05\06\07' | spicy-driver %INPUT
     :show-with: foo.spicy
 
-The following attributes can be used with ``skip`` to specify how much
-data to skip:
-
-``&eod``
-    Skips over all subsequent data until the end of the current input
-    is reached.
-
-``&size=N``
-    Skips over exactly ``N`` bytes.
-
-``&until=DELIM``
-    Skips all input until the specified delimiter is found. ``DELIM``
-    must be of type ``bytes``. The delimiter itself will be discarded
-    as well.
-
-These attributes cannot be combined.
-
-For readability, a ``skip`` field may be named (e.g., ``padding: skip
-&size=3;``), but even with a name, its value cannot be accessed.
+``skip`` works for all kinds of fields but is particularly efficient
+with ``bytes`` fields, for which it will generate optimized code
+avoiding the overhead of storing any data.
 
 ``skip`` fields may have conditions and hooks attached, like any other
 fields. However, they do not support ``$$`` in expressions and hook.
+
+For readability, a ``skip`` field may be named (e.g., ``padding: skip
+bytes &size=3;``), but even with a name, its value cannot be accessed.
 
 .. _id_dollardollar:
 .. _id_self:
