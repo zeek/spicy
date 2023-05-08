@@ -1646,6 +1646,8 @@ struct ProductionVisitor
         auto eod_attr = AttributeSet::find(p.field().attributes(), "&eod");
         auto size_attr = AttributeSet::find(p.field().attributes(), "&size");
         auto until_attr = AttributeSet::find(p.field().attributes(), "&until");
+        if ( ! until_attr )
+            until_attr = AttributeSet::find(p.field().attributes(), "&until-including");
 
         if ( auto c = p.field().condition() )
             pushBuilder(builder()->addIf(*c));
@@ -2105,8 +2107,11 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
         // set already, and is hence accessible to the condition through
         // "self.<x>".
         auto block = builder()->addBlock();
-        block->addLocal(ID("__dd"), field->ddType(), dd);
         auto cond = block->addTmp("requires", *a.valueAsExpression());
+
+        if ( ! field->isSkip() )
+            block->addLocal(ID("__dd"), field->ddType(), dd);
+
         pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 
@@ -2208,7 +2213,9 @@ Expression ParserBuilder::applyConvertExpression(const type::unit::item::Field& 
 
     if ( ! convert->second ) {
         auto block = builder()->addBlock();
-        block->addLocal(ID("__dd"), field.ddType(), value);
+        if ( ! field.isSkip() )
+            block->addLocal(ID("__dd"), field.ddType(), value);
+
         block->addAssign(*dst, convert->first);
     }
     else

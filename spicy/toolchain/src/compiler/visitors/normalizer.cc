@@ -216,7 +216,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const type::unit::item::Field& f, position_t p) {
-        if ( f.isAnonymous() && ! f.isTransient() ) {
+        if ( (f.isAnonymous() || f.isSkip()) && ! f.isTransient() ) {
             // Make the field transient if it's either top-level, or a direct
             // parent field is already transient.
             bool make_transient = false;
