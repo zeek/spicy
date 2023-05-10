@@ -119,7 +119,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
@@ -128,15 +127,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         throw;
     }
 
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     return __result;
 }
@@ -145,7 +141,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-types.spicy:16:20"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -230,7 +225,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
@@ -239,15 +233,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         throw;
     }
 
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     return __result;
 }
@@ -256,7 +247,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-types.spicy:27:14"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -273,7 +263,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
@@ -282,15 +271,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         throw;
     }
 
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     return __result;
 }
@@ -299,7 +285,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-types.spicy:28:14"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -316,7 +301,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
@@ -325,15 +309,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         throw;
     }
 
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     return __result;
 }
@@ -357,10 +338,8 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # End parsing production: Unit: foo_Priv6_2 ->
 
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -436,7 +415,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
@@ -445,15 +423,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         (*self).__error = __error;
-        default<void>();
         __error = (*self).__error;
         throw;
     }
 
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     return __result;
 }
@@ -462,7 +437,6 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-types.spicy:43:22-46:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);

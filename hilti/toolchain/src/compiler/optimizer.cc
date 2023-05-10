@@ -24,10 +24,13 @@
 #include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/operators/function.h>
+#include <hilti/ast/operators/struct.h>
 #include <hilti/ast/operators/tuple.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
 #include <hilti/ast/statements/declaration.h>
+#include <hilti/ast/statements/expression.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/enum.h>
@@ -1618,6 +1621,57 @@ struct DeadStoreVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadStoreVis
     }
 };
 
+struct DeadCodeVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadCodeVisitor> {
+    bool prune_uses(Node& node) override {
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = modified || *x;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    result_t operator()(const Module& m, position_t p) {
+        _current_module = &p.node.as<Module>();
+        return false;
+    }
+
+    result_t operator()(const statement::Expression& x, position_t p) {
+        if ( auto ctor = x.expression().tryAs<expression::Ctor>();
+             ctor && (ctor->isConstant() || ! hasChildWithSideEffects(x)) ) {
+            HILTI_DEBUG(logging::debug::Optimizer,
+                        util::fmt("removing side-effect free dead code (%s)", x.meta().location()));
+            removeNode(p);
+            return true;
+        }
+
+        return false;
+    }
+
+    bool hasChildWithSideEffects(const Node& node) const {
+        auto v = visitor::PreOrder<>();
+
+        // NOLINTNEXTLINE(readability-use-anyofallof)
+        for ( const auto& child : v.walk(node) ) {
+            if ( child.node.isA<operator_::struct_::MemberCall>() || child.node.isA<operator_::function::Call>() )
+                return true;
+        }
+
+        return false;
+    }
+};
+
 void Optimizer::run() {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1663,6 +1717,7 @@ void Optimizer::run() {
         {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},
          {"functions", []() { return std::make_unique<FunctionVisitor>(); }},
          {"members", []() { return std::make_unique<MemberVisitor>(); }},
+         {"dead_code", []() { return std::make_unique<DeadCodeVisitor>(); }},
          {"dead_store", []() { return std::make_unique<DeadStoreVisitor>(); }},
          {"types", []() { return std::make_unique<TypeVisitor>(); }}};
 

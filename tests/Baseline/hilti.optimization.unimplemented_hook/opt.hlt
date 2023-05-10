@@ -18,8 +18,6 @@ method hook void X::implemented() {
 }
 
 global_implemented();
-default<void>();
 x.implemented();
-default<void>();
 
 }

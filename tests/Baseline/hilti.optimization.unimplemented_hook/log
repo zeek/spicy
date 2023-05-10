@@ -6,5 +6,7 @@
 [debug/optimizer] removing declaration for unused hook function Foo::global_unimplemented_void
 [debug/optimizer] removing declaration for unused hook function Foo::global_unimplemented_int64
 [debug/optimizer] removing field for unused method Foo::X::unimplemented
+[debug/optimizer] removing side-effect free dead code (<...>/unimplemented_hook.hlt:29:1)
+[debug/optimizer] removing side-effect free dead code (<...>/unimplemented_hook.hlt:35:1)
 [debug/optimizer] removing field for unused method Foo::X::unimplemented_void
 [debug/optimizer] removing field for unused method Foo::X::unimplemented_int64

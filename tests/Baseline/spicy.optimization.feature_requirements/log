@@ -421,6 +421,37 @@
 [debug/optimizer] removing field for unused method foo::__register_foo_X6::<anon-struct-21>::parse1
 [debug/optimizer] removing field for unused method foo::__register_foo_X6::<anon-struct-21>::parse2
 [debug/optimizer] removing field for unused method foo::__register_foo_X6::<anon-struct-21>::parse3
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:13:11-15:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:13:11-15:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:13:11-15:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:13:11-15:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:18:11-20:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:18:11-20:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:18:11-20:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:18:11-20:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:23:11)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:23:11)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:23:11)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:23:11)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:23:11)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:26:11-28:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:26:11-28:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:26:11-28:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:26:11-28:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:26:11-28:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:32:11-34:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:32:11-34:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:32:11-34:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:32:11-34:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:32:11-34:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:36:18-40:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:36:18-40:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:36:18-40:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:36:18-40:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:43:11-46:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:43:11-46:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:43:11-46:2)
+[debug/optimizer] removing side-effect free dead code (<...>/feature_requirements.spicy:43:11-46:2)
 [debug/optimizer] removing unused member 'foo::X0::__begin'
 [debug/optimizer] removing unused member 'foo::X0::__filters'
 [debug/optimizer] removing unused member 'foo::X0::__parser'

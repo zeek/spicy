@@ -314,6 +314,31 @@
 [debug/optimizer] removing field for unused method foo::__register_foo_D::<anon-struct-13>::parse1
 [debug/optimizer] removing field for unused method foo::__register_foo_D::<anon-struct-13>::parse2
 [debug/optimizer] removing field for unused method foo::__register_foo_D::<anon-struct-13>::parse3
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:18:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:18:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:18:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:18:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:18:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:21:17)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:21:17)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:21:17)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:21:17)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:21:17)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:24:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:24:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:24:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:24:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:24:10)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:25:17-27:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:25:17-27:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:25:17-27:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:25:17-27:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:25:17-27:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:30:10-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:30:10-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:30:10-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:30:10-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-functions.spicy:30:10-32:2)
 [debug/optimizer] removing unused member 'foo::A::__begin'
 [debug/optimizer] removing unused member 'foo::A::__filters'
 [debug/optimizer] removing unused member 'foo::A::__offset'

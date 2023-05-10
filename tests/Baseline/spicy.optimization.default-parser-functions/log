@@ -201,6 +201,21 @@
 [debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-9>::parse1
 [debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-9>::parse2
 [debug/optimizer] removing field for unused method foo::__register_foo_P2::<anon-struct-9>::parse3
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:12:11)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:12:11)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:12:11)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:12:11)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:12:11)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:14:18)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:14:18)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:14:18)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:14:18)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:14:18)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:16:18-21:2)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:16:18-21:2)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:16:18-21:2)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:16:18-21:2)
+[debug/optimizer] removing side-effect free dead code (<...>/default-parser-functions.spicy:17:5)
 [debug/optimizer] removing unused member 'foo::P0::__begin'
 [debug/optimizer] removing unused member 'foo::P0::__filters'
 [debug/optimizer] removing unused member 'foo::P0::__offset'
