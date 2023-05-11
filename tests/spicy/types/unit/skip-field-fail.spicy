@@ -1,0 +1,25 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >> output 2>&1
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Validation for `skip` fields.
+
+module Test;
+
+type X = unit {
+    a: skip bytes &size=1 { print $$; }
+    b: skip bytes &size=1 &requires=($$ == b"x");
+    c: skip bytes &size=1 &convert=$$;
+};
+
+on X::a {
+    print $$;
+}
+
+# @TEST-START-NEXT
+
+module Test;
+
+type X = unit {
+    d: skip bytes &size=1 -> self.s;
+    sink s;
+};

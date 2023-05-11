@@ -2,7 +2,7 @@
 # @TEST-EXEC: ${SCRIPTS}/printf 'abcde' | spicy-dump %INPUT.hlto >> output
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-DOC: Test "&eod" attribute with "void" field type.
+# @TEST-DOC: Test deprecated "&eod" attribute with "void" field type while we still support it.
 
 module Test;
 

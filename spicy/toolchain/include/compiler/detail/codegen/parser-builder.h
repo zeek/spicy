@@ -50,6 +50,9 @@ enum class LiteralMode {
      * normal; if it fails, set cur to end.
      */
     Search,
+
+    /** Advance like default parsing would, but don't make value available. */
+    Skip,
 };
 
 namespace detail {
@@ -287,6 +290,15 @@ public:
      * until a match has been found or EOD is reached.
      */
     Expression parseLiteral(const Production& p, const std::optional<Expression>& dst);
+
+    /**
+     * Generates code that skips over an instance of a specific literal,
+     * meaning it assumed it will find the value in the input, but not process
+     * it further.
+     *
+     * @param prod a literal production matching what is to be skipped
+     */
+    void skipLiteral(const Production& production);
 
     /**
      * Generates code that ensures that a minimum amount of data is available

@@ -1,0 +1,39 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABCxyzDEF123123\x08\x09\x0a' | spicy-driver test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABCxyzDEF123123\x08\x09\x0a' | spicy-driver -i 1 test.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# Ensure we're actually producing Skip productions for fields where we support it
+# @TEST-EXEC: spicyc -p %INPUT | grep 'Begin parsing production: Skip' >skips.txt
+# @TEST-EXEC: btest-diff skips.txt
+#
+# @TEST-DOC: Exercise `skip` fields.
+
+module Test;
+
+public type Root = unit {
+    foo: Foo &size=27;
+    x: uint8;
+
+    on %done { print self; }
+};
+
+type Foo = unit {
+    a: uint8;
+    : skip bytes &size=2 { print "skip b"; }
+    c: uint8;
+    : skip bytes &size=2 if ( True );
+    : skip bytes &size=2 if ( False );
+    f: uint8; # == 0x07
+    : skip bytes &until=b"ABC";
+    : skip bytes &until-including=b"DEF";
+    : skip Bar; # no skip production for this one
+    j: skip Bar; # no skip production for this one
+    eod: skip bytes &eod;
+};
+
+type Bar = unit {
+    : /123/;
+};
+
+on Foo::eod { print "skip eos"; }

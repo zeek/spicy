@@ -173,7 +173,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
 
         assert(unit_field_ref);
 
-        if ( ! h.unitField() ) {
+        if ( unit_field_ref->isA<type::unit::item::Field>() && ! h.unitField() ) {
             logChange(p.node, unit_field_ref->as<type::unit::Item>());
             p.node.as<Hook>().setFieldRef(std::move(unit_field_ref));
             modified = true;
@@ -216,7 +216,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const type::unit::item::Field& f, position_t p) {
-        if ( f.isAnonymous() && ! f.isTransient() ) {
+        if ( (f.isAnonymous() || f.isSkip()) && ! f.isTransient() ) {
             // Make the field transient if it's either top-level, or a direct
             // parent field is already transient.
             bool make_transient = false;

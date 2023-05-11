@@ -35,6 +35,9 @@ static inline void checkName(const Expression& op0, const Expression& op1, Node&
 
     if ( check_optional && ! f->isOptional() )
         node.addError(util::fmt("field '%s' is not &optional", id));
+
+    if ( f->isNoEmit() )
+        node.addError(util::fmt("field '%s' cannot be accessed", id));
 }
 
 // Returns the type of a struct field referenced by an operand.

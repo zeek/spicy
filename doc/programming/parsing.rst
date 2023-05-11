@@ -295,6 +295,46 @@ corresponding field hook (see :ref:`unit_hooks`) using the reserved
     :exec: printf '\01\02\03' | spicy-driver %INPUT
     :show-with: foo.spicy
 
+Anonymous fields can often be more efficient to process because the
+parser doesn't need to retain their values. In particular for larger
+``bytes`` fields, making them anonymous is recommended where possible
+(unless, even better, they can be fully skipped over; see
+:ref:`skip`).
+
+.. _skip:
+
+Skipping Input
+^^^^^^^^^^^^^^
+
+For cases where your parser just needs to skip over some data, without
+needing access to its content, Spicy provides a ``skip`` keyword to
+prefix corresponding fields with:
+
+.. spicy-code:: skip.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        x: int8;
+         : skip bytes &size=5;
+        y: int8;
+        on %done { print self; }
+    };
+
+.. spicy-output:: skip.spicy
+    :exec: printf '\01\02\03\04\05\06\07' | spicy-driver %INPUT
+    :show-with: foo.spicy
+
+``skip`` works for all kinds of fields but is particularly efficient
+with ``bytes`` fields, for which it will generate optimized code
+avoiding the overhead of storing any data.
+
+``skip`` fields may have conditions and hooks attached, like any other
+fields. However, they do not support ``$$`` in expressions and hook.
+
+For readability, a ``skip`` field may be named (e.g., ``padding: skip
+bytes &size=3;``), but even with a name, its value cannot be accessed.
+
 .. _id_dollardollar:
 .. _id_self:
 
@@ -1240,38 +1280,13 @@ the current element anymore. See :ref:`unit_hooks` for more on hooks.
 Void
 ^^^^
 
-The :ref:`type_void` type can be used as a place-holder for not storing any
-data. By default ``void`` fields do not consume any data, and while not very
-useful for normal fields, this allows branches in :ref:`switch <parse_switch>`
-constructs to forego any parsing.
+The :ref:`type_void` type can be used as a placeholder in fields not
+meant to consume any data. This can be useful in some situations, such
+as providing a branch in :ref:`switch <parse_switch>` constructs to
+that foregoes any parsing, or attaching a :ref:`&requires
+<attribute_requires>` attribute to enforce a condition.
 
-If a non-zero ``&size`` is specified, the given number of bytes of input data
-are consumed. This allows skipping over data without storing their result:
-
-.. spicy-code:: parse-void-size.spicy
-
-    module Test;
-
-    public type Foo = unit {
-        : void &size=2;
-        x: uint8;
-
-        on %done { print self; }
-    };
-
-.. spicy-output:: parse-void-size.spicy
-    :exec: printf '\01\02\03' | spicy-driver %INPUT
-    :show-with: foo.spicy
-
-A ``void`` field can also terminate through an ``&until=<BYTES>``
-attribute: it then skips all input data until the given deliminator
-sequence of bytes is encountered. The deliminator is extracted from
-the stream before parsing continues.
-
-Finally, a ``void`` field can specify ``&eod`` to consume all data
-until the end of the current input.
-
-``void`` fields cannot have names.
+Fields of type ``void`` do not have any accessible value.
 
 Controlling Parsing
 ===================

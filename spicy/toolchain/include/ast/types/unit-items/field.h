@@ -21,7 +21,7 @@ namespace spicy::type::unit::item {
 /** AST node for a unit field. */
 class Field : public hilti::NodeBase, public hilti::node::WithDocString, public spicy::trait::isUnitItem {
 public:
-    Field(const std::optional<ID>& id, Type type, Engine e, const std::vector<Expression>& args,
+    Field(const std::optional<ID>& id, Type type, Engine e, bool skip, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
           std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
           const std::vector<Hook>& hooks = {}, Meta m = Meta())
@@ -32,6 +32,7 @@ public:
           _is_forwarding(false),
           _is_transient(false),
           _is_anonymous(! id.has_value()),
+          _is_skip(skip),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -40,7 +41,7 @@ public:
           _hooks_start(_sinks_end),
           _hooks_end(_hooks_start + static_cast<int>(hooks.size())) {}
 
-    Field(const std::optional<ID>& id, Ctor ctor, Engine e, const std::vector<Expression>& args,
+    Field(const std::optional<ID>& id, Ctor ctor, Engine e, bool skip, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
           std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
           const std::vector<Hook>& hooks = {}, Meta m = Meta())
@@ -51,6 +52,7 @@ public:
           _is_forwarding(false),
           _is_transient(false),
           _is_anonymous(! id.has_value()),
+          _is_skip(skip),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -59,7 +61,7 @@ public:
           _hooks_start(_sinks_end),
           _hooks_end(_hooks_start + static_cast<int>(hooks.size())) {}
 
-    Field(const std::optional<ID>& id, Item item, Engine e, const std::vector<Expression>& args,
+    Field(const std::optional<ID>& id, Item item, Engine e, bool skip, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
           std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
           const std::vector<Hook>& hooks = {}, const Meta& m = Meta())
@@ -70,6 +72,7 @@ public:
           _is_forwarding(false),
           _is_transient(false),
           _is_anonymous(! id.has_value()),
+          _is_skip(skip),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -78,7 +81,7 @@ public:
           _hooks_start(_sinks_end),
           _hooks_end(_hooks_start + static_cast<int>(hooks.size())) {}
 
-    Field(const std::optional<ID>& id, NodeRef type, Engine e, const std::vector<Expression>& args,
+    Field(const std::optional<ID>& id, NodeRef type, Engine e, bool skip, const std::vector<Expression>& args,
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
           std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
           const std::vector<Hook>& hooks = {}, const Meta& m = Meta())
@@ -90,6 +93,7 @@ public:
           _is_forwarding(false),
           _is_transient(false),
           _is_anonymous(! id.has_value()),
+          _is_skip(skip),
           _engine(e),
           _args_start(9),
           _args_end(_args_start + static_cast<int>(args.size())),
@@ -122,6 +126,7 @@ public:
     bool isForwarding() const { return _is_forwarding; }
     bool isTransient() const { return _is_transient; }
     bool isAnonymous() const { return _is_anonymous; }
+    bool isSkip() const { return _is_skip; }
     bool emitHook() const { return ! isAnonymous() || hooks().size(); }
 
     const Type& originalType() const {
@@ -171,10 +176,11 @@ public:
     void setParseType(Type t) { children()[2] = hilti::type::pruneWalk(std::move(t)); }
 
     bool operator==(const Field& other) const {
-        return _engine == other._engine && id() == other.id() && originalType() == other.originalType() &&
-               itemType() == other.itemType() && parseType() == other.parseType() &&
-               attributes() == other.attributes() && arguments() == other.arguments() && sinks() == other.sinks() &&
-               condition() == other.condition() && hooks() == other.hooks();
+        return _is_skip == other._is_skip && _engine == other._engine && id() == other.id() &&
+               originalType() == other.originalType() && itemType() == other.itemType() &&
+               parseType() == other.parseType() && attributes() == other.attributes() &&
+               arguments() == other.arguments() && sinks() == other.sinks() && condition() == other.condition() &&
+               hooks() == other.hooks();
     }
 
     Field& operator=(const Field& other) = default;
@@ -189,7 +195,8 @@ public:
         return node::Properties{{"engine", to_string(_engine)},
                                 {"anonymous", _is_anonymous},
                                 {"transient", _is_transient},
-                                {"forwarding", _is_forwarding}};
+                                {"forwarding", _is_forwarding},
+                                {"skip", _is_skip}};
     }
 
 private:
@@ -198,6 +205,7 @@ private:
     bool _is_forwarding;
     bool _is_transient;
     bool _is_anonymous;
+    bool _is_skip;
     Engine _engine;
     int _args_start;
     int _args_end;

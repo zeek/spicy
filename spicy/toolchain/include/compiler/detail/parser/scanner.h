@@ -30,6 +30,8 @@ public:
     void disableDottedIDMode();
     void enableHookIDMode();
     void disableHookIDMode();
+    void enableNewKeywordMode();
+    void disableNewKeywordMode();
     void setIgnoreMode(bool enable);
 };
 

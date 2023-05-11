@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/expressions/ctor.h>
 #include <hilti/base/logger.h>
 
 #include <spicy/ast/aliases.h>
@@ -20,7 +21,7 @@ namespace builder = hilti::builder;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
+struct Visitor : public hilti::visitor::PreOrder<std::optional<Expression>, Visitor> {
     Visitor(ParserBuilder* pb, const Production& p, const std::optional<Expression>& dst)
         : pb(pb), production(p), dst(dst) {}
     ParserBuilder* pb;
@@ -49,7 +50,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         auto cond = builder::memberCall(state().cur, "starts_with", {builder::expression(c)});
 
         switch ( state().literal_mode ) {
-            case LiteralMode::Default: {
+            case LiteralMode::Default:
+            case LiteralMode::Skip: {
                 auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
                 pushBuilder(have_lah);
@@ -78,7 +80,9 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                 pb->advanceInput(len);
                 popBuilder();
 
-                builder()->addAssign(destination(c.type()), builder::expression(c));
+                if ( state().literal_mode != LiteralMode::Skip )
+                    builder()->addAssign(destination(c.type()), builder::expression(c));
+
                 return builder::expression(c);
             }
 
@@ -104,9 +108,9 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             pb->cg()->addDeclaration(d);
         }
 
-        auto parse = [&](std::optional<Expression> result) -> Expression {
+        auto parse = [&](std::optional<Expression> result) -> std::optional<Expression> {
             auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
-            if ( ! result )
+            if ( ! result && state().literal_mode != LiteralMode::Skip )
                 result = destination(type::Bytes());
 
             pushBuilder(have_lah);
@@ -115,7 +119,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             pb->parseError("unexpected token to consume", c.meta());
             popBuilder();
 
-            pb->consumeLookAhead(*result);
+            pb->consumeLookAhead(result);
             popBuilder();
 
             pushBuilder(no_lah);
@@ -154,12 +158,15 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
             auto match = switch_.addDefault();
             pushBuilder(match);
 
-            if ( state().captures )
-                builder()->addAssign(*state().captures,
-                                     builder::memberCall(builder::id("ms"), "captures", {state().data}));
+            if ( state().literal_mode != LiteralMode::Skip ) {
+                if ( state().captures )
+                    builder()->addAssign(*state().captures,
+                                         builder::memberCall(builder::id("ms"), "captures", {state().data}));
 
-            builder()->addAssign(*result,
-                                 builder::memberCall(state().cur, "sub", {builder::begin(builder::id("ncur"))}));
+                builder()->addAssign(*result,
+                                     builder::memberCall(state().cur, "sub", {builder::begin(builder::id("ncur"))}));
+            }
+
             pb->setInput(builder::id("ncur"));
             builder()->addBreak();
             popBuilder();
@@ -168,13 +175,14 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
             popBuilder();
 
-            return *result;
+            return result;
         };
 
         std::optional<Expression> result;
 
         switch ( state().literal_mode ) {
-            case LiteralMode::Default: {
+            case LiteralMode::Default:
+            case LiteralMode::Skip: {
                 return parse(result);
             }
 
@@ -194,7 +202,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         auto offset = [](Expression view) { return builder::memberCall(std::move(view), "offset", {}); };
 
         switch ( state().literal_mode ) {
-            case LiteralMode::Default: {
+            case LiteralMode::Default:
+            case LiteralMode::Skip: {
                 auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
                 pushBuilder(have_lah);
@@ -224,7 +233,9 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
                 popBuilder();
 
-                builder()->addAssign(destination(type), expected);
+                if ( state().literal_mode != LiteralMode::Skip )
+                    builder()->addAssign(destination(type), expected);
+
                 return expected;
             }
 
@@ -257,8 +268,24 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 } // namespace
 
 Expression ParserBuilder::parseLiteral(const Production& p, const std::optional<Expression>& dst) {
-    if ( auto e = Visitor(this, p, dst).dispatch(p.expression()) )
-        return std::move(*e);
+    if ( auto e = Visitor(this, p, dst).dispatch(p.expression()); e && *e )
+        return std::move(**e);
 
     hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
+}
+
+void ParserBuilder::skipLiteral(const Production& p) {
+    assert(p.isLiteral());
+
+    auto pstate = state();
+    pstate.literal_mode = LiteralMode::Skip;
+    pushState(std::move(pstate));
+    auto e = Visitor(this, p, {}).dispatch(p.expression());
+    popState();
+
+    if ( e )
+        return;
+    else
+        hilti::logger().internalError(
+            fmt("codegen: literal parser did not return expression for '%s'", p.expression()));
 }

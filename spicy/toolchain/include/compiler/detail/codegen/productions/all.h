@@ -12,6 +12,7 @@
 #include <spicy/compiler/detail/codegen/productions/look-ahead.h>
 #include <spicy/compiler/detail/codegen/productions/resolved.h>
 #include <spicy/compiler/detail/codegen/productions/sequence.h>
+#include <spicy/compiler/detail/codegen/productions/skip.h>
 #include <spicy/compiler/detail/codegen/productions/switch.h>
 #include <spicy/compiler/detail/codegen/productions/type-literal.h>
 #include <spicy/compiler/detail/codegen/productions/unit.h>

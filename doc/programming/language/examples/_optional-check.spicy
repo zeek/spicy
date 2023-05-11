@@ -1,0 +1,9 @@
+# Automatically generated; edit in Sphinx source code, not here.
+global x: optional<uint64>;  # Unset.
+global b1: bool = x;         # False.
+global b2 = cast<bool>(x);   # False.
+
+if ( x )
+    print "'x' was set";     # Never runs.
+if ( ! x )
+    print "'x' was unset";   # Always runs.

@@ -3,6 +3,8 @@
 # @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01\x02' | spicy-dump %INPUT.hlto >> output 2>&1
 # @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01' | spicy-dump %INPUT.hlto >> output 2>&1
 # @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test deprecated `void` parsing while we still support it.
 
 module Test;
 

@@ -498,7 +498,7 @@ struct ProductionVisitor
             builder()->addAssign(destination(), builder::default_(field->itemType()));
         }
 
-        else if ( field->isAnonymous() ) {
+        else if ( field->isAnonymous() || field->isSkip() ) {
             // We won't have a field to store the value in, create a temporary.
             auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
             pushDestination(dst);
@@ -550,8 +550,10 @@ struct ProductionVisitor
                 type_args = meta.field()->arguments();
             }
 
-            Expression default_ = builder::default_(builder::typeByID(*unit->unitType().id()), type_args, location);
-            builder()->addAssign(destination(), std::move(default_));
+            if ( ! meta.field()->isSkip() ) {
+                Expression default_ = builder::default_(builder::typeByID(*unit->unitType().id()), type_args, location);
+                builder()->addAssign(destination(), std::move(default_));
+            }
 
             auto call = builder::memberCall(destination(), "__parse_stage1", args);
             builder()->addAssign(builder::tuple(
@@ -753,7 +755,7 @@ struct ProductionVisitor
             auto exceeded = builder()->addIf(std::move(cond));
             pushBuilder(exceeded, [&]() {
                 // We didn't finish parsing the data, which is an error.
-                if ( ! destination().type().isA<type::Void>() && ! field->isAnonymous() )
+                if ( ! field->isAnonymous() )
                     // Clear the field in case the type parsing has started
                     // to fill it.
                     builder()->addExpression(builder::unset(state().self, field->id()));
@@ -769,7 +771,7 @@ struct ProductionVisitor
             auto insufficient = builder()->addIf(std::move(missing));
             pushBuilder(insufficient, [&]() {
                 // We didn't parse all the data, which is an error.
-                if ( ! destination().type().isA<type::Void>() && ! field->isAnonymous() )
+                if ( ! field->isAnonymous() )
                     // Clear the field in case the type parsing has started
                     // to fill it.
                     builder()->addExpression(builder::unset(state().self, field->id()));
@@ -1052,7 +1054,8 @@ struct ProductionVisitor
 
         switch ( mode ) {
             case LiteralMode::Default:
-            case LiteralMode::Try: {
+            case LiteralMode::Try:
+            case LiteralMode::Skip: {
                 parse();
                 break;
             }
@@ -1642,6 +1645,86 @@ struct ProductionVisitor
             parseProduction(i);
     }
 
+    void operator()(const production::Skip& p) {
+        if ( const auto& ctor = p.ctor() ) {
+            pb->skipLiteral(*ctor);
+        }
+
+        else if ( p.field().parseType().isA<type::Bytes>() ) {
+            auto eod_attr = AttributeSet::find(p.field().attributes(), "&eod");
+            auto size_attr = AttributeSet::find(p.field().attributes(), "&size");
+            auto until_attr = AttributeSet::find(p.field().attributes(), "&until");
+            if ( ! until_attr )
+                until_attr = AttributeSet::find(p.field().attributes(), "&until-including");
+
+            if ( auto c = p.field().condition() )
+                pushBuilder(builder()->addIf(*c));
+
+            if ( size_attr ) {
+                auto n = builder()->addTmp("skip", *size_attr->valueAsExpression());
+                auto loop = builder()->addWhile(builder::greater(n, builder::integer(0U)));
+                pushBuilder(loop, [&]() {
+                    pb->waitForInput(builder::integer(1U), "not enough bytes for skipping", p.location());
+                    auto consume = builder()->addTmp("consume", builder::min(builder::size(state().cur),
+                                                                             *size_attr->valueAsExpression()));
+                    pb->advanceInput(consume);
+                    builder()->addAssign(n, builder::difference(n, consume));
+                    builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});
+                });
+            }
+
+            else if ( eod_attr ) {
+                builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
+                auto loop = builder()->addWhile(pb->waitForInputOrEod());
+                pushBuilder(loop, [&]() { pb->advanceInput(builder::size(state().cur)); });
+                pb->advanceInput(builder::size(state().cur));
+            }
+
+            else if ( until_attr ) {
+                Expression until_expr = builder::coerceTo(*until_attr->valueAsExpression(), hilti::type::Bytes());
+                auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+                auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder::size(until_bytes_var));
+
+                auto body = builder()->addWhile(builder::bool_(true));
+                pushBuilder(body, [&]() {
+                    pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
+                                     until_expr.meta());
+
+                    auto find = builder::memberCall(state().cur, "find", {until_bytes_var});
+                    auto found_id = ID("found");
+                    auto it_id = ID("it");
+                    auto found = builder::id(found_id);
+                    auto it = builder::id(it_id);
+                    builder()->addLocal(found_id, type::Bool());
+                    builder()->addLocal(it_id, type::stream::Iterator());
+                    builder()->addAssign(builder::tuple({found, it}), find);
+
+                    auto [found_branch, not_found_branch] = builder()->addIfElse(found);
+
+                    pushBuilder(found_branch, [&]() {
+                        auto new_it = builder::sum(it, until_bytes_size_var);
+                        pb->advanceInput(new_it);
+                        builder()->addBreak();
+                    });
+
+                    pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
+                });
+            }
+        }
+
+        else
+            hilti::logger().internalError("unexpected skip production");
+
+        if ( p.field().emitHook() ) {
+            pb->beforeHook();
+            builder()->addMemberCall(state().self, ID(fmt("__on_%s", p.field().id().local())), {}, p.field().meta());
+            pb->afterHook();
+        }
+
+        if ( p.field().condition() )
+            popBuilder();
+    }
+
     void operator()(const production::Variable& p) { pb->parseType(p.type(), p.meta(), destination()); }
 
     void operator()(const production::While& p) {
@@ -2034,12 +2117,16 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
         // set already, and is hence accessible to the condition through
         // "self.<x>".
         auto block = builder()->addBlock();
-        block->addLocal(ID("__dd"), field->ddType(), dd);
+
+        if ( ! field->parseType().isA<type::Void>() && ! field->isSkip() )
+            block->addLocal(ID("__dd"), field->ddType(), dd);
+
         auto cond = block->addTmp("requires", *a.valueAsExpression());
         pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
     }
 
-    if ( ! field->originalType().isA<spicy::type::Bitfield>() && ! value.type().isA<type::Void>() ) {
+    if ( ! field->originalType().isA<spicy::type::Bitfield>() && ! value.type().isA<type::Void>() &&
+         ! field->isSkip() ) {
         builder()->addDebugMsg("spicy", fmt("%s = %%s", field->id()), {value});
         builder()->addDebugMsg("spicy-verbose", fmt("- setting field '%s' to '%%s'", field->id()), {value});
     }
@@ -2061,7 +2148,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
                 args.push_back(hilti::builder::default_(builder::typeByID("hilti::Captures")));
         }
 
-        if ( value.type().isA<type::Void>() )
+        if ( value.type().isA<type::Void>() || field->isSkip() )
             // Special-case: No value parsed, but still run hook.
             builder()->addMemberCall(state().self, ID(fmt("__on_%s", field->id().local())), {}, field->meta());
         else
@@ -2136,7 +2223,9 @@ Expression ParserBuilder::applyConvertExpression(const type::unit::item::Field& 
 
     if ( ! convert->second ) {
         auto block = builder()->addBlock();
-        block->addLocal(ID("__dd"), field.ddType(), value);
+        if ( ! field.isSkip() )
+            block->addLocal(ID("__dd"), field.ddType(), value);
+
         block->addAssign(*dst, convert->first);
     }
     else

@@ -8,7 +8,7 @@ module Mini;
 import spicy;
 
 public type Foo = unit {
-    : void &eod;
+    : skip bytes &eod;
     : void {
         local i: optional<iterator<stream>>;
 

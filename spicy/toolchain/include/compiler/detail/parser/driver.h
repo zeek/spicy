@@ -70,6 +70,8 @@ public:
     void disableDottedIDMode();
     void enableHookIDMode();
     void disableHookIDMode();
+    void enableNewKeywordMode();
+    void disableNewKeywordMode();
     void setDestinationModule(Module m) { _module = std::move(m); }
     void setDestinationExpression(Expression e) { _expression = std::move(e); }
     int nextToken();

@@ -6,5 +6,13 @@ module Test;
 type X = unit {
     : void &size=2;
     : void &size=2 &max-size=2;
-    a: void;
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+type X = unit {
+    v: void;
+    on %done { print self.v; }
 };

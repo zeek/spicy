@@ -118,6 +118,10 @@ void Driver::enableDottedIDMode() { _scanner->enableDottedIDMode(); }
 
 void Driver::disableHookIDMode() { _scanner->disableHookIDMode(); }
 
+void Driver::enableNewKeywordMode() { _scanner->enableNewKeywordMode(); }
+
+void Driver::disableNewKeywordMode() { _scanner->disableNewKeywordMode(); }
+
 void Driver::enableHookIDMode() { _scanner->enableHookIDMode(); }
 
 void Driver::processPreprocessorLine(const std::string_view& directive, const std::string_view& expression,

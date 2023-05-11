@@ -1,3 +1,45 @@
+1.8.0-dev.151 | 2023-05-11 16:19:28 +0200
+
+  * Add new `skip` keyword to let unit items efficiently skip over
+    uninteresting data. (Robin Sommer, Corelight)
+
+    From the documentation:
+
+        For cases where your parser just needs to skip over some data, without
+        needing access to its content, Spicy provides a ``skip`` keyword to
+        prefix corresponding fields with:
+
+        .. spicy-code:: skip.spicy
+
+            module Test;
+
+            public type Foo = unit {
+                x: int8;
+                 : skip bytes &size=5;
+                y: int8;
+                on %done { print self; }
+            };
+
+        ``skip`` works for all kinds of fields but is particularly efficient
+        with ``bytes`` fields, for which it will generate optimized code
+        avoiding the overhead of storing any data.
+
+        ``skip`` fields may have conditions and hooks attached, like
+        any other fields. However, they do not support ``$$`` in
+        expressions and hooks.
+
+        For readability, a ``skip`` field may be named (e.g., ``padding: skip
+        bytes &size=3;``), but even with a name, its value cannot be accessed.
+
+  * Deprecate parsing `void` fields with attributes. (Robin Sommer, Corelight)
+
+    `skip` supersedes the existing void-with-attributes parsing. For
+    now we continue to support that by internally mapping it over to
+    the new mechanism, but will eventually remove it. `void` without
+    attributes (for not parsing anything) remains supported.
+
+  * GH-1051: Support `&requires` with `void` fields. (Robin Sommer, Corelight)
+
 1.8.0-dev.133 | 2023-05-10 13:11:54 +0200
 
   * Skip failure notifications for unsuccessful non-error runs. (Benjamin Bannier, Corelight)
