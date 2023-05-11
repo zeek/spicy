@@ -5,6 +5,7 @@
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/logging.h>
+#include <hilti/rt/profiler.h>
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;
@@ -53,8 +54,12 @@ static void printException(const std::string& msg, const Exception& e, std::ostr
         out << "[libhilti]    " << s << "\n";
 }
 
-Exception::Exception(const std::string& what, std::string_view desc, std::string_view location)
+Exception::Exception(Internal, const char* type, const std::string& what, std::string_view desc,
+                     std::string_view location)
     : std::runtime_error(what), _description(desc), _location(location) {
+    if ( isInitialized() )
+        profiler::start(std::string("hilti/exception/") + type);
+
     if ( configuration::get().abort_on_exceptions && ! detail::globalState()->disable_abort_on_exceptions ) {
         // TODO(robin): This will print the name of the base class (Exception), not
         // the derived exception, because we're in the constructor. Is there
@@ -64,12 +69,16 @@ Exception::Exception(const std::string& what, std::string_view desc, std::string
     }
 }
 
-Exception::Exception(const std::string& desc)
-    : Exception(debug::location() ? fmt("%s (%s)", desc, debug::location()) : desc, desc,
+Exception::Exception(Internal, const char* type, const std::string& desc)
+    : Exception(Internal(), type, debug::location() ? fmt("%s (%s)", desc, debug::location()) : desc, desc,
                 debug::location() ? debug::location() : "") {}
 
-Exception::Exception(std::string_view desc, std::string_view location)
-    : Exception(! location.empty() ? fmt("%s (%s)", desc, location) : fmt("%s", desc), desc, location) {}
+Exception::Exception(Internal, const char* type, std::string_view desc, std::string_view location)
+    : Exception(Internal(), type, ! location.empty() ? fmt("%s (%s)", desc, location) : fmt("%s", desc), desc,
+                location) {}
+
+Exception::Exception() : std::runtime_error("<no error>") { /* no profiling */
+}
 
 Exception::~Exception() = default;
 

@@ -6,6 +6,9 @@
 # @TEST-EXEC: printf '1!!' | spicy-driver -d test.hlto >>output 2>&1
 # @TEST-EXEC: btest-diff output
 #
+# Check profiling of exceptions.
+# @TEST-EXEC: printf '1XX' | spicy-driver -Z -d test.hlto 2>&1 | grep -q hilti/exception/RecoverableFailure
+#
 # @TEST-DOC: Check that parse errors of units connected to sinks aren't propagated back to the writer (#1076)
 
 module test;

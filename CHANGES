@@ -1,3 +1,7 @@
+1.8.0-dev.153 | 2023-05-11 16:26:49 +0200
+
+  * Profile exception activity. (Robin Sommer, Corelight)
+
 1.8.0-dev.151 | 2023-05-11 16:19:28 +0200
 
   * Add new `skip` keyword to let unit items efficiently skip over
