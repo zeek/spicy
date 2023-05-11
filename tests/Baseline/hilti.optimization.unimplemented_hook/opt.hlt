@@ -11,10 +11,10 @@ global optional<int<64>> j = default<optional<int<64>>>();
 
 declare public function hook void global_implemented();
 
-function hook void global_implemented() {
+function hook void global_implemented() &pure {
 }
 
-method hook void X::implemented() {
+method hook void X::implemented() &pure {
 }
 
 global_implemented();

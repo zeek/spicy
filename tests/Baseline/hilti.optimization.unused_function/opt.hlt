@@ -3,22 +3,22 @@ module Foo {
 
 global bool x = private_used();
 
-function bool private_used() {
+function bool private_used() &pure {
     return False;
 }
 
-public function extern bool extern_unused1() {
+public function extern bool extern_unused1() &pure {
     return False;
 }
 
-function extern bool extern_unused2() {
+function extern bool extern_unused2() &pure {
     return False;
 }
 
-init function void test_init() {
+init function void test_init() &pure {
 }
 
-preinit function void test_preinit() {
+preinit function void test_preinit() &pure {
 }
 
 }

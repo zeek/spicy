@@ -126,6 +126,9 @@
 [debug/optimizer] inlining constant 'foo::__feat%foo@@P2%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo@@P2%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo@@P2%uses_random_access'
+[debug/optimizer] marking function '__register_foo_P0' as pure
+[debug/optimizer] marking member 'foo::P2::__on_0x25_error' as pure (<...>/default-parser-functions.spicy:20:5)
+[debug/optimizer] marking member 'foo::P2::__on_y' as pure (<...>/default-parser-functions.spicy:18:13)
 [debug/optimizer] removing declaration for unused function foo::P0::__parse_foo_P0_stage2
 [debug/optimizer] removing declaration for unused function foo::P0::__parse_stage1
 [debug/optimizer] removing declaration for unused function foo::P0::parse1

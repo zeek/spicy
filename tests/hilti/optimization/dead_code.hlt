@@ -3,8 +3,31 @@
 
 module foo {
 
+function uint<64> fn_pure1() {
+    return 0;
+}
+
+function void fn_pure2() {}
+
+type X = struct {};
+function X fn_pure3() {
+    local X x;
+    return x;
+}
+
+global uint<64> num_calls = 0;
+function uint<64> fn_not_pure() {
+    num_calls += 1;
+    return 0;
+}
+
 uint8(10);
 default<void>();
 True;
+
+fn_pure1();
+fn_pure2();
+fn_pure3();
+fn_not_pure();
 
 }

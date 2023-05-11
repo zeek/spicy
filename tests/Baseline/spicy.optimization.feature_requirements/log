@@ -271,6 +271,10 @@
 [debug/optimizer] inlining constant 'foo::__feat%foo@@X6%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo@@X6%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo@@X6%uses_random_access'
+[debug/optimizer] marking function '__register_foo_X0' as pure
+[debug/optimizer] marking function '__register_foo_X1' as pure
+[debug/optimizer] marking function '__register_foo_X2' as pure
+[debug/optimizer] marking function '__register_foo_X3' as pure
 [debug/optimizer] removing declaration for unused function foo::X0::__parse_foo_X0_stage2
 [debug/optimizer] removing declaration for unused function foo::X0::__parse_stage1
 [debug/optimizer] removing declaration for unused function foo::X0::parse1
