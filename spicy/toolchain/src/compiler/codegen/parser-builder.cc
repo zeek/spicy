@@ -1675,7 +1675,8 @@ struct ProductionVisitor
 
             else if ( eod_attr ) {
                 builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
-                pb->waitForEod();
+                auto loop = builder()->addWhile(pb->waitForInputOrEod());
+                pushBuilder(loop, [&]() { pb->advanceInput(builder::size(state().cur)); });
                 pb->advanceInput(builder::size(state().cur));
             }
 
