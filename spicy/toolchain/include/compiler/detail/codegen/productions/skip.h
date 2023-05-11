@@ -25,7 +25,10 @@ public:
 
     spicy::Type type() const { return type::void_; }
     bool nullable() const { return false; }
-    bool eodOk() const { return field().attributes() && field().attributes()->has("&eod"); }
+    bool eodOk() const {
+        const auto attrs = field().attributes();
+        return attrs && attrs->has("&eod");
+    }
     bool atomic() const { return true; }
 
     std::string render() const { return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : to_string(_field)); }
