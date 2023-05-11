@@ -14,3 +14,12 @@ type X = unit {
 on X::a {
     print $$;
 }
+
+# @TEST-START-NEXT
+
+module Test;
+
+type X = unit {
+    d: skip bytes &size=1 -> self.s;
+    sink s;
+};
