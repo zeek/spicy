@@ -1,6 +1,6 @@
 # @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
-# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABCxyzDEF123\x08\x09\x0a' | spicy-driver test.hlto >>output
-# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABCxyzDEF123\x08\x09\x0a' | spicy-driver -i 1 test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABCxyzDEF123123\x08\x09\x0a' | spicy-driver test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\x05\x06\x07xyzABCxyzDEF123123\x08\x09\x0a' | spicy-driver -i 1 test.hlto >>output
 # @TEST-EXEC: btest-diff output
 #
 # Ensure we're actually producing Skip productions for fields where we support it
@@ -12,7 +12,7 @@
 module Test;
 
 public type Root = unit {
-    foo: Foo &size=24;
+    foo: Foo &size=27;
     x: uint8;
 
     on %done { print self; }
@@ -28,6 +28,7 @@ type Foo = unit {
     : skip bytes &until=b"ABC";
     : skip bytes &until-including=b"DEF";
     : skip Bar; # no skip production for this one
+    j: skip Bar; # no skip production for this one
     eod: skip bytes &eod;
 };
 

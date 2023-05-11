@@ -498,7 +498,7 @@ struct ProductionVisitor
             builder()->addAssign(destination(), builder::default_(field->itemType()));
         }
 
-        else if ( field->isAnonymous() ) {
+        else if ( field->isAnonymous() || field->isSkip() ) {
             // We won't have a field to store the value in, create a temporary.
             auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
             pushDestination(dst);
@@ -550,8 +550,10 @@ struct ProductionVisitor
                 type_args = meta.field()->arguments();
             }
 
-            Expression default_ = builder::default_(builder::typeByID(*unit->unitType().id()), type_args, location);
-            builder()->addAssign(destination(), std::move(default_));
+            if ( ! meta.field()->isSkip() ) {
+                Expression default_ = builder::default_(builder::typeByID(*unit->unitType().id()), type_args, location);
+                builder()->addAssign(destination(), std::move(default_));
+            }
 
             auto call = builder::memberCall(destination(), "__parse_stage1", args);
             builder()->addAssign(builder::tuple(
