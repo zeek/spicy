@@ -35,17 +35,17 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
     void addField(hilti::declaration::Field f) { fields.emplace_back(std::move(f)); }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
-        if ( ! f.parseType().isA<type::Void>() && ! f.isSkip() ) {
+        if ( ! f.parseType().isA<type::Void>() ) {
             // Create struct field.
             AttributeSet attrs({Attribute("&optional")});
 
             if ( auto x = AttributeSet::find(f.attributes(), "&default") )
                 attrs = AttributeSet::add(attrs, *x);
 
-            if ( f.isAnonymous() )
+            if ( f.isAnonymous() || f.isSkip() )
                 // This field will never make it into the C++ struct. We still
                 // carry it around though as that makes type inference easier at
-                // times.
+                // times, and also can improve error messages.
                 attrs = AttributeSet::add(attrs, Attribute("&no-emit"));
 
             auto nf = hilti::declaration::Field(f.id(), f.itemType(), std::move(attrs), f.meta());
