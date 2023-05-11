@@ -51,7 +51,7 @@ enum class LiteralMode {
      */
     Search,
 
-    /** TODO */
+    /** Advance like default parsing would, but don't make value available. */
     Skip,
 };
 
