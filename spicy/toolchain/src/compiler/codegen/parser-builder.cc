@@ -1646,7 +1646,7 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Skip& p) {
-        if ( const auto& ctor = p.ctor() ){
+        if ( const auto& ctor = p.ctor() ) {
             pb->skipLiteral(*ctor);
         }
 
@@ -2118,7 +2118,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
         // "self.<x>".
         auto block = builder()->addBlock();
 
-        if ( ! field->isSkip() )
+        if ( ! field->parseType().isA<type::Void>() && ! field->isSkip() )
             block->addLocal(ID("__dd"), field->ddType(), dd);
 
         auto cond = block->addTmp("requires", *a.valueAsExpression());

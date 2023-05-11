@@ -557,7 +557,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     void operator()(const type::Tuple& n, position_t p) {
         for ( const auto& e : n.elements() ) {
             if ( ! type::isAllocable(e.type()) && ! e.type().isA<type::Null>() )
-                error(fmt("type '%s' cannot be used inside a tuple", e.type()), p);
+                error(fmt("type '%s' cannot be used inside a tuple", e.type()), p, node::ErrorPriority::Low);
         }
     }
 

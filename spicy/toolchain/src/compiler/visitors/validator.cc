@@ -126,8 +126,12 @@ hilti::Result<hilti::Nothing> isParseableType(const Type& pt, const type::unit::
     }
 
     if ( pt.isA<type::Void>() ) {
-        if ( f.attributes() )
-            return hilti::result::Error("no attributes supported for void field");
+        if ( f.attributes() ) {
+            for ( const auto& a : f.attributes()->attributes() ) {
+                if ( a.tag() != "&requires" )
+                    return hilti::result::Error("no parsing attributes supported for void field");
+            }
+        }
 
         return hilti::Nothing();
     }

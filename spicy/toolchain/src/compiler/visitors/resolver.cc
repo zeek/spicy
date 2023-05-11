@@ -270,14 +270,25 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
     void operator()(const type::unit::item::UnresolvedField& u, position_t p) {
         if ( u.type() && u.type()->isA<type::Void>() && u.attributes() ) {
-            // Transparently map void field into skipping bytes fields.
-            hilti::logger().deprecated(
-                "using `void` fields with attributes is deprecated and support will be removed in a future "
-                "release; replace 'void' with 'skip bytes ...'",
-                u.meta().location());
+            // Transparently map void fields that aim to parse data into
+            // skipping bytes fields. Use of such void fields is deprecated and
+            // will be removed later.
+            int ok_attrs = 0;
+            const auto& attrs = u.attributes()->attributes();
+            for ( const auto& a : attrs ) {
+                if ( a.tag() == "&requires" )
+                    ok_attrs++;
+            }
 
-            p.node.as<type::unit::item::UnresolvedField>().setSkip(true);
-            p.node.as<type::unit::item::UnresolvedField>().setType(type::Bytes());
+            if ( ok_attrs != attrs.size() ) {
+                hilti::logger().deprecated(
+                    "using `void` fields with attributes is deprecated and support will be removed in a future "
+                    "release; replace 'void ...' with 'skip bytes ...'",
+                    u.meta().location());
+
+                p.node.as<type::unit::item::UnresolvedField>().setSkip(true);
+                p.node.as<type::unit::item::UnresolvedField>().setType(type::Bytes());
+            }
         }
 
         if ( const auto& id = u.unresolvedID() ) { // check for unresolved IDs first to overrides the other cases below
