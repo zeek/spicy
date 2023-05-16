@@ -10,13 +10,21 @@ function uint<64> fn_pure1() {
 function void fn_pure2() {}
 
 type X = struct {};
-function X fn_pure3() {
+function X fn_not_pure1() {
     local X x;
     return x;
 }
 
+type Y = struct {
+    hook void ~finally() {}
+};
+function Y fn_pure4() {
+    local Y y;
+    return y;
+}
+
 global uint<64> num_calls = 0;
-function uint<64> fn_not_pure() {
+function uint<64> fn_not_pure2() {
     num_calls += 1;
     return 0;
 }
@@ -27,7 +35,8 @@ True;
 
 fn_pure1();
 fn_pure2();
-fn_pure3();
-fn_not_pure();
+fn_not_pure1();
+fn_pure4();
+fn_not_pure2();
 
 }

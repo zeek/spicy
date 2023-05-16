@@ -1473,6 +1473,18 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
     }
 };
 
+// Helper function to detect whether a struct has lifecycle hooks attached.
+bool hasLifecycleHooks(const type::Struct& s) {
+    // NOLINTNEXTLINE(readability-use-anyofallof)
+    for ( const auto& f : s.fields() ) {
+        // Currently the only lifecycle hook we have is `~finally`.
+        if ( f.id().str() == "~finally" )
+            return true;
+    }
+
+    return false;
+};
+
 // Optimizer pass which removes dead store and variable declarations.
 struct DeadStoreVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadStoreVisitor> {
     // We use decl identities here instead of their canonical IDs since for
@@ -1542,10 +1554,9 @@ struct DeadStoreVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadStoreVis
         if ( ! decl.isA<declaration::LocalVariable>() && ! decl.isA<declaration::GlobalVariable>() )
             return false;
 
-        // Do not work on assignments to values of struct types since structs
-        // can have hooks attached which could make the assignment result
-        // visible non-locally.
-        if ( target->type().isA<type::Struct>() )
+        // Do not work on assignments to values of struct types which have
+        // lifecycle hooks attached.
+        if ( auto s = target->type().tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
             return false;
 
         switch ( _stage ) {
@@ -1609,9 +1620,9 @@ struct DeadStoreVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadStoreVis
                 const auto& decl = x.declaration();
 
                 if ( const auto& local = decl.tryAs<declaration::LocalVariable>() ) {
-                    // Do not attempt to remove declarations of structs since
-                    // they might have additional state attached via hooks.
-                    if ( local->type().isA<type::Struct>() )
+                    // Do not attempt to remove declarations of structs with
+                    // lifecycle hooks.
+                    if ( auto s = local->type().tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
                         break;
 
                     // If the local is initialized do not remove it to still
@@ -1800,10 +1811,8 @@ struct DeadCodeVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadCodeVisit
                 if ( fn->flavor() == type::function::Flavor::Hook )
                     return true;
 
-                // If the function returns a struct type there might be hooks
-                // like `finally` attached to the type so calling the function
-                // has side effects.
-                if ( fn->result().type().isA<type::Struct>() )
+                // If the function returns a struct type with lifecycle hooks it has side effects.
+                if ( auto s = fn->result().type().tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
                     return true;
 
                 // If the function is not marked pure it has side effects.
@@ -1944,6 +1953,12 @@ struct PureFunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, PureFunct
                     if ( type::isReferenceType(type) )
                         return {};
 
+                    // Functions accessing local variables can be pure if they
+                    // do not construct struct values of types with lifecycle
+                    // hooks attached.
+                    if ( auto s = type.tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
+                        return {};
+
                     continue;
                 }
 
@@ -1965,9 +1980,6 @@ struct PureFunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, PureFunct
                     if ( const auto& attrs = fn->function().attributes(); ! attrs || ! attrs->find("&pure") )
                         return {};
                 }
-
-                // FIXME(bbannier): If we construct a struct we can trigger life-cycle
-                // hooks making such functions not pure. Reject them here.
 
                 // Accessing keywords is side-effect free.
                 else if ( const auto& e = decl.tryAs<declaration::Expression>();
