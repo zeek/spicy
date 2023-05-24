@@ -20,6 +20,7 @@
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/local-variable.h>
+#include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/assign.h>
@@ -1985,6 +1986,24 @@ struct PureFunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, PureFunct
                 else if ( const auto& e = decl.tryAs<declaration::Expression>();
                           e && e->expression().isA<expression::Keyword>() ) {
                     continue;
+                }
+
+                else if ( const auto& param = decl.tryAs<declaration::Parameter>() ) {
+                    // Reference provide interior mutability regardless of the
+                    // mutability of the param so mark such accesses not as pure.
+                    if ( type::isReferenceType(param->type()) )
+                        return {};
+
+                    switch ( param->kind() ) {
+                        // Access to `copy` or `in` parameters is side-effect free.
+                        case declaration::parameter::Kind::Copy: [[fallthrough]];
+                        case declaration::parameter::Kind::In:
+                            continue;
+
+                            // Any other access could have side-effects.
+                        case declaration::parameter::Kind::InOut: [[fallthrough]];
+                        case declaration::parameter::Kind::Unknown: return {};
+                    }
                 }
 
                 else

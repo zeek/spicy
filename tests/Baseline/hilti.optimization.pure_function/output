@@ -4,4 +4,6 @@
 [debug/optimizer] marking member 'pure' as pure (<...>/pure_function.hlt:31:5)
 [debug/optimizer] marking member 'pure2' as pure (<...>/pure_function.hlt:32:5)
 [debug/optimizer] marking member 'T::pure4' as pure (<...>/pure_function.hlt:43:7-46:2)
+[debug/optimizer] marking function 'fn_pure5' as pure
+[debug/optimizer] marking function 'fn_pure6' as pure
 [debug/optimizer] marking function 'fn_pure' as pure

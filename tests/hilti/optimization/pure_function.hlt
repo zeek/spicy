@@ -48,4 +48,14 @@ method void T::pure4() {
 global T t;
 t.pure4();
 
+# Parameter access is side-effect free for `in` and `copy` parameters if they are not of reference type.
+function void fn_pure5(uint<64> in_param) { in_param += 42; }
+function void fn_pure6(copy uint<64> copy_param) { copy_param += 42; }
+function void fn_not_pure2(inout uint<64> inout_param) { inout_param += 42; }
+
+function void fn_not_pure3(strong_ref<uint<64>> in_param) { *in_param += 42; }
+function void fn_not_pure4(copy strong_ref<uint<64>> copy_param) { *copy_param += 42; }
+function void fn_not_pure2(inout strong_ref<uint<64>> inout_param) { *inout_param += 42; }
+
+
 }
