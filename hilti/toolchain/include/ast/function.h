@@ -64,6 +64,7 @@ public:
                attributes() == other.attributes() && callingConvention() == other.callingConvention();
     }
 
+    void setAttributes(const std::optional<AttributeSet>& attributes) { children()[3] = attributes; }
     void setBody(const Statement& b) { children()[2] = b; }
     void setID(const ID& id) { children()[0] = id; }
     void setFunctionType(const type::Function& ftype) { children()[1] = ftype; }
