@@ -9,47 +9,32 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
-ENV PATH="/opt/spicy/bin:/usr/local/zeek/bin:${PATH}"
+ENV PATH="/opt/spicy/bin:${PATH}"
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 \
- # Zeek.
- && apt-get install -q -y --no-install-recommends \
-    bind9 \
+ # Spicy build and test dependencies.
+ && apt-get install -y --no-install-recommends \
     bison \
     ccache \
     cmake \
-    curl \
+    doxygen \
     flex \
     g++ \
-    gcc \
     git \
     jq \
     libfl-dev \
-    libfl2 \
-    libmaxminddb-dev \
-    libpcap-dev \
     libssl-dev \
-    libz-dev \
+    locales-all \
     make \
     ninja-build \
-    python3-git \
-    python3-minimal \
-    python3-minimal \
+    python3 \
     python3-pip \
-    python3-semantic-version \
-    python3-websocket \
-    python3.9-dev \
-    swig \
- && git clone -b $ZEEK_VERSION --depth=1 https://github.com/zeek/zeek /src/zeek \
- && cd /src/zeek \
- && git submodule update --init --recursive --depth=1 \
- && ./configure --generator=Ninja $ZEEK_CONFFLAGS \
- && ninja -C build install \
- && cd - \
- && rm -rf /src/zeek \
- # Spicy build and test dependencies.
- && apt-get install -y --no-install-recommends python3 docker zlib1g-dev jq locales-all python3-setuptools python3-wheel \
+    python3-setuptools \
+    python3-sphinx \
+    python3-sphinx-rtd-theme \
+    python3-wheel \
+    zlib1g-dev \
  && pip3 install --no-cache-dir "btest>=0.66" pre-commit \
  # Spicy doc dependencies.
  && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
@@ -73,11 +58,8 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends llvm-11-dev clang-11 libclang-11-dev clang-format-11 clang-tidy-11 \
  && apt-get install -y --no-install-recommends llvm-12-dev clang-12 libclang-12-dev clang-format-12 clang-tidy-12 \
  && apt-get install -y --no-install-recommends llvm-15-dev clang-15 libclang-15-dev clang-format-15 clang-tidy-15 libclang-rt-15-dev \
- # Additional tools.
- && apt-get install -y --no-install-recommends docker.io vim \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-ENV PATH="/opt/zeek/bin:${PATH}"
 
 # Install a recent CMake.
 WORKDIR /usr/local/cmake
