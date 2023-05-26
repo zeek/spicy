@@ -1,3 +1,7 @@
+1.8.0-dev.155 | 2023-05-26 13:59:22 +0200
+
+  * Remove Zeek from Spicy CI. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.153 | 2023-05-11 16:26:49 +0200
 
   * Profile exception activity. (Robin Sommer, Corelight)
