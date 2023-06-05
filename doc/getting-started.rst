@@ -298,21 +298,21 @@ handler's body then just prints out what it gets.
 
 .. _example_zeek_my_http:
 
-Finally we can put together our pieces by pointing Zeek to all the
-files we got::
+Finally we can put together our pieces by compiling the Spicy grammar and the
+EVT file into an HLTO file with ``spicyz``, and by pointing Zeek at the produced
+file and the analyzer-specific Zeek scripts::
 
-    # zeek -Cr request-line.pcap my-http.spicy my-http.evt my-http.zeek
+    # spicyz my-http.spicy my-http.evt -o my-http.hlto
+    # zeek -Cr request-line.pcap my-http.hlto my-http.zeek
     Zeek saw from 127.0.0.1: GET /index.html 1.0
 
-When Zeek starts up here, it passes any ``*.spicy`` and ``*.evt`` on
-to the Spicy plugin, which then first kicks off all of its code
-generation. Afterwards the plugin registers the new analyzer with the
-Zeek event engine. Zeek then begins processing the packet trace as
-usual, now activating our new analyzer whenever it sees a TCP
-connection on port 12345. Accordingly, the ``MyHTTP::request_line``
-event gets generated once the parser gets to process the session's
-payload. The Zeek event handler then executes and prints the output we
-would expect.
+When Zeek starts up here the Spicy integration registers a protocol analyzer to
+the entry point of our Spicy grammar as specified in the EVT file. It then
+begins processing the packet trace as usual, now activating our new analyzer
+whenever it sees a TCP connection on port 12345. Accordingly, the
+``MyHTTP::request_line`` event gets generated once the parser gets to process
+the session's payload. The Zeek event handler then executes and prints the
+output we would expect.
 
 .. note::
 
@@ -320,23 +320,6 @@ would expect.
     ``print`` statements. You can add ``Spicy::enable_print=T`` to the
     command line to see it. In the example above, you would then get
     an additional line of output: ``GET, /index.html, 1.0``.
-
-If you tried the above, you will have noticed that Zeek took a little
-while to start up. That's of course because we're compiling C++ code
-in the background again before any packet processing can even begin.
-To accelerate the startup, we can once more precompile our analyzer
-similar to what we did before with ``spicyc``. We'll use a different
-tool here, though: ``spicyz`` is a small standalone application for
-precompiling analyzers for the Spicy plugin to later load. We give
-``spicyz`` (1) the ``*.spicy`` and ``*.evt`` inputs that we handed to
-Zeek above; and (2) an output ``*.hlto`` file to write the compiled
-analyzer into::
-
-    # spicyz -o my-http-analyzer.hlto my-http.spicy my-http.evt
-    # zeek -Cr request-line.pcap my-http-analyzer.hlto my-http.zeek
-    Zeek saw from 127.0.0.1: GET /index.html 1.0
-
-That ``zeek`` execution is now happening instantaneously.
 
 Custom Host Application
 -----------------------
