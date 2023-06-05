@@ -1,3 +1,9 @@
+1.8.0-dev.158 | 2023-06-05 11:26:41 +0200
+
+  * GH-1448: Adjust getting started docs for removed JIT compilation via Zeek. (Benjamin Bannier, Corelight)
+
+  * Fix markup for code blocks. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.155 | 2023-05-26 13:59:22 +0200
 
   * Remove Zeek from Spicy CI. (Benjamin Bannier, Corelight)
