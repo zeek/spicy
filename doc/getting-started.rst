@@ -225,11 +225,15 @@ Next we need to make sure that Zeek can load Spicy parsers. As of version 5.0
 Zeek by default bundles Spicy and spicy-plugin which makes Spicy parsers
 available to Zeek.
 
+.. code::
+
     # zeek -N
     <...>
     Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
 
 Depending on the Zeek build configuration this could also report
+
+.. code::
 
     Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (dynamic, version 1.3.13)
 
