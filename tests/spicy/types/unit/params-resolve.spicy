@@ -1,0 +1,24 @@
+# @TEST-DOC: Validate that unit parameters shadown globals of same name. This is a regression test for #1452.
+#
+# @TEST-EXEC: echo | spicy-driver -d %INPUT
+
+module foo;
+
+# This unit should pick up the value passed during initialization at runtime, not the global.
+type X = unit(x: uint64) {
+    var x: uint64 = x;
+};
+
+public type A = unit {
+    x: X(4711);
+    on %done { assert self.x.x == 4711; }
+};
+
+global x: uint64 = 0;
+
+# Since the parameter shadows the global of different type this compiles without type errors.
+type Z = unit(z: uint64) {
+    var z: uint64 = z;
+};
+
+global z: real = 0;
