@@ -71,10 +71,10 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - Development Version
       - Dockerfile
 
-    * - Alpine 3.12
-      - :package-release-tgz:`TAR <linux_alpine_3_12>`
-      - :package-dev-tgz:`TAR <docker_alpine_3_12>`
-      - :repo:`Dockerfile <docker/Dockerfile.alpine-3.12>`
+    * - Alpine 3.18
+      -
+      - :package-dev-tgz:`TAR <docker_alpine_3_18>`
+      - :repo:`Dockerfile <docker/Dockerfile.alpine-3.18>`
 
     * - CentOS Stream 8
       - :package-release-rpm:`TAR <linux_centos_stream_8>`

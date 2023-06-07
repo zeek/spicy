@@ -391,9 +391,9 @@ homebrew_ventura_task:
     - brew install spicy --HEAD
     - brew test spicy
 
-docker_alpine_3_12_task:
+docker_alpine_3_18_task:
   container:
-    dockerfile: docker/Dockerfile.alpine-3.12
+    dockerfile: docker/Dockerfile.alpine-3.18
     cpu: 4
     memory: 14G
 
