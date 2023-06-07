@@ -15,7 +15,7 @@ find $2 -type f | grep -v common.h | while read i; do
     cat $i | \
         grep -v '#define' | \
         awk '/(BEGIN_|STANDARD).*\($/ { getline x; printf "%s %s", $0, x; next} {print}' | \
-        egrep 'BEGIN_|STANDARD' | \
+        grep -E 'BEGIN_|STANDARD' | \
         grep -v ns::op | \
         sort | \
         awk -v ns=$1 -F '[(), ]+' '{

@@ -25,8 +25,8 @@ dirs="hilti spicy scripts tests ci"
 
 # Whitelist: ci/run-ci - We use bash for this one.
 find ${dirs} -type f | grep -v 3rdparty | grep -v '\.tmp/' | grep -v bashisms.sh | grep -v ci/run-ci | while read i; do
-    egrep '\<bash\>' $i | awk "{ print \"found bash in $i: \" \$0}" >>output 2>&1
-    if head -1 $i | egrep -q '#!.*\<sh\>'; then
+    grep -E '\<bash\>' $i | awk "{ print \"found bash in $i: \" \$0}" >>output 2>&1
+    if head -1 $i | grep -E -q '#!.*\<sh\>'; then
        ${SCRIPTS}/3rdparty/checkbashisms.pl $i >>output 2>&1
     fi
 done
