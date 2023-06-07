@@ -81,11 +81,6 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-rpm:`RPM <docker_centos_stream_8>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-stream-8>`
 
-    * - Debian 9
-      - :package-release-deb:`DEB <linux_debian9>`
-      - :package-dev-deb:`DEB <docker_debian9>`
-      - :repo:`Dockerfile <docker/Dockerfile.debian-9>`
-
     * - Debian 10
       - :package-release-deb:`DEB <linux_debian10>`
       - :package-dev-deb:`DEB <docker_debian10>`

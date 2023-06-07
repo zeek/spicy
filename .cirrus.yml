@@ -462,43 +462,6 @@ docker_centos_stream_8_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_debian9_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  container:
-    dockerfile: docker/Dockerfile.debian-9
-    cpu: 4
-    memory: 12G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:
-    - CXXFLAGS=-stdlib=libc++ LDFLAGS=-stdlib=libc++ ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
-  build_script:
-    - ninja -j4 -C build check all package
-    - cp build/spicy*.deb .
-    - dpkg --install ./spicy*.deb
-    - rm -rf build
-  test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
-
-  packages_artifacts:
-    path: ./spicy*.{deb,rpm}
-    type: application/gzip
-
 docker_debian10_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
