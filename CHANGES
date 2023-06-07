@@ -1,3 +1,7 @@
+1.8.0-dev.165 | 2023-06-07 17:23:04 +0200
+
+  * Clean up dependencies for ubuntu-22 image. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.163 | 2023-06-07 15:15:10 +0200
 
   * Remove unsupported fedora-36, add fedora-38. (Benjamin Bannier, Corelight)
