@@ -71,20 +71,15 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - Development Version
       - Dockerfile
 
-    * - Alpine 3.12
-      - :package-release-tgz:`TAR <linux_alpine_3_12>`
-      - :package-dev-tgz:`TAR <docker_alpine_3_12>`
-      - :repo:`Dockerfile <docker/Dockerfile.alpine-3.12>`
+    * - Alpine 3.18
+      -
+      - :package-dev-tgz:`TAR <docker_alpine_3_18>`
+      - :repo:`Dockerfile <docker/Dockerfile.alpine-3.18>`
 
     * - CentOS Stream 8
       - :package-release-rpm:`TAR <linux_centos_stream_8>`
       - :package-dev-rpm:`RPM <docker_centos_stream_8>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-stream-8>`
-
-    * - Debian 9
-      - :package-release-deb:`DEB <linux_debian9>`
-      - :package-dev-deb:`DEB <docker_debian9>`
-      - :repo:`Dockerfile <docker/Dockerfile.debian-9>`
 
     * - Debian 10
       - :package-release-deb:`DEB <linux_debian10>`
@@ -96,30 +91,25 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-deb:`DEB <docker_debian11>`
       - :repo:`Dockerfile <docker/Dockerfile.debian-11>`
 
-    * - Fedora 36
-      - :package-release-rpm:`RPM <linux_fedora36>`
-      - :package-dev-rpm:`RPM <docker_fedora36>`
-      - :repo:`Dockerfile <docker/Dockerfile.fedora-36>`
-
     * - Fedora 37
       - :package-release-rpm:`RPM <linux_fedora37>`
       - :package-dev-rpm:`RPM <docker_fedora37>`
       - :repo:`Dockerfile <docker/Dockerfile.fedora-37>`
 
-    * - Ubuntu 16
-      - :package-release-deb:`DEB <linux_ubuntu16>`
-      - :package-dev-deb:`DEB <docker_ubuntu16>`
-      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-16>`
-
-    * - Ubuntu 18
-      - :package-release-deb:`DEB <linux_ubuntu18>`
-      - :package-dev-deb:`DEB <docker_ubuntu18>`
-      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-18>`
+    * - Fedora 38
+      -
+      - :package-dev-rpm:`RPM <docker_fedora38>`
+      - :repo:`Dockerfile <docker/Dockerfile.fedora-38>`
 
     * - Ubuntu 20
       - :package-release-deb:`DEB <linux_ubuntu20>`
       - :package-dev-deb:`DEB <docker_ubuntu20>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-20>`
+
+    * - Ubuntu 22
+      -
+      - :package-dev-deb:`DEB <docker_ubuntu22>`
+      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-22>`
 
 macOS
 ~~~~~

@@ -1,3 +1,13 @@
+1.8.0-dev.163 | 2023-06-07 15:15:10 +0200
+
+  * Remove unsupported fedora-36, add fedora-38. (Benjamin Bannier, Corelight)
+
+  * Bump supported Alpine version to latest release. (Benjamin Bannier, Corelight)
+
+  * Refresh supported Ubuntu versions to upstream supported ones. (Benjamin Bannier, Corelight)
+
+  * Remove EOL debian-9. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.158 | 2023-06-05 11:26:41 +0200
 
   * GH-1448: Adjust getting started docs for removed JIT compilation via Zeek. (Benjamin Bannier, Corelight)

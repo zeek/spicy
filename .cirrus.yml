@@ -391,9 +391,9 @@ homebrew_ventura_task:
     - brew install spicy --HEAD
     - brew test spicy
 
-docker_alpine_3_12_task:
+docker_alpine_3_18_task:
   container:
-    dockerfile: docker/Dockerfile.alpine-3.12
+    dockerfile: docker/Dockerfile.alpine-3.18
     cpu: 4
     memory: 14G
 
@@ -454,43 +454,6 @@ docker_centos_stream_8_task:
     - ninja -j4 -C build check all package
     - cp build/spicy*.rpm .
     - rpm -i ./spicy*.rpm
-    - rm -rf build
-  test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
-
-  packages_artifacts:
-    path: ./spicy*.{deb,rpm}
-    type: application/gzip
-
-docker_debian9_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  container:
-    dockerfile: docker/Dockerfile.debian-9
-    cpu: 4
-    memory: 12G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:
-    - CXXFLAGS=-stdlib=libc++ LDFLAGS=-stdlib=libc++ ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
-  build_script:
-    - ninja -j4 -C build check all package
-    - cp build/spicy*.deb .
-    - dpkg --install ./spicy*.deb
     - rm -rf build
   test_install_script:
     - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
@@ -571,82 +534,6 @@ docker_debian11_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_ubuntu16_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  container:
-    dockerfile: docker/Dockerfile.ubuntu-16
-    cpu: 4
-    memory: 12G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:
-    # TODO(bbannier): We do not enable -Werror on ubuntu16 since there
-    # the generated flex scanners trigger null-conversion diagnostics.
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy
-  build_script:
-    - ninja -j4 -C build check all package
-    - cp build/spicy*.deb .
-    - dpkg --install ./spicy*.deb
-    - rm -rf build
-  test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
-
-  packages_artifacts:
-    path: ./spicy*.{deb,rpm}
-    type: application/gzip
-
-docker_ubuntu18_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  container:
-    dockerfile: docker/Dockerfile.ubuntu-18
-    cpu: 4
-    memory: 12G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
-  build_script:
-    - ninja -j4 -C build check all package
-    - cp build/spicy*.deb .
-    - dpkg --install ./spicy*.deb
-    - rm -rf build
-  test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
-
-  packages_artifacts:
-    path: ./spicy*.{deb,rpm}
-    type: application/gzip
-
 docker_ubuntu20_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
@@ -684,11 +571,48 @@ docker_ubuntu20_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora36_task:
+docker_ubuntu22_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.fedora-36
+    dockerfile: docker/Dockerfile.ubuntu-22
+    cpu: 4
+    memory: 12G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  update_git_script:
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+  build_script:
+    - ninja -j4 -C build check all package
+    - cp build/spicy*.deb .
+    - dpkg --install ./spicy*.deb
+    - rm -rf build
+  test_install_script:
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
+
+  packages_artifacts:
+    path: ./spicy*.{deb,rpm}
+    type: application/gzip
+
+docker_fedora37_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
+  container:
+    dockerfile: docker/Dockerfile.fedora-37
     cpu: 4
     memory: 12G
 
@@ -721,11 +645,11 @@ docker_fedora36_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora37_task:
+docker_fedora38_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.fedora-37
+    dockerfile: docker/Dockerfile.fedora-38
     cpu: 4
     memory: 12G
 
