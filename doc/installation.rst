@@ -101,20 +101,15 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-rpm:`RPM <docker_fedora37>`
       - :repo:`Dockerfile <docker/Dockerfile.fedora-37>`
 
-    * - Ubuntu 16
-      - :package-release-deb:`DEB <linux_ubuntu16>`
-      - :package-dev-deb:`DEB <docker_ubuntu16>`
-      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-16>`
-
-    * - Ubuntu 18
-      - :package-release-deb:`DEB <linux_ubuntu18>`
-      - :package-dev-deb:`DEB <docker_ubuntu18>`
-      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-18>`
-
     * - Ubuntu 20
       - :package-release-deb:`DEB <linux_ubuntu20>`
       - :package-dev-deb:`DEB <docker_ubuntu20>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-20>`
+
+    * - Ubuntu 22
+      -
+      - :package-dev-deb:`DEB <docker_ubuntu22>`
+      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-22>`
 
 macOS
 ~~~~~
