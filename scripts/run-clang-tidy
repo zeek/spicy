@@ -80,7 +80,7 @@ if [ ! -x "${clang_tidy_path}" ]; then
     error "cannot find clang-tidy" && exit 1
 fi
 
-if [ "${fix}" = 1 -a -n "$(git status --porcelain | egrep -v '^(M|\?\?) ')" ]; then
+if [ "${fix}" = 1 -a -n "$(git status --porcelain | grep -E -v '^(M|\?\?) ')" ]; then
     echo >&2
     echo "error: uncommitted changes in working directory, won't apply changes" >&2
     echo >&2
@@ -95,7 +95,7 @@ if [ ! -x "${clang_apply_replacements_path}" ]; then
 fi
 
 if [ -f "${clang_tidy_ignore}" ]; then
-    x=$(cat ${clang_tidy_ignore} | egrep -v '^ *(#.*)?$' | awk '{printf "%s|", $1}' | sed 's/|$//g')
+    x=$(cat ${clang_tidy_ignore} | grep -E -v '^ *(#.*)?$' | awk '{printf "%s|", $1}' | sed 's/|$//g')
     ignores="${ignores:+${ignores}|}${x}"
 fi
 
@@ -104,7 +104,7 @@ if [ -z "${ignores}" ]; then
 fi
 
 if [ -z "${files}" ]; then
-    files=$(cat ${compile_json} | jq -r '.[].file' | egrep '\.(cc|c|h)$' | grep -v autogen/__ | grep -v '\.bif\.' | egrep -v "${root}/(${ignores})")
+    files=$(cat ${compile_json} | jq -r '.[].file' | grep -E '\.(cc|c|h)$' | grep -v autogen/__ | grep -v '\.bif\.' | grep -E -v "${root}/(${ignores})")
 fi
 
 cmd="${clang_tidy_path} -quiet -p=${build} ${clang_tidy_args}"

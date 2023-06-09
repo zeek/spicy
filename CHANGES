@@ -1,3 +1,7 @@
+1.8.0-dev.167 | 2023-06-09 09:59:08 +0200
+
+  * Replace obsolete uses of `egrep` with `grep -E`. (Benjamin Bannier, Corelight)
+
 1.8.0-dev.165 | 2023-06-07 17:23:04 +0200
 
   * Clean up dependencies for ubuntu-22 image. (Benjamin Bannier, Corelight)

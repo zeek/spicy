@@ -1,8 +1,8 @@
 #! /bin/sh
 
-find . -type d -mindepth 0 -maxdepth 0 | egrep -v '^\.(/build.*|/\.git)(/|$)' | while read dir; do
+find . -type d -mindepth 0 -maxdepth 0 | grep -E -v '^\.(/build.*|/\.git)(/|$)' | while read dir; do
     find "${dir}" -type f | while read file; do
-        echo ${file} | egrep -q '/3rdparty/|/\..*/|update-license-headers' && continue
+        echo ${file} | grep -E -q '/3rdparty/|/\..*/|update-license-headers' && continue
         cat ${file} | grep -q Copyright || continue
         gsed -i'' 's/Copyright .* by the Zeek Project\..* details\./Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details./' "${file}"
     done

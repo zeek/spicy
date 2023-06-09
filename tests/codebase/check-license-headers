@@ -11,10 +11,10 @@ else
 fi
 
 git ls-files \
-    | egrep -v '^(tests|doc)/' \
-    | egrep -v '3rdparty/' \
-    | egrep -v '^\.$' \
-    | egrep '\.(h|c|cc|py|sh|api|ll|yy|h.in|cc.in|c.in|txt|evt|hilti|spicy)$' \
+    | grep -E -v '^(tests|doc)/' \
+    | grep -E -v '3rdparty/' \
+    | grep -E -v '^\.$' \
+    | grep -E '\.(h|c|cc|py|sh|api|ll|yy|h.in|cc.in|c.in|txt|evt|hilti|spicy)$' \
     | while read i; do
         grep -q "Copyright.*Zeek" $i || echo "No appropriate copyright header in '$i'" >&2
 done
