@@ -1,3 +1,10 @@
+1.8.0-dev.169 | 2023-06-09 09:59:42 +0200
+
+  * Fix docs for long-form of `-x` flag to spicyc. (Benjamin Bannier, Corelight)
+
+    The long form of `-x` is `--output-c++-files` but we documented
+    `--output-c++` instead which is used for `-c` and takes no argument.
+
 1.8.0-dev.167 | 2023-06-09 09:59:08 +0200
 
   * Replace obsolete uses of `egrep` with `grep -E`. (Benjamin Bannier, Corelight)
