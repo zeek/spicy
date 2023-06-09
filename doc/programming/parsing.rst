@@ -1956,7 +1956,7 @@ method, which will return a reference to it:
 By itself, this is not very useful. However, host applications can
 control how contexts are maintained, and they may assign the same
 context value to multiple units. For example, when parsing a protocol,
-the :ref:`Zeek plugin <zeek_plugin>` always creates a single context
+the :ref:`Zeek integration <zeek_plugin>` always creates a single context
 value shared by all top-level units belonging to the same connection,
 enabling parsers to maintain bi-directional, per-connection state.
 The batch mode of :ref:`spicy-driver <spicy-driver>` does the same.
@@ -2015,7 +2015,7 @@ associate numerical result codes with them as the responses come in:
 
 The output is produced from :download:`this input batch file
 <examples/context-input.dat>`. This would work the same when used with
-the Zeek plugin on a corresponding packet trace.
+the Zeek on a corresponding packet trace.
 
 Note that the units for the two sides of the connection need to
 declare the same ``%context`` type. Processing will abort at

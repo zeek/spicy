@@ -58,12 +58,12 @@ check:
 
 spicy-%:
 	git clone https://github.com/zeek/$@
-check-zeek-docs: spicy-plugin spicy-tftp
+check-zeek-docs: spicy-tftp
 	@echo Refreshing checkouts
 	@for REPO in $^; do (cd $$REPO && git pull && git reset HEAD --hard)>/dev/null; done
 	@
 	@echo Checking whether docs for Zeek integration are up-to-date
-	@./scripts/autogen-zeek-docs spicy-plugin spicy-tftp
+	@./scripts/autogen-zeek-docs spicy-tftp
 	@
 	@git diff --quiet autogen/zeek \
 		|| (echo "Zeek docs are not up-to-date, rerun './scripts/autogen-zeek-docs'." && exit 1)

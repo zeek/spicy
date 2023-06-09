@@ -6,12 +6,13 @@ Zeek Integration
 ================
 
 While Spicy itself remains application independent, transparent
-integration into Zeek has been a primary goal for its development. To
-facilitate adding new protocol and file analyzers to `Zeek
-<https://zeek.org>`_, there is a `Zeek plugin
-<https://github.com/zeek/spicy-plugin>`_ that makes Spicy parsers
-accessible to Zeek's processing pipeline. In the following, we dig
-deeper into how to use all of this.
+integration into `Zeek <https://zeek.org>`_ has been a primary goal
+for its development from early on. While historically an external Zeek
+plugin was required to use Spicy parsers with Zeek, Zeek has now been
+shipping with built-in Spicy support since version 5.0. That means you
+can directly add new protocol, file, and packet analyzers to Zeek
+through Spicy without needing to write any further code. In the
+following, we dig deeper into how to use all of this.
 
 .. note::
 
@@ -31,7 +32,7 @@ deeper into how to use all of this.
 Terminology
 ===========
 
-In Zeek, the term "analyzer" refers generally to a component that
+In Zeek, the term "analyzer" generally refers to a component that
 processes a particular protocol ("protocol analyzer"), file format
 ("file analyzer"), or low-level packet structure ("packet analyzer").
 "Processing" here means more than just parsing content: An analyzer
@@ -39,7 +40,7 @@ controls when it wants to be used (e.g., with connections on specific
 ports, or with files of a specific MIME type); what events to generate
 for Zeek's scripting layer; and how to handle any errors occurring
 during parsing. While Spicy itself focuses just on the parsing part,
-the Spicy plugin makes it possible to provide the remaining pieces to
+Spicy makes it possible to provide the remaining pieces to
 Zeek, turning a Spicy parser into a full Zeek analyzer. That's what we
 refer to as a "Spicy (protocol/file/packet) analyzer" for Zeek.
 
@@ -48,101 +49,33 @@ refer to as a "Spicy (protocol/file/packet) analyzer" for Zeek.
 Installation
 ============
 
-Since Zeek version 5.0, Spicy and Spicy plugin are by default bundled with Zeek.
-To confirm whether Spicy plugin is available you can inspect the list of
-installed plugin::
+Since Zeek version 5.0, support for Spicy is by default bundled with
+Zeek. To confirm that Spicy is indeed available, you can inspect the
+output of ``zeek -N``::
 
     # zeek -N Zeek::Spicy
     Zeek::Spicy - Support for Spicy parsers (*.hlto) (built-in)
 
-If you see ``Zeek::Spicy`` listed, spicy-plugin is available, otherwise it
-needs to be installed manually. The recommended way to do so is through Zeek's
-package manager `zkg <https://docs.zeek.org/projects/package-manager/en/stable>`_.
-If you have not yet installed *zkg*, follow `its instructions
-<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html>`_.
-
-You will need to have Spicy and Zeek installed as well of course.
-Before proceeding, make sure ``spicy-config`` and ``zeek-config`` are
-in your ``PATH``::
-
-    # which spicy-config
-    /opt/spicy/bin/spicy-config
-
-    # which zeek-config
-    /usr/local/zeek/bin/zeek-config
-
-.. _zeek_spicy_plugin_installation:
-
-Package Installation
---------------------
-
-The easiest way to install the plugin is through Zeek's package
-manager::
-
-    # zkg install zeek/spicy-plugin
-
-This will pull down the plugin's package, compile and test the plugin,
-and then install and activate it. That process may take a bit to
-complete. To check afterwards that the plugin has
-become available, run ``zeek -N Zeek::Spicy``, it should show output
-like this::
-
-    # zeek -N Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.hlto) (dynamic, version x.y.z)
-
-By default, *zkg* will install the most recent release version of the
-plugin. If you want to install the current development version, use
-``zkg install --version main zeek/spicy-plugin`` instead.
-
-.. _zeek_spicyz:
-
-If you want to develop your own Spicy analyzers for Zeek, you will
-need a tool that comes with the plugin's installation: ``spicyz``. If
-you are using a recent version of *zkg* (>= 2.8.0), it's easy to make
-the tool show up in your ``PATH``: Either run ``zkg env`` (see `this configuration advice
-<https://docs.zeek.org/projects/package-manager/en/stable/quickstart.html?highlight=zkg%20env#advanced-configuration>`_)
-or update your ``PATH`` manually::
-
-    # export PATH=$(zkg config bin_dir):$PATH
-
-If you are using an older version of *zkg* (including the version
-coming with Zeek 4.0), it's a bit more difficult to find ``spicyz``:
-it will be inside your *zkg* state directory at
-``<state_dir>/clones/package/spicy-plugin/build/bin/spicyz``.
-We recommend adding that directory to your ``PATH``. (The state
-directory is usually either ``<zeek-prefix>/var/lib/zkg`` or
-``~/.zkg``, depending on how you have set up *zkg*.)
-
-Manual Installation
--------------------
-
-If you prefer, you can also compile the Zeek plugin yourself, outside
-of the package manager by cloning the plugin's GitHub repository and
-building it through CMake. See the instructions in its `README
-<https://github.com/zeek/spicy-plugin>`_. This will install ``spicyz``
-into ``<prefix>/bin``.
-
-.. note::
-
-    Developer's note: It works to point ``ZEEK_PLUGIN_PATH`` directly
-    to the plugin's build directory, without installing it first. If
-    you are building the plugin as part of the Spicy distribution, it
-    will land in ``<build-directory>/zeek/spicy-plugin``.
+It remains possible to build Zeek against an external Spicy
+installation through Zeek's ``configure`` option
+``--with-spicy=PATH``, where ``PATH`` points to the Spicy installation
+directory. In that case, you also need to ensure that the Spicy tools
+(e.g., ``spicyc``, ``spicy-config``) are available in ``PATH``.
 
 Interface Definitions ("evt files")
 ===================================
 
 Per above, a Spicy analyzer for Zeek does more than just parsing data.
-Accordingly, we need to tell the Zeek plugin a couple of additional
+Accordingly, we need to tell Zeek a couple of additional
 pieces about analyzers we want it to provide to Zeek:
 
 Analyzer setup
-    The plugin needs to know what type of analyzers we are creating,
+    Zeek needs to know what type of analyzers we are creating,
     when we want Zeek to activate them, and what Spicy unit types to
     use as their parsing entry point.
 
 Event definitions
-   We need to tell the Spicy plugin what Zeek events to provide and
+   We need to tell Zeek which events to provide and
    when to trigger them.
 
 We define all of these through custom interface definition files that
@@ -230,7 +163,7 @@ properties are supported:
 
         .. note::
 
-            The plugin will also honor any ``%port`` :ref:`meta data
+            Zeek will also honor any ``%port`` :ref:`meta data
             property <unit_meta_data>` that the responder-side
             ``SPICY_UNIT`` may define (as long as the attribute's
             direction is not ``originator``).
@@ -370,7 +303,7 @@ File analyzers support the following properties:
 
         .. note::
 
-            The plugin will also honor any ``%mime-type`` :ref:`meta
+            Zeek will also honor any ``%mime-type`` :ref:`meta
             data property <unit_meta_data>` that the ``SPICY_UNIT``
             may define.
 
@@ -414,14 +347,14 @@ As a full example, here's what a new GIF analyzer could look like:
 Event Definitions
 -----------------
 
-To define a Zeek event that you want the Spicy plugin to trigger, you
+To define a Zeek event that you want the Spicy analyzer to trigger, you
 add lines of the form::
 
     on HOOK_ID -> event EVENT_NAME(ARG_1, ..., ARG_N);
 
     on HOOK_ID if COND -> event EVENT_NAME(ARG_1, ..., ARG_N);
 
-The Zeek plugin automatically derives from this everything it needs to
+Zeek automatically derives from this everything it needs to
 register new events with Zeek, including a mapping of the arguments'
 Spicy types to corresponding Zeek types. More specifically, these are
 the pieces going into such an event definition:
@@ -575,14 +508,14 @@ which you would normally need to create matching type declarations in
 your Zeek scripts. While that's not necessarily hard, but it can
 become quite cumbersome.
 
-Fortunately, the Spicy plugin can help: for most types, it can
-instantiate corresponding Zeek types automatically as it loads the
+Fortunately, there's help: for most types, Zeek can
+instantiate corresponding types automatically as it loads the
 corresponding analyzer. While you will never actually see the
 Zeek-side type declarations, they will be available inside your Zeek
 scripts as if you had typed them out yourself--similar to other types
 that are built into Zeek itself.
 
-To have the plugin create a Zeek type for your analyzer automatically,
+To have the Zeek create a type for your analyzer automatically,
 you need to ``export`` the Spicy type in your EVT file. The syntax for
 that is::
 
@@ -629,7 +562,7 @@ example, that looks like this::
 Enum Types
 ^^^^^^^^^^
 
-When you export a Spicy ``enum`` type, the Spicy plugin creates a
+When you export a Spicy ``enum`` type, Zeek creates a
 corresponding Zeek ``enum`` type. For example, assume the following
 Spicy declaration:
 
@@ -643,7 +576,7 @@ Spicy declaration:
         C = 85
     };
 
-Using ``export Test::MyEnum;``, the plugin will create the equivalent
+Using ``export Test::MyEnum;``, Zeek will create the equivalent
 of the following Zeek type for use in your scripts:
 
 .. code-block:: zeek
@@ -676,7 +609,7 @@ of the following Zeek type for use in your scripts:
 Unit Types
 ^^^^^^^^^^
 
-When you export a Spicy ``unit`` type, the Spicy plugin creates a
+When you export a Spicy ``unit`` type, Zeek creates a
 corresponding Zeek ``record`` type. For example, assume the following
 Spicy declaration:
 
@@ -691,7 +624,7 @@ Spicy declaration:
         var c: bool;
     };
 
-Using ``export Test::MyRecord;``, the plugin will then create the
+Using ``export Test::MyRecord;``, Zeek will then create the
 equivalent of the following Zeek type for use in your scripts:
 
 .. code-block:: zeek
@@ -711,7 +644,7 @@ equivalent of the following Zeek type for use in your scripts:
 The individual fields map over just like event arguments do, following
 the :ref:`the table <zeek-event-arg-types>` above. For aggregate
 types, this works recursively: if, e.g., a field is itself of unit
-type *and that type has been exported as well*, the plugin will map it
+type *and that type has been exported as well*, Zeek will map it
 over accordingly to the corresponding ``record`` type. Note that such
 dependent types must be exported *first* in the EVT file for this to
 work. As a result, you cannot export self-recursive unit types.
@@ -764,12 +697,12 @@ Conditional Compilation
 
 ``*.evt`` files offer the same basic form of :ref:`conditional
 compilation <conditional_compilation>` through
-``@if``/``@else``/``@endif`` blocks as Spicy scripts. The Zeek plugin
+``@if``/``@else``/``@endif`` blocks as Spicy scripts. Zeek
 makes two additional identifiers available for testing to both
 ``*.evt`` and ``*.spicy`` code:
 
     ``HAVE_ZEEK``
-        Always set to 1 by the plugin. This can be used for feature
+        Always set to 1 by Zeek. This can be used for feature
         testing from Spicy code to check if it's being compiled for
         Zeek.
 
@@ -807,13 +740,13 @@ guide::
 
 Instead of providing the precompiled analyzer on the Zeek command
 line, you can also copy them into
-``${prefix}/lib/spicy/Zeek_Spicy/modules``. The Spicy plugin will
+``${prefix}/lib/spicy/Zeek_Spicy/modules``. Zeek will
 automatically load any ``*.hlto`` object files it finds there. In
-addition, the plugin also scans Zeek's plugin directory for ``*.hlto``
+addition, Zeek also scans its plugin directory for ``*.hlto``
 files. Alternatively, you can override both of those locations by
 setting the environment variable ``ZEEK_SPICY_MODULE_PATH`` to a set of
-colon-separated directories to search instead. The plugin will then
-*only* look there. In all cases, the plugin searches any directories
+colon-separated directories to search instead. Zeek will then
+*only* look there. In all cases, Zeek searches any directories
 recursively, so it will find ``*.hlto`` also if they are nested in
 subfolders.
 
@@ -854,7 +787,7 @@ with your analyzer, add two pieces:
    reasonably certain that it is processing the expected protocol.
    Optionally, you may also call :ref:`spicy::decline_input()
    <spicy_decline_input>` when you're sure the parser is *not* parsing
-   the right protocol. However, the Zeek plugin will also trigger this
+   the right protocol. However, Zeek will also trigger this
    automatically whenever your parser aborts with an error.
 
 .. _zeek_configuration:
@@ -865,7 +798,7 @@ Configuration
 Options
 -------
 
-The Spicy plugin provides a set of script-level options to tune its
+Zeek provides a set of script-level options to tune Spicy
 behavior. These all live in the ``Spicy::`` namespace:
 
 .. literalinclude:: /autogen/zeek/__preload__.zeek
@@ -876,8 +809,8 @@ behavior. These all live in the ``Spicy::`` namespace:
 Functions
 ---------
 
-The Spicy plugin also adds the following new built-in functions to
-Zeek, which likewise live in the ``Spicy::`` namespace:
+Zeek also adds the following new built-in functions for Spicy, which
+likewise live in the ``Spicy::`` namespace:
 
 .. literalinclude:: /autogen/zeek/bare.zeek
     :language: zeek
@@ -908,8 +841,8 @@ file. If you're using a signature instead, try a port/MIME type first,
 just to make sure it's not a matter of signature mismatches.
 
 If there's nothing obviously wrong with your source files, you can
-trace what the plugin is compiling by running ``spicyz`` with ``-D
-zeek``. For example, reusing the :ref:`HTTP example
+trace what the Zeek's Spicy support is compiling by running ``spicyz``
+with ``-D zeek``. For example, reusing the :ref:`HTTP example
 <example_zeek_my_http>` from the *Getting Started* guide::
 
     # spicyz -D zeek my-http.spicy my-http.evt -o my-http.hlt
@@ -963,7 +896,7 @@ activated for processing the connection in the trace, and that it then
 receives the data that we know indeed constitutes its payload, before
 it eventually gets shutdown.
 
-To see this from the plugin's side, set the ``zeek`` debug stream
+To see this from the Zeek side, set the ``zeek`` debug stream
 through the ``HILTI_DEBUG`` environment variable::
 
     # HILTI_DEBUG=zeek zeek -Cr request-line.pcap my-http.hlto
@@ -982,7 +915,7 @@ through the ``HILTI_DEBUG`` environment variable::
     [zeek] [SPICY_MYHTTP/7/resp] no unit specified for parsing
 
 After the initial initialization, you see the data arriving and the
-event being generated for Zeek. The plugin also reports that we didn't
+event being generated for Zeek. Zeek also reports that we didn't
 define a unit for the responder side---which we know in this case, but
 if that appears unexpectedly you probably found a problem.
 
@@ -1005,7 +938,7 @@ setting ``HILTI_DEBUG=spicy`` tends to be helpful::
 
 If everything looks right with the parsing, and the right events are
 generated too, then the final part is to check out the events that
-arrive on the Zeek side. To get Zeek to see an event that the plugin
+arrive on the Zeek side. To get Zeek to see an event that Zeek
 raises, you need to have at least one handler implemented for it in
 one of your Zeek scripts. You can then load Zeek's
 ``misc/dump-events`` to see them as they are being received, including

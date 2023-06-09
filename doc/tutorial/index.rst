@@ -588,7 +588,7 @@ Zeek Integration
 ================
 
 To turn the Spicy-side grammar into a Zeek analyzer, we need to
-provide Spicy's Zeek plugin with a description of how to employ it.
+provide Zeek with a description of how to employ it.
 There are two parts to that: Telling Zeek when to activate the
 analyzer, and defining events to generate. In addition, we will need a
 Zeek-side script to do something with our new TFTP events. We will
@@ -599,36 +599,24 @@ files involved individually first, see the :ref:`final section
 used to bootstrap a new Zeek package with a skeleton of everything
 needed for an analyzer.
 
-Before proceeding, make sure that the Zeek plugin is available. Since
-Zeek 5.0, it will show up by default::
+Before proceeding, make sure that your Zeek comes with Spicy support
+built-in---which is the default since Zeek version 5.0::
 
     # zeek -N Zeek::Spicy
     Zeek::Spicy - Support for Spicy parsers (*.hlto) (built-in)
-
-If you are using an older version (or your Zeek has it specifically
-disabled), follow the instructions to :ref:`install the Zeek plugin
-<zeek_spicy_plugin_installation>`. You should now be seeing output
-similar to this::
-
-    # zeek -NN Zeek::Spicy
-    Zeek::Spicy - Support for Spicy parsers (*.hlto) (dynamic, version x.y.z)
 
 You should also have ``spicyz`` in your ``PATH``::
 
     # which spicyz
     /usr/local/zeek/bin/spicyz
 
-Note that you need a somewhat recent version of *zkg* to get ``spicyz``
-into your ``PATH`` automatically; refer to the :ref:`plugin
-instructions plugin <zeek_installation>` for more.
-
 Compiling the Analyzer
 ----------------------
 
-Spicy comes with a tool :ref:`spicyz <spicyz>` that compiles Spicy
-analyzers into binary code that Zeek can load through a Spicy
-plugin. The following command line produces a binary object file
-``tftp.hlto`` containing the executable analyzer code:
+Zeek comes with a tool :ref:`spicyz <spicyz>` that compiles Spicy
+analyzers into binary code that Zeek can load through a Spicy plugin.
+The following command line produces a binary object file ``tftp.hlto``
+containing the executable analyzer code:
 
 .. code::
 
@@ -648,11 +636,6 @@ When starting Zeek, we add ``tftp.hlto`` to its command line:
 .. code::
 
     # zeek -r tftp_rrq.pcap tftp.hlto
-
-.. note::
-
-    If you get an error from Zeek here, see :ref:`zeek_installation` to
-    make sure the Spicy plugin is installed correctly.
 
 
 Activating the Analyzer

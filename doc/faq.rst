@@ -59,33 +59,31 @@ Zeek
 
 .. _faq_zeek_install_spicy_and_plugin_to_use_parsers:
 
-.. rubric:: Do I need to install Spicy and its Zeek plugin to use Spicy parsers in Zeek?
+.. rubric:: Do I need to install Spicy and/or a Zeek plugin to use Spicy parsers in Zeek?
 
-As of version 5.0 Zeek by default bundles Spicy and its Zeek plugin. If that is
-the case the folder containing the ``zeek`` binary should also contain e.g.,
-``spicyc`` (provided by Spicy) and ``spicyz`` (provided by Spicy plugin). To
-check that the Spicy plugin is active look for ``Zeek::Spicy`` in the output
-of ``zeek -N``::
+If you're using Zeek >= 5.0 with a default build configuration,
+there's nothing else you need to install. After installing Zeek, the
+same folder containing the ``zeek`` binary will also have the relevant
+Spicy tools, such as  ``spicyc`` (provided by Spicy) and ``spicyz``
+(provided by Zeek). To double check that the Spicy support is indeed
+available, look for ``Zeek::Spicy`` in the output of ``zeek -N``::
 
     # zeek -N
     <...>
     Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
 
-If ``spicyc`` is missing, you need to :ref:`install Spicy <installation>`; if
-``spicyz`` is missing or ``Zeek::Spicy`` is not listed you need to :ref:`install
-Spicy plugin <zeek_spicy_plugin_installation>`.
+Note that it remains possible to build Zeek against an external Spicy
+installation, or even without any Spicy support at all. Look at Zeek's
+``configure`` for corresponding options.
 
-.. _faq_zeek_install_spicy_to_use_plugin:
+.. note::
 
-.. rubric:: Do I need a Spicy installation for using the Zeek plugin?
+    For some historic background: Zeek 5.0 started bundling Spicy, as well
+    as the former Zeek plugin for Spicy, so that now nothing else needs to
+    be installed separately anymore to use Spicy parsers. Since Zeek 6.0,
+    the code for that former plugin has further moved into Zeek itself,
+    and is now maintained directly by the Zeek developers.
 
-No, if the Zeek plugin was compiled with ``--build-toolchain=no``,
-it will not require Spicy to be installed on the system. It will only
-be able to load pre-compiled analyzers then (i.e., ``*.hlto`` files),
-which you can create on a similar system that has Spicy installed
-through :ref:`spicyz <spicyz>`. The build process will leave a binary
-distribution inside your build directory at
-``zeek/plugin/Zeek_Spicy.tgz``.
 
 .. _faq_zeek_spicy_dpd_support:
 
@@ -106,7 +104,7 @@ to declare such an analyzer.
 
 .. rubric:: I have ``print`` statements in my Spicy grammar, why do I not see any output when running Zeek?
 
-The Zeek plugin by default disables the output of Spicy-side ``print``
+Zeek by default disables the output of Spicy-side ``print``
 statements. To enable them, add ``Spicy::enable_print=T`` to the Zeek
 command line (or ``redef Spicy::enable_print=T;`` to a Zeek script
 that you are loading).
@@ -115,7 +113,7 @@ that you are loading).
 
 .. rubric:: My analyzer recognizes only one or two TCP packets even though there are more in the input.
 
-The Zeek Spicy plugin parses the sending and receiving sides of a TCP
+In Zeek, a Spicy analyzer parses the sending and receiving sides of a TCP
 connection each according to the given Spicy grammar. This means that
 if more than one message can be sent per side the grammar needs to
 allow for that. For example, if the grammar parses messages of the

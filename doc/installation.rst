@@ -17,10 +17,10 @@ platforms to support and test.
 
 .. note::
 
-    Most of the installation options discussed in this chapter do
-    *not* include the Zeek plugin for Spicy. We recommend installing
-    the plugin through Zeek's package manager; see its
-    :ref:`installation instructions <zeek_installation>`.
+    If your goal is to use Spicy with Zeek, you can skip these
+    installation instructions. Zeek comes with Spicy support built-in
+    by default since version 5.0. See the :ref:`Zeek section
+    <zeek_installation>` for more.
 
 Pre-built binaries
 ------------------
