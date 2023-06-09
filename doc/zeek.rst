@@ -801,7 +801,7 @@ Options
 Zeek provides a set of script-level options to tune Spicy
 behavior. These all live in the ``Spicy::`` namespace:
 
-.. literalinclude:: /autogen/zeek/__preload__.zeek
+.. literalinclude:: /autogen/zeek/init-bare.zeek
     :language: zeek
     :start-after: doc-options-start
     :end-before:  doc-options-end
@@ -812,7 +812,7 @@ Functions
 Zeek also adds the following new built-in functions for Spicy, which
 likewise live in the ``Spicy::`` namespace:
 
-.. literalinclude:: /autogen/zeek/bare.zeek
+.. literalinclude:: /autogen/zeek/init-framework.zeek
     :language: zeek
     :start-after: doc-functions-start
     :end-before:  doc-functions-end
