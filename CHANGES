@@ -1,3 +1,18 @@
+1.8.0-dev.173 | 2023-06-09 10:01:28 +0200
+
+  * GH-1447: Do not forcibly make `strong_ref` `in` function parameters immutable. (Benjamin Bannier, Corelight)
+
+    We previously would always emit a `const` value when passing a
+    `strong_ref` as a function parameter. This lead to the unintuitive error
+    that non-const `strong_ref` parameters could not be modified or have
+    non-const methods called on them (this would actually fail at codegen
+    time).
+
+    With this patch we remove the special treatment of `strong_ref`
+    parameter mutability.
+
+    Closes #1447.
+
 1.8.0-dev.171 | 2023-06-09 10:00:51 +0200
 
   * GH-1452: Allow resolving of unit parameters before `self` is fully resolved. (Benjamin Bannier, Corelight)
