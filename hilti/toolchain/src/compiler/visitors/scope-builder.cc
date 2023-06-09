@@ -169,6 +169,9 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const type::Struct& t, position_t p) {
+        for ( auto&& x : t.parameterRefs() )
+            p.parent().scope()->insert(std::move(x));
+
         if ( ! p.node.as<Type>().typeID() )
             // We need to associate the type ID with the declaration we're
             // creating, so wait for that to have been set by the resolver.
@@ -176,9 +179,6 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
         if ( t.selfRef() )
             p.node.scope()->insert(t.selfRef());
-
-        for ( auto&& x : t.parameterRefs() )
-            p.parent().scope()->insert(std::move(x));
     }
 };
 

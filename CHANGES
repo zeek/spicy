@@ -1,3 +1,20 @@
+1.8.0-dev.171 | 2023-06-09 10:00:51 +0200
+
+  * GH-1452: Allow resolving of unit parameters before `self` is fully resolved. (Benjamin Bannier, Corelight)
+
+    When constructing the list of declarations in a scope we previously
+    would not emit any items for struct types without fully resolved type.
+    This lead to the situation where when resolving references to a unit
+    parameter we might end up resolving them to similarly named globals
+    since they were available before the struct type was resolved.
+
+    This patch makes sure that we emit at least unit parameters at struct
+    scope level, even if we cannot emit `self` yet. This improves the
+    situation around globals mentioned above and is likely okay since `self`
+    should only ever resolve to something at struct scope.
+
+    Closes #1452.
+
 1.8.0-dev.169 | 2023-06-09 09:59:42 +0200
 
   * Fix docs for long-form of `-x` flag to spicyc. (Benjamin Bannier, Corelight)

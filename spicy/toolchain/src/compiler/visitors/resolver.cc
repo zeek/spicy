@@ -115,7 +115,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
     };
 #endif
 
-    // Log debug message recording resolving a epxxression.
+    // Log debug message recording resolving a expression.
     void logChange(const Node& old, const Expression& nexpr) {
         HILTI_DEBUG(logging::debug::Resolver,
                     hilti::util::fmt("[%s] %s -> expression %s (%s)", old.typename_(), old, nexpr, old.location()));
