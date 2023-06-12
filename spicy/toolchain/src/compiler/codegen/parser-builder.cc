@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <numeric>
 #include <optional>
+#include <sstream>
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
@@ -2109,6 +2110,13 @@ Expression ParserBuilder::contextNewFunction(const type::Unit& t) {
     return hilti::expression::UnresolvedID(std::move(id));
 }
 
+// Helper to heuristically reconstruct the Spicy source code for a given expression.
+std::string prettyPrintExpr(const Expression& e) {
+    std::stringstream ss;
+    ss << e;
+    return hilti::util::replace(ss.str(), "__dd", "$$");
+}
+
 void ParserBuilder::newValueForField(const production::Meta& meta, const Expression& value, const Expression& dd) {
     const auto& field = meta.field();
 
@@ -2122,7 +2130,9 @@ void ParserBuilder::newValueForField(const production::Meta& meta, const Express
             block->addLocal(ID("__dd"), field->ddType(), dd);
 
         auto cond = block->addTmp("requires", *a.valueAsExpression());
-        pushBuilder(block->addIf(builder::not_(cond)), [&]() { parseError("&requires failed", a.value().location()); });
+        pushBuilder(block->addIf(builder::not_(cond)), [&]() {
+            parseError(fmt("&requires failed: %s", prettyPrintExpr(*a.valueAsExpression())), a.value().location());
+        });
     }
 
     if ( ! field->originalType().isA<spicy::type::Bitfield>() && ! value.type().isA<type::Void>() &&
@@ -2273,7 +2283,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         for ( const auto& attr : AttributeSet::findAll(unit.attributes(), "&requires") ) {
             auto cond = *attr.valueAsExpression();
             pushBuilder(builder()->addIf(builder::not_(cond)),
-                        [&]() { parseError("&requires failed", cond.get().meta()); });
+                        [&]() { parseError(fmt("&requires failed: %s", prettyPrintExpr(cond)), cond.get().meta()); });
         }
     }
 
