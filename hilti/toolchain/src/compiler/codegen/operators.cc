@@ -92,6 +92,9 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const operator_::bool_::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::bool_::Unequal& n) { return binary(n, "!="); }
+    result_t operator()(const operator_::bool_::BitAnd& n) { return binary(n, "&"); }
+    result_t operator()(const operator_::bool_::BitOr& n) { return binary(n, "|"); }
+    result_t operator()(const operator_::bool_::BitXor& n) { return binary(n, "^"); }
 
     /// bytes::Iterator
 
