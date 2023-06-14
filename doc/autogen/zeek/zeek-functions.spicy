@@ -18,7 +18,7 @@ instead, which will have the same effect with Zeek.
 
 .. _spicy_weird:
 
-.. rubric:: ``function zeek::weird(id: string, addl: string = "") : &cxxname="spicy::zeek::rt::weird";``
+.. rubric:: ``function zeek::weird(id: string, addl: string = "") : &cxxname="zeek::spicy::rt::weird";``
 
 Reports a "weird" to Zeek. This should be used with similar semantics as in
 Zeek: something quite unexpected happening at the protocol level, which however

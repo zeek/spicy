@@ -39,5 +39,5 @@ By default, Spicy currently provides just one pre-defined identifier:
         The current Spicy version in numerical format (e.g., 10000 for
         version 1.0; see the output of ``spicy-config --version-number``).
 
-The Spicy plugin for Zeek defines a couple of :ref:`additional
+Zeek defines a couple of :ref:`additional
 identifiers <zeek_conditional_compilation>`.

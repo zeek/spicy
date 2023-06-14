@@ -200,9 +200,26 @@ and ``spicyc -p my-http.spicy`` will show the intermediary HILTI code.
 Zeek Integration
 ----------------
 
-Now let's use our ``RequestLine`` parser with Zeek. For that we need to prepare
-some input and then we can use the grammar that we already got to add a new
-protocol analyzer to Zeek.
+Now let's use our ``RequestLine`` parser with Zeek.
+
+Since version 5.0, Zeek comes with Spicy support built-in by default,
+so normally you won't need to install anything further to make use of
+Spicy parsers. To double check that your Zeek indeed supports Spicy,
+confirm that it shows up in the output of ``zeek -N``:
+
+.. code::
+
+    # zeek -N
+    <...>
+    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
+
+If you do not see the Spicy listed, it must have been disabled at Zeek
+build time. Assuming Spicy is indeed available, you will also find the
+Zeek-side compiler tool ``spicyz`` in the same location as the ``zeek``
+binary.
+
+Next, we prepare some input traffic for testing our ``RequestLine``
+parser with Zeek.
 
 .. rubric:: Preparations
 
@@ -220,26 +237,6 @@ payload::
     # killall tcpdump nc
 
 This gets us :download:`this trace file <examples/request-line.pcap>`.
-
-Next we need to make sure that Zeek can load Spicy parsers. As of version 5.0
-Zeek by default bundles Spicy and spicy-plugin which makes Spicy parsers
-available to Zeek.
-
-.. code::
-
-    # zeek -N
-    <...>
-    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (built-in)
-
-Depending on the Zeek build configuration this could also report
-
-.. code::
-
-    Zeek::Spicy - Support for Spicy parsers (``*.spicy``, ``*.evt``, ``*.hlto``) (dynamic, version 1.3.13)
-
-If you do not see the Spicy plugin listed you need to install the Zeek plugin
-spicy-plugin yourself, see :ref:`the Zeek package installation guide
-<zeek_spicy_plugin_installation>`.
 
 .. _example_zeek_my_http_adding_analyzer:
 
@@ -270,7 +267,7 @@ type that our Spicy grammar defines (line 2); and we want Zeek to
 activate our analyzer for all connections with a responder port of
 12345 (which, of course, matches the packet trace we created).
 
-The second block (line 5) tells the Spicy plugin that we want to
+The second block (line 5) tells Zeek that we want to
 define one event. On the left-hand side of that line we give the unit
 that is to trigger the event. The right-hand side defines its name and
 arguments. What we are saying here is that every time a ``RequestLine``
@@ -280,7 +277,7 @@ Three of them are the values of corresponding unit fields, accessed
 just through normal Spicy expressions (inside an event argument
 expression, ``self`` refers to the unit instance that has led to the
 generation of the current event). The first parameter, ``$conn``, is a
-"magic" keyword that lets the Spicy plugin pass the Zeek-side
+"magic" keyword that passes the Zeek-side
 connection ID (``conn_id``) to the event.
 
 Now we got everything in place that we need for our new protocol
@@ -316,7 +313,7 @@ output we would expect.
 
 .. note::
 
-    By default, the Zeek plugin suppresses any output from Spicy-side
+    By default, Zeek suppresses any output from Spicy-side
     ``print`` statements. You can add ``Spicy::enable_print=T`` to the
     command line to see it. In the example above, you would then get
     an additional line of output: ``GET, /index.html, 1.0``.

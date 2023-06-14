@@ -155,7 +155,7 @@ If we want that, we can use ``parse2()`` instead and provide it with a
     version: 1.0
 
 Another approach to retrieving field values goes through Spicy hooks
-calling back into the host application. That's how the Zeek plugin
+calling back into the host application. That's how the Zeek's Spicy support
 operates. Let's say we want to execute a custom C++ function every
 time a ``RequestList`` has been parsed. By adding the following code
 to ``my-http.spicy``, we (1) declare that function on the Spicy-side,
@@ -223,7 +223,7 @@ Supporting Arbitrary Parsers
 This approach is more complex, and we'll just briefly describe the
 main pieces here. All of the tools coming with Spicy support arbitrary
 parsers and can serve as further examples (e.g., :ref:`spicy-driver`,
-:ref:`spicy-dump`, the :ref:`Zeek plugin <zeek_plugin>`). Indeed, they all
+:ref:`spicy-dump`, :ref:`zeek_plugin`). Indeed, they all
 build on the same C++ library class ``spicy::rt::Driver`` that
 provides a higher-level API to working with Spicy's parsers in a
 generic fashion. We'll do the same in the following.

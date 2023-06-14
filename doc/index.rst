@@ -32,14 +32,13 @@ Overview
     creating pre-compiled shared libraries, or by giving you generated
     C++ code that you can link into your application.
 
-    Spicy comes with a `Zeek plugin
-    <https://github.com/zeek/spicy-plugin>`_ that enables adding new
-    protocol and file analyzers to `Zeek <https://www.zeek.org>`_
-    without having to write any C++ code. You define the grammar,
-    specify which Zeek events to generate, and Spicy takes care of the
-    rest. There's also a `Zeek analyzers
-    <https://github.com/zeek/spicy-analyzers>`_ package that provides
-    Zeek with several new, Spicy-based analyzers.
+    Spicy comes with Zeek support that enables adding new protocol and
+    file analyzers to `Zeek <https://www.zeek.org>`_ without having to
+    write any C++ code. You define the grammar, specify which Zeek
+    events to generate, and Spicy takes care of the rest. There's also
+    a `Zeek analyzers <https://github.com/zeek/spicy-analyzers>`_
+    package that provides Zeek with several new, Spicy-based
+    analyzers.
 
     See our :ref:`collection of example grammars <examples>` to get a
     sense of what Spicy looks like.
