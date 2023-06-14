@@ -1,0 +1,36 @@
+# @TEST-EXEC: ${HILTIC} -dj %INPUT
+
+module Foo {
+
+assert True == True;
+assert False == False;
+
+assert True != False;
+assert False != True;
+assert False != True;
+
+assert True && True;
+assert ! ( False && False );
+assert ! ( True && False );
+assert ! ( False && True );
+
+assert True & True;
+assert ! ( False & False );
+assert ! ( True & False );
+assert ! ( False & True );
+
+assert True || True;
+assert ! ( False || False );
+assert True || False;
+assert False || True;
+
+assert True | True;
+assert ! ( False | False );
+assert True | False;
+assert False | True;
+
+assert ! (True ^ True);
+assert ! ( False ^ False );
+assert True ^ False;
+assert False ^ True;
+}
