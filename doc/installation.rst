@@ -72,7 +72,7 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - Dockerfile
 
     * - Alpine 3.18
-      -
+      - :package-release-tgz:`TAR <linux_alpine_3_18>`
       - :package-dev-tgz:`TAR <docker_alpine_3_18>`
       - :repo:`Dockerfile <docker/Dockerfile.alpine-3.18>`
 
@@ -97,7 +97,7 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :repo:`Dockerfile <docker/Dockerfile.fedora-37>`
 
     * - Fedora 38
-      -
+      - :package-release-rpm:`RPM <linux_fedora38>`
       - :package-dev-rpm:`RPM <docker_fedora38>`
       - :repo:`Dockerfile <docker/Dockerfile.fedora-38>`
 
@@ -107,7 +107,7 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-20>`
 
     * - Ubuntu 22
-      -
+      - :package-release-deb:`DEB <linux_ubuntu22>`
       - :package-dev-deb:`DEB <docker_ubuntu22>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-22>`
 
