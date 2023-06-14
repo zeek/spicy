@@ -1,3 +1,16 @@
+1.9.0-dev.3 | 2023-06-14 16:35:45 +0200
+
+  * GH-1343: Include condition in `&requires` failure message. (Benjamin Bannier, Corelight)
+
+    With this patch we now include the `&requires` condition in the failure
+    message in case the condition is not met. Since we do not have direct
+    access to the Spicy source code anymore we render HILTI code for now,
+    but undo the most common desugaring by replacing `__dd` with `$$`.
+
+  * Update links to some release artifacts. (Benjamin Bannier, Corelight)
+
+  * Add placeholder section for 1.9 to NEWS. (Benjamin Bannier, Corelight)
+
 1.8.0 | 2023-06-14 08:53:34 +0200
 
   * Release 1.8.0.
