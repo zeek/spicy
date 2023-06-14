@@ -2,16 +2,86 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.8 (in progress)
-=========================
+Version 1.8
+===========
 
 .. rubric:: New Functionality
 
+- Add new ``skip`` keyword to let unit items efficiently skip over uninteresting data.
+
+  For cases where your parser just needs to skip over some data, without
+  needing access to its content, Spicy provides a ``skip`` keyword to
+  prefix corresponding fields with:
+
+  .. spicy-code:: skip.spicy
+
+      module Test;
+
+      public type Foo = unit {
+          x: int8;
+           : skip bytes &size=5;
+          y: int8;
+          on %done { print self; }
+      };
+
+  ``skip`` works for all kinds of fields but is particularly efficient
+  with ``bytes`` fields, for which it will generate optimized code
+  avoiding the overhead of storing any data.
+
+  ``skip`` fields may have conditions and hooks attached, like
+  any other fields. However, they do not support ``$$`` in
+  expressions and hooks.
+
+  For readability, a ``skip`` field may be named (e.g., ``padding: skip
+  bytes &size=3;``), but even with a name, its value cannot be accessed.
+
+  ``skip`` fields extend support for ``void`` with attributes fields which are now deprecated.
+
+- Add runtime profiling infrastructure.
+
+  This add an option ``--enable-profiling`` to the HILTI and Spicy compilers. Use
+  of the option does two things: (1) it sets a flag enabling inserting
+  additional profiling instrumentation into generated C++ code, and (2) it
+  enables using instrumentation for recording profiling information during
+  execution of the compiled code, including dumping out a profiling report at
+  the end. The profiling information collected includes time spent in HILTI
+  functions as well as for parsing Spicy units and unit fields.
+
 .. rubric:: Changed Functionality
+
+- Optimizations for improved runtime performance.
+
+  This release contains a number of changes to improve the runtime performance
+  of generated parsers. This includes tweaks for generating more performant
+  code for parsers, low-level optimizations of types in to runtime support
+  library as well as fine-tuning of parser execution at runtime.
+
+
+- Do not force locale on users of libhilti.
+- Avoid expensive checked iterator for internal ``Bytes`` iteration.
+- GH-1089: Allow to use ``offset()`` without enabling full random-access support.
+- GH-1394: Fix C++ normalization of generated enum values.
+- Disallow using ``$$`` with anonymous containers.
 
 .. rubric:: Bug fixes
 
+- GH-1386: Prevent internal error when passed invalid context.
+- Fix potential use-after-move bug.
+- GH-1390: Initialize ``Bytes`` internal control block for all constructors.
+- GH-1396: Fix regex performance regression introduced by constant folding.
+- GH-1399: Guard access to unit ``_filters`` member with feature flag.
+- GH-1421: Store numerical offset in units instead of iterator for position.
+- GH-1436: Make sure ``Bytes::sub`` only throws HILTI exceptions.
+- GH-1447: Do not forcibly make ``strong_ref`` ``in`` function parameters immutable.
+- GH-1452: Allow resolving of unit parameters before ``self`` is fully resolved.
+- Make sure Spicy runtime config is initialized after ``spicy::rt::init``.
+- Adjustments for building with GCC-13.
+
 .. rubric:: Documentation
+
+- Document how to check whether an ``optional`` value is set.
+- Preserve indention when extracting comments in doc generation.
+- Fix docs for long-form of ``-x`` flag to spicyc.
 
 Version 1.7
 ===========

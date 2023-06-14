@@ -1,3 +1,7 @@
+1.8.0 | 2023-06-14 08:53:34 +0200
+
+  * Release 1.8.0.
+
 1.8.0-dev.176 | 2023-06-14 08:52:14 +0200
 
   * Update Zeek docs for Zeek 6.0. (Robin Sommer, Corelight)
@@ -247,7 +251,7 @@
 
   * Implement `View::data` with `Bytes::append`. (Benjamin Bannier, Corelight)
 
-  * GH-7: Avoid unneeded temporaries when appending `View` to `Bytes`. (Benjamin Bannier, Corelight)
+  * Avoid unneeded temporaries when appending `View` to `Bytes`. (Benjamin Bannier, Corelight)
 
     We used `View::data` to constructs a new `Bytes` to append from. Since
     we cannot reuse the temporary in the append but have to copy the data
