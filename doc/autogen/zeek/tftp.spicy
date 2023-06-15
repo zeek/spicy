@@ -1,10 +1,12 @@
+# Copyright (c) 2021 by the Zeek Project. See LICENSE for details.
 #
 # Trivial File Transfer Protocol
 #
 # Specs from https://tools.ietf.org/html/rfc1350
-#
 
 module TFTP;
+
+import spicy;
 
 # Common header for all messages:
 #
@@ -22,8 +24,6 @@ public type Packet = unit {    # public top-level entry point for parsing
         Opcode::ACK   -> ack:   Acknowledgement;
         Opcode::ERROR -> error: Error;
         };
-
-    on %done { print self; }
 };
 
 # TFTP supports five types of packets [...]:
@@ -52,6 +52,8 @@ type Opcode = enum {
 type Request = unit(is_read: bool) {
     filename: bytes &until=b"\x00";
     mode:     bytes &until=b"\x00";
+
+    on %done { spicy::accept_input(); }
 };
 
 # Figure 5-2: DATA packet
@@ -65,7 +67,6 @@ type Data = unit {
     num:  uint16;
     data: bytes &eod;
 };
-
 
 # Figure 5-3: ACK packet
 #
