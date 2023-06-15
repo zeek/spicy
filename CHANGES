@@ -1,3 +1,7 @@
+1.9.0-dev.7 | 2023-06-15 14:40:25 +0200
+
+  * Fix autogeneration of zeek docs. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.5 | 2023-06-14 16:37:26 +0200
 
   * GH-1435: Add bitwise operators `&`, `|`, and `^` for booleans. (Benjamin Bannier, Corelight)
