@@ -273,7 +273,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             // Transparently map void fields that aim to parse data into
             // skipping bytes fields. Use of such void fields is deprecated and
             // will be removed later.
-            int ok_attrs = 0;
+            size_t ok_attrs = 0;
             const auto& attrs = u.attributes()->attributes();
             for ( const auto& a : attrs ) {
                 if ( a.tag() == "&requires" )
