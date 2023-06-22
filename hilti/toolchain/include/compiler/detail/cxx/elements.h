@@ -330,6 +330,7 @@ struct Struct {
     std::vector<struct_::Member> members;
     cxx::ID type_name;
     std::optional<cxx::Type> self;
+    cxx::Block ctor;
     bool add_ctors = false;
     std::string str() const;
     std::string inlineCode() const;
