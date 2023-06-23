@@ -960,7 +960,7 @@ struct ProductionVisitor
                     // block if we are in search mode and attempt to recover.
                     if ( mode == LiteralMode::Search ) {
                         auto [body, try_] = builder()->addTry();
-                        pushBuilder(body);
+
                         pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("hilti::MissingData"))),
                                     [&]() {
                                         // `advance` has failed, retry at the next non-gap block.
@@ -973,6 +973,8 @@ struct ProductionVisitor
                                         // Continue incremental matching.
                                         builder()->addContinue();
                                     });
+
+                        pushBuilder(body);
                     }
 
                     // Potentially bracketed `advance`.
@@ -980,9 +982,8 @@ struct ProductionVisitor
                                          builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}),
                                          location);
 
-                    if ( mode == LiteralMode::Search ) {
+                    if ( mode == LiteralMode::Search )
                         popBuilder(); // body.
-                    }
 
                     auto switch_ = builder()->addSwitch(builder::id("rc"), location);
 
@@ -1021,7 +1022,32 @@ struct ProductionVisitor
                 auto pstate = pb->state();
                 pstate.literal_mode = mode;
                 pushState(std::move(pstate));
+
+                // Since `advance` can trigger recoverable errors when
+                // hitting a gap, bracket the call to it in a `try`/`catch`
+                // block if we are in search mode and attempt to recover.
+                if ( mode == LiteralMode::Search ) {
+                    auto [body, try_] = builder()->addTry();
+
+                    pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("hilti::MissingData"))),
+                                [&]() {
+                                    // `advance` has failed, retry at the next non-gap block.
+                                    pb->advanceToNextData();
+
+                                    // // FIXME(bbannier):
+                                    // // We operate on `ncur` while `advanceToNextData`
+                                    // // updates `cur`; copy its result over.
+                                    // builder()->addAssign(ID("ncur"), state().cur);
+
+                                    // Continue incremental matching.
+                                    builder()->addContinue();
+                                });
+
+                    pushBuilder(body);
+                }
+
                 auto match = pb->parseLiteral(p, {});
+
                 popState();
 
                 if ( first_token ) {
@@ -1050,6 +1076,10 @@ struct ProductionVisitor
                     true_->addAssign(state().lahead, builder::integer(p.tokenID()));
                     true_->addAssign(state().lahead_end, builder::id("i"));
                 }
+
+                // Potentially bracketed `advance`.
+                if ( mode == LiteralMode::Search )
+                    popBuilder(); // body.
             };
         };
 
@@ -1298,9 +1328,9 @@ struct ProductionVisitor
             b->addBreak();
         };
 
-        // The container element type creating this counter was marked `&synchronize`. Allow any container element to
-        // fail parsing and be skipped. This means that if `n` elements where requested and one element fails to parse,
-        // we will return `n-1` elements.
+        // The container element type creating this counter was marked `&synchronize`. Allow any container element
+        // to fail parsing and be skipped. This means that if `n` elements where requested and one element fails to
+        // parse, we will return `n-1` elements.
         if ( auto f = p.body().meta().field(); f && AttributeSet::find(f->attributes(), "&synchronize") ) {
             auto try_ = builder()->addTry();
             pushBuilder(try_.first, [&]() { parse(); });

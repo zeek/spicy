@@ -1,0 +1,44 @@
+# @TEST-DOC: Validates that advance errors in trial mode are handled properly. Regression test for #1231 and #1464.
+
+# @TEST-EXEC: spicy-driver -d %INPUT -F test.dat >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type X = unit {
+    a: b"A"; # Use literal for lookahead.
+};
+
+public type Foo = unit {
+    %port = 80/tcp;
+
+    xs: (X &synchronize)[];
+
+    on %synced { print "Confirming with state: %s" % self; confirm; }
+    on %done { print self; }
+};
+
+# @TEST-START-NEXT
+module foo;
+
+type X = unit {
+    a: /A/; # Use regexp for lookahead.
+};
+
+public type Foo = unit {
+    %port = 80/tcp;
+
+    xs: (X &synchronize)[];
+
+    on %synced { print "Confirming with state: %s" % self; confirm; }
+    on %done { print self; }
+};
+
+# @TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-flow id1 stream 80/tcp
+@gap id1 1024
+@data id1 1
+A
+@end-flow id1
+# @TEST-END-FILE
