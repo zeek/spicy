@@ -1,3 +1,21 @@
+1.9.0-dev.13 | 2023-06-26 14:39:10 +0200
+
+  * GH-1446: Initialize generated struct members in constructor body. (Benjamin Bannier, Corelight)
+
+    We previously would generate them with default member initializers. This
+    lead to issues since for some constructs we need to create temporaries
+    (e.g., mutable accessors to `self`). With this patch we now always emit
+    a constructor body which ensures we have a block to attach temporaries
+    to.
+
+  * Disable implicit conversions of `cxx::Block` to `bool`. (Benjamin Bannier, Corelight)
+
+    I ran into this when I incorrectly tried to directly output a
+    `cxx::Block` to an iostream which worked but output a boolean (via
+    implicit conversion).
+
+  * Add missing newline in spicy-driver usage string. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.9 | 2023-06-20 08:48:49 +0200
 
   * Fix signedness warning. (Arne Welzel, Corelight)

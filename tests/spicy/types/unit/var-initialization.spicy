@@ -1,0 +1,15 @@
+# @TEST-DOC: Validates that unit var initialization can create temporaries. Regression test for #1446.
+#
+# @TEST-EXEC: spicyc -dgj %INPUT
+module foo;
+
+type A = unit {};
+
+function fun(inout a: A): bool {
+    return True;
+}
+
+type X = unit(a: A) {
+    # Since `fun` takes a inout unit-type parameters, creating the argument should need to create a temporary.
+    var z: bool = fun(a);
+};

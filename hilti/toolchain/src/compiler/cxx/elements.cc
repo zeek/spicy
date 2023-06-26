@@ -454,12 +454,18 @@ std::string cxx::type::Struct::inlineCode() const {
     });
 
     auto init_locals_user = [&]() {
-        return util::join(util::transform(locals_user,
-                                          [&](const auto& x) {
-                                              auto& l = std::get<declaration::Local>(x);
-                                              return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
-                                          }),
-                          "");
+        cxx::Formatter init;
+        init.compact_block = false;
+        init.ensure_braces_for_block = false;
+        init << ctor;
+
+        return init.str() + util::join(util::transform(locals_user,
+                                                       [&](const auto& x) {
+                                                           auto& l = std::get<declaration::Local>(x);
+                                                           return l.init ? fmt("    %s = %s;\n", l.id, *l.init) :
+                                                                           std::string();
+                                                       }),
+                                       "");
     };
 
     auto init_locals_non_user = [&]() {

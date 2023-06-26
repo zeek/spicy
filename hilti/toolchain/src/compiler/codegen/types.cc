@@ -53,6 +53,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                 std::vector<cxx::declaration::Argument> args;
                 std::vector<cxx::type::struct_::Member> fields;
 
+                cxx::Block ctor;
+
                 cxx::Block self_body;
                 self_body.addStatement(util::fmt("return ::hilti::rt::ValueReference<%s>::self(this)", id));
 
@@ -199,6 +201,12 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                         t = fmt("std::optional<%s>", t);
 
                     std::optional<cxx::Expression> default_;
+
+                    // Push a block so all values needed to default-initialize
+                    // fields have a block. This is required if compiling the
+                    // value needs to e.g., create temporaries.
+                    cg->pushCxxBlock(&ctor);
+
                     if ( ! f.isOptional() ) {
                         cg->pushSelf("__self()");
                         if ( auto x = f.default_() )
@@ -208,11 +216,16 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                         cg->popSelf();
                     }
 
-                    auto x = cxx::declaration::Local{cxx::ID(f.id()),
-                                                     t,
-                                                     {},
-                                                     default_,
-                                                     (f.isStatic() ? "inline static" : "")};
+                    cg->popCxxBlock();
+
+                    if ( default_ )
+                        ctor.addStatement(fmt("%s = %s", cxx::ID(f.id()), *default_));
+
+                    // Do not pass a default value here since initialization of
+                    // the member happens (and needs to happen) via the ctor
+                    // block above to guarantee we have a block.
+                    auto x = cxx::declaration::Local{cxx::ID(f.id()), t, {}, {}, (f.isStatic() ? "inline static" : "")};
+
 
                     fields.emplace_back(std::move(x));
                 }
@@ -245,6 +258,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                 auto t = cxx::type::Struct{.args = std::move(args),
                                            .members = std::move(fields),
                                            .type_name = cxx::ID(id.local()),
+                                           .ctor = std::move(ctor),
                                            .add_ctors = true};
                 return cxx::declaration::Type{id, t, t.inlineCode()};
             });
