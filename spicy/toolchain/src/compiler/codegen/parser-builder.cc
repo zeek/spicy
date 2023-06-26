@@ -921,6 +921,32 @@ struct ProductionVisitor
         auto parse = [&]() {
             bool first_token = true;
 
+            // Construct a `try`/`catch` block to guard code in
+            // `LiteralMode::Search` against `MissingData` errors.
+            //
+            // The passed callback will be invoked after a `MissingData` was
+            // encountered and recovered from.
+            //
+            // Returns a pointer to the constructed builder if any was constructed.
+            auto guardSearch = [&](auto&& cb) {
+                if ( mode != LiteralMode::Search )
+                    return std::shared_ptr<hilti::builder::Builder>();
+
+                auto [body, try_] = builder()->addTry();
+
+                pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("hilti::MissingData"))), [&]() {
+                    // `advance` has failed, retry at the next non-gap block.
+                    pb->advanceToNextData();
+
+                    cb();
+
+                    // Continue incremental matching.
+                    builder()->addContinue();
+                });
+
+                return pushBuilder(body);
+            };
+
             // Parse regexps in parallel.
             if ( ! regexps.empty() ) {
                 first_token = false;
@@ -955,35 +981,19 @@ struct ProductionVisitor
                 pushBuilder(builder()->addWhile(ms, builder::bool_(true)), [&]() {
                     builder()->addLocal(ID("rc"), hilti::type::SignedInteger(32));
 
-                    // Since `advance` can trigger recoverable errors when
-                    // hitting a gap, bracket the call to it in a `try`/`catch`
-                    // block if we are in search mode and attempt to recover.
-                    if ( mode == LiteralMode::Search ) {
-                        auto [body, try_] = builder()->addTry();
-
-                        pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("hilti::MissingData"))),
-                                    [&]() {
-                                        // `advance` has failed, retry at the next non-gap block.
-                                        pb->advanceToNextData();
-
-                                        // We operate on `ncur` while `advanceToNextData`
-                                        // updates `cur`; copy its result over.
-                                        builder()->addAssign(ID("ncur"), state().cur);
-
-                                        // Continue incremental matching.
-                                        builder()->addContinue();
-                                    });
-
-                        pushBuilder(body);
-                    }
+                    auto guardedSearch = guardSearch([&]() {
+                        // We operate on `ncur` while `advanceToNextData`
+                        // updates `cur`; copy its result over.
+                        builder()->addAssign(ID("ncur"), state().cur);
+                    });
 
                     // Potentially bracketed `advance`.
                     builder()->addAssign(builder::tuple({builder::id("rc"), builder::id("ncur")}),
                                          builder::memberCall(builder::id("ms"), "advance", {builder::id("ncur")}),
                                          location);
 
-                    if ( mode == LiteralMode::Search )
-                        popBuilder(); // body.
+                    if ( guardedSearch )
+                        popBuilder();
 
                     auto switch_ = builder()->addSwitch(builder::id("rc"), location);
 
@@ -1023,28 +1033,7 @@ struct ProductionVisitor
                 pstate.literal_mode = mode;
                 pushState(std::move(pstate));
 
-                // Since `advance` can trigger recoverable errors when
-                // hitting a gap, bracket the call to it in a `try`/`catch`
-                // block if we are in search mode and attempt to recover.
-                if ( mode == LiteralMode::Search ) {
-                    auto [body, try_] = builder()->addTry();
-
-                    pushBuilder(try_.addCatch(builder::parameter(ID("e"), builder::typeByID("hilti::MissingData"))),
-                                [&]() {
-                                    // `advance` has failed, retry at the next non-gap block.
-                                    pb->advanceToNextData();
-
-                                    // // FIXME(bbannier):
-                                    // // We operate on `ncur` while `advanceToNextData`
-                                    // // updates `cur`; copy its result over.
-                                    // builder()->addAssign(ID("ncur"), state().cur);
-
-                                    // Continue incremental matching.
-                                    builder()->addContinue();
-                                });
-
-                    pushBuilder(body);
-                }
+                auto guardedSearch = guardSearch([]() {});
 
                 auto match = pb->parseLiteral(p, {});
 
@@ -1077,9 +1066,8 @@ struct ProductionVisitor
                     true_->addAssign(state().lahead_end, builder::id("i"));
                 }
 
-                // Potentially bracketed `advance`.
-                if ( mode == LiteralMode::Search )
-                    popBuilder(); // body.
+                if ( guardedSearch )
+                    popBuilder();
             };
         };
 
