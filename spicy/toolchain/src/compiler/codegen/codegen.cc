@@ -244,6 +244,12 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
         replaceNode(&p, std::move(x));
     }
 
+    result_t operator()(const spicy::ctor::Unit& c, position_t p) {
+        // Replace unit ctor with an equivalent struct ctor.
+        auto n = hilti::ctor::Struct(c.fields().copy(), c.meta());
+        replaceNode(&p, n);
+    }
+
     result_t operator()(const operator_::unit::ConnectFilter& n, position_t p) {
         auto x = builder::call("spicy_rt::filter_connect", {n.op0(), argument(n.op2(), 0)});
         replaceNode(&p, std::move(x));

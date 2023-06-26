@@ -1,0 +1,15 @@
+# @TEST-DOC: Validates that unit vars can be assigned to with struct initialization. Regression test for #1275.
+#
+# @TEST-EXEC: spicyc -dj %INPUT -o foo.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x02' | spicy-dump foo.hlto >output 2>&1
+# @TEST-EXEC: btest-diff output
+module foo;
+
+type X = unit {
+    x: uint8;
+};
+
+public type Y = unit {
+    var x: X;
+    y: uint8 { self.x = [$x = $$ * 2]; }
+};
