@@ -1,3 +1,9 @@
+1.9.0-dev.21 | 2023-06-27 10:04:53 +0200
+
+  * Fix rendering in validation of `%byte-order` attribute. (Benjamin Bannier, Corelight)
+
+  * GH-1275: Add missing lowering of Spicy unit ctor to HILTI struct ctor. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.18 | 2023-06-27 10:04:11 +0200
 
   * Bump freebsd12 version in CI. (Benjamin Bannier, Corelight)

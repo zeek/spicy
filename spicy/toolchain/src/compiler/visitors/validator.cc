@@ -425,7 +425,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
             }
 
             if ( ! isEnumType(i.expression()->type(), "spicy::ByteOrder") )
-                error(fmt("%byte-order expression must be of spicy::ByteOrder, but is of type %s ",
+                error(fmt("%%byte-order expression must be of spicy::ByteOrder, but is of type %s",
                           i.expression()->type()),
                       p);
         }

@@ -3,6 +3,8 @@
 
 module Test;
 
+%byte-order=1;
+
 public type Type = unit {
   foo: uint32 &byte-order;
 };
