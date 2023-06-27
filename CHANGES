@@ -1,3 +1,7 @@
+1.9.0-dev.18 | 2023-06-27 10:04:11 +0200
+
+  * Bump freebsd12 version in CI. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.16 | 2023-06-26 14:48:32 +0200
 
   * Factor out code to guard search during recovery. (Benjamin Bannier, Corelight)
