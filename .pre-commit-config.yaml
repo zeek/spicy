@@ -10,6 +10,7 @@ repos:
     entry: ./tests/Scripts/3rdparty/checkbashisms.pl
     language: script
     types: ["sh"]
+    stages: ["commit"]
 
   - id: license
     name: Check for license headers
@@ -24,18 +25,21 @@ repos:
     entry: ./doc/scripts/autogen-docs
     language: script
     pass_filenames: false
+    stages: ["commit"]
 
   - id: stray_baselines
     name: Check for stray BTest baselines
     entry: ./tests/Scripts/stray_baselines.py
     language: python
     pass_filenames: false
+    stages: ["commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
   rev: 'v16.0.3'
   hooks:
   - id: clang-format
     types: ["c", "c++"]
+    stages: ["commit"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.4.0
@@ -45,6 +49,7 @@ repos:
   - id: end-of-file-fixer
     exclude: '^tests/Baseline|^doc/autogen|^doc/_static'
   - id: check-yaml
+    stages: ["commit"]
   - id: check-added-large-files
 
 - repo: https://gitlab.com/daverona/pre-commit/cpp
@@ -53,6 +58,7 @@ repos:
   - id: cpplint
     exclude: '3rdparty/'
     args: ["--quiet"]
+    stages: ["commit"]
 
 - repo: https://github.com/jorisroovers/gitlint
   rev:  v0.19.1
@@ -63,14 +69,19 @@ repos:
   rev: v1.10.0
   hooks:
   - id: rst-backticks
+    stages: ["commit"]
   - id: rst-directive-colons
+    stages: ["commit"]
   - id: rst-inline-touching-normal
+    stages: ["commit"]
 
 - repo: https://github.com/cheshirekow/cmake-format-precommit
   rev: v0.6.13
   hooks:
   - id: cmake-format
+    stages: ["commit"]
   - id: cmake-lint
+    stages: ["commit"]
 
 - repo: https://github.com/crate-ci/typos
   rev: v1.14.8
