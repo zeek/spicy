@@ -22,6 +22,7 @@
 #include <spicy/ast/all.h>
 #include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/hook.h>
+#include <spicy/ast/operators/unit.h>
 #include <spicy/ast/types.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/visitors.h>
@@ -579,6 +580,17 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 if ( a.tag() == "&size" || a.tag() == "&max-size" ) {
                     if ( ! a.hasValue() )
                         error(fmt("%s must provide an expression", a.tag()), p);
+                    else {
+                        auto v = hilti::visitor::PreOrder<>();
+                        for ( auto i : v.walk(a.value()) )
+                            if ( const auto& id = i.node.tryAs<ID>(); id && id->str() == "self" ) {
+                                error(fmt("%s expression cannot use 'self' since it is only available after parsing of "
+                                          "unit has started",
+                                          a.tag()),
+                                      p);
+                                break;
+                            }
+                    }
                 }
 
                 else if ( a.tag() == "&requires" ) {
