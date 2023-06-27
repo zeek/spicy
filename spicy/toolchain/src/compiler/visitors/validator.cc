@@ -576,14 +576,9 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 error(("attributes cannot be combined: &size, &max-size"), p);
 
             for ( const auto& a : attrs->attributes() ) {
-                if ( a.tag() == "&size" ) {
+                if ( a.tag() == "&size" || a.tag() == "&max-size" ) {
                     if ( ! a.hasValue() )
-                        error("&size must provide an expression", p);
-                }
-
-                else if ( a.tag() == "&max-size" ) {
-                    if ( ! a.hasValue() )
-                        error("&max-size must provide an expression", p);
+                        error(fmt("%s must provide an expression", a.tag()), p);
                 }
 
                 else if ( a.tag() == "&requires" ) {
