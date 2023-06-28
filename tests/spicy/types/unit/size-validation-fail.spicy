@@ -1,0 +1,20 @@
+# @TEST-DOC: Validates that uses of `self` in unit `&size` attribute are rejected. Regression test for #1466.
+#
+# @TEST-EXEC-FAIL: spicyc -dj %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type X1 = unit {
+    len: uint8;
+} &size=self.len; # Not available before parsing.
+
+type X2 = unit {
+    len: uint8;
+} &max-size=self.len; # Not available before parsing.
+
+type Y1 = unit(x: X1) {
+} &size=x.len; # Available before parsing.
+
+type Y2 = unit(x: X1) {
+} &max-size=x.len; # Available before parsing.

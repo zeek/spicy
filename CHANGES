@@ -1,3 +1,19 @@
+1.9.0-dev.27 | 2023-06-28 14:43:05 +0200
+
+  * Run a few pre-commit checks only at `commit` stage. (Benjamin Bannier, Corelight)
+
+  * GH-1466: Reject uses of `self` in unit `&size` and `&max-size` attribute. (Benjamin Bannier, Corelight)
+
+    Values in `self` are only available after parsing has started while
+    `&size` and `&max-size` are consumed before that. This means that any
+    use of `self` and its members in these contexts would only ever see
+    unset members, so it should not be the intended use.
+
+    This patch adds a validation which rejects uses of `self` for these unit
+    attributes.
+
+  * Refactor validation code for unit `&size` and `&max-size` attributes. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.23 | 2023-06-28 10:20:18 +0200
 
   * Bump doc sphinx-rtd-theme dependency. (Benjamin Bannier, Corelight)
