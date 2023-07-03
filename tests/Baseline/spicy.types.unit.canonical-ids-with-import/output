@@ -309,7 +309,6 @@
 [debug/ast-declarations]       - Field "__error" (a::X::__error)
 [debug/ast-declarations]   - ImportedModule "spicy_rt" (spicy_rt)
 [debug/ast-declarations]   - ImportedModule "hilti" (hilti)
-[debug/ast-declarations]   - Constant "__feat%a__X%uses_offset" (a::__feat%a__X%uses_offset)
 [debug/ast-declarations]   - Constant "__feat%a__X%uses_random_access" (a::__feat%a__X%uses_random_access)
 [debug/ast-declarations]   - Constant "__feat%a__X%is_filter" (a::__feat%a__X%is_filter)
 [debug/ast-declarations]   - Constant "__feat%a__X%supports_filters" (a::__feat%a__X%supports_filters)
