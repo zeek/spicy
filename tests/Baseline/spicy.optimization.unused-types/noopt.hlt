@@ -6,7 +6,7 @@ import hilti;
 
 type Priv1 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -32,7 +32,7 @@ type Priv1 = struct {
 } &on-heap;
 public type Pub2 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -58,7 +58,7 @@ public type Pub2 = struct {
 } &on-heap;
 type Priv2 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -84,7 +84,7 @@ type Priv2 = struct {
 } &on-heap;
 type Priv3 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -112,7 +112,7 @@ type Priv4 = struct {
     value_ref<Priv2> anon &optional &no-emit;
     value_ref<Priv3> x &optional;
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -139,7 +139,7 @@ type Priv4 = struct {
 } &on-heap;
 type Priv5 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -165,7 +165,7 @@ type Priv5 = struct {
 } &on-heap;
 type Priv6 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -193,7 +193,7 @@ public type Pub3 = struct {
     value_ref<Priv5> anon_2 &optional &no-emit;
     value_ref<Priv6> x &optional;
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -226,7 +226,7 @@ public type Priv10 = struct {
     Priv8 en &default=Priv8::A;
     Priv9 em;
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
@@ -314,7 +314,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Priv1%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -357,7 +357,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Priv1%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -407,7 +407,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
     if ( __feat%foo__Priv1%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -448,7 +448,7 @@ method extern method view<stream> foo::Priv1::parse1(inout value_ref<stream> dat
     # End parsing production: Unit: foo_Priv1 ->
 
     if ( __feat%foo__Priv1%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -472,7 +472,7 @@ method extern method view<stream> foo::Priv1::parse3(inout value_ref<spicy_rt::P
     # End parsing production: Unit: foo_Priv1 ->
 
     if ( __feat%foo__Priv1%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -494,7 +494,7 @@ method extern method view<stream> foo::Priv1::parse2(inout value_ref<Priv1> unit
     # End parsing production: Unit: foo_Priv1 ->
 
     if ( __feat%foo__Priv1%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -524,7 +524,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Pub2%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -567,7 +567,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Pub2%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -617,7 +617,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
     if ( __feat%foo__Pub2%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -658,7 +658,7 @@ method extern method view<stream> foo::Pub2::parse1(inout value_ref<stream> data
     # End parsing production: Unit: foo_Pub2 ->
 
     if ( __feat%foo__Pub2%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -682,7 +682,7 @@ method extern method view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::Pa
     # End parsing production: Unit: foo_Pub2 ->
 
     if ( __feat%foo__Pub2%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -704,7 +704,7 @@ method extern method view<stream> foo::Pub2::parse2(inout value_ref<Pub2> unit, 
     # End parsing production: Unit: foo_Pub2 ->
 
     if ( __feat%foo__Pub2%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -730,7 +730,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Priv2%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -773,7 +773,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Priv2%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -823,7 +823,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
     if ( __feat%foo__Priv2%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -864,7 +864,7 @@ method extern method view<stream> foo::Priv2::parse1(inout value_ref<stream> dat
     # End parsing production: Unit: foo_Priv2 ->
 
     if ( __feat%foo__Priv2%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -888,7 +888,7 @@ method extern method view<stream> foo::Priv2::parse3(inout value_ref<spicy_rt::P
     # End parsing production: Unit: foo_Priv2 ->
 
     if ( __feat%foo__Priv2%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -910,7 +910,7 @@ method extern method view<stream> foo::Priv2::parse2(inout value_ref<Priv2> unit
     # End parsing production: Unit: foo_Priv2 ->
 
     if ( __feat%foo__Priv2%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -940,7 +940,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Priv3%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -983,7 +983,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Priv3%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -1033,7 +1033,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
     if ( __feat%foo__Priv3%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -1074,7 +1074,7 @@ method extern method view<stream> foo::Priv3::parse1(inout value_ref<stream> dat
     # End parsing production: Unit: foo_Priv3 ->
 
     if ( __feat%foo__Priv3%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1098,7 +1098,7 @@ method extern method view<stream> foo::Priv3::parse3(inout value_ref<spicy_rt::P
     # End parsing production: Unit: foo_Priv3 ->
 
     if ( __feat%foo__Priv3%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1120,7 +1120,7 @@ method extern method view<stream> foo::Priv3::parse2(inout value_ref<Priv3> unit
     # End parsing production: Unit: foo_Priv3 ->
 
     if ( __feat%foo__Priv3%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1150,7 +1150,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Priv4%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -1193,7 +1193,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Priv4%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -1250,7 +1250,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # End parsing production: Unit: foo_Priv2_2 ->
 
     if ( __feat%foo__Priv4%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     # "<...>/unused-types.spicy:20:14"
 
@@ -1277,11 +1277,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     __error = (*self).__error;
 
     if ( __feat%foo__Priv4%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
 
     if ( __feat%foo__Priv4%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -1322,7 +1322,7 @@ method extern method view<stream> foo::Priv4::parse1(inout value_ref<stream> dat
     # End parsing production: Unit: foo_Priv4 -> foo_Priv2_2 foo_Priv3_2
 
     if ( __feat%foo__Priv4%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1346,7 +1346,7 @@ method extern method view<stream> foo::Priv4::parse3(inout value_ref<spicy_rt::P
     # End parsing production: Unit: foo_Priv4 -> foo_Priv2_2 foo_Priv3_2
 
     if ( __feat%foo__Priv4%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1368,7 +1368,7 @@ method extern method view<stream> foo::Priv4::parse2(inout value_ref<Priv4> unit
     # End parsing production: Unit: foo_Priv4 -> foo_Priv2_2 foo_Priv3_2
 
     if ( __feat%foo__Priv4%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1398,7 +1398,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Priv5%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -1441,7 +1441,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Priv5%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -1491,7 +1491,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
     if ( __feat%foo__Priv5%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -1532,7 +1532,7 @@ method extern method view<stream> foo::Priv5::parse1(inout value_ref<stream> dat
     # End parsing production: Unit: foo_Priv5 ->
 
     if ( __feat%foo__Priv5%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1556,7 +1556,7 @@ method extern method view<stream> foo::Priv5::parse3(inout value_ref<spicy_rt::P
     # End parsing production: Unit: foo_Priv5 ->
 
     if ( __feat%foo__Priv5%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1578,7 +1578,7 @@ method extern method view<stream> foo::Priv5::parse2(inout value_ref<Priv5> unit
     # End parsing production: Unit: foo_Priv5 ->
 
     if ( __feat%foo__Priv5%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1608,7 +1608,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Priv6%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -1651,7 +1651,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Priv6%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -1701,7 +1701,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
     if ( __feat%foo__Priv6%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -1742,7 +1742,7 @@ method extern method view<stream> foo::Priv6::parse1(inout value_ref<stream> dat
     # End parsing production: Unit: foo_Priv6 ->
 
     if ( __feat%foo__Priv6%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1766,7 +1766,7 @@ method extern method view<stream> foo::Priv6::parse3(inout value_ref<spicy_rt::P
     # End parsing production: Unit: foo_Priv6 ->
 
     if ( __feat%foo__Priv6%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1788,7 +1788,7 @@ method extern method view<stream> foo::Priv6::parse2(inout value_ref<Priv6> unit
     # End parsing production: Unit: foo_Priv6 ->
 
     if ( __feat%foo__Priv6%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -1818,7 +1818,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Pub3%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -1861,7 +1861,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Pub3%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -1918,7 +1918,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # End parsing production: Unit: foo_Priv5_2 ->
 
     if ( __feat%foo__Pub3%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     # "<...>/unused-types.spicy:28:14"
 
@@ -1945,11 +1945,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     __error = (*self).__error;
 
     if ( __feat%foo__Pub3%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
 
     if ( __feat%foo__Pub3%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -1990,7 +1990,7 @@ method extern method view<stream> foo::Pub3::parse1(inout value_ref<stream> data
     # End parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
 
     if ( __feat%foo__Pub3%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -2014,7 +2014,7 @@ method extern method view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::Pa
     # End parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
 
     if ( __feat%foo__Pub3%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -2036,7 +2036,7 @@ method extern method view<stream> foo::Pub3::parse2(inout value_ref<Pub3> unit, 
     # End parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
 
     if ( __feat%foo__Pub3%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -2062,7 +2062,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
         if ( __feat%foo__Priv10%uses_random_access ) {
             (*self).__begin = begin(__cur);
-            (*self).__offset = 0;
+            (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
@@ -2105,7 +2105,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     catch ( hilti::SystemException __except ) {
 
         if ( __feat%foo__Priv10%uses_random_access ) 
-            (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+            (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
@@ -2155,7 +2155,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
     if ( __feat%foo__Priv10%uses_random_access ) 
-        (*self).__offset = begin(__cur).offset() - (*(*self).__begin).offset();
+        (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
@@ -2196,7 +2196,7 @@ method extern method view<stream> foo::Priv10::parse1(inout value_ref<stream> da
     # End parsing production: Unit: foo_Priv10 ->
 
     if ( __feat%foo__Priv10%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -2220,7 +2220,7 @@ method extern method view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::
     # End parsing production: Unit: foo_Priv10 ->
 
     if ( __feat%foo__Priv10%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
@@ -2242,7 +2242,7 @@ method extern method view<stream> foo::Priv10::parse2(inout value_ref<Priv10> un
     # End parsing production: Unit: foo_Priv10 ->
 
     if ( __feat%foo__Priv10%uses_random_access ) 
-        (*unit).__offset = begin(ncur).offset() - (*(*unit).__begin).offset();
+        (*unit).__position = begin(ncur);
 
 
     if ( error ) 
