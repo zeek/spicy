@@ -171,7 +171,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     add_hook("0x25_init", {});
     add_hook("0x25_done", {});
-    add_hook("0x25_error", {builder::parameter("__except", type::String())});
+    add_hook("0x25_error", { builder::parameter("__except", type::String()) });
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
@@ -202,7 +202,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     auto attr_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
     auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                         AttributeSet({Attribute("&internal"), attr_random_access}));
-    auto f2 = hilti::declaration::Field(ID("__offset"), hilti::type::UnsignedInteger(64),
+    auto f2 = hilti::declaration::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                         AttributeSet({Attribute("&internal"), attr_random_access}));
     auto f3 = hilti::declaration::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                         AttributeSet({Attribute("&internal"), attr_random_access}));
@@ -343,8 +343,9 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
         _pb.builder()->addAssign(builder::id(ID(*unit.id(), "__parser")), parser);
 
         _pb.builder()->addExpression(
-            builder::call("spicy_rt::registerParser", {builder::id(ID(*unit.id(), "__parser")), builder::scope(),
-                                                       builder::strong_reference(unit)}));
+            builder::call("spicy_rt::registerParser",
+                          {builder::id(ID(*unit.id(), "__parser")), builder::scope(),
+                           builder::strong_reference(unit)}));
     });
 
     auto block = _pb.popBuilder()->block();

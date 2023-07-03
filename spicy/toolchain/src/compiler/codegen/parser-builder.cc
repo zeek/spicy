@@ -627,9 +627,7 @@ struct ProductionVisitor
         std::optional<Expression> pre_container_offset;
         if ( field && field->isContainer() ) {
             pre_container_offset =
-                builder()->addTmp("pre_container_offset",
-                                  builder::sum(builder::deref(builder::member(state().self, "__begin")),
-                                               builder::member(state().self, "__offset")));
+                builder()->addTmp("pre_container_offset", builder::member(state().self, "__position"));
         }
 
         if ( field && field->convertExpression() ) {
@@ -723,13 +721,8 @@ struct ProductionVisitor
         // elements inside e.g., this unit's fields hooks. Temporarily restore the previously stored offset.
         std::optional<Expression> prev;
         if ( pre_container_offset ) {
-            prev = builder()->addTmp("prev", builder::sum(builder::deref(builder::member(state().self, "__begin")),
-                                                          builder::member(state().self, "__offset")));
-            builder()->addAssign(builder::member(state().self, "__offset"),
-                                 builder::cast(builder::difference(*pre_container_offset,
-                                                                   builder::deref(
-                                                                       builder::member(state().self, "__begin"))),
-                                               type::UnsignedInteger(64)));
+            prev = builder()->addTmp("prev", builder::member(state().self, "__position"));
+            builder()->addAssign(builder::member(state().self, "__position"), *pre_container_offset);
         }
 
 
@@ -810,10 +803,7 @@ struct ProductionVisitor
             popState();
 
         if ( prev )
-            builder()->addAssign(builder::member(state().self, "__offset"),
-                                 builder::cast(builder::difference(*prev, builder::deref(builder::member(state().self,
-                                                                                                         "__begin"))),
-                                               type::UnsignedInteger(64)));
+            builder()->addAssign(builder::member(state().self, "__position"), *prev);
 
         if ( field->condition() )
             popBuilder();
@@ -2281,7 +2271,7 @@ void ParserBuilder::initializeUnit(const Location& l) {
     guardFeatureCode(unit, {"uses_random_access"}, [&]() {
         // Save the current input offset for the raw access methods.
         builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
-        builder()->addAssign(builder::member(state().self, ID("__offset")), builder::integer(0));
+        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
     });
 
     beforeHook();
@@ -2441,11 +2431,7 @@ void ParserBuilder::afterHook() {
 void ParserBuilder::saveParsePosition() {
     const auto& unit = state().unit.get();
     guardFeatureCode(unit, {"uses_random_access"}, [&]() {
-        builder()->addAssign(builder::member(state().self, ID("__offset")),
-                             builder::difference(builder::memberCall(builder::begin(state().cur), "offset", {}),
-                                                 builder::memberCall(builder::deref(
-                                                                         builder::member(state().self, "__begin")),
-                                                                     "offset", {})));
+        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
     });
 }
 
