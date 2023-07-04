@@ -1,3 +1,42 @@
+1.8.1 | 2023-07-04 17:16:32 +0200
+
+  * GH-1475: Revert #1439. (Benjamin Bannier, Corelight)
+
+    The changes for #1439 were incorrect and introduced incorrect parsing with
+    possible undefined behavior at runtime when encountering a combination of
+    list parsing and `&parse-from` or `&parse-at`.
+
+    This revert reopens GH-1421 and GH-1089.
+
+  * Bump freebsd12 version in CI. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 645aa756c8b6b73e059437fe47287a27f364b7b1)
+
+  * Fix rendering in validation of `%byte-order` attribute. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 3bda259f4399fd102e4f19bbf4a27f5b90f2d237)
+
+  * Factor out code to guard search during recovery. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 5108deb0e4e1b311b1157f150ed06e87b005e185)
+
+  * GH-1231: GH-1464: Add special handling for potential `advance` failure in trial mode. (Benjamin Bannier, Corelight)
+
+    In 7c18597f1b95747b0305918eb1777ed22c06b166 for #1231 we added code to
+    handle advance failures in trial mode when synchronizing on regexps, but
+    missed adding the same support for literals. This patch adds that
+    missing part.
+
+    Closes #1464.
+
+    (cherry picked from commit 30903c8d1c1ff2e904aaca76d6f5365e316e6c26)
+
+  * Add missing newline in spicy-driver usage string. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 1727f85cda7f24c22f705f79b62f506474f7c03e)
+
+  * Fix autogeneration of zeek docs. (Benjamin Bannier, Corelight)
+
 1.8.0 | 2023-06-14 08:53:34 +0200
 
   * Release 1.8.0.
