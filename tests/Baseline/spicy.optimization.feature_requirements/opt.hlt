@@ -5,9 +5,11 @@ import spicy_rt;
 import hilti;
 
 # Type X0 supports the following features:
-#     - uses_offset
+#     - uses_random_access
 type X0 = struct {
-    uint<64> __offset &internal &needed-by-feature="uses_offset";
+    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_0x25_init() ;
 } &on-heap;
@@ -15,6 +17,7 @@ type X0 = struct {
 #     - uses_random_access
 type X1 = struct {
     optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> __position &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_0x25_init() ;
@@ -59,43 +62,36 @@ type X6 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_X6_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 
-const bool __feat%foo__X0%uses_offset = True;
-const bool __feat%foo__X0%uses_random_access = False;
+const bool __feat%foo__X0%uses_random_access = True;
 const bool __feat%foo__X0%is_filter = False;
 const bool __feat%foo__X0%supports_filters = False;
 const bool __feat%foo__X0%supports_sinks = False;
 const bool __feat%foo__X0%synchronization = False;
-const bool __feat%foo__X1%uses_offset = False;
 const bool __feat%foo__X1%uses_random_access = True;
 const bool __feat%foo__X1%is_filter = False;
 const bool __feat%foo__X1%supports_filters = False;
 const bool __feat%foo__X1%supports_sinks = False;
 const bool __feat%foo__X1%synchronization = False;
-const bool __feat%foo__X2%uses_offset = False;
 const bool __feat%foo__X2%uses_random_access = False;
 const bool __feat%foo__X2%is_filter = False;
 const bool __feat%foo__X2%supports_filters = False;
 const bool __feat%foo__X2%supports_sinks = False;
 const bool __feat%foo__X2%synchronization = False;
-const bool __feat%foo__X3%uses_offset = False;
 const bool __feat%foo__X3%uses_random_access = False;
 const bool __feat%foo__X3%is_filter = False;
 const bool __feat%foo__X3%supports_filters = False;
 const bool __feat%foo__X3%supports_sinks = False;
 const bool __feat%foo__X3%synchronization = False;
-const bool __feat%foo__X4%uses_offset = False;
 const bool __feat%foo__X4%uses_random_access = False;
 const bool __feat%foo__X4%is_filter = True;
 const bool __feat%foo__X4%supports_filters = False;
 const bool __feat%foo__X4%supports_sinks = False;
 const bool __feat%foo__X4%synchronization = False;
-const bool __feat%foo__X5%uses_offset = False;
 const bool __feat%foo__X5%uses_random_access = False;
 const bool __feat%foo__X5%is_filter = False;
 const bool __feat%foo__X5%supports_filters = True;
 const bool __feat%foo__X5%supports_sinks = False;
 const bool __feat%foo__X5%synchronization = False;
-const bool __feat%foo__X6%uses_offset = False;
 const bool __feat%foo__X6%uses_random_access = False;
 const bool __feat%foo__X6%is_filter = False;
 const bool __feat%foo__X6%supports_filters = False;
@@ -103,7 +99,7 @@ const bool __feat%foo__X6%supports_sinks = True;
 const bool __feat%foo__X6%synchronization = False;
 
 method hook void foo::X0::__on_0x25_init() {
-    self.__offset;
+    ((*self.__position).offset() - (*self.__begin).offset());
 }
 
 init function void __register_foo_X0() {

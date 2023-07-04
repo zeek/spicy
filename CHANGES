@@ -1,3 +1,13 @@
+1.9.0-dev.30 | 2023-07-04 17:10:32 +0200
+
+  * GH-1475: Revert #1439. (Benjamin Bannier, Corelight)
+
+    The changes for #1439 were incorrect and introduced incorrect parsing with
+    possible undefined behavior at runtime when encountering a combination of
+    list parsing and `&parse-from` or `&parse-at`.
+
+    This revert reopens GH-1421 and GH-1089.
+
 1.9.0-dev.27 | 2023-06-28 14:43:05 +0200
 
   * Run a few pre-commit checks only at `commit` stage. (Benjamin Bannier, Corelight)
