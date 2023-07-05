@@ -18,6 +18,8 @@ type test = unit {
     on %x2 {}
     on a.b.c {}
 
+    x: uint32;
+    on x::%done {}
     };
 
 on test::%init(i: string) {}
@@ -26,3 +28,4 @@ on test::y1 {}
 on test::%y2 {}
 on test::a.b.c {}
 on XXXX::x {}
+on test::x::%done {}

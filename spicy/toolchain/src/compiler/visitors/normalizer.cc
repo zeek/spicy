@@ -128,8 +128,18 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         // Link hook to its unit type and field.
 
         NodeRef unit_type_ref = p.findParentRef<type::Unit>();
-        if ( ! unit_type_ref ) {
-            // External hook, do name lookuo.
+        if ( unit_type_ref ) {
+            // Produce a tailored error message if `%XXX` is used on a unit field.
+            if ( auto id = h.id().namespace_(); id && hilti::util::startsWith(h.id().local(), "0x25_") ) {
+                if ( unit_type_ref->as<type::Unit>().itemByName(h.id().namespace_().local()) ) {
+                    p.node.addError(hilti::util::fmt("cannot use hook '%s' with a unit field",
+                                                     hilti::util::replace(h.id().local(), "0x25_", "%")));
+                    return;
+                }
+            }
+        }
+        else {
+            // External hook, do name lookup.
             auto ns = h.id().namespace_();
             if ( ! ns )
                 return;
@@ -144,6 +154,21 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                     modified = true;
                 }
                 else {
+                    // Produce a tailored error message if `%XXX` is used on a unit field.
+                    if ( auto id = ns.namespace_(); id && hilti::util::startsWith(h.id().local(), "0x25_") ) {
+                        if ( auto resolved = hilti::scope::lookupID<hilti::declaration::Type>(id, p, "unit type") ) {
+                            if ( auto utype =
+                                     resolved->first->as<hilti::declaration::Type>().type().tryAs<type::Unit>();
+                                 utype && utype->itemByName(ns.local()) ) {
+                                p.node.addError(hilti::util::fmt("cannot use hook '%s' with a unit field",
+                                                                 hilti::util::replace(h.id().local(), "0x25_", "%")));
+                                // We failed to resolve the ID since it refers to a hook.
+                                // Return early here and do not emit below resolution error.
+                                return;
+                            }
+                        }
+                    }
+
                     p.node.addError(resolved.error());
                     return;
                 }
