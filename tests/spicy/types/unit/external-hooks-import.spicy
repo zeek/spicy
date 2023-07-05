@@ -1,5 +1,5 @@
 #
-# @TEST-EXEC:  echo 1234567890 | spicy-driver %INPUT mini.spicy >output
+# @TEST-EXEC:  echo 1234567890 | spicy-driver %INPUT mini.spicy | sort >output
 # @TEST-EXEC:  btest-diff output
 
 module test;
@@ -9,6 +9,8 @@ import Mini;
 on Mini::Foo::a { print "FOO a", self.a; }
 on Mini::Foo::b { print "FOO b", self.b; }
 on Mini::Foo::%init { print "FOO init"; }
+on Mini::Foo::%done { print "FOO done 1"; }
+on Mini::Foo { print "FOO done 2"; }
 
 ### @TEST-START-FILE mini.spicy
 

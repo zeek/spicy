@@ -136,8 +136,17 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
 
             auto resolved = hilti::scope::lookupID<hilti::declaration::Type>(ns, p, "unit type");
             if ( ! resolved ) {
-                p.node.addError(resolved.error());
-                return;
+                // Look up as a type directly. If found, add explicit `%done`.
+                resolved = hilti::scope::lookupID<hilti::declaration::Type>(h.id(), p, "unit type");
+                if ( resolved ) {
+                    logChange(p.node, "adding explicit %done hook");
+                    p.node.as<Hook>().setID(h.id() + ID("0x25_done"));
+                    modified = true;
+                }
+                else {
+                    p.node.addError(resolved.error());
+                    return;
+                }
             }
 
             unit_type_ref = resolved->first->as<hilti::declaration::Type>().typeRef();
