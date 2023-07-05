@@ -1,0 +1,17 @@
+# @TEST-DOC: Validates interaction of internal offset computation and `&parse-from`. Regression test for #1475.
+
+# @TEST-EXEC: spicyc -dj %INPUT -o foo.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf 'FF\x01\x02' | spicy-driver foo.hlto >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    : bytes &size=2; # FF
+    : Y;
+};
+
+type Y = unit {
+    payload: bytes &eod;
+    : uint8[2] &parse-from=self.payload foreach { print "element %s" % $$; }
+};
