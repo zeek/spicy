@@ -1,3 +1,16 @@
+1.9.0-dev.35 | 2023-07-07 11:22:41 +0200
+
+  * GH-1465: Support skipping explicit `%done` in external hooks. (Robin Sommer, Corelight)
+
+    Assuming `Foo::X` is a unit type, these two are now equivalent:
+
+        on Foo::X::%done   { }
+        on Foo::X          { }
+
+  * GH-1465: Produce better error message when hooks are used on a
+    unit field. (Robin Sommer, Corelight)
+
+
 1.9.0-dev.32 | 2023-07-05 13:03:56 +0200
 
   * GH-1475: Add regression test for #1475. (Benjamin Bannier, Corelight)
