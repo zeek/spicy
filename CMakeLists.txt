@@ -160,7 +160,7 @@ endif ()
 
 if (APPLE)
     set(MACOS_FOUND "yes")
-    require_version("maccOS" MACOS_FOUND ${CMAKE_SYSTEM_VERSION} "${macos_minimum_version}" true)
+    require_version("macOS" MACOS_FOUND ${CMAKE_SYSTEM_VERSION} "${macos_minimum_version}" true)
 endif ()
 
 require_version("Python" Python3_FOUND Python3_VERSION "${python_minimum_version}" true)

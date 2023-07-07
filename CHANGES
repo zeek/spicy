@@ -1,3 +1,7 @@
+1.9.0-dev.37 | 2023-07-07 12:56:37 +0200
+
+  * Fix typo: maccOS -> macOS (Ryan Schmidt)
+
 1.9.0-dev.35 | 2023-07-07 11:22:41 +0200
 
   * GH-1465: Support skipping explicit `%done` in external hooks. (Robin Sommer, Corelight)
