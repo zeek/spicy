@@ -1,8 +1,14 @@
-# @TEST-EXEC: spicyc -j -o test.hlto %INPUT
-# @TEST-EXEC: printf '\001\001\001' | spicy-driver test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '\002\001\001' | spicy-driver test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '\001\002\001' | spicy-driver test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '\001\001\002' | spicy-driver test.hlto >>output 2>&1
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+#
+# @TEST-EXEC: printf '\001\001\001' | spicy-driver -p Test::Foo test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\002\001\001' | spicy-driver -p Test::Foo test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\002\001' | spicy-driver -p Test::Foo test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\001\002' | spicy-driver -p Test::Foo test.hlto >>output 2>&1
+#
+# @TEST-EXEC: printf '\001\002' | spicy-driver -p Test::Bar test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\FFF\002' | spicy-driver -p Test::Bar test.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\FFF' | spicy-driver -p Test::Bar test.hlto >>output 2>&1
+#
 # @TEST-EXEC: btest-diff output
 
 module Test;
@@ -16,4 +22,10 @@ public type Foo = unit {
 
     on %done { print "success", self; }
     on %error { print "error", self; }
+};
+
+public type Bar = unit {
+    x: uint8;
+    # `&requires` can be used multiple times.
+    y: uint8 &requires=self.x==1 &requires=self.y==2;
 };

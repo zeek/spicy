@@ -1,3 +1,18 @@
+1.9.0-dev.39 | 2023-07-18 11:21:27 +0200
+
+  * GH-1485: Add validator rejecting unsupported multiple uses of attributes. (Benjamin Bannier, Corelight)
+
+    While for some attributes like e.g., `&requires` we support multiple
+    mentions, for many we actually only support at most one instance. We
+    previously would only interpret only one, even if multiple instances
+    where given.
+
+    This patch adds a validator which rejects code with multiple instances
+    of such attributes. We also add test coverage for `&requires` supporting
+    multiple instances.
+
+    Closes #1485.
+
 1.9.0-dev.37 | 2023-07-07 12:56:37 +0200
 
   * Fix typo: maccOS -> macOS (Ryan Schmidt)

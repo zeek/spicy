@@ -1,0 +1,26 @@
+# @TEST-DOC: Checks that multiple uses of attributes which can be used at most once are rejected.
+#
+# @TEST-EXEC-FAIL: spicyc -d -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+module foo;
+
+import spicy;
+
+public type X = unit {
+    n1: uint8 &convert=1 &convert=2 &convert=3; # Exactly one error here.
+    n2: bytes &size=1 &size=2;
+    n3: bytes &eod &max-size=1 &max-size=2;
+
+    n4: uint8 &parse-at=self.input() &parse-at=self.input() + 1;
+
+    x: bytes &eod;
+    n5: uint8 &parse-from=self.x &parse-from=self.x;
+
+    n6: addr &ipv4 &ipv6;
+    n7: real &type=spicy::RealType::IEEE754_Single &type=spicy::RealType::IEEE754_Double;
+
+    n8: bytes &eod &until=True &until=False;
+    n8: bytes &eod &until-including=True &until-including=False;
+    n8: bytes &eod &while=True &while=False;
+} &byte-order=spicy::ByteOrder::Little &byte-order=spicy::ByteOrder::Big;

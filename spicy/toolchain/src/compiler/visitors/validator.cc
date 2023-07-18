@@ -702,6 +702,22 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 }
             }
         }
+
+        // Check for attributes which can be used at most once.
+        if ( f.attributes() ) {
+            std::unordered_map<std::string, size_t> attrs;
+            for ( const auto& a : f.attributes()->attributes() )
+                attrs[a.tag()] += 1;
+
+            for ( const auto& [a, count] : attrs ) {
+                if ( count <= 1 )
+                    continue;
+
+                if ( a == "&convert" || a == "&size" || a == "&max-size" || a == "&parse-at" || a == "&parse-from" ||
+                     a == "&type" || a == "&until" || a == "&until-including" || a == "&while" )
+                    error(fmt("'%s' can be used at most once", a), p);
+            }
+        }
     }
 
     void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {
