@@ -1,3 +1,12 @@
+1.9.0-dev.41 | 2023-07-19 09:17:47 +0200
+
+  * Mention unit switch statements in conditional parsing docs. (Benjamin Bannier, Corelight)
+
+    Instead of decorating many fields with `if` conditions for certain
+    grammars a simpler approach can be to use a unit switch statement with
+    branch-by-expressions. Add a link to unit switch from the conditional
+    parsing section.
+
 1.9.0-dev.39 | 2023-07-18 11:21:27 +0200
 
   * GH-1485: Add validator rejecting unsupported multiple uses of attributes. (Benjamin Bannier, Corelight)
