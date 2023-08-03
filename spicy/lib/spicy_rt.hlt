@@ -68,6 +68,7 @@ public type Parser = struct {
     vector<ParserPort> ports;
 } &cxxname="spicy::rt::Parser";
 
+public type BitOrder = enum { LSB0, MSB0 } &cxxname="hilti::rt::integer::BitOrder";
 public type Direction = enum { Originator, Responder, Both } &cxxname="spicy::rt::Direction";
 public type FindDirection = __library_type("hilti::rt::stream::Direction");
 public type MIMEType = __library_type("spicy::rt::MIMEType");
@@ -86,10 +87,6 @@ declare public bool atEod(inout value_ref<stream> data, view<stream> cur, inout 
 declare public optional<iterator<stream>> unit_find(iterator<stream> begin_, iterator<stream> end_, optional<iterator<stream>> i, bytes needle, FindDirection dir) &cxxname="spicy::rt::detail::unitFind" &have_prototype;
 
 declare public void backtrack() &cxxname="spicy::rt::detail::backtrack" &have_prototype;
-
-public type BitOrder = enum { LSB0, MSB0 } &cxxname="hilti::rt::integer::BitOrder";
-  # TODO: Should accept BitOrder instead of enum<*> here.
-declare public uint<*> extractBits(uint<*> v, uint<64> lower, uint<64> upper, enum<*> order) &cxxname="hilti::rt::integer::bits" &have_prototype;
 
 declare public void initializeParsedUnit(inout ParsedUnit punit, any unit, TypeInfo ti) &cxxname="spicy::rt::ParsedUnit::initialize" &have_prototype;
 

@@ -18,38 +18,6 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
     auto const_(const Type& t) { return (out.isCompact() && hilti::type::isConstant(t)) ? "const " : ""; }
 
-    void operator()(const type::bitfield::Bits& n) {
-        out << "    " << n.id() << ": ";
-
-        if ( n.lower() == n.upper() )
-            out << fmt("%u", n.lower());
-        else
-            out << fmt("%u..%d", n.lower(), n.upper());
-
-        if ( n.attributes() )
-            out << ' ' << *n.attributes();
-
-        out << ";" << out.newline();
-    }
-
-    void operator()(const type::Bitfield& n, position_t p) {
-        if ( ! out.isExpandSubsequentType() ) {
-            if ( auto id = p.node.as<Type>().typeID() ) {
-                out << *id;
-                return;
-            }
-        }
-
-        out.setExpandSubsequentType(false);
-
-        out << const_(n) << fmt("bitfield(%d) {\n", n.width());
-
-        for ( const auto& f : n.bits() )
-            out << f;
-
-        out << "}";
-    }
-
     void operator()(const type::Sink& /* n */) { out << "sink"; }
 
     void operator()(const type::Unit& n) {

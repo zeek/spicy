@@ -16,9 +16,7 @@
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/unknown.h>
 
-#include <spicy/ast/aliases.h>
-
-namespace spicy::type {
+namespace hilti::type {
 
 namespace bitfield {
 
@@ -112,4 +110,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace spicy::type
+} // namespace hilti::type

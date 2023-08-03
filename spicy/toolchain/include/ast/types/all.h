@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <spicy/ast/types/bitfield.h>
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/all.h>

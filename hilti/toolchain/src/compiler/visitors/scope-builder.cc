@@ -155,6 +155,11 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
             p.node.scope()->insert(std::move(x));
     }
 
+    void operator()(const type::bitfield::Bits& b, position_t p) {
+        if ( auto d = b.ddRef() )
+            p.node.scope()->insert(std::move(d));
+    }
+
     void operator()(const type::Enum& m, position_t p) {
         if ( ! p.parent().isA<declaration::Type>() )
             return;

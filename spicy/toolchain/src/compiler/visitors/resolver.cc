@@ -170,43 +170,6 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
         }
     }
 
-    void operator()(const type::bitfield::Bits& b, position_t p) {
-        if ( type::isResolved(b.itemType()) )
-            return;
-
-        Type t = b.ddType();
-
-        if ( auto a = AttributeSet::find(b.attributes(), "&convert") ) {
-            t = a->valueAsExpression()->get().type();
-            if ( ! type::isResolved(t) )
-                return;
-        }
-
-        logChange(p.node, t, "item type");
-        p.node.as<type::bitfield::Bits>().setItemType(t);
-        modified = true;
-    }
-
-    void operator()(const type::Bitfield& b, position_t p) {
-        if ( type::isResolved(b.type()) )
-            return;
-
-        std::vector<hilti::type::tuple::Element> elems;
-
-        for ( const auto& bit : b.bits() ) {
-            if ( ! type::isResolved(bit.itemType()) )
-                return;
-
-            elems.emplace_back(bit.id(), bit.itemType());
-        }
-
-        Type t = type::Tuple(std::move(elems), b.meta());
-        assert(type::isResolved(t));
-        logChange(p.node, t);
-        p.node.as<type::Bitfield>().setType(t);
-        modified = true;
-    }
-
     void operator()(const type::unit::item::Field& f, position_t p) {
         if ( ! type::isResolved(f.parseType()) ) {
             if ( auto t = _fieldType(f, f.originalType(), FieldType::ParseType, f.isContainer(), f.meta()) ) {

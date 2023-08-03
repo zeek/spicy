@@ -135,7 +135,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
             auto x =
                 builder()->addTmp("bits", itype,
-                                  builder::call("spicy_rt::extractBits", {value, builder::integer(b.lower()),
+                                  builder::call("hilti::extractBits", {value, builder::integer(b.lower()),
                                                                           builder::integer(b.upper()), bit_order}));
 
             if ( auto a = AttributeSet::find(b.attributes(), "&convert") ) {

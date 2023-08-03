@@ -9,12 +9,11 @@
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/any.h>
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/unknown.h>
 
-#include <spicy/ast/types/bitfield.h>
-
-namespace spicy::operator_ {
+namespace hilti::operator_ {
 
 namespace bitfield::detail {
 
@@ -76,4 +75,4 @@ right.
     }
 END_OPERATOR_CUSTOM_x
 
-} // namespace spicy::operator_
+} // namespace hilti::operator_

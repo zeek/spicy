@@ -2,6 +2,5 @@
 
 #pragma once
 
-#include <spicy/ast/operators/bitfield.h>
 #include <spicy/ast/operators/sink.h>
 #include <spicy/ast/operators/unit.h>

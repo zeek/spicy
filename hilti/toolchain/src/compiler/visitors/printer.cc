@@ -797,6 +797,38 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const type::Bool& n) { out << const_(n) << "bool"; }
 
+    void operator()(const type::bitfield::Bits& n) {
+        out << "    " << n.id() << ": ";
+
+        if ( n.lower() == n.upper() )
+            out << fmt("%d", n.lower());
+        else
+            out << fmt("%d..%d", n.lower(), n.upper());
+
+        if ( n.attributes() )
+            out << ' ' << *n.attributes();
+
+        out << ";" << out.newline();
+    }
+
+    void operator()(const type::Bitfield& n, position_t p) {
+        if ( ! out.isExpandSubsequentType() ) {
+            if ( auto id = p.node.as<Type>().typeID() ) {
+                out << *id;
+                return;
+            }
+        }
+
+        out.setExpandSubsequentType(false);
+
+        out << const_(n) << fmt("bitfield(%d) {\n", n.width());
+
+        for ( const auto& f : n.bits() )
+            out << f;
+
+        out << "}";
+    }
+
     void operator()(const type::Bytes& n) { out << const_(n) << "bytes"; }
 
     void operator()(const type::enum_::Label& n) { out << n.id() << " = " << n.value(); }

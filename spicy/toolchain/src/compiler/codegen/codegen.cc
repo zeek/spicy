@@ -16,6 +16,7 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/operators/function.h>
 #include <hilti/ast/operators/struct.h>
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/regexp.h>
@@ -161,13 +162,6 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
      *     replaceNode(&p, hilti::expression::UnresolvedOperator(n.operator_().kind(), n.operands(), p.node.meta()));
      * }
      */
-    result_t operator()(const operator_::bitfield::Member& n, position_t p) {
-        const auto& id = n.op1().as<hilti::expression::Member>().id();
-        auto idx = n.op0().type().as<spicy::type::Bitfield>().bitsIndex(id);
-        assert(idx);
-        auto x = builder::index(n.op0(), *idx, n.meta());
-        replaceNode(&p, std::move(x));
-    }
 
     result_t operator()(const operator_::unit::Unset& n, position_t p) {
         const auto& id = n.op1().as<hilti::expression::Member>().id();

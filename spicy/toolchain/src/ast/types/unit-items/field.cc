@@ -3,11 +3,11 @@
 #include <optional>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/vector.h>
 
 #include <spicy/ast/detail/visitor.h>
-#include <spicy/ast/types/bitfield.h>
 #include <spicy/ast/types/unit-items/field.h>
 
 using namespace spicy;
