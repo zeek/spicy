@@ -34,7 +34,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 113
-%expect-rr 207
+%expect-rr 209
 
 %{
 
@@ -687,7 +687,7 @@ enum_label    : local_id                         { $$ = hilti::type::enum_::Labe
 bitfield_type : BITFIELD '(' CUINTEGER ')'
                                                  { _field_width = $3; }
                 '{' opt_bitfield_bits '}'
-                                                 { $$ = hilti::type::Bitfield($3, $7, __loc__); }
+                                                 { $$ = hilti::type::Bitfield($3, $7, {}, __loc__); }
 
 opt_bitfield_bits
               : bitfield_bits
@@ -809,6 +809,7 @@ expr_f        : ctor                             { $$ = hilti::expression::Ctor(
 
 expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
               | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
+              | DOLLARDOLLAR                     { $$ = hilti::expression::UnresolvedID(std::move("__dd"), __loc__);}
               | SCOPE                            { $$ = hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, __loc__); }
 
 

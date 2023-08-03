@@ -64,7 +64,7 @@ struct FieldTypeVisitor : public hilti::visitor::PreOrder<Type, FieldTypeVisitor
     result_t operator()(const type::Bitfield& t) {
         switch ( ft ) {
             case FieldType::DDType:
-            case FieldType::ItemType: return t.type();
+            case FieldType::ItemType: return t.tupleType();
 
             case FieldType::ParseType: return t;
         };

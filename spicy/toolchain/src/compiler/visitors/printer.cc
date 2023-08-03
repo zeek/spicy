@@ -9,7 +9,6 @@
 #include <spicy/compiler/detail/visitors.h>
 
 using namespace spicy;
-using hilti::util::fmt;
 
 namespace {
 

@@ -378,6 +378,68 @@ class Address : public detail::AtomicType<hilti::rt::Address> {};
 /** Type information for type ``any`. */
 class Any : public detail::ValueLessType {};
 
+class Bitfield;
+
+namespace bitfield {
+
+/** Auxiliary type information for type ``bitfield`` describing one of its fields. */
+class Bits {
+public:
+    /**
+     * Constructor.
+     *
+     * @param name ID of the field
+     * @param type type of the field
+     * @param offset offset of the field inside the bitfield's storage tuple.
+     */
+    Bits(const char* name, const TypeInfo* type, std::ptrdiff_t offset) : name(name), type(type), offset(offset) {}
+
+    const std::string name; /**< ID of the field, with an empty string indicating no name */
+    const TypeInfo* type;   /**< type of the field */
+
+private:
+    friend class type_info::Bitfield;
+
+    const std::ptrdiff_t offset;
+};
+
+}; // namespace bitfield
+
+/** Auxiliary type information for type ``bitfield`. */
+class Bitfield {
+public:
+    /**
+     * Constructor
+     *
+     * @param labels the bitfield's fields
+     */
+    Bitfield(std::vector<bitfield::Bits> bits) : _bits(std::move(bits)) {}
+
+    /** Returns the bitfield's fields. */
+    const auto& bits() const { return _bits; }
+
+    /**
+     * Returns a vector that can be iterated over to visit all the fields.
+     *
+     * @param v the value referring to the bitfield to iterate over
+     *
+     * @return a vector of pairs ``(field, value)`` where *field* is the
+     * current ``bitfield::Bit` and *value* is the field's value.
+     */
+    auto iterate(const Value& v) const {
+        std::vector<std::pair<const bitfield::Bits&, Value>> values;
+
+        values.reserve(_bits.size());
+        for ( const auto& f : _bits )
+            values.emplace_back(f, Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v));
+
+        return values;
+    }
+
+private:
+    const std::vector<bitfield::Bits> _bits;
+};
+
 /** Type information for type ``bool`. */
 class Bool : public detail::AtomicType<bool> {};
 
@@ -1148,6 +1210,7 @@ struct TypeInfo {
         Undefined,
         Address,
         Any,
+        Bitfield,
         Bool,
         Bytes,
         BytesIterator,
@@ -1198,6 +1261,7 @@ struct TypeInfo {
     union {
         type_info::Address* address;
         type_info::Any* any;
+        type_info::Bitfield* bitfield;
         type_info::Bool* bool_;
         type_info::Bytes* bytes;
         type_info::BytesIterator* bytes_iterator;
@@ -1255,6 +1319,10 @@ struct TypeInfo {
         else if constexpr ( std::is_same_v<Type, type_info::Any> ) {
             tag = Any;
             any = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Bitfield> ) {
+            tag = Bitfield;
+            bitfield = value;
         }
         else if constexpr ( std::is_same_v<Type, type_info::Bool> ) {
             tag = Bool;
@@ -1449,6 +1517,10 @@ const Type* auxType(const type_info::Value& v) {
     else if constexpr ( std::is_same_v<Type, type_info::Any> ) {
         assert(type.tag == TypeInfo::Any);
         return type.any;
+    }
+    else if constexpr ( std::is_same_v<Type, type_info::Bitfield> ) {
+        assert(type.tag == TypeInfo::Bitfield);
+        return type.bitfield;
     }
     else if constexpr ( std::is_same_v<Type, type_info::Bool> ) {
         assert(type.tag == TypeInfo::Bool);

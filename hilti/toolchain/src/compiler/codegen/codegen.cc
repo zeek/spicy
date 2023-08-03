@@ -841,6 +841,28 @@ void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
     block->addStatement(cxx::Expression(fmt("hilti::rt::profiler::stop(%s)", profiler)));
 }
 
+cxx::Expression CodeGen::unsignedIntegerToBitfield(const type::Bitfield& t, const cxx::Expression& value,
+                                                   const cxx::Expression& bitorder) {
+    std::vector<cxx::Expression> bits;
+    for ( const auto& b : t.bits(false) ) {
+        auto x = fmt("hilti::rt::integer::bits(%s, %d, %d, %s)", value, b.lower(), b.upper(), bitorder);
+
+        if ( auto a = AttributeSet::find(b.attributes(), "&convert") ) {
+            pushDollarDollar(x);
+            bits.emplace_back(compile(*a->valueAsExpression()));
+            popDollarDollar();
+        }
+        else
+            bits.emplace_back(std::move(x));
+    }
+
+    // `noop()` just returns the same value passed in. Without it, the compiler
+    // doesn't like the expression we are building, not sure why.
+    bits.emplace_back(fmt("hilti::rt::integer::noop(%s)", value));
+
+    return fmt("hilti::rt::make_bitfield(%s)", util::join(bits, ", "));
+}
+
 cxx::ID CodeGen::uniqueID(const std::string& prefix, const Node& n) {
     std::string x;
 

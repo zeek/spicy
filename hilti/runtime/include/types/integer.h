@@ -343,6 +343,16 @@ inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uin
     return (v & mask) >> lower;
 }
 
+/**
+ * Helper function just returning the value passed in. This is for working
+ * around an issue where our code generator produces code that, for unknown
+ * reasons, doesn't compile if the value is used directly.
+ */
+template<typename UINT>
+inline hilti::rt::integer::safe<UINT> noop(hilti::rt::integer::safe<UINT> v) {
+    return v;
+}
+
 } // namespace integer
 
 namespace detail::adl {

@@ -1,0 +1,62 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+type X = bitfield(16) {
+    a: 0..3;
+    b: 4..7;
+    c: 8..11;
+    d: 12..15;
+};
+
+global d = b"\x01\x00\xff";
+
+global bytes r;
+global X bf;
+
+(bf, r) = *unpack<X>(d, hilti::ByteOrder::Little);
+assert bf.a == 1;
+assert bf.b == 0;
+assert bf.c == 0;
+assert bf.d == 0;
+assert r == b"\xff";
+
+(bf, r) = *unpack<X>(d, hilti::ByteOrder::Little, hilti::BitOrder::LSB0);
+assert bf.a == 1;
+assert bf.b == 0;
+assert bf.c == 0;
+assert bf.d == 0;
+assert r == b"\xff";
+
+(bf, r) = *unpack<X>(d, hilti::ByteOrder::Little, hilti::BitOrder::MSB0);
+assert bf.a == 0;
+assert bf.b == 0;
+assert bf.c == 0;
+assert bf.d == 1;
+assert r == b"\xff";
+
+(bf, r) = *unpack<X>(d, hilti::ByteOrder::Big);
+assert bf.a == 0;
+assert bf.b == 0;
+assert bf.c == 1;
+assert bf.d == 0;
+assert r == b"\xff";
+
+(bf, r) = *unpack<X>(d, hilti::ByteOrder::Big, hilti::BitOrder::LSB0);
+assert bf.a == 0;
+assert bf.b == 0;
+assert bf.c == 1;
+assert bf.d == 0;
+assert r == b"\xff";
+
+(bf, r) = *unpack<X>(d, hilti::ByteOrder::Big, hilti::BitOrder::MSB0);
+assert bf.a == 0;
+assert bf.b == 1;
+assert bf.c == 0;
+assert bf.d == 0;
+assert r == b"\xff";
+
+}

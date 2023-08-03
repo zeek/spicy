@@ -185,4 +185,10 @@ private:
     std::variant<T, result::Error> _value;
 };
 
+/** Similar to `std::make_optional`, construct a result from a value. */
+template<typename T>
+Result<T> make_result(T&& t) {
+    return Result<T>(std::forward<T>(t));
+}
+
 } // namespace hilti::rt

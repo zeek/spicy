@@ -821,7 +821,7 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
         out.setExpandSubsequentType(false);
 
-        out << const_(n) << fmt("bitfield(%d) {\n", n.width());
+        out << const_(n) << fmt("bitfield(%d) {", n.width()) << out.newline();
 
         for ( const auto& f : n.bits() )
             out << f;

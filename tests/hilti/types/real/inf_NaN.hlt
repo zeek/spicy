@@ -6,10 +6,10 @@ module Foo {
 import hilti;
 
 global zero = 0e0;
-global real minus_zero = -0.;
-global real inf = 1./0.;
-global real minus_inf = -1./0.;
-global real nan = 0./0.;
+global real minus_zero = -0.0;
+global real inf = 1.0/0.0;
+global real minus_inf = -1.0/0.0;
+global real nan = 0.0/0.0;
 
 assert zero == minus_zero;
 assert inf == 3.14159/0e-999;

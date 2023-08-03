@@ -26,11 +26,6 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             p.node.scope()->insert(std::move(x));
     }
 
-    void operator()(const type::bitfield::Bits& b, position_t p) {
-        if ( auto d = b.ddRef() )
-            p.node.scope()->insert(std::move(d));
-    }
-
     void operator()(const type::unit::item::Field& f, position_t p) {
         if ( auto d = f.ddRef() )
             p.node.scope()->insert(std::move(d));

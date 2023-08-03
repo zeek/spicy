@@ -50,6 +50,15 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         return compileExpressions(ctor.as<ctor::Tuple>().value());
     }
 
+    auto tupleArgumentType(const Expression& op, int i) {
+        auto ctor = op.as<expression::Ctor>().ctor();
+
+        if ( auto x = ctor.tryAs<ctor::Coerced>() )
+            ctor = x->coercedCtor();
+
+        return ctor.as<ctor::Tuple>().value()[i].type();
+    }
+
     auto methodArguments(const expression::ResolvedOperatorBase& o) {
         auto ops = o.op2();
 
@@ -95,6 +104,15 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::bool_::BitAnd& n) { return binary(n, "&"); }
     result_t operator()(const operator_::bool_::BitOr& n) { return binary(n, "|"); }
     result_t operator()(const operator_::bool_::BitXor& n) { return binary(n, "^"); }
+
+    /// Bitfield
+
+    result_t operator()(const operator_::bitfield::Member& n) {
+        auto id = n.op1().as<expression::Member>().id();
+        auto elem = n.op0().type().as<type::Bitfield>().bitsIndex(id);
+        assert(elem);
+        return {fmt("std::get<%u>(%s.value)", *elem, op0(n)), cxx::Side::RHS};
+    }
 
     /// bytes::Iterator
 
@@ -377,7 +395,8 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
         if ( auto default_ = optionalArgument(args, 1); ! default_.empty() )
             return fmt(
-                "[](auto&& m, auto&& k, auto&& default_) { return m.contains(k)? m.get(k) : default_; }(%s, %s, %s)",
+                "[](auto&& m, auto&& k, auto&& default_) { return m.contains(k)? m.get(k) : default_; }(%s, %s, "
+                "%s)",
                 self, k, default_);
         else
             return fmt("%s.get(%s)", self, k);
@@ -457,8 +476,8 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::generic::Unpack& n) {
         auto args = tupleArguments(n, n.op1());
         auto throw_on_error = n.op2().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
-        return cg->unpack(n.op0().type().as<type::Type_>().typeValue(), args[0], util::slice(args, 1, -1),
-                          throw_on_error);
+        return cg->unpack(n.op0().type().as<type::Type_>().typeValue(), tupleArgumentType(n.op1(), 0), args[0],
+                          util::slice(args, 1, -1), throw_on_error);
     }
 
     result_t operator()(const operator_::generic::Begin& n) { return fmt("%s.begin()", op0(n)); }

@@ -298,6 +298,23 @@ public:
     }
 
     /**
+     * Returns a new attribute set that adds one element.
+     *
+     * @param s set to add to.
+     * @param a element to add.
+     * @return `s` with `a' added
+     */
+    static AttributeSet add(optional_ref<AttributeSet> s, Attribute a) {
+        if ( s ) {
+            auto ns = *s;
+            ns.addChild(std::move(a));
+            return ns;
+        }
+        else
+            return AttributeSet({std::move(a)});
+    }
+
+    /**
      * Retrieves an attribute with a given name from a set, dealing correctly
      * with an unset optional set. If multiple attributes with that tag
      * exist, it's undefined which is returned.

@@ -56,7 +56,7 @@ global uint<64> uinty = cast<uint<64>>(really); # Can't coerce real variable to 
 
 # 355/113 approximates pi as 3.141592920353982520964564...
 
-global real piish = 355./113.;
+global real piish = 355.0/113.0;
 
 # real needs ~15 decimal digits for its double-precision
 assert piish == 3.1415929203539823;

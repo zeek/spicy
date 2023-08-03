@@ -22,6 +22,14 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
         case TypeInfo::Undefined: throw RuntimeError("unhandled type");
         case TypeInfo::Address: return type.address->get(v);
         case TypeInfo::Any: return "<any>";
+        case TypeInfo::Bitfield: {
+            auto j = json::array();
+
+            for ( const auto& i : type.bitfield->iterate(v) )
+                j.push_back(convert(i.second));
+
+            return j;
+        }
         case TypeInfo::Bool: return type.bool_->get(v);
         case TypeInfo::Bytes: return to_string_for_print(type.bytes->get(v));
         case TypeInfo::BytesIterator: return to_string(type.bytes_iterator->get(v));
