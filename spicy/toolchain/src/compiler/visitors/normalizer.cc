@@ -269,6 +269,30 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             }
         }
     }
+
+    void operator()(const type::Bitfield& bf, position_t p) {
+        if ( auto field = p.parent().tryAs<type::unit::item::Field>() ) {
+            // Transfer any "&bitorder" attribute over to the type.
+            if ( auto a = AttributeSet::find(field->attributes(), "&bit-order");
+                 a && ! AttributeSet::find(bf.attributes(), "&bit-order") ) {
+                auto new_attrs = AttributeSet::add(bf.attributes(), *a);
+                logChange(p.node, "transfer &bitorder attribute");
+                p.node.as<type::Bitfield>().setAttributes(new_attrs);
+                modified = true;
+            }
+        }
+
+        if ( auto decl = p.parent().tryAs<hilti::declaration::Type>() ) {
+            // Transfer any "&bitorder" attribute over to the type.
+            if ( auto a = AttributeSet::find(decl->attributes(), "&bit-order");
+                 a && ! AttributeSet::find(bf.attributes(), "&bit-order") ) {
+                auto new_attrs = AttributeSet::add(bf.attributes(), *a);
+                logChange(p.node, "transfer &bitorder attribute");
+                p.node.as<type::Bitfield>().setAttributes(new_attrs);
+                modified = true;
+            }
+        }
+    }
 };
 
 } // anonymous namespace

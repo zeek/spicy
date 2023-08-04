@@ -689,7 +689,7 @@ enum_label    : local_id                         { $$ = hilti::type::enum_::Labe
 bitfield_type : BITFIELD '(' CUINTEGER ')'
                                                  { _field_width = $3; }
                 '{' opt_bitfield_bits '}'
-                                                 { $$ = spicy::type::Bitfield($3, $7, __loc__); }
+                                                 { $$ = spicy::type::Bitfield($3, $7, {}, __loc__); }
 
 opt_bitfield_bits
               : bitfield_bits

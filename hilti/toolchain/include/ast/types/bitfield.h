@@ -58,8 +58,9 @@ public:
 
     bool operator==(const Bits& other) const {
         return id() == other.id() && _lower == other._lower && _upper == other._upper &&
-               _field_width == other._field_width && itemType() == other.itemType() &&
-               attributes() == other.attributes();
+               _field_width == other._field_width && itemType() == other.itemType();
+        // TODO: Attributes don't quite compare correctly, see e.g., spicy.types.bitfield.parse-enum failure
+        // && attributes() == other.attributes();
     }
 
 private:

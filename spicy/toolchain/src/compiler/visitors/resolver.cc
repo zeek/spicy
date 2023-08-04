@@ -58,19 +58,7 @@ enum class FieldType {
 // Visitor determining a unit field type.
 struct FieldTypeVisitor : public hilti::visitor::PreOrder<Type, FieldTypeVisitor> {
     explicit FieldTypeVisitor(FieldType ft) : ft(ft) {}
-
     FieldType ft;
-
-    result_t operator()(const type::Bitfield& t) {
-        switch ( ft ) {
-            case FieldType::DDType:
-            case FieldType::ItemType: return t.tupleType();
-
-            case FieldType::ParseType: return t;
-        };
-
-        hilti::util::cannot_be_reached();
-    }
 
     result_t operator()(const hilti::type::RegExp& /* t */) { return hilti::type::Bytes(); }
 };
