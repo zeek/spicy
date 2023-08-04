@@ -227,6 +227,45 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         }
     }
 
+    void operator()(const operator_::unit::MemberNonConst& o, position_t p) {
+        auto unit = o.op0().type().tryAs<type::Unit>();
+        auto id = o.op1().tryAs<hilti::expression::Member>()->id();
+        if ( unit && id && ! unit->itemByName(id) ) {
+            // See if we we got an anonymous bitfield with a member of that
+            // name. If so, rewrite the access to transparently to refer to the
+            // member through the field's internal name.
+            bool found_field = false;
+            for ( const auto& f : unit->items<type::unit::item::Field>() ) {
+                if ( ! f.isAnonymous() )
+                    continue;
+
+                auto t = f.itemType().tryAs<type::Bitfield>();
+                if ( ! t )
+                    continue;
+
+                auto bits = t->bits(id);
+                if ( ! bits )
+                    continue;
+
+                if ( found_field )
+                    // Ambiguous access, the validator will catch that.
+                    return;
+
+                auto access_field =
+                    operator_::unit::MemberNonConst::Operator().instantiate({o.op0(),
+                                                                             hilti::expression::Member(f.id())},
+                                                                            o.meta());
+                auto access_bits =
+                    bitfield::Member::Operator().instantiate({std::move(access_field), o.op1()}, o.meta());
+
+                logChange(p.node, access_bits);
+                p.node = access_bits;
+                modified = true;
+                found_field = true;
+            }
+        }
+    }
+
     void operator()(const type::Unit& u, position_t p) {
         if ( ! p.node.as<Type>().typeID() )
             return;

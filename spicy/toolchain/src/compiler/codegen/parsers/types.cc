@@ -117,7 +117,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
     }
 
     result_t operator()(const hilti::type::Bitfield& t, position_t p) {
-        std::optional<Expression> bitorder = builder::id("spicy::BitOrder::LSB0");
+        std::optional<Expression> bitorder = builder::id("hilti::BitOrder::LSB0");
 
         if ( auto attrs = t.attributes() ) {
             if ( auto a = AttributeSet::find(*attrs, "&bit-order") )

@@ -499,7 +499,7 @@ struct ProductionVisitor
             builder()->addAssign(destination(), builder::default_(field->itemType()));
         }
 
-        else if ( field->isAnonymous() || field->isSkip() ) {
+        else if ( (field->isAnonymous() || field->isSkip()) && ! field->itemType().isA<type::Bitfield>() ) {
             // We won't have a field to store the value in, create a temporary.
             auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
             pushDestination(dst);

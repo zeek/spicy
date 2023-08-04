@@ -1,0 +1,27 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+# @TEST-DOC: Check that an anonymous bitfield's field name cannot shadow other fields.
+
+module Test;
+
+type Foo = unit {
+  x: uint8;
+  : bitfield(8) {
+    x: 0..3;
+  };
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+type Bar = unit {
+  : bitfield(8) {
+    x: 0..3;
+  };
+  : bitfield(8) {
+    x: 0..3;
+  };
+
+  on %done { print self.x; }
+};

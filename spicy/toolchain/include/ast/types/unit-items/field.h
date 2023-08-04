@@ -25,9 +25,9 @@ public:
           std::optional<Expression> repeat, const std::vector<Expression>& sinks,
           std::optional<AttributeSet> attrs = {}, std::optional<Expression> cond = {},
           const std::vector<Hook>& hooks = {}, Meta m = Meta())
-        : NodeBase(nodes((id ? id : _uniquer.get("anon")), hilti::type::pruneWalk(std::move(type)), hilti::type::auto_,
-                         hilti::node::none, hilti::type::auto_, node::none, std::move(repeat), std::move(attrs),
-                         std::move(cond), args, sinks, hooks),
+        : NodeBase(nodes((id ? id : _uniquer.get("__anon")), hilti::type::pruneWalk(std::move(type)),
+                         hilti::type::auto_, hilti::node::none, hilti::type::auto_, node::none, std::move(repeat),
+                         std::move(attrs), std::move(cond), args, sinks, hooks),
                    std::move(m)),
           _is_forwarding(false),
           _is_transient(false),
