@@ -900,9 +900,9 @@ struct Field {
      * @param offset offset of the field in number bytes inside the struct
      * @param accessor function returning a pointer to a fields value
      */
-    Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, bool internal,
+    Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, bool internal, bool anonymous,
           Accessor accessor = accessor_default)
-        : name(name), type(type), offset(offset), accessor(accessor), internal(internal) {}
+        : name(name), type(type), offset(offset), accessor(accessor), internal(internal), anonymous(anonymous) {}
 
     /** Default accessor function suitable for non-optional fields. */
     static const void* accessor_default(const Value& v) { return v.pointer(); }
@@ -921,6 +921,7 @@ struct Field {
         };
     }
 
+    bool isAnonymous() const { return anonymous; }
     bool isInternal() const { return internal; }
 
     const std::string name; /**< ID of the field */
@@ -935,6 +936,7 @@ private:
     const std::ptrdiff_t offset;
     const Accessor accessor;
     const bool internal;
+    const bool anonymous;
 };
 
 }; // namespace struct_

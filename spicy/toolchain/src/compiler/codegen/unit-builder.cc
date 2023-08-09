@@ -41,6 +41,9 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
         if ( auto x = AttributeSet::find(f.attributes(), "&default") )
             attrs = AttributeSet::add(attrs, *x);
 
+        if ( f.isAnonymous() )
+            attrs = AttributeSet::add(attrs, Attribute("&anonymous"));
+
         if ( (f.isAnonymous() || f.isSkip() || f.parseType().isA<type::Void>()) &&
              ! f.itemType().isA<type::Bitfield>() )
             // This field will never make it into the C++ struct. We still

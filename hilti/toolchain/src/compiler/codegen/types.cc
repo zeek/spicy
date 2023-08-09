@@ -901,8 +901,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
             if ( auto x = cxxID(p.node) )
                 cxx_type_id = *x;
 
-            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s), %s%s }",
-                                 cxx::ID(f.id()), cg->typeInfo(f.type()), cxx_type_id, cxx::ID(f.id()), f.isInternal(),
+            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s), %s, %s%s }",
+                                 cxx::ID(f.id()), cg->typeInfo(f.type()), cxx_type_id, cxx::ID(f.id()), f.isInternal(), f.isAnonymous(),
                                  accessor));
         }
 

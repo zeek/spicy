@@ -136,7 +136,11 @@ void TextPrinter::print(const type_info::Value& v) {
                     if ( y ) {
                         out() << '\n';
                         outputIndent();
-                        out() << f.name << ": ";
+
+                        if ( ! f.isAnonymous() )
+                            out() << f.name;
+
+                        out() << ": ";
                         print(y);
 
                         const auto& offset = offsets && offsets->size() > index ? offsets->at(index) : std::nullopt;
