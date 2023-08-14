@@ -1,3 +1,12 @@
+1.9.0-dev.45 | 2023-08-14 11:32:11 +0200
+
+  * Fix handling of `--show-backtraces` flag. (Benjamin Bannier, Corelight)
+
+    This flag was intended and always documented as a toggle, but instead
+    implemented as an argument taking a value (which was never evaluated).
+    This patch fixes the implementation to align with itend and
+    documentation.
+
 1.9.0-dev.43 | 2023-08-14 11:31:35 +0200
 
   * Bump FreeBSD versions in CI. (Benjamin Bannier, Corelight)
