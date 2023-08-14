@@ -39,7 +39,7 @@ constexpr int OPT_CXX_LINK = 1000;
 constexpr int OPT_CXX_ENABLE_DYNAMIC_GLOBALS = 1001;
 
 static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
-                                              {"show-backtraces", required_argument, nullptr, 'B'},
+                                              {"show-backtraces", no_argument, nullptr, 'B'},
                                               {"compiler-debug", required_argument, nullptr, 'D'},
                                               {"cxx-enable-dynamic-globals", no_argument, nullptr,
                                                OPT_CXX_ENABLE_DYNAMIC_GLOBALS},
