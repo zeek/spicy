@@ -21,6 +21,9 @@ class Call : public hilti::expression::ResolvedOperatorBase {
 public:
     using hilti::expression::ResolvedOperatorBase::ResolvedOperatorBase;
 
+    /** Implements `Expression` interface. */
+    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+
     struct Operator : public hilti::trait::isOperator {
         Operator(const Scope::Referee& r, const type::Function& ftype) {
             auto op0 = operator_::Operand{{}, type::Any()}; // IDs won't be resolved

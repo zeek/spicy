@@ -281,6 +281,9 @@ class CastedCoercion : public hilti::expression::ResolvedOperatorBase {
 public:
     using hilti::expression::ResolvedOperatorBase::ResolvedOperatorBase;
 
+    /** Implements `Expression` interface. */
+    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+
     struct Operator : public hilti::trait::isOperator {
         Operator() = default;
 
