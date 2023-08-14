@@ -1,3 +1,9 @@
+1.9.0-dev.47 | 2023-08-14 11:32:33 +0200
+
+  * GH-1384: Fix stringification of `DecodeErrorStrategy`. (Benjamin Bannier, Corelight)
+
+    This was pointed out by Simeon Miteff in #1384.
+
 1.9.0-dev.45 | 2023-08-14 11:32:11 +0200
 
   * Fix handling of `--show-backtraces` flag. (Benjamin Bannier, Corelight)

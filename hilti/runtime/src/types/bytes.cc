@@ -231,9 +231,9 @@ std::string to_string(const bytes::Charset& x, tag /*unused*/) {
 
 std::string to_string(const bytes::DecodeErrorStrategy& x, tag /*unused*/) {
     switch ( x.value() ) {
-        case bytes::DecodeErrorStrategy::IGNORE: return "Charset::IGNORE";
-        case bytes::DecodeErrorStrategy::REPLACE: return "Charset::REPLACE";
-        case bytes::DecodeErrorStrategy::STRICT: return "Charset::STRICT";
+        case bytes::DecodeErrorStrategy::IGNORE: return "DecodeErrorStrategy::IGNORE";
+        case bytes::DecodeErrorStrategy::REPLACE: return "DecodeErrorStrategy::REPLACE";
+        case bytes::DecodeErrorStrategy::STRICT: return "DecodeErrorStrategy::STRICT";
     }
 
     cannot_be_reached();

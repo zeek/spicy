@@ -113,6 +113,12 @@ TEST_CASE("bytes::Charset") {
     CHECK_EQ(to_string(Enum(bytes::Charset::Undef)), "Charset::Undef");
 }
 
+TEST_CASE("bytes::DecodeErrorStrategy") {
+    CHECK_EQ(to_string(Enum(bytes::DecodeErrorStrategy::IGNORE)), "DecodeErrorStrategy::IGNORE");
+    CHECK_EQ(to_string(Enum(bytes::DecodeErrorStrategy::REPLACE)), "DecodeErrorStrategy::REPLACE");
+    CHECK_EQ(to_string(Enum(bytes::DecodeErrorStrategy::STRICT)), "DecodeErrorStrategy::STRICT");
+}
+
 TEST_CASE("bytes::Side") {
     CHECK_EQ(to_string(Enum(bytes::Side::Left)), "Side::Left");
     CHECK_EQ(to_string(Enum(bytes::Side::Right)), "Side::Right");
