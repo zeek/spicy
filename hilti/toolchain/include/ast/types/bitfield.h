@@ -16,9 +16,7 @@
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/unknown.h>
 
-#include <spicy/ast/aliases.h>
-
-namespace spicy::type {
+namespace hilti::type {
 
 namespace bitfield {
 
@@ -41,6 +39,7 @@ public:
     auto upper() const { return _upper; }
     auto fieldWidth() const { return _field_width; }
     auto attributes() const { return children()[3].tryAs<AttributeSet>(); }
+
     const Type& ddType() const { return children()[1].as<hilti::declaration::Expression>().expression().type(); }
     NodeRef ddRef() const { return NodeRef(children()[1]); }
     const auto& itemType() const { return child<Type>(2); }
@@ -59,8 +58,9 @@ public:
 
     bool operator==(const Bits& other) const {
         return id() == other.id() && _lower == other._lower && _upper == other._upper &&
-               _field_width == other._field_width && itemType() == other.itemType() &&
-               attributes() == other.attributes();
+               _field_width == other._field_width && itemType() == other.itemType();
+        // TODO: Attributes don't quite compare correctly, see e.g., spicy.types.bitfield.parse-enum failure
+        // && attributes() == other.attributes();
     }
 
 private:
@@ -79,29 +79,37 @@ class Bitfield : public hilti::TypeBase,
                  hilti::type::trait::isParameterized,
                  hilti::type::trait::isMutable {
 public:
-    Bitfield(int width, std::vector<bitfield::Bits> bits, const Meta& m = Meta())
-        : TypeBase(nodes(type::UnsignedInteger(width, m), hilti::type::auto_, std::move(bits)), m), _width(width) {}
+    Bitfield(int width, std::vector<bitfield::Bits> bits, std::optional<AttributeSet> attributes,
+             const Meta& m = Meta())
+        : TypeBase(nodes(type::UnsignedInteger(width, m), std::move(attributes), std::move(bits)), m), _width(width) {
+        // Add a hidden range storing the original integer value.
+        addChild(bitfield::Bits(ID("__value__"), 0, width - 1, width, {}, m));
+    }
+
     Bitfield(Wildcard /*unused*/, Meta m = Meta())
         : TypeBase({hilti::type::unknown, hilti::type::unknown}, std::move(m)), _wildcard(true) {}
 
     int width() const { return _width; }
-    auto bits() const { return children<bitfield::Bits>(2, -1); }
+    auto bits(bool include_hidden = false) const { return children<bitfield::Bits>(2, include_hidden ? -1 : -2); }
     hilti::optional_ref<const bitfield::Bits> bits(const ID& id) const;
     std::optional<int> bitsIndex(const ID& id) const;
-    const Type& parseType() const { return child<Type>(0); }
-    const Type& type() const { return child<Type>(1); }
-
-    void addField(bitfield::Bits f) { addChild(std::move(f)); }
-    void setType(const Type& t) { children()[1] = t; }
+    auto attributes() const { return children()[1].tryAs<AttributeSet>(); }
 
     bool operator==(const Bitfield& other) const { return width() == other.width() && bits() == other.bits(); }
 
     /** Implements the `Type` interface. */
     auto isEqual(const Type& other) const { return node::isEqual(this, other); }
     /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
+    auto _isResolved(ResolvedState* rstate) const {
+        auto bs = bits();
+        return std::all_of(bs.begin(), bs.end(),
+                           [&](const auto& b) { return type::detail::isResolved(b.itemType(), rstate); });
+    }
+
+    void setAttributes(const AttributeSet& attrs) { children()[1] = attrs; }
+
     /** Implements the `Type` interface. */
-    auto typeParameters() const { return hilti::util::slice(children(), 1); }
+    auto typeParameters() const { return hilti::util::slice(children(), 2); }
     /** Implements the `Type` interface. */
     auto isWildcard() const { return _wildcard; }
     /** Implements the `Node` interface. */
@@ -112,4 +120,4 @@ private:
     bool _wildcard = false;
 };
 
-} // namespace spicy::type
+} // namespace hilti::type

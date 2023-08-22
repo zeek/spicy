@@ -204,6 +204,9 @@ class MemberCall : public hilti::expression::ResolvedOperatorBase {
 public:
     using hilti::expression::ResolvedOperatorBase::ResolvedOperatorBase;
 
+    /** Implements `Expression` interface. */
+    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+
     struct Operator : public hilti::trait::isOperator {
         Operator(const type::Unit& stype, const type::unit::item::Field& f) : _field(f) {
             auto ftype = f.itemType().as<type::Function>();

@@ -4,6 +4,7 @@
 
 #include <hilti/ast/builder/all.h>
 #include <hilti/ast/builder/expression.h>
+#include <hilti/ast/operators/tuple.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 
@@ -49,8 +50,8 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         return builder()->addTmp("x", t);
     }
 
-    Expression performUnpack(const Expression& target, const Type& t, int len, const std::vector<Expression>& unpack_args,
-                             const Meta& m, bool is_try) {
+    Expression performUnpack(const Expression& target, const Type& t, int len,
+                             const std::vector<Expression>& unpack_args, const Meta& m, bool is_try) {
         if ( ! is_try ) {
             auto error_msg = fmt("expecting %d bytes for unpacking value", len);
             pb->waitForInput(builder::integer(len), error_msg, m);
@@ -115,45 +116,30 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
                                  is_try);
     }
 
-    result_t operator()(const spicy::type::Bitfield& t) {
-        const auto& itype = t.parseType();
-        auto value = builder()->addTmp("bitfield", itype);
-        performUnpack(value, itype, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
+    result_t operator()(const hilti::type::Bitfield& t, position_t p) {
+        std::optional<Expression> bitorder = builder::id("hilti::BitOrder::LSB0");
 
-        builder()->addDebugMsg("spicy", fmt("%s = %%s", meta.field()->id()), {value});
-        builder()->addDebugIndent("spicy");
-
-        std::vector<Expression> extracted_bits;
-
-        for ( const auto& b : t.bits() ) {
-            auto bit_order = builder::id("spicy_rt::BitOrder::LSB0");
-
-            if ( const auto& a = AttributeSet::find(meta.field()->attributes(), "&bit-order") )
-                bit_order = *a->valueAsExpression();
-            else if ( const auto& p = state().unit.get().propertyItem("%bit-order") )
-                bit_order = *p->expression();
-
-            auto x =
-                builder()->addTmp("bits", itype,
-                                  builder::call("spicy_rt::extractBits", {value, builder::integer(b.lower()),
-                                                                          builder::integer(b.upper()), bit_order}));
-
-            if ( auto a = AttributeSet::find(b.attributes(), "&convert") ) {
-                auto converted = builder()->addTmp(ID("converted"), b.itemType());
-                auto block = builder()->addBlock();
-                block->addLocal(ID("__dd"), itype, x);
-                block->addAssign(converted, *a->valueAsExpression());
-                x = converted;
-            }
-
-            extracted_bits.push_back(x);
-            builder()->addDebugMsg("spicy", fmt("%s = %%s", b.id()), {x});
+        if ( auto attrs = t.attributes() ) {
+            if ( auto a = AttributeSet::find(*attrs, "&bit-order") )
+                bitorder = *a->valueAsExpression();
         }
 
-        builder()->addDebugDedent("spicy");
+        auto target = destination(t);
+        performUnpack(target, t, t.width() / 8, {state().cur, fieldByteOrder(), *bitorder}, t.meta(), is_try);
 
-        auto target = destination(t.type());
-        builder()->addAssign(target, builder::tuple(extracted_bits));
+        if ( pb->options().debug ) {
+            // Print all the bit ranges individually so that we can include
+            // their IDs, which the standard tuple output wouldn't show.
+            builder()->addDebugMsg("spicy", fmt("%s = %%s", meta.field()->id()),
+                                   {builder::member(target, "__value__")});
+
+            builder()->addDebugIndent("spicy");
+            for ( const auto& bits : t.bits() )
+                builder()->addDebugMsg("spicy", fmt("%s = %%s", bits.id()), {builder::member(target, bits.id())});
+
+            builder()->addDebugDedent("spicy");
+        }
+
         return target;
     }
 
@@ -172,9 +158,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         return performUnpack(destination(t), t, t.width() / 8, {state().cur, fieldByteOrder()}, t.meta(), is_try);
     }
 
-    result_t operator()(const hilti::type::Void& t) {
-        return hilti::expression::Void();
-    }
+    result_t operator()(const hilti::type::Void& t) { return hilti::expression::Void(); }
 
     result_t operator()(const hilti::type::Bytes& t) {
         auto chunked_attr = AttributeSet::find(meta.field()->attributes(), "&chunked");

@@ -74,7 +74,8 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         if ( auto t = dst.tryAs<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            return {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp), cxx::Side::LHS};
+            return {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp),
+                    cxx::Side::LHS};
         }
 
         if ( auto t = dst.tryAs<type::Bool>() )
@@ -181,6 +182,9 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
         if ( auto t = dst.tryAs<type::UnsignedInteger>() )
             return fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", t->width(), expr);
+
+        if ( auto t = dst.tryAs<type::Bitfield>() )
+            return cg->unsignedIntegerToBitfield(*t, expr, cxx::Expression("hilti::rt::integer::BitOrder::LSB0"));
 
         logger().internalError(fmt("codegen: unexpected type coercion from unsigned integer to %s", dst.typename_()));
     }

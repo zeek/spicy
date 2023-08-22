@@ -21,6 +21,7 @@
     class cls : public hilti::expression::ResolvedOperatorBase {                                                       \
     public:                                                                                                            \
         using hilti::expression::ResolvedOperatorBase::ResolvedOperatorBase;                                           \
+        auto isEqual(const Expression& other) const { return node::isEqual(this, other); }                             \
                                                                                                                        \
         /** Class implementing operator interface. */                                                                  \
         struct Operator : public hilti::trait::isOperator {                                                            \

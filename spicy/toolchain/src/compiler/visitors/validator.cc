@@ -636,6 +636,29 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
         if ( u.propertyItem("%synchronize-at") && u.propertyItem("%synchronize-after") )
             error("unit cannot specify both %synchronize-at and %synchronize-after", p);
+
+
+        // Ensure that the items of anonymous bitfields do not lead to ambiguities.
+        std::set<ID> seen_bits;
+
+        for ( const auto& f : u.items<type::unit::item::Field>() ) {
+            if ( ! f.isAnonymous() )
+                continue;
+
+            auto t = f.itemType().tryAs<type::Bitfield>();
+            if ( ! t )
+                continue;
+
+            for ( const auto& b : t->bits() ) {
+                if ( u.itemByName(b.id()) )
+                    error(fmt("bitfield item '%s' shadows unit field", b.id()), p);
+
+                if ( seen_bits.find(b.id()) != seen_bits.end() )
+                    error(fmt("bitfield item name '%s' appears in multiple anonymous bitfields", b.id()), p);
+
+                seen_bits.insert(b.id());
+            }
+        }
     }
 
     void operator()(const hilti::operator_::value_reference::Equal& o, position_t p) {
@@ -933,21 +956,6 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     void operator()(const operator_::unit::ForwardEod& n, position_t p) {
         if ( auto x = n.op0().type().tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", p);
-    }
-
-    void operator()(const spicy::type::Bitfield& b, position_t p) {
-        const auto width = b.width();
-
-        for ( const auto& bit : b.bits() ) {
-            const auto lower = bit.lower();
-            const auto upper = bit.upper();
-
-            if ( lower > upper )
-                error("lower limit needs to be lower than upper limit", p);
-
-            if ( upper >= width )
-                error("upper limit is beyond the width of the bitfield", p);
-        }
     }
 };
 

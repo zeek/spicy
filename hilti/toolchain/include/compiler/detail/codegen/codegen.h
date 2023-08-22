@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <hilti/ast/function.h>
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/base/cache.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cxx/elements.h>
@@ -98,8 +99,8 @@ public:
     cxx::Expression pack(const hilti::Type& t, const cxx::Expression& data, const std::vector<cxx::Expression>& args);
     cxx::Expression unpack(const hilti::Type& t, const Expression& data, const std::vector<Expression>& args,
                            bool throw_on_error);
-    cxx::Expression unpack(const hilti::Type& t, const cxx::Expression& data, const std::vector<cxx::Expression>& args,
-                           bool throw_on_error);
+    cxx::Expression unpack(const hilti::Type& t, const Type& data_type, const cxx::Expression& data,
+                           const std::vector<cxx::Expression>& args, bool throw_on_error);
     void addDeclarationFor(const hilti::Type& t) { _need_decls.push_back(t); }
 
     cxx::Expression addTmp(const std::string& prefix, const cxx::Type& t);
@@ -107,6 +108,9 @@ public:
 
     cxx::Expression startProfiler(const std::string& name, cxx::Block* block = nullptr, bool insert_at_front = false);
     void stopProfiler(const cxx::Expression& profiler, cxx::Block* block = nullptr);
+
+    cxx::Expression unsignedIntegerToBitfield(const type::Bitfield& t, const cxx::Expression& value,
+                                              const cxx::Expression& bitorder);
 
     /**
      * Returns an ID that's unique for a given node. The ID is derived from
@@ -119,11 +123,12 @@ public:
     cxx::ID uniqueID(const std::string& prefix, const Node& n);
 
     cxx::Expression self() const { return _self.back(); }
-    cxx::Expression dollardollar() const {
-        return {"__dd", cxx::Side::LHS};
-    } // TODO(robin): We hardcode the currently; need a stack, too?
     void pushSelf(detail::cxx::Expression e) { _self.push_back(std::move(e)); }
     void popSelf() { _self.pop_back(); }
+
+    cxx::Expression dollardollar() const { return _dd.back(); }
+    void pushDollarDollar(cxx::Expression e) { _dd.push_back(std::move(e)); }
+    void popDollarDollar() { _dd.pop_back(); }
 
     auto cxxBlock() const { return ! _cxx_blocks.empty() ? _cxx_blocks.back() : nullptr; }
     void pushCxxBlock(cxx::Block* b) { _cxx_blocks.push_back(b); }
@@ -148,6 +153,7 @@ private:
     hilti::Unit* _hilti_unit = nullptr;
     std::weak_ptr<Context> _context;
     std::vector<detail::cxx::Expression> _self = {{"__self", cxx::Side::LHS}};
+    std::vector<detail::cxx::Expression> _dd = {{"__dd", cxx::Side::LHS}};
     std::vector<detail::cxx::Block*> _cxx_blocks;
     std::vector<detail::cxx::declaration::Local> _tmps;
     std::map<std::string, int> _tmp_counters;

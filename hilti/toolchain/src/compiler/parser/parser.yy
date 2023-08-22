@@ -34,7 +34,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 113
-%expect-rr 207
+%expect-rr 209
 
 %{
 
@@ -67,6 +67,8 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 
 #define __loc__ toMeta(yylhs.location)
 
+static int _field_width = 0;
+
 %}
 
 %token <std::string> IDENT          "identifier"
@@ -98,6 +100,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 %token AUTO "auto"
 %token AT "at"
 %token BEGIN_ "begin"
+%token BITFIELD "bitfield"
 %token BOOL "bool"
 %token BREAK "break"
 %token BYTES "bytes"
@@ -223,7 +226,7 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 %type <hilti::ID>                                     local_id scoped_id dotted_id function_id scoped_function_id
 %type <hilti::Declaration>                            local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
 %type <std::vector<hilti::Declaration>>               struct_fields union_fields opt_union_fields
-%type <hilti::Type>                                   base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type
+%type <hilti::Type>                                   base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type bitfield_type
 %type <hilti::Ctor>                                   ctor tuple struct_ list regexp map set
 %type <hilti::Expression>                             expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <std::vector<hilti::Expression>>                opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
@@ -249,6 +252,8 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 %type <hilti::ctor::map::Element>                     map_elem
 %type <hilti::type::enum_::Label>                     enum_label
 %type <std::vector<hilti::type::enum_::Label>>        enum_labels
+%type <std::vector<hilti::type::bitfield::Bits>>      bitfield_bits opt_bitfield_bits
+%type <hilti::type::bitfield::Bits>                   bitfield_bits_spec
 %type <std::vector<std::string>>                      re_patterns
 %type <std::string>                                   re_pattern_constant
 %type <hilti::statement::switch_::Case>               switch_case
@@ -594,6 +599,7 @@ base_type_no_attrs
               | struct_type                      { $$ = std::move($1); }
               | union_type                       { $$ = std::move($1); }
               | enum_type                        { $$ = std::move($1); }
+              | bitfield_type                    { $$ = std::move($1); }
               ;
 
 base_type     : base_type_no_attrs opt_type_flags
@@ -678,6 +684,26 @@ enum_label    : local_id                         { $$ = hilti::type::enum_::Labe
               | local_id '=' CUINTEGER           { $$ = hilti::type::enum_::Label(std::move($1), $3, __loc__); }
               ;
 
+bitfield_type : BITFIELD '(' CUINTEGER ')'
+                                                 { _field_width = $3; }
+                '{' opt_bitfield_bits '}'
+                                                 { $$ = hilti::type::Bitfield($3, $7, {}, __loc__); }
+
+opt_bitfield_bits
+              : bitfield_bits
+                                                 { $$ = std::move($1); }
+              | /* empty */                      { $$ = std::vector<hilti::type::bitfield::Bits>(); }
+
+bitfield_bits
+              : bitfield_bits bitfield_bits_spec
+                                                 { $$ = std::move($1); $$.push_back(std::move($2));  }
+              | bitfield_bits_spec               { $$ = std::vector<hilti::type::bitfield::Bits>(); $$.push_back(std::move($1)); }
+
+bitfield_bits_spec
+              : local_id ':' CUINTEGER DOTDOT CUINTEGER opt_attributes ';'
+                                                 { $$ = hilti::type::bitfield::Bits(std::move($1), $3, $5, _field_width, std::move($6), __loc__); }
+              | local_id ':' CUINTEGER opt_attributes ';'
+                                                 { $$ = hilti::type::bitfield::Bits(std::move($1), $3, $3, _field_width, std::move($4), __loc__); }
 /* Expressions */
 
 expr          : expr_0                           { $$ = std::move($1); }
@@ -783,6 +809,7 @@ expr_f        : ctor                             { $$ = hilti::expression::Ctor(
 
 expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
               | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
+              | DOLLARDOLLAR                     { $$ = hilti::expression::UnresolvedID(std::move("__dd"), __loc__);}
               | SCOPE                            { $$ = hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, __loc__); }
 
 

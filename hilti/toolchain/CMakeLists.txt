@@ -50,6 +50,7 @@ set(SOURCES
     src/ast/scope.cc
     src/ast/scope-lookup.cc
     src/ast/type.cc
+    src/ast/types/bitfield.cc
     src/ast/types/enum.cc
     src/ast/types/integer.cc
     src/ast/types/library.cc

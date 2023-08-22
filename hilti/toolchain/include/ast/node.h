@@ -413,8 +413,8 @@ public:
      */
     template<typename T>
     auto children(int begin, int end) const {
-        auto end_ = (end < 0) ? _children.end() : _children.begin() + end;
-        return hilti::node::Range<T>(_children.begin() + begin, end_);
+        int end_ = (end >= 0) ? end : std::max(begin, static_cast<int>(_children.size()) + end + 1);
+        return hilti::node::Range<T>(_children.begin() + begin, _children.begin() + end_);
     }
 
     /**
@@ -426,10 +426,10 @@ public:
      * @return vector containing child references from `start` to `end`
      */
     auto childRefs(int begin, int end) {
-        auto end_ = (end < 0) ? _children.end() : _children.begin() + end;
+        int end_ = (end >= 0) ? end : std::max(begin, static_cast<int>(_children.size()) + end + 1);
 
         std::vector<NodeRef> refs;
-        for ( auto c = _children.begin(); c != end_; c = std::next(c) )
+        for ( auto c = _children.begin(); c != _children.begin() + end_; c = std::next(c) )
             refs.emplace_back(*c);
 
         return refs;

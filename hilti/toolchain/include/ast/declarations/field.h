@@ -69,6 +69,7 @@ public:
         return {};
     }
 
+    auto isAnonymous() const { return AttributeSet::find(attributes(), "&anonymous").has_value(); }
     auto isInternal() const { return AttributeSet::find(attributes(), "&internal").has_value(); }
     auto isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
     auto isStatic() const { return AttributeSet::find(attributes(), "&static").has_value(); }

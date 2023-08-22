@@ -474,6 +474,23 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
         }
     }
 
+    void operator()(const type::bitfield::Bits& b, position_t p) {
+        if ( type::isResolved(b.itemType()) )
+            return;
+
+        Type t = b.ddType();
+
+        if ( auto a = AttributeSet::find(b.attributes(), "&convert") ) {
+            t = a->valueAsExpression()->get().type();
+            if ( ! type::isResolved(t) )
+                return;
+        }
+
+        logChange(p.node, t);
+        p.node.as<type::bitfield::Bits>().setItemType(t);
+        modified = true;
+    }
+
     void operator()(const type::Enum& m, position_t p) {
         if ( type::isResolved(p.node.as<Type>()) )
             return;

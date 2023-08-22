@@ -379,6 +379,13 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
 
     result_t operator()(const type::Bool& n) { return CxxTypes{.base_type = "::hilti::rt::Bool"}; }
 
+    result_t operator()(const type::Bitfield& n) {
+        auto x = node::transform(n.bits(true),
+                                 [this](const auto& b) { return cg->compile(b.itemType(), codegen::TypeUsage::Storage); });
+        auto t = fmt("hilti::rt::Bitfield<%s>", util::join(x, ", "));
+        return CxxTypes{.base_type = t};
+    }
+
     result_t operator()(const type::Bytes& n) { return CxxTypes{.base_type = "::hilti::rt::Bytes"}; }
 
     result_t operator()(const type::Real& n) { return CxxTypes{.base_type = "double"}; }
@@ -806,6 +813,19 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
     auto typeID(const Node& n) { return n.as<Type>().typeID(); }
     auto cxxID(const Node& n) { return n.as<Type>().cxxID(); }
 
+    result_t operator()(const type::Bitfield& n, position_t p) {
+        std::vector<std::string> elems;
+        auto ttype = cg->compile(p.node.as<Type>(), codegen::TypeUsage::Storage);
+
+        for ( const auto&& [i, b] : util::enumerate(n.bits()) )
+            elems.push_back(
+                fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, hilti::rt::bitfield::elementOffset<%s, %d>() }",
+                    b.id(), cg->typeInfo(b.itemType()), ttype, i));
+
+        return fmt("::hilti::rt::type_info::Bitfield(std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
+                   util::join(elems, ", "));
+    }
+
     result_t operator()(const type::Enum& n) {
         std::vector<std::string> labels;
 
@@ -881,8 +901,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
             if ( auto x = cxxID(p.node) )
                 cxx_type_id = *x;
 
-            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s), %s%s }",
-                                 cxx::ID(f.id()), cg->typeInfo(f.type()), cxx_type_id, cxx::ID(f.id()), f.isInternal(),
+            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s), %s, %s%s }",
+                                 cxx::ID(f.id()), cg->typeInfo(f.type()), cxx_type_id, cxx::ID(f.id()), f.isInternal(), f.isAnonymous(),
                                  accessor));
         }
 
@@ -1079,7 +1099,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const hilti::Type& t) {
         // Prefer the bare type name as the display value.
         display << *t.typeID();
     else
-        hilti::print(display, t);
+        hilti::print(display, t, true);
 
     if ( display.str().empty() )
         logger().internalError(fmt("codegen: type %s does not have a display rendering for type information",

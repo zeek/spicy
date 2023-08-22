@@ -1,0 +1,12 @@
+# @TEST-EXEC:  printf '\377' | spicy-dump %INPUT >output
+# @TEST-EXEC:  btest-diff output
+
+module foo;
+
+type X = bitfield(8) {
+    a: 0..4;
+};
+
+public type Y = unit {
+	x: X;
+};

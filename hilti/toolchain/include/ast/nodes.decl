@@ -20,6 +20,7 @@ hilti::type::function::Result : isNode
 hilti::type::function::Parameter : isNode
 hilti::statement::switch_::Case : isNode
 hilti::statement::try_::Catch : isNode
+hilti::type::bitfield::Bits : isNode
 hilti::type::enum_::Label : isNode
 hilti::type::tuple::Element : isNode
 
@@ -113,6 +114,7 @@ hilti::statement::Yield : isStatement
 hilti::type::Address : isType
 hilti::type::Any : isType
 hilti::type::Auto : isType
+hilti::type::Bitfield : isType
 hilti::type::Bool : isType
 hilti::type::Bytes : isType
 hilti::type::DocOnly : isType

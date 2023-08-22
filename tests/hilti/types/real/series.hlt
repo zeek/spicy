@@ -44,7 +44,7 @@ function void run() {
     d3 = d1*1e3;
     hilti::print(d3);
 
-    d3 = d1+1.;
+    d3 = d1+1.0;
     hilti::print(d3);
 
     return;

@@ -1,13 +1,12 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/tuple.h>
 
-#include <spicy/ast/types/bitfield.h>
-
-using namespace spicy;
+using namespace hilti;
 
 hilti::optional_ref<const type::bitfield::Bits> type::Bitfield::bits(const ID& id) const {
-    for ( const auto& b : bits() ) {
+    for ( const auto& b : bits(true) ) {
         if ( id == b.id() )
             return b;
     }
@@ -16,7 +15,7 @@ hilti::optional_ref<const type::bitfield::Bits> type::Bitfield::bits(const ID& i
 }
 
 std::optional<int> type::Bitfield::bitsIndex(const ID& id) const {
-    for ( const auto&& [i, b] : hilti::util::enumerate(bits()) ) {
+    for ( const auto&& [i, b] : hilti::util::enumerate(bits(true)) ) {
         if ( id == b.id() )
             return i;
     }

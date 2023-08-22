@@ -11,6 +11,7 @@
 #include <hilti/ast/expressions/type.h>
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/address.h>
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/error.h>
@@ -166,6 +167,17 @@ BEGIN_OPERATOR_CUSTOM(generic, Unpack)
             return;
         }
 
+        else if ( data_type.isA<type::Bitfield>() ) {
+            if ( args.size() >= 2 && args.size() <= 3 ) {
+                auto arg1 = args[1].type().typeID();
+                auto arg2 = (args.size() > 2 ? args[2].type().typeID() : ID("BitOrder"));
+                if ( arg1 && arg1->local() == ID("ByteOrder") && arg2 && arg2->local() == ID("BitOrder") )
+                    return;
+            }
+
+            p.node.addError("invalid arguments for bitfield unpacking; want (<data>, <ByteOrder>[, <BitOrder>])");
+        }
+
         else
             p.node.addError("type not unpackable");
     }
@@ -280,6 +292,9 @@ namespace generic {
 class CastedCoercion : public hilti::expression::ResolvedOperatorBase {
 public:
     using hilti::expression::ResolvedOperatorBase::ResolvedOperatorBase;
+
+    /** Implements `Expression` interface. */
+    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
 
     struct Operator : public hilti::trait::isOperator {
         Operator() = default;

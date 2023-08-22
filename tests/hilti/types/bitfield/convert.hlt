@@ -1,0 +1,17 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+type X = bitfield(32) {
+    a: 0..4 &convert="string";
+    b: 1..2 &convert=(2 * $$);
+};
+
+global X x = 255;
+assert x.a == "string";
+assert x.b == 6;
+
+}

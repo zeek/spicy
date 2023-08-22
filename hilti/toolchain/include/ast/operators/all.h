@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/operators/address.h>
+#include <hilti/ast/operators/bitfield.h>
 #include <hilti/ast/operators/bool.h>
 #include <hilti/ast/operators/bytes.h>
 #include <hilti/ast/operators/enum.h>

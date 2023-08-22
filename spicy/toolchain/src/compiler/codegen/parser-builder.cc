@@ -16,6 +16,7 @@
 #include <hilti/ast/expressions/type-wrapped.h>
 #include <hilti/ast/expressions/void.h>
 #include <hilti/ast/statements/declaration.h>
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/exception.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/stream.h>
@@ -25,7 +26,6 @@
 #include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
 
-#include <spicy/ast/types/bitfield.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/sink.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
@@ -499,7 +499,7 @@ struct ProductionVisitor
             builder()->addAssign(destination(), builder::default_(field->itemType()));
         }
 
-        else if ( field->isAnonymous() || field->isSkip() ) {
+        else if ( (field->isAnonymous() || field->isSkip()) && ! field->itemType().isA<type::Bitfield>() ) {
             // We won't have a field to store the value in, create a temporary.
             auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
             pushDestination(dst);

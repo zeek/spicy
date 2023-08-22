@@ -221,6 +221,12 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( dst.isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
             return ctor::Bool(c.value() != 0, c.meta());
 
+        if ( auto t = dst.tryAs<type::Bitfield>(); t && c.value() >= 0 ) {
+            auto u = static_cast<uint64_t>(c.value());
+            if ( auto [umin, umax] = util::unsigned_integer_range(t->width()); u >= umin && u <= umax )
+                return ctor::UnsignedInteger(u, t->width(), c.meta());
+        }
+
         return {};
     }
 
@@ -269,6 +275,12 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
         if ( auto t = dst.tryAs<type::Real>() ) {
             if ( static_cast<uint64_t>(static_cast<double>(c.value())) == c.value() )
                 return ctor::Real(static_cast<double>(c.value()));
+        }
+
+        if ( auto t = dst.tryAs<type::Bitfield>() ) {
+            uint64_t u = c.value();
+            if ( auto [umin, umax] = util::unsigned_integer_range(t->width()); u >= umin && u <= umax )
+                return ctor::UnsignedInteger(u, t->width(), c.meta());
         }
 
         return {};
@@ -532,6 +544,11 @@ struct VisitorType : public visitor::PreOrder<std::optional<Type>, VisitorType> 
                 return dst;
         }
 
+        if ( auto t = dst.tryAs<type::Bitfield>() ) {
+            if ( src.width() <= t->width() )
+                return dst;
+        }
+
         return {};
     }
 
@@ -775,7 +792,8 @@ Result<std::pair<bool, std::vector<Expression>>> hilti::coerceOperands(const nod
         auto oat = operator_::type(op.type, exprs, node::Range<Expression>(transformed.begin(), transformed.end()));
 
         if ( ! oat ) {
-            HILTI_DEBUG(logging::debug::Operator, util::fmt("  [param %d] could not look up operand type -> failure", i));
+            HILTI_DEBUG(logging::debug::Operator,
+                        util::fmt("  [param %d] could not look up operand type -> failure", i));
             return result::Error("could not look up operand type");
         }
 
@@ -904,7 +922,7 @@ static CoercedExpression _coerceExpression(const Expression& e, const Type& src,
 
         if ( style & CoercionStyle::OperandMatching ) {
             // Don't allow a constant value to match a non-constant operand.
-            if ( e_is_const && !dst_is_const && dst_is_mut )
+            if ( e_is_const && ! dst_is_const && dst_is_mut )
                 RETURN(result::Error());
         }
     }
@@ -1019,7 +1037,8 @@ CoercedExpression hilti::coerceExpression(const Expression& e, const Type& src, 
 }
 
 // Public version going through all plugins.
-CoercedExpression hilti::coerceExpression(const Expression& e, const Type& dst, bitmask<CoercionStyle> style, bool lhs) {
+CoercedExpression hilti::coerceExpression(const Expression& e, const Type& dst, bitmask<CoercionStyle> style,
+                                          bool lhs) {
     return coerceExpression(e, e.type(), dst, style, lhs);
 }
 

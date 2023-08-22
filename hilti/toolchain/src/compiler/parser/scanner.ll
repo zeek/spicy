@@ -56,8 +56,8 @@ hexit     [0-9a-fA-F]
 hexs      {hexit}+
 E         ([Ee][+-]?{digits})
 P         ([Pp][+-]?{digits})
-decfloat  {digits}{E}|{digit}*\.{digits}{E}?|{digits}\.{digit}*{E}?
-hexfloat  0[xX]({hexit}+{P}|{hexit}*\.{hexit}+{P}?|{hexit}+\.{hexit}*{P}?)
+decfloat  {digits}{E}|{digit}*\.{digits}{E}?|{digits}\.{digits}{E}?
+hexfloat  0[xX]({hexit}+{P}|{hexit}*\.{hexit}+{P}?|{hexit}+\.{hexs}{P}?)
 id        [a-zA-Z_]|[a-zA-Z_][a-zA-Z_0-9-]*[a-zA-Z_0-9]|[$][$]
 property  %[a-zA-Z_][a-zA-Z_0-9-]*
 string    \"(\\.|[^\\"])*\"
@@ -84,6 +84,7 @@ assert                return token::ASSERT;
 assert-exception      return token::ASSERT_EXCEPTION;
 auto                  return token::AUTO;
 begin                 return token::BEGIN_;
+bitfield              return token::BITFIELD;
 bool                  return token::BOOL;
 break                 return token::BREAK;
 bytes                 return token::BYTES;

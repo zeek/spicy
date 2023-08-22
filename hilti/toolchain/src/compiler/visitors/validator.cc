@@ -430,6 +430,21 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         error("automatic type has not been resolved", p, node::ErrorPriority::Low);
     }
 
+    void operator()(const type::Bitfield& b, position_t p) {
+        const auto width = b.width();
+
+        for ( const auto& bit : b.bits() ) {
+            const auto lower = bit.lower();
+            const auto upper = bit.upper();
+
+            if ( lower > upper )
+                error("lower limit needs to be lower than upper limit", p);
+
+            if ( upper >= width )
+                error("upper limit is beyond the width of the bitfield", p);
+        }
+    }
+
     void operator()(const type::Enum& n, position_t p) {
         std::unordered_set<int> seen;
 

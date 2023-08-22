@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc -j -Q -o test.hlto %INPUT
+# @TEST-EXEC: printf '\001\002\003' | spicy-dump -Q test.hlto >output-text
+# @TEST-EXEC: btest-diff output-text
+# @TEST-EXEC: printf '\001\002\003' | spicy-dump -J -Q test.hlto >output-json
+# @TEST-EXEC: btest-diff output-json
+
+module Test;
+
+public type X = unit {
+    x: uint8;
+    : bitfield(8) { a1: 0..7; a2: 0..7; };
+    b: bitfield(8) { b1: 0..7; b2: 0..7; };
+};

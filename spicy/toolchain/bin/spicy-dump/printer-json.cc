@@ -22,6 +22,14 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
         case TypeInfo::Undefined: throw RuntimeError("unhandled type");
         case TypeInfo::Address: return type.address->get(v);
         case TypeInfo::Any: return "<any>";
+        case TypeInfo::Bitfield: {
+            auto j = json::object();
+
+            for ( const auto& i : type.bitfield->iterate(v) )
+                j[i.first.name] = convert(i.second);
+
+            return j;
+        }
         case TypeInfo::Bool: return type.bool_->get(v);
         case TypeInfo::Bytes: return to_string_for_print(type.bytes->get(v));
         case TypeInfo::BytesIterator: return to_string(type.bytes_iterator->get(v));
@@ -91,12 +99,22 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                     // Field not set.
                     continue;
 
+                if ( f.type->tag == TypeInfo::Bitfield && f.isAnonymous() ) {
+                    // Special case anonymous bitfield: map field to into current array.
+                    for ( const auto& [b, val] : f.type->bitfield->iterate(y) )
+                        j[b.name] = convert(val);
+
+                    continue;
+                }
+
                 j[f.name] = convert(y);
             }
 
-            auto offsets = json::array();
+            auto offsets = json::object();
             const auto& __offsets = spicy::rt::get_offsets_for_unit(*struct_, v);
             if ( _options.include_offsets && __offsets ) {
+                auto fields = struct_->fields();
+
                 for ( const auto&& [index, offset] : enumerate(*__offsets) ) {
                     auto o = json::object();
 
@@ -106,8 +124,16 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                             o["end"] = end->Ref();
                     }
 
-                    offsets.push_back(std::move(o));
+                    const auto& field = fields[index].get();
+                    if ( field.type->tag == TypeInfo::Bitfield && field.isAnonymous() ) {
+                        // Special case anonymous bitfield: add offsets for all its items
+                        for ( const auto& b : field.type->bitfield->bits() )
+                            offsets[b.name] = o;
+                    }
+                    else
+                        offsets[field.name] = std::move(o);
                 }
+
                 j["__offsets"] = offsets;
             }
 

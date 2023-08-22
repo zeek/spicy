@@ -68,8 +68,6 @@ public:
     bool isTemporary() const { return isLhs(); }
     /** Implements `Expression` interface. */
     const Type& type() const { return result(); }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
 
     /** Implements `Expression` interface. */
     bool isConstant() const { return type::isConstant(type()); }
