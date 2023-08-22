@@ -18,21 +18,27 @@ void TextPrinter::print(const type_info::Value& v) {
         case TypeInfo::Bitfield: {
             auto first = true;
 
-            out() << '(';
+            out() << "{\n";
 
-            for ( const auto& i : type.bitfield->iterate(v) ) {
-                if ( ! first )
-                    out() << ", ";
-                else
-                    first = false;
+            indent([&]() {
+                outputIndent();
 
-                if ( i.first.name.size() )
-                    out() << i.first.name << ": ";
+                for ( auto [key, value] : type.bitfield->iterate(v) ) {
+                    if ( ! first ) {
+                        out() << '\n';
+                        outputIndent();
+                    }
+                    else
+                        first = false;
 
-                print(i.second);
-            }
+                    out() << key.name << ": ";
+                    print(value);
+                }
+            });
 
-            out() << ')';
+            out() << '\n';
+            outputIndent();
+            out() << '}';
             break;
         }
         case TypeInfo::Bool: out() << (type.bool_->get(v) ? "True" : "False"); break;

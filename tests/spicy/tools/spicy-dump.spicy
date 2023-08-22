@@ -16,6 +16,8 @@ type Enum = enum { A = 1, B = 2, C = 4 };
 
 type Unit = unit { var b: int32 = 100; };
 
+type Bitfield = bitfield(8) { a: 1..2; b: 3..4; c: 5..6; };
+
 global b: bytes = b"abc";
 global m: map<uint64, string> = map(1: "A", 2: "B");
 global s: set<string> = set("A", "B", "C");
@@ -29,6 +31,7 @@ public type TestTypes = unit {
     var bo: bool = True;
     var by: bytes = b"123";
     var bi: iterator<bytes> = begin(b);
+    var bf: Bitfield = 255;
     var en: Enum = Enum::B;
     var in_: interval = interval(42.0);
     var ma: map<uint64, string> = map(1: "A", 2: "B");

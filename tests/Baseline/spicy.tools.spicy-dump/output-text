@@ -5,6 +5,11 @@ Test::TestTypes {
   bo: True
   by: 123
   bi: <bytes iterator>
+  bf: {
+    a: 3
+    b: 3
+    c: 3
+  }
   en: B
   in_: 42.000000s
   ma: {1: A, 2: B}
