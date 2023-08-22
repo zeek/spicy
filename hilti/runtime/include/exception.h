@@ -112,6 +112,12 @@ HILTI_EXCEPTION(AssertionFailure, RuntimeError)
 HILTI_EXCEPTION(AttributeNotSet, RuntimeError)
 
 /**
+ * Exception triggered when a barrier synchronization is either explicitly or
+ * implicitly aborted.
+ */
+HILTI_EXCEPTION(BarrierAborted, RuntimeError)
+
+/**
  * Exception triggered when a division by zero is attempted.
  */
 HILTI_EXCEPTION(DivisionByZero, RuntimeError)

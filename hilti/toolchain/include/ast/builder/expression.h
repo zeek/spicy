@@ -9,6 +9,7 @@
 
 #include <hilti/ast/builder/declaration.h>
 #include <hilti/ast/ctors/all.h>
+#include <hilti/ast/ctors/barrier.h>
 #include <hilti/ast/expressions/all.h>
 #include <hilti/ast/types/unresolved-id.h>
 
@@ -354,6 +355,10 @@ inline Expression namedCtor(const std::string& name, const std::vector<Expressio
 
 inline auto scope(const Meta& m = Meta()) {
     return hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, m);
+}
+
+inline auto barrier(uint64_t parties, const Meta& m = Meta()) {
+    return hilti::expression::Ctor(hilti::ctor::Barrier(parties), m);
 }
 
 } // namespace hilti::builder

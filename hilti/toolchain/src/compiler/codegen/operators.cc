@@ -88,6 +88,33 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     result_t operator()(const operator_::address::Unequal& n) { return binary(n, "!="); }
     result_t operator()(const operator_::address::Family& n) { return fmt("%s.family()", op0(n)); }
 
+    // Barrier
+
+    result_t operator()(const operator_::barrier::Ctor& n) {
+        auto args = tupleArguments(n, n.op1());
+        return fmt("::hilti::rt::Barrier(%s)", args[0]);
+    }
+
+    result_t operator()(const operator_::barrier::Wait& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.wait()", self);
+    }
+
+    result_t operator()(const operator_::barrier::Arrive& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.arrive()", self);
+    }
+
+    result_t operator()(const operator_::barrier::ArriveAndWait& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.arrive_and_wait()", self);
+    }
+
+    result_t operator()(const operator_::barrier::Abort& n) {
+        auto [self, args] = methodArguments(n);
+        return fmt("%s.abort()", self);
+    }
+
     /// Bool
 
     result_t operator()(const operator_::bool_::Equal& n) { return binary(n, "=="); }

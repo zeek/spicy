@@ -1,0 +1,64 @@
+# @TEST-EXEC: hiltic -P -o Test.h %INPUT
+# @TEST-EXEC: hiltic -j %INPUT driver.cc >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check barrier operation.
+
+module Test {
+
+import hilti;
+
+global b1 = barrier(2);
+global b2 = barrier(2);
+
+function extern void x() {
+    hilti::print("1 x: %s" % b1);
+    b1.arrive_and_wait(); # blocks
+    hilti::print("2 x: %s" % b1);
+
+    hilti::print("3 x: %s" % b2);
+    b2.arrive_and_wait(); # does not block
+    hilti::print("4 x: %s" % b2);
+}
+
+function extern void y() {
+    hilti::print("1 y: %s" % b1);
+    b1.arrive();
+    b1.wait(); # does not block
+    hilti::print("2 y: %s" % b1);
+
+    hilti::print("3 y: %s" % b2);
+    b2.arrive();
+    b2.wait(); # blocks
+    hilti::print("4 y: %s" % b2);
+}
+
+}
+
+@TEST-START-FILE driver.cc
+
+#include "Test.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto rx = hlt::Test::x();
+    assert(rx);
+
+    auto ry = hlt::Test::y();
+    assert(ry);
+
+    while ( ! (rx && ry) ) {
+        if ( ! rx ) {
+            std::cout << "-- resuming rx" << std::endl;
+            rx.resume();
+        }
+
+        if ( ! ry ) {
+            std::cout << "-- resuming ry" << std::endl;
+            ry.resume();
+        }
+    }
+
+    return 0;
+}
+
+@TEST-END-FILE

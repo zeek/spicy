@@ -181,11 +181,17 @@ public:
     /** Returns the fiber's type. */
     auto type() { return _type; }
 
+    /**
+     * Returns true if the fiber is currently suspended due to waiting for a
+     * barrier.
+     */
+    auto atBarrier() const { return _state == State::YieldedAtBarrier; }
+
     /** Returns the fiber's stack buffer. */
     const auto& stackBuffer() const { return _stack_buffer; }
 
     void run();
-    void yield();
+    void yield(bool at_barrier = false);
     void resume();
     void abort();
 
@@ -194,7 +200,8 @@ public:
     bool isDone() {
         switch ( _state ) {
             case State::Running:
-            case State::Yielded: return false;
+            case State::Yielded:
+            case State::YieldedAtBarrier: return false;
 
             case State::Aborting:
             case State::Finished:
@@ -233,7 +240,7 @@ private:
     friend void ::__fiber_switch_trampoline(void* argsp);
     friend void detail::trackStack();
 
-    enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
+    enum class State { Init, Running, Aborting, Yielded, YieldedAtBarrier, Idle, Finished };
 
     void _yield(const char* tag);
     void _activate(const char* tag);
@@ -283,7 +290,7 @@ private:
 
 std::ostream& operator<<(std::ostream& out, const Fiber& fiber);
 
-extern void yield();
+extern void yield(bool at_barrier = false);
 
 } // namespace detail
 
@@ -327,6 +334,12 @@ public:
 
     /** Returns a handle to the currently running function. */
     resumable::Handle* handle() { return _fiber.get(); }
+
+    /**
+     * Returns true if the function is currently suspended due to waiting for a
+     * barrier.
+     */
+    auto atBarrier() const { return (! _done) && _fiber->atBarrier(); }
 
     /**
      * Returns true if the function has completed orderly and provided a result.

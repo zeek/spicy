@@ -71,6 +71,12 @@ public:
     bool isFinished() const { return _done || _skip; }
 
     /**
+     * Returns true if parsing has yielded due to waiting for a barrier
+     * release. If that's the case, the next resume will re-check the barrier.
+     */
+    bool isWaitingAtBarrier() const { return _resumable && _resumable->atBarrier() && ! isFinished(); }
+
+    /**
      * Explicitly skips any remaining input. Further calls to `process()` and
      * `finish()` will be ignored.
      */
@@ -163,26 +169,35 @@ public:
      *
      * @param id textual ID to associate with state for use in debug messages
      *
+     * @param reverse_id if the state is associated with one side of a
+     * connection, a textual ID that's associated with the state for the
+     * opposite direction
+
      * @param cid if the state is associated with one side of a
      * connection, a textual ID representing that connection.
      *
      * @param driver driver owning this state
      */
-    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, std::optional<std::string> cid,
-                          std::optional<UnitContext> context, Driver* driver)
+    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, std::optional<std::string> reverse_id,
+                          std::optional<std::string> cid, std::optional<UnitContext> context, Driver* driver)
         : ParsingState(type, parser, std::move(context)),
           _id(std::move(std::move(id))),
+          _reverse_id(std::move(reverse_id)),
           _cid(std::move(std::move(cid))),
           _driver(driver) {}
 
     /** Returns the textual ID associated with the state. */
     const auto& id() const { return _id; }
 
+    /** Returns the textual ID associated with the opposite direction, if any. */
+    const auto& reverseId() const { return _reverse_id; }
+
 protected:
     void debug(const std::string& msg) override;
 
 private:
     std::string _id;
+    std::optional<std::string> _reverse_id;
     std::optional<std::string> _cid;
     Driver* _driver;
 };

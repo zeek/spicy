@@ -25,6 +25,36 @@ This type supports the :ref:`pack/unpack operators <packing>`.
 
 .. include:: /autogen/types/address.rst
 
+.. _type_barrier:
+
+Barrier
+-------
+
+A ``barrier`` provides a synchronization point for multiple parsing
+stream, such as the two sides of a connection. It comes with an
+expected number ``N`` of parties to reach the synchronization point.
+Each party must call ``arrive()` to signal it has done so. Each party
+may call ``wait()`` to block until all parties have arrived.
+
+.. note::
+
+    It's possible to create dead-lock situations with barriers if you
+    aren't careful. The easiest way to do so is waiting for a barrier
+    on which nobody ever calls ``arrive()``. If a deadlock occurs,
+    it's up to the host application to eventually resolve the
+    situation. Zeek, for example, will eventually time out the
+    connection and clean up the parsing state.
+
+.. rubric:: Type
+
+- ``barrier(N)``
+
+.. rubric:: Constants
+
+- ``barrier(N)``, ``barrier()`` (untyped)
+
+.. include:: /autogen/types/barrier.rst
+
 .. _type_bitfield:
 
 Bitfield

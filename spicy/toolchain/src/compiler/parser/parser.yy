@@ -34,8 +34,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 125
-%expect-rr 164
+%expect 128
+%expect-rr 166
 
 %{
 
@@ -134,6 +134,7 @@ static std::vector<hilti::DocString> _docs;
 %token ANY
 %token ARROW
 %token AUTO
+%token BARRIER
 %token BITFIELD
 %token BEGIN_
 %token BOOL
@@ -622,6 +623,7 @@ base_type_no_ref
 
               | SINK                             { $$ = spicy::type::Sink(__loc__); }
 
+              | BARRIER  '(' CUINTEGER ')'       { $$ = hilti::type::Barrier($3, __loc__); }
               | LIBRARY_TYPE '(' CSTRING ')'     { $$ = hilti::type::Library(std::move($3), __loc__); }
 
               | tuple_type                       { $$ = std::move($1); }
@@ -1039,6 +1041,8 @@ ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCto
               | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
               | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
               | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::namedCtor("port", {std::move($3), std::move($5)}, __loc__); }
+              | BARRIER '(' expr ')'             { $$ = hilti::builder::namedCtor("barrier", { std::move($3) }, __loc__); }
+              | BARRIER '(' ')'                  { $$ = hilti::expression::Ctor(hilti::ctor::Barrier(__loc__), __loc__); }
               ;
 
 tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }

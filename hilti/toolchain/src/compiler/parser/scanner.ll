@@ -83,6 +83,7 @@ any                   return token::ANY;
 assert                return token::ASSERT;
 assert-exception      return token::ASSERT_EXCEPTION;
 auto                  return token::AUTO;
+barrier               return token::BARRIER;
 begin                 return token::BEGIN_;
 bool                  return token::BOOL;
 break                 return token::BREAK;

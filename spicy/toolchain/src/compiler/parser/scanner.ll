@@ -102,6 +102,7 @@ any                   return token::ANY;
 assert                return token::ASSERT;
 assert-exception      return token::ASSERT_EXCEPTION;
 attribute             return token::ATTRIBUTE;
+barrier               return token::BARRIER;
 begin                 return token::BEGIN_;
 bitfield              return token::BITFIELD;
 bool                  return token::BOOL;

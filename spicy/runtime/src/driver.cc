@@ -339,7 +339,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     return Done;
                 }
                 else {
-                    if ( eod )
+                    if ( eod && ! _resumable->atBarrier() )
                         hilti::rt::internalError("parsing yielded for final data chunk");
 
                     return Continue;
@@ -367,13 +367,14 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
     // Helper to add flows to the map.
     auto create_state = [&](driver::ParsingType type, const std::string& parser_name, const std::string& id,
-                            std::optional<std::string> cid, std::optional<UnitContext> context) {
+                            std::optional<std::string> reverse_id, std::optional<std::string> cid,
+                            std::optional<UnitContext> context) {
         if ( auto parser = lookupParser(parser_name) ) {
             if ( ! context )
                 context = (*parser)->createContext();
 
-            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, std::move(cid),
-                                                                              context, this));
+            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, std::move(reverse_id),
+                                                                              std::move(cid), context, this));
             if ( x.second )
                 _total_flows++;
 
@@ -382,6 +383,32 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
         else {
             DRIVER_DEBUG(hilti::rt::fmt("no parser for ID %s, skipping", id));
             return std::make_pair(flows.end(), std::optional<UnitContext>{});
+        }
+    };
+
+    auto process_flow_data = [&](const std::string& id, size_t size, const char* data) {
+        auto s = flows.find(id);
+        if ( s == flows.end() )
+            return;
+
+        try {
+            s->second.process(size, data);
+        } catch ( const hilti::rt::Exception& e ) {
+            std::cout << hilti::rt::fmt("error for ID %s: %s\n", id, e.what());
+        }
+
+        if ( const auto& rid = s->second.reverseId() ) {
+            auto r = flows.find(*rid);
+            if ( r == flows.end() || ! r->second.isWaitingAtBarrier() )
+                return;
+
+            try {
+                // Give the other side a chance to check if it's barrier has
+                // been released.
+                r->second.process(0, "");
+            } catch ( const hilti::rt::Exception& e ) {
+                std::cout << hilti::rt::fmt("error for ID %s: %s\n", *rid, e.what());
+            }
         }
     };
 
@@ -412,7 +439,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 return hilti::rt::result::Error(hilti::rt::fmt("unknown session type '%s'", m[2]));
 
 
-            create_state(type, parser_name, id, {}, {});
+            create_state(type, parser_name, id, {}, {}, {});
         }
         else if ( m[0] == "@begin-conn" ) {
             // @begin-conn <conn-id> <type> <orig-id> <orig-parser> <resp-id> <resp-parser>
@@ -445,12 +472,14 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
             std::optional<UnitContext> context;
 
-            if ( auto [x, ctx] = create_state(type, orig_parser_name, orig_id, cid, context); x != flows.end() ) {
+            if ( auto [x, ctx] = create_state(type, orig_parser_name, orig_id, resp_id, cid, context);
+                 x != flows.end() ) {
                 orig_state = &x->second;
                 context = std::move(ctx);
             }
 
-            if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, cid, context); x != flows.end() )
+            if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, orig_id, cid, context);
+                 x != flows.end() )
                 resp_state = &x->second;
 
             if ( ! (orig_state && resp_state) ) {
@@ -482,14 +511,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( in.eof() || in.fail() )
                 return hilti::rt::result::Error("premature end of @data");
 
-            auto s = flows.find(id);
-            if ( s != flows.end() ) {
-                try {
-                    s->second.process(size, data);
-                } catch ( const hilti::rt::Exception& e ) {
-                    std::cout << hilti::rt::fmt("error for ID %s: %s\n", id, e.what());
-                }
-            }
+            process_flow_data(id, size, data);
         }
         else if ( m[0] == "@gap" ) {
             // @gap <id> <size>
@@ -498,15 +520,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
             auto id = std::string(m[1]);
             auto size = std::stoul(std::string(m[2]));
-
-            auto s = flows.find(id);
-            if ( s != flows.end() ) {
-                try {
-                    s->second.process(size, nullptr);
-                } catch ( const hilti::rt::Exception& e ) {
-                    std::cout << hilti::rt::fmt("error for ID %s: %s\n", id, e.what());
-                }
-            }
+            process_flow_data(id, size, nullptr);
         }
         else if ( m[0] == "@end-flow" ) {
             // @end-flow <id>

@@ -36,6 +36,7 @@ set(SOURCES
     src/safe-math.cc
     src/type-info.cc
     src/types/address.cc
+    src/types/barrier.cc
     src/types/bytes.cc
     src/types/integer.cc
     src/types/port.cc
@@ -136,6 +137,7 @@ add_executable(
     src/tests/main.cc
     src/tests/address.cc
     src/tests/backtrace.cc
+    src/tests/barrier.cc
     src/tests/bytes.cc
     src/tests/context.cc
     src/tests/debug-logger.cc

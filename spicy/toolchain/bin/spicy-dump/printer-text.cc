@@ -15,6 +15,7 @@ void TextPrinter::print(const type_info::Value& v) {
         case TypeInfo::Undefined: throw RuntimeError("unhandled type");
         case TypeInfo::Address: out() << type.address->get(v); break;
         case TypeInfo::Any: out() << "<any>"; break;
+        case TypeInfo::Barrier: out() << "<barrier>"; break;
         case TypeInfo::Bool: out() << (type.bool_->get(v) ? "True" : "False"); break;
         case TypeInfo::Bytes: out() << to_string_for_print(type.bytes->get(v)); break;
         case TypeInfo::BytesIterator: out() << to_string(type.bytes_iterator->get(v)); break;

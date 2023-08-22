@@ -1,0 +1,18 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check barrier construction.
+
+module Test {
+
+import hilti;
+
+global b1 = barrier(1);
+global barrier(2) b2;
+global barrier(3) b3 = barrier();
+
+hilti::print("b1: %s" % b1);
+hilti::print("b2: %s" % b2);
+hilti::print("b3: %s" % b3);
+
+}

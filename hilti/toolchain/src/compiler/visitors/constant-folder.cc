@@ -160,6 +160,12 @@ struct VisitorConstantFolder : public visitor::PreOrder<std::optional<Ctor>, Vis
         return ctor::Real(-op->value(), p.node.meta());
     }
 
+    result_t operator()(const operator_::barrier::Ctor& op, position_t p) {
+        return tryReplaceCtorExpression<ctor::UnsignedInteger>(op, p, [](const auto& ctor) {
+            return ctor::Barrier(ctor.value());
+        });
+    }
+
     result_t operator()(const operator_::error::Ctor& op, position_t p) {
         return tryReplaceCtorExpression<ctor::Error>(op, p, [](const auto& ctor) { return ctor::Error(ctor.value()); });
     }
