@@ -99,6 +99,14 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                     // Field not set.
                     continue;
 
+                if ( f.type->tag == TypeInfo::Bitfield && f.isAnonymous() ) {
+                    // Special case anonymous bitfield: map field to into current array.
+                    for ( const auto& [b, val] : f.type->bitfield->iterate(y) )
+                        j[b.name] = convert(val);
+
+                    continue;
+                }
+
                 j[f.name] = convert(y);
             }
 
@@ -106,6 +114,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
             const auto& __offsets = spicy::rt::get_offsets_for_unit(*struct_, v);
             if ( _options.include_offsets && __offsets ) {
                 auto fields = struct_->fields();
+
                 for ( const auto&& [index, offset] : enumerate(*__offsets) ) {
                     auto o = json::object();
 
@@ -116,8 +125,15 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                     }
 
                     const auto& field = fields[index].get();
-                    offsets[field.name] = std::move(o);
+                    if ( field.type->tag == TypeInfo::Bitfield && field.isAnonymous() ) {
+                        // Special case anonymous bitfield: add offsets for all its items
+                        for ( const auto& b : field.type->bitfield->bits() )
+                            offsets[b.name] = o;
+                    }
+                    else
+                        offsets[field.name] = std::move(o);
                 }
+
                 j["__offsets"] = offsets;
             }
 

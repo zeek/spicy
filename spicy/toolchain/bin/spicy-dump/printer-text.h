@@ -33,6 +33,9 @@ private:
     // Return output stream.
     std::ostream& out() { return _output; }
 
+    // Append rendering of offsets to current output line.
+    void printOffsets(const hilti::rt::type_info::Struct& ti, const hilti::rt::type_info::Value& v, uint64_t index);
+
     // Insert current indentation into output stream.
     void outputIndent() { out() << std::string(static_cast<std::basic_string<char>::size_type>(_level) * 2, ' '); }
 

@@ -133,35 +133,32 @@ void TextPrinter::print(const type_info::Value& v) {
 
             const auto* x = type.struct_;
 
-            const auto& offsets = spicy::rt::get_offsets_for_unit(*x, v);
-
             bool empty = true;
             uint64_t index = 0;
             indent([&]() {
                 for ( const auto& [f, y] : x->iterate(v) ) {
                     if ( y ) {
-                        out() << '\n';
-                        outputIndent();
+                        if ( f.type->tag == TypeInfo::Bitfield && f.isAnonymous() ) {
+                            // Special case anonymous bitfield: print at top level.
+                            for ( const auto& [b, val] : f.type->bitfield->iterate(y) ) {
+                                out() << '\n';
+                                outputIndent();
 
-                        if ( ! f.isAnonymous() )
-                            out() << f.name;
+                                out() << b.name << ": ";
+                                print(val);
+                                printOffsets(*x, v, index);
+                            }
+                        }
+                        else {
+                            out() << '\n';
+                            outputIndent();
 
-                        out() << ": ";
-                        print(y);
+                            if ( ! f.isAnonymous() )
+                                out() << f.name;
 
-                        const auto& offset = offsets && offsets->size() > index ? offsets->at(index) : std::nullopt;
-
-                        if ( _options.include_offsets && offset ) {
-                            const auto& start = std::get<0>(*offset);
-                            const auto& end = std::get<1>(*offset);
-
-                            out() << " [" << start << ", ";
-
-                            if ( end )
-                                out() << *end;
-                            else
-                                out() << "-";
-                            out() << "]";
+                            out() << ": ";
+                            print(y);
+                            printOffsets(*x, v, index);
                         }
 
                         empty = false;
@@ -249,5 +246,23 @@ void TextPrinter::print(const type_info::Value& v) {
                 out() << "Null";
             break;
         }
+    }
+}
+
+void TextPrinter::printOffsets(const type_info::Struct& ti, const type_info::Value& v, uint64_t index) {
+    const auto& offsets = spicy::rt::get_offsets_for_unit(ti, v);
+    const auto& offset = offsets && offsets->size() > index ? offsets->at(index) : std::nullopt;
+
+    if ( _options.include_offsets && offset ) {
+        const auto& start = std::get<0>(*offset);
+        const auto& end = std::get<1>(*offset);
+
+        out() << " [" << start << ", ";
+
+        if ( end )
+            out() << *end;
+        else
+            out() << "-";
+        out() << "]";
     }
 }
