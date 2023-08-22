@@ -504,19 +504,19 @@ that corresponding type needs to be known by Zeek. That is always the
 case for built-in atomic types (per :ref:`the conversion table
 <zeek-event-arg-types>`), but it can turn out more challenging
 to achieve for custom types, such as ``enum`` and ``record``, for
-which you would normally need to create matching type declarations in
-your Zeek scripts. While that's not necessarily hard, but it can
+which you would normally need to manually create matching type declarations in
+your Zeek scripts. While that's not necessarily hard, it can
 become quite cumbersome.
 
 Fortunately, there's help: for most types, Zeek can
 instantiate corresponding types automatically as it loads the
-corresponding analyzer. While you will never actually see the
+corresponding Spicy analyzer. While you will never actually see the
 Zeek-side type declarations, they will be available inside your Zeek
 scripts as if you had typed them out yourself--similar to other types
 that are built into Zeek itself.
 
 To have the Zeek create a type for your analyzer automatically,
-you need to ``export`` the Spicy type in your EVT file. The syntax for
+you need to ``export`` the Spicy type in your EVT file. The most basic syntax for
 that is::
 
     export SPICY_ID [as ZEEK_ID];
@@ -535,7 +535,9 @@ Exporting types generally works for most Spicy types as long as
 there's an ID associated with them in your Spicy code. However,
 exporting is most helpful with user-defined types, such as ``enum``
 and ``unit``, because it can save you quite a bit of typing there. We
-discuss the more common type conversions in more detail below.
+discuss the more common type conversions in more detail below. When
+exporting units, there are two optional extensions to the syntax,
+which we describe :ref:`below <zeek_unit>`.
 
 To confirm the types made available to Zeek, you can see all exports
 in the output of ``zeek -NN``. With our 2nd ``TFTP::Request``
@@ -653,6 +655,36 @@ As you can see in the example, unit fields are always declared as
 optional on the Zeek-side, as they may not have been set during
 parsing. Unit variables are non-optional by default, unless declared
 as ``&optional`` in Spicy.
+
+Sometimes you may not want to export all unit items to Zeek. For that
+case, there is an extended form the ``export`` statement that takes a
+list of fields to include or exclude. To include only selected fields,
+add a ``with`` clause to the ``export`` statement::
+
+    export spicy_id [as ZEEK_ID] with { field_1, field_2, ..., field_n };
+
+To export all but a some fields, use ``without`` instead::
+
+    export spicy_id [as zeek_id] without { field_1, field_2, ..., field_n };
+
+In both cases, ``field_i`` is the name of a unit field to include or
+exclude.
+
+If you intend to use the exported ``record`` type with `Zeek's logging
+framework <https://docs.zeek.org/en/master/frameworks/logging.html>`_,
+you can automatically have a ``&log`` attribute included with the type
+by adding ``&log`` to the ``export`` statement::
+
+    export spicy_id [as ZEEK_ID] &log;
+
+Now Zeek will log all the exported ``record`` fields when writing out
+an instance of the ``record`` type.
+
+If you want ``&log`` only for a subset of ``record`` fields, you can
+use a ``with`` clause (see above) and add ``&log``  to just the
+desired fields. The following is the full syntax for ``with``::
+
+    export spicy_id [as ZEEK_ID] with { field_1 [&log], field_2 [&log], ..., field_n [&log] };
 
 .. _zeek_struct:
 

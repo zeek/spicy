@@ -1,3 +1,77 @@
+1.9.0-dev.59 | 2023-08-22 15:10:07 +0200
+
+  * Add documentation for `export` extensions. (Robin Sommer, Corelight)
+
+    This goes with https://github.com/zeek/zeek/pull/3228.
+
+  * spicy-dump: Level up anonymous bitfields. (Robin Sommer, Corelight)
+
+    Spicy-dump now renders items of anonymous bitfields at the parent
+    level. Offsets are added accordingly as well if requested.
+
+  * spicy-dump: Make offsets in JSON output useful. (Robin Sommer, Corelight)
+
+    We were including offsets into spicy-dumps JSON output, but there was
+    no information in there saying which offsets belong to what field.
+    Turning `__offsets` from an array into a map indexed by field name now.
+
+  * spicy-dump: Change format how bitfields are printed. (Robin Sommer, Corelight)
+
+    We now render them as key/value form in both text and JSON output.
+
+  * Include a flag into a unit field's type information indicating if it's anonymous. (Robin Sommer, Corelight)
+
+    This preservers the information if a field had a name even though
+    internally we do carry a generated dummy name around in that case. For
+    now, we just adapt `spicy-dump` to not print the dummy name in that
+    case in its text output. Later, Zeek will leverage this when
+    auto-generating record types.
+
+  * GH-1468: Allow to directly access members of anonymous bitfields. (Robin Sommer, Corelight)
+
+    This works now:
+
+        type Foo = unit {
+          : bitfield(8) {
+            x: 0..3;
+            y: 4..7;
+          };
+
+          on %done {
+            print self.x, self.y;
+          }
+    };
+
+  * GH-1032: GH-1484: Switch Spicy over to use the new HILTI-side bitfield type. (Robin Sommer, Corelight)
+
+  * Implement remaining pieces to make `bitfield` a full HILTI type. (Robin Sommer, Corelight)
+
+    We keep representing bitfields as a C++ tuple behind the scenes, but
+    no longer map it into a HILTI-side tuple as well. Instead `Bitfield`
+    is now a regular type with corresponding operators and runtime
+    functionality.
+
+    The one change to the C++ tuple representation is that we add an
+    additional hidden tuple element at the end that stores the original
+    integer value. That allows for displaying it (which we will do for now
+    only inside Spicy debug output) and could later also facilitate modifying
+    fields and reconstructing an integer.
+
+  * Move `bitfield` type from Spicy to HILTI. (Robin Sommer, Corelight)
+
+    This prepares for making `bitfield` a fully-supported HILTI type. This
+    change only moves existing code over to HILTI without breaking
+    Spicy-side functionality. There are still HILTI-side pieces missing
+    for providing full support, which will come next.
+
+  * Fix comparison for resolved operators. (Robin Sommer, Corelight)
+
+    The `isEqual` method was implemented in the base class, which led to
+    wrong template types being used.
+
+    A subsequent commit will depend on this working correctly, including a test
+    breaking if not.
+
 1.9.0-dev.47 | 2023-08-14 11:32:33 +0200
 
   * GH-1384: Fix stringification of `DecodeErrorStrategy`. (Benjamin Bannier, Corelight)
