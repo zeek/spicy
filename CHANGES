@@ -1,3 +1,20 @@
+1.9.0-dev.62 | 2023-08-28 12:11:40 +0200
+
+  * GH-1504: Use user-inaccessible chars for encoding `::` in feature variables. (Benjamin Bannier, Corelight)
+
+    When setting up feature tracking variables for the optimizer we
+    previously would normalize `:` as `_`, e.g., `mod::Unit` would lead to
+    feature variables `__feat%mod__Unit%...`. In various places in the
+    optimizer we would then use that knowledge to extract module and unit
+    ID. Since user-specified identifiers can contain literal `_` or `__`
+    this could confuse the optimizer.
+
+    With this patch we now normalize `:` as `@` which is not
+    user-accessible. We add a new codegen normalization so `@` becomes
+    `0x40`. This gives a more reliable encoding.
+
+  * Clean up extraction and handling of feature flag in optimizer. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.59 | 2023-08-22 15:10:07 +0200
 
   * Add documentation for `export` extensions. (Robin Sommer, Corelight)

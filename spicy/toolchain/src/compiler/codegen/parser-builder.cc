@@ -296,7 +296,7 @@ struct ProductionVisitor
                     pushState(std::move(pstate));
 
                     // Disable trimming for random-access units.
-                    const auto id = hilti::util::replace(*unit->id(), ":", "_");
+                    const auto id = hilti::util::replace(*unit->id(), ":", "@");
                     pushBuilder(builder()->addIf(
                                     builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "uses_random_access")))),
                                 [&]() { builder()->addAssign(state().trim, builder::bool_(false)); });
@@ -2327,7 +2327,7 @@ Expression _filters(const ParserState& state) {
     if ( ! typeID )
         return member;
 
-    const auto id = hilti::util::replace(*typeID, ":", "_");
+    const auto id = hilti::util::replace(*typeID, ":", "@");
     const auto flag = builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "supports_filters")));
 
     return builder::ternary(flag, std::move(member), builder::strong_reference(builder::typeByID("spicy_rt::Filters")));
@@ -2480,7 +2480,7 @@ void ParserBuilder::guardFeatureCode(const type::Unit& unit, const std::vector<s
         return;
     }
 
-    const auto id = hilti::util::replace(*typeID, ":", "_");
+    const auto id = hilti::util::replace(*typeID, ":", "@");
     auto flags = hilti::util::transform(features, [&](const auto& feature) {
         return builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature)));
     });

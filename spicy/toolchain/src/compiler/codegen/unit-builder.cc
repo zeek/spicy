@@ -185,7 +185,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_synced", {}, attr_sync);
 
     if ( unit.id() ) {
-        ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "_"));
+        ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "@"));
 
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
         addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(unit.isFilter())));
