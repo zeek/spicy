@@ -51,6 +51,24 @@ Type innermostType(Type type) {
     return type;
 }
 
+bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
+
+// Helper to extract `(ID, feature)` from a feature constant.
+auto idFeatureFromConstant(const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
+    const auto& id = featureConstant.local();
+
+    if ( ! isFeatureFlag(id) )
+        return {};
+
+    const auto& tokens = util::split(id, "%");
+    assert(tokens.size() == 3);
+
+    auto type_id = ID(util::replace(tokens[1], "__", "::"));
+    const auto& feature = tokens[2];
+
+    return {{type_id, feature}};
+};
+
 class OptimizerVisitor {
 public:
     enum class Stage { COLLECT, PRUNE_USES, PRUNE_DECLS };
@@ -479,18 +497,17 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
 
                 const auto& id = x.id();
 
-                // We only work on feature flags named `__feat*`.
-                if ( ! util::startsWith(id, "__feat") )
+                const auto& id_feature = idFeatureFromConstant(x.id());
+                if ( ! id_feature )
                     break;
 
-                const auto& tokens = util::split(id, "%");
-                assert(tokens.size() == 3);
+                const auto& [type_id, feature] = *id_feature;
 
-                // The type name is encoded in the variable name with `::` replaced by `__`.
-                const auto& typeID = ID(util::replace(tokens[1], "__", "::"));
-                const auto& feature = tokens[2];
+                // We only work on feature flags.
+                if ( ! isFeatureFlag(id) )
+                    break;
 
-                _features[typeID].insert({feature, *value});
+                _features[type_id].insert({feature, *value});
                 break;
             }
 
@@ -919,31 +936,31 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
     void operator()(const declaration::Constant& x, position_t p) {
         const auto& id = x.id();
 
-        // We only work on feature flags named `__feat*`.
-        if ( ! util::startsWith(id, "__feat") )
+        // We only work on feature flags.
+        if ( ! isFeatureFlag(id) )
             return;
 
-        const auto& tokens = util::split(id, "%");
-        assert(tokens.size() == 3);
+        const auto& id_feature = idFeatureFromConstant(x.id());
+        if ( ! id_feature )
+            return;
 
-        // The type name is encoded in the variable name with `::` replaced by `__`.
-        const auto& typeID = ID(util::replace(tokens[1], "__", "::"));
-        const auto& feature = tokens[2];
+        const auto& [type_id, feature] = *id_feature;
 
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Record the feature as unused for the type if it was not already recorded.
-                _features[typeID].insert({feature, false});
+                _features[type_id].insert({feature, false});
                 break;
             }
 
             case Stage::TRANSFORM: {
-                const auto required = _features.at(typeID).at(feature);
+                const auto required = _features.at(type_id).at(feature);
                 const auto value = x.value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
 
                 if ( required != value ) {
                     HILTI_DEBUG(logging::debug::Optimizer,
-                                util::fmt("disabling feature '%s' of type '%s' since it is not used", feature, typeID));
+                                util::fmt("disabling feature '%s' of type '%s' since it is not used", feature,
+                                          type_id));
 
                     p.node.as<declaration::Constant>().setValue(builder::bool_(false));
                 }
@@ -1093,23 +1110,6 @@ struct FeatureRequirementsVisitor : visitor::PreOrder<void, FeatureRequirementsV
     // Helper function to compute all feature flags participating in an
     // condition. Feature flags are always combined with logical `or`.
     static void featureFlagsFromCondition(const Expression& condition, std::map<ID, std::set<std::string>>& result) {
-        // Helper to extract `(ID, feature)` from a feature constant.
-        auto idFeatureFromConstant = [](const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
-            // Split away the module part of the resolved ID.
-            auto id = util::split1(featureConstant, "::").second;
-
-            if ( ! util::startsWith(id, "__feat") )
-                return {};
-
-            const auto& tokens = util::split(id, "%");
-            assert(tokens.size() == 3);
-
-            auto type_id = ID(util::replace(tokens[1], "__", "::"));
-            const auto& feature = tokens[2];
-
-            return {{type_id, feature}};
-        };
-
         if ( auto rid = condition.tryAs<expression::ResolvedID>() ) {
             if ( auto id_feature = idFeatureFromConstant(rid->id()) )
                 result[std::move(id_feature->first)].insert(std::move(id_feature->second));
@@ -1391,17 +1391,18 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Check whether the feature flag matches the type of the field.
-                if ( ! util::startsWith(x.id(), "__feat%") )
+                if ( ! isFeatureFlag(x.id()) )
                     break;
 
-                auto tokens = util::split(x.id(), "%");
-                assert(tokens.size() == 3);
+                auto id_feature = idFeatureFromConstant(x.id());
+                if ( ! id_feature )
+                    break;
 
-                auto type_id = ID(util::replace(tokens[1], "__", "::"));
-                auto feature = tokens[2];
+                const auto& [type_id, feature] = *id_feature;
+
                 auto is_active = x.value().as<expression::Ctor>().ctor().as<ctor::Bool>().value();
 
-                _features[std::move(type_id)][std::move(feature)] = is_active;
+                _features[type_id][feature] = is_active;
 
                 break;
             }
