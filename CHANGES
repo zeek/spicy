@@ -1,3 +1,11 @@
+1.9.0-dev.64 | 2023-08-28 17:05:18 +0200
+
+  * GH-1508: Fix returned value for `<unit>.position()`. (Benjamin Bannier, Corelight)
+
+    We declared this method to return an iterator, but potentially returned
+    an optional iterator. This patch add an additional deref so we get the
+    correct value.
+
 1.9.0-dev.62 | 2023-08-28 12:11:40 +0200
 
   * GH-1504: Use user-inaccessible chars for encoding `::` in feature variables. (Benjamin Bannier, Corelight)
