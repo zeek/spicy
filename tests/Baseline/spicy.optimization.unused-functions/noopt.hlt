@@ -137,31 +137,31 @@ type F = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 
-const bool __feat%foo__A%uses_random_access = True;
-const bool __feat%foo__A%is_filter = False;
-const bool __feat%foo__A%supports_filters = True;
-const bool __feat%foo__A%supports_sinks = True;
-const bool __feat%foo__A%synchronization = True;
-const bool __feat%foo__B%uses_random_access = True;
-const bool __feat%foo__B%is_filter = False;
-const bool __feat%foo__B%supports_filters = True;
-const bool __feat%foo__B%supports_sinks = True;
-const bool __feat%foo__B%synchronization = True;
-const bool __feat%foo__C%uses_random_access = True;
-const bool __feat%foo__C%is_filter = False;
-const bool __feat%foo__C%supports_filters = True;
-const bool __feat%foo__C%supports_sinks = True;
-const bool __feat%foo__C%synchronization = True;
-const bool __feat%foo__D%uses_random_access = True;
-const bool __feat%foo__D%is_filter = False;
-const bool __feat%foo__D%supports_filters = True;
-const bool __feat%foo__D%supports_sinks = True;
-const bool __feat%foo__D%synchronization = True;
-const bool __feat%foo__F%uses_random_access = True;
-const bool __feat%foo__F%is_filter = True;
-const bool __feat%foo__F%supports_filters = True;
-const bool __feat%foo__F%supports_sinks = True;
-const bool __feat%foo__F%synchronization = True;
+const bool __feat%foo@@A%uses_random_access = True;
+const bool __feat%foo@@A%is_filter = False;
+const bool __feat%foo@@A%supports_filters = True;
+const bool __feat%foo@@A%supports_sinks = True;
+const bool __feat%foo@@A%synchronization = True;
+const bool __feat%foo@@B%uses_random_access = True;
+const bool __feat%foo@@B%is_filter = False;
+const bool __feat%foo@@B%supports_filters = True;
+const bool __feat%foo@@B%supports_sinks = True;
+const bool __feat%foo@@B%synchronization = True;
+const bool __feat%foo@@C%uses_random_access = True;
+const bool __feat%foo@@C%is_filter = False;
+const bool __feat%foo@@C%supports_filters = True;
+const bool __feat%foo@@C%supports_sinks = True;
+const bool __feat%foo@@C%synchronization = True;
+const bool __feat%foo@@D%uses_random_access = True;
+const bool __feat%foo@@D%is_filter = False;
+const bool __feat%foo@@D%supports_filters = True;
+const bool __feat%foo@@D%supports_sinks = True;
+const bool __feat%foo@@D%synchronization = True;
+const bool __feat%foo@@F%uses_random_access = True;
+const bool __feat%foo@@F%is_filter = True;
+const bool __feat%foo@@F%supports_filters = True;
+const bool __feat%foo@@F%supports_sinks = True;
+const bool __feat%foo@@F%synchronization = True;
 
 function void f1() {
 }
@@ -174,24 +174,24 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
 
-        if ( __feat%foo__A%uses_random_access ) 
+        if ( __feat%foo@@A%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
 
-        if ( __feat%foo__A%uses_random_access ) {
+        if ( __feat%foo@@A%uses_random_access ) {
             (*self).__begin = begin(__cur);
             (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
 
-        if ( __feat%foo__A%uses_random_access ) 
+        if ( __feat%foo@@A%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_init();
 
-        if ( __feat%foo__A%uses_random_access ) 
+        if ( __feat%foo@@A%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -202,7 +202,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo__A%supports_filters ) 
+        if ( __feat%foo@@A%supports_filters ) 
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
                 local value_ref<stream> filtered_data = filtered;
@@ -223,22 +223,22 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     }
     catch ( hilti::SystemException __except ) {
 
-        if ( __feat%foo__A%uses_random_access ) 
+        if ( __feat%foo@@A%uses_random_access ) 
             (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
-        if ( __feat%foo__A%supports_filters ) 
+        if ( __feat%foo@@A%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
         (*self).__error = __error;
 
-        if ( __feat%foo__A%uses_random_access ) 
+        if ( __feat%foo@@A%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_finally();
 
-        if ( __feat%foo__A%uses_random_access ) 
+        if ( __feat%foo@@A%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -252,12 +252,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     (*self).__error = __error;
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_finally();
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -273,17 +273,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-functions.spicy:18:10"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
         (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_done();
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -293,7 +293,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     __error = (*self).__error;
 
-    if ( __feat%foo__A%supports_filters ) 
+    if ( __feat%foo@@A%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
     hilti::debugDedent("spicy");
@@ -314,7 +314,7 @@ method extern method view<stream> foo::A::parse1(inout value_ref<stream> data, o
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_A ->
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -338,7 +338,7 @@ method extern method view<stream> foo::A::parse3(inout value_ref<spicy_rt::Parse
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_A ->
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -360,7 +360,7 @@ method extern method view<stream> foo::A::parse2(inout value_ref<A> unit, inout 
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_A ->
 
-    if ( __feat%foo__A%uses_random_access ) 
+    if ( __feat%foo@@A%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -372,7 +372,7 @@ method extern method view<stream> foo::A::parse2(inout value_ref<A> unit, inout 
 
 init function void __register_foo_A() {
 
-    if ( __feat%foo__A%is_filter || __feat%foo__A%supports_sinks ) {
+    if ( __feat%foo@@A%is_filter || __feat%foo@@A%supports_sinks ) {
         foo::A::__parser = [$name="foo::A", $is_public=False, $parse1=foo::A::parse1, $parse2=foo::A::parse2, $parse3=foo::A::parse3, $context_new=Null, $type_info=typeinfo(A), $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::A::__parser, $scope, Null);
     }
@@ -384,24 +384,24 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
 
-        if ( __feat%foo__B%uses_random_access ) 
+        if ( __feat%foo@@B%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
 
-        if ( __feat%foo__B%uses_random_access ) {
+        if ( __feat%foo@@B%uses_random_access ) {
             (*self).__begin = begin(__cur);
             (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
 
-        if ( __feat%foo__B%uses_random_access ) 
+        if ( __feat%foo@@B%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_init();
 
-        if ( __feat%foo__B%uses_random_access ) 
+        if ( __feat%foo@@B%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -412,7 +412,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo__B%supports_filters ) 
+        if ( __feat%foo@@B%supports_filters ) 
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
                 local value_ref<stream> filtered_data = filtered;
@@ -433,22 +433,22 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     }
     catch ( hilti::SystemException __except ) {
 
-        if ( __feat%foo__B%uses_random_access ) 
+        if ( __feat%foo@@B%uses_random_access ) 
             (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
-        if ( __feat%foo__B%supports_filters ) 
+        if ( __feat%foo@@B%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
         (*self).__error = __error;
 
-        if ( __feat%foo__B%uses_random_access ) 
+        if ( __feat%foo@@B%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_finally();
 
-        if ( __feat%foo__B%uses_random_access ) 
+        if ( __feat%foo@@B%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -462,12 +462,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     (*self).__error = __error;
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_finally();
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -483,17 +483,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-functions.spicy:21:17"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
         (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_done();
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -503,7 +503,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     __error = (*self).__error;
 
-    if ( __feat%foo__B%supports_filters ) 
+    if ( __feat%foo@@B%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
     hilti::debugDedent("spicy");
@@ -524,7 +524,7 @@ method extern method view<stream> foo::B::parse1(inout value_ref<stream> data, o
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -548,7 +548,7 @@ method extern method view<stream> foo::B::parse3(inout value_ref<spicy_rt::Parse
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -570,7 +570,7 @@ method extern method view<stream> foo::B::parse2(inout value_ref<B> unit, inout 
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
-    if ( __feat%foo__B%uses_random_access ) 
+    if ( __feat%foo@@B%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -590,24 +590,24 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
 
-        if ( __feat%foo__C%uses_random_access ) 
+        if ( __feat%foo@@C%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
 
-        if ( __feat%foo__C%uses_random_access ) {
+        if ( __feat%foo@@C%uses_random_access ) {
             (*self).__begin = begin(__cur);
             (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
 
-        if ( __feat%foo__C%uses_random_access ) 
+        if ( __feat%foo@@C%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_init();
 
-        if ( __feat%foo__C%uses_random_access ) 
+        if ( __feat%foo@@C%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -618,7 +618,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo__C%supports_filters ) 
+        if ( __feat%foo@@C%supports_filters ) 
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
                 local value_ref<stream> filtered_data = filtered;
@@ -639,22 +639,22 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     }
     catch ( hilti::SystemException __except ) {
 
-        if ( __feat%foo__C%uses_random_access ) 
+        if ( __feat%foo@@C%uses_random_access ) 
             (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
-        if ( __feat%foo__C%supports_filters ) 
+        if ( __feat%foo@@C%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
         (*self).__error = __error;
 
-        if ( __feat%foo__C%uses_random_access ) 
+        if ( __feat%foo@@C%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_finally();
 
-        if ( __feat%foo__C%uses_random_access ) 
+        if ( __feat%foo@@C%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -668,12 +668,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     (*self).__error = __error;
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_finally();
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -689,17 +689,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-functions.spicy:24:10"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
         (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_done();
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -709,7 +709,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     __error = (*self).__error;
 
-    if ( __feat%foo__C%supports_filters ) 
+    if ( __feat%foo@@C%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
     hilti::debugDedent("spicy");
@@ -730,7 +730,7 @@ method extern method view<stream> foo::C::parse1(inout value_ref<stream> data, o
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_C ->
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -754,7 +754,7 @@ method extern method view<stream> foo::C::parse3(inout value_ref<spicy_rt::Parse
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_C ->
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -776,7 +776,7 @@ method extern method view<stream> foo::C::parse2(inout value_ref<C> unit, inout 
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_C ->
 
-    if ( __feat%foo__C%uses_random_access ) 
+    if ( __feat%foo@@C%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -788,7 +788,7 @@ method extern method view<stream> foo::C::parse2(inout value_ref<C> unit, inout 
 
 init function void __register_foo_C() {
 
-    if ( __feat%foo__C%is_filter || __feat%foo__C%supports_sinks ) {
+    if ( __feat%foo@@C%is_filter || __feat%foo@@C%supports_sinks ) {
         foo::C::__parser = [$name="foo::C", $is_public=False, $parse1=foo::C::parse1, $parse2=foo::C::parse2, $parse3=foo::C::parse3, $context_new=Null, $type_info=typeinfo(C), $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::C::__parser, $scope, Null);
     }
@@ -800,24 +800,24 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
 
-        if ( __feat%foo__D%uses_random_access ) 
+        if ( __feat%foo@@D%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
 
-        if ( __feat%foo__D%uses_random_access ) {
+        if ( __feat%foo@@D%uses_random_access ) {
             (*self).__begin = begin(__cur);
             (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
 
-        if ( __feat%foo__D%uses_random_access ) 
+        if ( __feat%foo@@D%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_init();
 
-        if ( __feat%foo__D%uses_random_access ) 
+        if ( __feat%foo@@D%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -828,7 +828,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo__D%supports_filters ) 
+        if ( __feat%foo@@D%supports_filters ) 
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
                 local value_ref<stream> filtered_data = filtered;
@@ -849,22 +849,22 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     }
     catch ( hilti::SystemException __except ) {
 
-        if ( __feat%foo__D%uses_random_access ) 
+        if ( __feat%foo@@D%uses_random_access ) 
             (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
-        if ( __feat%foo__D%supports_filters ) 
+        if ( __feat%foo@@D%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
         (*self).__error = __error;
 
-        if ( __feat%foo__D%uses_random_access ) 
+        if ( __feat%foo@@D%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_finally();
 
-        if ( __feat%foo__D%uses_random_access ) 
+        if ( __feat%foo@@D%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -878,12 +878,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     (*self).__error = __error;
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_finally();
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -906,21 +906,21 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     (__cur, __lah, __lahe, __error) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe, __error);
     # End parsing production: Unit: foo_C_2 ->
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
         (*self).__position = begin(__cur);
 
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
         (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_done();
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -930,7 +930,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     __error = (*self).__error;
 
-    if ( __feat%foo__D%supports_filters ) 
+    if ( __feat%foo@@D%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
     hilti::debugDedent("spicy");
@@ -951,7 +951,7 @@ method extern method view<stream> foo::D::parse1(inout value_ref<stream> data, o
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -975,7 +975,7 @@ method extern method view<stream> foo::D::parse3(inout value_ref<spicy_rt::Parse
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -997,7 +997,7 @@ method extern method view<stream> foo::D::parse2(inout value_ref<D> unit, inout 
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
-    if ( __feat%foo__D%uses_random_access ) 
+    if ( __feat%foo@@D%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -1017,24 +1017,24 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
 
-        if ( __feat%foo__F%uses_random_access ) 
+        if ( __feat%foo@@F%uses_random_access ) 
             __trim = False;
 
         hilti::debugIndent("spicy");
 
-        if ( __feat%foo__F%uses_random_access ) {
+        if ( __feat%foo@@F%uses_random_access ) {
             (*self).__begin = begin(__cur);
             (*self).__position = begin(__cur);
         }
 
         (*self).__error = __error;
 
-        if ( __feat%foo__F%uses_random_access ) 
+        if ( __feat%foo@@F%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_init();
 
-        if ( __feat%foo__F%uses_random_access ) 
+        if ( __feat%foo@@F%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -1045,7 +1045,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo__F%supports_filters ) 
+        if ( __feat%foo@@F%supports_filters ) 
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
                 local value_ref<stream> filtered_data = filtered;
@@ -1066,26 +1066,26 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     }
     catch ( hilti::SystemException __except ) {
 
-        if ( __feat%foo__F%uses_random_access ) 
+        if ( __feat%foo@@F%uses_random_access ) 
             (*self).__position = begin(__cur);
 
         (*self).__on_0x25_error(hilti::exception_what(__except));
 
-        if ( __feat%foo__F%supports_filters ) 
+        if ( __feat%foo@@F%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
 
-        if ( __feat%foo__F%is_filter ) 
+        if ( __feat%foo@@F%is_filter ) 
             spicy_rt::filter_forward_eod(self);
 
         (*self).__error = __error;
 
-        if ( __feat%foo__F%uses_random_access ) 
+        if ( __feat%foo@@F%uses_random_access ) 
             (*self).__position_update = Null;
 
         (*self).__on_0x25_finally();
 
-        if ( __feat%foo__F%uses_random_access ) 
+        if ( __feat%foo@@F%uses_random_access ) 
 
             if ( (*self).__position_update ) {
                 __cur = __cur.advance((*(*self).__position_update));
@@ -1099,12 +1099,12 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     (*self).__error = __error;
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_finally();
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -1120,17 +1120,17 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     # "<...>/unused-functions.spicy:30:10-32:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
         (*self).__position = begin(__cur);
 
     (*self).__error = __error;
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
         (*self).__position_update = Null;
 
     (*self).__on_0x25_done();
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
 
         if ( (*self).__position_update ) {
             __cur = __cur.advance((*(*self).__position_update));
@@ -1140,11 +1140,11 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     __error = (*self).__error;
 
-    if ( __feat%foo__F%supports_filters ) 
+    if ( __feat%foo@@F%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
 
-    if ( __feat%foo__F%is_filter ) 
+    if ( __feat%foo@@F%is_filter ) 
         spicy_rt::filter_forward_eod(self);
 
     hilti::debugDedent("spicy");
@@ -1165,7 +1165,7 @@ method extern method view<stream> foo::F::parse1(inout value_ref<stream> data, o
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_F ->
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -1189,7 +1189,7 @@ method extern method view<stream> foo::F::parse3(inout value_ref<spicy_rt::Parse
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_F ->
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -1211,7 +1211,7 @@ method extern method view<stream> foo::F::parse2(inout value_ref<F> unit, inout 
     (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_F ->
 
-    if ( __feat%foo__F%uses_random_access ) 
+    if ( __feat%foo@@F%uses_random_access ) 
         (*unit).__position = begin(ncur);
 
 
@@ -1223,7 +1223,7 @@ method extern method view<stream> foo::F::parse2(inout value_ref<F> unit, inout 
 
 init function void __register_foo_F() {
 
-    if ( __feat%foo__F%is_filter || __feat%foo__F%supports_sinks ) {
+    if ( __feat%foo@@F%is_filter || __feat%foo@@F%supports_sinks ) {
         foo::F::__parser = [$name="foo::F", $is_public=False, $parse1=foo::F::parse1, $parse2=foo::F::parse2, $parse3=foo::F::parse3, $context_new=Null, $type_info=typeinfo(F), $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::F::__parser, $scope, Null);
     }

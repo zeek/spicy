@@ -63,7 +63,7 @@ auto idFeatureFromConstant(const ID& featureConstant) -> std::optional<std::pair
     const auto& tokens = util::split(id, "%");
     assert(tokens.size() == 3);
 
-    auto type_id = ID(util::replace(tokens[1], "__", "::"));
+    auto type_id = ID(util::replace(tokens[1], "@@", "::"));
     const auto& feature = tokens[2];
 
     return {{type_id, feature}};

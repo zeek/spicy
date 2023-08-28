@@ -1,0 +1,10 @@
+# @TEST-DOC: Validate that the optimizer does not get confused by `__` in IDs. This is a regression test for #1503.
+
+# Just check that this outputs something without failure.
+# @TEST-EXEC: echo | spicy-driver -d %INPUT
+
+module foo;
+
+public type X__x = unit {
+    on %init { print self.offset(); }
+};

@@ -143,6 +143,7 @@ std::string cxx::normalize_id(std::string id) {
             id.append("_");
 
         id = util::replace(id, "%", "0x25");
+        id = util::replace(id, "@", "0x40");
         id = util::replace(id, "~", "_0x7e_"); // we expect to see this only at the beginning (for "~finally")
         return id;
     };
