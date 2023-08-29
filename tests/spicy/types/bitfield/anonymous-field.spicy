@@ -16,6 +16,7 @@ public type Foo = unit {
 
   on %done {
     print self.x, self.y;
+    print self;
 
     assert self?.x;
     assert self.?x == 15;
