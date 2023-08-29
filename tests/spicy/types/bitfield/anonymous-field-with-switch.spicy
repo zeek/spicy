@@ -1,0 +1,48 @@
+# @TEST-EXEC:  printf '\000\002\003' | spicy-driver %INPUT >>output
+# @TEST-EXEC:  echo --- >>output
+# @TEST-EXEC:  printf '\001\002\003' | spicy-driver %INPUT >>output
+# @TEST-EXEC:  echo --- >>output
+# @TEST-EXEC:  printf '\000\002\003' | spicy-dump -J %INPUT >>output
+# @TEST-EXEC:  echo --- >>output
+# @TEST-EXEC:  printf '\001\002\003' | spicy-dump -J %INPUT >>output
+# @TEST-EXEC:  btest-diff output
+
+module foo;
+
+public type X = unit {
+    n: uint8;
+
+    switch (self.n) {
+        0 -> : bitfield(8) {
+            A: 0..7;
+        };
+        * -> : bitfield(8) {
+            B: 0..7;
+        };
+    };
+
+    switch (self.n) {
+        0 -> c: bitfield(8) {
+            C: 0..7;
+        };
+        * -> c: bitfield(8) {
+            C: 0..7;
+        };
+    };
+
+    on %done {
+        print self;
+
+        if ( self?.A ) {
+            print "A", self.A;
+            print self.?A;
+        }
+
+        if ( self?.B ) {
+            print "B", self.B;
+            print self.?B;
+        }
+
+        print "C", self.c.C;
+    }
+};

@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL:  spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:  btest-diff output
+
+module foo;
+
+public type X = unit {
+    n: uint8;
+
+    switch (self.n) {
+        0 -> : bitfield(8) {
+            A: 0..7;
+        };
+        * -> : bitfield(8) {
+            A: 0..7;
+        };
+    };
+};
