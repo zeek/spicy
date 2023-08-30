@@ -19,7 +19,7 @@ namespace hilti::rt {
 /// printing.
 template<typename... Ts>
 struct Bitfield {
-    std::tuple<Ts...> value;
+    std::tuple<std::optional<Ts>...> value;
 };
 
 template<typename... Ts>

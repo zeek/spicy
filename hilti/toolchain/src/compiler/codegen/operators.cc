@@ -111,7 +111,14 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         auto id = n.op1().as<expression::Member>().id();
         auto elem = n.op0().type().as<type::Bitfield>().bitsIndex(id);
         assert(elem);
-        return {fmt("std::get<%u>(%s.value)", *elem, op0(n)), cxx::Side::RHS};
+        return {fmt("(hilti::rt::optional::value(std::get<%u>(%s.value)))", *elem, op0(n)), cxx::Side::RHS};
+    }
+
+    result_t operator()(const operator_::bitfield::HasMember& n) {
+        auto id = n.op1().as<expression::Member>().id();
+        auto elem = n.op0().type().as<type::Bitfield>().bitsIndex(id);
+        assert(elem);
+        return {fmt("std::get<%u>(%s.value).has_value()", *elem, op0(n)), cxx::Side::RHS};
     }
 
     /// bytes::Iterator

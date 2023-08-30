@@ -13,6 +13,8 @@
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/unknown.h>
 
+#include "ast/types/bool.h"
+
 namespace hilti::operator_ {
 
 namespace bitfield::detail {
@@ -74,5 +76,25 @@ right.
 )";
     }
 END_OPERATOR_CUSTOM_x
+
+BEGIN_OPERATOR_CUSTOM(bitfield, HasMember)
+    Type result(const hilti::node::Range<Expression>& /* ops */) const { return type::Bool(); }
+
+    bool isLhs() const { return false; }
+    auto priority() const { return hilti::operator_::Priority::Normal; }
+
+    const std::vector<Operand>& operands() const {
+        static std::vector<Operand> _operands =
+            {{{}, type::constant(type::Bitfield(type::Wildcard())), false, {}, "bitfield"},
+             {{}, type::Member(type::Wildcard()), false, {}, "<field>"}};
+        return _operands;
+    }
+
+    void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
+        detail::checkName(i.op0(), i.op1(), p.node);
+    }
+
+    std::string doc() const { return "Returns true if the bitfield's element has a value to provide."; }
+END_OPERATOR_CUSTOM
 
 } // namespace hilti::operator_
