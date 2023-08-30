@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
+#include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/regexp.h>
 #include <hilti/ast/declarations/field.h>
 #include <hilti/ast/declarations/local-variable.h>
@@ -73,6 +74,11 @@ hilti::Expression featureConstant(const hilti::ID& typeID, std::string_view feat
     const auto& ns = typeID.namespace_();
     const auto id = hilti::util::replace(typeID, ":", "@");
     return builder::id(ID(hilti::rt::fmt("%s::__feat%%%s%%%s", ns, id, feature)));
+}
+
+Expression _begin(const ID& typeID, const ParserState& state) {
+    return builder::ternary(featureConstant(typeID, "uses_random_access"), builder::member(state.self, ID("__begin")),
+                            builder::optional(type::stream::Iterator()));
 }
 
 struct ProductionVisitor
@@ -308,8 +314,10 @@ struct ProductionVisitor
                     build_parse_stage1_logic();
 
                     // Call stage 2.
-                    std::vector<Expression> args = {state().data,   state().cur,        state().trim,
-                                                    state().lahead, state().lahead_end, state().error};
+                    std::vector<Expression> args = {state().data,   _begin(*unit->id(), state()),
+                                                    state().cur,    state().trim,
+                                                    state().lahead, state().lahead_end,
+                                                    state().error};
 
                     if ( addl_param )
                         args.push_back(builder::id(addl_param->id()));
@@ -330,7 +338,7 @@ struct ProductionVisitor
                             builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
                                                 builder::id("filtered"));
                             args2[0] = builder::id("filtered_data");
-                            args2[1] = builder::deref(args2[0]);
+                            args2[2] = builder::deref(args2[0]);
                             builder()->addExpression(builder::memberCall(state().self, id_stage2, args2));
 
                             // Assume the filter consumed the full input.
@@ -453,8 +461,10 @@ struct ProductionVisitor
                 return id_stage1;
             });
 
-        std::vector<Expression> args = {state().data,   state().cur,        state().trim,
-                                        state().lahead, state().lahead_end, state().error};
+        auto none = builder::optional(type::stream::Iterator());
+        auto begin = unit ? _begin(*unit->id(), state()) : none;
+        std::vector<Expression> args = {state().data,       begin,        state().cur, state().trim, state().lahead,
+                                        state().lahead_end, state().error};
 
         if ( ! unit && p.meta().field() )
             args.push_back(destination());
@@ -544,8 +554,10 @@ struct ProductionVisitor
         else if ( auto unit = p.tryAs<production::Unit>(); unit && ! top_level ) {
             // Parsing a different unit type. We call the other unit's parse
             // function, but don't have to create it here.
-            std::vector<Expression> args = {pb->state().data,   pb->state().cur,        pb->state().trim,
-                                            pb->state().lahead, pb->state().lahead_end, pb->state().error};
+            std::vector<Expression> args = {pb->state().data,   _begin(*unit->unitType().id(), state()),
+                                            pb->state().cur,    pb->state().trim,
+                                            pb->state().lahead, pb->state().lahead_end,
+                                            pb->state().error};
 
             Location location;
             hilti::node::Range<Expression> type_args;
@@ -1816,6 +1828,7 @@ hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type:
 
     auto params = std::vector<type::function::Parameter>{
         builder::parameter("__data", type::ValueReference(type::Stream()), declaration::parameter::Kind::InOut),
+        builder::parameter("__begin", type::Optional(type::stream::Iterator()), declaration::parameter::Kind::Copy),
         builder::parameter("__cur", type::stream::View(), declaration::parameter::Kind::Copy),
         builder::parameter("__trim", type::Bool(), declaration::parameter::Kind::Copy),
         builder::parameter("__lah", look_ahead::Type, declaration::parameter::Kind::Copy),
