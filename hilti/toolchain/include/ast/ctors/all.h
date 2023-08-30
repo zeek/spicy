@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/ctors/address.h>
+#include <hilti/ast/ctors/bitfield.h>
 #include <hilti/ast/ctors/bool.h>
 #include <hilti/ast/ctors/bytes.h>
 #include <hilti/ast/ctors/coerced.h>

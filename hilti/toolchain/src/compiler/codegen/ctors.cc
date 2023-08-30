@@ -23,6 +23,22 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
 
     result_t operator()(const ctor::Address& n) { return fmt("::hilti::rt::Address(\"%s\")", n.value()); }
 
+    result_t operator()(const ctor::Bitfield& n) {
+        std::vector<cxx::Type> types;
+        std::vector<cxx::Expression> values;
+        for ( const auto& b : n.btype().bits(true) ) {
+            auto itype = cg->compile(n.btype().bits(b.id())->itemType(), codegen::TypeUsage::Storage);
+            types.emplace_back(itype);
+
+            if ( auto x = n.bits(b.id()) )
+                values.emplace_back(cg->compile(x->expression()));
+            else
+                values.emplace_back("std::nullopt");
+        }
+
+        return fmt("hilti::rt::Bitfield<%s>{std::make_tuple(%s)}", util::join(types, ", "), util::join(values, ", "));
+    }
+
     result_t operator()(const ctor::Bool& n) { return fmt("::hilti::rt::Bool(%s)", n.value() ? "true" : "false"); }
 
     result_t operator()(const ctor::Bytes& n) { return fmt("\"%s\"_b", util::escapeBytesForCxx(n.value())); }
