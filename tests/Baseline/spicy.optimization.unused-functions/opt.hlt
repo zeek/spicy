@@ -7,26 +7,26 @@ import hilti;
 public type B = struct {
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse2(inout value_ref<B> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
-    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_B_stage2(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type C = struct {
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_C_stage2(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 public type D = struct {
     value_ref<C> anon &optional &no-emit;
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
     method extern view<stream> parse1(inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse2(inout value_ref<D> unit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
     method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> gunit, inout value_ref<stream> data, optional<view<stream>> cur = Null, optional<spicy_rt::UnitContext> context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static;
-    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_D_stage2(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 
 const bool __feat%foo__A%uses_random_access = False;
@@ -58,18 +58,19 @@ const bool __feat%foo__F%synchronization = False;
 init function void __register_foo_A() {
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::__parse_stage1(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:21:17"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
         hilti::debugIndent("spicy");
+        local optional<iterator<stream>> __begin = begin(__cur);
         (*self).__error = __error;
         default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo_B_stage2(__data, __cur, __trim, __lah, __lahe, __error);
+            __result = (*self).__parse_foo_B_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
     catch ( hilti::SystemException __except ) {
@@ -86,7 +87,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::__parse_foo_B_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::__parse_foo_B_stage2(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:21:17"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
@@ -107,7 +108,7 @@ method extern method view<stream> foo::B::parse1(inout value_ref<stream> data, o
     # "<...>/unused-functions.spicy:21:17"
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
     if ( error ) 
@@ -127,7 +128,7 @@ method extern method view<stream> foo::B::parse3(inout value_ref<spicy_rt::Parse
     # "<...>/unused-functions.spicy:21:17"
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
     if ( error ) 
@@ -145,7 +146,7 @@ method extern method view<stream> foo::B::parse2(inout value_ref<B> unit, inout 
     # "<...>/unused-functions.spicy:21:17"
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
     if ( error ) 
@@ -159,18 +160,19 @@ init function void __register_foo_B() {
     spicy_rt::registerParser(foo::B::__parser, $scope, Null);
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_stage1(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:24:10"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
         hilti::debugIndent("spicy");
+        local optional<iterator<stream>> __begin = begin(__cur);
         (*self).__error = __error;
         default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo_C_stage2(__data, __cur, __trim, __lah, __lahe, __error);
+            __result = (*self).__parse_foo_C_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
     catch ( hilti::SystemException __except ) {
@@ -187,7 +189,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_foo_C_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_foo_C_stage2(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:24:10"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     (*self).__error = __error;
@@ -201,18 +203,19 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 init function void __register_foo_C() {
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::__parse_stage1(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:25:17-27:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     try {
         hilti::debugIndent("spicy");
+        local optional<iterator<stream>> __begin = begin(__cur);
         (*self).__error = __error;
         default<void>();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo_D_stage2(__data, __cur, __trim, __lah, __lahe, __error);
+            __result = (*self).__parse_foo_D_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
     catch ( hilti::SystemException __except ) {
@@ -229,7 +232,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     return __result;
 }
 
-method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::__parse_foo_D_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::__parse_foo_D_stage2(inout value_ref<stream> __data, copy optional<iterator<stream>> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:25:17-27:2"
     local tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __result;
     local value_ref<C> __transient_anon;
@@ -237,7 +240,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     # Begin parsing production: Unit: foo_C_2 ->
     __transient_anon = default<C>();
-    (__cur, __lah, __lahe, __error) = (*__transient_anon).__parse_stage1(__data, __cur, __trim, __lah, __lahe, __error);
+    (__cur, __lah, __lahe, __error) = (*__transient_anon).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
     # End parsing production: Unit: foo_C_2 ->
 
     (*self).__error = __error;
@@ -258,7 +261,7 @@ method extern method view<stream> foo::D::parse1(inout value_ref<stream> data, o
     # "<...>/unused-functions.spicy:25:17-27:2"
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( error ) 
@@ -278,7 +281,7 @@ method extern method view<stream> foo::D::parse3(inout value_ref<spicy_rt::Parse
     # "<...>/unused-functions.spicy:25:17-27:2"
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( error ) 
@@ -296,7 +299,7 @@ method extern method view<stream> foo::D::parse2(inout value_ref<D> unit, inout 
     # "<...>/unused-functions.spicy:25:17-27:2"
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( error ) 

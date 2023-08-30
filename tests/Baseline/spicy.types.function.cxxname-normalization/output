@@ -19,7 +19,7 @@
 [debug/normalizer] &cxxname="spicy::rt::Parser" -> &cxxname="::spicy::rt::Parser" (<...>/spicy_rt.hlt:69:3)
 [debug/normalizer] &cxxname="spicy::rt::Direction" -> &cxxname="::spicy::rt::Direction" (<...>/spicy_rt.hlt:71:62)
 [debug/normalizer] &cxxname="spicy::rt::detail::registerParser" -> &cxxname="::spicy::rt::detail::registerParser" (<...>/spicy_rt.hlt:76:96)
-[debug/normalizer] &cxxname="spicy::rt::detail::printParserState" -> &cxxname="::spicy::rt::detail::printParserState" (<...>/spicy_rt.hlt:77:214)
+[debug/normalizer] &cxxname="spicy::rt::detail::printParserState" -> &cxxname="::spicy::rt::detail::printParserState" (<...>/spicy_rt.hlt:77:249)
 [debug/normalizer] &cxxname="spicy::rt::detail::waitForInputOrEod" -> &cxxname="::spicy::rt::detail::waitForInputOrEod" (<...>/spicy_rt.hlt:79:122)
 [debug/normalizer] &cxxname="spicy::rt::detail::waitForInputOrEod" -> &cxxname="::spicy::rt::detail::waitForInputOrEod" (<...>/spicy_rt.hlt:80:134)
 [debug/normalizer] &cxxname="spicy::rt::detail::waitForInput" -> &cxxname="::spicy::rt::detail::waitForInput" (<...>/spicy_rt.hlt:81:152)
