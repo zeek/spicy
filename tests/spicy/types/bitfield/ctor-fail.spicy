@@ -1,0 +1,16 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >>output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# @TEST-DOC: Check that we catch invalid bitfield constants.
+
+module Test;
+
+public type Foo = unit {
+  x: bitfield(8) {
+    a: 1..3 = 255; # error
+    b: 1..3 = 8; # error
+    c: 1..3 = 7; # ok
+    d: 4..7 = -1;
+    e: 4..7 = "42";
+  };
+};

@@ -969,12 +969,12 @@ Example:
 Bitfield
 ^^^^^^^^
 
-Bitfields parse an integer value of a given size, and then make
-selected smaller bit ranges within that value available individually
-through dedicated identifiers. For example, the following unit parses
-4 bytes as an ``uint32`` and then makes the value of bit 0 available
-as ``f.x1``, bits 1 to 2 as ``f.x2``, and bits 3 to 4 as ``f.x3``,
-respectively:
+:ref:`Bitfields <type_bitfield>` parse an integer value of a given
+size, and then make selected smaller bit ranges within that value
+available individually through dedicated identifiers. For example, the
+following unit parses 4 bytes as an ``uint32`` and then makes the
+value of bit 0 available as ``f.x1``, bits 1 to 2 as ``f.x2``, and
+bits 3 to 4 as ``f.x3``, respectively:
 
 .. spicy-code:: parse-bitfield.spicy
 
@@ -1036,6 +1036,25 @@ range to an enum, using ``$$`` to access the parsed value:
 .. spicy-output:: parse-bitfield-enum.spicy
     :exec: printf '\x21' | spicy-driver %INPUT
     :show-with: foo.spicy
+
+When parsing a bitfield, you can enforce expected values for some
+or all of the bitranges through an assignment-style syntax:
+
+.. spicy-code::
+
+    type Foo = unit {
+        f: bitfield(8) {
+            x1: 0..3 = 2;
+            x2: 4..5;
+            x3: 6..7 = 3;
+        }
+    };
+
+Now parsing will fail if values of ``x1`` and ``x3`` aren't ``2`` and
+``3``, respectively. Internally, Spicy treats bitfields with such
+expected values similar to constants of other types, meaning they
+operate as valid look-ahead symbols as well (see
+:ref:`parse_lookahead`).
 
 .. _parse_bytes:
 

@@ -40,6 +40,18 @@ parsed inside a unit.
 - Each ``RANGE`` has one of the forms ``LABEL: A`` or ``LABEL: A..B``
   where ``A`` and ``B`` are bit numbers.
 
+.. rubric:: Constants
+
+- ``bitfield(N) { RANGE_1 [= VALUE_1]; ...; RANGE_N [= VALUE_N] }``
+
+A bitfield constant represents expected values for all or some of the
+individual bitranges. They can be used only for parsing inside a unit
+field, not as values to otherwise operate with. To define such a
+constant with expected values, add ``= VALUE`` to the bitranges inside
+the type definition as suitable (with ``VALUE`` representing the final
+value after applying any ``&bit-order`` attribute, if present). See
+:ref:`parse_bitfield` for more information.
+
 .. include:: /autogen/types/bitfield.rst
 
 .. _type_bool:

@@ -10,10 +10,9 @@
 #include <hilti/ast/operators/common.h>
 #include <hilti/ast/types/any.h>
 #include <hilti/ast/types/bitfield.h>
+#include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/unknown.h>
-
-#include "ast/types/bool.h"
 
 namespace hilti::operator_ {
 
@@ -94,7 +93,7 @@ BEGIN_OPERATOR_CUSTOM(bitfield, HasMember)
         detail::checkName(i.op0(), i.op1(), p.node);
     }
 
-    std::string doc() const { return "Returns true if the bitfield's element has a value to provide."; }
+    std::string doc() const { return "Returns true if the bitfield's element has a value."; }
 END_OPERATOR_CUSTOM
 
 } // namespace hilti::operator_

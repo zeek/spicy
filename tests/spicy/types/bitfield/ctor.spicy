@@ -1,0 +1,17 @@
+# @TEST-EXEC:       ${SCRIPTS}/printf '\x82' | spicy-driver %INPUT >>output 2>&1
+# @TEST-EXEC-FAIL:  ${SCRIPTS}/printf '\200' | spicy-driver %INPUT >>output 2>&1
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Check bitfield constant parsing.
+
+module Test;
+
+public type Foo = unit {
+  x: bitfield(8) {
+    a: 0..3 = 2;
+    b: 4..7;
+    c: 7 = 1;
+  };
+
+  on %done { print self.x; }
+};

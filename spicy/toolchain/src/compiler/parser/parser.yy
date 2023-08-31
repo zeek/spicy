@@ -258,7 +258,7 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::Expression>                            expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
 %type <std::vector<hilti::Expression>>               opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
 %type <std::optional<hilti::Statement>>              opt_else_block
-%type <std::optional<hilti::Expression>>             opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr
+%type <std::optional<hilti::Expression>>             opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_bits_value
 %type <hilti::type::function::Parameter>             func_param
 %type <hilti::declaration::parameter::Kind>          opt_func_param_kind
 %type <hilti::type::function::Result>                func_result opt_func_result
@@ -702,10 +702,15 @@ bitfield_bits
               | bitfield_bits_spec               { $$ = std::vector<spicy::type::bitfield::Bits>(); $$.push_back(std::move($1)); }
 
 bitfield_bits_spec
-              : local_id ':' CUINTEGER DOTDOT CUINTEGER opt_attributes ';'
-                                                 { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $5, _field_width, std::move($6), __loc__); }
-              | local_id ':' CUINTEGER opt_attributes ';'
-                                                 { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $3, _field_width, std::move($4), __loc__); }
+              : local_id ':' CUINTEGER DOTDOT CUINTEGER opt_bitfield_bits_value opt_attributes ';'
+                                                 { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $5, _field_width, std::move($7), std::move($6), __loc__); }
+              | local_id ':' CUINTEGER opt_bitfield_bits_value opt_attributes ';'
+                                                 { $$ = spicy::type::bitfield::Bits(std::move($1), $3, $3, _field_width, std::move($5), std::move($4), __loc__); }
+
+opt_bitfield_bits_value
+              : '=' expr                         { $$ = std::move($2); }
+              | /* empty */                      { $$ = {}; }
+              ;
 
 /* --- Begin of Spicy units --- */
 

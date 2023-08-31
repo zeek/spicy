@@ -1,0 +1,17 @@
+# @TEST-EXEC:  printf '\001\002\003\204\005' | spicy-driver %INPUT >>output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Check look-ahead vector parsing with bitfield constant as terminator.
+
+module Test;
+
+public type Foo = unit {
+  x: uint8[];
+  y: bitfield(8) {
+    a: 0..3 = 4;
+    b: 4..7;
+  };
+  z: uint8;
+
+  on %done { print self; }
+};

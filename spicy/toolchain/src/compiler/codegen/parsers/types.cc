@@ -67,7 +67,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         else {
             auto has_data = pb->waitForInputOrEod(builder::integer(len));
 
-            auto result = builder()->addTmp("result", type::Result(t));
+            auto result = dst ? *dst : builder()->addTmp("result", type::Result(t));
 
             auto true_ = builder()->addIf(has_data);
             pushBuilder(true_);
@@ -128,16 +128,19 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
         performUnpack(target, t, t.width() / 8, {state().cur, fieldByteOrder(), *bitorder}, t.meta(), is_try);
 
         if ( pb->options().debug ) {
-            // Print all the bit ranges individually so that we can include
-            // their IDs, which the standard tuple output wouldn't show.
-            builder()->addDebugMsg("spicy", fmt("%s = %%s", meta.field()->id()),
-                                   {builder::member(target, "__value__")});
+            auto have_value = builder()->addIf(builder::hasMember(target, "__value__"));
+            pushBuilder(have_value, [&]() {
+                // Print all the bit ranges individually so that we can include
+                // their IDs, which the standard tuple output wouldn't show.
+                builder()->addDebugMsg("spicy", fmt("%s = %%s", meta.field()->id()),
+                                       {builder::member(target, "__value__")});
 
-            builder()->addDebugIndent("spicy");
-            for ( const auto& bits : t.bits() )
-                builder()->addDebugMsg("spicy", fmt("%s = %%s", bits.id()), {builder::member(target, bits.id())});
+                builder()->addDebugIndent("spicy");
+                for ( const auto& bits : t.bits() )
+                    builder()->addDebugMsg("spicy", fmt("%s = %%s", bits.id()), {builder::member(target, bits.id())});
 
-            builder()->addDebugDedent("spicy");
+                builder()->addDebugDedent("spicy");
+            });
         }
 
         return target;
@@ -303,7 +306,7 @@ struct Visitor : public hilti::visitor::PreOrder<Expression, Visitor> {
 
 Expression ParserBuilder::_parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
                                      bool is_try) {
-    assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>()));
+    assert(! is_try || (t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>() || t.isA<type::Bitfield>()));
 
     if ( auto e = Visitor(this, meta, dst, is_try).dispatch(t) )
         return std::move(*e);
@@ -317,7 +320,7 @@ Expression ParserBuilder::parseType(const Type& t, const production::Meta& meta,
 
 Expression ParserBuilder::parseTypeTry(const Type& t, const production::Meta& meta,
                                        const std::optional<Expression>& dst) {
-    assert(t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>());
+    assert(t.isA<type::SignedInteger>() || t.isA<type::UnsignedInteger>() || t.isA<type::Bitfield>());
 
     return _parseType(t, meta, dst, /*is_try =*/true);
 }
