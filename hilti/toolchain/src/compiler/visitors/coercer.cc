@@ -608,6 +608,17 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
             modified = true;
         }
     }
+
+    void operator()(const type::bitfield::Bits& n, position_t p) {
+        if ( ! n.ctorValue() )
+            return;
+
+        if ( auto x = coerceTo(&p.node, *n.ctorValue(), n.itemType(), false, true) ) {
+            logChange(p.node, *x, "bits value");
+            p.node.as<type::bitfield::Bits>().setCtorValue(*x);
+            modified = true;
+        }
+    }
 };
 
 } // anonymous namespace
