@@ -342,7 +342,9 @@ std::string cxx::type::Struct::str() const {
 
     auto fmt_member = [&](const auto& f) {
         if ( auto x = std::get_if<declaration::Local>(&f) ) {
-            if ( ! (x->isInternal() || x->linkage == "inline static") ) // Don't visit internal or static fields.
+            if ( x->isAnonymous() )
+                visitor_calls.emplace_back(fmt("_(\"<anon>\", %s); ", x->id));
+            else if ( ! (x->isInternal() || x->linkage == "inline static") ) // Don't visit internal or static fields.
                 visitor_calls.emplace_back(fmt("_(\"%s\", %s); ", x->id, x->id));
 
             // We default initialize any members here that don't have an

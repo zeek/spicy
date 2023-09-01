@@ -138,6 +138,10 @@ struct Local {
     // namespace reserved for internal IDs.
     bool isInternal() const { return util::startsWith(id.local(), "__"); }
 
+    // Returns true if the ID starts with "_anon", which is the marker we use
+    // for anonymous fields that make it out into the generated struct.
+    bool isAnonymous() const { return util::startsWith(id.local(), "_anon"); }
+
     std::string str() const;
     operator std::string() const { return str(); }
 };

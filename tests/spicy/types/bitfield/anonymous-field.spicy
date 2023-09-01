@@ -10,7 +10,18 @@ public type Foo = unit {
     y: 4..7;
   };
 
+  : bitfield(8) {
+    z: 0..3;
+  } if ( False );
+
   on %done {
     print self.x, self.y;
+    print self;
+
+    assert self?.x;
+    assert self.?x == 15;
+
+    assert ! self?.z;
+    assert-exception self.?z;
   }
 };

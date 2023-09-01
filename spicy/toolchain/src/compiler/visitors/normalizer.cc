@@ -227,33 +227,43 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         }
     }
 
-    void operator()(const operator_::unit::MemberNonConst& o, position_t p) {
-        auto unit = o.op0().type().tryAs<type::Unit>();
-        auto id = o.op1().tryAs<hilti::expression::Member>()->id();
-        if ( unit && id && ! unit->itemByName(id) ) {
-            // See if we we got an anonymous bitfield with a member of that
-            // name. If so, rewrite the access to transparently to refer to the
-            // member through the field's internal name.
-            bool found_field = false;
-            for ( const auto& f : unit->items<type::unit::item::Field>() ) {
-                if ( ! f.isAnonymous() )
+    // Helper returning the field name containing a given item of an anonymous bitfield.
+    std::optional<ID> findBitsFieldID(const hilti::node::Set<type::unit::Item>& items, const ID& id) const {
+        for ( const auto& item : items ) {
+            if ( auto field = item.tryAs<type::unit::item::Field>() ) {
+                if ( ! field->isAnonymous() )
                     continue;
 
-                auto t = f.itemType().tryAs<type::Bitfield>();
+                auto t = field->itemType().tryAs<type::Bitfield>();
                 if ( ! t )
                     continue;
 
-                auto bits = t->bits(id);
-                if ( ! bits )
-                    continue;
+                if ( auto bits = t->bits(id) )
+                    return field->id();
+            }
+            else if ( auto field = item.tryAs<type::unit::item::Switch>() ) {
+                for ( const auto& c : field->cases() ) {
+                    if ( auto id_ = findBitsFieldID(c.items(), id) )
+                        return id_;
+                }
+            }
+        }
 
-                if ( found_field )
-                    // Ambiguous access, the validator will catch that.
-                    return;
+        return {};
+    }
 
+    void operator()(const operator_::unit::MemberNonConst& o, position_t p) {
+        auto unit = o.op0().type().tryAs<type::Unit>();
+        auto id = o.op1().tryAs<hilti::expression::Member>()->id();
+
+        if ( unit && id && ! unit->itemByName(id) ) {
+            // See if we got an anonymous bitfield with a member of that
+            // name. If so, rewrite the access to transparently refer to the
+            // member through the field's internal name.
+            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
                 auto access_field =
                     operator_::unit::MemberNonConst::Operator().instantiate({o.op0(),
-                                                                             hilti::expression::Member(f.id())},
+                                                                             hilti::expression::Member(*field_id)},
                                                                             o.meta());
                 auto access_bits =
                     bitfield::Member::Operator().instantiate({std::move(access_field), o.op1()}, o.meta());
@@ -261,7 +271,46 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
                 logChange(p.node, access_bits);
                 p.node = access_bits;
                 modified = true;
-                found_field = true;
+            }
+        }
+    }
+
+    void operator()(const operator_::unit::HasMember& o, position_t p) {
+        auto unit = o.op0().type().tryAs<type::Unit>();
+        auto id = o.op1().tryAs<hilti::expression::Member>()->id();
+
+        if ( unit && id && ! unit->itemByName(id) ) {
+            // See if we got an anonymous bitfield with a member of that
+            // name. If so, rewrite the access to transparently refer to the
+            // member through the field's internal name.
+            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
+                auto has_field =
+                    operator_::unit::HasMember::Operator().instantiate({o.op0(), hilti::expression::Member(*field_id)},
+                                                                       o.meta());
+                logChange(p.node, has_field);
+                p.node = has_field;
+                modified = true;
+            }
+        }
+    }
+
+    void operator()(const operator_::unit::TryMember& o, position_t p) {
+        auto unit = o.op0().type().tryAs<type::Unit>();
+        auto id = o.op1().tryAs<hilti::expression::Member>()->id();
+
+        if ( unit && id && ! unit->itemByName(id) ) {
+            // See if we we got an anonymous bitfield with a member of that
+            // name. If so, rewrite the access to transparently to refer to the
+            // member through the field's internal name.
+            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
+                auto try_field =
+                    operator_::unit::TryMember::Operator().instantiate({o.op0(), hilti::expression::Member(*field_id)},
+                                                                       o.meta());
+                auto access_bits = bitfield::Member::Operator().instantiate({std::move(try_field), o.op1()}, o.meta());
+
+                logChange(p.node, access_bits);
+                p.node = access_bits;
+                modified = true;
             }
         }
     }
