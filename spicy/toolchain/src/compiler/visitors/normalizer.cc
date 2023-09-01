@@ -227,7 +227,7 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         }
     }
 
-    // Helper return the field name containing a given item of an anonymous bitfield.
+    // Helper returning the field name containing a given item of an anonymous bitfield.
     std::optional<ID> findBitsFieldID(const hilti::node::Set<type::unit::Item>& items, const ID& id) const {
         for ( const auto& item : items ) {
             if ( auto field = item.tryAs<type::unit::item::Field>() ) {
@@ -257,8 +257,8 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         auto id = o.op1().tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
-            // See if we we got an anonymous bitfield with a member of that
-            // name. If so, rewrite the access to transparently to refer to the
+            // See if we got an anonymous bitfield with a member of that
+            // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
             if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
                 auto access_field =
@@ -280,8 +280,8 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         auto id = o.op1().tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
-            // See if we we got an anonymous bitfield with a member of that
-            // name. If so, rewrite the access to transparently to refer to the
+            // See if we got an anonymous bitfield with a member of that
+            // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
             if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
                 auto has_field =

@@ -574,11 +574,11 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     void checkBits(const spicy::type::Unit& u, position_t p, const hilti::node::Set<type::unit::Item>& items,
                      std::set<ID>* seen_bits) {
         for ( const auto& item : items ) {
-            if ( auto f = item.template tryAs<spicy::type::unit::item::Field>() ) {
+            if ( auto f = item.tryAs<spicy::type::unit::item::Field>() ) {
                 if ( ! f->isAnonymous() )
                     continue;
 
-                auto t = f->itemType().template tryAs<type::Bitfield>();
+                auto t = f->itemType().tryAs<type::Bitfield>();
                 if ( ! t )
                     continue;
 
@@ -593,7 +593,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                 }
             }
 
-            else if ( auto f = item.template tryAs<spicy::type::unit::item::Switch>() ) {
+            else if ( auto f = item.tryAs<spicy::type::unit::item::Switch>() ) {
                 for ( const auto& c : f->cases() )
                     checkBits(u, p, c.items(), seen_bits);
             }
