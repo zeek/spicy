@@ -1,3 +1,8 @@
+
+1.9.0-dev.71 | 2023-09-01 10:33:35 +0200
+
+  * Drop removed RTD config key. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.69 | 2023-09-01 09:57:22 +0200
 
   * GH-1503: Handle anonymous bitfields inside `switch` statements. (Robin Sommer, Corelight)

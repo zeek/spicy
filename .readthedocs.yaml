@@ -12,6 +12,5 @@ sphinx:
   configuration: doc/conf.py
 
 python:
-  system_packages: false
   install:
     - requirements: doc/requirements.txt
