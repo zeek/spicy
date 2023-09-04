@@ -16,6 +16,8 @@ environment:
 
     # Cache HILTI C++ compilation.
     HILTI_CXX_COMPILER_LAUNCHER: ccache
+    CCACHE_COMPRESS: "1"
+    CCACHE_MAXSIZE: "2G"
 
 lint_task:
   skip: $CIRRUS_CRON == '' && $CIRRUS_PR == ''
@@ -34,7 +36,6 @@ lint_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
     LD_LIBRARY_PATH: /usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/
 
   update_git_script:
@@ -72,7 +73,6 @@ clang12_ubuntu_debug_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
     LD_LIBRARY_PATH: /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
 
   update_git_script:
@@ -115,7 +115,6 @@ clang10_lts_ubuntu_release_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -157,7 +156,6 @@ clang9_lts_ubuntu_release_static_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -197,7 +195,6 @@ clang11_nightly_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
     LD_LIBRARY_PATH: /usr/lib/llvm-11/lib/clang/9.0.1/lib/linux/
 
   update_git_script:
@@ -236,7 +233,6 @@ macos_monterey_task:
 
   environment:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -270,7 +266,6 @@ macos_ventura_task:
 
   environment:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -308,7 +303,6 @@ no_toolchain_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -349,7 +343,6 @@ validate_release_tarball_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -407,7 +400,6 @@ docker_alpine_3_18_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -441,7 +433,6 @@ docker_centos_stream_8_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -480,7 +471,6 @@ docker_debian10_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -515,7 +505,6 @@ docker_debian11_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
@@ -552,7 +541,6 @@ docker_ubuntu20_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
 
   update_git_script:
     - git submodule update --recursive --init
