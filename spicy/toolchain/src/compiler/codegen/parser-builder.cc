@@ -69,6 +69,12 @@ void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) c
 
 namespace spicy::detail::codegen {
 
+hilti::Expression featureConstant(const hilti::ID& typeID, std::string_view feature) {
+    const auto& ns = typeID.namespace_();
+    const auto id = hilti::util::replace(typeID, ":", "@");
+    return builder::id(ID(hilti::rt::fmt("%s::__feat%%%s%%%s", ns, id, feature)));
+}
+
 struct ProductionVisitor
     : public hilti::detail::visitor::Visitor<void, ProductionVisitor, Production, hilti::detail::visitor::Order::Pre> {
     ProductionVisitor(ParserBuilder* pb, const Grammar& g) : pb(pb), grammar(g) {}
@@ -296,9 +302,7 @@ struct ProductionVisitor
                     pushState(std::move(pstate));
 
                     // Disable trimming for random-access units.
-                    const auto id = hilti::util::replace(*unit->id(), ":", "@");
-                    pushBuilder(builder()->addIf(
-                                    builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "uses_random_access")))),
+                    pushBuilder(builder()->addIf(featureConstant(*unit->id(), "uses_random_access")),
                                 [&]() { builder()->addAssign(state().trim, builder::bool_(false)); });
 
                     build_parse_stage1_logic();
@@ -2327,10 +2331,8 @@ Expression _filters(const ParserState& state) {
     if ( ! typeID )
         return member;
 
-    const auto id = hilti::util::replace(*typeID, ":", "@");
-    const auto flag = builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "supports_filters")));
-
-    return builder::ternary(flag, std::move(member), builder::strong_reference(builder::typeByID("spicy_rt::Filters")));
+    return builder::ternary(featureConstant(*typeID, "supports_filters"), std::move(member),
+                            builder::strong_reference(builder::typeByID("spicy_rt::Filters")));
 }
 
 Expression ParserBuilder::waitForInputOrEod() {
@@ -2480,10 +2482,8 @@ void ParserBuilder::guardFeatureCode(const type::Unit& unit, const std::vector<s
         return;
     }
 
-    const auto id = hilti::util::replace(*typeID, ":", "@");
-    auto flags = hilti::util::transform(features, [&](const auto& feature) {
-        return builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature)));
-    });
+    auto flags =
+        hilti::util::transform(features, [&](const auto& feature) { return featureConstant(*typeID, feature); });
 
     auto cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
                                 [](const auto& a, const auto& b) { return hilti::expression::LogicalOr(a, b); });
