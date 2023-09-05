@@ -14,3 +14,13 @@ sphinx:
 python:
   install:
     - requirements: doc/requirements.txt
+
+search:
+  ignore:
+    - "doxygen-output/*"
+    - "_static/*"
+    # Defaults.
+    - search.html
+    - search/index.html
+    - 404.html
+    - 404/index.html
