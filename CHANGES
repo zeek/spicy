@@ -1,3 +1,16 @@
+1.9.0-dev.75 | 2023-09-05 16:15:17 +0200
+
+  * Merge branch 'topic/bbannier/rtd-search-suppress-doxygen-results' (Benjamin Bannier, Corelight)
+
+  * GH-1516: Do not include generated Doxygen documentation in RTD search results [skip CI]. (Benjamin Bannier, Corelight)
+
+    Doxygen documentation is likely not relevant for users and hides results
+    they are looking for. Also, Doxygen already comes with its own search
+    which is reachable the developer documentation.
+
+    Closes #1516.
+
+  * Reduce ccache cache size in CI. (Benjamin Bannier, Corelight)
 
 1.9.0-dev.71 | 2023-09-01 10:33:35 +0200
 
