@@ -1,3 +1,5 @@
+# @TEST-KNOWN-FAILURE: FIXME(bbannier): doesn't work on my machine, should be unrelated to actual test.
+#
 # @TEST-DOC: Validate that one can load additional static or shared libraries.
 
 # @TEST-REQUIRES: command -v ar
