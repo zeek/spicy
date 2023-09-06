@@ -1,3 +1,12 @@
+1.9.0-dev.77 | 2023-09-06 14:38:55 +0200
+
+  * Clarify error handling docs [skip CI]. (Benjamin Bannier, Corelight)
+
+    The docs previously made it sound as if exceptions could potentially be
+    swallowed with `on %error` handlers. Since this is currently not
+    supported, but a often requested feature, clarify the docs to not stir
+    up too much anticipation.
+
 1.9.0-dev.75 | 2023-09-05 16:15:17 +0200
 
   * Merge branch 'topic/bbannier/rtd-search-suppress-doxygen-results' (Benjamin Bannier, Corelight)
