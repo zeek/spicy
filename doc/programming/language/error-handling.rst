@@ -18,11 +18,11 @@ Exceptions provide Spicy's primary mechanism for reporting errors.
 Currently, various parts of the runtime system throw exceptions if
 they encounter unexpected situations. In particular, the generated
 parsers throw ``ParsingError`` exceptions if they find themselves
-unable to comprehend their input. However, the support for catching
-and handling exception is remains minimal at the moment. For now, only
-``ParsingError`` exceptions can be caught indirectly through the
+unable to comprehend their input. However, support for catching
+and handling exceptions remains minimal at the moment. For now, only
+``ParsingError`` exceptions can be intercepted (but not suppressed) with
 :ref:`%on_error <on_error>` unit hook, which internally is nothing
-else than an exception handler.
+else than a hook into parser teardown on exceptions.
 
 .. todo::
 
