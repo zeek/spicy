@@ -263,6 +263,77 @@ struct Visitor : public hilti::visitor::PreOrder<std::optional<Expression>, Visi
     result_t operator()(const hilti::ctor::SignedInteger& c) {
         return parseInteger(c.type(), builder::expression(c), c.meta());
     }
+
+    result_t operator()(const hilti::ctor::Bitfield& c) {
+        auto offset = [](Expression view) { return builder::memberCall(std::move(view), "offset", {}); };
+
+        switch ( state().literal_mode ) {
+            case LiteralMode::Default:
+            case LiteralMode::Skip: {
+                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
+
+                pushBuilder(have_lah);
+
+                pushBuilder(builder()->addIf(builder::unequal(state().lahead, builder::integer(production.tokenID()))));
+                pb->parseError("unexpected token to consume", c.meta());
+                popBuilder();
+
+                // Need to reparse the value to assign it to our destination.
+                auto value = pb->parseType(c.btype(), production.meta(), {});
+                builder()->addAssign(destination(c.btype()), value);
+
+                pb->consumeLookAhead();
+                popBuilder();
+
+                pushBuilder(no_lah);
+                auto old_cur = builder()->addTmp("ocur", state().cur);
+
+                value = pb->parseType(c.btype(), production.meta(), {});
+
+                // Check that the bit values match what we expect.
+                for ( const auto& b : c.bits() ) {
+                    auto error = builder()->addIf(builder::unequal(builder::member(value, b.id()), b.expression()));
+                    pushBuilder(error);
+                    builder()->addAssign(state().cur, old_cur);
+                    pb->parseError(fmt("unexpected value for bitfield element '%s'", b.id()), c.meta());
+                    popBuilder();
+                }
+
+                if ( state().literal_mode != LiteralMode::Skip )
+                    builder()->addAssign(destination(c.btype()), value);
+
+                popBuilder();
+
+                return value;
+            }
+
+            case LiteralMode::Search: // Handled in `parseLiteral`.
+            case LiteralMode::Try: {
+                auto old_cur = builder()->addTmp("ocur", state().cur);
+                auto bf = builder()->addTmp("bf", c.btype());
+                pb->parseTypeTry(c.btype(), production.meta(), bf);
+                auto new_cur = builder()->addTmp("ncur", state().cur);
+
+                auto match = builder()->addIf(builder::unequal(offset(old_cur), offset(new_cur)));
+                pushBuilder(match);
+                builder()->addAssign(state().cur, old_cur); // restore, because we must not move cur when in sync mode
+
+                // Check that the bit values match what we expect.
+                for ( const auto& b : c.bits() ) {
+                    auto error = builder()->addIf(builder::unequal(builder::member(bf, b.id()), b.expression()));
+                    pushBuilder(error);
+                    builder()->addAssign(new_cur, old_cur); // reset to old position
+                    popBuilder();
+                }
+
+                popBuilder();
+
+                return builder::begin(new_cur);
+            }
+        }
+
+        hilti::util::cannot_be_reached();
+    }
 };
 
 } // namespace

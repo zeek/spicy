@@ -374,6 +374,42 @@ struct VisitorCtor : public visitor::PreOrder<std::optional<Ctor>, VisitorCtor> 
             return ctor::Struct(std::move(nf), dst_, c.meta());
         }
 
+        if ( auto dtype = dst_.tryAs<type::Bitfield>() ) {
+            if ( ! dst_.typeID() )
+                // Wait for this to be resolved.
+                return {};
+
+            auto stype = c.type().as<type::Struct>();
+
+            std::set<ID> src_fields;
+            for ( const auto& f : stype.fields() )
+                src_fields.insert(f.id());
+
+            std::set<ID> dst_fields;
+            for ( const auto& f : dtype->bits() )
+                dst_fields.insert(f.id());
+
+            // Check for fields in ctor that type does not have.
+            if ( ! util::set_difference(src_fields, dst_fields).empty() )
+                return {};
+
+            // Coerce each field.
+            std::vector<ctor::bitfield::Bits> bits;
+
+            for ( const auto& sf : stype.fields() ) {
+                const auto& dbits = dtype->bits(sf.id());
+                const auto& se = c.field(sf.id());
+                assert(dbits && se);
+                if ( const auto& ne = hilti::coerceExpression(se->expression(), dbits->itemType(), style) )
+                    bits.emplace_back(sf.id(), *ne.coerced);
+                else
+                    // Cannot coerce.
+                    return {};
+            }
+
+            return ctor::Bitfield(std::move(bits), *dtype, c.meta());
+        }
+
         return {};
     }
 };

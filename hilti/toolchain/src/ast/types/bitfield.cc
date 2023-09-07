@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/ctors/bitfield.h>
 #include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/tuple.h>
 
@@ -21,4 +22,18 @@ std::optional<int> type::Bitfield::bitsIndex(const ID& id) const {
     }
 
     return {};
+}
+
+std::optional<Ctor> type::Bitfield::ctorValue() const {
+    std::vector<ctor::bitfield::Bits> values;
+
+    for ( const auto& b : bits() ) {
+        if ( auto v = b.ctorValue() )
+            values.emplace_back(b.id(), *v, meta());
+    }
+
+    if ( ! values.empty() )
+        return ctor::Bitfield(std::move(values), *this, meta());
+    else
+        return {};
 }

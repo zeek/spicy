@@ -25,6 +25,7 @@ hilti::type::enum_::Label : isNode
 hilti::type::tuple::Element : isNode
 
 hilti::ctor::Address : isCtor
+hilti::ctor::Bitfield : isCtor
 hilti::ctor::Bool : isCtor
 hilti::ctor::Bytes : isCtor
 hilti::ctor::Coerced : isCtor

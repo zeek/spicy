@@ -230,6 +230,22 @@ struct Visitor : visitor::PreOrder<void, Visitor> {
 
     void operator()(const ctor::Address& n) { out << n.value(); }
 
+    void operator()(const ctor::Bitfield& n) {
+        out << "[";
+
+        bool first = true;
+        for ( const auto& f : n.bits() ) {
+            if ( ! first )
+                out << ", ";
+            else
+                first = false;
+
+            out << '$' << f.id() << "=" << f.expression();
+        }
+
+        out << "]";
+    }
+
     void operator()(const ctor::Bool& n) { out << (n.value() ? "True" : "False"); }
 
     void operator()(const ctor::Bytes& n) { out << "b\"" << util::escapeUTF8(n.value(), true) << '"'; }

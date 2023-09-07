@@ -1,0 +1,24 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+type BF = bitfield(8) {
+  a: 0..3;
+  b: 4..7;
+  c: 4..5;
+};
+
+global BF bf;
+hilti::print(bf);
+
+bf = [$a = 1, $c = 2];
+hilti::print(bf);
+
+assert bf.a == 1;
+assert-exception bf.b;
+assert bf?.a;
+assert ! bf?.b;
+}

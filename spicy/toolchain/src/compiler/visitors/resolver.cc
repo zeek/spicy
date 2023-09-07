@@ -294,6 +294,16 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
             if ( ! type::isResolved(t) )
                 return;
 
+            if ( auto bf = t->tryAs<type::Bitfield>() ) {
+                // If a bitfield type comes with values for at least one of its
+                // items, it's actually a bitfield ctor. Replace the type with the
+                // ctor then.
+                if ( auto ctor = bf->ctorValue() ) {
+                    replaceField(&p, resolveField(u, *ctor));
+                    return;
+                }
+            }
+
             replaceField(&p, resolveField(u, *t));
         }
 

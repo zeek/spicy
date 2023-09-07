@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <utility>
 
+#include <hilti/ast/ctors/bitfield.h>
+#include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/module.h>
@@ -430,18 +432,28 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         error("automatic type has not been resolved", p, node::ErrorPriority::Low);
     }
 
-    void operator()(const type::Bitfield& b, position_t p) {
-        const auto width = b.width();
+    void operator()(const type::bitfield::Bits& bit, position_t p) {
+        const auto lower = bit.lower();
+        const auto upper = bit.upper();
 
-        for ( const auto& bit : b.bits() ) {
-            const auto lower = bit.lower();
-            const auto upper = bit.upper();
+        if ( lower > upper )
+            error("lower limit needs to be lower than upper limit", p);
 
-            if ( lower > upper )
-                error("lower limit needs to be lower than upper limit", p);
+        if ( upper >= bit.fieldWidth() )
+            error("upper limit is beyond the width of the bitfield", p);
 
-            if ( upper >= width )
-                error("upper limit is beyond the width of the bitfield", p);
+        if ( auto expr = bit.ctorValue() ) {
+            if ( auto expr_ = expr->tryAs<expression::Ctor>() ) {
+                auto ctor = expr_->ctor();
+
+                if ( auto x = ctor.tryAs<ctor::Coerced>() )
+                    ctor = x->coercedCtor();
+
+                if ( auto i = ctor.tryAs<ctor::UnsignedInteger>() ) {
+                    if ( i->value() > (1U << (upper - lower + 1)) - 1 )
+                        error("value is outside of bitfield element's range", p);
+                }
+            }
         }
     }
 

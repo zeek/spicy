@@ -1,3 +1,66 @@
+1.9.0-dev.84 | 2023-09-07 17:12:00 +0200
+
+  * GH-1467: Support bitfield constants in Spicy for parsing. (Robin Sommer, Corelight)
+
+    One can now define bitfield "constants" for parsing by providing
+    integer expressions with fields:
+
+        type Foo = unit {
+          x: bitfield(8) {
+            a: 0..3 = 2;
+            b: 4..7;
+            c: 7 = 1;
+          };
+
+    This will first parse the bitfield as usual and then enforce that the
+    two bit ranges that are coming with expressions (i.e., `a` and `c`)
+    indeed containing the expected values. If they don't, that's a parse
+    error.
+
+    We also support using such bitfield constants for look-ahead parsing:
+
+        type Foo = unit {
+          x: uint8[];
+          y: bitfield(8) {
+            a: 0..3 = 4;
+            b: 4..7;
+          };
+        };
+
+    This will parse uint8s until a value is discovered that has its bits
+    set as defined by the bitfield constant.
+
+    (We use the term "constant" loosely here: only the bits with values
+    are actually enforced to be constant, all others are parsed as usual.)
+
+    Closes #1467.
+
+  * Extend bitfield type with per-item storage for constant values. (Robin Sommer, Corelight)
+
+    This allows to associate an expression with each bit value. We don't
+    use this from HILTI because there's isn't a good syntax to do so
+    (and/or: it's not worth adding), but we'll use (and test) this from
+    Spicy in a subsequent commit.
+
+  * Add bitfield constants. (Robin Sommer, Corelight)
+
+    It's now possible to initialize a bitfield value through an assignment
+    from a struct constructor expression:
+
+        type BF = bitfield(8) {
+          a: 0..3;
+          b: 4..7;
+          c: 4..5;
+        };
+
+        global BF bf = [$a = 1, $c = 2];
+
+  * Change internal tuple representation of bitfield to store optional values. (Robin Sommer, Corelight)
+
+    This will allow us to create bitfield constants where not at all
+    elements are set. We also add an operator to test if an element is
+    set (test forthcoming in a subsequent commit).
+
 1.9.0-dev.79 | 2023-09-07 11:15:05 +0200
 
   * GH-1520: Fix handling of `spicy-dump --enable-print`. (Benjamin Bannier, Corelight)
