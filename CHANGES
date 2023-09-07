@@ -1,3 +1,9 @@
+1.9.0-dev.79 | 2023-09-07 11:15:05 +0200
+
+  * GH-1520: Fix handling of `spicy-dump --enable-print`. (Benjamin Bannier, Corelight)
+
+    This flag was understood, but not handled since at least v1.1.0.
+
 1.9.0-dev.77 | 2023-09-06 14:38:55 +0200
 
   * Clarify error handling docs [skip CI]. (Benjamin Bannier, Corelight)

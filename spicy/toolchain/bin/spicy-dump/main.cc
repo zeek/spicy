@@ -234,7 +234,10 @@ int main(int argc, char** argv) {
 
     try {
         auto config = hilti::rt::configuration::get();
-        config.cout.reset();
+
+        if ( ! driver.opt_enable_print )
+            config.cout.reset();
+
         hilti::rt::configuration::set(config);
 
         if ( auto x = driver.initRuntime(); ! x )
