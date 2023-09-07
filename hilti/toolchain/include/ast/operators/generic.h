@@ -192,8 +192,9 @@ BEGIN_OPERATOR_CUSTOM(generic, Begin)
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
-        if ( ! type::isIterable(i.operands()[0].type()) )
-            p.node.addError("not an iterable type");
+        const auto& typ = i.operands()[0].type();
+        if ( ! type::isIterable(typ) )
+            p.node.addError(util::fmt("'%s' not an iterable type", typ));
     }
 
     std::string doc() const { return "Returns an iterator to the beginning of the container's content."; }
@@ -218,8 +219,9 @@ BEGIN_OPERATOR_CUSTOM(generic, End)
     }
 
     void validate(const expression::ResolvedOperator& i, operator_::position_t p) const {
-        if ( ! type::isIterable(i.operands()[0].type()) )
-            p.node.addError("not an iterable type");
+        const auto& typ = i.operands()[0].type();
+        if ( ! type::isIterable(typ) )
+            p.node.addError(util::fmt("'%s' not an iterable type", typ));
     }
 
     std::string doc() const { return "Returns an iterator to the end of the container's content."; }
