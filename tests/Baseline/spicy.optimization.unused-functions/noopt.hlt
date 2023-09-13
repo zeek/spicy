@@ -137,31 +137,31 @@ type F = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_F_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 
-const bool __feat%foo@@A%uses_random_access = True;
-const bool __feat%foo@@A%is_filter = False;
-const bool __feat%foo@@A%supports_filters = True;
-const bool __feat%foo@@A%supports_sinks = True;
-const bool __feat%foo@@A%synchronization = True;
-const bool __feat%foo@@B%uses_random_access = True;
-const bool __feat%foo@@B%is_filter = False;
-const bool __feat%foo@@B%supports_filters = True;
-const bool __feat%foo@@B%supports_sinks = True;
-const bool __feat%foo@@B%synchronization = True;
-const bool __feat%foo@@C%uses_random_access = True;
-const bool __feat%foo@@C%is_filter = False;
-const bool __feat%foo@@C%supports_filters = True;
-const bool __feat%foo@@C%supports_sinks = True;
-const bool __feat%foo@@C%synchronization = True;
-const bool __feat%foo@@D%uses_random_access = True;
-const bool __feat%foo@@D%is_filter = False;
-const bool __feat%foo@@D%supports_filters = True;
-const bool __feat%foo@@D%supports_sinks = True;
-const bool __feat%foo@@D%synchronization = True;
-const bool __feat%foo@@F%uses_random_access = True;
-const bool __feat%foo@@F%is_filter = True;
-const bool __feat%foo@@F%supports_filters = True;
-const bool __feat%foo@@F%supports_sinks = True;
-const bool __feat%foo@@F%synchronization = True;
+public const bool __feat%foo@@A%uses_random_access = True;
+public const bool __feat%foo@@A%is_filter = False;
+public const bool __feat%foo@@A%supports_filters = True;
+public const bool __feat%foo@@A%supports_sinks = True;
+public const bool __feat%foo@@A%synchronization = True;
+public const bool __feat%foo@@B%uses_random_access = True;
+public const bool __feat%foo@@B%is_filter = False;
+public const bool __feat%foo@@B%supports_filters = True;
+public const bool __feat%foo@@B%supports_sinks = True;
+public const bool __feat%foo@@B%synchronization = True;
+public const bool __feat%foo@@C%uses_random_access = True;
+public const bool __feat%foo@@C%is_filter = False;
+public const bool __feat%foo@@C%supports_filters = True;
+public const bool __feat%foo@@C%supports_sinks = True;
+public const bool __feat%foo@@C%synchronization = True;
+public const bool __feat%foo@@D%uses_random_access = True;
+public const bool __feat%foo@@D%is_filter = False;
+public const bool __feat%foo@@D%supports_filters = True;
+public const bool __feat%foo@@D%supports_sinks = True;
+public const bool __feat%foo@@D%synchronization = True;
+public const bool __feat%foo@@F%uses_random_access = True;
+public const bool __feat%foo@@F%is_filter = True;
+public const bool __feat%foo@@F%supports_filters = True;
+public const bool __feat%foo@@F%supports_sinks = True;
+public const bool __feat%foo@@F%synchronization = True;
 
 function void f1() {
 }

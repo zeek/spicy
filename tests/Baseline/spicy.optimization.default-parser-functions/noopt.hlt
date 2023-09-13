@@ -87,21 +87,21 @@ public type P2 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_P2_stage2(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 
-const bool __feat%foo@@P0%uses_random_access = True;
-const bool __feat%foo@@P0%is_filter = False;
-const bool __feat%foo@@P0%supports_filters = True;
-const bool __feat%foo@@P0%supports_sinks = True;
-const bool __feat%foo@@P0%synchronization = True;
-const bool __feat%foo@@P1%uses_random_access = True;
-const bool __feat%foo@@P1%is_filter = False;
-const bool __feat%foo@@P1%supports_filters = True;
-const bool __feat%foo@@P1%supports_sinks = True;
-const bool __feat%foo@@P1%synchronization = True;
-const bool __feat%foo@@P2%uses_random_access = True;
-const bool __feat%foo@@P2%is_filter = False;
-const bool __feat%foo@@P2%supports_filters = True;
-const bool __feat%foo@@P2%supports_sinks = True;
-const bool __feat%foo@@P2%synchronization = True;
+public const bool __feat%foo@@P0%uses_random_access = True;
+public const bool __feat%foo@@P0%is_filter = False;
+public const bool __feat%foo@@P0%supports_filters = True;
+public const bool __feat%foo@@P0%supports_sinks = True;
+public const bool __feat%foo@@P0%synchronization = True;
+public const bool __feat%foo@@P1%uses_random_access = True;
+public const bool __feat%foo@@P1%is_filter = False;
+public const bool __feat%foo@@P1%supports_filters = True;
+public const bool __feat%foo@@P1%supports_sinks = True;
+public const bool __feat%foo@@P1%synchronization = True;
+public const bool __feat%foo@@P2%uses_random_access = True;
+public const bool __feat%foo@@P2%is_filter = False;
+public const bool __feat%foo@@P2%supports_filters = True;
+public const bool __feat%foo@@P2%supports_sinks = True;
+public const bool __feat%foo@@P2%synchronization = True;
 
 method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> foo::P0::__parse_stage1(inout value_ref<stream> __data, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:12:11"

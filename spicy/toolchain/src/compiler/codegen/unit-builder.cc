@@ -187,11 +187,16 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     if ( unit.id() ) {
         ID typeID = ID(hilti::rt::replace(*unit.id(), ":", "@"));
 
-        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true)));
-        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(unit.isFilter())));
-        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true)));
-        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true)));
-        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%synchronization", typeID)), builder::bool_(true)));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%uses_random_access", typeID)), builder::bool_(true),
+                                         declaration::Linkage::Public));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%is_filter", typeID)), builder::bool_(unit.isFilter()),
+                                         declaration::Linkage::Public));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_filters", typeID)), builder::bool_(true),
+                                         declaration::Linkage::Public));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%supports_sinks", typeID)), builder::bool_(true),
+                                         declaration::Linkage::Public));
+        addDeclaration(builder::constant(ID(fmt("__feat%%%s%%synchronization", typeID)), builder::bool_(true),
+                                         declaration::Linkage::Public));
     }
 
     add_hook("0x25_gap", {builder::parameter("seq", type::UnsignedInteger(64)),
