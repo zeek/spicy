@@ -1,0 +1,23 @@
+# @TEST-EXEC: spicyc -dj %INPUT -o foo.hlto -T >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'FF\x01\x02' | spicy-driver foo.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    : bytes &size=2; # FF
+    : Y;
+};
+
+type Y = unit {
+    payload: bytes &eod { print self.offset(); }
+    : uint8[2] &parse-from=self.payload foreach {
+        # This should print 0, 1.
+        print self.offset();
+    } {
+        # This should print 2.
+        print self.offset();
+    }
+};
+
+# FIXME(bbannier): also check with limited via, e.g., `&max-size`/`&size` on subunit.
