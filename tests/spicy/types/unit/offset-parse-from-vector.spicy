@@ -1,0 +1,47 @@
+# @TEST-EXEC: spicyc -dj %INPUT -o foo.hlto -T >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf 'FFXXYYZZ' | spicy-driver foo.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type A = unit {
+    : bytes &size=2; # FF
+    : X;
+    : Y;
+    : Z;
+};
+
+type Byte = bytes &size=1;
+
+type X = unit {
+    payload: bytes &size=2 { print "X pre-container offset=%d" % self.offset(); }
+    xs: Byte[2] &parse-from=self.payload foreach {
+        # This should print 0, 1.
+        print "X container offset=%d, $$=%d" % (self.offset(), $$);
+    } {
+        # This should print 2.
+        print "X post-container offset=%d, $$=%d" % (self.offset(), $$);
+    }
+};
+
+type Y = unit {
+    payload: bytes &size=2 { print "Y pre-container offset=%d" % self.offset(); }
+    ys: Byte[2] &size=2 &parse-from=self.payload foreach {
+        # This should print 0, 1.
+        print "Y container offset=%d, $$=%d" % (self.offset(), $$);
+    } {
+        # This should print 2.
+        print "Y post-container offset=%d, $$=%d" % (self.offset(), $$);
+    }
+};
+
+type Z = unit {
+    payload: bytes &size=2 { print "Z pre-container offset=%d" % self.offset(); }
+    zs: Byte[2] &max-size=2 &parse-from=self.payload foreach {
+        # This should print 0, 1.
+        print "Z container offset=%d, $$=%d" % (self.offset(), $$);
+    } {
+        # This should print 2.
+        print "Z post-container offset=%d, $$=%d" % (self.offset(), $$);
+    }
+};
