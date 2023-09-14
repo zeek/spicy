@@ -123,6 +123,9 @@ struct ParserState {
     /**< Expression referencing the stream instance we're working on. */
     Expression data;
 
+    /**< Expression referencing the beginning of the current unit inside data'. */
+    Expression begin;
+
     /**< Expression referencing the current view inside 'data'. */
     Expression cur;
 

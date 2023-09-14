@@ -381,6 +381,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
  * spicy-verbose debug stream.
  */
 void printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                      const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
                       const hilti::rt::stream::View& cur, int64_t lahead,
                       const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
                       bool trim, const std::optional<hilti::rt::RecoverableFailure>& error);
