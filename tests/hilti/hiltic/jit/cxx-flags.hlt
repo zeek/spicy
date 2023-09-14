@@ -1,0 +1,20 @@
+# @TEST-EXEC: HILTI_CXX_FLAGS=-DRETURN_VALUE=42 ${HILTIC} -j %INPUT my-test.cc
+#
+# @TEST-DOC: Ensure hiltic honors the environment variable HILTI_CXX_INCLUDE_DIRS
+
+module Test {
+
+declare public int<64> test_cc() &cxxname="test_cc";
+
+assert(test_cc() == 42);
+
+}
+
+@TEST-START-FILE my-test.cc
+
+#include <cstdint>
+#include <hilti/rt/types/integer.h>
+
+hilti::rt::integer::safe<int64_t> test_cc() { return RETURN_VALUE; }
+
+@TEST-END-FILE

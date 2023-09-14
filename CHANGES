@@ -1,3 +1,16 @@
+1.9.0-dev.86 | 2023-09-14 10:36:25 +0200
+
+  * Add support for passing arbitrary C++ compiler flags. (Benjamin Bannier, Corelight)
+
+    This adds a magic environment variable `HILTI_CXX_FLAGS` which if set
+    specifies compiler flags which should be passed during C++ compilation
+    after implicit flags. This could be used to e.g., set defines, or set
+    low-level compiler flags.
+
+    Even with this flag, for passing include directories one should still
+    use `HILTI_CXX_INCLUDE_DIRS` since they are searched before any
+    implicitly added paths.
+
 1.9.0-dev.84 | 2023-09-07 17:12:00 +0200
 
   * GH-1467: Support bitfield constants in Spicy for parsing. (Robin Sommer, Corelight)

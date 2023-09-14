@@ -61,9 +61,16 @@ control the compilation process:
         during JIT. Setting this variable to an empty value disables use of
         ``ccache`` in that case.
 
+    ``HILTI_CXX_FLAGS``
+        Specifies additional flags to pass during C++ compilation. This will be
+        added after all implicit arguments. Use ``HILTI_CXX_INCLUDE_DIRS`` to
+        specify additional include directories.
+
     ``HILTI_CXX_INCLUDE_DIRS``
-        Specified additional, colon-separated C++ include directory to
-        search for header files.
+        Specifies additional, colon-separated C++ include directories to
+        search for header files. Directories passed via
+        ``HILTI_CXX_INCLUDE_DIRS`` will be searched for headers before any
+        header search paths implicit in Spicy C++ compilation.
 
     ``HILTI_JIT_PARALLELISM``
         Set to specify the maximum number of background compilation jobs to run
