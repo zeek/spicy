@@ -278,3 +278,13 @@ If your C++ code requires additional include files outside of standard
 include paths, you can set the environment variable
 ``HILTI_CXX_INCLUDE_DIRS`` to a colon-separated list of additional
 directories for ``spicyc`` to use when compiling C++ code.
+
+Passing arbitrary compiler flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you need to set arbitrary compiler flags you can use the environment
+variable ``HILTI_CXX_FLAGS``. If this value is set it will be added verbatim as
+the last argument to the compiler invocation used when compiling C++ code.
+
+.. warning:: Prefer using ``HILTI_CXX_INCLUDE_DIRS`` for setting include paths
+  since paths set this way will be searched before implicit paths.

@@ -305,13 +305,16 @@ hilti::Result<Nothing> JIT::_compile() {
             args.push_back(i);
         }
 
-        if ( auto path = getenv("HILTI_CXX_INCLUDE_DIRS") ) {
-            for ( auto&& dir : hilti::rt::split(path, ":") ) {
+        if ( auto path = hilti::rt::getenv("HILTI_CXX_INCLUDE_DIRS") ) {
+            for ( auto&& dir : hilti::rt::split(*path, ":") ) {
                 if ( ! dir.empty() ) {
                     args.insert(args.begin(), {"-I", std::string(dir)});
                 }
             }
         }
+
+        if ( auto flags = hilti::rt::getenv("HILTI_CXX_FLAGS") )
+            args.push_back(*flags);
 
         // We explicitly create the object file in the temporary directory.
         // This ensures that we use a temp path for object files created for
