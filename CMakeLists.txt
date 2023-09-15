@@ -136,7 +136,7 @@ if (BISON_ROOT)
         NO_DEFAULT_PATH)
 endif ()
 
-find_package(Python3)
+find_package(Python ${python_minimum_version} COMPONENTS Interpreter)
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -163,7 +163,7 @@ if (APPLE)
     require_version("maccOS" MACOS_FOUND ${CMAKE_SYSTEM_VERSION} "${macos_minimum_version}" true)
 endif ()
 
-require_version("Python" Python3_FOUND Python3_VERSION "${python_minimum_version}" true)
+require_version("Python" Python_FOUND Python_VERSION "${python_minimum_version}" true)
 require_version("Flex" FLEX_FOUND FLEX_VERSION "${flex_minimum_version}" true)
 require_version("Bison" BISON_FOUND BISON_VERSION "${bison_minimum_version}" true)
 
@@ -340,7 +340,7 @@ message(
     "\nBison version:         ${BISON_VERSION}"
     "\nCMake version:         ${CMAKE_VERSION}"
     "\nFlex version:          ${FLEX_VERSION}"
-    "\nPython version:        ${Python3_VERSION}"
+    "\nPython version:        ${Python_VERSION}"
     "\nzlib version:          ${ZLIB_VERSION_STRING}"
     "\n"
     "\n================================================================\n")
