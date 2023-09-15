@@ -1,3 +1,15 @@
+1.9.0-dev.88 | 2023-09-15 10:47:53 +0200
+
+  * Use find_package(Python) with version. (Arne Welzel, Corelight)
+
+    Zeek's configure sets Python_EXECUTABLE has hint, but Spicy is using
+    find_package(Python3) and would only use Python3_EXECUTABLE as hint.
+    This results in Spicy finding a different (the default) Python executable
+    when configuring Zeek with --with-python=/opt/custom/bin/python3.
+
+    Switch Spicy over to use find_package(Python) and add the minimum
+    version so it knows to look for Python3.
+
 1.9.0-dev.86 | 2023-09-14 10:36:25 +0200
 
   * Add support for passing arbitrary C++ compiler flags. (Benjamin Bannier, Corelight)
