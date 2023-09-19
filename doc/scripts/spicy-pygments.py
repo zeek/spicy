@@ -8,6 +8,10 @@ from sphinx.highlighting import lexers
 def setup(app):
     lexers['spicy'] = SpicyLexer()
     lexers['spicy-evt'] = SpicyEvtLexer()
+    return {
+        'parallel_read_safe': True,
+        'parallel_write_safe': True,
+    }
 
 
 class SpicyLexer(RegexLexer):
