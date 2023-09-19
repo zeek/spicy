@@ -83,7 +83,10 @@ html_theme_options = {
 linkcheck_ignore = [
     r'https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/.*',
     r'http://download.zeek.org',
-    r'https://download.zeek.org']
+    r'https://download.zeek.org',
+    # Certificate potentially cannot be validated.
+    r'https://www.icir.org/hilti',
+]
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
