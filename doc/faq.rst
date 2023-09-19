@@ -120,8 +120,13 @@ allow for that. For example, if the grammar parses messages of the
 protocol as ``Message``, the top-level parsing unit given in the EVT
 file needs to be able to parse a list of messages ``Message[]``.
 
-A simple way to accomplish this is to introduce a parser which wraps
-messages of the protocol:
+One way to express this is to introduce a parser which wraps
+messages of the protocol in an :ref:`anonymous field <anonymous_fields>`.
+
+.. warning:: Since in general the number of messages exchanged over a TCP
+  connection is unbounded, an anonymous field should be used. If a named field
+  was used instead the parser would need to store all messages over the
+  connection which would lead to unbounded memory growth.
 
 .. code-block:: spicy
 
@@ -131,5 +136,5 @@ messages of the protocol:
 
    # Parser used e.g., in EVT file.
    public type Messages = unit {
-     messages: Message[];
+     : Message[];
    };

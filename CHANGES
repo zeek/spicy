@@ -1,3 +1,9 @@
+1.9.0-dev.91 | 2023-09-19 11:50:32 +0200
+
+  * Skip validating links to https://www.icir.org/hilti. (Benjamin Bannier, Corelight)
+
+  * Document using anonymous field for extracting TCP messages. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.88 | 2023-09-15 10:47:53 +0200
 
   * Use find_package(Python) with version. (Arne Welzel, Corelight)
