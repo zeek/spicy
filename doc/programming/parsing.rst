@@ -270,6 +270,8 @@ terminating ``NULL``), but never more than 1024 bytes.
 
 ``&max-size`` cannot be combined with ``&size``.
 
+.. _anonymous_fields:
+
 Anonymous Fields
 ^^^^^^^^^^^^^^^^
 
