@@ -1,3 +1,7 @@
+1.9.0-dev.95 | 2023-09-20 12:14:50 +0200
+
+  * Add trait class to bitfield types. (Robin Sommer, Corelight)
+
 1.9.0-dev.93 | 2023-09-20 09:26:29 +0200
 
   * Declare Spicy pygments extension as parallel-safe. [skip CI] (Benjamin Bannier, Corelight)
