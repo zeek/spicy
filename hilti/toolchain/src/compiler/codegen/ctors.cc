@@ -36,7 +36,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
                 values.emplace_back("std::nullopt");
         }
 
-        return fmt("hilti::rt::Bitfield<%s>{std::make_tuple(%s)}", util::join(types, ", "), util::join(values, ", "));
+        return fmt("hilti::rt::Bitfield<%s>{{}, std::make_tuple(%s)}", util::join(types, ", "), util::join(values, ", "));
     }
 
     result_t operator()(const ctor::Bool& n) { return fmt("::hilti::rt::Bool(%s)", n.value() ? "true" : "false"); }

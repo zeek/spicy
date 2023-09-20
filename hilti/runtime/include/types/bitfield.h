@@ -13,18 +13,22 @@
 
 namespace hilti::rt {
 
+namespace trait {
+struct isBitfield {};
+} // namespace trait
+
 /// A bitfield is just a type wrapper around a tuple of the corresponding field
 /// values (including the hidden additional element storing the bitfield's
 /// original integer value). We wrap it so that we can customize the
 /// printing.
 template<typename... Ts>
-struct Bitfield {
+struct Bitfield : public trait::isBitfield {
     std::tuple<std::optional<Ts>...> value;
 };
 
 template<typename... Ts>
 Bitfield<Ts...> make_bitfield(Ts&&... args) {
-    return Bitfield<Ts...>{std::make_tuple(std::forward<Ts>(args)...)};
+    return Bitfield<Ts...>{{}, std::make_tuple(std::forward<Ts>(args)...)};
 }
 
 namespace bitfield {
