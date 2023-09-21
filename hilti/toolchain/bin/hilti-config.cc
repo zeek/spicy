@@ -199,9 +199,7 @@ int main(int argc, char** argv) {
                 join(result, hilti::configuration().runtime_ld_flags_release);
 
             if ( want_dynamic_linking ) {
-#if __APPLE__
-                result.emplace_back("-Wl,-noall_load");
-#else
+#if ! (__APPLE__)
                 result.emplace_back("-Wl,--no-whole-archive");
 #endif
             }
