@@ -416,6 +416,9 @@ using hilti::rt::createTemporaryFile; // NOLINT(misc-unused-using-decls)
 /** Returns the path of the current executable. */
 hilti::rt::filesystem::path currentExecutable();
 
+/** Returns the path relative to parent of the current executable. */
+hilti::rt::filesystem::path fromOrigin(const hilti::rt::filesystem::path &relativePath);
+
 /** Dumps a backtrace to stderr and then aborts execution. */
 [[noreturn]] extern void abort_with_backtrace();
 

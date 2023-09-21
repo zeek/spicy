@@ -87,10 +87,10 @@ void Configuration::init(bool use_build_directory) {
         cxx_launcher = {};
 
     distbase = "${PROJECT_SOURCE_DIR}";
-    install_prefix = "${CMAKE_INSTALL_PREFIX}";
+    install_prefix = util::fromOrigin("../");
     build_directory = "${PROJECT_BINARY_DIR}";
-    lib_directory = (uses_build_directory ? "${PROJECT_BINARY_DIR}/lib" : "${CMAKE_INSTALL_FULL_LIBDIR}");
-    hiltic = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/hiltic" : "${CMAKE_INSTALL_PREFIX}/bin/hiltic");
+    lib_directory = (uses_build_directory ? "${PROJECT_BINARY_DIR}/lib" : util::fromOrigin("../lib"));
+    hiltic = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/hiltic" : util::fromOrigin("../bin/hiltic"));
     version_number = PROJECT_VERSION_NUMBER;
     version_string = PROJECT_VERSION_STRING_SHORT;
     version_string_long = PROJECT_VERSION_STRING_LONG;

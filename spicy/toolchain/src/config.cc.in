@@ -94,8 +94,10 @@ void Configuration::init(bool use_build_directory) {
     uses_build_directory = use_build_directory;
     std::string installation_tag = (use_build_directory ? "BUILD" : "INSTALL");
 
-    spicyc = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/spicyc" : "${CMAKE_INSTALL_PREFIX}/bin/spicyc");
-
+    spicyc = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/spicyc" : hilti::util::fromOrigin("../bin/spicyc"));
+    if (!hilti::rt::filesystem::exists(spicyc)) {
+      spicyc = "${CMAKE_INSTALL_PREFIX}/bin/spicyc";
+    }
     std::vector<std::string> library_paths;
 
     if ( auto path = std::getenv("SPICY_PATH") ) {

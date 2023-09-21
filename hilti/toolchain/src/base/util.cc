@@ -178,6 +178,11 @@ hilti::rt::filesystem::path util::currentExecutable() {
     return normalizePath(exe);
 }
 
+
+hilti::rt::filesystem::path util::fromOrigin(const hilti::rt::filesystem::path &relativePath) {
+  return normalizePath(util::currentExecutable().parent_path() / relativePath);
+}
+
 void util::abort_with_backtrace() {
     std::cerr << "\n--- Aborting" << std::endl;
     auto bt = hilti::rt::Backtrace().backtrace();
