@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <sys/errno.h>
+#include <sys/resource.h>
 #include <unistd.h>
 
 #include <array>
@@ -587,6 +589,29 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
         return errors.front();
 
     return Nothing();
+}
+
+JIT::JobRunner::JobRunner() {
+    // reproc refuses to run on setups with a too high rlimit for the number of open files,
+    // https://github.com/DaanDeMeyer/reproc/blob/main/reproc/src/process.posix.c#L103.
+    // Since this leads to very intransparent errors try to set a lower limit
+    // if we are on such a machine so things mostly just work.
+    struct ::rlimit limit;
+    if ( ::getrlimit(RLIMIT_NOFILE, &limit) != 0 )
+        logger().internalError(
+            util::fmt("cannot get limit for number of open files ('ulimit -n'): %s", ::strerror(errno)));
+
+    constexpr auto REPROC_MAX_FD_LIMIT = 1024 * 1024;
+
+    if ( limit.rlim_cur >= REPROC_MAX_FD_LIMIT ) {
+        limit.rlim_cur = REPROC_MAX_FD_LIMIT;
+        if ( ::setrlimit(RLIMIT_NOFILE, &limit) != 0 ) {
+            logger().internalError(
+                util::fmt("cannot set limit for number of open files ('ulimit -n %d'), please set it in your "
+                          "environment: %s",
+                          REPROC_MAX_FD_LIMIT, ::strerror(errno)));
+        }
+    }
 }
 
 void JIT::add(CxxCode d) {

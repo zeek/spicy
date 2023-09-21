@@ -200,6 +200,8 @@ private:
     };
 
     struct JobRunner {
+        JobRunner();
+
         using JobID = uint64_t;
 
         Result<JobID> _scheduleJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args);
