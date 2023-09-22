@@ -1,3 +1,9 @@
+1.9.0-dev.109 | 2023-09-22 16:35:02 +0200
+
+  * Add explicit dependency for local pre-commit hook. (Benjamin Bannier, Corelight)
+
+  * Fix file selection in clang-format pre-commit hook. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.106 | 2023-09-22 12:19:21 +0200
 
   * GH-1533: Fix access to anonymous bitfield element through a constant value. (Robin Sommer, Corelight)

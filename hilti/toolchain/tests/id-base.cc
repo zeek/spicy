@@ -8,7 +8,6 @@
 #include <hilti/base/id-base.h>
 
 
-
 using namespace hilti;
 
 std::string normalize_id(std::string id) { return id; }

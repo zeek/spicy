@@ -263,8 +263,8 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
             if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
                 auto access_field =
                     operator_::unit::MemberConst::Operator().instantiate({o.op0(),
-                                                                             hilti::expression::Member(*field_id)},
-                                                                            o.meta());
+                                                                          hilti::expression::Member(*field_id)},
+                                                                         o.meta());
                 auto access_bits =
                     bitfield::Member::Operator().instantiate({std::move(access_field), o.op1()}, o.meta());
 

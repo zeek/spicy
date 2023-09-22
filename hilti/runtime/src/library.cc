@@ -15,8 +15,7 @@
 using namespace hilti::rt;
 
 std::string hilti::rt::library::Version::toJSON() const {
-    auto version =
-        nlohmann::json{{"magic", magic}, {"hilti_version", hilti_version}, {"debug", debug}};
+    auto version = nlohmann::json{{"magic", magic}, {"hilti_version", hilti_version}, {"debug", debug}};
     std::stringstream json;
     json << version;
     return json.str();

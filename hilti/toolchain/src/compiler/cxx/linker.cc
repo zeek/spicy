@@ -61,8 +61,10 @@ void cxx::Linker::finalize() {
 
     auto cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
 
-    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_library_version = R\"(%s)\";", cxx_namespace, version.toJSON()));
-    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();", cxx_namespace));
+    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_library_version = R\"(%s)\";", cxx_namespace,
+                 version.toJSON()));
+    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();",
+                 cxx_namespace));
 
     // Create a scope string that's likely to be unique to this linker module.
     std::size_t hash = 0;
