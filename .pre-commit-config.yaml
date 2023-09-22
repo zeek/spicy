@@ -27,9 +27,11 @@ repos:
     pass_filenames: false
     stages: ["commit"]
 
-  - id: stray_baselines
+  - id: stray-baselines
     name: Check for stray BTest baselines
     entry: ./tests/Scripts/stray_baselines.py
+    additional_dependencies:
+      - btest
     language: python
     pass_filenames: false
     stages: ["commit"]
