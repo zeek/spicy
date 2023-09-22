@@ -1,0 +1,21 @@
+# @TEST-EXEC:  printf '\377' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Test access to element of anonymous bitfield through a constant unit value. Regression test for #1533.
+
+module foo;
+
+type X = unit {
+    : bitfield(8) {
+        a: 0..7;
+    };
+};
+
+type Y = unit(x: X) {
+    on %init { print x.a; }
+};
+
+public type Z = unit {
+    x: X;
+    y: Y(self.x);
+};

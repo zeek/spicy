@@ -1,3 +1,7 @@
+1.9.0-dev.106 | 2023-09-22 12:19:21 +0200
+
+  * GH-1533: Fix access to anonymous bitfield element through a constant value. (Robin Sommer, Corelight)
+
 1.9.0-dev.104 | 2023-09-22 11:04:19 +0200
 
   * Artificially limit the number of open files. (Benjamin Bannier, Corelight)
