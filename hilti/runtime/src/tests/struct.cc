@@ -4,9 +4,9 @@
 
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/logging.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/struct.h>
-#include <hilti/rt/logging.h>
 
 using namespace hilti::rt;
 

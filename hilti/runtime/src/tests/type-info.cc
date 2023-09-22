@@ -61,7 +61,8 @@ const hilti::rt::TypeInfo __ti_Test_Y =
     {"Test::Y", "Test::Y",
      new hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
          {hilti::rt::type_info::struct_::Field{"b", &hilti::rt::type_info::bool_, offsetof(Test::Y, b), false, false},
-          hilti::rt::type_info::struct_::Field{"r", &hilti::rt::type_info::real, offsetof(Test::Y, r), false, false}}))};
+          hilti::rt::type_info::struct_::Field{"r", &hilti::rt::type_info::real, offsetof(Test::Y, r), false,
+                                               false}}))};
 } // namespace
 } // namespace __hlt::type_info
 
@@ -128,8 +129,8 @@ TEST_CASE("internal fields") {
                          new type_info::Struct(
                              {type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false, false},
                               type_info::struct_::Field{"f2", &type_info::string, offsetof(A, f2), false, false},
-                              type_info::struct_::Field{"__internal", &type_info::bool_, offsetof(A, __internal),
-                                                        true, false}})};
+                              type_info::struct_::Field{"__internal", &type_info::bool_, offsetof(A, __internal), true,
+                                                        false}})};
 
     auto sx = StrongReference<A>({42, "foo", true});
     auto p = type_info::value::Parent(sx);

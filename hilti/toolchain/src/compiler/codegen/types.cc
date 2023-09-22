@@ -380,8 +380,9 @@ struct VisitorStorage : hilti::visitor::PreOrder<CxxTypes, VisitorStorage> {
     result_t operator()(const type::Bool& n) { return CxxTypes{.base_type = "::hilti::rt::Bool"}; }
 
     result_t operator()(const type::Bitfield& n) {
-        auto x = node::transform(n.bits(true),
-                                 [this](const auto& b) { return cg->compile(b.itemType(), codegen::TypeUsage::Storage); });
+        auto x = node::transform(n.bits(true), [this](const auto& b) {
+            return cg->compile(b.itemType(), codegen::TypeUsage::Storage);
+        });
         auto t = fmt("hilti::rt::Bitfield<%s>", util::join(x, ", "));
         return CxxTypes{.base_type = t};
     }
@@ -818,9 +819,9 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
         auto ttype = cg->compile(p.node.as<Type>(), codegen::TypeUsage::Storage);
 
         for ( const auto&& [i, b] : util::enumerate(n.bits()) )
-            elems.push_back(
-                fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, hilti::rt::bitfield::elementOffset<%s, %d>() }",
-                    b.id(), cg->typeInfo(b.itemType()), ttype, i));
+            elems.push_back(fmt(
+                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, hilti::rt::bitfield::elementOffset<%s, %d>() }",
+                b.id(), cg->typeInfo(b.itemType()), ttype, i));
 
         return fmt("::hilti::rt::type_info::Bitfield(std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
                    util::join(elems, ", "));
@@ -902,8 +903,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder<cxx::Expression, Visito
                 cxx_type_id = *x;
 
             fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s), %s, %s%s }",
-                                 cxx::ID(f.id()), cg->typeInfo(f.type()), cxx_type_id, cxx::ID(f.id()), f.isInternal(), f.isAnonymous(),
-                                 accessor));
+                                 cxx::ID(f.id()), cg->typeInfo(f.type()), cxx_type_id, cxx::ID(f.id()), f.isInternal(),
+                                 f.isAnonymous(), accessor));
         }
 
         return fmt("::hilti::rt::type_info::Struct(std::vector<::hilti::rt::type_info::struct_::Field>({%s}))",

@@ -71,7 +71,8 @@ TEST_CASE("constructs from an `::in_addr4`") { CHECK_EQ(std::string(Address(*mak
 
 TEST_CASE("constructs from an `::in6_addr`") {
     std::string addr = std::string(Address(*make_in6_addr("::4996:2d2:0:0:4996:2d2")));
-    auto is_correct = (addr == "::4996:2d2:0:0:4996:2d2" || addr == "0:0:4996:2d2::4996:2d2"); // Alpine has been seen to return the latter
+    auto is_correct = (addr == "::4996:2d2:0:0:4996:2d2" ||
+                       addr == "0:0:4996:2d2::4996:2d2"); // Alpine has been seen to return the latter
 
     CHECK(is_correct);
 }

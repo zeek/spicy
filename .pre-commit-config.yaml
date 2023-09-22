@@ -38,7 +38,7 @@ repos:
   rev: 'v16.0.3'
   hooks:
   - id: clang-format
-    types: ["c", "c++"]
+    types_or: ["c", "c++"]
     stages: ["commit"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks

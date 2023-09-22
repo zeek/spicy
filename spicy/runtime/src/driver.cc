@@ -68,8 +68,8 @@ void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& dat
     auto max_stack_size = pretty_print_number(ru.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(ru.cached_fibers);
 
-    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap, num_stacks,
-                     cached_stacks, max_stacks, max_stack_size));
+    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
+                     num_stacks, cached_stacks, max_stacks, max_stack_size));
 }
 
 void Driver::_debugStats(size_t current_flows, size_t current_connections) {
@@ -88,8 +88,8 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
     auto max_stack_size = pretty_print_number(stats.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(stats.cached_fibers);
 
-    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap, num_stacks,
-                     cached_stacks, max_stacks, max_stack_size));
+    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
+                     num_stacks, cached_stacks, max_stacks, max_stack_size));
 }
 
 Result<Nothing> Driver::listParsers(std::ostream& out) {
@@ -174,7 +174,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
 
         in.read(buffer, static_cast<std::streamsize>(len));
 
-                {
+        {
             auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/input/%s", parser.name));
 
             if ( auto n = in.gcount() )
