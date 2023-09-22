@@ -252,6 +252,29 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
         return {};
     }
 
+    void operator()(const operator_::unit::MemberConst& o, position_t p) {
+        auto unit = o.op0().type().tryAs<type::Unit>();
+        auto id = o.op1().tryAs<hilti::expression::Member>()->id();
+
+        if ( unit && id && ! unit->itemByName(id) ) {
+            // See if we got an anonymous bitfield with a member of that
+            // name. If so, rewrite the access to transparently refer to the
+            // member through the field's internal name.
+            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
+                auto access_field =
+                    operator_::unit::MemberConst::Operator().instantiate({o.op0(),
+                                                                             hilti::expression::Member(*field_id)},
+                                                                            o.meta());
+                auto access_bits =
+                    bitfield::Member::Operator().instantiate({std::move(access_field), o.op1()}, o.meta());
+
+                logChange(p.node, access_bits);
+                p.node = access_bits;
+                modified = true;
+            }
+        }
+    }
+
     void operator()(const operator_::unit::MemberNonConst& o, position_t p) {
         auto unit = o.op0().type().tryAs<type::Unit>();
         auto id = o.op1().tryAs<hilti::expression::Member>()->id();
