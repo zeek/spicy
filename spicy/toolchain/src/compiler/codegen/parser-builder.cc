@@ -60,14 +60,21 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
       needs_look_ahead(grammar.needsLookAhead()),
       self(hilti::expression::UnresolvedID(ID("self"))),
       data(std::move(data)),
+      begin(builder::optional(type::stream::Iterator())),
       cur(std::move(cur)) {}
 
 void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
-    builder->addCall("spicy_rt::printParserState", {builder::string(unit_id), data, cur, lahead, lahead_end,
+    builder->addCall("spicy_rt::printParserState", {builder::string(unit_id), data, begin, cur, lahead, lahead_end,
                                                     builder::string(to_string(literal_mode)), trim, error});
 }
 
 namespace spicy::detail::codegen {
+
+hilti::Expression featureConstant(const hilti::ID& typeID, std::string_view feature) {
+    const auto& ns = typeID.namespace_();
+    const auto id = hilti::util::replace(typeID, ":", "@");
+    return builder::id(ID(hilti::rt::fmt("%s::__feat%%%s%%%s", ns, id, feature)));
+}
 
 struct ProductionVisitor
     : public hilti::detail::visitor::Visitor<void, ProductionVisitor, Production, hilti::detail::visitor::Order::Pre> {
@@ -255,8 +262,12 @@ struct ProductionVisitor
                         builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
                     }
 
-                    if ( unit )
+                    if ( unit ) {
+                        auto pstate = state();
+                        pstate.begin = builder()->addTmp("begin", builder::optional(builder::begin(state().cur)));
+                        pushState(std::move(pstate));
                         pb->initializeUnit(p.location());
+                    }
                 };
 
                 auto build_parse_stage1 = [&]() {
@@ -267,6 +278,7 @@ struct ProductionVisitor
                     auto pstate = state();
                     pstate.self = hilti::expression::UnresolvedID(ID("self"));
                     pstate.data = builder::id("__data");
+                    pstate.begin = builder::id("__begin");
                     pstate.cur = builder::id("__cur");
                     pstate.ncur = {};
                     pstate.trim = builder::id("__trim");
@@ -296,15 +308,13 @@ struct ProductionVisitor
                     pushState(std::move(pstate));
 
                     // Disable trimming for random-access units.
-                    const auto id = hilti::util::replace(*unit->id(), ":", "@");
-                    pushBuilder(builder()->addIf(
-                                    builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "uses_random_access")))),
+                    pushBuilder(builder()->addIf(featureConstant(*unit->id(), "uses_random_access")),
                                 [&]() { builder()->addAssign(state().trim, builder::bool_(false)); });
 
                     build_parse_stage1_logic();
 
                     // Call stage 2.
-                    std::vector<Expression> args = {state().data,   state().cur,        state().trim,
+                    std::vector<Expression> args = {state().data,   state().begin,      state().cur,  state().trim,
                                                     state().lahead, state().lahead_end, state().error};
 
                     if ( addl_param )
@@ -326,7 +336,8 @@ struct ProductionVisitor
                             builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
                                                 builder::id("filtered"));
                             args2[0] = builder::id("filtered_data");
-                            args2[1] = builder::deref(args2[0]);
+                            args2[1] = builder::optional(type::stream::Iterator());
+                            args2[2] = builder::deref(args2[0]);
                             builder()->addExpression(builder::memberCall(state().self, id_stage2, args2));
 
                             // Assume the filter consumed the full input.
@@ -366,8 +377,10 @@ struct ProductionVisitor
                         hilti::logger().internalError(
                             fmt("ParserBuilder: non-atomic production %s not handled (%s)", p.typename_(), p));
 
-                    if ( unit )
+                    if ( unit ) {
                         builder()->addCall("hilti::debugDedent", {builder::string("spicy")});
+                        popState();
+                    }
 
                     auto result = builder::tuple({
                         state().cur,
@@ -384,6 +397,7 @@ struct ProductionVisitor
                     auto pstate = state();
                     pstate.self = hilti::expression::UnresolvedID(ID("self"));
                     pstate.data = builder::id("__data");
+                    pstate.begin = builder::id("__begin");
                     pstate.cur = builder::id("__cur");
                     pstate.ncur = {};
                     pstate.trim = builder::id("__trim");
@@ -449,8 +463,13 @@ struct ProductionVisitor
                 return id_stage1;
             });
 
-        std::vector<Expression> args = {state().data,   state().cur,        state().trim,
-                                        state().lahead, state().lahead_end, state().error};
+        std::vector<Expression> args = {state().data,
+                                        (unit ? builder::optional(type::stream::Iterator()) : state().begin),
+                                        state().cur,
+                                        state().trim,
+                                        state().lahead,
+                                        state().lahead_end,
+                                        state().error};
 
         if ( ! unit && p.meta().field() )
             args.push_back(destination());
@@ -540,8 +559,9 @@ struct ProductionVisitor
         else if ( auto unit = p.tryAs<production::Unit>(); unit && ! top_level ) {
             // Parsing a different unit type. We call the other unit's parse
             // function, but don't have to create it here.
-            std::vector<Expression> args = {pb->state().data,   pb->state().cur,        pb->state().trim,
-                                            pb->state().lahead, pb->state().lahead_end, pb->state().error};
+            std::vector<Expression> args = {pb->state().data, pb->state().begin,  pb->state().cur,
+                                            pb->state().trim, pb->state().lahead, pb->state().lahead_end,
+                                            pb->state().error};
 
             Location location;
             hilti::node::Range<Expression> type_args;
@@ -789,6 +809,7 @@ struct ProductionVisitor
              AttributeSet::find(field->attributes(), "&parse-at") ) {
             ncur = {};
             popState();
+            pb->saveParsePosition();
         }
 
         if ( ncur )
@@ -1221,12 +1242,14 @@ struct ProductionVisitor
         pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
 
         auto tmp = builder()->addTmp("parse_from", type::ValueReference(type::Stream()), value);
-        pstate.data = tmp;
-        pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
-        pstate.ncur = {};
         builder()->addMemberCall(tmp, "freeze", {});
 
+        pstate.data = tmp;
+        pstate.begin = builder()->addTmp("parse_begin", builder::begin(builder::deref(tmp)));
+        pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
+        pstate.ncur = {};
         pushState(std::move(pstate));
+        pb->saveParsePosition();
     }
 
     // Redirects input to be read from given stream position next.
@@ -1238,9 +1261,11 @@ struct ProductionVisitor
         pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
 
         auto cur = builder::memberCall(state().cur, "advance", {position});
+        pstate.begin = builder()->addTmp("parse_begin", position);
         pstate.cur = builder()->addTmp("parse_cur", cur);
         pstate.ncur = {};
         pushState(std::move(pstate));
+        pb->saveParsePosition();
     }
 
     // Start sync and trial mode.
@@ -1812,6 +1837,7 @@ hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type:
 
     auto params = std::vector<type::function::Parameter>{
         builder::parameter("__data", type::ValueReference(type::Stream()), declaration::parameter::Kind::InOut),
+        builder::parameter("__begin", type::Optional(type::stream::Iterator()), declaration::parameter::Kind::Copy),
         builder::parameter("__cur", type::stream::View(), declaration::parameter::Kind::Copy),
         builder::parameter("__trim", type::Bool(), declaration::parameter::Kind::Copy),
         builder::parameter("__lah", look_ahead::Type, declaration::parameter::Kind::Copy),
@@ -2266,13 +2292,7 @@ void ParserBuilder::trimInput(bool force) {
 }
 
 void ParserBuilder::initializeUnit(const Location& l) {
-    const auto& unit = state().unit.get();
-
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
-        // Save the current input offset for the raw access methods.
-        builder()->addAssign(builder::member(state().self, ID("__begin")), builder::begin(state().cur));
-        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
-    });
+    saveParsePosition();
 
     beforeHook();
     builder()->addMemberCall(state().self, "__on_0x25_init", {}, l);
@@ -2327,10 +2347,8 @@ Expression _filters(const ParserState& state) {
     if ( ! typeID )
         return member;
 
-    const auto id = hilti::util::replace(*typeID, ":", "@");
-    const auto flag = builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, "supports_filters")));
-
-    return builder::ternary(flag, std::move(member), builder::strong_reference(builder::typeByID("spicy_rt::Filters")));
+    return builder::ternary(featureConstant(*typeID, "supports_filters"), std::move(member),
+                            builder::strong_reference(builder::typeByID("spicy_rt::Filters")));
 }
 
 Expression ParserBuilder::waitForInputOrEod() {
@@ -2431,6 +2449,7 @@ void ParserBuilder::afterHook() {
 void ParserBuilder::saveParsePosition() {
     const auto& unit = state().unit.get();
     guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+        builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin);
         builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
     });
 }
@@ -2480,10 +2499,8 @@ void ParserBuilder::guardFeatureCode(const type::Unit& unit, const std::vector<s
         return;
     }
 
-    const auto id = hilti::util::replace(*typeID, ":", "@");
-    auto flags = hilti::util::transform(features, [&](const auto& feature) {
-        return builder::id(ID(hilti::rt::fmt("__feat%%%s%%%s", id, feature)));
-    });
+    auto flags =
+        hilti::util::transform(features, [&](const auto& feature) { return featureConstant(*typeID, feature); });
 
     auto cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
                                 [](const auto& a, const auto& b) { return hilti::expression::LogicalOr(a, b); });

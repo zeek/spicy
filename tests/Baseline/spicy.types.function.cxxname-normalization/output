@@ -20,7 +20,7 @@
 [debug/normalizer] &cxxname="hilti::rt::integer::BitOrder" -> &cxxname="::hilti::rt::integer::BitOrder" (<...>/spicy_rt.hlt:71:44)
 [debug/normalizer] &cxxname="spicy::rt::Direction" -> &cxxname="::spicy::rt::Direction" (<...>/spicy_rt.hlt:72:62)
 [debug/normalizer] &cxxname="spicy::rt::detail::registerParser" -> &cxxname="::spicy::rt::detail::registerParser" (<...>/spicy_rt.hlt:77:96)
-[debug/normalizer] &cxxname="spicy::rt::detail::printParserState" -> &cxxname="::spicy::rt::detail::printParserState" (<...>/spicy_rt.hlt:78:214)
+[debug/normalizer] &cxxname="spicy::rt::detail::printParserState" -> &cxxname="::spicy::rt::detail::printParserState" (<...>/spicy_rt.hlt:78:249)
 [debug/normalizer] &cxxname="spicy::rt::detail::waitForInputOrEod" -> &cxxname="::spicy::rt::detail::waitForInputOrEod" (<...>/spicy_rt.hlt:80:122)
 [debug/normalizer] &cxxname="spicy::rt::detail::waitForInputOrEod" -> &cxxname="::spicy::rt::detail::waitForInputOrEod" (<...>/spicy_rt.hlt:81:134)
 [debug/normalizer] &cxxname="spicy::rt::detail::waitForInput" -> &cxxname="::spicy::rt::detail::waitForInput" (<...>/spicy_rt.hlt:82:152)
