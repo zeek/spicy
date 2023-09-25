@@ -570,7 +570,7 @@ std::string to_string(const bytes::DecodeErrorStrategy& x, adl::tag /*unused*/);
 // Disable JSON-ification of `Bytes`.
 //
 // As of nlohmann-json-0e694b4060ed55df980eaaebc2398b0ff24530d4 the JSON library misdetects the serialization for
-// `Bytes` on some platforms. We see this on platfoms not providing a C++17-compliant (e.g., in Cirrus' `no-toolchain`
+// `Bytes` on some platforms. We see this on platforms not providing a C++17-compliant (e.g., in Cirrus' `no-toolchain`
 // task which uses gcc-9.3.0) where code in JSON wants to check whether `Bytes` can be converted to a
 // `std::filesystem::path`, but then runs into compiler issues.
 namespace nlohmann {

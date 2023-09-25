@@ -37,7 +37,7 @@ repos:
     stages: ["commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'v16.0.3'
+  rev: 'v16.0.6'
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
@@ -86,7 +86,7 @@ repos:
     stages: ["commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.14.8
+  rev: v1.16.13
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*'

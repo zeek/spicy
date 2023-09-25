@@ -379,7 +379,7 @@ for ns in sorted(keys):
     # only in typing issues that we don't track in the documentation. An
     # example is the vector's index operators for constant and non-constant
     # instances, respectively. Other duplications are coming from joining
-    # namspaces for integers.
+    # namespaces for integers.
     already_recorded: Set[str] = set()
 
     def print_unique(s):

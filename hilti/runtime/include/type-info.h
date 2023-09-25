@@ -77,7 +77,7 @@ private:
  *
  * Value instances are tied to a `Parent` instance. The value's data will
  * remain accessible only as long as the parent stays around. If that goes
- * away, deferencing will throw an error.
+ * away, dereferencing will throw an error.
  */
 class Value {
 public:
@@ -635,7 +635,7 @@ public:
     const TypeInfo* keyType() const { return _ktype; }
 
     /**
-     * Returns the type of the valye of the elements, as passed into the constructor.
+     * Returns the type of the value of the elements, as passed into the constructor.
      */
     const TypeInfo* valueType() const { return _vtype; }
 
@@ -742,7 +742,7 @@ public:
     const TypeInfo* keyType() const { return _ktype; }
 
     /**
-     * Returns the type of the valye of the elements, as passed into the constructor.
+     * Returns the type of the value of the elements, as passed into the constructor.
      */
     const TypeInfo* valueType() const { return _vtype; }
 

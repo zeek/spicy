@@ -23,7 +23,7 @@ namespace hilti::detail::cxx {
  * requires knowledge across all compilation units. That knowledge is
  * included with each compiled C++ code unit as JSON data inside comments.
  * The linker extracts all this information and then generates an additional
- * C++ code unit with corresponding globa code.
+ * C++ code unit with corresponding global code.
  */
 class Linker {
 public:
