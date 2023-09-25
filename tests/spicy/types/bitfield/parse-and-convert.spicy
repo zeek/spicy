@@ -26,6 +26,10 @@ public type Y = unit {
     c: bitfield(8) {
         c: 0..7 &convert=FOO3;
     };
+
+    d: bitfield(8) {
+        d: 0..7 &convert="foo";
+    };
 };
 
 function FOO(): string { return "foo"; }

@@ -12,4 +12,7 @@ mini::Y {
   c: {
     c: foo
   }
+  d: {
+    d: foo
+  }
 }

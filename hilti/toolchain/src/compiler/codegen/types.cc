@@ -1137,7 +1137,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const hilti::Type& t) {
                 logger().internalError(fmt("codegen: type %s does not have a dynamic type info visitor", t), t);
 
             auto id_init = (t.typeID() ? fmt("\"%s\"", *t.typeID()) : std::string("{}"));
-            auto init = fmt("{ %s, \"%s\", new %s }", id_init, display.str(), *x);
+            auto init = fmt("{ %s, \"%s\", new %s }", id_init, util::escapeBytesForCxx(display.str()), *x);
 
             ti.declaration =
                 cxx::declaration::Constant{.id = tid, .type = "::hilti::rt::TypeInfo", .init = init, .linkage = ""};
