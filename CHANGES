@@ -1,3 +1,7 @@
+1.9.0-dev.111 | 2023-09-26 16:05:25 +0200
+
+  * Add GH dependabot config. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.109 | 2023-09-22 16:35:02 +0200
 
   * Add explicit dependency for local pre-commit hook. (Benjamin Bannier, Corelight)
