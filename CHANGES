@@ -1,3 +1,11 @@
+1.9.0-dev.123 | 2023-09-27 09:41:04 +0200
+
+  * Escape rendered bitfield fields. (Benjamin Bannier, Corelight)
+
+  * Enforce that `Bitfield`s always own their fields. (Benjamin Bannier, Corelight)
+
+  * Fix typos. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.119 | 2023-09-27 09:39:35 +0200
 
   * GH-1542: GH-1547: Bump dependencies. (Benjamin Bannier, Corelight)
@@ -3793,7 +3801,7 @@ x:
   * Use sequential JIT mode in CI to save memory. (Benjamin Bannier,
     Corelight)
 
-  * GH-582: Add master CI task for macOS Big Sur. (Benjamin Bannier,
+  * GH-582: Add master CI task for macOS Big Sure. (Benjamin Bannier,
     Corelight)
 
   * GH-670: Remove pre-commit hooks which require external tool
@@ -5276,7 +5284,7 @@ x:
 
     This comes with a couple of grammar changes to avoid ambiguitues:
 
-        - "new X" no longer allowes full expressions for X, just values or
+        - "new X" no longer allows full expressions for X, just values or
           identifiers.
 
         - Switch cases that use look-ahead now also need to be introduced

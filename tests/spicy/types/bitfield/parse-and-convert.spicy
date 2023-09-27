@@ -1,14 +1,37 @@
-# @TEST-EXEC:  printf '\377\377\377\377' | spicy-driver %INPUT >output
-# @TEST-EXEC:  btest-diff output
+# @TEST-EXEC: spicyc -dj %INPUT -o mini.hlto >>output
+# @TEST-EXEC: printf '\377\377\377\377' | spicy-dump -p mini::X mini.hlto >>output
+# @TEST-EXEC: printf '\377\377\377\377' | spicy-dump -p mini::Y mini.hlto >>output
+# @TEST-EXEC: btest-diff output
 
-module Mini;
+module mini;
 
-public type test = unit {
+public type X = unit {
      f: bitfield(32) {
          x1: 0;
          x2: 1..2;
          x3: 3..4;
      } &convert=$$.x2;
-
-     on %done { print self; }
 };
+
+# Regression test for #1539.
+public type Y = unit {
+    a: bitfield(8) {
+        a: 0..7 &convert=FOO();
+    };
+
+    b: bitfield(8) {
+        b: 0..7 &convert=FOO2;
+    };
+
+    c: bitfield(8) {
+        c: 0..7 &convert=FOO3;
+    };
+
+    d: bitfield(8) {
+        d: 0..7 &convert="foo";
+    };
+};
+
+function FOO(): string { return "foo"; }
+const FOO2 = "foo";
+global FOO3 = "foo";

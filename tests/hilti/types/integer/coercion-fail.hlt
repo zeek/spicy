@@ -40,7 +40,7 @@ global real from_u64_1p53 = 0x20000000000001;
 global real from_i64_1p53 = -0x20000000000001;
 
 global int<32> i = 32;
-# This fails, we don't allow converson to boolean outside of specific language contexts.
+# This fails, we don't allow conversion to boolean outside of specific language contexts.
 global bool k = i;
 
 }

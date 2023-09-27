@@ -312,7 +312,7 @@ public:
     void trim(const SafeConstIterator& i);
     void trim(const UnsafeConstIterator& i);
 
-    // Turns the chain into invalidated state, whill releases all chunks and
+    // Turns the chain into invalidated state, will releases all chunks and
     // will let attempts to dereference any still existing iterators fail.
     void invalidate() {
         _state = State::Invalid;

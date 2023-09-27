@@ -26,9 +26,12 @@ struct Bitfield : public trait::isBitfield {
     std::tuple<std::optional<Ts>...> value;
 };
 
+/// Construct a Bitfield.
+///
+/// Since a bitfield always owns its values this takes all fields by value.
 template<typename... Ts>
-Bitfield<Ts...> make_bitfield(Ts&&... args) {
-    return Bitfield<Ts...>{{}, std::make_tuple(std::forward<Ts>(args)...)};
+Bitfield<Ts...> make_bitfield(Ts... args) {
+    return Bitfield<Ts...>{{}, std::make_tuple(std::move(args)...)};
 }
 
 namespace bitfield {

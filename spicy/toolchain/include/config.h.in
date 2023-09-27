@@ -62,7 +62,7 @@ struct Configuration {
 
     /**
      * Augments the global HILTI configuration with Spicy's options. For
-     * condfiguration options that are offered separately by both HILTI and
+     * configuration options that are offered separately by both HILTI and
      * Spicy (e.g., the compiler flags), this modifies the global HILTI
      * configuration by merging in the corresponding Spicy values. This all
      * reconfigures this Spicy configuration's paths based on the HILTI
