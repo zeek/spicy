@@ -1,3 +1,7 @@
+1.9.0-dev.119 | 2023-09-27 09:39:35 +0200
+
+  * GH-1542: GH-1547: Bump dependencies. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.111 | 2023-09-26 16:05:25 +0200
 
   * Add GH dependabot config. (Benjamin Bannier, Corelight)
