@@ -9,6 +9,15 @@ using namespace hilti::rt;
 using namespace hilti::rt::stream;
 using namespace hilti::rt::stream::detail;
 
+Chunk::~Chunk() {
+    // The default dtr would turn deletion the list behind `_next` into a
+    // recursive list traversal. For very long lists this could lead to stack
+    // overflows. Traverse the list in a loop instead. This is adapted from
+    // https://stackoverflow.com/questions/35535312/stack-overflow-with-unique-ptr-linked-list#answer-35535907.
+    for ( auto current = std::move(_next); current; current = std::move(current->_next) )
+        ; // Nothing.
+}
+
 Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
     if ( d.size() <= SmallBufferSize ) {
         std::array<Byte, SmallBufferSize> a{};

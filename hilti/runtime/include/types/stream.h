@@ -118,7 +118,7 @@ public:
         return *this;
     }
 
-    ~Chunk() = default;
+    ~Chunk();
 
     Offset offset() const { return _offset; }
     Offset endOffset() const { return _offset + size(); }
