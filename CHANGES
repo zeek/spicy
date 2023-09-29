@@ -1,3 +1,7 @@
+1.9.0-dev.128 | 2023-09-29 13:27:28 +0200
+
+  * GH-1550: Replace recursive deletion with explicit loop to avoid stack overflow. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.126 | 2023-09-29 13:26:53 +0200
 
   * GH-1549: Add feature guards to accesses of a unit's `__position`. (Benjamin Bannier, Corelight)
