@@ -738,6 +738,33 @@ TEST_CASE("Trim to beyond end") {
     CHECK_EQ(x.view().end().offset(), 10);
 }
 
+TEST_CASE("Trim noop") {
+    auto x = Stream("1"_b);
+    auto i = x.begin(); // Into first chunk.
+
+    x.append("2"_b);
+    REQUIRE_EQ(x.numberOfChunks(), 2);
+
+    auto j = x.begin() + x.size() - 1; // Into second chunk.
+
+    x.trim(j); // Drops the first chunk.
+    CHECK_EQ(x.numberOfChunks(), 1);
+
+    // Trimming away data before the range of the stream should be a noop.
+    x.trim(i);
+    CHECK_EQ(x.numberOfChunks(), 1);
+}
+
+TEST_CASE("Trim empty") {
+    auto x = Stream();
+    REQUIRE_EQ(x.numberOfChunks(), 0);
+
+    auto i = x.begin();
+
+    x.trim(i);
+    CHECK_EQ(x.numberOfChunks(), 0);
+}
+
 TEST_CASE("Block iteration") {
     auto content = [](auto b, auto s) -> bool { return memcmp(b->start, s, strlen(s)) == 0; };
 
