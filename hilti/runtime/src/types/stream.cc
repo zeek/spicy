@@ -4,6 +4,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
+#include <hilti/rt/util.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::stream;
@@ -96,11 +97,19 @@ void Chain::append(Chain&& other) {
 void Chain::trim(const Offset& offset) {
     _ensureValid();
 
+    if ( ! _head || offset < _head->offset() )
+        // Noop: chain is empty, or offset is before the head of chain; we do
+        // not need to trim anything.
+        return;
+
     // We search the first chunk that's containing the desired position,
     // deleting all the ones we pass on the way. We trim the one that
     // contains the position.
     while ( _head ) {
         if ( offset >= _head->endOffset() ) {
+            // Chain should be in order and we progress forward in offset.
+            assert(! _head->next() || _head->offset() < _head->next()->offset());
+
             // Delete chunk.
             _head = std::move(_head->_next);
             if ( ! _head || _head->isLast() )
@@ -112,6 +121,10 @@ void Chain::trim(const Offset& offset) {
             assert(_head->offset() == offset);
             break;
         }
+
+        else
+            // Other offsets are already rejected before entering loop.
+            cannot_be_reached();
     }
 
     _head_offset = offset;
