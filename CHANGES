@@ -1,3 +1,23 @@
+1.9.0-dev.126 | 2023-09-29 13:26:53 +0200
+
+  * GH-1549: Add feature guards to accesses of a unit's `__position`. (Benjamin Bannier, Corelight)
+
+    Access of `__position` triggers a random access functionality. In order
+    to distinguish our internal uses from accesses due to user code, most
+    access in our generated code should be guarded with a feature constant
+    (`if` or ternary).
+
+    In this patch add proper guards for a couple instances where we did not
+    do that correctly. That mishap caused all units with containers to be
+    random access (even the root unit) which in turn could have lead to
+    e.g., unbounded memory growth, or runtime overhead due to generation and
+    execution of unneeded code, or expensive cleanup on very large untrimmed
+    inputs.
+
+    Closes #1549.
+
+  * Refactor feature guard helper to directly take unit ID instead of type. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.123 | 2023-09-27 09:41:04 +0200
 
   * Escape rendered bitfield fields. (Benjamin Bannier, Corelight)

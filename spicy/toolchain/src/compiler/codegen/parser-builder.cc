@@ -323,7 +323,7 @@ struct ProductionVisitor
                     builder()->addLocal("filtered", hilti::builder::strong_reference(type::Stream()));
 
                     if ( unit ) {
-                        pb->guardFeatureCode(*unit, {"supports_filters"}, [&]() {
+                        pb->guardFeatureCode(*unit->id(), {"supports_filters"}, [&]() {
                             // If we have a filter attached, we initialize it and change to parse from its output.
                             auto filtered = builder::assign(builder::id("filtered"),
                                                             builder::call("spicy_rt::filter_init",
@@ -645,10 +645,12 @@ struct ProductionVisitor
         // elements inside e.g., this unit's fields hooks. Store the value before parsing of a container starts so we
         // can restore it later.
         std::optional<Expression> pre_container_offset;
-        if ( field && field->isContainer() ) {
+        if ( field && field->isContainer() )
             pre_container_offset =
-                builder()->addTmp("pre_container_offset", builder::member(state().self, "__position"));
-        }
+                builder()->addTmp("pre_container_offset",
+                                  builder::ternary(featureConstant(state().unit_id, "uses_random_access"),
+                                                   builder::member(state().self, "__position"),
+                                                   builder::optional(hilti::type::stream::Iterator())));
 
         if ( field && field->convertExpression() ) {
             // Need an additional temporary for the parsed field.
@@ -741,10 +743,14 @@ struct ProductionVisitor
         // elements inside e.g., this unit's fields hooks. Temporarily restore the previously stored offset.
         std::optional<Expression> prev;
         if ( pre_container_offset ) {
-            prev = builder()->addTmp("prev", builder::member(state().self, "__position"));
-            builder()->addAssign(builder::member(state().self, "__position"), *pre_container_offset);
-        }
+            prev = builder()->addTmp("prev", builder::ternary(featureConstant(state().unit_id, "uses_random_access"),
+                                                              builder::member(state().self, "__position"),
+                                                              builder::optional(hilti::type::stream::Iterator())));
 
+            pb->guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
+                builder()->addAssign(builder::member(state().self, "__position"), *pre_container_offset);
+            });
+        }
 
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- post-parse field: %s", field->id()));
 
@@ -824,7 +830,8 @@ struct ProductionVisitor
             popState();
 
         if ( prev )
-            builder()->addAssign(builder::member(state().self, "__position"), *prev);
+            pb->guardFeatureCode(state().unit_id, {"uses_random_access"},
+                                 [&]() { builder()->addAssign(builder::member(state().self, "__position"), *prev); });
 
         if ( field->condition() )
             popBuilder();
@@ -1331,9 +1338,9 @@ struct ProductionVisitor
             b->addBreak();
         };
 
-        // The container element type creating this counter was marked `&synchronize`. Allow any container element
-        // to fail parsing and be skipped. This means that if `n` elements where requested and one element fails to
-        // parse, we will return `n-1` elements.
+        // The container element type creating this counter was marked `&synchronize`. Allow any container
+        // element to fail parsing and be skipped. This means that if `n` elements where requested and one
+        // element fails to parse, we will return `n-1` elements.
         if ( auto f = p.body().meta().field(); f && AttributeSet::find(f->attributes(), "&synchronize") ) {
             auto try_ = builder()->addTry();
             pushBuilder(try_.first, [&]() { parse(); });
@@ -1778,9 +1785,9 @@ struct ProductionVisitor
                 std::shared_ptr<hilti::builder::Builder> builder_alt2;
                 auto parse = [&]() { std::tie(builder_alt1, builder_alt2) = parseLookAhead(lah_prod); };
 
-                // If the list field generating this While is a synchronization point, set up a try/catch block for
-                // internal list synchronization (failure to parse a list element tries to synchronize at the next
-                // possible list element).
+                // If the list field generating this While is a synchronization point, set up a try/catch block
+                // for internal list synchronization (failure to parse a list element tries to synchronize at
+                // the next possible list element).
                 if ( auto field = p.body().meta().field();
                      field && field->attributes() && AttributeSet::find(field->attributes(), "&synchronize") ) {
                     auto try_ = builder()->addTry();
@@ -2325,11 +2332,11 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(state().self, "__on_0x25_error", {what}, l);
     }
 
-    guardFeatureCode(unit, {"supports_filters"},
+    guardFeatureCode(state().unit_id, {"supports_filters"},
                      [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
 
     if ( unit.isFilter() )
-        guardFeatureCode(unit, {"is_filter"},
+        guardFeatureCode(state().unit_id, {"is_filter"},
                          [&]() { builder()->addCall("spicy_rt::filter_forward_eod", {state().self}); });
 
     for ( const auto& s : unit.items<type::unit::item::Sink>() )
@@ -2406,8 +2413,6 @@ void ParserBuilder::advanceInput(const Expression& i) {
 void ParserBuilder::setInput(const Expression& i) { builder()->addAssign(state().cur, i); }
 
 void ParserBuilder::beforeHook() {
-    const auto& unit = state().unit.get();
-
     // Forward the current trial mode state into the unit so hooks see the
     // correct state should they invoke e.g., `reject`.
     //
@@ -2415,16 +2420,14 @@ void ParserBuilder::beforeHook() {
     // https://github.com/zeek/spicy/issues/1108 is fixed.
     builder()->addAssign(builder::member(state().self, ID("__error")), state().error);
 
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__position_update")),
                              builder::optional(hilti::type::stream::Iterator()));
     });
 }
 
 void ParserBuilder::afterHook() {
-    const auto& unit = state().unit.get();
-
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
         auto position_update = builder::member(state().self, ID("__position_update"));
         auto advance = builder()->addIf(position_update);
         auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
@@ -2447,8 +2450,7 @@ void ParserBuilder::afterHook() {
 }
 
 void ParserBuilder::saveParsePosition() {
-    const auto& unit = state().unit.get();
-    guardFeatureCode(unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin);
         builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
     });
@@ -2491,16 +2493,15 @@ void ParserBuilder::finishLoopBody(const Expression& cookie, const Location& l) 
                 [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
 }
 
-void ParserBuilder::guardFeatureCode(const type::Unit& unit, const std::vector<std::string_view>& features,
+void ParserBuilder::guardFeatureCode(const ID& unit_id, const std::vector<std::string_view>& features,
                                      const std::function<void()>& f) {
-    const auto& typeID = unit.id();
-    if ( ! typeID || features.empty() ) {
+    if ( features.empty() ) {
         f();
         return;
     }
 
     auto flags =
-        hilti::util::transform(features, [&](const auto& feature) { return featureConstant(*typeID, feature); });
+        hilti::util::transform(features, [&](const auto& feature) { return featureConstant(unit_id, feature); });
 
     auto cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
                                 [](const auto& a, const auto& b) { return hilti::expression::LogicalOr(a, b); });

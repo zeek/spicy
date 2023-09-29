@@ -328,7 +328,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     const auto dependentFeatureFlags = unit.isPublic() ? std::vector<std::string_view>{} :
                                                          std::vector<std::string_view>({"is_filter", "supports_sinks"});
 
-    _pb.guardFeatureCode(unit, dependentFeatureFlags, [&]() {
+    _pb.guardFeatureCode(ID(*unit.id()), dependentFeatureFlags, [&]() {
         auto parser =
             builder::struct_({{ID("name"), builder::string(*unit.id())},
                               {ID("is_public"), builder::bool_(unit.isPublic())},

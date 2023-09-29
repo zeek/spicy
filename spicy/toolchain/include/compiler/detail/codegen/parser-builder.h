@@ -501,7 +501,7 @@ public:
      * @param features identifiers of the feature, will be combined with OR.
      * @param f callback building the feature-dependent code.
      */
-    void guardFeatureCode(const type::Unit& unit, const std::vector<std::string_view>& features,
+    void guardFeatureCode(const ID& unit_id, const std::vector<std::string_view>& features,
                           const std::function<void()>& f);
 
     CodeGen* cg() const { return _cg; }

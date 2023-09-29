@@ -1,0 +1,30 @@
+# @TEST-DOC: Checks we have not accidentally enabled random access (which would disable trimming).
+#
+# @TEST-EXEC: spicyc -djo x.hlto x.spicy
+# @TEST-EXEC: sh gen_input.sh >input.dat
+# @TEST-EXEC: HILTI_DEBUG=spicy-verbose spicy-driver -F input.dat x.hlto >>output 2>&1
+#
+# Since we generate 10 chunks below we expect at least 10 calls to trim.
+# @TEST-EXEC: [ $(grep -c 'trimming input' output) -ge 10 ]
+
+# @TEST-START-FILE x.spicy
+module x;
+
+public type C = unit {
+    # This unit should NOT be random access.
+    %port= 80/tcp;
+    : (bytes &size=1)[];
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE gen_input.sh
+echo '!spicy-batch v2'
+echo '@begin-flow id1 stream 80/tcp'
+echo '@begin-flow id2 block application/foo'
+
+# Generate 10 chunks. If changing this, adjust above test as well.
+for _ in $(seq 0 10); do
+    echo '@data id1 1'
+    echo 'C'
+done
+# @TEST-END-FILE
