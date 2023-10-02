@@ -67,7 +67,7 @@ libraries aren't in a standard runtime library path, you'll also need
 to set ``LD_LIBRARY_PATH`` (Linux) or ``DYLD_LIBRARY_PATH`` (macOS) to
 point there (e.g., ``LD_LIBRARY_PATH=/opt/clang9/lib/clang/9.0.1/lib/linux``).
 
-When using Zeek's spicy support, and Zeek hasn't been compiled
+When using Zeek's Spicy support, and Zeek hasn't been compiled
 with sanitizer support, you'll also need to set ``LD_PRELOAD`` (Linux)
 or ``DYLD_INSERT_LIBRARIES`` (macOS) to the shared ``asan`` library to
 use (e.g.,

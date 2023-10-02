@@ -136,13 +136,14 @@ interleaved input flows in parallel, mimicking how host applications
 like Zeek would be employing Spicy parsers for processing many
 sessions concurrently. The batch input must be prepared in a specific
 format (see below) that provides embedded meta information about the
-contained flows of input. The easiest way to generate such a batch
-is :download:`a Zeek script coming with Spicy
-</_static/record-spicy-batch.zeek>`. If you run Zeek with this script
-on a PCAP trace, it will record the contained TCP and UDP sessions
+contained flows of input. If you have Zeek at hand, the easiest way to
+generate such a batch is `a script coming with Zeek
+<https://github.com/zeek/zeek/blob/master/scripts/policy/frameworks/spicy/record-spicy-batch.zeek>`_.
+If you run Zeek with this script on a PCAP trace, it will record the
+contained TCP and UDP sessions
 into a Spicy batch file::
 
-    # zeek -b -r http/methods.trace record-spicy-batch.zeek
+    # zeek -b -r http/methods.trace policy/frameworks/spicy/record-spicy-batch
     tracking [orig_h=128.2.6.136, orig_p=46562/tcp, resp_h=173.194.75.103, resp_p=80/tcp]
     tracking [orig_h=128.2.6.136, orig_p=46563/tcp, resp_h=173.194.75.103, resp_p=80/tcp]
     tracking [orig_h=128.2.6.136, orig_p=46564/tcp, resp_h=173.194.75.103, resp_p=80/tcp]
