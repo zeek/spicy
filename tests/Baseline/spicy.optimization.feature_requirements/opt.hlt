@@ -6,11 +6,8 @@ import hilti;
 
 # Type X0 supports the following features:
 #     - uses_offset
-#     - uses_random_access
 type X0 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position &internal &needed-by-feature="uses_offset";
+    uint<64> __offset &internal &needed-by-feature="uses_offset";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_0x25_init() ;
 } &on-heap;
@@ -63,7 +60,7 @@ type X6 = struct {
 } &on-heap;
 
 const bool __feat%foo@@X0%uses_offset = True;
-const bool __feat%foo@@X0%uses_random_access = True;
+const bool __feat%foo@@X0%uses_random_access = False;
 const bool __feat%foo@@X0%is_filter = False;
 const bool __feat%foo@@X0%supports_filters = False;
 const bool __feat%foo@@X0%supports_sinks = False;
@@ -106,7 +103,7 @@ const bool __feat%foo@@X6%supports_sinks = True;
 const bool __feat%foo@@X6%synchronization = False;
 
 method hook void foo::X0::__on_0x25_init() {
-    ((*self.__position).offset() - (*self.__begin).offset());
+    self.__offset;
 }
 
 init function void __register_foo_X0() {

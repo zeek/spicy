@@ -214,7 +214,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     // Fields related to offset functionality.
     auto attr_uses_offset = Attribute("&needed-by-feature", builder::string("uses_offset"));
-    auto f3 = hilti::declaration::Field(ID("__position"), hilti::type::Optional(hilti::type::stream::Iterator()),
+    auto f3 = hilti::declaration::Field(ID("__offset"), hilti::type::UnsignedInteger(64),
                                         AttributeSet({Attribute("&internal"), attr_uses_offset}));
     v.addField(std::move(f3));
 

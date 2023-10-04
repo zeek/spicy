@@ -649,8 +649,7 @@ struct ProductionVisitor
             pre_container_offset =
                 builder()->addTmp("pre_container_offset",
                                   builder::ternary(featureConstant(state().unit_id, "uses_offset"),
-                                                   builder::member(state().self, "__position"),
-                                                   builder::optional(hilti::type::stream::Iterator())));
+                                                   builder::member(state().self, "__offset"), builder::integer(0)));
 
         if ( field && field->convertExpression() ) {
             // Need an additional temporary for the parsed field.
@@ -743,12 +742,12 @@ struct ProductionVisitor
         // elements inside e.g., this unit's fields hooks. Temporarily restore the previously stored offset.
         std::optional<Expression> prev;
         if ( pre_container_offset ) {
-            prev = builder()->addTmp("prev", builder::ternary(featureConstant(state().unit_id, "uses_offset"),
-                                                              builder::member(state().self, "__position"),
-                                                              builder::optional(hilti::type::stream::Iterator())));
+            prev = builder()->addTmp("prev",
+                                     builder::ternary(featureConstant(state().unit_id, "uses_offset"),
+                                                      builder::member(state().self, "__offset"), builder::integer(0)));
 
             pb->guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
-                builder()->addAssign(builder::member(state().self, "__position"), *pre_container_offset);
+                builder()->addAssign(builder::member(state().self, "__offset"), *pre_container_offset);
             });
         }
 
@@ -831,7 +830,7 @@ struct ProductionVisitor
 
         if ( prev )
             pb->guardFeatureCode(state().unit_id, {"uses_offset"},
-                                 [&]() { builder()->addAssign(builder::member(state().self, "__position"), *prev); });
+                                 [&]() { builder()->addAssign(builder::member(state().self, "__offset"), *prev); });
 
         if ( field->condition() )
             popBuilder();
@@ -2454,7 +2453,13 @@ void ParserBuilder::saveParsePosition() {
                      [&]() { builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin); });
 
     guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
-        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+        pushBuilder(builder()->addIf(state().begin), [&]() {
+            auto cur = builder::memberCall(builder::begin(state().cur), "offset", {});
+            auto begin = builder::memberCall(builder::deref(state().begin), "offset", {});
+
+            builder()->addAssign(builder::member(state().self, ID("__offset")),
+                                 builder::cast(builder::difference(cur, begin), type::UnsignedInteger(64)));
+        });
     });
 }
 
