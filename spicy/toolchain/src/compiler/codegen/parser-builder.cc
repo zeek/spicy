@@ -648,7 +648,7 @@ struct ProductionVisitor
         if ( field && field->isContainer() )
             pre_container_offset =
                 builder()->addTmp("pre_container_offset",
-                                  builder::ternary(featureConstant(state().unit_id, "uses_random_access"),
+                                  builder::ternary(featureConstant(state().unit_id, "uses_offset"),
                                                    builder::member(state().self, "__position"),
                                                    builder::optional(hilti::type::stream::Iterator())));
 
@@ -743,11 +743,11 @@ struct ProductionVisitor
         // elements inside e.g., this unit's fields hooks. Temporarily restore the previously stored offset.
         std::optional<Expression> prev;
         if ( pre_container_offset ) {
-            prev = builder()->addTmp("prev", builder::ternary(featureConstant(state().unit_id, "uses_random_access"),
+            prev = builder()->addTmp("prev", builder::ternary(featureConstant(state().unit_id, "uses_offset"),
                                                               builder::member(state().self, "__position"),
                                                               builder::optional(hilti::type::stream::Iterator())));
 
-            pb->guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
+            pb->guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
                 builder()->addAssign(builder::member(state().self, "__position"), *pre_container_offset);
             });
         }
@@ -830,7 +830,7 @@ struct ProductionVisitor
             popState();
 
         if ( prev )
-            pb->guardFeatureCode(state().unit_id, {"uses_random_access"},
+            pb->guardFeatureCode(state().unit_id, {"uses_offset"},
                                  [&]() { builder()->addAssign(builder::member(state().self, "__position"), *prev); });
 
         if ( field->condition() )
@@ -2420,14 +2420,14 @@ void ParserBuilder::beforeHook() {
     // https://github.com/zeek/spicy/issues/1108 is fixed.
     builder()->addAssign(builder::member(state().self, ID("__error")), state().error);
 
-    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit_id, {"uses_random_access", "uses_offset"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__position_update")),
                              builder::optional(hilti::type::stream::Iterator()));
     });
 }
 
 void ParserBuilder::afterHook() {
-    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit_id, {"uses_random_access", "uses_offset"}, [&]() {
         auto position_update = builder::member(state().self, ID("__position_update"));
         auto advance = builder()->addIf(position_update);
         auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
@@ -2450,8 +2450,10 @@ void ParserBuilder::afterHook() {
 }
 
 void ParserBuilder::saveParsePosition() {
-    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
-        builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin);
+    guardFeatureCode(state().unit_id, {"uses_random_access"},
+                     [&]() { builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin); });
+
+    guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
     });
 }
