@@ -1252,7 +1252,7 @@ struct ProductionVisitor
         builder()->addMemberCall(tmp, "freeze", {});
 
         pstate.data = tmp;
-        pstate.begin = builder()->addTmp("parse_begin", builder::begin(builder::deref(tmp)));
+        pstate.begin = builder()->addTmp("parse_begin", builder::optional(builder::begin(builder::deref(tmp))));
         pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
         pstate.ncur = {};
         pushState(std::move(pstate));
@@ -1268,7 +1268,7 @@ struct ProductionVisitor
         pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
 
         auto cur = builder::memberCall(state().cur, "advance", {position});
-        pstate.begin = builder()->addTmp("parse_begin", position);
+        pstate.begin = builder()->addTmp("parse_begin", builder::optional(position));
         pstate.cur = builder()->addTmp("parse_cur", cur);
         pstate.ncur = {};
         pushState(std::move(pstate));
