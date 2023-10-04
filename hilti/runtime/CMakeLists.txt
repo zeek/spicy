@@ -65,7 +65,7 @@ foreach (lib hilti-rt hilti-rt-debug)
     target_include_directories(${lib}-objects BEFORE
                                PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/justrx/include)
 
-    add_dependencies(${lib}-objects fiber::fiber)
+    add_dependencies(${lib}-objects fiber)
     target_include_directories(
         ${lib}-objects PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
                                ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include)
@@ -73,7 +73,7 @@ foreach (lib hilti-rt hilti-rt-debug)
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
     target_link_libraries(${lib} jrx-objects)
-    target_link_libraries(${lib} fiber::fiber)
+    target_link_libraries(${lib} fiber)
 endforeach ()
 
 # Build hilti-rt with release flags.

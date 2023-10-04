@@ -1,3 +1,57 @@
+1.9.0-dev.134 | 2023-10-04 11:20:46 +0200
+
+  * Bump 3rdparty/fiber from `f75b2f9` to `ada36b2` (dependabot[bot])
+
+    Bumps [3rdparty/fiber](https://github.com/simonfxr/fiber) from `f75b2f9` to `ada36b2`.
+    - [Commits](https://github.com/simonfxr/fiber/compare/f75b2f93aa312b9922f9c977021e5470ff7715fa...ada36b254c10d487eb4d8d108a3cb156538e1885)
+
+    ---
+    updated-dependencies:
+    - dependency-name: 3rdparty/fiber
+      dependency-type: direct:production
+    ...
+
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+  * Bump 3rdparty/benchmark from `0d98dba` to `7736df0` (dependabot[bot])
+
+    Bumps [3rdparty/benchmark](https://github.com/google/benchmark) from `0d98dba` to `7736df0`.
+    - [Release notes](https://github.com/google/benchmark/releases)
+    - [Commits](https://github.com/google/benchmark/compare/0d98dba29d66e93259db7daa53a9327df767a415...7736df03049c362c7275f7573de6d6a685630e0a)
+
+    ---
+    updated-dependencies:
+    - dependency-name: 3rdparty/benchmark
+      dependency-type: direct:production
+    ...
+
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+  * Bump 3rdparty/SafeInt from `4cafc91` to `925235c` (dependabot[bot])
+
+    Bumps [3rdparty/SafeInt](https://github.com/dcleblanc/SafeInt) from `4cafc91` to `925235c`.
+    - [Release notes](https://github.com/dcleblanc/SafeInt/releases)
+    - [Commits](https://github.com/dcleblanc/SafeInt/compare/4cafc9196c4da9c817992b20f5253ef967685bf8...925235c06de490865f871218fa2bd8ac38241a95)
+
+    ---
+    updated-dependencies:
+    - dependency-name: 3rdparty/SafeInt
+      dependency-type: direct:production
+    ...
+
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+  * GH-1549: GH-1554: Fix potential infinite loop when trimming data before stream. (Benjamin Bannier, Corelight)
+
+    Previously we would trigger an infinite loop if one tried to trim before
+    the head chunk of a stream. In praxis this seem to have been no issue
+    due to #1549 and us emitting way less calls to trim than possible.
+
+    This patch adds an explicit check whether we need to trim anything, and
+    exits the low-level function early for such cases.
+
+    Closes #1554.
+
 1.9.0-dev.128 | 2023-09-29 13:27:28 +0200
 
   * GH-1550: Replace recursive deletion with explicit loop to avoid stack overflow. (Benjamin Bannier, Corelight)

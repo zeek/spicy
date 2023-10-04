@@ -113,7 +113,7 @@ function (hilti_link_object_libraries_in_tree lib)
 
     target_link_libraries(${lib} ${_private} reproc++)
     target_link_libraries(${lib} ${_private} jrx-objects)
-    target_link_libraries(${lib} ${_private} fiber::fiber)
+    target_link_libraries(${lib} ${_private} fiber)
 endfunction ()
 
 # Link a library against libhilti. This picks the right version of
