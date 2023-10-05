@@ -10,7 +10,7 @@
 [hilti-trace] : local optional<hilti::RecoverableFailure> error = Null;
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:2"
 [hilti-trace] :  # Begin parsing production: Unit: Mini_Test -> f1 f2
-[hilti-trace] : spicy_rt::printParserState("Mini::Test", data, Null, ncur, lahead, lahead_end, "default", True, error);
+[hilti-trace] : spicy_rt::printParserState("Mini::Test", data, begin(ncur), ncur, lahead, lahead_end, "default", True, error);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Unit: Mini_Test -> f1 f2");
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
 [hilti-trace] : (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);

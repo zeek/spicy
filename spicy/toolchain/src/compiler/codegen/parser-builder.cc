@@ -60,7 +60,7 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
       needs_look_ahead(grammar.needsLookAhead()),
       self(hilti::expression::UnresolvedID(ID("self"))),
       data(std::move(data)),
-      begin(builder::optional(type::stream::Iterator())),
+      begin(builder::optional(builder::begin(cur))),
       cur(std::move(cur)) {}
 
 void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
@@ -1998,6 +1998,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
             auto pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
             pstate.self = builder::id("unit");
+            pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
             pstate.cur = builder::id("ncur");
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
@@ -2044,6 +2045,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
             pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
             pstate.self = builder::id("unit");
+            pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
             pstate.cur = builder::id("ncur");
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
@@ -2083,6 +2085,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
         auto pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
         pstate.self = builder::id("unit");
+        pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
         pstate.cur = builder::id("ncur");
         pstate.trim = builder::bool_(true);
         pstate.lahead = builder::id("lahead");
@@ -2453,13 +2456,11 @@ void ParserBuilder::saveParsePosition() {
                      [&]() { builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin); });
 
     guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
-        pushBuilder(builder()->addIf(state().begin), [&]() {
-            auto cur = builder::memberCall(builder::begin(state().cur), "offset", {});
-            auto begin = builder::memberCall(builder::deref(state().begin), "offset", {});
+        auto cur = builder::memberCall(builder::begin(state().cur), "offset", {});
+        auto begin = builder::memberCall(builder::deref(state().begin), "offset", {});
 
-            builder()->addAssign(builder::member(state().self, ID("__offset")),
-                                 builder::cast(builder::difference(cur, begin), type::UnsignedInteger(64)));
-        });
+        builder()->addAssign(builder::member(state().self, ID("__offset")),
+                             builder::cast(builder::difference(cur, begin), type::UnsignedInteger(64)));
     });
 }
 
