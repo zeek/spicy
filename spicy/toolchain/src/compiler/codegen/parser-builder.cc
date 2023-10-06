@@ -60,7 +60,7 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
       needs_look_ahead(grammar.needsLookAhead()),
       self(hilti::expression::UnresolvedID(ID("self"))),
       data(std::move(data)),
-      begin(builder::optional(type::stream::Iterator())),
+      begin(builder::optional(builder::begin(cur))),
       cur(std::move(cur)) {}
 
 void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
@@ -648,9 +648,8 @@ struct ProductionVisitor
         if ( field && field->isContainer() )
             pre_container_offset =
                 builder()->addTmp("pre_container_offset",
-                                  builder::ternary(featureConstant(state().unit_id, "uses_random_access"),
-                                                   builder::member(state().self, "__position"),
-                                                   builder::optional(hilti::type::stream::Iterator())));
+                                  builder::ternary(featureConstant(state().unit_id, "uses_offset"),
+                                                   builder::member(state().self, "__offset"), builder::integer(0)));
 
         if ( field && field->convertExpression() ) {
             // Need an additional temporary for the parsed field.
@@ -743,12 +742,12 @@ struct ProductionVisitor
         // elements inside e.g., this unit's fields hooks. Temporarily restore the previously stored offset.
         std::optional<Expression> prev;
         if ( pre_container_offset ) {
-            prev = builder()->addTmp("prev", builder::ternary(featureConstant(state().unit_id, "uses_random_access"),
-                                                              builder::member(state().self, "__position"),
-                                                              builder::optional(hilti::type::stream::Iterator())));
+            prev = builder()->addTmp("prev",
+                                     builder::ternary(featureConstant(state().unit_id, "uses_offset"),
+                                                      builder::member(state().self, "__offset"), builder::integer(0)));
 
-            pb->guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
-                builder()->addAssign(builder::member(state().self, "__position"), *pre_container_offset);
+            pb->guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
+                builder()->addAssign(builder::member(state().self, "__offset"), *pre_container_offset);
             });
         }
 
@@ -830,8 +829,8 @@ struct ProductionVisitor
             popState();
 
         if ( prev )
-            pb->guardFeatureCode(state().unit_id, {"uses_random_access"},
-                                 [&]() { builder()->addAssign(builder::member(state().self, "__position"), *prev); });
+            pb->guardFeatureCode(state().unit_id, {"uses_offset"},
+                                 [&]() { builder()->addAssign(builder::member(state().self, "__offset"), *prev); });
 
         if ( field->condition() )
             popBuilder();
@@ -1252,7 +1251,7 @@ struct ProductionVisitor
         builder()->addMemberCall(tmp, "freeze", {});
 
         pstate.data = tmp;
-        pstate.begin = builder()->addTmp("parse_begin", builder::begin(builder::deref(tmp)));
+        pstate.begin = builder()->addTmp("parse_begin", builder::optional(builder::begin(builder::deref(tmp))));
         pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
         pstate.ncur = {};
         pushState(std::move(pstate));
@@ -1268,7 +1267,7 @@ struct ProductionVisitor
         pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
 
         auto cur = builder::memberCall(state().cur, "advance", {position});
-        pstate.begin = builder()->addTmp("parse_begin", position);
+        pstate.begin = builder()->addTmp("parse_begin", builder::optional(position));
         pstate.cur = builder()->addTmp("parse_cur", cur);
         pstate.ncur = {};
         pushState(std::move(pstate));
@@ -1999,6 +1998,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
             auto pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
             pstate.self = builder::id("unit");
+            pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
             pstate.cur = builder::id("ncur");
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
@@ -2045,6 +2045,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
             pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
             pstate.self = builder::id("unit");
+            pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
             pstate.cur = builder::id("ncur");
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
@@ -2084,6 +2085,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
         auto pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
         pstate.self = builder::id("unit");
+        pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
         pstate.cur = builder::id("ncur");
         pstate.trim = builder::bool_(true);
         pstate.lahead = builder::id("lahead");
@@ -2420,14 +2422,14 @@ void ParserBuilder::beforeHook() {
     // https://github.com/zeek/spicy/issues/1108 is fixed.
     builder()->addAssign(builder::member(state().self, ID("__error")), state().error);
 
-    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit_id, {"uses_random_access", "uses_offset"}, [&]() {
         builder()->addAssign(builder::member(state().self, ID("__position_update")),
                              builder::optional(hilti::type::stream::Iterator()));
     });
 }
 
 void ParserBuilder::afterHook() {
-    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit_id, {"uses_random_access", "uses_offset"}, [&]() {
         auto position_update = builder::member(state().self, ID("__position_update"));
         auto advance = builder()->addIf(position_update);
         auto ncur = builder::memberCall(state().cur, "advance", {builder::deref(position_update)});
@@ -2450,9 +2452,15 @@ void ParserBuilder::afterHook() {
 }
 
 void ParserBuilder::saveParsePosition() {
-    guardFeatureCode(state().unit_id, {"uses_random_access"}, [&]() {
-        builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin);
-        builder()->addAssign(builder::member(state().self, ID("__position")), builder::begin(state().cur));
+    guardFeatureCode(state().unit_id, {"uses_random_access"},
+                     [&]() { builder()->addAssign(builder::member(state().self, ID("__begin")), state().begin); });
+
+    guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
+        auto cur = builder::memberCall(builder::begin(state().cur), "offset", {});
+        auto begin = builder::memberCall(builder::deref(state().begin), "offset", {});
+
+        builder()->addAssign(builder::member(state().self, ID("__offset")),
+                             builder::cast(builder::difference(cur, begin), type::UnsignedInteger(64)));
     });
 }
 

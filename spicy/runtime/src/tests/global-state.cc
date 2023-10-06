@@ -12,7 +12,7 @@ TEST_SUITE_BEGIN("GlobalState");
 
 class TestState {
 public:
-    TestState() { std::exchange(_prev, detail::__global_state); }
+    TestState() { std::swap(_prev, detail::__global_state); }
 
     ~TestState() {
         delete detail::__global_state;
@@ -29,7 +29,6 @@ TEST_CASE("createGlobalState") {
 
     CHECK_NE(detail::createGlobalState(), nullptr);
 }
-
 
 TEST_CASE("globalState") {
     TestState _;

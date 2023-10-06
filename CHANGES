@@ -1,3 +1,31 @@
+1.9.0-dev.140 | 2023-10-06 12:34:02 +0200
+
+  * Set `ParserState::begin` on all possible paths into a parser. (Benjamin Bannier, Corelight)
+
+    We previously would sometimes leave `ParserState::begin` unset, e.g.,
+    when parsing beginning parsing of a top-level production. With this
+    patch we now set its value on all possible paths.
+
+  * Fix spicy-rt-tests for freebsd-12. (Benjamin Bannier, Corelight)
+
+  * GH-1089: Make `offset()` independent of random access functionality. (Benjamin Bannier, Corelight)
+
+    With this patch we store the value returned by `offset()` directly in
+    the unit instead of computing it on the fly when requested from `cur -
+    begin`. With that `offset()` can be used without enabling random access
+    functionality on the unit.
+
+    Closes #1089.
+
+  * Move `offset()` into its own feature. (Benjamin Bannier, Corelight)
+
+    This patch makes `__position` depend on `uses_offset` so uses of it
+    (`position()`, `offset()`) can be tracked separately. Since `offset()`
+    still requires random access `uses_offset` enables `uses_random_access`
+    for that use case; we plan to relax that in a follow-up patch.
+
+  * Consistently wrap `ParserState::begin` in optional. (Benjamin Bannier, Corelight)
+
 1.9.0-dev.134 | 2023-10-04 11:20:46 +0200
 
   * Bump 3rdparty/fiber from `f75b2f9` to `ada36b2` (dependabot[bot])
