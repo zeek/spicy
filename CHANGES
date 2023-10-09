@@ -1,3 +1,19 @@
+1.9.0-dev.142 | 2023-10-09 11:10:35 +0200
+
+  * Explicitly set ASM compiler. (Benjamin Bannier, Corelight)
+
+    When not setting an ASM compiler we might end up configuring Clang as C
+    compiler, but GCC as ASM compiler. The code in `3rdparty/fiber` then
+    causes Clang-only flags like `-Weverything` to be passed to GCC (which
+    does not understand it).
+
+    The way we need to do this is subtle. We need to rely on
+    `3rdparty/fiber` to explicitly `enable_language(ASM)` and not set it as
+    a project language to work around `find_package(BISON)` breaking if
+    `CMAKE_ASM_COMPILER` is set. By removing ASM from project languages and
+    setting the ASM config after Bison was found, but before we configure
+    `3rdparty/fiber` things seem to work as intended.
+
 1.9.0-dev.140 | 2023-10-06 12:34:02 +0200
 
   * Set `ParserState::begin` on all possible paths into a parser. (Benjamin Bannier, Corelight)

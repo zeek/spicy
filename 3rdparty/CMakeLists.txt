@@ -7,11 +7,19 @@ add_subdirectory(doctest)
 
 add_subdirectory(justrx)
 
+
+# Use the configured C compiler as ASM compiler as well. This prevents that we
+# e.g., use a Clang as C compiler, but e.g., GCC as assembler which leads to
+# incompatible flags like `-Weverything` being passed to GCC from e.g.,
+# `3rdparty/fiber`.
+set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
+
 # The GNU toolchain by default assumes that any assembly files (of which the
 # fiber library contains at least one) need an executable stack; explictly
 # disable that since we do not need executable stacks and some package linters
 # call this out as needlessly insecure.
 set(CMAKE_ASM_FLAGS ${CMAKE_ASM_FLAGS} -Wa,--noexecstack)
+
 set(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
