@@ -189,8 +189,6 @@ protected:
     // only from chain so that it can track any changes.
     friend class Chain;
 
-    void trim(const Offset& o);
-
     // Update offset for current chunk and all others linked from it.
     void setOffset(Offset o) {
         auto c = this;

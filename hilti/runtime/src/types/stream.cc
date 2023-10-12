@@ -47,23 +47,6 @@ Chunk::Chunk(const Offset& offset, const std::string& s) : _offset(offset) {
     }
 }
 
-void Chunk::trim(const Offset& o) {
-    assert(o >= _offset && o < _offset + size());
-    if ( auto a = std::get_if<Array>(&_data) ) {
-        auto begin = a->second.data() + (o - _offset).Ref();
-        auto end = a->second.data() + a->first.Ref();
-        a->first = (end - begin);
-        memmove(a->second.data(), begin, a->first.Ref());
-    }
-    else if ( std::holds_alternative<Vector>(_data) ) {
-        auto& v = std::get<Vector>(_data);
-        v.erase(v.begin(), v.begin() + static_cast<Vector::difference_type>((o - _offset).Ref()));
-    }
-    // Nothing to do for gap chunks.
-
-    _offset = o;
-}
-
 void Chain::append(std::unique_ptr<Chunk> chunk) {
     _ensureValid();
     _ensureMutable();
@@ -117,8 +100,7 @@ void Chain::trim(const Offset& offset) {
         }
 
         else if ( _head->inRange(offset) ) {
-            _head->trim(offset);
-            assert(_head->offset() == offset);
+            // Perform no trimming inside individual chunks.
             break;
         }
 
@@ -128,7 +110,6 @@ void Chain::trim(const Offset& offset) {
     }
 
     _head_offset = offset;
-    assert(! _head || _head->offset() == offset);
 }
 
 ChainPtr Chain::deepCopy() const {
