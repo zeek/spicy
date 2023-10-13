@@ -1,3 +1,18 @@
+1.9.0-dev.144 | 2023-10-13 11:47:35 +0200
+
+  * GH-1571: Remove trimming inside individual chunks. (Benjamin Bannier, Corelight)
+
+    Trimming `Chunk`s (always from the left) causes a lot of internal work
+    with only limited benefit since we manage visibility with `stream::View`s
+    on top of `Chunk`s anyway.
+
+    This patch removes trimming inside `Chunk`s so now any trimming only
+    removes `Chunk`s from `Chain`s, but does not internally change
+    individual `Chunk`s anymore. This might lead to slightly increased memory
+    use, but callers usually have that data in memory anyway.
+
+    Closes #1571.
+
 1.9.0-dev.142 | 2023-10-09 11:10:35 +0200
 
   * Explicitly set ASM compiler. (Benjamin Bannier, Corelight)
