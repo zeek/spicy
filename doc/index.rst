@@ -35,10 +35,7 @@ Overview
     Spicy comes with Zeek support that enables adding new protocol and
     file analyzers to `Zeek <https://www.zeek.org>`_ without having to
     write any C++ code. You define the grammar, specify which Zeek
-    events to generate, and Spicy takes care of the rest. There's also
-    a `Zeek analyzers <https://github.com/zeek/spicy-analyzers>`_
-    package that provides Zeek with several new, Spicy-based
-    analyzers.
+    events to generate, and Spicy takes care of the rest.
 
     See our :ref:`collection of example grammars <examples>` to get a
     sense of what Spicy looks like.

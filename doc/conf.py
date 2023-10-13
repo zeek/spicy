@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('scripts'))
 # -- Project information -----------------------------------------------------
 
 project = u'Spicy'
-copyright = u'2020 by the Zeek Project'
+copyright = u'2023 by the Zeek Project'
 author = u'Zeek Project'
 
 version = open('../VERSION').readline()
@@ -58,6 +58,8 @@ extlinks = {
     "repo":  ("https://github.com/zeek/spicy/blob/v%s/%%s" % release, "#%s"),
     "issue": ("https://github.com/zeek/spicy/issues/%s", "#%s"),
     "pr":    ("https://github.com/zeek/spicy/pulls/%s", "#%s"),
+
+    "zeek":  ("https://docs.zeek.org/en/master/%s", "%s"),
 
     # Links to binary builds.
     "package-dev-tgz": ("https://api.cirrus-ci.com/v1/artifact/github/zeek/spicy/%s/packages/build/spicy-dev.tar.gz", "%s"),

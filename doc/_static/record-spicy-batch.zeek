@@ -1,1 +1,0 @@
-../autogen/zeek/record-spicy-batch.zeek

@@ -1,3 +1,15 @@
+1.9.0-dev.146 | 2023-10-13 12:26:24 +0200
+
+  * Remove Zeek-specific documentation. (Robin Sommer, Corelight)
+
+    This now lives Zeek-side.
+
+    This keeps the section structure so that we make things easier to
+    find, and put in pointers to the new Zeek-side documentation
+
+    It leaves everything in the development section as is; hard to piece
+    apart and seems fine to leave it here.
+
 1.9.0-dev.144 | 2023-10-13 11:47:35 +0200
 
   * GH-1571: Remove trimming inside individual chunks. (Benjamin Bannier, Corelight)

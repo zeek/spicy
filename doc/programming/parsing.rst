@@ -1980,7 +1980,7 @@ method, which will return a reference to it:
 By itself, this is not very useful. However, host applications can
 control how contexts are maintained, and they may assign the same
 context value to multiple units. For example, when parsing a protocol,
-the :ref:`Zeek integration <zeek_plugin>` always creates a single context
+the :zeek:`Zeek integration <devel/spicy/index.html>` always creates a single context
 value shared by all top-level units belonging to the same connection,
 enabling parsers to maintain bi-directional, per-connection state.
 The batch mode of :ref:`spicy-driver <spicy-driver>` does the same.
