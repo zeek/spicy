@@ -117,7 +117,7 @@ fi
 
 cxx="$(${spicy_config} --cxx ${spicy_config_flags}) $(${spicy_config} --cxxflags ${spicy_config_flags})"
 ldflags="$(${spicy_config} --ldflags ${spicy_config_flags})"
-spicy_lib_dir=$(${spicy_config} --libdirs | sed 's/^\. //g') # A bit of a hack to get the dir we want ...
+spicy_lib_dir=$(for i in $(${spicy_config} --libdirs); do test -e "${i}/spicy_rt.hlt" && echo "${i}" && break; done) # extract the directory we want
 spicy_driver=${spicy_lib_dir}/spicy-driver-host.cc
 
 rt_modules=""
