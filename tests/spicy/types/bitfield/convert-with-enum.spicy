@@ -1,0 +1,16 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEST-DOC: Make sure this compiles. Regression test for #1568.
+
+module Test;
+
+import spicy;
+
+type X = enum { A = 1, B = 2 };
+
+public type Foo = unit {
+    f: bitfield(8) {
+        x1: 0..3 &convert=X($$);
+        x2: 4..7 &convert=X($$);
+    } { print self.f.x1, self.f.x2; }
+};
