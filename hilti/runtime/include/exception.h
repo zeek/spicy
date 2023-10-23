@@ -3,7 +3,7 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
+#include <optional>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -27,7 +27,7 @@ public:
      */
     Exception(const std::string& desc) : Exception(Internal(), "Exception", desc) {
 #ifndef NDEBUG
-        _backtrace = std::make_unique<Backtrace>();
+        _backtrace = Backtrace();
 #endif
     }
 
@@ -37,30 +37,20 @@ public:
      */
     Exception(std::string_view desc, std::string_view location) : Exception(Internal(), "Exception", desc, location) {
 #ifndef NDEBUG
-        _backtrace = std::make_unique<Backtrace>();
+        _backtrace = Backtrace();
 #endif
     }
 
     Exception();
 
     Exception(const Exception& other)
-        : std::runtime_error(other), _description(other._description), _location(other._location) {
-        if ( other._backtrace )
-            _backtrace = std::make_unique<Backtrace>(*other._backtrace);
-    }
+        : std::runtime_error(other),
+          _description(other._description),
+          _location(other._location),
+          _backtrace(other._backtrace) {}
 
     Exception(Exception&&) noexcept = default;
-    Exception& operator=(const Exception& other) {
-        // Note: We don't copy the backtrace here, as it's not clear what
-        // that would mean.
-        if ( &other != this ) {
-            std::runtime_error::operator=(other);
-            _description = other._description;
-            _location = other._location;
-        }
-
-        return *this;
-    }
+    Exception& operator=(const Exception& other) = default;
 
     Exception& operator=(Exception&&) noexcept = default;
 
@@ -77,9 +67,14 @@ public:
 
     /**
      * Returns a stack backtrace captured at the time the exception was
-     * thrown, if available. Returns null if not available.
+     * thrown, if available. Returns null if unavailable.
      */
-    auto backtrace() const { return _backtrace.get(); }
+    const Backtrace* backtrace() const {
+        if ( ! _backtrace )
+            return nullptr;
+
+        return &*_backtrace;
+    }
 
 protected:
     enum Internal {};
@@ -92,7 +87,7 @@ private:
 
     std::string _description;
     std::string _location;
-    std::unique_ptr<Backtrace> _backtrace; // null if not available
+    std::optional<Backtrace> _backtrace; // null if unavailable.
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { return stream << e.what(); }
