@@ -32,6 +32,13 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
     auto typeID(const Node& n) { return n.as<Type>().typeID(); }
     auto cxxID(const Node& n) { return n.as<Type>().cxxID(); }
 
+    result_t operator()(const type::Bitfield& n) {
+        for ( const auto& b : n.bits(true) )
+            addDependency(b.itemType());
+
+        return {};
+    }
+
     result_t operator()(const type::Struct& n, const position_t p) {
         assert(typeID(p.node));
 

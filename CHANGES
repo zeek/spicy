@@ -1,3 +1,9 @@
+1.9.0-dev.150 | 2023-10-23 10:48:59 +0200
+
+  * GH-1568: Fix bitfield's lack of declaring its C++-side type dependencies. (Robin Sommer, Corelight)
+
+    Closes #1568.
+
 1.9.0-dev.148 | 2023-10-23 10:10:39 +0200
 
   * Remove check of Zeek docs in Cirrus cron config. (Benjamin Bannier, Corelight)
