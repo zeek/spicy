@@ -175,7 +175,8 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
         in.read(buffer, static_cast<std::streamsize>(len));
 
         {
-            auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/input/%s", parser.name));
+            assert(parser.profiler_tags);
+            auto profiler = hilti::rt::profiler::start(parser.profiler_tags.prepare_input);
 
             if ( auto n = in.gcount() )
                 data->append(hilti::rt::Bytes(buffer, n));
@@ -251,7 +252,9 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
         switch ( _type ) {
             case ParsingType::Block: {
                 DRIVER_DEBUG("block", size, data);
-                auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/block/%s", _parser->name));
+
+                assert(_parser->profiler_tags);
+                auto profiler = hilti::rt::profiler::start(_parser->profiler_tags.prepare_block);
 
                 auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
                 input->freeze();
@@ -288,7 +291,8 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     return Done;
                 }
 
-                auto profiler = hilti::rt::profiler::start(fmt("spicy/prepare/stream/%s", _parser->name));
+                assert(_parser->profiler_tags);
+                auto profiler = hilti::rt::profiler::start(_parser->profiler_tags.prepare_stream);
 
                 if ( ! _input ) {
                     // First chunk.

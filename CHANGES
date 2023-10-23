@@ -1,3 +1,11 @@
+1.9.0-dev.152 | 2023-10-23 10:49:19 +0200
+
+  * GH-1567: Speed up runtime calls to start profilers. (Robin Sommer, Corelight)
+
+    We now cache the profiler tags to avoid frequent re-computation.
+
+    Closes #1567.
+
 1.9.0-dev.150 | 2023-10-23 10:48:59 +0200
 
   * GH-1568: Fix bitfield's lack of declaring its C++-side type dependencies. (Robin Sommer, Corelight)

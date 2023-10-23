@@ -150,7 +150,9 @@ struct Parser {
           type_info(type),
           description(std::move(description)),
           mime_types(std::move(mime_types)),
-          ports(std::move(ports)) {}
+          ports(std::move(ports)) {
+        _initProfiling();
+    }
 
     Parser(std::string name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type, std::string description,
@@ -163,19 +165,25 @@ struct Parser {
           type_info(type),
           description(std::move(description)),
           mime_types(std::move(mime_types)),
-          ports(std::move(ports)) {}
+          ports(std::move(ports)) {
+        _initProfiling();
+    }
 
     Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
            std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
         : Parser(std::move(name), is_public, nullptr, std::move(parse2), nullptr, nullptr, type, std::move(description),
-                 std::move(mime_types), std::move(ports)) {}
+                 std::move(mime_types), std::move(ports)) {
+        _initProfiling();
+    }
 
     Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, ContextNewFunction context_new, const hilti::rt::TypeInfo* type,
            std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
         : Parser(std::move(name), is_public, nullptr, std::move(parse2), nullptr, context_new, type,
-                 std::move(description), std::move(mime_types), std::move(ports)) {}
+                 std::move(description), std::move(mime_types), std::move(ports)) {
+        _initProfiling();
+    }
 
     Parser(const Parser&) = default;
 
@@ -236,7 +244,20 @@ struct Parser {
      */
     ContextNewFunction context_new = nullptr;
 
+    /** Type-information for puarser's unit. */
     const hilti::rt::TypeInfo* type_info;
+
+    /** Pre-computed profiler tags used by the runtime driver. */
+    struct {
+        std::string prepare_block;
+        std::string prepare_input;
+        std::string prepare_stream;
+
+        operator bool() const {
+            // ensure initialization code has run
+            return ! prepare_input.empty();
+        }
+    } profiler_tags;
 
     /**
      * Human-readable description associated with this parser.
@@ -273,6 +294,9 @@ struct Parser {
     /** For internal use only. Dispatcher for the corresponding unit hook. */
     std::optional<std::function<void(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&)>>
         __hook_undelivered;
+
+private:
+    void _initProfiling();
 };
 
 /** Returns all available public parsers. */
