@@ -1,3 +1,9 @@
+1.9.0-dev.148 | 2023-10-23 10:10:39 +0200
+
+  * Remove check of Zeek docs in Cirrus cron config. (Benjamin Bannier, Corelight)
+
+    This is a follow-up to 2b92da596631ff1a29b7deac05e00faaad9305f3.
+
 1.9.0-dev.146 | 2023-10-13 12:26:24 +0200
 
   * Remove Zeek-specific documentation. (Robin Sommer, Corelight)
