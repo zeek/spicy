@@ -3,6 +3,7 @@
 #pragma once
 
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -24,18 +25,33 @@ public:
     /**
      * @param desc message describing the situation
      */
-    Exception(const std::string& desc) : Exception(Internal(), "Exception", desc) {}
+    Exception(const std::string& desc) : Exception(Internal(), "Exception", desc) {
+#ifndef NDEBUG
+        _backtrace = Backtrace();
+#endif
+    }
 
     /**
      * @param desc message describing the situation
      * @param location string indicating the location of the operation that failed
      */
-    Exception(std::string_view desc, std::string_view location) : Exception(Internal(), "Exception", desc, location) {}
+    Exception(std::string_view desc, std::string_view location) : Exception(Internal(), "Exception", desc, location) {
+#ifndef NDEBUG
+        _backtrace = Backtrace();
+#endif
+    }
 
     Exception();
-    Exception(const Exception&) = default;
+
+    Exception(const Exception& other)
+        : std::runtime_error(other),
+          _description(other._description),
+          _location(other._location),
+          _backtrace(other._backtrace) {}
+
     Exception(Exception&&) noexcept = default;
-    Exception& operator=(const Exception&) = default;
+    Exception& operator=(const Exception& other) = default;
+
     Exception& operator=(Exception&&) noexcept = default;
 
     // Empty, but required to make exception handling work between library
@@ -51,9 +67,14 @@ public:
 
     /**
      * Returns a stack backtrace captured at the time the exception was
-     * thrown.
+     * thrown, if available. Returns null if unavailable.
      */
-    auto backtrace() const { return _backtrace.backtrace(); }
+    const Backtrace* backtrace() const {
+        if ( ! _backtrace )
+            return nullptr;
+
+        return &*_backtrace;
+    }
 
 protected:
     enum Internal {};
@@ -66,7 +87,7 @@ private:
 
     std::string _description;
     std::string _location;
-    Backtrace _backtrace;
+    std::optional<Backtrace> _backtrace; // null if unavailable.
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { return stream << e.what(); }

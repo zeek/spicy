@@ -61,8 +61,13 @@ TEST_CASE("backtrace") {
     // - two frames from doctest's expansion of `CHECK_EQ`, and
     // - one frame for the current line
     // - three frames from the test harness to reach and expand `TEST_CASE`.
-#ifdef HILTI_HAVE_BACKTRACE
-    CHECK_GE(Exception("description").backtrace()->size(), 7U);
+#ifndef NDEBUG
+#if defined(HILTI_HAVE_BACKTRACE)
+    CHECK_GE(Exception("description").backtrace()->backtrace()->size(), 7U);
+#endif
+#else
+    // No backtrace captured in release builds.
+    CHECK(! Exception("description").backtrace());
 #endif
 }
 

@@ -1,3 +1,17 @@
+1.9.0-dev.155 | 2023-10-23 10:54:13 +0200
+
+  * GH-1565: Disable capturing backtraces with HILTI exceptions in non-debug builds. (Robin Sommer, Corelight)
+
+    They can be expensive to capture, and aren't used anywhere by default
+    unless explicitly requested.
+
+    We change it so that the exception class still remains ABI
+    compatible between release and debug builds. It's the compilation
+    settings of the code including `exception.h` that determines if a
+    backtrace it captured.
+
+    Closes #1565.
+
 1.9.0-dev.152 | 2023-10-23 10:49:19 +0200
 
   * GH-1567: Speed up runtime calls to start profilers. (Robin Sommer, Corelight)

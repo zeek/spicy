@@ -24,5 +24,10 @@ void configuration::set(Configuration cfg) {
     if ( isInitialized() )
         hilti::rt::fatalError("attempt to change configuration after library has already been initialized");
 
+#ifndef NDEBUG
+    if ( cfg.show_backtraces )
+        hilti::rt::warning("printing of exception backtraces enabled, but not supported in release builds");
+#endif
+
     *detail::__configuration = std::move(cfg);
 }

@@ -44,7 +44,10 @@ static void printException(const std::string& msg, const Exception& e, std::ostr
     if ( ! configuration::get().show_backtraces )
         return;
 
-    auto bt = e.backtrace();
+    if ( ! e.backtrace() )
+        return;
+
+    auto bt = e.backtrace()->backtrace();
     if ( bt->empty() )
         return;
 

@@ -1167,14 +1167,20 @@ Result<Nothing> Driver::jitUnits() {
 void Driver::printHiltiException(const hilti::rt::Exception& e) {
     std::cerr << fmt("uncaught exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
 
-    if ( _driver_options.show_backtraces ) {
-        if ( auto bt = e.backtrace(); ! bt->empty() ) {
-            std::cerr << "backtrace:\n";
+    if ( ! _driver_options.show_backtraces )
+        return;
 
-            for ( const auto& s : *bt )
-                std::cerr << "  " << s << "\n";
-        }
-    }
+    if ( ! e.backtrace() )
+        return;
+
+    auto bt = e.backtrace()->backtrace();
+    if ( bt->empty() )
+        return;
+
+    std::cerr << "backtrace:\n";
+
+    for ( const auto& s : *bt )
+        std::cerr << "  " << s << "\n";
 }
 
 Result<Nothing> Driver::initRuntime() {
