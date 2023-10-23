@@ -1,3 +1,9 @@
+1.9.0-dev.157 | 2023-10-23 10:58:57 +0200
+
+  * Fix spicy-build to correctly infer library directory. (Robin Sommer, Corelight)
+
+    Closes https://github.com/zeek/zeek/issues/3384.
+
 1.9.0-dev.155 | 2023-10-23 10:54:13 +0200
 
   * GH-1565: Disable capturing backtraces with HILTI exceptions in non-debug builds. (Robin Sommer, Corelight)
