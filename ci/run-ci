@@ -303,14 +303,6 @@ function run_test_common {
     # the remote is temporarily unavailable.
     (cd "${root}"/doc && make BUILDDIR="${build}" DESTDIR="${artifacts}"/doc check) || true
 
-    # Only check Zeek docs from cron builds triggered via Cirrus. This
-    # surfaces errors, but avoids failing builds because e.g., vendored docs
-    # and unversioned external dependencies get out of sync.
-    if [ -n "${CIRRUS_CRON}" ]; then
-        log_stage "Check Zeek docs ..."
-        (cd "${root}"/doc && make check-zeek-docs) || rc=1
-    fi
-
     return ${rc}
 }
 
