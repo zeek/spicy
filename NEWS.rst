@@ -2,16 +2,204 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.9 (in progress)
-=========================
+Version 1.9
+===========
 
 .. rubric:: New Functionality
 
+- GH-1468: Allow to directly access members of anonymous bitfields.
+
+  We now automatically map fields of anonymous bitfields into their containing unit.
+
+  .. code-block:: spicy
+
+    type Foo = unit {
+        : bitfield(8) {
+            x: 0..3;
+            y: 4..7;
+        };
+
+        on %done {
+            print self.x, self.y;
+        }
+    };
+
+- GH-1467: Support bitfield constants in Spicy for parsing.
+
+  One can now define bitfield "constants" for parsing by providing
+  integer expressions with fields:
+
+  .. code-block:: spicy
+
+      type Foo = unit {
+        x: bitfield(8) {
+          a: 0..3 = 2;
+          b: 4..7;
+          c: 7 = 1;
+        };
+
+  This will first parse the bitfield as usual and then enforce that the
+  two bit ranges that are coming with expressions (i.e., ``a`` and ``c``)
+  indeed containing the expected values. If they don't, that's a parse
+  error.
+
+  We also support using such bitfield constants for look-ahead parsing:
+
+  .. code-block:: spicy
+
+      type Foo = unit {
+        x: uint8[];
+        y: bitfield(8) {
+          a: 0..3 = 4;
+          b: 4..7;
+        };
+      };
+
+  This will parse uint8s until a value is discovered that has its bits
+  set as defined by the bitfield constant.
+
+  (We use the term "constant" loosely here: only the bits with values
+  are actually enforced to be constant, all others are parsed as usual.)
+
+- GH-1089, GH-1421: Make ``offset()`` independent of random access functionality.
+
+  We now store the value returned by ``offset()`` directly in the
+  unit instead of computing it on the fly when requested from ``cur - begin``.
+  With that ``offset()`` can be used without enabling random access
+  functionality on the unit.
+
+- Add support for passing arbitrary C++ compiler flags.
+
+  This adds a magic environment variable ``HILTI_CXX_FLAGS`` which if set
+  specifies compiler flags which should be passed during C++ compilation
+  after implicit flags. This could be used to e.g., set defines, or set
+  low-level compiler flags.
+
+  Even with this flag, for passing include directories one should still
+  use ``HILTI_CXX_INCLUDE_DIRS`` since they are searched before any
+  implicitly added paths.
+
+- GH-1435: Add bitwise operators ``&``, ``|``, and ``^`` for booleans.
+
+- GH-1465: Support skipping explicit ``%done`` in external hooks.
+
+  Assuming ``Foo::X`` is a unit type, these two are now equivalent:
+
+  .. code-block:: spicy
+
+      on Foo::X::%done   { }
+      on Foo::X          { }
+
 .. rubric:: Changed Functionality
+
+- GH-1567: Speed up runtime calls to start profilers.
+
+- GH-1565: Disable capturing backtraces with HILTI exceptions in non-debug builds.
+
+- GH-1343: Include condition in ``&requires`` failure message.
+
+- GH-1466: Reject uses of ``self`` in unit ``&size`` and ``&max-size`` attribute.
+
+  Values in ``self`` are only available after parsing has started while
+  ``&size`` and ``&max-size`` are consumed before that. This means that any
+  use of ``self`` and its members in these contexts would only ever see
+  unset members, so it should not be the intended use.
+
+- GH-1485: Add validator rejecting unsupported multiple uses of attributes.
+
+- GH-1465: Produce better error message when hooks are used on a unit field.
+
+- GH-1503: Handle anonymous bitfields inside ``switch`` statements.
+
+  We now map items of anonymous bitfields inside a ``switch`` cases into
+  the unit namespace, just like we already do for top-level fields. We
+  also catch if two anonymous bitfields inside those cases carry the
+  same name, which would make accesses ambiguous.
+
+  So the following works now:
+
+  .. code-block:: spicy
+
+      switch (self.n) {
+          0 -> : bitfield(8) {
+              A: 0..7;
+          };
+          * -> : bitfield(8) {
+              B: 0..7;
+          };
+      };
+
+  Whereas this does not work:
+
+  .. code-block:: spicy
+
+      switch (self.n) {
+          0 -> : bitfield(8) {
+              A: 0..7;
+          };
+          * -> : bitfield(8) {
+              A: 0..7;
+          };
+      };
+
+- GH-1571: Remove trimming inside individual chunks.
+
+  Trimming a ``Chunk`` (always from the left) causes a lot of internal work
+  with only limited benefit since we manage visibility with a ``stream::View``
+  on top of a ``Chunk`` anyway.
+
+  We now trimming only removes a ``Chunk`` from a ``Chain``, but does not
+  internally change individual the ``Chunk`` anymore. This should benefit
+  performance but might lead to slightly increased memory use, but callers
+  usually have that data in memory anyway.
+
+- Use ``find_package(Python)`` with version.
+
+  Zeek's configure sets ``Python_EXECUTABLE`` has hint, but Spicy is using
+  ``find_package(Python3)`` and would only use ``Python3_EXECUTABLE`` as hint.
+  This results in Spicy finding a different (the default) Python executable
+  when configuring Zeek with ``--with-python=/opt/custom/bin/python3``.
+
+  Switch Spicy over to use ``find_package(Python)`` and add the minimum
+  version so it knows to look for ``Python3``.
 
 .. rubric:: Bug fixes
 
+- GH-1520: Fix handling of ``spicy-dump --enable-print``.
+
+- Fix spicy-build to correctly infer library directory.
+
+- GH-1446: Initialize generated struct members in constructor body.
+
+- GH-1464: Add special handling for potential ``advance`` failure in trial mode.
+
+- GH-1275: Add missing lowering of Spicy unit ctor to HILTI struct ctor.
+
+- Fix rendering in validation of ``%byte-order`` attribute.
+
+- GH-1384: Fix stringification of ``DecodeErrorStrategy``.
+
+- Fix handling of ``--show-backtraces`` flag.
+
+- GH-1032: Allow using using bitfields with type declarations.
+
+- GH-1484: Fix using of ``&convert`` on bitfields.
+
+- GH-1508: Fix returned value for ``<unit>.position()``.
+
+- GH-1504: Use user-inaccessible chars for encoding ``::`` in feature variables.
+
+- GH-1550: Replace recursive deletion with explicit loop to avoid stack overflow.
+
+- GH-1549: Add feature guards to accesses of a unit's ``__position``.
+
 .. rubric:: Documentation
+
+- Move Zeek-specific documentation into Zeek documentation.
+
+- Clarify error handling docs.
+
+- Mention unit switch statements in conditional parsing docs.
 
 Version 1.8
 ===========
@@ -66,7 +254,6 @@ Version 1.8
   of generated parsers. This includes tweaks for generating more performant
   code for parsers, low-level optimizations of types in to runtime support
   library as well as fine-tuning of parser execution at runtime.
-
 
 - Do not force locale on users of libhilti.
 - Avoid expensive checked iterator for internal ``Bytes`` iteration.
@@ -367,7 +554,7 @@ Version 1.5
 
 - GH-44: Update docs for spicy-plugin rename ``_Zeek::Spicy`` -> ``Zeek::Spicy``.
 
-- GH-1183: Update docs for Discourse migration [skip CI].
+- GH-1183: Update docs for Discourse migration.
 
 - GH-1205: Update Spicy docs for now being built into Zeek.
 
