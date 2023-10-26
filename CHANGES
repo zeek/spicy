@@ -1,3 +1,138 @@
+1.8.2 | 2023-10-26 12:42:44 +0200
+
+  * Bump FreeBSD versions in CI. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 9afcedcb084bf352a993e86db51261ae63753f17)
+
+  * GH-1571: Remove trimming inside individual chunks. (Benjamin Bannier, Corelight)
+
+    Trimming `Chunk`s (always from the left) causes a lot of internal work
+    with only limited benefit since we manage visibility with `stream::View`s
+    on top of `Chunk`s anyway.
+
+    This patch removes trimming inside `Chunk`s so now any trimming only
+    removes `Chunk`s from `Chain`s, but does not internally change
+    individual `Chunk`s anymore. This might lead to slightly increased memory
+    use, but callers usually have that data in memory anyway.
+
+    Closes #1571.
+
+    (cherry picked from commit 625a60745a3e2287f4485d099d382cb20daf8d0a)
+
+  * GH-1549: GH-1554: Fix potential infinite loop when trimming data before stream. (Benjamin Bannier, Corelight)
+
+    Previously we would trigger an infinite loop if one tried to trim before
+    the head chunk of a stream. In praxis this seem to have been no issue
+    due to #1549 and us emitting way less calls to trim than possible.
+
+    This patch adds an explicit check whether we need to trim anything, and
+    exits the low-level function early for such cases.
+
+    Closes #1554.
+
+    (cherry picked from commit bc888f5bf82c18cc2a1e73f04294985d54d257c3)
+
+  * GH-1550: Replace recursive deletion with explicit loop to avoid stack overflow. (Benjamin Bannier, Corelight)
+
+    Closes #1550.
+
+    (cherry picked from commit e190a7875215801af37bbb614ca7cd9b43aad84b)
+
+  * GH-1549: Add feature guards to accesses of a unit's `__position`. (Benjamin Bannier, Corelight)
+
+    Access of `__position` triggers a random access functionality. In order
+    to distinguish our internal uses from accesses due to user code, most
+    access in our generated code should be guarded with a feature constant
+    (`if` or ternary).
+
+    In this patch add proper guards for a couple instances where we did not
+    do that correctly. That mishap caused all units with containers to be
+    random access (even the root unit) which in turn could have lead to
+    e.g., unbounded memory growth, or runtime overhead due to generation and
+    execution of unneeded code, or expensive cleanup on very large untrimmed
+    inputs.
+
+    Closes #1549.
+
+    (cherry picked from commit acd3844f0c94e2c6025f89453e6a0519f9f2025e)
+
+  * Artificially limit the number of open files. (Benjamin Bannier, Corelight)
+
+    This works around a silent failure in reproc where it would refuse to
+    run on systems which huge rlimits for the number of open files. We have
+    seen this hit on huge production boxes.
+
+    (cherry picked from commit 273e44281f0d890c183e7fd7ee128db44c16db67)
+
+  * GH-1478: Add regression test for #1478. (Benjamin Bannier, Corelight)
+
+    Closes #1478.
+
+    (cherry picked from commit f4ef4c572c21b4d97499a20f7a931b739ecb46d2)
+
+  * Add begin to parser state. (Benjamin Bannier, Corelight)
+
+    This patch adds the current begin position to the parser state, and
+    makes the corresponding changes to generated parser functions so it is
+    passed down.
+
+    We already modelled the semantic beginning of the input in the unit, but
+    had no reliable way to keep this up-to-date across non-unit contexts
+    like `&parse-from`. This would then for certain setups lead to generated
+    code where `input` and `position` would point to different inputs which in
+    turn caused `offset` (modelled as `position - input`) to be incorrect.
+
+    (cherry picked from commit 35aa4266c8bf37ebff3df5ec17241171e42e7cec)
+
+  * Expand validator error message. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit d77775c81e4128603b899ba9bd3817a90a8bd58d)
+
+  * Disable a few newer clang-tidy categories. (Benjamin Bannier, Corelight)
+
+    The options disabled here and triggered in newer versions of clang-tidy.
+
+    (cherry picked from commit 08998a7192abaeb4ef1967a28eadcba622be0bb5)
+
+  * Drop `-noall_load` linker option. (Benjamin Bannier, Corelight)
+
+    We added this linker option on macos. This option was already obsolete,
+    e.g., in the `ld` manpage:
+
+    ```
+         -noall_load
+                 This is the default.  This option is obsolete.
+    ```
+
+    Newer versions of xcode do not know this option anymore and instead
+    generate a hard error.
+
+    (cherry picked from commit 265581faeaf4bebfb2255ee4a39a87ffba206466)
+
+  * Declare Spicy pygments extension as parallel-safe. [skip CI] (Benjamin Bannier, Corelight)
+
+    We previously would not declare that the Spicy pygments highlighter is
+    safe to execute in parallel (reading or writing of sources). Sphinx then
+    assumed that the extension was not safe to run in parallel and instead
+    ran jobs sequentially.
+
+    This patch declares the extension as able to execute in parallel. Since
+    the extension does not manage any external state this is safe.
+
+    (cherry picked from commit 22e9f729f423d0e43b788d48d824377ceaaf8ede)
+
+  * Use find_package(Python) with version. (Arne Welzel, Corelight)
+
+    Zeek's configure sets Python_EXECUTABLE has hint, but Spicy is using
+    find_package(Python3) and would only use Python3_EXECUTABLE as hint.
+    This results in Spicy finding a different (the default) Python executable
+    when configuring Zeek with --with-python=/opt/custom/bin/python3.
+
+    Switch Spicy over to use find_package(Python) and add the minimum
+    version so it knows to look for Python3.
+
+    (cherry picked from commit 32d8bbd85d03fe821d77729d3976dd0e37180474)
+
 1.8.1 | 2023-07-04 17:16:32 +0200
 
   * GH-1475: Revert #1439. (Benjamin Bannier, Corelight)
