@@ -61,4 +61,16 @@ TEST_CASE("upper") {
                          "illegal UTF8 sequence in string", const RuntimeError&);
 }
 
+TEST_CASE("to_string") {
+    CHECK_EQ(to_string(std::string("abc")), "\"abc\"");
+    CHECK_EQ(to_string(std::string_view("abc")), "\"abc\"");
+    CHECK_EQ(to_string("abc"), "\"abc\"");
+}
+
+TEST_CASE("to_string_for_print") {
+    CHECK_EQ(to_string_for_print(std::string("abc")), "abc");
+    CHECK_EQ(to_string_for_print(std::string_view("abc")), "abc");
+    CHECK_EQ(to_string_for_print("abc"), "abc");
+}
+
 TEST_SUITE_END();
