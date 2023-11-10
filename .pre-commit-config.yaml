@@ -37,14 +37,14 @@ repos:
     stages: ["commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'v16.0.6'
+  rev: 'v17.0.6'
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
     stages: ["commit"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v4.5.0
   hooks:
   - id: trailing-whitespace
     exclude: '^tests/Baseline'
@@ -86,7 +86,7 @@ repos:
     stages: ["commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.16.13
+  rev: v1.16.23
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*'
