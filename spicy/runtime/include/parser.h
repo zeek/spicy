@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -316,7 +317,7 @@ inline auto parsers() {
  */
 class ParseError : public hilti::rt::RecoverableFailure {
 public:
-    ParseError(const std::string& msg, const std::string& location = "") : RecoverableFailure(msg, location) {}
+    ParseError(std::string_view msg, std::string_view location = "") : RecoverableFailure(msg, location) {}
 
     ParseError(const hilti::rt::result::Error& e) : RecoverableFailure(e.description()) {}
 
@@ -336,7 +337,7 @@ public:
 
 class MissingData : public ParseError {
 public:
-    MissingData(const std::string& location = "") : ParseError("missing data", location) {}
+    MissingData(std::string_view location = "") : ParseError("missing data", location) {}
     ~MissingData() override; /* required to create vtable, see hilti::rt::Exception */
 };
 
@@ -452,8 +453,8 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
  * has been reached
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
-                         const hilti::rt::stream::View& cur, uint64_t min, const std::string& error_msg,
-                         const std::string& location,
+                         const hilti::rt::stream::View& cur, uint64_t min, std::string_view error_msg,
+                         std::string_view location,
                          hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
 
 /**
@@ -484,7 +485,7 @@ extern bool waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data
  * has been reached
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
-                         const hilti::rt::stream::View& cur, const std::string& error_msg, const std::string& location,
+                         const hilti::rt::stream::View& cur, std::string_view error_msg, std::string_view location,
                          const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
 
 /**

@@ -105,14 +105,14 @@ void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, cons
 }
 
 void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                          uint64_t min, const std::string& error_msg, const std::string& location,
+                          uint64_t min, std::string_view error_msg, std::string_view location,
                           hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
                               filters) { // NOLINT(performance-unnecessary-value-param)
     while ( min > cur.size() )
         if ( ! waitForInputOrEod(data, cur, filters) ) {
             SPICY_RT_DEBUG_VERBOSE(
                 hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
-            throw ParseError(error_msg, location);
+            throw ParseError(std::string(error_msg), std::string(location));
         }
 }
 
@@ -156,12 +156,12 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
 }
 
 void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                          const std::string& error_msg, const std::string& location,
+                          std::string_view error_msg, std::string_view location,
                           const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( ! waitForInputOrEod(data, cur, filters) ) {
         SPICY_RT_DEBUG_VERBOSE(
             hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
-        throw ParseError(error_msg, location);
+        throw ParseError(std::string(error_msg), std::string(location));
     }
 }
 
