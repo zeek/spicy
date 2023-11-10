@@ -64,8 +64,9 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
       cur(std::move(cur)) {}
 
 void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
-    builder->addCall("spicy_rt::printParserState", {builder::string(unit_id), data, begin, cur, lahead, lahead_end,
-                                                    builder::string(to_string(literal_mode)), trim, error});
+    builder->addCall("spicy_rt::printParserState",
+                     {builder::string_literal(unit_id.str()), data, begin, cur, lahead, lahead_end,
+                      builder::string_literal(to_string(literal_mode)), trim, error});
 }
 
 namespace spicy::detail::codegen {
@@ -157,7 +158,7 @@ struct ProductionVisitor
         if ( pb->options().debug ) {
             pb->state().printDebug(builder());
             builder()->addDebugMsg("spicy-verbose", fmt("- parsing production: %s", hilti::util::trim(std::string(p))));
-            builder()->addCall("hilti::debugIndent", {builder::string("spicy-verbose")});
+            builder()->addCall("hilti::debugIndent", {builder::string_literal("spicy-verbose")});
         }
     }
 
@@ -165,7 +166,7 @@ struct ProductionVisitor
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- end production"));
 
         if ( pb->options().debug )
-            builder()->addCall("hilti::debugDedent", {builder::string("spicy-verbose")});
+            builder()->addCall("hilti::debugDedent", {builder::string_literal("spicy-verbose")});
 
         builder()->addComment(fmt("End parsing production: %s", hilti::util::trim(std::string(p))),
                               hilti::statement::comment::Separator::After);
@@ -259,7 +260,7 @@ struct ProductionVisitor
                         }
 
                         builder()->addDebugMsg("spicy", msg);
-                        builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
+                        builder()->addCall("hilti::debugIndent", {builder::string_literal("spicy")});
                     }
 
                     if ( unit ) {
@@ -378,7 +379,7 @@ struct ProductionVisitor
                             fmt("ParserBuilder: non-atomic production %s not handled (%s)", p.typename_(), p));
 
                     if ( unit ) {
-                        builder()->addCall("hilti::debugDedent", {builder::string("spicy")});
+                        builder()->addCall("hilti::debugDedent", {builder::string_literal("spicy")});
                         popState();
                     }
 
@@ -1365,9 +1366,9 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Enclosure& p) {
-        builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
+        builder()->addCall("hilti::debugIndent", {builder::string_literal("spicy")});
         parseProduction(p.child());
-        builder()->addCall("hilti::debugDedent", {builder::string("spicy")});
+        builder()->addCall("hilti::debugDedent", {builder::string_literal("spicy")});
     }
 
     void operator()(const production::ForEach& p) {
@@ -1391,7 +1392,7 @@ struct ProductionVisitor
     void operator()(const production::Resolved& p) { parseProduction(grammar.resolved(p)); }
 
     void operator()(const production::Switch& p) {
-        builder()->addCall("hilti::debugIndent", {builder::string("spicy")});
+        builder()->addCall("hilti::debugIndent", {builder::string_literal("spicy")});
 
         if ( const auto& a = AttributeSet::find(p.attributes(), "&parse-from") )
             redirectInputToBytesValue(*a->valueAsExpression());
@@ -1444,7 +1445,7 @@ struct ProductionVisitor
         if ( AttributeSet::find(p.attributes(), "&parse-from") || AttributeSet::find(p.attributes(), "&parse-at") )
             popState();
 
-        builder()->addCall("hilti::debugDedent", {builder::string("spicy")});
+        builder()->addCall("hilti::debugDedent", {builder::string_literal("spicy")});
     }
 
     void operator()(const production::Unit& p) {
@@ -1884,9 +1885,9 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
          builder::parameter("cur", type::Optional(type::stream::View()), builder::optional(type::stream::View())),
          builder::parameter("context", type::Optional(builder::typeByID("spicy_rt::UnitContext")))};
 
-    auto attr_ext_overload =
-        AttributeSet({Attribute("&needed-by-feature", builder::string("is_filter")),
-                      Attribute("&needed-by-feature", builder::string("supports_sinks")), Attribute("&static")});
+    auto attr_ext_overload = AttributeSet({Attribute("&needed-by-feature", builder::string_literal("is_filter")),
+                                           Attribute("&needed-by-feature", builder::string_literal("supports_sinks")),
+                                           Attribute("&static")});
 
     auto f_ext_overload1_result = type::stream::View();
     auto f_ext_overload1 = builder::function(id_ext_overload1, f_ext_overload1_result, params,
@@ -2369,7 +2370,7 @@ Expression ParserBuilder::atEod() {
 }
 
 void ParserBuilder::waitForInput(const std::string& error_msg, const Meta& location) {
-    builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, builder::string(error_msg),
+    builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, builder::string_literal(error_msg),
                                                   builder::expression(location), _filters(state())});
 }
 
@@ -2378,7 +2379,7 @@ Expression ParserBuilder::waitForInputOrEod(const Expression& min) {
 }
 
 void ParserBuilder::waitForInput(const Expression& min, const std::string& error_msg, const Meta& location) {
-    builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, min, builder::string(error_msg),
+    builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, min, builder::string_literal(error_msg),
                                                   builder::expression(location), _filters(state())});
 }
 
@@ -2391,11 +2392,11 @@ void ParserBuilder::parseError(const Expression& error_msg, const Meta& location
 }
 
 void ParserBuilder::parseError(const std::string& error_msg, const Meta& location) {
-    parseError(builder::string(error_msg), location);
+    parseError(builder::string_literal(error_msg), location);
 }
 
 void ParserBuilder::parseError(const std::string& fmt, const std::vector<Expression>& args, const Meta& location) {
-    parseError(builder::modulo(builder::string(fmt), builder::tuple(args)), location);
+    parseError(builder::modulo(builder::string_literal(fmt), builder::tuple(args)), location);
 }
 
 void ParserBuilder::advanceToNextData() {

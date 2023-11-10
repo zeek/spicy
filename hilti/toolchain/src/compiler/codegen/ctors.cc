@@ -181,7 +181,12 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
         return fmt("::hilti::rt::Stream(\"%s\"_b)", util::escapeBytesForCxx(n.value()));
     }
 
-    result_t operator()(const ctor::String& n) { return fmt("std::string(\"%s\")", util::escapeUTF8(n.value(), true)); }
+    result_t operator()(const ctor::String& n) {
+        if ( n.isLiteral() )
+            return fmt("std::string_view(\"%s\")", util::escapeUTF8(n.value(), true));
+        else
+            return fmt("std::string(\"%s\")", util::escapeUTF8(n.value(), true));
+    }
 
     result_t operator()(const ctor::Tuple& n) {
         return fmt("std::make_tuple(%s)",

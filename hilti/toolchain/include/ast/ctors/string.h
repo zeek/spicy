@@ -13,9 +13,11 @@ namespace hilti::ctor {
 /** AST node for a string constructor. */
 class String : public NodeBase, public hilti::trait::isCtor {
 public:
-    String(std::string v, const Meta& m = Meta()) : NodeBase(nodes(type::String(m)), m), _value(std::move(v)) {}
+    String(std::string v, bool is_literal = false, const Meta& m = Meta())
+        : NodeBase(nodes(type::String(m)), m), _value(std::move(v)), _is_literal(is_literal) {}
 
-    auto value() const { return _value; }
+    const auto& value() const& { return _value; }
+    bool isLiteral() const { return _is_literal; }
 
     bool operator==(const String& other) const { return value() == other.value(); }
 
@@ -31,10 +33,11 @@ public:
     auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
 
     /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"value", _value}}; }
+    auto properties() const { return node::Properties{{"value", _value}, {"is_literal", _is_literal}}; }
 
 private:
     std::string _value;
+    bool _is_literal = false;
 };
 
 } // namespace hilti::ctor

@@ -126,7 +126,7 @@ struct FieldBuilder : public hilti::visitor::PreOrder<void, FieldBuilder> {
     void operator()(const spicy::type::unit::item::Sink& s) {
         auto type = builder::typeByID("spicy_rt::Sink", s.meta());
         AttributeSet attrs({Attribute("&default", builder::new_(std::move(type))), Attribute("&internal"),
-                            Attribute("&needed-by-feature", builder::string("supports_sinks"))});
+                            Attribute("&needed-by-feature", builder::string_literal("supports_sinks"))});
 
         auto nf = hilti::declaration::Field(s.id(), type::Sink(), std::move(attrs), s.meta());
         addField(std::move(nf));
@@ -179,7 +179,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
-    auto attr_sync = AttributeSet({Attribute("&needed-by-feature", builder::string("synchronization"))});
+    auto attr_sync = AttributeSet({Attribute("&needed-by-feature", builder::string_literal("synchronization"))});
     add_hook("0x25_confirmed", {}, attr_sync);
     add_hook("0x25_rejected", {}, attr_sync);
     add_hook("0x25_synced", {}, attr_sync);
@@ -204,7 +204,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
              {builder::parameter("seq", type::UnsignedInteger(64)), builder::parameter("data", type::Bytes())});
 
     // Fields related to random-access functionality.
-    auto attr_uses_random_access = Attribute("&needed-by-feature", builder::string("uses_random_access"));
+    auto attr_uses_random_access = Attribute("&needed-by-feature", builder::string_literal("uses_random_access"));
     auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                         AttributeSet({Attribute("&internal"), attr_uses_random_access}));
     auto f2 = hilti::declaration::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
@@ -213,23 +213,24 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     v.addField(std::move(f2));
 
     // Fields related to offset functionality.
-    auto attr_uses_offset = Attribute("&needed-by-feature", builder::string("uses_offset"));
+    auto attr_uses_offset = Attribute("&needed-by-feature", builder::string_literal("uses_offset"));
     auto f3 = hilti::declaration::Field(ID("__offset"), hilti::type::UnsignedInteger(64),
                                         AttributeSet({Attribute("&internal"), attr_uses_offset}));
     v.addField(std::move(f3));
 
     {
         auto attrs = AttributeSet({Attribute("&static"), Attribute("&internal"),
-                                   Attribute("&needed-by-feature", builder::string("supports_filters"))});
+                                   Attribute("&needed-by-feature", builder::string_literal("supports_filters"))});
 
         if ( unit.isPublic() )
             attrs = AttributeSet::add(std::move(attrs), Attribute("&always-emit"));
         else
-            attrs =
-                AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("supports_sinks")));
+            attrs = AttributeSet::add(std::move(attrs),
+                                      Attribute("&needed-by-feature", builder::string_literal("supports_sinks")));
 
         if ( unit.isFilter() )
-            attrs = AttributeSet::add(std::move(attrs), Attribute("&needed-by-feature", builder::string("is_filter")));
+            attrs = AttributeSet::add(std::move(attrs),
+                                      Attribute("&needed-by-feature", builder::string_literal("is_filter")));
 
         auto parser =
             hilti::declaration::Field(ID("__parser"), builder::typeByID("spicy_rt::Parser"), std::move(attrs));
@@ -238,8 +239,8 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
     }
 
     {
-        auto attrs =
-            AttributeSet({Attribute("&internal"), Attribute("&needed-by-feature", builder::string("supports_sinks"))});
+        auto attrs = AttributeSet(
+            {Attribute("&internal"), Attribute("&needed-by-feature", builder::string_literal("supports_sinks"))});
 
         // If the unit has a `%mime-type` property consumers can connect to it via
         // MIME type with `connect_mime_type`. In that case we need to always emit
@@ -253,16 +254,17 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     auto filters =
         hilti::declaration::Field(ID("__filters"), hilti::type::StrongReference(builder::typeByID("spicy_rt::Filters")),
-                                  AttributeSet({Attribute("&internal"),
-                                                Attribute("&needed-by-feature", builder::string("supports_filters"))}));
+                                  AttributeSet(
+                                      {Attribute("&internal"),
+                                       Attribute("&needed-by-feature", builder::string_literal("supports_filters"))}));
     v.addField(std::move(filters));
 
     if ( unit.isFilter() ) {
-        auto forward =
-            hilti::declaration::Field(ID("__forward"),
-                                      hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
-                                      AttributeSet({Attribute("&internal"),
-                                                    Attribute("&needed-by-feature", builder::string("is_filter"))}));
+        auto forward = hilti::declaration::Field(ID("__forward"),
+                                                 hilti::type::WeakReference(builder::typeByID("spicy_rt::Forward")),
+                                                 AttributeSet({Attribute("&internal"),
+                                                               Attribute("&needed-by-feature",
+                                                                         builder::string_literal("is_filter"))}));
         v.addField(std::move(forward));
     }
 
@@ -334,18 +336,14 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     _pb.guardFeatureCode(ID(*unit.id()), dependentFeatureFlags, [&]() {
         auto parser =
-            builder::struct_({{ID("name"), builder::string(*unit.id())},
+            builder::struct_({{ID("name"), builder::string_literal(unit.id()->str())},
                               {ID("is_public"), builder::bool_(unit.isPublic())},
                               {ID("parse1"), parse1},
                               {ID("parse2"), _pb.parseMethodExternalOverload2(unit)},
                               {ID("parse3"), parse3},
                               {ID("context_new"), context_new},
                               {ID("type_info"), builder::typeinfo(builder::id(*unit.id()))},
-                              // We emit different string types for generated and user-provided strings. The distinction
-                              // is whether they have a location, so set a dummy location so both branches behave
-                              // identically.
-                              {ID("description"), (description ? *description->expression() :
-                                                                 builder::string("", Meta(Location("<unset>"))))},
+                              {ID("description"), (description ? *description->expression() : builder::string(""))},
                               {ID("mime_types"),
                                builder::vector(builder::typeByID("spicy_rt::MIMEType"), std::move(mime_types))},
                               {ID("ports"),

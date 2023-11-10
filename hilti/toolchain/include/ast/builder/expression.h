@@ -21,7 +21,12 @@ inline Expression id(ID id_, Meta m = Meta()) { return expression::UnresolvedID(
 // Ctor expressions
 
 inline Expression string(std::string s, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::String(std::move(s), m), m);
+    return expression::Ctor(ctor::String(std::move(s), false, m), m);
+}
+
+inline Expression string_literal(std::string_view s) {
+    // String literals have no location.
+    return expression::Ctor(ctor::String({s.data(), s.size()}, true));
 }
 
 inline Expression bool_(bool b, const Meta& m = Meta()) { return expression::Ctor(ctor::Bool(b, m), m); }
@@ -305,13 +310,9 @@ inline Expression new_(Type t, const std::vector<Expression>& args, const Meta& 
 
 inline Expression expression(Ctor c, Meta m = Meta()) { return expression::Ctor(std::move(c), std::move(m)); }
 
-inline Expression expression(const Location& l) { return expression::Ctor(ctor::String(l), l); }
+inline Expression expression(const Location& l) { return builder::string_literal(std::string(l)); }
 
-inline Expression expression(const Meta& m) {
-    // NOTE: We omit the meta information here since this is how we distinguish
-    // user-provided and generated strings. Meta is generated information.
-    return expression::Ctor(ctor::String(m.location()));
-}
+inline Expression expression(const Meta& m) { return builder::expression(m.location()); }
 
 inline Expression grouping(Expression e, Meta m = Meta()) { return expression::Grouping(std::move(e), std::move(m)); }
 

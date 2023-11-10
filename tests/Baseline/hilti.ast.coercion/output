@@ -52,7 +52,7 @@
 [debug/ast-final]       - ID <name="D"> (coercion.hlt:10:15) [@i:XXX]
 [debug/ast-final]       - type::String (coercion.hlt:10:8) (const) (resolved) [@t:XXX]
 [debug/ast-final]       - expression::Ctor (coercion.hlt:10:19) (const) (resolved) [@e:XXX]
-[debug/ast-final]         - ctor::String <value="42"> (coercion.hlt:10:19) [@c:XXX]
+[debug/ast-final]         - ctor::String <is_literal="false" value="42"> (coercion.hlt:10:19) [@c:XXX]
 [debug/ast-final]           - type::String (coercion.hlt:10:19) (const) (resolved) [@t:XXX]
 [debug/ast-final]     - declaration::Function %5 <linkage="private" parent_type="%???"> (coercion.hlt:10:24-14:2) [canon-id: Foo::x] [@d:XXX]
 [debug/ast-final]       - Function <cc="<standard>"> (coercion.hlt:12:9-14:2) [@f:XXX]
@@ -140,7 +140,7 @@
 [debug/ast-final]               - ctor::UnsignedInteger <value="2" width="64"> (coercion.hlt:28:45) [@c:XXX]
 [debug/ast-final]                 - type::UnsignedInteger <width="64"> (coercion.hlt:28:45) (const) (resolved) [@t:XXX]
 [debug/ast-final]             - expression::Ctor (coercion.hlt:28:48) (const) (resolved) [@e:XXX]
-[debug/ast-final]               - ctor::String <value="xyz"> (coercion.hlt:28:48) [@c:XXX]
+[debug/ast-final]               - ctor::String <is_literal="false" value="xyz"> (coercion.hlt:28:48) [@c:XXX]
 [debug/ast-final]                 - type::String (coercion.hlt:28:48) (const) (resolved) [@t:XXX]
 [debug/ast-final]           - ctor::Tuple (coercion.hlt:28:41) [@c:XXX]
 [debug/ast-final]             - type::Tuple <wildcard="false"> (coercion.hlt:28:41) (const) (resolved) [@t:XXX]
@@ -166,7 +166,7 @@
 [debug/ast-final]                 - ctor::SignedInteger <value="2" width="32"> (coercion.hlt:28:45) [@c:XXX]
 [debug/ast-final]                   - type::SignedInteger <width="32"> (coercion.hlt:28:45) (const) (resolved) [@t:XXX]
 [debug/ast-final]             - expression::Ctor (coercion.hlt:28:48) (const) (resolved) [@e:XXX]
-[debug/ast-final]               - ctor::String <value="xyz"> (coercion.hlt:28:48) [@c:XXX]
+[debug/ast-final]               - ctor::String <is_literal="false" value="xyz"> (coercion.hlt:28:48) [@c:XXX]
 [debug/ast-final]                 - type::String (coercion.hlt:28:48) (const) (resolved) [@t:XXX]
 module Foo {
 
