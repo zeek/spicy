@@ -9,21 +9,22 @@ using namespace hilti::rt::detail;
 
 #include <cstdlib>
 #include <iostream>
+#include <string_view>
 
 using namespace hilti::rt;
 
 HILTI_THREAD_LOCAL const char* debug::detail::tls_location = nullptr;
 
-void hilti::rt::internalError(const std::string& msg) {
+void hilti::rt::internalError(std::string_view msg) {
     std::cerr << fmt("[libhilti] Internal error: %s", msg) << std::endl;
     abort_with_backtrace();
 }
 
-void hilti::rt::fatalError(const std::string& msg) {
+void hilti::rt::fatalError(std::string_view msg) {
     std::cerr << fmt("[libhilti] Fatal error: %s", msg) << std::endl;
     // We do a hard abort here, with no cleanup, because  ASAN may have trouble
     // terminating otherwise if the fiber stacks are still hanging out.
     _exit(1);
 }
 
-void hilti::rt::warning(const std::string& msg) { std::cerr << fmt("[libhilti] Warning: %s", msg) << std::endl; }
+void hilti::rt::warning(std::string_view msg) { std::cerr << fmt("[libhilti] Warning: %s", msg) << std::endl; }

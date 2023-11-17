@@ -15,12 +15,12 @@ using namespace hilti::rt;
 
 detail::DebugLogger::DebugLogger(hilti::rt::filesystem::path output) : _path(std::move(output)) {}
 
-void detail::DebugLogger::enable(const std::string& streams) {
+void detail::DebugLogger::enable(std::string_view streams) {
     for ( auto s : split(streams, ":") )
-        _streams[std::string(trim(s))] = 0;
+        _streams[trim(s)] = 0;
 }
 
-void detail::DebugLogger::print(const std::string& stream, const std::string& msg) {
+void detail::DebugLogger::print(std::string_view stream, std::string_view msg) {
     if ( _path.empty() )
         return;
 
