@@ -308,8 +308,9 @@ taking the file to load from the command line:
 ::
 
     # $(spicy-config --cxx) -o my-driver my-driver.cc $(spicy-config --cxxflags --ldflags --dynamic-loading)
-    # spicyc -j my-http.spicy >my-http.hlto
-    # ./my-driver my-http.hlto "$(cat data)"
+    # spicyc -j -o my-http.hlto my-http.spicy
+    # echo "GET /index.html HTTP/1.0\n\n<dummy>" > data
+    # ./my-driver my-http.hlto MyHTTP::RequestLine "$(cat data)"
     Available parsers:
 
         MyHTTP::RequestLine
