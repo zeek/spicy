@@ -62,7 +62,7 @@ invocation of ``spicyc`` and can remove e.g., unused code. Since we generate
 output files with multiple invocations, optimizations could lead to incomplete
 code.
 
-We also need ``spicyc`` to get generate some additional additional
+We also need ``spicyc`` to generate some additional
 "linker" code implementing internal plumbing necessary for
 cross-module functionality. That's what ``-l`` (aka
 ``--output-linker``) does::
@@ -94,10 +94,11 @@ signatures:
 ``parse1``
     The simplest form of parsing function receives a stream of input
     data, along with an optional view into the stream to limit the
-    region to parse if desired. ``parse``` will internally instantiate
-    an instance of the unit's ``struct``, and then feed the unit's
-    parser with the data stream. However, it won't provide access to
-    what's being parsed as it doesn't pass back the ``struct``.
+    region to parse if desired and an optional context.
+    ``parse1`` will internally instantiate an instance of the unit's
+    ``struct``, and then feed the unit's parser with the data stream.
+    However, it won't provide access to what's being parsed as it
+    doesn't pass back the ``struct``.
 
 ``parse2``
     The second form takes a pre-instantiated instance of the unit's
