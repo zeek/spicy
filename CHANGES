@@ -1,3 +1,9 @@
+1.10.0-dev.8 | 2023-11-17 14:04:16 +0100
+
+  * doc: Fix typo and outdated info for host applications (Anthony VEREZ)
+
+  * Add placeholder section for 1.10 to NEWS. (Benjamin Bannier, Corelight)
+
 1.9.0 | 2023-10-24 16:28:18 +0200
 
   * Release 1.9.0.
