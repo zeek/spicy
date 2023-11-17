@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     auto unit = driver.processInput(**parser, data);
     assert(unit);
 
-    // Print out conntent of parsed unit.
+    // Print out content of parsed unit.
     print(unit->value());
 
     // Wrap up runtime libraries.
