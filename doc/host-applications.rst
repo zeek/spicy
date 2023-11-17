@@ -148,7 +148,7 @@ If we want that, we can use ``parse2()`` instead and provide it with a
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http-host.cc $(spicy-config --cxxflags --ldflags)
+    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
     # ./my-http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
     method : GET
