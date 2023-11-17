@@ -16,7 +16,8 @@ std::string fmt(const char* fmt, const Args&... args) {
 
 /** sprintf-style string formatting. */
 template<typename... Args>
-std::string fmt(const std::string& s, const Args&... args) {
-    return fmt(s.c_str(), args...);
+std::string fmt(std::string_view s, const Args&... args) {
+    // In generated code `s` is always null-terminated.
+    return fmt(s.data(), args...);
 }
 } // namespace hilti::rt
