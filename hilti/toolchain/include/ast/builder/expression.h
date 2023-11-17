@@ -307,7 +307,11 @@ inline Expression expression(Ctor c, Meta m = Meta()) { return expression::Ctor(
 
 inline Expression expression(const Location& l) { return expression::Ctor(ctor::String(l), l); }
 
-inline Expression expression(const Meta& m) { return expression::Ctor(ctor::String(m.location()), m); }
+inline Expression expression(const Meta& m) {
+    // NOTE: We omit the meta information here since this is how we distinguish
+    // user-provided and generated strings. Meta is generated information.
+    return expression::Ctor(ctor::String(m.location()));
+}
 
 inline Expression grouping(Expression e, Meta m = Meta()) { return expression::Grouping(std::move(e), std::move(m)); }
 
