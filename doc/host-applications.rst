@@ -277,7 +277,7 @@ generically over HILTI types like this unit:
    :lines: 15-30
    :language: c++
 
-Adding ``print(unit->value()`` after the call to ``processInput()``
+Adding ``print(unit->value())`` after the call to ``processInput()``
 then gives us this output:
 
 ::
