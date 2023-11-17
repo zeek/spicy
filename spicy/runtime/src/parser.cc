@@ -52,10 +52,10 @@ static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, c
         return false;
 }
 
-void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
+void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
                               const hilti::rt::stream::View& cur, int64_t lahead,
-                              const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
+                              const hilti::rt::stream::SafeConstIterator& lahead_end, std::string_view literal_mode,
                               bool trim, const std::optional<hilti::rt::RecoverableFailure>& error) {
     auto msg = [&]() {
         auto str = [&](const hilti::rt::stream::SafeConstIterator& begin,

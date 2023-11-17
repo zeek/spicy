@@ -405,11 +405,11 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
  * Prints the current parser state, as passed in through arguments, to the
  * spicy-verbose debug stream.
  */
-void printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
+void printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                       const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
                       const hilti::rt::stream::View& cur, int64_t lahead,
-                      const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
-                      bool trim, const std::optional<hilti::rt::RecoverableFailure>& error);
+                      const hilti::rt::stream::SafeConstIterator& lahead_end, std::string_view literal_mode, bool trim,
+                      const std::optional<hilti::rt::RecoverableFailure>& error);
 
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes
