@@ -24,14 +24,15 @@ public:
     bool isEnabled(std::string_view stream) { return _streams.find(stream) != _streams.end(); }
 
     void indent(std::string_view stream) {
-        if ( isEnabled(stream) )
-            _streams[stream] += 1;
+        if ( auto s = _streams.find(stream); s != _streams.end() ) {
+            auto& indent = s->second;
+            indent += 1;
+        }
     }
 
     void dedent(std::string_view stream) {
-        if ( isEnabled(stream) ) {
-            auto& indent = _streams[stream];
-
+        if ( auto s = _streams.find(stream); s != _streams.end() ) {
+            auto& indent = s->second;
             if ( indent > 0 )
                 indent -= 1;
         }
