@@ -22,9 +22,9 @@ HILTI_EXCEPTION_IMPL(ParseError)
 void spicy::rt::Parser::_initProfiling() {
     // Cache profiler tags to avoid recomputing them frequently.
     assert(! name.empty());
-    profiler_tags.prepare_block = "spicy/prepare/block/" + name;
-    profiler_tags.prepare_input = "spicy/prepare/input/" + name;
-    profiler_tags.prepare_stream = "spicy/prepare/stream/" + name;
+    profiler_tags.prepare_block.append(name);
+    profiler_tags.prepare_input.append(name);
+    profiler_tags.prepare_stream.append(name);
 }
 
 void spicy::rt::accept_input() {

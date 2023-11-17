@@ -139,10 +139,10 @@ struct has_on_undelivered {
  * as well.
  */
 struct Parser {
-    Parser(std::string name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
+    Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            ContextNewFunction context_new, const hilti::rt::TypeInfo* type, std::string description,
            hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : name(std::move(name)),
+        : name(name),
           is_public(is_public),
           parse1(parse1),
           parse2(std::move(parse2)),
@@ -155,10 +155,10 @@ struct Parser {
         _initProfiling();
     }
 
-    Parser(std::string name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
+    Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type, std::string description,
            hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : name(std::move(name)),
+        : name(name),
           is_public(is_public),
           parse1(parse1),
           parse2(std::move(parse2)),
@@ -170,19 +170,19 @@ struct Parser {
         _initProfiling();
     }
 
-    Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+    Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
            std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : Parser(std::move(name), is_public, nullptr, std::move(parse2), nullptr, nullptr, type, std::move(description),
+        : Parser(name, is_public, nullptr, std::move(parse2), nullptr, nullptr, type, std::move(description),
                  std::move(mime_types), std::move(ports)) {
         _initProfiling();
     }
 
-    Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+    Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, ContextNewFunction context_new, const hilti::rt::TypeInfo* type,
            std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : Parser(std::move(name), is_public, nullptr, std::move(parse2), nullptr, context_new, type,
-                 std::move(description), std::move(mime_types), std::move(ports)) {
+        : Parser(name, is_public, nullptr, std::move(parse2), nullptr, context_new, type, std::move(description),
+                 std::move(mime_types), std::move(ports)) {
         _initProfiling();
     }
 
@@ -206,7 +206,7 @@ struct Parser {
     }
 
     /** Short descriptive name. */
-    std::string name;
+    std::string_view name;
 
     /** Whether this parser is public. */
     bool is_public;
@@ -250,9 +250,9 @@ struct Parser {
 
     /** Pre-computed profiler tags used by the runtime driver. */
     struct {
-        std::string prepare_block;
-        std::string prepare_input;
-        std::string prepare_stream;
+        std::string prepare_block = "spicy/prepare/block/";
+        std::string prepare_input = "spicy/prepare/input/";
+        std::string prepare_stream = "spicy/prepare/stream/";
 
         operator bool() const {
             // ensure initialization code has run

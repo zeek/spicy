@@ -52,12 +52,12 @@ TEST_CASE("init") {
         REQUIRE_NE(gs, nullptr);
         CHECK_EQ(gs->default_parser, &parser);
 
-        CHECK_EQ(gs->parsers_by_name,
-                 std::map<std::string, std::vector<const Parser*>>({{parser.name, {&parser}},
-                                                                    {"4040/tcp", {&parser}},
-                                                                    {"4040/tcp%orig", {&parser}},
-                                                                    {"4040/tcp%resp", {&parser}},
-                                                                    {parser.mime_types.at(0), {&parser}}}));
+        CHECK_EQ(gs->parsers_by_name, std::map<std::string, std::vector<const Parser*>>(
+                                          {{{parser.name.data(), parser.name.size()}, {&parser}},
+                                           {"4040/tcp", {&parser}},
+                                           {"4040/tcp%orig", {&parser}},
+                                           {"4040/tcp%resp", {&parser}},
+                                           {parser.mime_types.at(0), {&parser}}}));
         CHECK_EQ(gs->parsers_by_mime_type,
                  std::map<std::string, std::vector<const Parser*>>({{parser.mime_types.at(0), {&parser}}}));
     }
@@ -82,12 +82,12 @@ TEST_CASE("init") {
 
         CAPTURE(gs->parsers.size());
         CAPTURE(gs->parsers_by_name.size());
-        CHECK_EQ(gs->parsers_by_name,
-                 std::map<std::string, std::vector<const Parser*>>({{parser1.name, {&parser1}},
-                                                                    {"4040/tcp%orig", {&parser1}},
-                                                                    {parser1.mime_types.at(0), {&parser1}},
-                                                                    {parser2.name, {&parser2}},
-                                                                    {"4040/tcp%resp", {&parser2}}}));
+        CHECK_EQ(gs->parsers_by_name, std::map<std::string, std::vector<const Parser*>>(
+                                          {{{parser1.name.data(), parser1.name.size()}, {&parser1}},
+                                           {"4040/tcp%orig", {&parser1}},
+                                           {parser1.mime_types.at(0), {&parser1}},
+                                           {{parser2.name.data(), parser2.name.size()}, {&parser2}},
+                                           {"4040/tcp%resp", {&parser2}}}));
         CHECK_EQ(gs->parsers_by_mime_type,
                  std::map<std::string, std::vector<const Parser*>>(
                      {{parser1.mime_types.at(0), {&parser1}}, {parser2.mime_types.at(0).mainType(), {&parser2}}}));
@@ -113,12 +113,12 @@ TEST_CASE("init") {
 
         CAPTURE(gs->parsers.size());
         CAPTURE(gs->parsers_by_name.size());
-        CHECK_EQ(gs->parsers_by_name,
-                 std::map<std::string, std::vector<const Parser*>>({{parser1.name, {&parser1}},
-                                                                    {"4040/tcp%orig", {&parser1}},
-                                                                    {parser1.mime_types.at(0), {&parser1}},
-                                                                    {parser2.name, {&parser2}},
-                                                                    {"4040/tcp%resp", {&parser2}}}));
+        CHECK_EQ(gs->parsers_by_name, std::map<std::string, std::vector<const Parser*>>(
+                                          {{{parser1.name.data(), parser1.name.size()}, {&parser1}},
+                                           {"4040/tcp%orig", {&parser1}},
+                                           {parser1.mime_types.at(0), {&parser1}},
+                                           {{parser2.name.data(), parser2.name.size()}, {&parser2}},
+                                           {"4040/tcp%resp", {&parser2}}}));
         CHECK_EQ(gs->parsers_by_mime_type,
                  std::map<std::string, std::vector<const Parser*>>(
                      {{parser1.mime_types.at(0), {&parser1}}, {parser2.mime_types.at(0).mainType(), {&parser2}}}));

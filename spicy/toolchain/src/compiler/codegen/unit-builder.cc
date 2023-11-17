@@ -341,7 +341,11 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                               {ID("parse3"), parse3},
                               {ID("context_new"), context_new},
                               {ID("type_info"), builder::typeinfo(builder::id(*unit.id()))},
-                              {ID("description"), (description ? *description->expression() : builder::string(""))},
+                              // We emit different string types for generated and user-provided strings. The distinction
+                              // is whether they have a location, so set a dummy location so both branches behave
+                              // identically.
+                              {ID("description"), (description ? *description->expression() :
+                                                                 builder::string("", Meta(Location("<unset>"))))},
                               {ID("mime_types"),
                                builder::vector(builder::typeByID("spicy_rt::MIMEType"), std::move(mime_types))},
                               {ID("ports"),
