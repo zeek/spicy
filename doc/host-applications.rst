@@ -240,7 +240,7 @@ prints out our one available parser:
 
 .. literalinclude:: examples/my-http-host-driver.cc
    :caption: my-http-host.cc
-   :lines:   9-12,31-42,57-64
+   :lines:   9-12,31-44,59-64
    :language: c++
 
 ::
