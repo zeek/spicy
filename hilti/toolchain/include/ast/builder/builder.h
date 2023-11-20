@@ -54,8 +54,8 @@ public:
 
     void addExpression(const Expression& expr) { _block._add(statement::Expression(expr, expr.meta())); }
 
-    void addAssert(Expression cond, std::string msg, Meta m = Meta()) {
-        _block._add(statement::Assert(std::move(cond), builder::string(std::move(msg)), std::move(m)));
+    void addAssert(Expression cond, std::string_view msg, Meta m = Meta()) {
+        _block._add(statement::Assert(std::move(cond), builder::string_literal(msg), std::move(m)));
     }
 
     void addAssign(Expression dst, Expression src, const Meta& m = Meta()) {
