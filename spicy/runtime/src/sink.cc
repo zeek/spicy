@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include "spicy/rt/sink.h"
+
 #include <spicy/rt/parser.h>
 
 using namespace spicy::rt;
@@ -124,7 +126,7 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
             _filter_data->output_cur = (*_filter_data->output).view();
         }
 
-        _filter_data->input->append(*data);
+        _filter_data->input->append(std::move(*data));
         spicy::rt::filter::flush(_filter);
 
         data = _filter_data->output_cur.data();
@@ -137,6 +139,8 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
 
     _size += data->size();
 
+    std::vector<sink::detail::State*> states;
+    states.reserve(_states.size());
     for ( auto s : _states ) {
         if ( s->skip_delivery )
             continue;
@@ -144,7 +148,15 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
         if ( s->resumable )
             throw ParseError("more data after sink's unit has already completed parsing");
 
-        s->data->append(*data);
+        states.push_back(s);
+    }
+
+    for ( auto s : states ) {
+        if ( states.size() == 1 )
+            s->data->append(std::move(*data));
+        else
+            s->data->append(*data);
+
         try {
             // Sinks are operating independently from the writer, so we
             // don't forward errors on.
@@ -172,7 +184,7 @@ void Sink::_newData(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
     // haven't anything buffered, and we do auto-trimming, just pass on.
     if ( _auto_trim && _chunks.empty() && rseq == _cur_rseq ) {
         _debugReassembler("fastpath new data", data, rseq, len);
-        _deliver(data, rseq, rseq + len);
+        _deliver(std::move(data), rseq, rseq + len);
         return;
     }
 

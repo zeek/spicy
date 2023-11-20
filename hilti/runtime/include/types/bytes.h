@@ -226,6 +226,9 @@ public:
     /** Returns the bytes' data as a string instance. */
     const std::string& str() const& { return *this; }
 
+    /** Returns the bytes' data as a string instance. */
+    std::string str() && { return std::move(*this); }
+
     /** Returns an iterator representing the first byte of the instance. */
     const_iterator begin() const { return const_iterator(0U, _control); }
 

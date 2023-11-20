@@ -394,7 +394,7 @@ void Stream::append(Bytes&& data) {
     if ( data.isEmpty() )
         return;
 
-    _chain->append(std::make_unique<Chunk>(0, data.str()));
+    _chain->append(std::make_unique<Chunk>(0, std::move(data).str()));
 }
 
 void Stream::append(const Bytes& data) {
