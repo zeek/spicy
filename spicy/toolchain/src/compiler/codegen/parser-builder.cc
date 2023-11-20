@@ -2391,11 +2391,11 @@ void ParserBuilder::parseError(const Expression& error_msg, const Meta& location
     builder()->addThrow(builder::exception(builder::typeByID("spicy_rt::ParseError"), error_msg, location), location);
 }
 
-void ParserBuilder::parseError(const std::string& error_msg, const Meta& location) {
+void ParserBuilder::parseError(std::string_view error_msg, const Meta& location) {
     parseError(builder::string_literal(error_msg), location);
 }
 
-void ParserBuilder::parseError(const std::string& fmt, const std::vector<Expression>& args, const Meta& location) {
+void ParserBuilder::parseError(std::string_view fmt, const std::vector<Expression>& args, const Meta& location) {
     parseError(builder::modulo(builder::string_literal(fmt), builder::tuple(args)), location);
 }
 

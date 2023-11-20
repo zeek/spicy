@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -402,13 +403,13 @@ public:
     void consumeLookAhead(std::optional<Expression> dst = {});
 
     /** Generates code that triggers a parse error exception. */
-    void parseError(const std::string& error_msg, const Meta& location);
+    void parseError(std::string_view error_msg, const Meta& location);
 
     /** Generates code that triggers a parse error exception. */
     void parseError(const Expression& error_msg, const Meta& location);
 
     /** Generates code that triggers a parse error exception. */
-    void parseError(const std::string& fmt, const std::vector<Expression>& args, const Meta& location);
+    void parseError(std::string_view fmt, const std::vector<Expression>& args, const Meta& location);
 
     /** Called when a field has been updated. */
     void newValueForField(const production::Meta& meta, const Expression& value, const Expression& dd);
