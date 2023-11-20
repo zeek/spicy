@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -103,9 +104,9 @@ public:
     void addThrow(Expression excpt, Meta m = Meta()) { _block._add(statement::Throw(std::move(excpt), std::move(m))); }
     void addRethrow(Meta m = Meta()) { _block._add(statement::Throw(std::move(m))); }
 
-    void addDebugMsg(const std::string& stream, const std::string& fmt, std::vector<Expression> args = {});
-    void addDebugIndent(const std::string& stream);
-    void addDebugDedent(const std::string& stream);
+    void addDebugMsg(std::string_view stream, std::string_view fmt, std::vector<Expression> args = {});
+    void addDebugIndent(std::string_view stream);
+    void addDebugDedent(std::string_view stream);
 
     void addPrint(const std::vector<Expression>& exprs) { addCall("hilti::print", exprs); }
     void addPrint(const Expression& expr) { addCall("hilti::print", {expr}); }

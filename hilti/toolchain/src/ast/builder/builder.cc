@@ -67,7 +67,7 @@ Expression Builder::addTmp(const std::string& prefix, const Type& t, const Expre
     return builder::id(tmp);
 }
 
-void Builder::addDebugMsg(const std::string& stream, const std::string& fmt, std::vector<Expression> args) {
+void Builder::addDebugMsg(std::string_view stream, std::string_view fmt, std::vector<Expression> args) {
     if ( ! context()->options().debug )
         return;
 
@@ -87,7 +87,7 @@ void Builder::addDebugMsg(const std::string& stream, const std::string& fmt, std
     _block._add(statement::Expression(call, call.meta()));
 }
 
-void Builder::addDebugIndent(const std::string& stream) {
+void Builder::addDebugIndent(std::string_view stream) {
     if ( ! context()->options().debug )
         return;
 
@@ -95,7 +95,7 @@ void Builder::addDebugIndent(const std::string& stream) {
     _block._add(statement::Expression(std::move(call)));
 }
 
-void Builder::addDebugDedent(const std::string& stream) {
+void Builder::addDebugDedent(std::string_view stream) {
     if ( ! context()->options().debug )
         return;
 
