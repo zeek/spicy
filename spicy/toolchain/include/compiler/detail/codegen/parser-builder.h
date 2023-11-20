@@ -315,7 +315,7 @@ public:
      * @param error_msg message to report with parse error if end-of-data is reached
      * @param location location associated with the operation.
      */
-    void waitForInput(const Expression& min, const std::string& error_msg, const Meta& location);
+    void waitForInput(const Expression& min, std::string_view error_msg, const Meta& location);
 
     /**
      * Generates code that ensures that either a minimum amount of data is
@@ -337,7 +337,7 @@ public:
      * @param error_msg message to report with parse error if end-of-data is reached
      * @param location location associated with the operation
      */
-    void waitForInput(const std::string& error_msg, const Meta& location);
+    void waitForInput(std::string_view error_msg, const Meta& location);
 
     /**
      * Generates code that waits for either more input becoming available or

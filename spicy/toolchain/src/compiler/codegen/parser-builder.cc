@@ -2369,7 +2369,7 @@ Expression ParserBuilder::atEod() {
     return builder::call("spicy_rt::atEod", {state().data, state().cur, _filters(state())});
 }
 
-void ParserBuilder::waitForInput(const std::string& error_msg, const Meta& location) {
+void ParserBuilder::waitForInput(std::string_view error_msg, const Meta& location) {
     builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, builder::string_literal(error_msg),
                                                   builder::expression(location), _filters(state())});
 }
@@ -2378,7 +2378,7 @@ Expression ParserBuilder::waitForInputOrEod(const Expression& min) {
     return builder::call("spicy_rt::waitForInputOrEod", {state().data, state().cur, min, _filters(state())});
 }
 
-void ParserBuilder::waitForInput(const Expression& min, const std::string& error_msg, const Meta& location) {
+void ParserBuilder::waitForInput(const Expression& min, std::string_view error_msg, const Meta& location) {
     builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, min, builder::string_literal(error_msg),
                                                   builder::expression(location), _filters(state())});
 }
