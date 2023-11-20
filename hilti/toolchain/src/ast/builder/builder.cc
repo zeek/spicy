@@ -107,7 +107,7 @@ void Builder::setLocation(const Location& l) {
     _block._add(statement::SetLocation(builder::string_literal(l.render())));
 }
 
-std::optional<Expression> Builder::startProfiler(const std::string& name) {
+std::optional<Expression> Builder::startProfiler(std::string_view name) {
     if ( ! context()->options().enable_profiling )
         return {};
 

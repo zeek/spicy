@@ -241,7 +241,7 @@ public:
 
     bool empty() const { return _block.statements().empty() && _tmps.empty(); }
 
-    std::optional<Expression> startProfiler(const std::string& name);
+    std::optional<Expression> startProfiler(std::string_view name);
     void stopProfiler(Expression profiler);
 
 private:
