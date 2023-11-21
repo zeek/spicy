@@ -57,9 +57,9 @@ static void printException(const std::string& msg, const Exception& e, std::ostr
         out << "[libhilti]    " << s << "\n";
 }
 
-Exception::Exception(Internal, const char* type, const std::string& what, std::string_view desc,
+Exception::Exception(Internal, const char* type, std::string_view what, std::string_view desc,
                      std::string_view location)
-    : std::runtime_error(what), _description(desc), _location(location) {
+    : std::runtime_error({what.data(), what.size()}), _description(desc), _location(location) {
     if ( isInitialized() )
         profiler::start(std::string("hilti/exception/") + type);
 
@@ -72,7 +72,7 @@ Exception::Exception(Internal, const char* type, const std::string& what, std::s
     }
 }
 
-Exception::Exception(Internal, const char* type, const std::string& desc)
+Exception::Exception(Internal, const char* type, std::string_view desc)
     : Exception(Internal(), type, debug::location() ? fmt("%s (%s)", desc, debug::location()) : desc, desc,
                 debug::location() ? debug::location() : "") {}
 
@@ -85,8 +85,7 @@ Exception::Exception() : std::runtime_error("<no error>") { /* no profiling */
 
 Exception::~Exception() = default;
 
-WouldBlock::WouldBlock(const std::string& desc, const std::string& location)
-    : WouldBlock(fmt("%s (%s)", desc, location)) {}
+WouldBlock::WouldBlock(std::string_view desc, std::string_view location) : WouldBlock(fmt("%s (%s)", desc, location)) {}
 
 exception::DisableAbortOnExceptions::DisableAbortOnExceptions() {
     detail::globalState()->disable_abort_on_exceptions++;
