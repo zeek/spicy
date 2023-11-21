@@ -343,7 +343,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
                               {ID("parse3"), parse3},
                               {ID("context_new"), context_new},
                               {ID("type_info"), builder::typeinfo(builder::id(*unit.id()))},
-                              {ID("description"), (description ? *description->expression() : builder::string(""))},
+                              {ID("description"), (description ? *description->expression() : builder::string_mut(""))},
                               {ID("mime_types"),
                                builder::vector(builder::typeByID("spicy_rt::MIMEType"), std::move(mime_types))},
                               {ID("ports"),

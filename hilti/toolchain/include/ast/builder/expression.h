@@ -20,9 +20,16 @@ inline Expression id(ID id_, Meta m = Meta()) { return expression::UnresolvedID(
 
 // Ctor expressions
 
-inline Expression string(std::string s, const Meta& m = Meta()) {
+inline Expression string_mut(std::string s, const Meta& m = Meta()) {
     return expression::Ctor(ctor::String(std::move(s), false, m), m);
 }
+
+// clang-format off
+[[deprecated("Use string_mut or string_literal instead")]]
+inline Expression string(std::string s, const Meta& m = Meta()) {
+    return builder::string_mut(std::move(s), m);
+}
+// clang-format on
 
 inline Expression string_literal(std::string_view s) {
     // String literals have no location.
@@ -57,7 +64,7 @@ inline Expression default_(Type t, hilti::node::Range<Expression> type_args, con
 
 
 inline Expression exception(Type t, std::string msg, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::Exception(std::move(t), builder::string(std::move(msg)), m), m);
+    return expression::Ctor(ctor::Exception(std::move(t), builder::string_mut(std::move(msg)), m), m);
 }
 
 inline Expression exception(Type t, Expression msg, const Meta& m = Meta()) {
