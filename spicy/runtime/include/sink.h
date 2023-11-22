@@ -4,6 +4,7 @@
 
 #include <list>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -341,9 +342,9 @@ private:
     void _reportUndeliveredUpTo(uint64_t rupper) const;
 
     // Output reassembler state for debugging.
-    void _debugReassembler(const std::string& msg, const std::optional<hilti::rt::Bytes>& data, uint64_t seq,
+    void _debugReassembler(std::string_view msg, const std::optional<hilti::rt::Bytes>& data, uint64_t seq,
                            uint64_t len) const;
-    void _debugReassemblerBuffer(const std::string& msg) const;
+    void _debugReassemblerBuffer(std::string_view msg) const;
     void _debugDeliver(const hilti::rt::Bytes& data) const;
 
     // States for connected units.

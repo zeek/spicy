@@ -337,7 +337,7 @@ void Sink::_reportUndeliveredUpTo(uint64_t rupper) const {
     }
 }
 
-void Sink::_debugReassembler(const std::string& msg, const std::optional<hilti::rt::Bytes>& data, uint64_t rseq,
+void Sink::_debugReassembler(std::string_view msg, const std::optional<hilti::rt::Bytes>& data, uint64_t rseq,
                              uint64_t len) const {
     if ( ! debug::wantVerbose() )
         return;
@@ -355,7 +355,7 @@ void Sink::_debugReassembler(const std::string& msg, const std::optional<hilti::
             fmt("reassembler/%p: %s rseq=% " PRIu64 " upper=%" PRIu64 " <gap>", this, msg, rseq, rseq + len));
 }
 
-void Sink::_debugReassemblerBuffer(const std::string& msg) const {
+void Sink::_debugReassemblerBuffer(std::string_view msg) const {
     if ( ! debug::wantVerbose() )
         return;
 
