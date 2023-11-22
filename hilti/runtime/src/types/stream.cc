@@ -328,31 +328,32 @@ void View::copyRaw(Byte* dst) const {
 std::optional<View::Block> View::firstBlock() const {
     _ensureValid();
 
-    if ( unsafeBegin() == unsafeEnd() || ! unsafeBegin().chunk() )
+    auto begin = unsafeBegin();
+    if ( begin == unsafeEnd() || ! begin.chunk() )
         return {};
 
-    const auto* chain = _begin.chain();
+    const auto* chain = begin.chain();
     assert(chain);
 
-    auto chunk = chain->findChunk(_begin.offset(), _begin.chunk());
+    auto chunk = chain->findChunk(begin.offset(), begin.chunk());
     if ( ! chunk )
         throw InvalidIterator("stream iterator outside of valid range");
 
-    auto start = chunk->data() + (_begin.offset() - chunk->offset()).Ref();
+    auto start = chunk->data() + (begin.offset() - chunk->offset()).Ref();
     bool is_last = (chunk->isLast() || (_end && _end->offset() <= chunk->endOffset()));
 
     Size size;
 
     if ( _end && is_last ) {
-        auto offset_end = std::max(std::min(_end->offset(), _begin.chain()->endOffset()), _begin.offset());
-        size = (offset_end - _begin.offset());
+        auto offset_end = std::max(std::min(_end->offset(), chain->endOffset()), begin.offset());
+        size = (offset_end - begin.offset());
     }
     else
         size = chunk->endData() - start;
 
     return View::Block{.start = start,
                        .size = size,
-                       .offset = _begin.offset(),
+                       .offset = begin.offset(),
                        .is_first = true,
                        .is_last = is_last,
                        ._block = is_last ? nullptr : chunk->next()};
