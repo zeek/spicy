@@ -1335,16 +1335,17 @@ public:
     View extract(Byte* dst, uint64_t n) const {
         _ensureValid();
 
+        auto p = unsafeBegin();
+
         // Fast-path for when we're staying inside the initial chunk.
-        if ( auto chunk = _begin.chunk(); chunk && chunk->inRange(_begin.offset() + n) ) {
-            memcpy(dst, chunk->data(_begin.offset()), n);
-            return View(SafeConstIterator(_begin._chain, _begin.offset() + n, chunk), _end);
+        if ( auto chunk = p.chunk(); chunk && chunk->inRange(p.offset() + n) ) {
+            memcpy(dst, chunk->data(p.offset()), n);
+            return View(SafeConstIterator(p + n), _end);
         }
 
         if ( n > size() )
             throw WouldBlock("end of stream view");
 
-        auto p = unsafeBegin();
         for ( uint64_t i = 0; i < n; ++i )
             dst[i] = *p++;
 
