@@ -1844,7 +1844,7 @@ hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type:
 
     auto params = std::vector<type::function::Parameter>{
         builder::parameter("__data", type::ValueReference(type::Stream()), declaration::parameter::Kind::InOut),
-        builder::parameter("__begin", type::Optional(type::stream::Iterator()), declaration::parameter::Kind::Copy),
+        builder::parameter("__begin", type::Optional(type::stream::Iterator()), declaration::parameter::Kind::In),
         builder::parameter("__cur", type::stream::View(), declaration::parameter::Kind::Copy),
         builder::parameter("__trim", type::Bool(), declaration::parameter::Kind::Copy),
         builder::parameter("__lah", look_ahead::Type, declaration::parameter::Kind::Copy),
