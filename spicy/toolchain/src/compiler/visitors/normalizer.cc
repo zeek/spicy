@@ -408,7 +408,8 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
 
 } // anonymous namespace
 
-bool spicy::detail::ast::normalize(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit) {
+bool spicy::detail::ast::normalize(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root,
+                                   hilti::Unit* unit) {
     bool hilti_modified = (*hilti::plugin::registry().hiltiPlugin().ast_normalize)(ctx, root, unit);
 
     hilti::util::timing::Collector _("spicy/compiler/normalizer");

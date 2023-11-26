@@ -6,6 +6,7 @@
 #include <string>
 
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/types/stream.h>
 
 namespace spicy::rt::zlib {
@@ -65,7 +66,7 @@ public:
     hilti::rt::Bytes finish();
 
 private:
-    std::shared_ptr<detail::State> _state;
+    hilti::rt::SharedPtr<detail::State> _state;
 };
 
 /** Instantiates a new `Stream` object, forwarding arguments to its constructor. */

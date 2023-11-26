@@ -7,6 +7,7 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/types/stream.h>
 
 namespace spicy::rt::base64 {
@@ -78,7 +79,7 @@ public:
     hilti::rt::Bytes finish();
 
 private:
-    std::shared_ptr<detail::State> _state;
+    hilti::rt::SharedPtr<detail::State> _state;
 };
 
 /** Forwards to the corresponding `Stream` method. */

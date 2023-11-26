@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/expressions/grouping.h>
 #include <hilti/ast/expressions/keyword.h>
@@ -170,7 +172,7 @@ public:
     }
 
     void setAttributes(const AttributeSet& attrs) { children()[2] = attrs; }
-    void setGrammar(std::shared_ptr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
+    void setGrammar(hilti::rt::SharedPtr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
     void setID(const ID& id) { children()[1] = id; }
     void setPublic(bool p) { _public = p; }
 
@@ -213,7 +215,7 @@ public:
 private:
     bool _public = false;
     bool _wildcard = false;
-    std::shared_ptr<spicy::detail::codegen::Grammar> _grammar;
+    hilti::rt::SharedPtr<spicy::detail::codegen::Grammar> _grammar;
 };
 
 

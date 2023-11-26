@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/declarations/global-variable.h>
@@ -22,9 +24,9 @@ using namespace hilti;
 namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
-    explicit Visitor(std::shared_ptr<hilti::Context> ctx, Unit* unit) : context(std::move(ctx)), unit(unit) {}
+    explicit Visitor(hilti::rt::SharedPtr<hilti::Context> ctx, Unit* unit) : context(std::move(ctx)), unit(unit) {}
 
-    std::shared_ptr<hilti::Context> context;
+    hilti::rt::SharedPtr<hilti::Context> context;
     Unit* unit;
 
     void operator()(const Module& m, position_t p) {
@@ -189,7 +191,7 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
 
 } // anonymous namespace
 
-void hilti::detail::ast::buildScopes(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit) {
+void hilti::detail::ast::buildScopes(const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* root, Unit* unit) {
     util::timing::Collector _("hilti/compiler/ast/scope-builder");
 
     auto v = Visitor(ctx, unit);

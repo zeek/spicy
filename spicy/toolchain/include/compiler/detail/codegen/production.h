@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/location.h>
 #include <hilti/base/result.h>
 #include <hilti/global.h>
@@ -212,16 +214,16 @@ public:
     void setMeta(production::Meta m) { *_meta = std::move(m); }
 
     /** Implements the `Production` interface. */
-    std::shared_ptr<production::Meta> _metaInstance() const { return _meta; }
+    hilti::rt::SharedPtr<production::Meta> _metaInstance() const { return _meta; }
 
-    void _setMetaInstance(std::shared_ptr<production::Meta> m) { _meta = std::move(m); }
+    void _setMetaInstance(hilti::rt::SharedPtr<production::Meta> m) { _meta = std::move(m); }
 
 private:
     std::string _symbol;
     Location _location;
     std::optional<Expression> _filter;
     std::optional<Expression> _sink;
-    std::shared_ptr<production::Meta> _meta;
+    hilti::rt::SharedPtr<production::Meta> _meta;
 };
 
 } // namespace spicy::detail::codegen

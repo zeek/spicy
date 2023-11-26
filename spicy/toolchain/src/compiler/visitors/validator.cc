@@ -972,7 +972,7 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
 
 } // anonymous namespace
 
-void spicy::detail::ast::validate_pre(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root,
+void spicy::detail::ast::validate_pre(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root,
                                       hilti::Unit* unit) {
     {
         auto v = VisitorPre();
@@ -985,7 +985,7 @@ void spicy::detail::ast::validate_pre(const std::shared_ptr<hilti::Context>& ctx
     (*hilti::plugin::registry().hiltiPlugin().ast_validate_pre)(ctx, root, unit);
 }
 
-void spicy::detail::ast::validate_post(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root,
+void spicy::detail::ast::validate_post(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root,
                                        hilti::Unit* unit) {
     {
         auto v = VisitorPost();

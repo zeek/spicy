@@ -15,6 +15,7 @@
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/json-fwd.h>
 #include <hilti/rt/types/reference.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
@@ -64,7 +65,7 @@ extern void from_json(const nlohmann::json& j, Join& x); // NOLINT
 /** One C++ code unit. */
 class Unit {
 public:
-    Unit(const std::shared_ptr<Context>& context);
+    Unit(const hilti::rt::SharedPtr<Context>& context);
 
     void setModule(const hilti::Module& m, const hilti::Unit& hilti_unit);
     cxx::ID moduleID() const { return _module_id; }
@@ -102,21 +103,21 @@ public:
     Result<linker::MetaData> linkerMetaData() const;     // only after finalize
     cxx::ID cxxNamespace() const;
 
-    std::shared_ptr<Context> context() const { return _context.lock(); }
+    hilti::rt::SharedPtr<Context> context() const { return _context.lock(); }
 
     static std::pair<bool, std::optional<linker::MetaData>> readLinkerMetaData(std::istream& input);
 
 protected:
     friend class Linker;
-    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id);
-    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code);
+    Unit(const hilti::rt::SharedPtr<Context>& context, cxx::ID module_id);
+    Unit(const hilti::rt::SharedPtr<Context>& context, cxx::ID module_id, const std::string& cxx_code);
 
 private:
     void _generateCode(Formatter& f, bool prototypes_only);
     void _addHeader(Formatter& f);
     void _addModuleInitFunction();
 
-    std::weak_ptr<Context> _context;
+    hilti::rt::WeakPtr<Context> _context;
 
     cxx::ID _module_id;
     hilti::rt::filesystem::path _module_path;

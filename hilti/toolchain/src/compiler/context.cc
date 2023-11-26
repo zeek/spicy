@@ -73,14 +73,14 @@ Context::~Context() {
         u.second->unit = nullptr;
 }
 
-void Context::cacheUnit(const std::shared_ptr<Unit>& unit) {
-    auto entry = std::make_shared<CacheEntry>(unit);
-    auto idx = unit->cacheIndex();
+void Context::cacheUnit(hilti::rt::SharedPtr<Unit> unit) {
+    auto entry = hilti::rt::makeShared<CacheEntry>(std::move(unit));
+    auto idx = entry->unit->cacheIndex();
 
     auto i = _unit_cache_by_id.find(idx.scopedID());
     if ( i == _unit_cache_by_id.end() ) {
         HILTI_DEBUG(logging::debug::Compiler,
-                    util::fmt("registering %s AST for module %s (%s)", unit->extension(), idx.id, idx.path));
+                    util::fmt("registering %s AST for module %s (%s)", entry->unit->extension(), idx.id, idx.path));
 
         _unit_cache_by_id.insert({idx.scopedID(), entry});
 
@@ -88,8 +88,8 @@ void Context::cacheUnit(const std::shared_ptr<Unit>& unit) {
             _unit_cache_by_path.insert({idx.path, entry});
     }
     else {
-        HILTI_DEBUG(logging::debug::Compiler, util::fmt("updating cached AST for module %s", unit->uniqueID()));
-        i->second->unit = unit;
+        HILTI_DEBUG(logging::debug::Compiler, util::fmt("updating cached AST for module %s", entry->unit->uniqueID()));
+        i->second->unit = entry->unit;
     }
 }
 
@@ -131,7 +131,7 @@ std::optional<CacheEntry> Context::lookupUnit(const hilti::rt::filesystem::path&
 }
 
 
-static void _dependencies(const std::weak_ptr<Unit>& u, std::vector<std::weak_ptr<Unit>>* seen) {
+static void _dependencies(const hilti::rt::WeakPtr<Unit>& u, std::vector<hilti::rt::WeakPtr<Unit>>* seen) {
     auto unit = u.lock();
 
     for ( const auto& d : *seen ) {
@@ -145,13 +145,13 @@ static void _dependencies(const std::weak_ptr<Unit>& u, std::vector<std::weak_pt
         _dependencies(x, seen);
 }
 
-std::vector<std::weak_ptr<Unit>> Context::lookupDependenciesForUnit(const context::CacheIndex& idx,
-                                                                    const hilti::rt::filesystem::path& extension) {
+std::vector<hilti::rt::WeakPtr<Unit>> Context::lookupDependenciesForUnit(const context::CacheIndex& idx,
+                                                                         const hilti::rt::filesystem::path& extension) {
     auto m = lookupUnit(idx, extension);
     if ( ! m )
         return {};
 
-    std::vector<std::weak_ptr<Unit>> seen;
+    std::vector<hilti::rt::WeakPtr<Unit>> seen;
     _dependencies(m->unit, &seen);
     seen.erase(seen.begin()); // don't report entry point
     return seen;

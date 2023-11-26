@@ -63,7 +63,7 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
       begin(builder::optional(builder::begin(cur))),
       cur(std::move(cur)) {}
 
-void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
+void ParserState::printDebug(const hilti::rt::SharedPtr<builder::Builder>& builder) const {
     builder->addCall("spicy_rt::printParserState", {builder::string(unit_id), data, begin, cur, lahead, lahead_end,
                                                     builder::string(to_string(literal_mode)), trim, error});
 }
@@ -85,9 +85,9 @@ struct ProductionVisitor
     auto popState() { return pb->popState(); }
 
     auto builder() { return pb->builder(); }
-    auto pushBuilder(std::shared_ptr<builder::Builder> b) { return pb->pushBuilder(std::move(b)); }
+    auto pushBuilder(hilti::rt::SharedPtr<builder::Builder> b) { return pb->pushBuilder(std::move(b)); }
     auto pushBuilder() { return pb->pushBuilder(); }
-    auto pushBuilder(std::shared_ptr<hilti::builder::Builder> b, const std::function<void()>& func) {
+    auto pushBuilder(hilti::rt::SharedPtr<hilti::builder::Builder> b, const std::function<void()>& func) {
         return pb->pushBuilder(std::move(b), func);
     }
     auto popBuilder() { return pb->popBuilder(); }
@@ -947,7 +947,7 @@ struct ProductionVisitor
             // Returns a pointer to the constructed builder if any was constructed.
             auto guardSearch = [&](auto&& cb) {
                 if ( mode != LiteralMode::Search )
-                    return std::shared_ptr<hilti::builder::Builder>();
+                    return hilti::rt::SharedPtr<hilti::builder::Builder>();
 
                 auto [body, try_] = builder()->addTry();
 
@@ -1780,8 +1780,8 @@ struct ProductionVisitor
 
                 auto lah_prod = p.lookAheadProduction();
 
-                std::shared_ptr<hilti::builder::Builder> builder_alt1;
-                std::shared_ptr<hilti::builder::Builder> builder_alt2;
+                hilti::rt::SharedPtr<hilti::builder::Builder> builder_alt1;
+                hilti::rt::SharedPtr<hilti::builder::Builder> builder_alt2;
                 auto parse = [&]() { std::tie(builder_alt1, builder_alt2) = parseLookAhead(lah_prod); };
 
                 // If the list field generating this While is a synchronization point, set up a try/catch block
@@ -1859,12 +1859,12 @@ hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type:
                           m);
 }
 
-std::shared_ptr<hilti::Context> ParserBuilder::context() const { return _cg->context(); }
+hilti::rt::SharedPtr<hilti::Context> ParserBuilder::context() const { return _cg->context(); }
 
 const hilti::Options& ParserBuilder::options() const { return _cg->options(); }
 
-std::shared_ptr<hilti::builder::Builder> ParserBuilder::pushBuilder() {
-    _builders.emplace_back(std::make_shared<hilti::builder::Builder>(context()));
+hilti::rt::SharedPtr<hilti::builder::Builder> ParserBuilder::pushBuilder() {
+    _builders.emplace_back(hilti::rt::makeShared<hilti::builder::Builder>(context()));
     return _builders.back();
 }
 

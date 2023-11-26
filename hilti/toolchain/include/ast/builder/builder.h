@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/builder/declaration.h>
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctor.h>
@@ -21,7 +23,7 @@ namespace hilti::builder {
 
 class Builder {
 public:
-    Builder(std::weak_ptr<hilti::Context> context)
+    Builder(hilti::rt::WeakPtr<hilti::Context> context)
         : _context(std::move(context)), _our_block(statement::Block()), _block(*_our_block) {}
 
     Statement block() {
@@ -185,7 +187,7 @@ public:
         auto addDefault(Meta m = Meta()) { return _addCase({}, std::move(m)); }
 
     private:
-        std::shared_ptr<Builder> _addCase(std::vector<Expression> exprs, Meta m = Meta()) {
+        hilti::rt::SharedPtr<Builder> _addCase(std::vector<Expression> exprs, Meta m = Meta()) {
             _switch._addCase(statement::switch_::Case(std::move(exprs), statement::Block(), std::move(m)));
             return _builder->newBuilder(_switch._lastCaseNode().as<statement::switch_::Case>()._bodyNode());
         }
@@ -246,7 +248,7 @@ public:
 private:
     friend class SwitchProxy;
 
-    Builder(std::weak_ptr<hilti::Context> context, Statement& s) // NOLINT
+    Builder(hilti::rt::WeakPtr<hilti::Context> context, Statement& s) // NOLINT
         : _context(std::move(context)), _block(s.as<statement::Block>()) {}
 
     template<typename T>
@@ -254,11 +256,11 @@ private:
         return _block._lastStatementNode().as<T>();
     }
 
-    std::shared_ptr<Builder> newBuilder(Node& n) { // NOLINT
-        return std::shared_ptr<Builder>(new Builder(_context, n.template as<Statement>()));
+    hilti::rt::SharedPtr<Builder> newBuilder(Node& n) { // NOLINT
+        return hilti::rt::SharedPtr<Builder>(new Builder(_context, n.template as<Statement>()));
     }
 
-    std::weak_ptr<hilti::Context> _context;
+    hilti::rt::WeakPtr<hilti::Context> _context;
     std::optional<statement::Block> _our_block;
     statement::Block& _block;
 

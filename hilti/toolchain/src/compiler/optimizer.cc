@@ -1424,10 +1424,10 @@ void Optimizer::run() {
     auto units = [&]() {
         // We initially store the list as a `set` to ensure uniqueness, but
         // convert to a `vector` so we can mutate entries while iterating.
-        auto UnitCmp = [](const std::shared_ptr<Unit>& lhs, const std::shared_ptr<Unit>& rhs) {
+        auto UnitCmp = [](const hilti::rt::SharedPtr<Unit>& lhs, const hilti::rt::SharedPtr<Unit>& rhs) {
             return lhs->uniqueID() < rhs->uniqueID();
         };
-        std::set<std::shared_ptr<Unit>, decltype(UnitCmp)> units(UnitCmp);
+        std::set<hilti::rt::SharedPtr<Unit>, decltype(UnitCmp)> units(UnitCmp);
 
         for ( auto& unit : _units ) {
             units.insert(unit);
@@ -1436,7 +1436,7 @@ void Optimizer::run() {
                 units.insert(dep.lock());
         }
 
-        return std::vector<std::shared_ptr<Unit>>{units.begin(), units.end()};
+        return std::vector<hilti::rt::SharedPtr<Unit>>{units.begin(), units.end()};
     }();
 
     const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");

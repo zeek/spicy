@@ -60,17 +60,19 @@ ID Unit::_makeUniqueID(const ID& id) {
 
 Unit::~Unit() { _destroyModule(); }
 
-Result<std::shared_ptr<Unit>> Unit::fromCache(const std::shared_ptr<Context>& context,
-                                              const hilti::rt::filesystem::path& path, const std::optional<ID>& scope) {
+Result<hilti::rt::SharedPtr<Unit>> Unit::fromCache(const hilti::rt::SharedPtr<Context>& context,
+                                                   const hilti::rt::filesystem::path& path,
+                                                   const std::optional<ID>& scope) {
     if ( auto cached = context->lookupUnit(path, scope) )
         return cached->unit;
     else
         return result::Error(fmt("unknown module %s", path));
 }
 
-Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& context,
-                                               const hilti::rt::filesystem::path& path, const std::optional<ID>& scope,
-                                               std::optional<hilti::rt::filesystem::path> process_extension) {
+Result<hilti::rt::SharedPtr<Unit>> Unit::fromSource(const hilti::rt::SharedPtr<Context>& context,
+                                                    const hilti::rt::filesystem::path& path,
+                                                    const std::optional<ID>& scope,
+                                                    std::optional<hilti::rt::filesystem::path> process_extension) {
     if ( auto cached = context->lookupUnit(path, scope, process_extension) )
         return cached->unit;
 
@@ -82,26 +84,26 @@ Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& c
         process_extension = path.extension();
 
     auto id = module->id();
-    auto unit = std::shared_ptr<Unit>(new Unit(context, id, scope, path, *process_extension,
-                                               std::move(*module))); // no make_shared, ctor is private
+    auto unit = hilti::rt::SharedPtr<Unit>(new Unit(context, id, scope, path, *process_extension,
+                                                    std::move(*module))); // no make_shared, ctor is private
     context->cacheUnit(unit);
 
     return unit;
 }
 
-std::shared_ptr<Unit> Unit::fromModule(const std::shared_ptr<Context>& context, const hilti::Module& module,
-                                       hilti::rt::filesystem::path extension) {
-    auto unit = std::shared_ptr<Unit>(new Unit(context, module.id(), {}, {}, std::move(extension),
-                                               module)); // no make_shared, ctor is private
+hilti::rt::SharedPtr<Unit> Unit::fromModule(const hilti::rt::SharedPtr<Context>& context, const hilti::Module& module,
+                                            hilti::rt::filesystem::path extension) {
+    auto unit = hilti::rt::SharedPtr<Unit>(new Unit(context, module.id(), {}, {}, std::move(extension),
+                                                    module)); // no make_shared, ctor is private
     context->cacheUnit(unit);
     return unit;
 }
 
-Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& context, const ID& id,
-                                               const hilti::rt::filesystem::path& parse_extension,
-                                               const hilti::rt::filesystem::path& process_extension,
-                                               std::optional<ID> scope,
-                                               std::vector<hilti::rt::filesystem::path> search_dirs) {
+Result<hilti::rt::SharedPtr<Unit>> Unit::fromImport(const hilti::rt::SharedPtr<Context>& context, const ID& id,
+                                                    const hilti::rt::filesystem::path& parse_extension,
+                                                    const hilti::rt::filesystem::path& process_extension,
+                                                    std::optional<ID> scope,
+                                                    std::vector<hilti::rt::filesystem::path> search_dirs) {
     if ( auto cached = context->lookupUnit(id, scope, process_extension) )
         return cached->unit;
 
@@ -142,13 +144,14 @@ Result<std::shared_ptr<Unit>> Unit::fromImport(const std::shared_ptr<Context>& c
     return unit;
 }
 
-Result<std::shared_ptr<Unit>> Unit::fromCXX(const std::shared_ptr<Context>& context, detail::cxx::Unit cxx,
-                                            const hilti::rt::filesystem::path& path) {
-    return std::shared_ptr<Unit>(
+Result<hilti::rt::SharedPtr<Unit>> Unit::fromCXX(const hilti::rt::SharedPtr<Context>& context, detail::cxx::Unit cxx,
+                                                 const hilti::rt::filesystem::path& path) {
+    return hilti::rt::SharedPtr<Unit>(
         new Unit(context, ID(fmt("<CXX/%s>", path.native())), {}, ".cxx", path, std::move(cxx)));
 }
 
-Result<hilti::Module> Unit::_parse(const std::shared_ptr<Context>& context, const hilti::rt::filesystem::path& path) {
+Result<hilti::Module> Unit::_parse(const hilti::rt::SharedPtr<Context>& context,
+                                   const hilti::rt::filesystem::path& path) {
     util::timing::Collector _("hilti/compiler/parser");
 
     std::ifstream in;
@@ -307,7 +310,8 @@ Result<CxxCode> Unit::cxxCode() const {
     return CxxCode{_cxx_unit->moduleID(), cxx};
 }
 
-void Unit::_recursiveDependencies(std::vector<std::weak_ptr<Unit>>* dst, std::unordered_set<const Unit*>* seen) const {
+void Unit::_recursiveDependencies(std::vector<hilti::rt::WeakPtr<Unit>>* dst,
+                                  std::unordered_set<const Unit*>* seen) const {
     // This uses two vectors because the weak_ptr are a bit tough to work with,
     // in particular they can't be compared through std::find().
 
@@ -323,17 +327,17 @@ void Unit::_recursiveDependencies(std::vector<std::weak_ptr<Unit>>* dst, std::un
     }
 }
 
-std::vector<std::weak_ptr<Unit>> Unit::dependencies(bool recursive) const {
+std::vector<hilti::rt::WeakPtr<Unit>> Unit::dependencies(bool recursive) const {
     if ( ! recursive )
         return _dependencies;
 
-    std::vector<std::weak_ptr<Unit>> deps;
+    std::vector<hilti::rt::WeakPtr<Unit>> deps;
     std::unordered_set<const Unit*> seen;
     _recursiveDependencies(&deps, &seen);
     return deps;
 }
 
-bool Unit::addDependency(const std::shared_ptr<Unit>& unit) {
+bool Unit::addDependency(const hilti::rt::SharedPtr<Unit>& unit) {
     for ( const auto& d : _dependencies ) {
         if ( d.lock().get() == unit.get() )
             return false;
@@ -438,8 +442,8 @@ void Unit::_destroyModule() {
     _module = {};
 }
 
-Result<std::shared_ptr<Unit>> Unit::link(const std::shared_ptr<Context>& context,
-                                         const std::vector<linker::MetaData>& mds) {
+Result<hilti::rt::SharedPtr<Unit>> Unit::link(const hilti::rt::SharedPtr<Context>& context,
+                                              const std::vector<linker::MetaData>& mds) {
     HILTI_DEBUG(logging::debug::Compiler, fmt("linking %u modules", mds.size()));
     auto cxx_unit = detail::CodeGen(context).linkUnits(mds);
 

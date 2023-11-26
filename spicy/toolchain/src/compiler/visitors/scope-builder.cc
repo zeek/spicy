@@ -83,7 +83,8 @@ struct Visitor : public hilti::visitor::PostOrder<void, Visitor> {
 
 } // anonymous namespace
 
-void spicy::detail::ast::buildScopes(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit) {
+void spicy::detail::ast::buildScopes(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root,
+                                     hilti::Unit* unit) {
     (*hilti::plugin::registry().hiltiPlugin().ast_build_scopes)(ctx, root, unit);
 
     hilti::util::timing::Collector _("spicy/compiler/ast/scope-builder");

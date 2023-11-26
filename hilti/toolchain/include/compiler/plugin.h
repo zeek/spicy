@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/node.h>
@@ -79,7 +80,7 @@ struct Plugin {
      * @param arg1 compiler context that's in use
      * @return directories to search
      */
-    Hook<std::vector<hilti::rt::filesystem::path>, std::shared_ptr<hilti::Context>> library_paths;
+    Hook<std::vector<hilti::rt::filesystem::path>, hilti::rt::SharedPtr<hilti::Context>> library_paths;
 
     /**
      * Hook called to parse input file that this plugin handles.
@@ -130,7 +131,7 @@ struct Plugin {
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_build_scopes;
+    Hook<bool, hilti::rt::SharedPtr<hilti::Context>, Node*, Unit*> ast_build_scopes;
 
     /**
      * Hook called to prepare an AST before any further stages execute.
@@ -140,7 +141,7 @@ struct Plugin {
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_normalize;
+    Hook<bool, hilti::rt::SharedPtr<hilti::Context>, Node*, Unit*> ast_normalize;
 
     /**
      * Hook called to apply type coersions to the AST.
@@ -150,7 +151,7 @@ struct Plugin {
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_coerce;
+    Hook<bool, hilti::rt::SharedPtr<hilti::Context>, Node*, Unit*> ast_coerce;
 
     /**
      * Hook called to resolve unknown types and other entities.
@@ -160,7 +161,7 @@ struct Plugin {
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_resolve;
+    Hook<bool, hilti::rt::SharedPtr<hilti::Context>, Node*, Unit*> ast_resolve;
 
     /**
      * Hook called to validate correctness of an AST before resolving starts
@@ -171,7 +172,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may not modify the AST
      * @param arg3 current unit being compiled
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_validate_pre;
+    Hook<bool, hilti::rt::SharedPtr<hilti::Context>, Node*, Unit*> ast_validate_pre;
 
     /**
      * Hook called to validate correctness of an AST once fully resolved. Any
@@ -181,7 +182,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may not modify the AST
      * @param arg3 current unit being compiled
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_validate_post;
+    Hook<bool, hilti::rt::SharedPtr<hilti::Context>, Node*, Unit*> ast_validate_post;
 
     /**
      * Hook called to print an AST back as source code. The hook gets to choose
@@ -203,7 +204,7 @@ struct Plugin {
      * @param arg3 current unit being compiled
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, std::shared_ptr<hilti::Context>, Node*, Unit*> ast_transform;
+    Hook<bool, hilti::rt::SharedPtr<hilti::Context>, Node*, Unit*> ast_transform;
 };
 
 class PluginRegistry;

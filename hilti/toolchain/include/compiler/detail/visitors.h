@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/function.h>
@@ -69,13 +71,13 @@ Result<std::optional<Ctor>> foldConstant(const Node& expr);
 
 namespace ast {
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void buildScopes(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit);
+void buildScopes(const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 bool normalize(Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 bool coerce(Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-bool resolve(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit);
+bool resolve(const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* root, Unit* unit);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 void validate_pre(Node* root);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */

@@ -115,11 +115,11 @@ class Production_(trait::isProduction) {
      * Returns the internal meta instance the production is using. For
      * internal infrastructure use only.
      */
-    std::shared_ptr<production::Meta> _metaInstance() const;
+    hilti::rt::SharedPtr<production::Meta> _metaInstance() const;
 
     /**
      * Sets the internal meta instance the production is using. For internal
      * infrastructure use only.
      */
-    void _setMetaInstance(std::shared_ptr<production::Meta> m);
+    void _setMetaInstance(hilti::rt::SharedPtr<production::Meta> m);
 };

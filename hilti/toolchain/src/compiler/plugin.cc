@@ -52,7 +52,7 @@ Plugin hilti::detail::create_hilti_plugin() {
         .cxx_includes = {"hilti/rt/libhilti.h"},
 
         .library_paths =
-            [](const std::shared_ptr<hilti::Context>& ctx) { return hilti::configuration().hilti_library_paths; },
+            [](const hilti::rt::SharedPtr<hilti::Context>& ctx) { return hilti::configuration().hilti_library_paths; },
 
         .parse = [](std::istream& in, const hilti::rt::filesystem::path& path) { return parseSource(in, path); },
 
@@ -63,27 +63,28 @@ Plugin hilti::detail::create_hilti_plugin() {
                           bitmask<CoercionStyle> style) { return detail::coerceType(std::move(t), dst, style); },
 
         .ast_build_scopes =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
+            [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m, Unit* u) {
                 ast::buildScopes(ctx, m, u);
                 return false;
             },
 
-        .ast_normalize = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+        .ast_normalize = [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m,
                             Unit* u) { return ast::normalize(m, u); },
 
-        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) { return ast::coerce(m, u); },
+        .ast_coerce = [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m,
+                         Unit* u) { return ast::coerce(m, u); },
 
-        .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+        .ast_resolve = [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m,
                           Unit* u) { return ast::resolve(ctx, m, u); },
 
         .ast_validate_pre =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
+            [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m, Unit* u) {
                 ast::validate_pre(m);
                 return false;
             },
 
         .ast_validate_post =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
+            [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m, Unit* u) {
                 ast::validate_post(m);
                 return false;
             },

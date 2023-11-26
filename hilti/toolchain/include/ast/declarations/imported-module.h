@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/expression.h>
@@ -59,7 +60,7 @@ public:
     const auto& searchDirectories() const { return _dirs; }
 
     /** Sets both extensions to the same value. */
-    void setUnit(const std::shared_ptr<Unit>& unit) { _unit = unit; }
+    void setUnit(hilti::rt::SharedPtr<Unit> unit) { _unit = std::move(unit); }
 
     bool operator==(const ImportedModule& other) const { return id() == other.id(); }
 
@@ -78,7 +79,7 @@ public:
     node::Properties properties() const;
 
 private:
-    std::weak_ptr<hilti::Unit> _unit;
+    hilti::rt::WeakPtr<hilti::Unit> _unit;
     hilti::rt::filesystem::path _parse_extension;
     hilti::rt::filesystem::path _path;
     std::optional<ID> _scope;

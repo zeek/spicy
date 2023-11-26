@@ -23,7 +23,9 @@ hilti::Plugin spicy::detail::create_spicy_plugin() {
         .cxx_includes = {"spicy/rt/libspicy.h"},
 
         .library_paths =
-            [](const std::shared_ptr<hilti::Context>& /* ctx */) { return spicy::configuration().spicy_library_paths; },
+            [](const hilti::rt::SharedPtr<hilti::Context>& /* ctx */) {
+                return spicy::configuration().spicy_library_paths;
+            },
 
         .parse = [](std::istream& in, const hilti::rt::filesystem::path& path) { return parseSource(in, path); },
 
@@ -34,35 +36,35 @@ hilti::Plugin spicy::detail::create_spicy_plugin() {
                           bitmask<hilti::CoercionStyle> style) { return detail::coerceType(std::move(t), dst, style); },
 
         .ast_build_scopes =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
+            [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
                 ast::buildScopes(ctx, m, u);
                 return false;
             },
 
-        .ast_normalize = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+        .ast_normalize = [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m,
                             hilti::Unit* u) { return ast::normalize(ctx, m, u); },
 
-        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, hilti::Node* m,
+        .ast_coerce = [](const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* m,
                          hilti::Unit* u) { return ast::coerce(ctx, m, u); },
 
-        .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
+        .ast_resolve = [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m,
                           hilti::Unit* u) { return ast::resolve(ctx, m, u); },
 
         .ast_validate_pre =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
+            [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
                 ast::validate_pre(ctx, m, u);
                 return false;
             },
 
         .ast_validate_post =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
+            [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
                 ast::validate_post(ctx, m, u);
                 return false;
             },
 
         .ast_print = [](const Node& root, hilti::printer::Stream& out) { return ast::print(root, out); },
 
-        .ast_transform = [](const std::shared_ptr<hilti::Context>& ctx, Node* n, hilti::Unit* u) -> bool {
+        .ast_transform = [](const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* n, hilti::Unit* u) -> bool {
             return CodeGen(ctx).compileModule(n, u);
         },
     };

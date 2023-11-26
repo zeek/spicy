@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/function.h>
 #include <hilti/ast/types/bitfield.h>
 #include <hilti/base/cache.h>
@@ -60,7 +62,7 @@ struct CxxTypeInfo {
  */
 class CodeGen {
 public:
-    CodeGen(const std::shared_ptr<Context>& context) : _context(context) {}
+    CodeGen(const hilti::rt::SharedPtr<Context>& context) : _context(context) {}
 
     /** Entry point for code generation. */
     Result<cxx::Unit> compileModule(Node& root, hilti::Unit* hilti_unit,
@@ -69,7 +71,7 @@ public:
     /** Entry point for generating additional cross-unit C++ code through HILTI's linker. */
     Result<cxx::Unit> linkUnits(const std::vector<cxx::linker::MetaData>& mds);
 
-    std::shared_ptr<Context> context() const { return _context.lock(); }
+    hilti::rt::SharedPtr<Context> context() const { return _context.lock(); }
     const Options& options() const { return context()->options(); }
 
     // These must be called only while a module is being compiled.
@@ -151,7 +153,7 @@ private:
 
     std::unique_ptr<cxx::Unit> _cxx_unit;
     hilti::Unit* _hilti_unit = nullptr;
-    std::weak_ptr<Context> _context;
+    hilti::rt::WeakPtr<Context> _context;
     std::vector<detail::cxx::Expression> _self = {{"__self", cxx::Side::LHS}};
     std::vector<detail::cxx::Expression> _dd = {{"__dd", cxx::Side::LHS}};
     std::vector<detail::cxx::Block*> _cxx_blocks;

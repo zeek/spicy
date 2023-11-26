@@ -14,6 +14,7 @@
 
 #include <hilti/rt/init.h>
 #include <hilti/rt/logging.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/util.h>
 
 #include <hilti/autogen/config.h>
@@ -179,14 +180,14 @@ bool CxxCode::save(std::ostream& out) const {
     return ! out.fail();
 }
 
-JIT::JIT(const std::shared_ptr<Context>& context, bool dump_code)
+JIT::JIT(const hilti::rt::SharedPtr<Context>& context, bool dump_code)
     : _context(context),
       _dump_code(dump_code),
       _hash(std::hash<std::string>{}(hilti::rt::filesystem::current_path().string())) {}
 
 JIT::~JIT() { _finish(); }
 
-hilti::Result<std::shared_ptr<const Library>> JIT::build() {
+hilti::Result<hilti::rt::SharedPtr<const Library>> JIT::build() {
     util::timing::Collector _("hilti/jit");
 
     if ( auto rc = _checkCompiler(); ! rc )
@@ -349,7 +350,7 @@ hilti::Result<Nothing> JIT::_compile() {
     return Nothing();
 }
 
-hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
+hilti::Result<hilti::rt::SharedPtr<const Library>> JIT::_link() {
     util::timing::Collector _("hilti/jit/link");
     HILTI_DEBUG(logging::debug::Jit, "linking object files");
 
@@ -425,7 +426,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     // Instantiate the library object from the file on disk, and set it up
     // to delete the file & its directory on destruction.
     bool keep_tmps = options().keep_tmps;
-    auto library = std::shared_ptr<const Library>(new Library(lib), [keep_tmps](const Library* library) {
+    auto library = hilti::rt::SharedPtr<const Library>(new Library(lib), [keep_tmps](const Library* library) {
         if ( ! keep_tmps ) {
             auto remove = library->remove();
             if ( ! remove )

@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <spicy/compiler/detail/codegen/production.h>
 
 namespace spicy::detail::codegen {
@@ -24,7 +26,7 @@ class Resolved : public ProductionBase {
 public:
     Resolved(const Location& l = location::None)
         : ProductionBase("", l),
-          _symbol(std::make_shared<std::string>("<unresolved>")),
+          _symbol(hilti::rt::makeShared<std::string>("<unresolved>")),
           _rsymbol(hilti::util::fmt("ref:%d", ++_cnt)) {}
     std::string render() const { return symbol(); }
 
@@ -40,7 +42,7 @@ public:
     std::optional<spicy::Type> type() const { return {}; }
 
 
-    std::shared_ptr<std::string> _symbol;
+    hilti::rt::SharedPtr<std::string> _symbol;
     std::string _rsymbol;
 
     inline static int _cnt = 0;

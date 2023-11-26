@@ -12,6 +12,7 @@
 
 #include <hilti/rt/any.h>
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/ast/id.h>
 #include <hilti/autogen/config.h>
@@ -126,10 +127,10 @@ struct CacheIndex {
  * changing.
  */
 struct CacheEntry {
-    std::shared_ptr<Unit> unit; /**< cached unit */
+    hilti::rt::SharedPtr<Unit> unit; /**< cached unit */
 
     CacheEntry() = default;
-    CacheEntry(std::shared_ptr<Unit> unit) : unit(std::move(unit)) {}
+    CacheEntry(hilti::rt::SharedPtr<Unit> unit) : unit(std::move(unit)) {}
 };
 
 } // namespace context
@@ -156,7 +157,7 @@ public:
      * @param unit unit to cache
      * @return the meta data associated with the newly registered module
      */
-    void cacheUnit(const std::shared_ptr<Unit>& unit);
+    void cacheUnit(hilti::rt::SharedPtr<Unit> unit);
 
     /**
      * Looks up a previously cached unit by its ID.
@@ -199,8 +200,8 @@ public:
      * @param idx cache index for the module which to return dependencies for
      * @return set of dependencies
      */
-    std::vector<std::weak_ptr<Unit>> lookupDependenciesForUnit(const context::CacheIndex& idx,
-                                                               const hilti::rt::filesystem::path& extension);
+    std::vector<hilti::rt::WeakPtr<Unit>> lookupDependenciesForUnit(const context::CacheIndex& idx,
+                                                                    const hilti::rt::filesystem::path& extension);
 
     /**
      * Dumps the current state of the unit cache to a debug stream.
@@ -212,8 +213,8 @@ public:
 private:
     Options _options;
 
-    std::unordered_map<ID, std::shared_ptr<context::CacheEntry>> _unit_cache_by_id;
-    std::unordered_map<std::string, std::shared_ptr<context::CacheEntry>> _unit_cache_by_path;
+    std::unordered_map<ID, hilti::rt::SharedPtr<context::CacheEntry>> _unit_cache_by_id;
+    std::unordered_map<std::string, hilti::rt::SharedPtr<context::CacheEntry>> _unit_cache_by_path;
 };
 
 } // namespace hilti

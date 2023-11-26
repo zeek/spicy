@@ -10,6 +10,7 @@
 
 #include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/detail/visitor.h>
@@ -67,7 +68,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
-static auto pluginForUnit(const std::shared_ptr<Unit>& u) {
+static auto pluginForUnit(const hilti::rt::SharedPtr<Unit>& u) {
     auto p = plugin::registry().pluginForExtension(u->extension());
     if ( ! p )
         logger().internalError(util::fmt("no plugin for unit extension %s: %s", u->extension(), p.error()));
@@ -464,7 +465,7 @@ Result<Nothing> Driver::initialize() {
     if ( getenv("HILTI_PRINT_SETTINGS") )
         _compiler_options.print(std::cerr);
 
-    _ctx = std::make_shared<Context>(_compiler_options);
+    _ctx = hilti::rt::makeShared<Context>(_compiler_options);
     return Nothing();
 }
 
@@ -482,7 +483,7 @@ void Driver::setDriverOptions(driver::Options options) {
     _driver_options = std::move(options);
 }
 
-void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
+void Driver::_addUnit(const hilti::rt::SharedPtr<Unit>& unit) {
     if ( _processed_units.find(unit->uniqueID()) != _processed_units.end() )
         return;
 
@@ -593,7 +594,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     return error("unsupported file type", path);
 }
 
-Result<Nothing> Driver::addInput(const std::shared_ptr<Unit>& u) {
+Result<Nothing> Driver::addInput(const hilti::rt::SharedPtr<Unit>& u) {
     if ( _processed_units.find(u->uniqueID()) != _processed_units.end() )
         return Nothing();
 
@@ -614,7 +615,7 @@ Result<Nothing> Driver::addInput(const std::shared_ptr<Unit>& u) {
     return Nothing();
 }
 
-Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units,
+Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vector<hilti::rt::SharedPtr<Unit>> units,
                                                 int& round) {
     HILTI_DEBUG(logging::debug::Compiler,
                 fmt("resolving units with plugin %s: %s", plugin.component,
@@ -647,7 +648,7 @@ Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vecto
         logging::DebugPushIndent _(logging::debug::Compiler);
 
         bool modified = false;
-        std::vector<std::shared_ptr<Unit>> dependencies;
+        std::vector<hilti::rt::SharedPtr<Unit>> dependencies;
 
         for ( auto&& u : units )
             u->resetAST();
@@ -746,7 +747,7 @@ Result<Nothing> Driver::_resolveUnitsWithPlugin(const Plugin& plugin, std::vecto
 }
 
 Result<Nothing> Driver::_transformUnitsWithPlugin(const Plugin& plugin,
-                                                  const std::vector<std::shared_ptr<Unit>>& units) {
+                                                  const std::vector<hilti::rt::SharedPtr<Unit>>& units) {
     if ( ! plugin.ast_transform )
         return Nothing();
 
@@ -782,10 +783,10 @@ Result<Nothing> Driver::_transformUnitsWithPlugin(const Plugin& plugin,
  * extension as well. One can choose to have only fully resolved units
  * considered.
  */
-static auto _unitsForPlugin(const std::vector<std::shared_ptr<Unit>>& units, const std::string& extension,
+static auto _unitsForPlugin(const std::vector<hilti::rt::SharedPtr<Unit>>& units, const std::string& extension,
                             bool include_resolved) {
     auto cmp = [](const auto& u1, const auto& u2) { return u1->uniqueID() < u2->uniqueID(); };
-    std::set<std::shared_ptr<Unit>, decltype(cmp)> nunits(cmp);
+    std::set<hilti::rt::SharedPtr<Unit>, decltype(cmp)> nunits(cmp);
 
     for ( auto&& u : units ) {
         if ( u->extension() == extension && (! u->isResolved() || include_resolved) ) {
@@ -800,7 +801,7 @@ static auto _unitsForPlugin(const std::vector<std::shared_ptr<Unit>>& units, con
         }
     }
 
-    std::vector<std::shared_ptr<Unit>> nunits_vec;
+    std::vector<hilti::rt::SharedPtr<Unit>> nunits_vec;
     nunits_vec.reserve(nunits.size());
     for ( auto&& u : nunits )
         nunits_vec.push_back(u);
@@ -1261,7 +1262,7 @@ Result<Nothing> Driver::finishRuntime() {
     return Nothing();
 }
 
-void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const Plugin& plugin,
+void Driver::_dumpAST(const hilti::rt::SharedPtr<Unit>& unit, const logging::DebugStream& stream, const Plugin& plugin,
                       const std::string& prefix, int round) {
     if ( ! logger().isEnabled(stream) )
         return;
@@ -1275,7 +1276,7 @@ void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStr
     detail::renderNode(*unit->moduleRef(), stream, true);
 }
 
-void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, std::ostream& stream, const Plugin& plugin,
+void Driver::_dumpAST(const hilti::rt::SharedPtr<Unit>& unit, std::ostream& stream, const Plugin& plugin,
                       const std::string& prefix, int round) {
     std::string r;
 
@@ -1286,7 +1287,7 @@ void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, std::ostream& stream, c
     detail::renderNode(unit->module(), stream, true);
 }
 
-void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream,
+void Driver::_dumpAST(const hilti::rt::SharedPtr<Unit>& unit, const logging::DebugStream& stream,
                       const std::string& prefix) {
     if ( ! logger().isEnabled(stream) )
         return;
@@ -1295,7 +1296,7 @@ void Driver::_dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStr
     detail::renderNode(unit->module(), stream, true);
 }
 
-void Driver::_dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& plugin) {
+void Driver::_dumpDeclarations(const hilti::rt::SharedPtr<Unit>& unit, const Plugin& plugin) {
     if ( ! logger().isEnabled(logging::debug::AstDeclarations) )
         return;
 
@@ -1315,7 +1316,7 @@ void Driver::_dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& 
     }
 }
 
-void Driver::_saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+void Driver::_saveIterationAST(const hilti::rt::SharedPtr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
                                int round = 0) {
     if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
         return;
@@ -1324,7 +1325,7 @@ void Driver::_saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& 
     _dumpAST(unit, out, plugin, prefix, round);
 }
 
-void Driver::_saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+void Driver::_saveIterationAST(const hilti::rt::SharedPtr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
                                const std::string& tag) {
     if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
         return;

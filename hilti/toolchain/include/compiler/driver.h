@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
@@ -129,7 +130,7 @@ public:
      * @param u unit to schedule for compilation
      * @return set if successful; otherwise the result provides an error message
      */
-    Result<Nothing> addInput(const std::shared_ptr<Unit>& u);
+    Result<Nothing> addInput(const hilti::rt::SharedPtr<Unit>& u);
 
     /**
      * Schedules a source file for compilation. The file will be parsed
@@ -374,7 +375,7 @@ protected:
      * Hook for derived classes to execute custom code when a new unit
      * is being added as an input file.
      */
-    virtual void hookAddInput(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
+    virtual void hookAddInput(hilti::rt::SharedPtr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
 
     /**
      * Hook for derived classes to execute custom code when a new source code
@@ -387,14 +388,16 @@ protected:
      * been loaded. This hook will run before the AST has been compiled (and
      * hence it'll be fully unprocessed).
      */
-    virtual void hookNewASTPreCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
+    virtual void hookNewASTPreCompilation(hilti::rt::SharedPtr<Unit> unit) {
+    } // NOLINT(performance-unnecessary-value-param)
 
     /**
      * Hook for derived classes to execute custom code when a code unit has
      * been finalized. This hook will run after the AST has been be fully
      * processed by the suitable plugin, but before it's being transformed.
      */
-    virtual void hookNewASTPostCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
+    virtual void hookNewASTPostCompilation(hilti::rt::SharedPtr<Unit> unit) {
+    } // NOLINT(performance-unnecessary-value-param)
 
     /**
      * Hook for derived classes to execute custom code when all input files
@@ -427,13 +430,15 @@ private:
     enum Stage { UNINITIALIZED, INITIALIZED, COMPILED, CODEGENED, LINKED, JITTED } _stage = UNINITIALIZED;
 
     // Backend for adding a new unit.
-    void _addUnit(const std::shared_ptr<Unit>& unit);
+    void _addUnit(const hilti::rt::SharedPtr<Unit>& unit);
 
     // Run a specific plugini's AST passes on all units with the corresponding extension.
-    Result<Nothing> _resolveUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units, int& round);
+    Result<Nothing> _resolveUnitsWithPlugin(const Plugin& plugin, std::vector<hilti::rt::SharedPtr<Unit>> units,
+                                            int& round);
 
     // Runs a specific plugin's transform step on a given set of units.
-    Result<Nothing> _transformUnitsWithPlugin(const Plugin& plugin, const std::vector<std::shared_ptr<Unit>>& units);
+    Result<Nothing> _transformUnitsWithPlugin(const Plugin& plugin,
+                                              const std::vector<hilti::rt::SharedPtr<Unit>>& units);
 
     // Run all plugins on current units, iterating until finished.
     Result<Nothing> _resolveUnits();
@@ -445,25 +450,26 @@ private:
     Result<Nothing> _optimizeUnits();
 
     // Sends a debug dump of a unit's AST to the global logger.
-    void _dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const Plugin& plugin,
+    void _dumpAST(const hilti::rt::SharedPtr<Unit>& unit, const logging::DebugStream& stream, const Plugin& plugin,
                   const std::string& prefix, int round);
 
     // Sends a debug dump of a unit's AST to the global logger.
-    void _dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const std::string& prefix);
+    void _dumpAST(const hilti::rt::SharedPtr<Unit>& unit, const logging::DebugStream& stream,
+                  const std::string& prefix);
 
     // Sends a debug dump of a unit's AST to an output stream.
-    void _dumpAST(const std::shared_ptr<Unit>& unit, std::ostream& stream, const Plugin& plugin,
+    void _dumpAST(const hilti::rt::SharedPtr<Unit>& unit, std::ostream& stream, const Plugin& plugin,
                   const std::string& prefix, int round);
 
     // Records a reduced debug dump of a unit's AST limited to just declarations.
-    void _dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& plugin);
+    void _dumpDeclarations(const hilti::rt::SharedPtr<Unit>& unit, const Plugin& plugin);
 
     // Records a debug dump of a unit's AST to disk.
-    void _saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+    void _saveIterationAST(const hilti::rt::SharedPtr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
                            int round);
 
     // Records a debug dump of a unit's AST to disk.
-    void _saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+    void _saveIterationAST(const hilti::rt::SharedPtr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
                            const std::string& tag);
 
     /**
@@ -478,19 +484,19 @@ private:
     driver::Options _driver_options;
     hilti::Options _compiler_options;
 
-    std::vector<std::shared_ptr<Unit>> _pending_units;
+    std::vector<hilti::rt::SharedPtr<Unit>> _pending_units;
     std::set<ID> _processed_units;
     std::set<hilti::rt::filesystem::path> _processed_paths;
 
-    std::shared_ptr<Context> _ctx;                      // driver's compiler context
-    std::unique_ptr<hilti::JIT> _jit;                   // driver's JIT instance
-    std::shared_ptr<const hilti::rt::Library> _library; // Compiled code
+    hilti::rt::SharedPtr<Context> _ctx;                      // driver's compiler context
+    std::unique_ptr<hilti::JIT> _jit;                        // driver's JIT instance
+    hilti::rt::SharedPtr<const hilti::rt::Library> _library; // Compiled code
 
     std::vector<CxxCode> _generated_cxxs;
     std::unordered_map<std::string, Library> _libraries;
     std::vector<hilti::rt::filesystem::path> _external_cxxs;
     std::vector<linker::MetaData> _mds;
-    std::vector<std::shared_ptr<Unit>> _hlts;
+    std::vector<hilti::rt::SharedPtr<Unit>> _hlts;
 
     bool _runtime_initialized = false; // true once initRuntime() has succeeded
     std::set<std::string> _tmp_files;  // all tmp files created, so that we can clean them up.

@@ -13,6 +13,7 @@
 
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/library.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/base/util.h>
 #include <hilti/compiler/context.h>
@@ -127,7 +128,7 @@ public:
      * @param context compiler context to use
      * @param dump_code if true, save all C++ code into files `dbg.*` for debugging
      */
-    explicit JIT(const std::shared_ptr<Context>& context, bool dump_code = false);
+    explicit JIT(const hilti::rt::SharedPtr<Context>& context, bool dump_code = false);
     ~JIT();
 
     JIT() = delete;
@@ -163,7 +164,7 @@ public:
      *
      * @return the compiled library, which will be ready for loading.
      */
-    Result<std::shared_ptr<const Library>> build();
+    Result<hilti::rt::SharedPtr<const Library>> build();
 
     /** Returns the compiler context in use. */
     auto context() const { return _context.lock(); }
@@ -179,13 +180,13 @@ private:
     hilti::Result<Nothing> _compile();
 
     // Link object files into shared library.
-    hilti::Result<std::shared_ptr<const Library>> _link();
+    hilti::Result<hilti::rt::SharedPtr<const Library>> _link();
 
     // Clean up after compilation.
     void _finish();
 
-    std::weak_ptr<Context> _context; // global context for options
-    bool _dump_code;                 // save all C++ code for debugging
+    hilti::rt::WeakPtr<Context> _context; // global context for options
+    bool _dump_code;                      // save all C++ code for debugging
 
     std::vector<hilti::rt::filesystem::path> _files; // all added source files
     std::vector<CxxCode> _codes;                     // all C++ code units to be compiled

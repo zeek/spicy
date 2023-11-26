@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 namespace hilti::util::timing {
 
 using Clock = std::chrono::high_resolution_clock;
@@ -37,7 +39,7 @@ public:
      * a shared_ptr so that ledgers can store that to ensure the global
      * singleton doesn't get destroyed at exit before they go away, too.
      */
-    static std::shared_ptr<Manager> singleton();
+    static hilti::rt::SharedPtr<Manager> singleton();
 
 protected:
     friend Collector;
@@ -123,7 +125,7 @@ protected:
     std::string _name;
 
 private:
-    std::shared_ptr<detail::Manager> _manager;
+    hilti::rt::SharedPtr<detail::Manager> _manager;
     Time _time_started;
 };
 

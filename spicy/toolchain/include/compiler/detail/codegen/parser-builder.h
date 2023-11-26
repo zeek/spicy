@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/compiler/context.h>
 
 #include <spicy/ast/aliases.h>
@@ -106,7 +108,7 @@ struct ParserState {
      *
      * @param block bock to add the generated code to
      */
-    void printDebug(const std::shared_ptr<hilti::builder::Builder>& b) const;
+    void printDebug(const hilti::rt::SharedPtr<hilti::builder::Builder>& b) const;
 
     /** Unit type that's currently being compiled. */
     std::reference_wrapper<const type::Unit> unit;
@@ -227,13 +229,13 @@ public:
     auto builder() { return _builders.back(); }
 
     /** Activates a statement builder for subsequent code. */
-    auto pushBuilder(std::shared_ptr<hilti::builder::Builder> b) {
+    auto pushBuilder(hilti::rt::SharedPtr<hilti::builder::Builder> b) {
         _builders.emplace_back(b);
         return b;
     }
 
     /** Creates a new statement builder and activates it for subsequent code. */
-    std::shared_ptr<hilti::builder::Builder> pushBuilder();
+    hilti::rt::SharedPtr<hilti::builder::Builder> pushBuilder();
 
     /** Deactivates the most recent statement builder. */
     auto popBuilder() {
@@ -260,7 +262,7 @@ public:
     ScopeGuard makeScopeGuard() { return ScopeGuard(this); }
 
     /** Activates a statement builder for subsequent code. */
-    auto pushBuilder(std::shared_ptr<hilti::builder::Builder> b, const std::function<void()>& func) {
+    auto pushBuilder(hilti::rt::SharedPtr<hilti::builder::Builder> b, const std::function<void()>& func) {
         pushBuilder(b);
         func();
         popBuilder();
@@ -505,7 +507,7 @@ public:
                           const std::function<void()>& f);
 
     CodeGen* cg() const { return _cg; }
-    std::shared_ptr<hilti::Context> context() const;
+    hilti::rt::SharedPtr<hilti::Context> context() const;
     const hilti::Options& options() const;
 
 private:
@@ -516,7 +518,7 @@ private:
                           bool is_try);
 
     std::vector<ParserState> _states;
-    std::vector<std::shared_ptr<hilti::builder::Builder>> _builders;
+    std::vector<hilti::rt::SharedPtr<hilti::builder::Builder>> _builders;
     std::map<ID, Expression> _functions;
     bool _report_new_value_for_field = true;
 };

@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/id.h>
 #include <hilti/compiler/context.h>
 
@@ -23,24 +25,24 @@ class Stream;
 namespace spicy::detail::ast {
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void buildScopes(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+void buildScopes(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-bool coerce(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+bool coerce(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-bool normalize(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+bool normalize(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
 bool print(const hilti::Node& root, hilti::printer::Stream& out);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-bool resolve(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+bool resolve(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void validate_pre(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+void validate_pre(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void validate_post(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
+void validate_post(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit);
 
 } // namespace spicy::detail::ast

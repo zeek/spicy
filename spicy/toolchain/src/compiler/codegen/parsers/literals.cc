@@ -30,7 +30,7 @@ struct Visitor : public hilti::visitor::PreOrder<std::optional<Expression>, Visi
 
     auto state() { return pb->state(); }
     auto builder() { return pb->builder(); }
-    auto pushBuilder(std::shared_ptr<builder::Builder> b) { return pb->pushBuilder(std::move(b)); }
+    auto pushBuilder(hilti::rt::SharedPtr<builder::Builder> b) { return pb->pushBuilder(std::move(b)); }
     auto pushBuilder() { return pb->pushBuilder(); }
     auto popBuilder() { return pb->popBuilder(); }
 

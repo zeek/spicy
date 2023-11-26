@@ -283,7 +283,7 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
         // Give this production its own meta instance. Due to the caching it
         // would normally have a shared one.
         // TODO(robin): Rename _setMetaInstance(), or give it clearMeta() or such.
-        prod._setMetaInstance(std::make_shared<production::Meta>());
+        prod._setMetaInstance(hilti::rt::makeShared<production::Meta>());
         return prod;
     }
 

@@ -49,7 +49,7 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
 } // anonymous namespace
 
-bool spicy::detail::ast::coerce(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit) {
+bool spicy::detail::ast::coerce(const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* root, Unit* unit) {
     bool hilti_modified = (*hilti::plugin::registry().hiltiPlugin().ast_coerce)(ctx, root, unit);
 
     hilti::util::timing::Collector _("spicy/compiler/coercer");

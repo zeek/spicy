@@ -555,7 +555,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             // unique_ptr here and then move that into the lambda. However,
             // turns out our `Lambda` requires a callback that can be copied,
             // which the unique_ptr would prevent.
-            body.addLocal({"args_on_heap", "auto", {}, "std::make_shared<decltype(args)>(std::move(args))"});
+            body.addLocal({"args_on_heap", "auto", {}, "hilti::rt::makeShared<decltype(args)>(std::move(args))"});
 
             int idx = 0;
             auto inner_args =

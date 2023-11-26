@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 
@@ -66,7 +68,7 @@ private:
 
     // This violates value-semantics but we need to share updates with
     // existing copies of the production
-    std::shared_ptr<std::pair<std::set<Production>, std::set<Production>>> _lahs;
+    hilti::rt::SharedPtr<std::pair<std::set<Production>, std::set<Production>>> _lahs;
 };
 
 } // namespace spicy::detail::codegen::production

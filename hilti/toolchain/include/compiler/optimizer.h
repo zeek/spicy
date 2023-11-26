@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/id.h>
 #include <hilti/compiler/unit.h>
 
@@ -13,13 +15,13 @@ namespace hilti {
 
 struct Optimizer {
 public:
-    Optimizer(const std::vector<std::shared_ptr<Unit>>& units) : _units(units) {}
+    Optimizer(const std::vector<hilti::rt::SharedPtr<Unit>>& units) : _units(units) {}
     ~Optimizer() {}
 
     void run();
 
 private:
-    const std::vector<std::shared_ptr<Unit>>& _units;
+    const std::vector<hilti::rt::SharedPtr<Unit>>& _units;
 };
 
 } // namespace hilti

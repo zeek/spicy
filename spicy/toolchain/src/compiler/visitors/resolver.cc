@@ -340,7 +340,8 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
 
 } // anonymous namespace
 
-bool spicy::detail::ast::resolve(const std::shared_ptr<hilti::Context>& ctx, hilti::Node* root, hilti::Unit* unit) {
+bool spicy::detail::ast::resolve(const hilti::rt::SharedPtr<hilti::Context>& ctx, hilti::Node* root,
+                                 hilti::Unit* unit) {
     bool hilti_modified = (*hilti::plugin::registry().hiltiPlugin().ast_resolve)(ctx, root, unit);
 
     hilti::util::timing::Collector _("spicy/compiler/resolver");

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 #include <hilti/ast/id.h>
 #include <hilti/ast/module.h>
@@ -192,7 +193,7 @@ public:
      * @param recursive if true, return the transitive closure of all
      * dependent units, vs just direct dependencies of the current unit
      */
-    std::vector<std::weak_ptr<Unit>> dependencies(bool recursive = false) const;
+    std::vector<hilti::rt::WeakPtr<Unit>> dependencies(bool recursive = false) const;
 
     /** Removes any dependencies registered for the unit so far. */
     void clearDependencies() { _dependencies.clear(); };
@@ -203,7 +204,7 @@ public:
      * @param unit the unit this one depends on
      * @returns true if this is a new dependency that had not been previously added
      */
-    bool addDependency(const std::shared_ptr<Unit>& unit);
+    bool addDependency(const hilti::rt::SharedPtr<Unit>& unit);
 
     /**
      * Returns the unit's meta data for the internal HILTI linker.
@@ -251,7 +252,7 @@ public:
     void setResolved(bool resolved) { _resolved = resolved; }
 
     /** Returns the compiler context in use. */
-    std::shared_ptr<Context> context() const { return _context.lock(); }
+    hilti::rt::SharedPtr<Context> context() const { return _context.lock(); }
 
     /** Returns the compiler options in use. */
     const Options& options() const { return context()->options(); }
@@ -270,10 +271,9 @@ public:
      * processing the AST; if not given, this will be taken from the filename
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromSource(const std::shared_ptr<Context>& context,
-                                                    const hilti::rt::filesystem::path& path,
-                                                    const std::optional<ID>& scope,
-                                                    std::optional<hilti::rt::filesystem::path> process_extension = {});
+    static Result<hilti::rt::SharedPtr<Unit>> fromSource(
+        const hilti::rt::SharedPtr<Context>& context, const hilti::rt::filesystem::path& path,
+        const std::optional<ID>& scope, std::optional<hilti::rt::filesystem::path> process_extension = {});
 
     /**
      * Factory method that instantiates a unit from an existing HILTI AST.
@@ -288,8 +288,8 @@ public:
      * processing the AST
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static std::shared_ptr<Unit> fromModule(const std::shared_ptr<Context>& context, const hilti::Module& module,
-                                            hilti::rt::filesystem::path extension);
+    static hilti::rt::SharedPtr<Unit> fromModule(const hilti::rt::SharedPtr<Context>& context,
+                                                 const hilti::Module& module, hilti::rt::filesystem::path extension);
 
     /**
      * Factory method that instantiates a unit for an `import` statement,
@@ -306,11 +306,11 @@ public:
      * doesn't need to.
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromImport(const std::shared_ptr<Context>& context, const ID& id,
-                                                    const hilti::rt::filesystem::path& parse_extension,
-                                                    const hilti::rt::filesystem::path& process_extension,
-                                                    std::optional<ID> scope,
-                                                    std::vector<hilti::rt::filesystem::path> search_dirs);
+    static Result<hilti::rt::SharedPtr<Unit>> fromImport(const hilti::rt::SharedPtr<Context>& context, const ID& id,
+                                                         const hilti::rt::filesystem::path& parse_extension,
+                                                         const hilti::rt::filesystem::path& process_extension,
+                                                         std::optional<ID> scope,
+                                                         std::vector<hilti::rt::filesystem::path> search_dirs);
 
     /**
      * Factory method that instantiates a unit from an existing HILTI module
@@ -321,9 +321,9 @@ public:
      * @param scope import-from scope associated with the existing module
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromCache(const std::shared_ptr<Context>& context,
-                                                   const hilti::rt::filesystem::path& path,
-                                                   const std::optional<ID>& scope);
+    static Result<hilti::rt::SharedPtr<Unit>> fromCache(const hilti::rt::SharedPtr<Context>& context,
+                                                        const hilti::rt::filesystem::path& path,
+                                                        const std::optional<ID>& scope);
 
     /**
      * Factory method that instantiates a unit from existing C++ source code
@@ -333,8 +333,9 @@ public:
      * @param path path associated with the C++ code, if any
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromCXX(const std::shared_ptr<Context>& context, detail::cxx::Unit cxx,
-                                                 const hilti::rt::filesystem::path& path = "");
+    static Result<hilti::rt::SharedPtr<Unit>> fromCXX(const hilti::rt::SharedPtr<Context>& context,
+                                                      detail::cxx::Unit cxx,
+                                                      const hilti::rt::filesystem::path& path = "");
 
     /**
      * Entry point for the HILTI linker, The linker combines meta data from
@@ -346,8 +347,8 @@ public:
      * @param mds set of meta data from modules to be linked together
      * @return a unit representing additional C++ code that the modules need to function
      */
-    static Result<std::shared_ptr<Unit>> link(const std::shared_ptr<Context>& context,
-                                              const std::vector<linker::MetaData>& mds);
+    static Result<hilti::rt::SharedPtr<Unit>> link(const hilti::rt::SharedPtr<Context>& context,
+                                                   const std::vector<linker::MetaData>& mds);
 
     /**
      * Reads linker meta from a file. This expects the file to contain linker
@@ -371,7 +372,7 @@ public:
 private:
     // Private constructor initializing the unit's meta data. Use the public
     // `from*()` factory functions instead to instantiate a unit.
-    Unit(const std::shared_ptr<Context>& context, const ID& id, const std::optional<ID>& scope,
+    Unit(const hilti::rt::SharedPtr<Context>& context, const ID& id, const std::optional<ID>& scope,
          const hilti::rt::filesystem::path& path, hilti::rt::filesystem::path extension, Node&& module)
         : _index(id, scope, util::normalizePath(path)),
           _unique_id(_makeUniqueID(id)),
@@ -379,7 +380,7 @@ private:
           _module(std::move(module)),
           _context(context) {}
 
-    Unit(const std::shared_ptr<Context>& context, const ID& id, const std::optional<ID>& scope,
+    Unit(const hilti::rt::SharedPtr<Context>& context, const ID& id, const std::optional<ID>& scope,
          const hilti::rt::filesystem::path& path, hilti::rt::filesystem::path extension,
          std::optional<detail::cxx::Unit> cxx_unit = {})
         : _index(id, scope, util::normalizePath(path)),
@@ -403,21 +404,22 @@ private:
     void _destroyModule();
 
     // Helper for dependencies() to recurse.
-    void _recursiveDependencies(std::vector<std::weak_ptr<Unit>>* dst, std::unordered_set<const Unit*>* seen) const;
+    void _recursiveDependencies(std::vector<hilti::rt::WeakPtr<Unit>>* dst,
+                                std::unordered_set<const Unit*>* seen) const;
 
     // Parses a source file with the appropriate plugin.
-    static Result<hilti::Module> _parse(const std::shared_ptr<Context>& context,
+    static Result<hilti::Module> _parse(const hilti::rt::SharedPtr<Context>& context,
                                         const hilti::rt::filesystem::path& path);
 
-    context::CacheIndex _index;                     // index for the context's module cache
-    ID _unique_id;                                  // globally unique ID for this module
-    hilti::rt::filesystem::path _extension;         // AST extension, which may differ from source file
-    std::optional<Node> _module;                    // root node for AST (always a `Module`), if available
-    std::vector<std::weak_ptr<Unit>> _dependencies; // recorded dependencies
-    std::weak_ptr<Context> _context;                // global context
-    std::optional<detail::cxx::Unit> _cxx_unit;     // compiled C++ code for this unit, once available
-    bool _resolved = false;                         // state of resolving the AST
-    bool _requires_compilation = false;             // mark explicitly as requiring compilation to C++
+    context::CacheIndex _index;                          // index for the context's module cache
+    ID _unique_id;                                       // globally unique ID for this module
+    hilti::rt::filesystem::path _extension;              // AST extension, which may differ from source file
+    std::optional<Node> _module;                         // root node for AST (always a `Module`), if available
+    std::vector<hilti::rt::WeakPtr<Unit>> _dependencies; // recorded dependencies
+    hilti::rt::WeakPtr<Context> _context;                // global context
+    std::optional<detail::cxx::Unit> _cxx_unit;          // compiled C++ code for this unit, once available
+    bool _resolved = false;                              // state of resolving the AST
+    bool _requires_compilation = false;                  // mark explicitly as requiring compilation to C++
 
     static std::unordered_map<ID, unsigned int> _uid_cache; // cache storing state for generating globally unique IDs
 };

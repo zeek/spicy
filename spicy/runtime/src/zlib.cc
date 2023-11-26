@@ -14,7 +14,7 @@ struct detail::State {
 };
 
 Stream::Stream(int64_t window_bits) {
-    _state = std::shared_ptr<detail::State>(new detail::State(), [](auto p) {
+    _state = hilti::rt::SharedPtr<detail::State>(new detail::State(), [](auto p) {
         inflateEnd(&p->stream);
         delete p; // NOLINT(cppcoreguidelines-owning-memory)
     });

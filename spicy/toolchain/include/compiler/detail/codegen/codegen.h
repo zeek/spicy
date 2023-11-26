@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/node.h>
@@ -29,7 +31,7 @@ namespace spicy::detail {
  */
 class CodeGen {
 public:
-    CodeGen(const std::shared_ptr<hilti::Context>& context) : _context(context), _gb(this), _pb(this) {}
+    CodeGen(const hilti::rt::SharedPtr<hilti::Context>& context) : _context(context), _gb(this), _pb(this) {}
 
     /** Entry point for transformation from a Spicy AST to a HILTI AST. */
     bool compileModule(hilti::Node* root, hilti::Unit* u);
@@ -65,7 +67,7 @@ public:
 
 
 private:
-    std::weak_ptr<hilti::Context> _context;
+    hilti::rt::WeakPtr<hilti::Context> _context;
     codegen::GrammarBuilder _gb;
     codegen::ParserBuilder _pb;
 

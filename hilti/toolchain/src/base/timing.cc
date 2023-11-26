@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
@@ -38,11 +40,11 @@ static std::string prettyTimeForUnit(Duration d, double factor, const std::strin
     return fmt("%.2f%s", static_cast<double>(x.count()) / factor, unit);
 }
 
-std::shared_ptr<Manager> Manager::singleton() {
-    static std::shared_ptr<Manager> singleton;
+hilti::rt::SharedPtr<Manager> Manager::singleton() {
+    static hilti::rt::SharedPtr<Manager> singleton;
 
     if ( ! singleton )
-        singleton = std::shared_ptr<Manager>(new Manager());
+        singleton = hilti::rt::SharedPtr<Manager>(new Manager());
 
     return singleton;
 }

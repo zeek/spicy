@@ -5,6 +5,8 @@
 #include <sstream>
 #include <utility>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 #include <hilti/ast/ctors/reference.h>
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/local-variable.h>
@@ -43,10 +45,10 @@ inline const hilti::logging::DebugStream Operator("operator");
 namespace {
 
 struct Visitor : public visitor::PostOrder<void, Visitor> {
-    Visitor(std::shared_ptr<hilti::Context> ctx, Node* module, Unit* unit)
+    Visitor(hilti::rt::SharedPtr<hilti::Context> ctx, Node* module, Unit* unit)
         : _context(std::move(ctx)), unit(unit), _module(module->as<Module>()) {}
 
-    std::shared_ptr<hilti::Context> _context;
+    hilti::rt::SharedPtr<hilti::Context> _context;
     Unit* unit;
     Module& _module;
 
@@ -292,11 +294,11 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     }
 
     void operator()(const declaration::ImportedModule& m, position_t p) {
-        std::shared_ptr<Unit> imported_unit = m.unit();
+        hilti::rt::SharedPtr<Unit> imported_unit = m.unit();
 
         if ( ! imported_unit ) {
             std::string name;
-            Result<std::shared_ptr<Unit>> u;
+            Result<hilti::rt::SharedPtr<Unit>> u;
 
             if ( m.path().empty() ) {
                 name = m.id().str();
@@ -1018,7 +1020,7 @@ std::vector<Node> Visitor::matchOverloads(const std::vector<Operator>& candidate
 
 } // anonymous namespace
 
-bool hilti::detail::ast::resolve(const std::shared_ptr<hilti::Context>& ctx, Node* root, Unit* unit) {
+bool hilti::detail::ast::resolve(const hilti::rt::SharedPtr<hilti::Context>& ctx, Node* root, Unit* unit) {
     util::timing::Collector _("hilti/compiler/ast/resolver");
 
     auto v1 = Visitor(ctx, root, unit);
