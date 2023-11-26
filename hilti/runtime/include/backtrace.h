@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include <hilti/rt/types/shared_ptr.h>
+
 namespace hilti::rt {
 
 /** Captures a stack backtrace at construction time. */
@@ -30,7 +32,7 @@ public:
 
 private:
     using Callstack = std::array<void*, 32>;
-    std::shared_ptr<Callstack> _callstack = nullptr;
+    SharedPtr<Callstack> _callstack = nullptr;
     int _frames = -1;
 };
 

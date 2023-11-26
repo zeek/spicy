@@ -24,6 +24,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -37,7 +38,7 @@ template<typename K, typename V>
 class Iterator {
     using M = Map<K, V>;
 
-    std::weak_ptr<M*> _control;
+    WeakPtr<M*> _control;
     typename M::M::iterator _iterator;
 
 public:
@@ -94,7 +95,7 @@ template<typename K, typename V>
 class ConstIterator {
     using M = Map<K, V>;
 
-    std::weak_ptr<M*> _control;
+    WeakPtr<M*> _control;
     typename M::M::const_iterator _iterator;
 
 public:
@@ -172,9 +173,9 @@ template<typename K, typename V>
 class Map : protected std::map<K, V> {
 public:
     using M = std::map<K, V>;
-    using C = std::shared_ptr<Map<K, V>*>;
+    using C = SharedPtr<Map<K, V>*>;
 
-    C _control = std::make_shared<Map<K, V>*>(this);
+    C _control = makeShared<Map<K, V>*>(this);
 
     using key_type = typename M::key_type;
     using value_type = typename M::value_type;
@@ -303,7 +304,7 @@ private:
 
     void invalidateIterators() {
         // Update control block to invalidate all iterators previously created from it.
-        _control = std::make_shared<Map<K, V>*>(this);
+        _control = makeShared<Map<K, V>*>(this);
     }
 }; // namespace hilti::rt
 

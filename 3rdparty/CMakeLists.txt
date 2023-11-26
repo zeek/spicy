@@ -49,3 +49,5 @@ check_cxx_compiler_flag("-Wno-changes-meaning" _has_no_changes_meaning_flag)
 if (_has_no_changes_meaning_flag)
     set_property(TARGET reproc++ PROPERTY COMPILE_OPTIONS "-Wno-changes-meaning")
 endif ()
+
+add_subdirectory(boost)

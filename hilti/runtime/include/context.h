@@ -11,6 +11,7 @@
 
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/threading.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 namespace hilti::rt {
 
@@ -54,7 +55,7 @@ struct Context {
      * linker code. Each array entry corresponds to the globals of one HILTI
      * module.
      */
-    std::vector<std::shared_ptr<void>> hilti_globals;
+    std::vector<SharedPtr<void>> hilti_globals;
 
     /** A user-defined cookie value that's carried around with the context. */
     void* cookie = nullptr;

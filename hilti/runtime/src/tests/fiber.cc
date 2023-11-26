@@ -10,6 +10,7 @@
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/result.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 class TestDtor { //NOLINT
 public:
@@ -293,7 +294,7 @@ TEST_CASE("copy-arg") {
     auto s2 = hilti::rt::ValueReference<std::string>("string2");
 
     auto args = std::make_tuple(hilti::rt::resumable::detail::copyArg(s1), hilti::rt::resumable::detail::copyArg(s2));
-    auto args_on_heap = std::make_shared<decltype(args)>(std::move(args));
+    auto args_on_heap = hilti::rt::makeShared<decltype(args)>(std::move(args));
 
     // Check that the copied values have the expected content.
     CHECK_EQ(std::get<0>(*args_on_heap), std::string("string1"));

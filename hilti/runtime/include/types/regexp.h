@@ -11,6 +11,7 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/vector.h>
 
@@ -257,7 +258,7 @@ private:
     // Backend for the searching and matching methods.
     int16_t _search_pattern(jrx_match_state* ms, const char* data, size_t len, int32_t* so, int32_t* eo) const;
 
-    std::shared_ptr<regexp::detail::CompiledRegExp> _re;
+    SharedPtr<regexp::detail::CompiledRegExp> _re;
 };
 
 namespace detail::adl {

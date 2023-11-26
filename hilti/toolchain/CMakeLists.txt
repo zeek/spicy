@@ -141,11 +141,11 @@ set_config_val(
 # Include directories
 set_config_val(
     HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
-    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/3rdparty !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include/3rdparty"
 )
 set_config_val(
     HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS
-    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include"
+    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/3rdparty !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include/3rdparty"
 )
 
 # CXX flags

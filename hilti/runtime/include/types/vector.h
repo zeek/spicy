@@ -90,7 +90,7 @@ class Iterator {
     using V = Vector<T, Allocator>;
     friend V;
 
-    std::weak_ptr<V*> _control;
+    WeakPtr<V*> _control;
     typename V::size_type _index = 0;
 
 public:
@@ -167,7 +167,7 @@ template<typename T, typename Allocator>
 class ConstIterator {
     using V = Vector<T, Allocator>;
 
-    std::weak_ptr<Vector<T, Allocator>*> _control;
+    WeakPtr<Vector<T, Allocator>*> _control;
     typename V::size_type _index = 0;
 
 public:
@@ -266,8 +266,8 @@ public:
     using iterator = vector::Iterator<T, Allocator>;
     using const_iterator = vector::ConstIterator<T, Allocator>;
 
-    using C = std::shared_ptr<Vector*>;
-    C _control = std::make_shared<Vector<T, Allocator>*>(this);
+    using C = SharedPtr<Vector*>;
+    C _control = makeShared<Vector<T, Allocator>*>(this);
 
     Vector() = default;
 

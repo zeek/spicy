@@ -68,7 +68,7 @@ TEST_CASE("asSharedPtr") {
     }
 
     SUBCASE("non-owning") {
-        auto ptr = std::make_shared<T>(42);
+        auto ptr = makeShared<T>(42);
 
         REQUIRE(ValueReference<T>::self(ptr.get()).asSharedPtr());
         CHECK_EQ(*ValueReference<T>::self(ptr.get()).asSharedPtr(), *ptr);
@@ -93,7 +93,7 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
     }
 
     SUBCASE("from ptr") {
-        const auto ptr = std::make_shared<U>(x);
+        const auto ptr = makeShared<U>(x);
         ValueReference<U> ref(ptr);
         CHECK_EQ(*ref, x);
     }
@@ -355,8 +355,8 @@ TEST_CASE("isNull") {
     CHECK(StrongReference<int>().isNull());
     CHECK_FALSE(StrongReference<int>(42).isNull());
 
-    CHECK(StrongReference<int>(ValueReference<int>(std::shared_ptr<int>())).isNull());
-    CHECK_FALSE(StrongReference<int>(ValueReference<int>(std::make_shared<int>(42))).isNull());
+    CHECK(StrongReference<int>(ValueReference<int>(SharedPtr<int>())).isNull());
+    CHECK_FALSE(StrongReference<int>(ValueReference<int>(makeShared<int>(42))).isNull());
 }
 
 TEST_CASE("reset") {

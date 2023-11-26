@@ -37,3 +37,27 @@
 [submodule "3rdparty/any"]
 	path = 3rdparty/any
 	url = https://github.com/thelink2012/any.git
+[submodule "3rdparty/boost/assert"]
+	path = 3rdparty/boost/assert
+	url = https://github.com/boostorg/assert.git
+[submodule "3rdparty/boost/config"]
+	path = 3rdparty/boost/config
+	url = https://github.com/boostorg/config.git
+[submodule "3rdparty/boost/core"]
+	path = 3rdparty/boost/core
+	url = https://github.com/boostorg/core.git
+[submodule "3rdparty/boost/move"]
+	path = 3rdparty/boost/move
+	url = https://github.com/boostorg/move.git
+[submodule "3rdparty/boost/smart_ptr"]
+	path = 3rdparty/boost/smart_ptr
+	url = https://github.com/boostorg/smart_ptr.git
+[submodule "3rdparty/boost/static_assert"]
+	path = 3rdparty/boost/static_assert
+	url = https://github.com/boostorg/static_assert.git
+[submodule "3rdparty/boost/throw_exception"]
+	path = 3rdparty/boost/throw_exception
+	url = https://github.com/boostorg/throw_exception.git
+[submodule "3rdparty/boost/type_traits"]
+	path = 3rdparty/boost/type_traits
+	url = https://github.com/boostorg/type_traits.git

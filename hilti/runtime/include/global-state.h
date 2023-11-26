@@ -13,6 +13,7 @@
 #include <hilti/rt/debug-logger.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/profiler-state.h>
+#include <hilti/rt/types/shared_ptr.h>
 
 // We collect all (or most) of the runtime's global state centrally. That's
 // 1st good to see what we have (global state should be minimal) and 2nd
@@ -74,7 +75,7 @@ struct GlobalState {
     std::vector<hilti::rt::detail::HiltiModule> hilti_modules;
 
     /** Cache of already compiled regular expressions. */
-    std::unordered_map<std::string, std::shared_ptr<regexp::detail::CompiledRegExp>> regexp_cache;
+    std::unordered_map<std::string, SharedPtr<regexp::detail::CompiledRegExp>> regexp_cache;
 };
 
 /**
@@ -126,7 +127,7 @@ inline auto moduleGlobals(unsigned int idx) {
 
     assert(idx < globals.size());
 
-    return std::static_pointer_cast<T>(globals[idx]);
+    return staticPointerCast<T>(globals[idx]);
 }
 
 /**
@@ -141,7 +142,7 @@ inline auto initModuleGlobals(unsigned int idx) {
     if ( context::detail::current()->hilti_globals.size() <= idx )
         context::detail::current()->hilti_globals.resize(idx + 1);
 
-    context::detail::current()->hilti_globals[idx] = std::make_shared<T>();
+    context::detail::current()->hilti_globals[idx] = makeShared<T>();
 }
 
 } // namespace hilti::rt::detail

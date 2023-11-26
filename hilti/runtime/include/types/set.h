@@ -22,6 +22,7 @@
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/set_fwd.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/types/vector_fwd.h>
 #include <hilti/rt/util.h>
 
@@ -33,7 +34,7 @@ template<typename T>
 class Iterator {
     using S = Set<T>;
 
-    std::weak_ptr<S*> _control;
+    WeakPtr<S*> _control;
     typename S::V::iterator _iterator;
 
 public:
@@ -108,9 +109,9 @@ template<typename T>
 class Set : protected std::set<T> {
 public:
     using V = std::set<T>;
-    using C = std::shared_ptr<Set<T>*>;
+    using C = SharedPtr<Set<T>*>;
 
-    C _control = std::make_shared<Set<T>*>(this);
+    C _control = makeShared<Set<T>*>(this);
 
     using reference = const T&;
     using const_reference = const T&;
@@ -154,7 +155,7 @@ public:
      */
     size_type erase(const key_type& key) {
         // Update control block to invalidate all iterators previously created from it.
-        _control = std::make_shared<Set<T>*>();
+        _control = makeShared<Set<T>*>();
 
         return static_cast<V&>(*this).erase(key);
     }
@@ -165,7 +166,7 @@ public:
      */
     void clear() {
         // Update control block to invalidate all iterators previously created from it.
-        _control = std::make_shared<Set<T>*>();
+        _control = makeShared<Set<T>*>();
 
         return static_cast<V&>(*this).clear();
     }

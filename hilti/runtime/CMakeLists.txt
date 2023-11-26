@@ -70,10 +70,13 @@ foreach (lib hilti-rt hilti-rt-debug)
         ${lib}-objects PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
                                ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include)
 
+    target_link_libraries(${lib}-objects PUBLIC Boost::smart_ptr)
+
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
     target_link_libraries(${lib} jrx-objects)
     target_link_libraries(${lib} fiber)
+    target_link_libraries(${lib} Boost::smart_ptr)
 endforeach ()
 
 # Build hilti-rt with release flags.
@@ -129,6 +132,15 @@ install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/single_include/nlohmann
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/filesystem/include/ghc hilti/rt/3rdparty/ghc)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/any hilti/rt/3rdparty/any)
 
+# Since we carefully replicate a simply Boost install tree from the Boost
+# modules we use copy over that tree. Since CMake seems unable to replace
+# symlinks with their contents on install use an ad hoc script instead.
+set(_dst ${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/3rdparty/boost)
+install(CODE "message(STATUS \"Installing: ${_dst}\")")
+install(
+    CODE "execute_process(COMMAND python3 -c \"import shutil; shutil.rmtree('${_dst}', ignore_errors=True); shutil.copytree('${PROJECT_SOURCE_DIR}/hilti/runtime/include/3rdparty/boost', '${_dst}')\")"
+)
+
 ##### Tests
 
 add_executable(
@@ -179,9 +191,9 @@ target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_libraries(hilti-rt-tests
                       PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
-target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
+target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest
+                                             Boost::smart_ptr)
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
-add_test(NAME hilti-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-rt-configuration-tests src/tests/configuration.cc)
 target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")

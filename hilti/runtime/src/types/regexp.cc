@@ -7,6 +7,7 @@
 
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/types/regexp.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/util.h>
 
 extern "C" {
@@ -45,11 +46,11 @@ public:
     bool _done = false;
 
     jrx_match_state _ms{};
-    std::shared_ptr<regexp::detail::CompiledRegExp> _re;
+    SharedPtr<regexp::detail::CompiledRegExp> _re;
 
     ~Pimpl() { jrx_match_state_done(&_ms); }
 
-    Pimpl(std::shared_ptr<regexp::detail::CompiledRegExp> re) : _re(std::move(re)) {
+    Pimpl(SharedPtr<regexp::detail::CompiledRegExp> re) : _re(std::move(re)) {
         jrx_match_state_init(_re->jrx(), 0, &_ms);
     }
 
@@ -269,7 +270,7 @@ RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) {
     auto& ptr = detail::globalState()->regexp_cache[key];
 
     if ( ! ptr )
-        ptr = std::make_shared<regexp::detail::CompiledRegExp>(patterns, flags);
+        ptr = makeShared<regexp::detail::CompiledRegExp>(patterns, flags);
 
     _re = ptr;
 }

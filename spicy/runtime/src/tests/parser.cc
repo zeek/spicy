@@ -105,7 +105,7 @@ TEST_CASE("atEod") {
     }
 }
 
-struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
+struct UnitWithSinkSupport : hilti::rt::EnableSharedFromThis<UnitWithSinkSupport> {
     static Parser __parser;
     sink::detail::State* __sink = nullptr;
     std::optional<hilti::rt::RecoverableFailure> __error;

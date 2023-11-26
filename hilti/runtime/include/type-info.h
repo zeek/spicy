@@ -20,6 +20,7 @@
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/set.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/vector.h>
 
@@ -44,10 +45,10 @@ class Parent {
 public:
     /** Constructor that ties existing HILTI value to instance. */
     template<typename T>
-    Parent(const StrongReference<T>& value) : _handle(std::make_shared<bool>()), _value(value) {}
+    Parent(const StrongReference<T>& value) : _handle(makeShared<bool>()), _value(value) {}
 
     /** Constructor that leaves instance initially untied. */
-    Parent() : _handle(std::make_shared<bool>()) {}
+    Parent() : _handle(makeShared<bool>()) {}
 
     /** Tie instances to an existing HILTI value. */
     void tie(hilti::rt::StrongReferenceGeneric value) { _value = std::move(value); }
@@ -55,14 +56,14 @@ public:
 private:
     friend class type_info::Value;
 
-    std::weak_ptr<bool> handle() const {
+    WeakPtr<bool> handle() const {
         if ( ! _value )
             throw InvalidValue("type-info traversal not tied to value");
 
         return _handle;
     }
 
-    std::shared_ptr<bool> _handle;
+    SharedPtr<bool> _handle;
     std::optional<hilti::rt::StrongReferenceGeneric> _value;
 };
 
@@ -139,7 +140,7 @@ private:
 
     const void* _ptr;
     const TypeInfo* _ti;
-    std::weak_ptr<bool> _parent_handle;
+    WeakPtr<bool> _parent_handle;
 };
 
 namespace detail {

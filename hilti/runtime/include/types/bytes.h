@@ -15,6 +15,7 @@
 #include <hilti/rt/json-fwd.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/shared_ptr.h>
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
@@ -48,13 +49,13 @@ class Iterator {
     using B = std::string;
     using difference_type = B::const_iterator::difference_type;
 
-    std::weak_ptr<B*> _control;
+    WeakPtr<B*> _control;
     typename integer::safe<std::uint64_t> _index = 0;
 
 public:
     Iterator() = default;
 
-    Iterator(typename B::size_type index, std::weak_ptr<B*> control) : _control(std::move(control)), _index(index) {}
+    Iterator(typename B::size_type index, WeakPtr<B*> control) : _control(std::move(control)), _index(index) {}
 
     uint8_t operator*() const {
         if ( auto&& l = _control.lock() ) {
@@ -537,9 +538,9 @@ public:
 
 private:
     friend bytes::Iterator;
-    std::shared_ptr<Base*> _control = std::make_shared<Base*>(static_cast<Base*>(this));
+    SharedPtr<Base*> _control = makeShared<Base*>(static_cast<Base*>(this));
 
-    void invalidateIterators() { _control = std::make_shared<Base*>(static_cast<Base*>(this)); }
+    void invalidateIterators() { _control = makeShared<Base*>(static_cast<Base*>(this)); }
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
