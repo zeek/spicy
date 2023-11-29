@@ -251,8 +251,9 @@ public:
      * @param n optional starting point, which must be inside the same instance
      */
     const_iterator find(value_type b, const const_iterator& n = const_iterator()) const {
-        if ( auto i = Base::find(b, (n ? n - begin() : 0)); i != Base::npos )
-            return begin() + i;
+        auto beg = begin();
+        if ( auto i = Base::find(b, (n ? n - beg : 0)); i != Base::npos )
+            return beg + i;
         else
             return end();
     }
