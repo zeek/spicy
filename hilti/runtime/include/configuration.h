@@ -18,7 +18,7 @@ struct Configuration {
     Configuration();
 
     /** Stack size for fibers with individual stacks. */
-    size_t fiber_individual_stack_size = static_cast<size_t>(1 * 1024 * 1024);
+    size_t fiber_individual_stack_size = static_cast<size_t>(256 * 1024 * 1024);
 
     /** Stack size for shared fiber stack. */
     size_t fiber_shared_stack_size = static_cast<size_t>(1 * 1024 * 1024);
