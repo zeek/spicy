@@ -21,8 +21,8 @@ using namespace hilti::rt;
 
 #ifndef HILTI_HAVE_ASAN
 // Defaults for normal operation.
-static const auto DefaultFiberType = detail::Fiber::Type::SharedStack; // share stack by default
-static const auto AlwaysUseStackSwitchTrampoline = false;              // use switch trampoline only with shared stacks
+static const auto DefaultFiberType = detail::Fiber::Type::IndividualStack; // individual stack by default
+static const auto AlwaysUseStackSwitchTrampoline = false; // use switch trampoline only with shared stacks
 static const auto FiberGuardFlags = FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI;
 
 #define ASAN_NO_OPTIMIZE // just leave empty
