@@ -33,7 +33,7 @@ Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
     }
 }
 
-Chunk::Chunk(const Offset& offset, const std::string& s) : _offset(offset) {
+Chunk::Chunk(const Offset& offset, std::string_view s) : _offset(offset) {
     if ( s.size() <= SmallBufferSize ) {
         std::array<Byte, SmallBufferSize> a{};
         memcpy(a.data(), s.data(), s.size());
@@ -410,7 +410,7 @@ void Stream::append(const char* data, size_t len) {
         return;
 
     if ( data )
-        _chain->append(std::make_unique<Chunk>(0, std::string(data, len)));
+        _chain->append(std::make_unique<Chunk>(0, std::string_view{data, len}));
     else
         _chain->append(std::make_unique<Chunk>(0, len));
 }

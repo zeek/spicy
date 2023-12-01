@@ -95,7 +95,7 @@ public:
         : _offset(o), _data(std::make_pair(n, d)) {}
     Chunk(const Offset& o, Vector&& d) : _offset(o), _data(std::move(d)) {}
     Chunk(const Offset& o, const View& d);
-    Chunk(const Offset& o, const std::string& s);
+    Chunk(const Offset& o, std::string_view sv);
 
     template<int N>
     Chunk(Offset o, std::array<Byte, N> d) : Chunk(_fromArray(o, std::move(d))) {}
