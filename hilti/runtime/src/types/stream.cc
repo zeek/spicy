@@ -26,8 +26,7 @@ Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
         _data = std::make_pair(d.size(), a);
     }
     else {
-        std::vector<Byte> v;
-        v.resize(d.size());
+        std::vector<Byte> v(d.size());
         d.copyRaw(v.data());
         _data = std::move(v);
     }
@@ -40,8 +39,7 @@ Chunk::Chunk(const Offset& offset, std::string_view s) : _offset(offset) {
         _data = std::make_pair(s.size(), a);
     }
     else {
-        std::vector<Byte> v;
-        v.resize(s.size());
+        std::vector<Byte> v(s.size());
         memcpy(v.data(), s.data(), s.size());
         _data = std::move(v);
     }
