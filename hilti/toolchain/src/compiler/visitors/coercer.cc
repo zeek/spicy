@@ -401,7 +401,11 @@ struct Visitor : public visitor::PreOrder<void, Visitor> {
     // passed `set` and perform the coercion automatically when resolving the
     // function call.
     void operator()(const operator_::set::In& n, position_t p) {
-        if ( auto x = coerceTo(&p.node, n.op0(), n.op1().type().as<type::Set>().elementType(), true, false) ) {
+        auto op1 = n.op1().type().tryAs<type::Set>();
+        if ( ! op1 )
+            return;
+
+        if ( auto x = coerceTo(&p.node, n.op0(), op1->elementType(), true, false) ) {
             logChange(p.node, *x, "call argument");
             p.node.as<operator_::set::In>().setOp0(*x);
             modified = true;
