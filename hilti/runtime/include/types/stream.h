@@ -87,22 +87,11 @@ struct Gap {
  */
 class Chunk {
 public:
-    static const int SmallBufferSize = 32;
-    using Array = std::pair<Size, std::array<Byte, SmallBufferSize>>;
-    using Vector = std::vector<Byte>;
-
-    Chunk(const Offset& o, std::array<Byte, SmallBufferSize> d, const Size& n)
-        : _offset(o), _data(std::make_pair(n, d)) {}
-    Chunk(const Offset& o, Vector&& d) : _offset(o), _data(std::move(d)) {}
     Chunk(const Offset& o, const View& d);
-    Chunk(const Offset& o, std::string_view sv);
-
-    template<int N>
-    Chunk(Offset o, std::array<Byte, N> d) : Chunk(_fromArray(o, std::move(d))) {}
-    Chunk(const Offset& o, const char* d, const Size& n) : Chunk(_fromArray(o, d, n)) {}
+    Chunk(const Offset& o, std::string s);
 
     // Constructs a gap chunk which signifies empty data.
-    Chunk(const Offset& o, size_t len) : _offset(o), _data(Gap{len}) {}
+    Chunk(const Offset& o, size_t len) : _offset(o), _gap_size(len) { assert(_gap_size > 0); }
 
     Chunk(const Chunk& other) : _offset(other._offset), _data(other._data) {}
     Chunk(Chunk&& other) noexcept
@@ -122,19 +111,14 @@ public:
 
     Offset offset() const { return _offset; }
     Offset endOffset() const { return _offset + size(); }
-    bool isGap() const { return std::holds_alternative<Gap>(_data); }
+    bool isGap() const { return _gap_size > 0; };
     bool inRange(const Offset& offset) const { return offset >= _offset && offset < endOffset(); }
 
     const Byte* data() const {
-        if ( auto a = std::get_if<Array>(&_data) )
-            return a->second.data();
-        else if ( auto a = std::get_if<Vector>(&_data) ) {
-            return a->data();
-        }
-        else if ( std::holds_alternative<Gap>(_data) )
+        if ( isGap() )
             throw MissingData("data is missing");
 
-        hilti::rt::cannot_be_reached();
+        return reinterpret_cast<const Byte*>(_data.data());
     }
 
     const Byte* data(const Offset& offset) const {
@@ -143,26 +127,17 @@ public:
     }
 
     const Byte* endData() const {
-        if ( auto a = std::get_if<Array>(&_data) )
-            return a->second.data() + a->first.Ref();
-        else if ( auto a = std::get_if<Vector>(&_data) ) {
-            return a->data() + a->size();
-        }
-        else if ( std::holds_alternative<Gap>(_data) )
+        if ( isGap() )
             throw MissingData("data is missing");
 
-        hilti::rt::cannot_be_reached();
+        return reinterpret_cast<const Byte*>(data() + _data.size());
     }
 
     Size size() const {
-        if ( auto a = std::get_if<Array>(&_data) )
-            return a->first;
-        else if ( auto a = std::get_if<Vector>(&_data) )
-            return a->size();
-        else if ( auto a = std::get_if<Gap>(&_data) )
-            return a->size;
+        if ( isGap() )
+            return _gap_size;
 
-        hilti::rt::cannot_be_reached();
+        return _data.size();
     }
 
     bool isLast() const { return ! _next; }
@@ -230,20 +205,9 @@ protected:
     void clearNext() { _next = nullptr; }
 
 private:
-    inline Chunk _fromArray(const Offset& o, const char* d, const Size& n) {
-        auto ud = reinterpret_cast<const Byte*>(d);
-
-        if ( n <= Chunk::SmallBufferSize ) {
-            std::array<Byte, Chunk::SmallBufferSize> x{};
-            std::copy(ud, ud + n.Ref(), x.data());
-            return Chunk(o, x, n);
-        }
-
-        return Chunk(o, Chunk::Vector(ud, ud + n.Ref()));
-    }
-
-    Offset _offset = 0;                     // global offset of 1st byte
-    std::variant<Array, Vector, Gap> _data; // content of this chunk
+    Offset _offset = 0;            // global offset of 1st byte
+    std::string _data;             // content of this chunk
+    size_t _gap_size = 0;          // non-zero if this is a gap in which case _data is irrelevant
     const Chain* _chain = nullptr; // chain this chunk is part of, or null if not linked to a chain yet (non-owning;
                                    // will stay valid at least as long as the current chunk does)
     std::unique_ptr<Chunk> _next = nullptr; // next chunk in chain, or null if last
@@ -1511,28 +1475,17 @@ public:
     Stream() : _chain(make_intrusive<Chain>()) {}
 
     /**
-     * Creates an instance from a vector of `Bytes`.
-     * @param d `vector` to create the stream from
-     */
-    explicit Stream(std::vector<Byte> d) : Stream(Chunk(0, std::move(d))) {}
-
-    /**
      * Creates an instance from a bytes instance.
      * @param d `Bytes` instance to the create the stream from
      */
     explicit Stream(const Bytes& d);
 
     /**
-     * Creates an instance for C-style ASCII string, not including the final null byte. The data will be copied.
-     * @param d null-terminated string to create the stream from
-     */
-    explicit Stream(const char* d) : Stream(Chunk(0, d, strlen(d))) {}
-
-    /**
      * Creates an instance from an existing memory block. The data
      * will be copied if set, otherwise a gap will be recorded.
      */
     Stream(const char* d, const Size& n);
+
     /**
      * Creates an instance from an existing stream view.
      * @param d `View` to create the stream from
