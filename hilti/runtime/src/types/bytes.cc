@@ -215,6 +215,7 @@ Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
 }
 
 void Bytes::append(const stream::View& view) {
+    reserve(size() + view.size());
     for ( auto block = view.firstBlock(); block; block = view.nextBlock(block) )
         Base::append(reinterpret_cast<const char*>(block->start), block->size);
 }
