@@ -2,4 +2,4 @@
 #name count avg-% total-%
 hilti/func/Foo::fibo 192
 hilti/func/Foo::y 95
-hilti/total 1 100.00 100.00
+hilti/total 1 1.00e+02 1.00e+02

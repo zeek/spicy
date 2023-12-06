@@ -11,7 +11,7 @@ hilti/func/Mini::Test::__parse_stage1 1
 hilti/func/Mini::Test::parse3 1
 hilti/func/Mini::__register_Mini_Sub 1
 hilti/func/Mini::__register_Mini_Test 1
-hilti/total 1 100.00 100.00
+hilti/total 1 1.00e+02 1.00e+02
 spicy/prepare/input/Mini::Test 1
 spicy/unit/Mini::Sub 1
 spicy/unit/Mini::Sub::f2 1
@@ -30,7 +30,7 @@ hilti/func/Mini::Test::__parse_stage1 4
 hilti/func/Mini::Test::parse1 4
 hilti/func/Mini::__register_Mini_Sub 1
 hilti/func/Mini::__register_Mini_Test 1
-hilti/total 1 100.00 100.00
+hilti/total 1 1.00e+02 1.00e+02
 spicy/prepare/block/Mini::Test 3
 spicy/prepare/stream/Mini::Test 3
 spicy/unit/Mini::Sub 4
