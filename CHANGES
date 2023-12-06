@@ -1,3 +1,7 @@
+1.10.0-dev.40 | 2023-12-06 12:31:27 +0100
+
+  * GH-1605: Allow for unresolved types for set `in` operator. (Benjamin Bannier, Corelight)
+
 1.10.0-dev.38 | 2023-12-06 12:28:27 +0100
 
   * Avoid reallocating Bytes when appending from view (Arne Welzel, Corelight)

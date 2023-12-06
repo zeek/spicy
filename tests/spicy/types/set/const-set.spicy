@@ -1,0 +1,10 @@
+# @TEST-DOC: Checks that `in` works with `const` sets; regression test for #1605.
+#
+# @TEST-EXEC: spicyc -dj %INPUT
+
+module foo;
+
+const xs = set("a");
+
+assert "a" in xs;
+assert "b" !in xs;
