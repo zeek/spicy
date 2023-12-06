@@ -1,3 +1,7 @@
+1.10.0-dev.10 | 2023-12-06 10:40:22 +0100
+
+  * Allow unsafe Vector iteration over underlying std::vector. (Arne Welzel, Corelight)
+
 1.10.0-dev.8 | 2023-11-17 14:04:16 +0100
 
   * doc: Fix typo and outdated info for host applications (Anthony VEREZ)

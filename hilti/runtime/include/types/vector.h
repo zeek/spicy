@@ -490,6 +490,9 @@ public:
     auto cbegin() const { return const_iterator(0U, _control); }
     auto cend() const { return const_iterator(size(), _control); }
 
+    auto unsafeBegin() const { return V::cbegin(); }
+    auto unsafeEnd() const { return V::cend(); }
+
     size_type size() const { return V::size(); }
 
     // Methods of `std::vector`.
