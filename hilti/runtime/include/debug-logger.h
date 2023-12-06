@@ -6,7 +6,7 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <string>
+#include <string_view>
 
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
@@ -18,20 +18,21 @@ class DebugLogger {
 public:
     DebugLogger(hilti::rt::filesystem::path output);
 
-    void print(const std::string& stream, const std::string& msg);
-    void enable(const std::string& streams);
+    void print(std::string_view stream, std::string_view msg);
+    void enable(std::string_view streams);
 
-    bool isEnabled(const std::string& stream) { return _streams.find(stream) != _streams.end(); }
+    bool isEnabled(std::string_view stream) { return _streams.find(stream) != _streams.end(); }
 
-    void indent(const std::string& stream) {
-        if ( isEnabled(stream) )
-            _streams[stream] += 1;
+    void indent(std::string_view stream) {
+        if ( auto s = _streams.find(stream); s != _streams.end() ) {
+            auto& indent = s->second;
+            indent += 1;
+        }
     }
 
-    void dedent(const std::string& stream) {
-        if ( isEnabled(stream) ) {
-            auto& indent = _streams[stream];
-
+    void dedent(std::string_view stream) {
+        if ( auto s = _streams.find(stream); s != _streams.end() ) {
+            auto& indent = s->second;
             if ( indent > 0 )
                 indent -= 1;
         }
@@ -41,7 +42,7 @@ private:
     hilti::rt::filesystem::path _path;
     std::ostream* _output = nullptr;
     std::unique_ptr<std::ofstream> _output_file;
-    std::map<std::string, integer::safe<uint64_t>> _streams;
+    std::map<std::string_view, integer::safe<uint64_t>> _streams;
 };
 
 } // namespace hilti::rt::detail

@@ -77,5 +77,13 @@ inline std::string detail::to_string_for_print<std::string_view>(const std::stri
     return escapeUTF8(x, false, false, true);
 }
 
+// Specialization for string literals. Since `to_string_for_print` is not
+// implemented with ADL like e.g., `to_string` provide an overload for string
+// literals. This is needed since we cannot partially specialize
+// `to_string_for_print`.
+template<typename CharT, size_t N>
+inline std::string to_string_for_print(const CharT (&x)[N]) {
+    return x;
+}
 
 } // namespace hilti::rt

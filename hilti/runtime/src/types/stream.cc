@@ -26,22 +26,20 @@ Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
         _data = std::make_pair(d.size(), a);
     }
     else {
-        std::vector<Byte> v;
-        v.resize(d.size());
+        std::vector<Byte> v(d.size());
         d.copyRaw(v.data());
         _data = std::move(v);
     }
 }
 
-Chunk::Chunk(const Offset& offset, const std::string& s) : _offset(offset) {
+Chunk::Chunk(const Offset& offset, std::string_view s) : _offset(offset) {
     if ( s.size() <= SmallBufferSize ) {
         std::array<Byte, SmallBufferSize> a{};
         memcpy(a.data(), s.data(), s.size());
         _data = std::make_pair(s.size(), a);
     }
     else {
-        std::vector<Byte> v;
-        v.resize(s.size());
+        std::vector<Byte> v(s.size());
         memcpy(v.data(), s.data(), s.size());
         _data = std::move(v);
     }
@@ -328,31 +326,32 @@ void View::copyRaw(Byte* dst) const {
 std::optional<View::Block> View::firstBlock() const {
     _ensureValid();
 
-    if ( unsafeBegin() == unsafeEnd() || ! unsafeBegin().chunk() )
+    auto begin = unsafeBegin();
+    if ( begin == unsafeEnd() || ! begin.chunk() )
         return {};
 
-    const auto* chain = _begin.chain();
+    const auto* chain = begin.chain();
     assert(chain);
 
-    auto chunk = chain->findChunk(_begin.offset(), _begin.chunk());
+    auto chunk = chain->findChunk(begin.offset(), begin.chunk());
     if ( ! chunk )
         throw InvalidIterator("stream iterator outside of valid range");
 
-    auto start = chunk->data() + (_begin.offset() - chunk->offset()).Ref();
+    auto start = chunk->data() + (begin.offset() - chunk->offset()).Ref();
     bool is_last = (chunk->isLast() || (_end && _end->offset() <= chunk->endOffset()));
 
     Size size;
 
     if ( _end && is_last ) {
-        auto offset_end = std::max(std::min(_end->offset(), _begin.chain()->endOffset()), _begin.offset());
-        size = (offset_end - _begin.offset());
+        auto offset_end = std::max(std::min(_end->offset(), chain->endOffset()), begin.offset());
+        size = (offset_end - begin.offset());
     }
     else
         size = chunk->endData() - start;
 
     return View::Block{.start = start,
                        .size = size,
-                       .offset = _begin.offset(),
+                       .offset = begin.offset(),
                        .is_first = true,
                        .is_last = is_last,
                        ._block = is_last ? nullptr : chunk->next()};
@@ -394,7 +393,7 @@ void Stream::append(Bytes&& data) {
     if ( data.isEmpty() )
         return;
 
-    _chain->append(std::make_unique<Chunk>(0, data.str()));
+    _chain->append(std::make_unique<Chunk>(0, std::move(data).str()));
 }
 
 void Stream::append(const Bytes& data) {
@@ -409,7 +408,7 @@ void Stream::append(const char* data, size_t len) {
         return;
 
     if ( data )
-        _chain->append(std::make_unique<Chunk>(0, std::string(data, len)));
+        _chain->append(std::make_unique<Chunk>(0, std::string_view{data, len}));
     else
         _chain->append(std::make_unique<Chunk>(0, len));
 }

@@ -22,9 +22,9 @@ HILTI_EXCEPTION_IMPL(ParseError)
 void spicy::rt::Parser::_initProfiling() {
     // Cache profiler tags to avoid recomputing them frequently.
     assert(! name.empty());
-    profiler_tags.prepare_block = "spicy/prepare/block/" + name;
-    profiler_tags.prepare_input = "spicy/prepare/input/" + name;
-    profiler_tags.prepare_stream = "spicy/prepare/stream/" + name;
+    profiler_tags.prepare_block.append(name);
+    profiler_tags.prepare_input.append(name);
+    profiler_tags.prepare_stream.append(name);
 }
 
 void spicy::rt::accept_input() {
@@ -52,10 +52,10 @@ static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, c
         return false;
 }
 
-void detail::printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
+void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
                               const hilti::rt::stream::View& cur, int64_t lahead,
-                              const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
+                              const hilti::rt::stream::SafeConstIterator& lahead_end, std::string_view literal_mode,
                               bool trim, const std::optional<hilti::rt::RecoverableFailure>& error) {
     auto msg = [&]() {
         auto str = [&](const hilti::rt::stream::SafeConstIterator& begin,
@@ -105,14 +105,14 @@ void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, cons
 }
 
 void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                          uint64_t min, const std::string& error_msg, const std::string& location,
+                          uint64_t min, std::string_view error_msg, std::string_view location,
                           hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
                               filters) { // NOLINT(performance-unnecessary-value-param)
     while ( min > cur.size() )
         if ( ! waitForInputOrEod(data, cur, filters) ) {
             SPICY_RT_DEBUG_VERBOSE(
                 hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
-            throw ParseError(error_msg, location);
+            throw ParseError(std::string(error_msg), std::string(location));
         }
 }
 
@@ -156,12 +156,12 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
 }
 
 void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                          const std::string& error_msg, const std::string& location,
+                          std::string_view error_msg, std::string_view location,
                           const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( ! waitForInputOrEod(data, cur, filters) ) {
         SPICY_RT_DEBUG_VERBOSE(
             hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
-        throw ParseError(error_msg, location);
+        throw ParseError(std::string(error_msg), std::string(location));
     }
 }
 

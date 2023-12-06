@@ -12,12 +12,15 @@ using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
 std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_iterator& n) const {
+    auto b = begin();
+
     if ( v.isEmpty() )
-        return std::make_tuple(true, n ? n : begin());
+        return std::make_tuple(true, n ? n : b);
 
-    auto first = *v.begin();
+    auto bv = v.begin();
+    auto first = *bv;
 
-    for ( auto i = const_iterator(n ? n : begin()); true; ++i ) {
+    for ( auto i = const_iterator(n ? n : b); true; ++i ) {
         if ( i == end() )
             return std::make_tuple(false, i);
 
@@ -25,7 +28,7 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
             continue;
 
         auto x = i;
-        auto y = v.begin();
+        auto y = bv;
 
         for ( ;; ) {
             if ( x == end() )
@@ -151,7 +154,7 @@ Bytes Bytes::strip(bytes::Side side) const {
 
 integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
     int64_t x = 0;
-    if ( hilti::rt::atoi_n(begin(), end(), base, &x) == end() )
+    if ( hilti::rt::atoi_n(str().begin(), str().end(), base, &x) == str().end() )
         return x;
 
     throw RuntimeError("cannot parse bytes as signed integer");
@@ -159,7 +162,7 @@ integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
 
 integer::safe<uint64_t> Bytes::toUInt(uint64_t base) const {
     int64_t x = 0;
-    if ( hilti::rt::atoi_n(begin(), end(), base, &x) == end() )
+    if ( hilti::rt::atoi_n(str().begin(), str().end(), base, &x) == str().end() )
         return x;
 
     throw RuntimeError("cannot parse bytes as unsigned integer");
@@ -193,7 +196,7 @@ uint64_t Bytes::toUInt(ByteOrder byte_order) const {
 
     uint64_t i = 0;
 
-    for ( auto c : *this )
+    for ( auto c : str() )
         i = (i << 8U) | static_cast<uint8_t>(c);
 
     if ( byte_order == hilti::rt::ByteOrder::Little )
@@ -212,6 +215,7 @@ Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
 }
 
 void Bytes::append(const stream::View& view) {
+    reserve(size() + view.size());
     for ( auto block = view.firstBlock(); block; block = view.nextBlock(block) )
         Base::append(reinterpret_cast<const char*>(block->start), block->size);
 }

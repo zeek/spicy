@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -138,10 +139,10 @@ struct has_on_undelivered {
  * as well.
  */
 struct Parser {
-    Parser(std::string name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
+    Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            ContextNewFunction context_new, const hilti::rt::TypeInfo* type, std::string description,
            hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : name(std::move(name)),
+        : name(name),
           is_public(is_public),
           parse1(parse1),
           parse2(std::move(parse2)),
@@ -154,10 +155,10 @@ struct Parser {
         _initProfiling();
     }
 
-    Parser(std::string name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
+    Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type, std::string description,
            hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : name(std::move(name)),
+        : name(name),
           is_public(is_public),
           parse1(parse1),
           parse2(std::move(parse2)),
@@ -169,19 +170,19 @@ struct Parser {
         _initProfiling();
     }
 
-    Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+    Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
            std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : Parser(std::move(name), is_public, nullptr, std::move(parse2), nullptr, nullptr, type, std::move(description),
+        : Parser(name, is_public, nullptr, std::move(parse2), nullptr, nullptr, type, std::move(description),
                  std::move(mime_types), std::move(ports)) {
         _initProfiling();
     }
 
-    Parser(std::string name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+    Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, ContextNewFunction context_new, const hilti::rt::TypeInfo* type,
            std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : Parser(std::move(name), is_public, nullptr, std::move(parse2), nullptr, context_new, type,
-                 std::move(description), std::move(mime_types), std::move(ports)) {
+        : Parser(name, is_public, nullptr, std::move(parse2), nullptr, context_new, type, std::move(description),
+                 std::move(mime_types), std::move(ports)) {
         _initProfiling();
     }
 
@@ -205,7 +206,7 @@ struct Parser {
     }
 
     /** Short descriptive name. */
-    std::string name;
+    std::string_view name;
 
     /** Whether this parser is public. */
     bool is_public;
@@ -249,9 +250,9 @@ struct Parser {
 
     /** Pre-computed profiler tags used by the runtime driver. */
     struct {
-        std::string prepare_block;
-        std::string prepare_input;
-        std::string prepare_stream;
+        std::string prepare_block = "spicy/prepare/block/";
+        std::string prepare_input = "spicy/prepare/input/";
+        std::string prepare_stream = "spicy/prepare/stream/";
 
         operator bool() const {
             // ensure initialization code has run
@@ -316,7 +317,7 @@ inline auto parsers() {
  */
 class ParseError : public hilti::rt::RecoverableFailure {
 public:
-    ParseError(const std::string& msg, const std::string& location = "") : RecoverableFailure(msg, location) {}
+    ParseError(std::string_view msg, std::string_view location = "") : RecoverableFailure(msg, location) {}
 
     ParseError(const hilti::rt::result::Error& e) : RecoverableFailure(e.description()) {}
 
@@ -336,7 +337,7 @@ public:
 
 class MissingData : public ParseError {
 public:
-    MissingData(const std::string& location = "") : ParseError("missing data", location) {}
+    MissingData(std::string_view location = "") : ParseError("missing data", location) {}
     ~MissingData() override; /* required to create vtable, see hilti::rt::Exception */
 };
 
@@ -404,11 +405,11 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
  * Prints the current parser state, as passed in through arguments, to the
  * spicy-verbose debug stream.
  */
-void printParserState(const std::string& unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
+void printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                       const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
                       const hilti::rt::stream::View& cur, int64_t lahead,
-                      const hilti::rt::stream::SafeConstIterator& lahead_end, const std::string& literal_mode,
-                      bool trim, const std::optional<hilti::rt::RecoverableFailure>& error);
+                      const hilti::rt::stream::SafeConstIterator& lahead_end, std::string_view literal_mode, bool trim,
+                      const std::optional<hilti::rt::RecoverableFailure>& error);
 
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes
@@ -452,8 +453,8 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
  * has been reached
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
-                         const hilti::rt::stream::View& cur, uint64_t min, const std::string& error_msg,
-                         const std::string& location,
+                         const hilti::rt::stream::View& cur, uint64_t min, std::string_view error_msg,
+                         std::string_view location,
                          hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
 
 /**
@@ -484,7 +485,7 @@ extern bool waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data
  * has been reached
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
-                         const hilti::rt::stream::View& cur, const std::string& error_msg, const std::string& location,
+                         const hilti::rt::stream::View& cur, std::string_view error_msg, std::string_view location,
                          const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
 
 /**

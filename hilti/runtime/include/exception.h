@@ -7,6 +7,7 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -25,7 +26,7 @@ public:
     /**
      * @param desc message describing the situation
      */
-    Exception(const std::string& desc) : Exception(Internal(), "Exception", desc) {
+    Exception(std::string_view desc) : Exception(Internal(), "Exception", desc) {
 #ifndef NDEBUG
         _backtrace = Backtrace();
 #endif
@@ -79,11 +80,11 @@ public:
 protected:
     enum Internal {};
 
-    Exception(Internal, const char* type, const std::string& desc);
+    Exception(Internal, const char* type, std::string_view desc);
     Exception(Internal, const char* type, std::string_view desc, std::string_view location);
 
 private:
-    Exception(Internal, const char* type, const std::string& what, std::string_view desc, std::string_view location);
+    Exception(Internal, const char* type, std::string_view what, std::string_view desc, std::string_view location);
 
     std::string _description;
     std::string _location;
@@ -95,7 +96,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { retu
 #define HILTI_EXCEPTION(name, base)                                                                                    \
     class name : public ::hilti::rt::base {                                                                            \
     public:                                                                                                            \
-        name(const std::string& desc) : base(Internal(), #name, desc) {}                                               \
+        name(std::string_view desc) : base(Internal(), #name, desc) {}                                                 \
         name(std::string_view desc, std::string_view location) : base(Internal(), #name, desc, location) {}            \
         virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
     protected:                                                                                                         \
@@ -105,7 +106,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { retu
 #define HILTI_EXCEPTION_NS(name, ns, base)                                                                             \
     class name : public ns::base {                                                                                     \
     public:                                                                                                            \
-        name(const std::string& desc) : base(Internal(), #name, desc) {}                                               \
+        name(std::string_view desc) : base(Internal(), #name, desc) {}                                                 \
         name(std::string_view desc, std::string_view location) : base(Internal(), #name, desc, location) {}            \
         virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
     protected:                                                                                                         \
@@ -237,7 +238,7 @@ public:
      * @param desc message describing the situation
      * @param location string indicating the location of the operation that couldn't complete
      */
-    WouldBlock(const std::string& desc, const std::string& location);
+    WouldBlock(std::string_view desc, std::string_view location);
 };
 
 namespace exception {

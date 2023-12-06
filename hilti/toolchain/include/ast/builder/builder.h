@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -53,8 +54,8 @@ public:
 
     void addExpression(const Expression& expr) { _block._add(statement::Expression(expr, expr.meta())); }
 
-    void addAssert(Expression cond, std::string msg, Meta m = Meta()) {
-        _block._add(statement::Assert(std::move(cond), builder::string(std::move(msg)), std::move(m)));
+    void addAssert(Expression cond, std::string_view msg, Meta m = Meta()) {
+        _block._add(statement::Assert(std::move(cond), builder::string_literal(msg), std::move(m)));
     }
 
     void addAssign(Expression dst, Expression src, const Meta& m = Meta()) {
@@ -103,9 +104,9 @@ public:
     void addThrow(Expression excpt, Meta m = Meta()) { _block._add(statement::Throw(std::move(excpt), std::move(m))); }
     void addRethrow(Meta m = Meta()) { _block._add(statement::Throw(std::move(m))); }
 
-    void addDebugMsg(const std::string& stream, const std::string& fmt, std::vector<Expression> args = {});
-    void addDebugIndent(const std::string& stream);
-    void addDebugDedent(const std::string& stream);
+    void addDebugMsg(std::string_view stream, std::string_view fmt, std::vector<Expression> args = {});
+    void addDebugIndent(std::string_view stream);
+    void addDebugDedent(std::string_view stream);
 
     void addPrint(const std::vector<Expression>& exprs) { addCall("hilti::print", exprs); }
     void addPrint(const Expression& expr) { addCall("hilti::print", {expr}); }
@@ -240,7 +241,7 @@ public:
 
     bool empty() const { return _block.statements().empty() && _tmps.empty(); }
 
-    std::optional<Expression> startProfiler(const std::string& name);
+    std::optional<Expression> startProfiler(std::string_view name);
     void stopProfiler(Expression profiler);
 
 private:

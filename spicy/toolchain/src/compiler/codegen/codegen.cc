@@ -343,7 +343,7 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
 
         switch ( exprs.size() ) {
             case 0: {
-                auto call = builder::call("hilti::print", {builder::string("")});
+                auto call = builder::call("hilti::print", {builder::string_literal("")});
                 replaceNode(&p, hilti::statement::Expression(call, p.node.location()));
                 break;
             }

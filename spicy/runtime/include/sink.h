@@ -4,6 +4,7 @@
 
 #include <list>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -178,7 +179,7 @@ public:
      * @param mt MIME type to connect units for
      * @param scope identifier for the desired scope
      */
-    void connect_mime_type(const MIMEType& mt, const std::string& scope);
+    void connect_mime_type(const MIMEType& mt, std::string_view scope);
 
     /**
      * Connects new instances of all units to the sink that support a given
@@ -190,7 +191,7 @@ public:
      * @param scope identifier for the desired scope
      * @throws ``mime::InvalidType`` if the type cannot be parsed
      */
-    void connect_mime_type(const std::string& mt, const std::string& scope) { connect_mime_type(MIMEType(mt), scope); }
+    void connect_mime_type(const std::string& mt, std::string_view scope) { connect_mime_type(MIMEType(mt), scope); }
 
     /**
      * Connects new instances of all units to the sink that support a given
@@ -202,7 +203,7 @@ public:
      * @param scope identifier for the desired scope
      * @throws ``mime::InvalidType`` if the type cannot be parsed
      */
-    void connect_mime_type(const hilti::rt::Bytes& mt, const std::string& scope) {
+    void connect_mime_type(const hilti::rt::Bytes& mt, std::string_view scope) {
         connect_mime_type(MIMEType(mt.str()), scope);
     }
 
@@ -341,9 +342,9 @@ private:
     void _reportUndeliveredUpTo(uint64_t rupper) const;
 
     // Output reassembler state for debugging.
-    void _debugReassembler(const std::string& msg, const std::optional<hilti::rt::Bytes>& data, uint64_t seq,
+    void _debugReassembler(std::string_view msg, const std::optional<hilti::rt::Bytes>& data, uint64_t seq,
                            uint64_t len) const;
-    void _debugReassemblerBuffer(const std::string& msg) const;
+    void _debugReassemblerBuffer(std::string_view msg) const;
     void _debugDeliver(const hilti::rt::Bytes& data) const;
 
     // States for connected units.

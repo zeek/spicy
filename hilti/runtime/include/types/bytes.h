@@ -226,6 +226,9 @@ public:
     /** Returns the bytes' data as a string instance. */
     const std::string& str() const& { return *this; }
 
+    /** Returns the bytes' data as a string instance. */
+    std::string str() && { return std::move(*this); }
+
     /** Returns an iterator representing the first byte of the instance. */
     const_iterator begin() const { return const_iterator(0U, _control); }
 
@@ -248,8 +251,9 @@ public:
      * @param n optional starting point, which must be inside the same instance
      */
     const_iterator find(value_type b, const const_iterator& n = const_iterator()) const {
-        if ( auto i = Base::find(b, (n ? n - begin() : 0)); i != Base::npos )
-            return begin() + i;
+        auto beg = begin();
+        if ( auto i = Base::find(b, (n ? n - beg : 0)); i != Base::npos )
+            return beg + i;
         else
             return end();
     }

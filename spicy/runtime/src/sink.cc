@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include "spicy/rt/sink.h"
+
 #include <spicy/rt/parser.h>
 
 using namespace spicy::rt;
@@ -124,7 +126,7 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
             _filter_data->output_cur = (*_filter_data->output).view();
         }
 
-        _filter_data->input->append(*data);
+        _filter_data->input->append(std::move(*data));
         spicy::rt::filter::flush(_filter);
 
         data = _filter_data->output_cur.data();
@@ -137,6 +139,8 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
 
     _size += data->size();
 
+    std::vector<sink::detail::State*> states;
+    states.reserve(_states.size());
     for ( auto s : _states ) {
         if ( s->skip_delivery )
             continue;
@@ -144,7 +148,15 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
         if ( s->resumable )
             throw ParseError("more data after sink's unit has already completed parsing");
 
-        s->data->append(*data);
+        states.push_back(s);
+    }
+
+    for ( auto s : states ) {
+        if ( states.size() == 1 )
+            s->data->append(std::move(*data));
+        else
+            s->data->append(*data);
+
         try {
             // Sinks are operating independently from the writer, so we
             // don't forward errors on.
@@ -172,7 +184,7 @@ void Sink::_newData(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
     // haven't anything buffered, and we do auto-trimming, just pass on.
     if ( _auto_trim && _chunks.empty() && rseq == _cur_rseq ) {
         _debugReassembler("fastpath new data", data, rseq, len);
-        _deliver(data, rseq, rseq + len);
+        _deliver(std::move(data), rseq, rseq + len);
         return;
     }
 
@@ -325,7 +337,7 @@ void Sink::_reportUndeliveredUpTo(uint64_t rupper) const {
     }
 }
 
-void Sink::_debugReassembler(const std::string& msg, const std::optional<hilti::rt::Bytes>& data, uint64_t rseq,
+void Sink::_debugReassembler(std::string_view msg, const std::optional<hilti::rt::Bytes>& data, uint64_t rseq,
                              uint64_t len) const {
     if ( ! debug::wantVerbose() )
         return;
@@ -343,7 +355,7 @@ void Sink::_debugReassembler(const std::string& msg, const std::optional<hilti::
             fmt("reassembler/%p: %s rseq=% " PRIu64 " upper=%" PRIu64 " <gap>", this, msg, rseq, rseq + len));
 }
 
-void Sink::_debugReassemblerBuffer(const std::string& msg) const {
+void Sink::_debugReassemblerBuffer(std::string_view msg) const {
     if ( ! debug::wantVerbose() )
         return;
 
@@ -363,7 +375,7 @@ void Sink::_debugReassemblerBuffer(const std::string& msg) const {
         _debugReassembler(fmt("  * chunk %d:", i), c.data, c.rseq, (c.rupper - c.rseq));
 }
 
-void Sink::connect_mime_type(const MIMEType& mt, const std::string& scope) {
+void Sink::connect_mime_type(const MIMEType& mt, std::string_view scope) {
     auto connect_matching = [&](auto mt) {
         if ( const auto& x = detail::globalState()->parsers_by_mime_type.find(mt.asKey());
              x != detail::globalState()->parsers_by_mime_type.end() ) {

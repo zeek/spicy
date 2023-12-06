@@ -1007,7 +1007,7 @@ ctor          : CADDRESS                         { $$ = hilti::ctor::Address(hil
               | CBYTES                           { $$ = hilti::ctor::Bytes(std::move($1), __loc__); }
               | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
               | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
-              | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
+              | CSTRING                          { $$ = hilti::ctor::String($1, false, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
               | '+' CUINTEGER                    { if ( $2 > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
                                                     hilti::logger().error("integer constant out of range", __loc__.location());

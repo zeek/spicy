@@ -820,7 +820,7 @@ member_expr   : local_id                         { $$ = hilti::expression::Membe
 
 ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __loc__); }
               | CBYTES                           { $$ = hilti::ctor::Bytes(std::move($1), __loc__); }
-              | CSTRING                          { $$ = hilti::ctor::String($1, __loc__); }
+              | CSTRING                          { $$ = hilti::ctor::String($1, false, __loc__); }
               | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
               | '+' CUINTEGER                    { if ( $2 > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
                                                     logger().error("integer constant out of range", __loc__.location());

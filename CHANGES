@@ -1,3 +1,93 @@
+1.10.0-dev.38 | 2023-12-06 12:28:27 +0100
+
+  * Avoid reallocating Bytes when appending from view (Arne Welzel, Corelight)
+
+    When copying a full view into a Bytes instance, avoid potential
+    reallocations and memcpy() by pre-allocating enough capacity in
+    the underlying string.
+
+  * Allocate vector of correct size right away when constructing Chunks. (Benjamin Bannier, Corelight)
+
+  * Avoid one extra std::string copy in Stream::append. (Arne Welzel, Corelight)
+
+    For a chunk of significant size, seems that would result in an extra
+    malloc and copy of the input data.
+
+  * Reduce safe iterator use in internal code for `Bytes`. (Benjamin Bannier, Corelight)
+
+    The safe iterator for bytes dynamically allocates which can cause
+    overhead. Use index-based or at least string iterators to reduce that
+    overhead where possible.
+
+  * Use unsafe iterators in `View::extract`. (Benjamin Bannier, Corelight)
+
+  * Avoid unneeded parameter copy in parse functions. (Benjamin Bannier, Corelight)
+
+  * Streamline `View::firstBlock`. (Benjamin Bannier, Corelight)
+
+  * Reduce allocations when connecting sinks by mime-type. (Benjamin Bannier, Corelight)
+
+  * Reduce allocations for `Sink` debug logging. (Benjamin Bannier, Corelight)
+
+  * Deprecate `builder::string`. (Benjamin Bannier, Corelight)
+
+  * Reduce allocations when creating exceptions. (Benjamin Bannier, Corelight)
+
+  * Reduce allocations in `builder::addAssert`. (Benjamin Bannier, Corelight)
+
+  * Reduce allocations in `ParserBuilder::waitForInput`. (Benjamin Bannier, Corelight)
+
+  * Reduce allocations in `Builder::startProfiler`. (Benjamin Bannier, Corelight)
+
+  * Reduce allocatons in `Builder::addDebug*` methods. (Benjamin Bannier, Corelight)
+
+  * Reduce allocations in `ParserBuilder::parseError`. (Benjamin Bannier, Corelight)
+
+  * Reducing copying when forwarding data to sinks. (Benjamin Bannier, Corelight)
+
+  * Reduce lookup overhead in indent/dedent logger functions. (Benjamin Bannier, Corelight)
+
+  * Emit C++ string literals for HILTI string literals. (Benjamin Bannier, Corelight)
+
+    When emitting literals for HILTI strings (string ctors) we would
+    previously explicitly force creation of `std::string`. This was almost
+    always an unnecessary pessimisation over emitting string literals since
+    even if their C++ uses expected `std::string` string literals can
+    convert to this type implicitly; at the same time it made it impossible
+    to make effective use of APIs accepting `std::string_view`.
+
+    With this patch we now emit C++ string literals for HILTI string
+    literals.
+
+  * Emit locations as generated strings. (Benjamin Bannier, Corelight)
+
+  * Avoid allocations when creating parsers. (Benjamin Bannier, Corelight)
+
+  * Use non-owning strings for `fmt`. (Benjamin Bannier, Corelight)
+
+  * Use non-owning strings for `printParserState`. (Benjamin Bannier, Corelight)
+
+  * GH-1591: Use non-owning strings in the logging framework. (Benjamin Bannier, Corelight)
+
+    Closes #1591.
+
+  * Add `to_string_for_print` for string literals. (Benjamin Bannier, Corelight)
+
+  * GH-1589: Reduce string allocations on hot parse path. (Benjamin Bannier, Corelight)
+
+    When waiting for input we pass down strings for a possible error message
+    and the triggering location. In generated code these are always
+    literals.
+
+    With this patch we do not take them as owning strings, but instead as
+    views into existing strings to minimize allocations. In the case of
+    error messages the created low-level exception objects already had used
+    string_views, so this also aligns the APIs.
+
+    Closes #1589.
+
+  * Bump pre-commit hooks (Benjamin Bannier, Corelight)
+
 1.10.0-dev.10 | 2023-12-06 10:40:22 +0100
 
   * Allow unsafe Vector iteration over underlying std::vector. (Arne Welzel, Corelight)

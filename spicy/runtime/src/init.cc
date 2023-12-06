@@ -38,7 +38,7 @@ void spicy::rt::init() {
                 default_parser = std::nullopt;
         }
 
-        globalState()->parsers_by_name[p->name].emplace_back(p);
+        globalState()->parsers_by_name[{p->name.data(), p->name.size()}].emplace_back(p);
 
         for ( const auto& x : p->ports ) {
             auto idx = std::string(x.port);

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <string>
+#include <string_view>
 #include <utility>
 
 #include <hilti/rt/debug-logger.h>
@@ -18,10 +18,10 @@ namespace hilti::rt {
  * anything that can happen during "normal" operation (which is almost
  * everything).
  */
-void fatalError(const std::string& msg) __attribute__((noreturn));
+void fatalError(std::string_view msg) __attribute__((noreturn));
 
 /** Reports a warning. */
-void warning(const std::string& msg);
+void warning(std::string_view msg);
 
 /**
  * Prints a string, or a runtime value, to a specific debug stream. This is a
@@ -42,39 +42,39 @@ namespace debug {
 
 namespace detail {
 /** Prints a debug message to a specific debug stream. */
-inline void print(const std::string& stream, const char* msg) {
+inline void print(std::string_view stream, const char* msg) {
     if ( ::hilti::rt::detail::globalState()->debug_logger )
         ::hilti::rt::detail::globalState()->debug_logger->print(stream, msg);
 }
 
 /** Print a string to a specific debug stream with proper escaping. */
-inline void print(const std::string& stream, const std::string_view& s) {
+inline void print(std::string_view stream, std::string_view s) {
     if ( ::hilti::rt::detail::globalState()->debug_logger )
         ::hilti::rt::detail::globalState()->debug_logger->print(stream, hilti::rt::escapeBytes(s, false));
 }
 
 template<typename T, typename std::enable_if_t<not std::is_convertible<T, std::string_view>::value>* = nullptr>
 /** Prints the string representastion of a HILTI runtime value to a specific debug stream. */
-inline void print(const std::string& stream, const T& t) {
+inline void print(std::string_view stream, const T& t) {
     if ( ::hilti::rt::detail::globalState()->debug_logger )
         ::hilti::rt::detail::globalState()->debug_logger->print(stream, hilti::rt::to_string_for_print(t));
 }
 } // namespace detail
 
 /** Returns true if debug logging is enabled for a given stream. */
-inline bool isEnabled(const std::string& stream) {
+inline bool isEnabled(std::string_view stream) {
     return ::hilti::rt::detail::globalState()->debug_logger &&
            ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream);
 }
 
 /** Increases the indentation level for a debug stream. */
-inline void indent(const std::string& stream) {
+inline void indent(std::string_view stream) {
     if ( ::hilti::rt::detail::globalState()->debug_logger )
         ::hilti::rt::detail::globalState()->debug_logger->indent(stream);
 }
 
 /** Decreases the indentation level for a debug stream. */
-inline void dedent(const std::string& stream) {
+inline void dedent(const std::string_view stream) {
     if ( ::hilti::rt::detail::globalState()->debug_logger )
         ::hilti::rt::detail::globalState()->debug_logger->dedent(stream);
 }
@@ -103,7 +103,7 @@ inline void setLocation(const char* l = nullptr) { detail::tls_location = l; }
  * arguments if nothing is going to get logged.
  */
 template<typename T>
-inline void print(const std::string& stream, T&& msg) {
+inline void print(std::string_view stream, T&& msg) {
     if ( ::hilti::rt::detail::globalState()->debug_logger &&
          ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream) )
         ::hilti::rt::debug::detail::print(stream, std::forward<T>(msg));

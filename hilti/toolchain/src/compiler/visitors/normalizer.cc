@@ -221,7 +221,7 @@ struct VisitorNormalizer : public visitor::PreOrder<void, VisitorNormalizer> {
         // Normalize values passed as `&cxxname` so they always are interpreted as FQNs by enforcing leading `::`.
         if ( const auto& tag = n.tag(); tag == "&cxxname" && n.hasValue() ) {
             if ( const auto& value = n.valueAsString(); value && ! util::startsWith(*value, "::") ) {
-                auto n = Attribute(tag, builder::string(util::fmt("::%s", *value)));
+                auto n = Attribute(tag, builder::string_literal(util::fmt("::%s", *value)));
                 logChange(p.node, n);
                 p.node = n;
                 modified = true;

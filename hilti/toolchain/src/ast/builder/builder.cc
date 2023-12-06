@@ -67,52 +67,54 @@ Expression Builder::addTmp(const std::string& prefix, const Type& t, const Expre
     return builder::id(tmp);
 }
 
-void Builder::addDebugMsg(const std::string& stream, const std::string& fmt, std::vector<Expression> args) {
+void Builder::addDebugMsg(std::string_view stream, std::string_view fmt, std::vector<Expression> args) {
     if ( ! context()->options().debug )
         return;
 
     Expression call;
 
     if ( args.empty() )
-        call = builder::call("hilti::debug", {builder::string(stream), builder::string(fmt)});
+        call = builder::call("hilti::debug", {builder::string_literal(stream), builder::string_literal(fmt)});
     else if ( args.size() == 1 ) {
-        auto msg = builder::modulo(builder::string(fmt), std::move(args.front()));
-        call = builder::call("hilti::debug", {builder::string(stream), std::move(msg)});
+        auto msg = builder::modulo(builder::string_literal(fmt), std::move(args.front()));
+        call = builder::call("hilti::debug", {builder::string_literal(stream), std::move(msg)});
     }
     else {
-        auto msg = builder::modulo(builder::string(fmt), builder::tuple(args));
-        call = builder::call("hilti::debug", {builder::string(stream), std::move(msg)});
+        auto msg = builder::modulo(builder::string_literal(fmt), builder::tuple(args));
+        call = builder::call("hilti::debug", {builder::string_literal(stream), std::move(msg)});
     }
 
     _block._add(statement::Expression(call, call.meta()));
 }
 
-void Builder::addDebugIndent(const std::string& stream) {
+void Builder::addDebugIndent(std::string_view stream) {
     if ( ! context()->options().debug )
         return;
 
-    auto call = builder::call("hilti::debugIndent", {builder::string(stream)});
+    auto call = builder::call("hilti::debugIndent", {builder::string_literal(stream)});
     _block._add(statement::Expression(std::move(call)));
 }
 
-void Builder::addDebugDedent(const std::string& stream) {
+void Builder::addDebugDedent(std::string_view stream) {
     if ( ! context()->options().debug )
         return;
 
-    auto call = builder::call("hilti::debugDedent", {builder::string(stream)});
+    auto call = builder::call("hilti::debugDedent", {builder::string_literal(stream)});
     _block._add(statement::Expression(std::move(call)));
 }
 
-void Builder::setLocation(const Location& l) { _block._add(statement::SetLocation(builder::string(l.render()))); }
+void Builder::setLocation(const Location& l) {
+    _block._add(statement::SetLocation(builder::string_literal(l.render())));
+}
 
-std::optional<Expression> Builder::startProfiler(const std::string& name) {
+std::optional<Expression> Builder::startProfiler(std::string_view name) {
     if ( ! context()->options().enable_profiling )
         return {};
 
     // Note the name of the temp must not clash what HILTI's code generator
     // picks for profiler that it instantiates itself. We do not currently keep
     // those namespace separate.
-    return addTmp("prof", builder::call("hilti::profiler_start", {builder::string(name)}));
+    return addTmp("prof", builder::call("hilti::profiler_start", {builder::string_literal(name)}));
 }
 
 void Builder::stopProfiler(Expression profiler) {

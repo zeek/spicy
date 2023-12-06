@@ -20,8 +20,20 @@ inline Expression id(ID id_, Meta m = Meta()) { return expression::UnresolvedID(
 
 // Ctor expressions
 
+inline Expression string_mut(std::string s, const Meta& m = Meta()) {
+    return expression::Ctor(ctor::String(std::move(s), false, m), m);
+}
+
+// clang-format off
+[[deprecated("Use string_mut or string_literal instead")]]
 inline Expression string(std::string s, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::String(std::move(s), m), m);
+    return builder::string_mut(std::move(s), m);
+}
+// clang-format on
+
+inline Expression string_literal(std::string_view s) {
+    // String literals have no location.
+    return expression::Ctor(ctor::String({s.data(), s.size()}, true));
 }
 
 inline Expression bool_(bool b, const Meta& m = Meta()) { return expression::Ctor(ctor::Bool(b, m), m); }
@@ -52,7 +64,7 @@ inline Expression default_(Type t, hilti::node::Range<Expression> type_args, con
 
 
 inline Expression exception(Type t, std::string msg, const Meta& m = Meta()) {
-    return expression::Ctor(ctor::Exception(std::move(t), builder::string(std::move(msg)), m), m);
+    return expression::Ctor(ctor::Exception(std::move(t), builder::string_mut(std::move(msg)), m), m);
 }
 
 inline Expression exception(Type t, Expression msg, const Meta& m = Meta()) {
@@ -305,9 +317,9 @@ inline Expression new_(Type t, const std::vector<Expression>& args, const Meta& 
 
 inline Expression expression(Ctor c, Meta m = Meta()) { return expression::Ctor(std::move(c), std::move(m)); }
 
-inline Expression expression(const Location& l) { return expression::Ctor(ctor::String(l), l); }
+inline Expression expression(const Location& l) { return builder::string_literal(std::string(l)); }
 
-inline Expression expression(const Meta& m) { return expression::Ctor(ctor::String(m.location()), m); }
+inline Expression expression(const Meta& m) { return builder::expression(m.location()); }
 
 inline Expression grouping(Expression e, Meta m = Meta()) { return expression::Grouping(std::move(e), std::move(m)); }
 

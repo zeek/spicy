@@ -76,7 +76,7 @@
 namespace hilti::rt {
 
 /** Reports an internal error and aborts execution. */
-void internalError(const std::string& msg) __attribute__((noreturn));
+void internalError(std::string_view msg) __attribute__((noreturn));
 
 } // namespace hilti::rt
 
