@@ -363,7 +363,7 @@ void ASAN_NO_OPTIMIZE detail::Fiber::_finishSwitchFiber(const char* tag) {
 #endif
 }
 
-void detail::Fiber::_executeSwitch(const char* tag, detail::Fiber* from, detail::Fiber* to) {
+void ASAN_NO_OPTIMIZE detail::Fiber::_executeSwitch(const char* tag, detail::Fiber* from, detail::Fiber* to) {
     HILTI_RT_FIBER_DEBUG(tag, fmt("executing fiber switch from %s to %s", *from, *to));
 
     detail::Fiber::_startSwitchFiber(tag, to);
