@@ -48,17 +48,18 @@ class Iterator {
     using B = std::string;
     using difference_type = B::const_iterator::difference_type;
 
-    std::weak_ptr<B*> _control;
+    std::weak_ptr<const B*> _control;
     typename integer::safe<std::uint64_t> _index = 0;
 
 public:
     Iterator() = default;
 
-    Iterator(typename B::size_type index, std::weak_ptr<B*> control) : _control(std::move(control)), _index(index) {}
+    Iterator(typename B::size_type index, std::weak_ptr<const B*> control)
+        : _control(std::move(control)), _index(index) {}
 
     uint8_t operator*() const {
         if ( auto&& l = _control.lock() ) {
-            auto&& data = static_cast<B&>(**l);
+            auto&& data = static_cast<const B&>(**l);
 
             if ( _index >= data.size() )
                 throw IndexError(fmt("index %s out of bounds", _index));
@@ -170,6 +171,8 @@ public:
     using Base::Base;
     using Base::data;
 
+    using C = std::shared_ptr<const Base*>;
+
     /**
      * Creates a bytes instance from a raw string representation
      * encoded in a specified character set.
@@ -230,10 +233,10 @@ public:
     std::string str() && { return std::move(*this); }
 
     /** Returns an iterator representing the first byte of the instance. */
-    const_iterator begin() const { return const_iterator(0U, _control); }
+    const_iterator begin() const { return const_iterator(0U, getControl()); }
 
     /** Returns an iterator representing the end of the instance. */
-    const_iterator end() const { return const_iterator(size(), _control); }
+    const_iterator end() const { return const_iterator(size(), getControl()); }
 
     /** Returns an iterator referring to the given offset. */
     const_iterator at(Offset o) const { return begin() + o; }
@@ -541,9 +544,17 @@ public:
 
 private:
     friend bytes::Iterator;
-    std::shared_ptr<Base*> _control = std::make_shared<Base*>(static_cast<Base*>(this));
 
-    void invalidateIterators() { _control = std::make_shared<Base*>(static_cast<Base*>(this)); }
+    const C& getControl() const {
+        if ( ! _control )
+            _control = std::make_shared<const Base*>(static_cast<const Base*>(this));
+
+        return _control;
+    }
+
+    void invalidateIterators() { _control.reset(); }
+
+    mutable C _control;
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
