@@ -10,9 +10,6 @@
 
 namespace hilti::rt::detail {
 
-/** Helper recording global stack resource usage. */
-extern void trackStack();
-
 /**
  * Checks that the current fiber has sufficient stack space left for executing
  * a function body. This is called often and should reduce overhead as much as
