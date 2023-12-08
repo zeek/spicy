@@ -1,3 +1,9 @@
+1.10.0-dev.46 | 2023-12-08 09:56:14 +0100
+
+  * Remove redundant forward decl. (Benjamin Bannier, Corelight)
+
+  * GH-1611: Silence ASAN warning. (Benjamin Bannier, Corelight)
+
 1.10.0-dev.43 | 2023-12-08 09:55:13 +0100
 
   * Allocate Vector::_control lazily. (Arne Welzel, Corelight)
