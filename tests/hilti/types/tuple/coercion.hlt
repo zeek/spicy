@@ -1,0 +1,16 @@
+# @TEST-DOC: Validate that trivial tuple coercions happen w/o overhead, regression test for #1615.
+#
+# @TEST-EXEC: hiltic -c %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+function tuple<a: uint<64>, b: string> f() {
+    return (123, "abc");
+}
+
+hilti::print(f());
+
+}
