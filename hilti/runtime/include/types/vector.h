@@ -267,7 +267,6 @@ public:
     using const_iterator = vector::ConstIterator<T, Allocator>;
 
     using C = std::shared_ptr<Vector*>;
-    C _control = std::make_shared<Vector<T, Allocator>*>(this);
 
     Vector() = default;
 
@@ -325,7 +324,7 @@ public:
         if ( i >= V::size() )
             throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
 
-        return const_iterator(static_cast<size_type>(i), _control);
+        return const_iterator(static_cast<size_type>(i), getControl());
     }
 
     /**
@@ -481,14 +480,14 @@ public:
         return pos;
     }
 
-    auto begin() { return iterator(0U, _control); }
-    auto end() { return iterator(size(), _control); }
+    auto begin() { return iterator(0U, getControl()); }
+    auto end() { return iterator(size(), getControl()); }
 
-    auto begin() const { return const_iterator(0U, _control); }
-    auto end() const { return const_iterator(size(), _control); }
+    auto begin() const { return const_iterator(0U, getControl()); }
+    auto end() const { return const_iterator(size(), getControl()); }
 
-    auto cbegin() const { return const_iterator(0U, _control); }
-    auto cend() const { return const_iterator(size(), _control); }
+    auto cbegin() const { return const_iterator(0U, getControl()); }
+    auto cend() const { return const_iterator(size(), getControl()); }
 
     auto unsafeBegin() const { return V::cbegin(); }
     auto unsafeEnd() const { return V::cend(); }
@@ -509,6 +508,16 @@ public:
     friend bool operator==(const Vector& a, const Vector& b) {
         return static_cast<const V&>(a) == static_cast<const V&>(b);
     }
+
+private:
+    const C& getControl() const {
+        if ( ! _control )
+            _control = std::make_shared<Vector<T, Allocator>*>(const_cast<Vector<T, Allocator>*>(this));
+
+        return _control;
+    }
+
+    mutable C _control;
 };
 
 namespace vector {

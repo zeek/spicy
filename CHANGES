@@ -1,3 +1,9 @@
+1.10.0-dev.43 | 2023-12-08 09:55:13 +0100
+
+  * Allocate Vector::_control lazily. (Arne Welzel, Corelight)
+
+  * Allocate Bytes::_control lazily. (Arne Welzel, Corelight)
+
 1.10.0-dev.40 | 2023-12-06 12:31:27 +0100
 
   * GH-1605: Allow for unresolved types for set `in` operator. (Benjamin Bannier, Corelight)
