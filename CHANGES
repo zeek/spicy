@@ -1,3 +1,15 @@
+1.10.0-dev.50 | 2023-12-11 12:08:12 +0100
+
+  * GH-1615: Optimize C++ tuple element coercions. (Benjamin Bannier, Corelight)
+
+    This patch introduces an optimization to pass C++ tuples through if they
+    do not need C++-side coercion. This emits better code if a tuple ctor
+    already has the right types. We also optimize codegen if we are coercing
+    from a temporary tuple in that we now capture it in a temporary and
+    coerce elements from that instead of repeatedly emitting the same tuple
+    ctor (we scale with the number of tuple elements now not its square
+    anymore).
+
 1.10.0-dev.48 | 2023-12-08 15:55:12 +0100
 
   * Use deterministic destruction of Spicy runtime in unit tests. (Benjamin Bannier, Corelight)

@@ -163,11 +163,27 @@ struct Visitor : public hilti::visitor::PreOrder<cxx::Expression, Visitor> {
             std::vector<cxx::Expression> exprs;
 
             assert(src.elements().size() == t->elements().size());
-            for ( auto i = 0U; i < src.elements().size(); i++ )
-                exprs.push_back(
-                    cg->coerce(fmt("std::get<%d>(%s)", i, expr), src.elements()[i].type(), t->elements()[i].type()));
 
-            return fmt("std::make_tuple(%s)", util::join(exprs, ", "));
+            // Check if a coercion is needed at all.
+            bool all_same_types = true;
+            for ( auto i = 0U; i < src.elements().size(); ++i ) {
+                if ( src.elements()[i].type() != t->elements()[i].type() ) {
+                    all_same_types = false;
+                    break;
+                }
+            }
+
+            if ( all_same_types )
+                return fmt("%s", expr);
+
+            // Coerce individual fields. We do this in a lambda to avoid
+            // emitting multiple full tupled constructors for temporaries.
+            for ( auto i = 0U; i < src.elements().size(); i++ ) {
+                exprs.push_back(
+                    cg->coerce(fmt("std::get<%d>(__t)", i), src.elements()[i].type(), t->elements()[i].type()));
+            }
+
+            return fmt("[&](const auto& __t) { return std::make_tuple(%s); }(%s)", util::join(exprs, ", "), expr);
         }
 
         logger().internalError(fmt("codegen: unexpected type coercion from tuple to %s", dst.typename_()));
