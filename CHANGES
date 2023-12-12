@@ -1,3 +1,18 @@
+1.10.0-dev.53 | 2023-12-12 13:05:41 +0100
+
+  * Avoid unnecessary copy when constructing `Stream` from `Bytes`. (Benjamin Bannier, Corelight)
+
+  * Back Chunk with a std::string instead of std::variant. (Arne Welzel, Corelight)
+
+    This is probably a bit funky due to the trailing \0 and a Chunk not
+    being a string, but hey, hilti::rt::Bytes is backed by std::string, too.
+
+    Looking at the creation of Chunk::Chunk(), there's actually a memset()
+    operation visible due to the variant holding some 40 bytes that are
+    zero initialized upon construction. std::string supports SSO, so we
+    can leverage even if the actual size is out of our control. The
+    std::get_if()s do show up very marginally for the View::size() calls.
+
 1.10.0-dev.50 | 2023-12-11 12:08:12 +0100
 
   * GH-1615: Optimize C++ tuple element coercions. (Benjamin Bannier, Corelight)

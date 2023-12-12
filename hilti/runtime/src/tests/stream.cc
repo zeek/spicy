@@ -92,8 +92,6 @@ TEST_CASE("construct") {
         CHECK(x.isFrozen());
     }
 
-    CHECK_EQ(Stream(std::vector<Byte>({'1', '2', '3'})), Stream("123"_b));
-
     SUBCASE("from memory block") {
         auto xs = "123"_b;
         const auto s = Stream(xs.data(), xs.size());
@@ -108,15 +106,12 @@ TEST_CASE("construct") {
         CHECK_EQ(Stream(std::move(s)), Stream("123"_b));
     }
 
-    SUBCASE("from string") {
-        const auto SmallBufferSize = stream::detail::Chunk::SmallBufferSize;
+    SUBCASE("from Bytes") {
+        auto d1 = Bytes(1, '\x01');
+        CHECK_EQ(to_string_for_print(Stream(d1)), escapeBytes(d1.str(), true));
 
-        auto d1 = std::string(1, '\x01');
-        REQUIRE_LT(d1.size(), SmallBufferSize);
-        CHECK_EQ(to_string_for_print(Stream(d1.c_str())), escapeBytes(d1, true));
-
-        auto d2 = std::string(SmallBufferSize + 10, '\x01');
-        CHECK_EQ(to_string_for_print(Stream(d2.c_str())), escapeBytes(d2, true));
+        auto d2 = Bytes(1024, '\x01');
+        CHECK_EQ(to_string_for_print(Stream(d2)), escapeBytes(d2.str(), true));
     }
 }
 

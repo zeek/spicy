@@ -20,30 +20,11 @@ Chunk::~Chunk() {
 }
 
 Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
-    if ( d.size() <= SmallBufferSize ) {
-        std::array<Byte, SmallBufferSize> a{};
-        d.copyRaw(a.data());
-        _data = std::make_pair(d.size(), a);
-    }
-    else {
-        std::vector<Byte> v(d.size());
-        d.copyRaw(v.data());
-        _data = std::move(v);
-    }
+    _data.resize(d.size());
+    d.copyRaw(reinterpret_cast<Byte*>(_data.data()));
 }
 
-Chunk::Chunk(const Offset& offset, std::string_view s) : _offset(offset) {
-    if ( s.size() <= SmallBufferSize ) {
-        std::array<Byte, SmallBufferSize> a{};
-        memcpy(a.data(), s.data(), s.size());
-        _data = std::make_pair(s.size(), a);
-    }
-    else {
-        std::vector<Byte> v(s.size());
-        memcpy(v.data(), s.data(), s.size());
-        _data = std::move(v);
-    }
-}
+Chunk::Chunk(const Offset& offset, std::string s) : _offset(offset), _data(std::move(s)) {}
 
 void Chain::append(std::unique_ptr<Chunk> chunk) {
     _ensureValid();
@@ -385,7 +366,7 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
                        ._block = is_last ? nullptr : chunk->next()};
 }
 
-Stream::Stream(const Bytes& d) : Stream(Chunk(0, d.str())) {}
+Stream::Stream(Bytes d) : Stream(Chunk(0, std::move(d).str())) {}
 
 Stream::Stream(const char* d, const Size& n) : Stream() { append(d, n); }
 
@@ -408,7 +389,7 @@ void Stream::append(const char* data, size_t len) {
         return;
 
     if ( data )
-        _chain->append(std::make_unique<Chunk>(0, std::string_view{data, len}));
+        _chain->append(std::make_unique<Chunk>(0, std::string{data, len}));
     else
         _chain->append(std::make_unique<Chunk>(0, len));
 }
