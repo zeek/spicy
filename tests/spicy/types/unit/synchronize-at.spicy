@@ -1,10 +1,15 @@
 # @TEST-DOC: Validates synchronization via `%synchronize-at` property.
 #
 # @TEST-EXEC: spicyc -d -j %INPUT -o foo.hlto
-# @TEST-EXEC: printf 'foobar123' | spicy-dump -d foo.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '1234567' | spicy-dump -d foo.hlto >>output 2>&1
-# @TEST-EXEC: printf '123bar4567' | spicy-dump -d foo.hlto >>output 2>&1
+
+# @TEST-EXEC: ${SCRIPTS}/printf 'foobar123' | spicy-dump -d foo.hlto -p foo::Test1 >>output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '1234567' | spicy-dump -d foo.hlto -p foo::Test1 >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '123bar4567' | spicy-dump -d foo.hlto -p foo::Test1 >>output 2>&1
 # @TEST-EXEC: btest-diff output
+
+# @TEST-EXEC: ${SCRIPTS}/printf '\xFF\xFF\xFF' | spicy-dump -d foo.hlto -p foo::Test2 >>output2 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '\xCC\xFF\xFF' | spicy-dump -d foo.hlto -p foo::Test2 >>output2 2>&1
+# @TEST-EXEC: btest-diff output2
 
 module foo;
 
@@ -17,9 +22,23 @@ type Bar = unit {
     data: bytes &eod;
 };
 
-public type Test = unit {
+public type Test1 = unit {
     foo: Foo;
     bar: Bar &synchronize;
 
     on %synced { print self; confirm; }
+};
+
+##########################################
+
+public type Test2 = unit {
+    xs: (X &synchronize)[] foreach { if (|self.xs| > 0) stop; }
+    on %synced { confirm; }
+};
+
+type X = unit {
+    %synchronize-at = b"\xFF";
+    # Use a `&requires` here to avoid us generating a lookahead parse for
+    # `Test2::xs` above. Due to this we also need an explicit `stop` there.
+    x: bytes &size=1 &requires=(|$$| == 0 || $$==b"\xFF");
 };

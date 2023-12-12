@@ -1,3 +1,14 @@
+1.10.0-dev.55 | 2023-12-12 18:38:24 +0100
+
+  * GH-1617: Fix handling of `%synchronize-*` attributes for units in lists. (Benjamin Bannier, Corelight)
+
+    We previously would not detect `%synchronize-at` or `%synchronize-from`
+    attributes if the unit was not directly in a field, i.e., we mishandled
+    the common case of synchronizing on a unit in a list.
+
+    With this patch we now handle these attributes, regardless of how the
+    unit appears.
+
 1.10.0-dev.53 | 2023-12-12 13:05:41 +0100
 
   * Avoid unnecessary copy when constructing `Stream` from `Bytes`. (Benjamin Bannier, Corelight)
