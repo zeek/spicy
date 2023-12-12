@@ -1478,7 +1478,7 @@ public:
      * Creates an instance from a bytes instance.
      * @param d `Bytes` instance to the create the stream from
      */
-    explicit Stream(const Bytes& d);
+    explicit Stream(Bytes d);
 
     /**
      * Creates an instance from an existing memory block. The data

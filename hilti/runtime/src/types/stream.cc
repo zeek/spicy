@@ -366,7 +366,7 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
                        ._block = is_last ? nullptr : chunk->next()};
 }
 
-Stream::Stream(const Bytes& d) : Stream(Chunk(0, d.str())) {}
+Stream::Stream(Bytes d) : Stream(Chunk(0, std::move(d).str())) {}
 
 Stream::Stream(const char* d, const Size& n) : Stream() { append(d, n); }
 
