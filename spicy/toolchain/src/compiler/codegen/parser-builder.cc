@@ -1124,7 +1124,8 @@ struct ProductionVisitor
         }
 
         // Validation.
-        if ( auto while_ = p->tryAs<production::While>(); while_ && while_->expression() )
+        auto while_ = p->tryAs<production::While>();
+        if ( while_ && while_->expression() )
             hilti::logger().error("&synchronize cannot be used on while loops with conditions");
 
         // Helper to validate the parser state after search for a lookahead.
@@ -1140,10 +1141,21 @@ struct ProductionVisitor
         };
 
         // Handle synchronization via `synchronize-at` or `synchronize-after` unit properties.
-        if ( const auto& unit = p->tryAs<production::Unit>() ) {
-            const auto& type = unit->unitType();
-            const auto synchronize_at = type.propertyItem("%synchronize-at");
-            const auto synchronize_after = type.propertyItem("%synchronize-after");
+        // We can either see a unit for synchronization in a list (generating a
+        // `while` production), or directly.
+        std::optional<type::Unit> unitType;
+        if ( while_ ) {
+            if ( const auto& field = while_->meta().field() )
+                if ( auto unit = field->parseType().elementType().tryAs<type::Unit>() )
+                    unitType = *unit;
+        }
+
+        else if ( const auto& unit = p->tryAs<production::Unit>() )
+            unitType = unit->unitType();
+
+        if ( unitType ) {
+            const auto synchronize_at = unitType->propertyItem("%synchronize-at");
+            const auto synchronize_after = unitType->propertyItem("%synchronize-after");
 
             std::optional<Expression> e;
 
