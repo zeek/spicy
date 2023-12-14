@@ -365,6 +365,12 @@ public:
     /** Constructor. */
     SafeConstIterator() = default;
 
+    SafeConstIterator(const SafeConstIterator&) = default;
+    SafeConstIterator(SafeConstIterator&&) = default;
+
+    SafeConstIterator& operator=(const SafeConstIterator&) = default;
+    SafeConstIterator& operator=(SafeConstIterator&&) = default;
+
     /** Constructor. */
     explicit SafeConstIterator(const UnsafeConstIterator& i);
 
