@@ -1011,8 +1011,11 @@ public:
     /** Constructor. */
     View() = default;
 
-    /** Destructor. */
-    ~View() = default;
+    View(const View&) = default;
+    View(View&&) = default;
+
+    View& operator=(const View&) = default;
+    View& operator=(View&&) = default;
 
     /** Constructor for static view bracketed through two iterators. */
     explicit View(SafeConstIterator begin, SafeConstIterator end) : _begin(std::move(begin)), _end(std::move(end)) {
