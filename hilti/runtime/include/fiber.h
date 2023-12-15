@@ -81,6 +81,11 @@ struct StackBuffer {
      */
     StackBuffer(const ::Fiber* fiber) : _fiber(fiber) {}
 
+    StackBuffer(const StackBuffer&) = delete;
+    StackBuffer(StackBuffer&&) = default;
+    StackBuffer& operator=(const StackBuffer&) = delete;
+    StackBuffer& operator=(StackBuffer&&) = default;
+
     /** Destructor. */
     ~StackBuffer();
 
