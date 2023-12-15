@@ -322,6 +322,11 @@ public:
     ParseError(const hilti::rt::result::Error& e) : RecoverableFailure(e.description()) {}
 
     ~ParseError() override; /* required to create vtable, see hilti::rt::Exception */
+
+    ParseError(const ParseError&) = default;
+    ParseError(ParseError&&) = default;
+    ParseError& operator=(const ParseError&) = default;
+    ParseError& operator=(ParseError&&) = default;
 };
 
 /**
