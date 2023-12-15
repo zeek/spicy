@@ -145,11 +145,13 @@ public:
               return hilti::rt::any_cast<F>(f)(h);
           }) {}
 
-    Callback(const Callback&) = default;
+    Callback(const Callback&) = delete;
     Callback(Callback&&) = default;
 
-    Callback& operator=(const Callback&) = default;
+    Callback& operator=(const Callback&) = delete;
     Callback& operator=(Callback&&) = default;
+
+    ~Callback() = default;
 
     hilti::rt::any operator()(resumable::Handle* h) const { return _invoke(_f, h); }
 
