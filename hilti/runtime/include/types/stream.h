@@ -1020,6 +1020,8 @@ public:
     /** Constructor. */
     View() = default;
 
+    ~View() = default;
+
     View(const View&) = default;
     View(View&&) = default;
 
