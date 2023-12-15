@@ -188,6 +188,8 @@ public:
     Bytes(const Bytes& xs) : Base(xs) {}
     Bytes(Bytes&& xs) noexcept : Base(std::move(xs)) {}
 
+    ~Bytes() = default;
+
     /** Replaces the contents of this `Bytes` with another `Bytes`.
      *
      * This function invalidates all iterators.
