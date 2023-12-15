@@ -56,6 +56,10 @@ public:
     Pimpl(const Pimpl& other) : _acc(other._acc), _first(other._first), _re(other._re) {
         jrx_match_state_copy(&other._ms, &_ms);
     }
+
+    Pimpl(Pimpl&&) = default;
+    Pimpl& operator=(const Pimpl&) = default;
+    Pimpl& operator=(Pimpl&&) = default;
 };
 
 regexp::MatchState::MatchState(const RegExp& re) {
