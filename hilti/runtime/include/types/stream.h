@@ -366,6 +366,8 @@ public:
     /** Constructor. */
     SafeConstIterator() = default;
 
+    ~SafeConstIterator() = default;
+
     SafeConstIterator(const SafeConstIterator&) = default;
     SafeConstIterator(SafeConstIterator&&) = default;
 
