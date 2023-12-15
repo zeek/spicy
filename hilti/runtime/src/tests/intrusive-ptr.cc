@@ -25,6 +25,11 @@ public:
     Managed() { ++instances; }
     ~Managed() { --instances; }
     static inline int instances = 0;
+
+    Managed(const Managed&) = delete;
+    Managed(Managed&&) = default;
+    Managed& operator=(const Managed&) = delete;
+    Managed& operator=(Managed&&) = default;
 };
 
 using ManagedPtr = IntrusivePtr<Managed>;
@@ -49,6 +54,11 @@ struct TestObject : intrusive_ptr::ManagedObject {
     static uint64_t instances;
     TestObject() { ++instances; }
     TestObject(int _i) : i(_i) { ++instances; }
+
+    TestObject(const TestObject&) = delete;
+    TestObject(TestObject&&) = default;
+    TestObject& operator=(const TestObject&) = delete;
+    TestObject& operator=(TestObject&&) = default;
 
     ~TestObject() { --instances; }
 

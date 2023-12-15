@@ -23,6 +23,11 @@ public:
 
     ~TestCout() { configuration::detail::__configuration = std::move(_prev); }
 
+    TestCout(const TestCout&) = delete;
+    TestCout(TestCout&&) = delete;
+    TestCout& operator=(const TestCout&) = delete;
+    TestCout& operator=(TestCout&&) = delete;
+
     auto str() const { return _cout.str(); }
 
 private:

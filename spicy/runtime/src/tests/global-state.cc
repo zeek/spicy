@@ -19,6 +19,11 @@ public:
         detail::__global_state = _prev;
     }
 
+    TestState(const TestState&) = delete;
+    TestState(TestState&&) = default;
+    TestState& operator=(const TestState&) = delete;
+    TestState& operator=(TestState&&) = default;
+
 private:
     detail::GlobalState* _prev{nullptr};
 };

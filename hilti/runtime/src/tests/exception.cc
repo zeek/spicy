@@ -30,6 +30,11 @@ public:
         debug::setLocation(nullptr);
     }
 
+    TestLocation(const TestLocation&) = delete;
+    TestLocation(TestLocation&&) = delete;
+    TestLocation& operator=(const TestLocation&) = delete;
+    TestLocation& operator=(TestLocation&&) = delete;
+
 private:
     std::string _location;
     Context* _prev = nullptr;

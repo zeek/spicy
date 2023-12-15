@@ -119,6 +119,17 @@ struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
         // Not implemented.
         return *this;
     }
+
+    // NOLINTNEXTLINE(bugprone-unhandled-self-assignment, cert-oop54-cpp)
+    UnitWithSinkSupport& operator=(UnitWithSinkSupport&&) noexcept {
+        // Not implemented.
+        return *this;
+    }
+
+    UnitWithSinkSupport() = default;
+    UnitWithSinkSupport(const UnitWithSinkSupport&) = default;
+    UnitWithSinkSupport(UnitWithSinkSupport&&) = default;
+    ~UnitWithSinkSupport() = default;
 };
 
 Parser UnitWithSinkSupport::__parser{};
