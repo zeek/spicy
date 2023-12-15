@@ -48,6 +48,12 @@ struct FiberContext {
     FiberContext();
     ~FiberContext();
 
+    FiberContext(const FiberContext&) = delete;
+    FiberContext(FiberContext&&) = default;
+
+    FiberContext& operator=(const FiberContext&) = delete;
+    FiberContext& operator=(FiberContext&&) = default;
+
     /** (Pseudo-)fiber representing the main function. */
     std::unique_ptr<detail::Fiber> main;
 
