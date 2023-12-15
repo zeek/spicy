@@ -91,6 +91,12 @@ public:
     virtual void collect(Node&) {}
     virtual bool prune_uses(Node&) { return false; }
     virtual bool prune_decls(Node&) { return false; }
+
+    OptimizerVisitor() = default;
+    OptimizerVisitor(const OptimizerVisitor&) = default;
+    OptimizerVisitor(OptimizerVisitor&&) = default;
+    OptimizerVisitor& operator=(const OptimizerVisitor&) = default;
+    OptimizerVisitor& operator=(OptimizerVisitor&&) = default;
 };
 
 struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisitor> {

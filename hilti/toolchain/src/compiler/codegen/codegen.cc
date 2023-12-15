@@ -34,6 +34,11 @@ struct GlobalsVisitor : hilti::visitor::PreOrder<void, GlobalsVisitor> {
     GlobalsVisitor(const GlobalsVisitor&) = delete;
     GlobalsVisitor(GlobalsVisitor&&) noexcept = delete;
 
+    GlobalsVisitor& operator=(const GlobalsVisitor&) = delete;
+    GlobalsVisitor& operator=(GlobalsVisitor&&) noexcept = delete;
+
+    ~GlobalsVisitor() override = default;
+
     CodeGen* cg;
     bool include_implementation;
 

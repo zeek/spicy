@@ -260,6 +260,11 @@ public:
     Visitor() = default;
     virtual ~Visitor() = default;
 
+    Visitor(const Visitor&) = default;
+    Visitor(Visitor&&) noexcept = default;
+    Visitor& operator=(const Visitor&) = default;
+    Visitor& operator=(Visitor&&) noexcept = default;
+
     virtual void preDispatch(const Erased& /* n */, int /* level */){};
 
     /** Execute matching dispatch methods for a single node.  */
