@@ -365,6 +365,12 @@ public:
     /** Constructor. */
     SafeConstIterator() = default;
 
+    SafeConstIterator(const SafeConstIterator&) = default;
+    SafeConstIterator(SafeConstIterator&&) = default;
+
+    SafeConstIterator& operator=(const SafeConstIterator&) = default;
+    SafeConstIterator& operator=(SafeConstIterator&&) = default;
+
     /** Constructor. */
     explicit SafeConstIterator(const UnsafeConstIterator& i);
 
@@ -1011,8 +1017,11 @@ public:
     /** Constructor. */
     View() = default;
 
-    /** Destructor. */
-    ~View() = default;
+    View(const View&) = default;
+    View(View&&) = default;
+
+    View& operator=(const View&) = default;
+    View& operator=(View&&) = default;
 
     /** Constructor for static view bracketed through two iterators. */
     explicit View(SafeConstIterator begin, SafeConstIterator end) : _begin(std::move(begin)), _end(std::move(end)) {
@@ -1334,7 +1343,9 @@ public:
     detail::UnsafeConstIterator unsafeBegin() const { return detail::UnsafeConstIterator(_begin); }
 
     /** Returns an unsafe iterator representing the end of the instance. */
-    detail::UnsafeConstIterator unsafeEnd() const { return detail::UnsafeConstIterator(end()); }
+    detail::UnsafeConstIterator unsafeEnd() const {
+        return _end ? detail::UnsafeConstIterator(*_end) : _begin.chain()->unsafeEnd();
+    }
 
     /** Returns an safe iterator pointint to the beginning of the view. */
     const SafeConstIterator& begin() const { return _begin; }

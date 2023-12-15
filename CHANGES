@@ -1,3 +1,21 @@
+1.10.0-dev.59 | 2023-12-15 13:29:41 +0100
+
+  * Add move ctr for `stream::SafeConstIterator`. (Benjamin Bannier, Corelight)
+
+  * Use unchecked operations for `View::unsafeEnd`. (Benjamin Bannier, Corelight)
+
+    We previously would call `end()` to compute `unsafeEnd` which incurrs
+    overheads this function is explicitly designed to avoid. We now switch
+    this implementation of this function to completely unsafe code avoiding
+    these overheads.
+
+  * Add move ctr for `stream::View`. (Benjamin Bannier, Corelight)
+
+    In C++17 move ctors are not by default generated, add them explicitly.
+    We also get rid of the `View` dtr since it adds nothing (e.g., the class
+    is declared `final`), but declaring them could e.g., make the class not
+    POD anymore (this is not the case here though).
+
 1.10.0-dev.55 | 2023-12-12 18:38:24 +0100
 
   * GH-1617: Fix handling of `%synchronize-*` attributes for units in lists. (Benjamin Bannier, Corelight)
