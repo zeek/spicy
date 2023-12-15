@@ -225,7 +225,8 @@ public:
     using UnsafeConstIterator = stream::detail::UnsafeConstIterator;
     using Size = stream::Size;
 
-    Chain() {}
+    Chain() = default;
+    ~Chain() = default;
 
     /** Moves a chunk and all its successors into a new chain. */
     Chain(std::unique_ptr<Chunk> head) : _head(std::move(head)), _tail(_head->last()) { _head->setChain(this); }
