@@ -148,12 +148,12 @@ public:
     pointer get() const noexcept {
         // Some versions of GCC diagnose a maybe uninitialized variable here.
         // Since we always initialize the field this should not be possible.
-#pragma GCC diagnostic push;
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         return ptr_;
-#pragma GCC diagnostic pop;
+#pragma GCC diagnostic pop
     }
 
     pointer operator->() const noexcept { return ptr_; }
