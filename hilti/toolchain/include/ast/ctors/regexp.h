@@ -16,8 +16,8 @@ namespace hilti::ctor {
 /** AST node for a RegExp constructor. */
 class RegExp : public NodeBase, public hilti::trait::isCtor {
 public:
-    RegExp(std::vector<std::string> p, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : NodeBase(nodes(type::RegExp(m), std::move(attrs)), std::move(m)), _patterns(std::move(p)) {}
+    RegExp(std::vector<std::string> p, std::optional<AttributeSet> attrs = {}, const Meta& m = Meta())
+        : NodeBase(nodes(type::RegExp(m), std::move(attrs)), m), _patterns(std::move(p)) {}
 
     auto attributes() const { return children()[1].tryAs<AttributeSet>(); }
     const auto& value() const { return _patterns; }

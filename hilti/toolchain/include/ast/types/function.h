@@ -70,8 +70,8 @@ using Kind = declaration::parameter::Kind;
 
 class Function : public TypeBase, trait::isParameterized {
 public:
-    Function(Wildcard /*unused*/, Meta m = Meta())
-        : TypeBase(nodes(function::Result(type::Error(m))), std::move(m)), _wildcard(true) {}
+    Function(Wildcard /*unused*/, const Meta& m = Meta())
+        : TypeBase(nodes(function::Result(type::Error(m))), m), _wildcard(true) {}
     Function(function::Result result, const std::vector<function::Parameter>& params,
              function::Flavor flavor = function::Flavor::Standard, Meta m = Meta())
         : TypeBase(nodes(std::move(result), util::transform(params, [](const auto& p) { return Declaration(p); })),

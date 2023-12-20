@@ -71,8 +71,8 @@ public:
 class ValueReference : public NodeBase, public hilti::trait::isCtor {
 public:
     /** Constructs a reference value of type `t`. */
-    ValueReference(Expression e, Meta m = Meta())
-        : NodeBase(nodes(type::ValueReference(type::auto_, m), std::move(e)), std::move(m)) {}
+    ValueReference(Expression e, const Meta& m = Meta())
+        : NodeBase(nodes(type::ValueReference(type::auto_, m), std::move(e)), m) {}
 
     const Type& dereferencedType() const { return child<type::ValueReference>(0).dereferencedType(); }
     const Expression& expression() const { return child<Expression>(1); }

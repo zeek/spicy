@@ -118,7 +118,9 @@ public:
     Node(const Node& other) : node::detail::Node::Node(other), _scope(other._scope) {}
 
     Node(Node&& other) noexcept
-        : node::detail::Node::Node(std::move(other)),
+        // NOTE: Accessing fields of `other` after invoking the base class'
+        // move constructor is safe since initialization of base slices.
+        : node::detail::Node::Node(static_cast<node::detail::Node&&>(other)),
           _control_ptr(std::move(other._control_ptr)),
           _scope(std::move(other._scope)),
           _errors(std::move(other._errors)) {
