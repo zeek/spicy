@@ -37,6 +37,7 @@ Checks: '
   -misc-confusable-identifiers,
   -misc-const-correctness,
   -misc-use-anonymous-namespace,
+  -misc-include-cleaner,
 
   modernize-*,
   -modernize-avoid-c-arrays,
