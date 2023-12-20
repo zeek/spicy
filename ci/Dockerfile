@@ -2,9 +2,6 @@
 
 FROM ubuntu:22.04
 
-ARG ZEEK_VERSION="v5.0.5"
-ARG ZEEK_CONFFLAGS="--disable-spicy"
-
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 CMD ["sh"]
