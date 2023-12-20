@@ -251,6 +251,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     }
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
     hilti::init();
     spicy::init();

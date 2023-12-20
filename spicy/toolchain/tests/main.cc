@@ -14,6 +14,7 @@ struct RuntimeWrapper {
     }
 };
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
     doctest::Context context;
     auto rt = RuntimeWrapper();

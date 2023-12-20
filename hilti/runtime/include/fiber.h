@@ -313,7 +313,11 @@ public:
 
     ~Resumable() {
         if ( _fiber )
-            detail::Fiber::destroy(std::move(_fiber));
+            try {
+                detail::Fiber::destroy(std::move(_fiber));
+            } catch ( ... ) {
+                cannot_be_reached();
+            }
     }
 
     /** Starts execution of the function. This must be called only once. */
