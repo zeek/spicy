@@ -1,6 +1,6 @@
 # Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-FROM ubuntu:focal
+FROM ubuntu:22.04
 
 ARG ZEEK_VERSION="v5.0.5"
 ARG ZEEK_CONFFLAGS="--disable-spicy"
@@ -44,14 +44,14 @@ RUN apt-get update \
  # Clang-9.
  && apt-get install -y --no-install-recommends llvm-9-dev clang-9 libclang-9-dev libc++-dev libc++1 libc++abi-dev libc++abi1 \
  # Clang-[10,11,12].
- && echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main' >> /etc/apt/sources.list.d/llvm10.list \
- && echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main' >> /etc/apt/sources.list.d/llvm10.list \
- && echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list.d/llvm11.list \
- && echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list.d/llvm11.list \
- && echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main' >> /etc/apt/sources.list.d/llvm12.list \
- && echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main' >> /etc/apt/sources.list.d/llvm12.list \
- && echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main' >> /etc/apt/sources.list.d/llvm15.list \
- && echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main' >> /etc/apt/sources.list.d/llvm15.list \
+ && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-10 main' >> /etc/apt/sources.list.d/llvm10.list \
+ && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-10 main' >> /etc/apt/sources.list.d/llvm10.list \
+ && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-11 main' >> /etc/apt/sources.list.d/llvm11.list \
+ && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-11 main' >> /etc/apt/sources.list.d/llvm11.list \
+ && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-12 main' >> /etc/apt/sources.list.d/llvm12.list \
+ && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-12 main' >> /etc/apt/sources.list.d/llvm12.list \
+ && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main' >> /etc/apt/sources.list.d/llvm15.list \
+ && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main' >> /etc/apt/sources.list.d/llvm15.list \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
  && apt-get update \
  && apt-get install -y --no-install-recommends llvm-10-dev clang-10 libclang-10-dev clang-format-10 clang-tidy-10 \
@@ -60,8 +60,3 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends llvm-15-dev clang-15 libclang-15-dev clang-format-15 clang-tidy-15 libclang-rt-15-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-
-# Install a recent CMake.
-WORKDIR /usr/local/cmake
-RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local/cmake --strip-components 1
-ENV PATH="/usr/local/cmake/bin:${PATH}"
