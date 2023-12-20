@@ -53,22 +53,18 @@ namespace type {
 using namespace hilti::type;
 } // namespace type
 
-#if 0
-namespace type {
-using Function = hilti::type::Function;
-using Void = hilti::type::Void;
-using Wildcard = hilti::type::Wildcard;
-using Bytes = hilti::type
-}
-#endif
+// namespace type {
+// using Function = hilti::type::Function;
+// using Void = hilti::type::Void;
+// using Wildcard = hilti::type::Wildcard;
+// using Bytes = hilti::type
+// }
 
-#if 0
-namespace type::function {
-using Parameter = hilti::type::function::Parameter;
-using Result = hilti::type::function::Result;
-using Flavor = hilti::type::function::Flavor;
-}
-#endif
+// namespace type::function {
+// using Parameter = hilti::type::function::Parameter;
+// using Result = hilti::type::function::Result;
+// using Flavor = hilti::type::function::Flavor;
+// }
 
 namespace node {
 
