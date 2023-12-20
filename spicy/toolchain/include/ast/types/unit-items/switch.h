@@ -10,7 +10,6 @@
 #include <spicy/ast/aliases.h>
 #include <spicy/ast/engine.h>
 #include <spicy/ast/types/unit-items/field.h>
-#include <spicy/ast/types/unit.h>
 
 namespace spicy::type::unit::item {
 
