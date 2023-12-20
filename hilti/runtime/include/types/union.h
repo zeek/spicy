@@ -95,7 +95,7 @@ public:
 };
 
 namespace detail::adl {
-template<typename T, typename std::enable_if_t<std::is_base_of<trait::isUnion, T>::value>* = nullptr>
+template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isUnion, T>>* = nullptr>
 inline std::string to_string(const T& x, adl::tag /*unused*/) {
     std::string field = "<unset>";
 

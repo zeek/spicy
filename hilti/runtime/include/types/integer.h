@@ -163,41 +163,41 @@ inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
     switch ( fmt.value() ) {
         case ByteOrder::Big:
         case ByteOrder::Network:
-            if constexpr ( std::is_same<T, uint8_t>::value )
+            if constexpr ( std::is_same_v<T, uint8_t> )
                 return std::make_tuple(static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b));
 
-            if constexpr ( std::is_same<T, int8_t>::value ) {
+            if constexpr ( std::is_same_v<T, int8_t> ) {
                 auto x = static_cast<int8_t>(raw[0]); // Forced cast to skip safe<T> range check.
                 return std::make_tuple(static_cast<integer::safe<int8_t>>(x), std::move(b));
             }
 
-            if constexpr ( std::is_same<T, uint16_t>::value || std::is_same<T, int16_t>::value )
+            if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )
                 return detail::unpack<T>(std::move(b), raw, {0, 1});
 
-            if constexpr ( std::is_same<T, uint32_t>::value || std::is_same<T, int32_t>::value )
+            if constexpr ( std::is_same_v<T, uint32_t> || std::is_same_v<T, int32_t> )
                 return detail::unpack<T>(std::move(b), raw, {0, 1, 2, 3});
 
-            if constexpr ( std::is_same<T, uint64_t>::value || std::is_same<T, int64_t>::value )
+            if constexpr ( std::is_same_v<T, uint64_t> || std::is_same_v<T, int64_t> )
                 return detail::unpack<T>(std::move(b), raw, {0, 1, 2, 3, 4, 5, 6, 7});
 
             abort_with_backtrace();
 
         case ByteOrder::Little:
-            if constexpr ( std::is_same<T, uint8_t>::value )
+            if constexpr ( std::is_same_v<T, uint8_t> )
                 return std::make_tuple(static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b));
 
-            if constexpr ( std::is_same<T, int8_t>::value ) {
+            if constexpr ( std::is_same_v<T, int8_t> ) {
                 auto x = static_cast<int8_t>(raw[0]); // Forced cast to skip safe<T> range check.
                 return std::make_tuple(static_cast<integer::safe<int8_t>>(x), std::move(b));
             }
 
-            if constexpr ( std::is_same<T, uint16_t>::value || std::is_same<T, int16_t>::value )
+            if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )
                 return detail::unpack<T>(std::move(b), raw, {1, 0});
 
-            if constexpr ( std::is_same<T, uint32_t>::value || std::is_same<T, int32_t>::value )
+            if constexpr ( std::is_same_v<T, uint32_t> || std::is_same_v<T, int32_t> )
                 return detail::unpack<T>(std::move(b), raw, {3, 2, 1, 0});
 
-            if constexpr ( std::is_same<T, uint64_t>::value || std::is_same<T, int64_t>::value )
+            if constexpr ( std::is_same_v<T, uint64_t> || std::is_same_v<T, int64_t> )
                 return detail::unpack<T>(std::move(b), raw, {7, 6, 5, 4, 3, 2, 1, 0});
 
             abort_with_backtrace();

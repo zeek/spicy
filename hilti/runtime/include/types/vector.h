@@ -60,7 +60,7 @@ public:
     void deallocate(value_type* p, std::size_t) noexcept { ::operator delete(p); }
 
     template<typename U>
-    void construct(U* p) noexcept(std::is_nothrow_default_constructible<U>::value) {
+    void construct(U* p) noexcept(std::is_nothrow_default_constructible_v<U>) {
         ::new (static_cast<void*>(p)) U(Default_);
     }
 

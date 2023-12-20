@@ -38,7 +38,7 @@ inline bool operator!=(const Statement& s1, const Statement& s2) { return ! (s1 
 using Statement = statement::detail::Statement;
 
 /** Constructs an AST node from any class implementing the `Statement` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of<trait::isStatement, T>::value>* = nullptr>
+template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isStatement, T>>* = nullptr>
 inline Node to_node(T t) {
     return Node(Statement(std::move(t)));
 }

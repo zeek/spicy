@@ -37,7 +37,7 @@ constexpr auto has__str__helper(int) -> decltype(std::declval<T>().__str__(), st
 template<typename T>
 using has__str__ = decltype(has__str__helper<T>(0));
 
-template<typename T, typename std::enable_if_t<std::is_base_of<trait::isStruct, T>::value>* = nullptr>
+template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isStruct, T>>* = nullptr>
 inline std::string to_string(const T& x, adl::tag /*unused*/) {
     if constexpr ( has__str__<T>() ) {
         if ( auto s = T(x).__str__() ) // copy because we need a non-const T

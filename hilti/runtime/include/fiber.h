@@ -300,7 +300,7 @@ public:
      *
      * @param f function to be executed
      */
-    template<typename Function, typename = std::enable_if_t<std::is_invocable<Function, resumable::Handle*>::value>>
+    template<typename Function, typename = std::enable_if_t<std::is_invocable_v<Function, resumable::Handle*>>>
     Resumable(Function f) : _fiber(detail::Fiber::create()) {
         _fiber->init(std::move(f));
     }
@@ -375,7 +375,7 @@ namespace resumable::detail {
 template<typename T>
 auto copyArg(T t) {
     // In general, we can't move references to the heap.
-    static_assert(! std::is_reference<T>::value, "copyArg() does not accept references other than ValueReference<T>.");
+    static_assert(! std::is_reference_v<T>, "copyArg() does not accept references other than ValueReference<T>.");
     return t;
 }
 

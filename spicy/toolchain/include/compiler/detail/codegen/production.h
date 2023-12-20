@@ -120,7 +120,7 @@ extern uint64_t tokenID(const std::string& p);
 class Production final : public production::Production_ {
 public:
     /** Constructs a production from an instance of a class implementing the `Production` interface. */
-    template<typename T, typename std::enable_if_t<std::is_base_of<trait::isProduction, T>::value>* = nullptr>
+    template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isProduction, T>>* = nullptr>
     Production(T t) : codegen::production::Production_(std::move(t)) {}
 
     ~Production() final = default;
