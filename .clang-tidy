@@ -42,6 +42,7 @@ Checks: '
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -modernize-return-braced-init-list,
+  -modernize-macro-to-enum,
 
   performance-*,
   portability-*,
