@@ -48,7 +48,6 @@ Configure options:
     --clang-format <path>          Path to clang-format to use (default: found in PATH)
     --clang-tidy <path>            Path to clang-tidy to use   (default: found in PATH)
     --cxx-compiler <path>          Path to C++ compiler to use (default: found by cmake)
-    --disable-benchmark            Do not build benchmark targets
     --disable-precompiled-headers  Disable use of precompiled headers for developer tests
     --rpath <path>                 Additional rpaths to use; will end up in LD_LIBRARY_PATH (default: none)
 
@@ -139,10 +138,6 @@ function run_configure {
                 shift 2;
                 ;;
 
-            --disable-benchmark)
-                disable_benchmark=1
-                ;;
-
             --disable-precompiled-headers)
                 configure="${configure} --disable-precompiled-headers"
                 shift 1;
@@ -161,11 +156,6 @@ function run_configure {
             *)  usage;;
         esac
     done
-
-    # When using this script enable building of benchmark targets by default unless explicitly disabled.
-    if [[ -z "${disable_benchmark+set}" ]]; then
-        configure="${configure} --enable-benchmark"
-    fi
 
     if [ -e ${build} ]; then
         error "Build directory ${build} already exists, delete first"
