@@ -41,7 +41,7 @@ lint_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17` --rpath /usr/lib/llvm-17/lib/clang/17/lib/linux/
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
   build_script:       ./ci/run-ci -b build build
   test_code_script:   ./ci/run-ci -b build test-code
 
@@ -78,7 +78,7 @@ clang17_ubuntu_debug_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17` --rpath /usr/lib/llvm-17/lib/clang/17/lib/linux/
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   install_script:     ./ci/run-ci -b build install
