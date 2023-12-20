@@ -225,7 +225,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 
             case 'U': driver_options.report_resource_usage = true; break;
 
-            case 'v': std::cerr << "spicy-driver v" << hilti::configuration().version_string_long << std::endl; exit(0);
+            case 'v': std::cerr << "spicy-driver v" << hilti::configuration().version_string_long << '\n'; exit(0);
 
             case 'L': compiler_options.library_paths.emplace_back(optarg); break;
 

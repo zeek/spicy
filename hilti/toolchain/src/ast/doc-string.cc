@@ -20,10 +20,10 @@ std::string DocString::normalize(std::string line) const {
 
 void DocString::render(std::ostream& out) const {
     for ( const auto& line : _summary )
-        out << "##! " << line << std::endl;
+        out << "##! " << line << '\n';
 
     for ( const auto& line : _text )
-        out << "## " << line << std::endl;
+        out << "## " << line << '\n';
 }
 
 void DocString::render(printer::Stream& out) const {

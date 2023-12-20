@@ -43,5 +43,6 @@ void detail::DebugLogger::print(std::string_view stream, std::string_view msg) {
     }
 
     auto indent = std::string(i->second * 2, ' ');
-    (*_output) << fmt("[%s] %s%s", stream, indent, msg) << std::endl;
+    (*_output) << fmt("[%s] %s%s", stream, indent, msg) << '\n';
+    _output->flush();
 }

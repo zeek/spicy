@@ -28,7 +28,7 @@ void print(const T& t, bool newline = true) {
     cout << hilti::rt::to_string_for_print(t);
 
     if ( newline )
-        cout << std::endl;
+        cout << '\n';
     else
         cout.flush();
 }
@@ -44,7 +44,7 @@ void printValues(const T& t, bool newline = true) {
     cout << join_tuple_for_print(t);
 
     if ( newline )
-        cout << std::endl;
+        cout << '\n';
     else
         cout.flush();
 }

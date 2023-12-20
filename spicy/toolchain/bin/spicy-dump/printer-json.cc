@@ -13,7 +13,7 @@ using namespace hilti::rt;
 
 using json = nlohmann::json;
 
-void JSONPrinter::print(const type_info::Value& v) { out() << convert(v) << std::endl; }
+void JSONPrinter::print(const type_info::Value& v) { out() << convert(v) << '\n'; }
 
 nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
     const auto& type = v.type();

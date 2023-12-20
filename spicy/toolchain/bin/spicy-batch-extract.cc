@@ -8,7 +8,7 @@
 #include <hilti/rt/util.h>
 
 void error(const std::string& msg) {
-    std::cerr << "error: " << msg << std::endl;
+    std::cerr << "error: " << msg << '\n';
     exit(1);
 }
 
@@ -19,7 +19,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
     if ( magic != std::string("!spicy-batch v2") )
         error("input is not a Spicy batch file");
 
-    out << magic << std::endl;
+    out << magic << '\n';
 
     std::set<std::string> needles = {std::move(needle)};
     auto is_needle = [&](const std::string& n) { return needles.find(n) != needles.end(); };
@@ -40,7 +40,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
 
             auto id = std::string(m[1]);
             if ( is_needle(id) )
-                out << cmd << std::endl;
+                out << cmd << '\n';
         }
         else if ( m[0] == "@begin-conn" ) {
             // @begin-conn <conn-id> <type> <orig-id> <orig-parser> <resp-id> <resp-parser>
@@ -54,7 +54,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
             if ( is_needle(cid) ) {
                 needles.insert(orig_id);
                 needles.insert(resp_id);
-                out << cmd << std::endl;
+                out << cmd << '\n';
             }
         }
 
@@ -75,7 +75,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
                 error("premature end of @data");
 
             if ( is_needle(id) ) {
-                out << cmd << std::endl;
+                out << cmd << '\n';
                 out.write(data, static_cast<std::streamsize>(size));
                 out.put('\n');
             }
@@ -87,7 +87,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
 
             auto id = std::string(m[1]);
             if ( is_needle(id) )
-                out << cmd << std::endl;
+                out << cmd << '\n';
         }
         else if ( m[0] == "@end-conn" ) {
             // @end-conn <cid>
@@ -97,7 +97,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
             auto cid = std::string(m[1]);
 
             if ( is_needle(cid) )
-                out << cmd << std::endl;
+                out << cmd << '\n';
         }
         else
             error(hilti::rt::fmt("unknown command '%s'", m[0]));
@@ -107,7 +107,7 @@ void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& 
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
     if ( argc != 2 ) {
-        std::cerr << "usage: " << argv[0] << " <fid> | <cid>" << std::endl;
+        std::cerr << "usage: " << argv[0] << " <fid> | <cid>" << '\n';
         exit(1);
     }
 

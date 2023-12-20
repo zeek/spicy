@@ -179,10 +179,10 @@ hilti::rt::filesystem::path util::currentExecutable() {
 }
 
 void util::abort_with_backtrace() {
-    std::cerr << "\n--- Aborting" << std::endl;
+    std::cerr << "\n--- Aborting" << '\n';
     auto bt = hilti::rt::Backtrace().backtrace();
     for ( const auto& f : *bt )
-        std::cerr << f << std::endl;
+        std::cerr << f << '\n';
     abort();
 }
 

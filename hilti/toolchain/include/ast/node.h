@@ -293,7 +293,7 @@ public:
     void assertIsA() {
         if ( ! isA<T>() ) {
             std::cerr << "Assertion failure: Node expected to be a " << typeid(T).name() << " but is a "
-                      << typeid_().name() << std::endl;
+                      << typeid_().name() << '\n';
             util::abort_with_backtrace();
         }
     }

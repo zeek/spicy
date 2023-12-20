@@ -558,12 +558,12 @@ void View::debugPrint(std::ostream& out) const {
     else
         out << "<not set>\n";
 
-    out << "[data]" << std::endl;
+    out << "[data]" << '\n';
     Stream::debugPrint(out, _begin.chain());
 }
 
 void Stream::debugPrint(std::ostream& out, const stream::detail::Chain* chain) {
-    out << fmt("chain %p", chain) << std::endl;
+    out << fmt("chain %p", chain) << '\n';
     int i = 0;
     auto c = chain->head();
     while ( c ) {
@@ -578,5 +578,5 @@ void Stream::debugPrint(std::ostream& out) const { debugPrint(out, _chain.get())
 void Chunk::debugPrint(std::ostream& out) const {
     auto x = std::string(reinterpret_cast<const char*>(data()), size());
     x = escapeBytes(x);
-    out << fmt("offset %lu  data=|%s|", _offset, x) << std::endl;
+    out << fmt("offset %lu  data=|%s|", _offset, x) << '\n';
 }

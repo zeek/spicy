@@ -147,7 +147,7 @@ void Logger::report(std::ostream& output, logging::Level level, size_t indent, c
         level_str = util::fmt("debug/%s", addl);
 
     if ( l )
-        output << util::fmt("[%s] %s%s: %s", level_str, indent_str, std::string(l), msg) << std::endl;
+        output << util::fmt("[%s] %s%s: %s", level_str, indent_str, std::string(l), msg) << '\n';
     else
-        output << util::fmt("[%s] %s%s", level_str, indent_str, msg) << std::endl;
+        output << util::fmt("[%s] %s%s", level_str, indent_str, msg) << '\n';
 }

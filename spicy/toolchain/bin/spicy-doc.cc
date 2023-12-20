@@ -186,6 +186,6 @@ int main(int argc, char** argv) {
         add_operator(type_, hilti::operator_::generic::End::Operator());
     }
 
-    std::cout << all_operators.dump(4) << std::endl;
+    std::cout << all_operators.dump(4) << '\n';
     return 0;
 }

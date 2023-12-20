@@ -397,7 +397,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
             case 'U': _driver_options.report_resource_usage = true; break;
 
             case 'v':
-                std::cerr << _name << " v" << hilti::configuration().version_string_long << std::endl;
+                std::cerr << _name << " v" << hilti::configuration().version_string_long << '\n';
                 return Nothing();
 
             case 'V': _compiler_options.skip_validation = true; break;
@@ -1165,7 +1165,7 @@ Result<Nothing> Driver::jitUnits() {
 }
 
 void Driver::printHiltiException(const hilti::rt::Exception& e) {
-    std::cerr << fmt("uncaught exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+    std::cerr << fmt("uncaught exception %s: %s", util::demangle(typeid(e).name()), e.what()) << '\n';
 
     if ( ! _driver_options.show_backtraces )
         return;
@@ -1206,7 +1206,7 @@ Result<Nothing> Driver::initRuntime() {
         finishRuntime();
         exit(1);
     } catch ( const std::runtime_error& e ) {
-        std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+        std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << '\n';
         hookFinishRuntime();
         finishRuntime();
         exit(1);
@@ -1233,7 +1233,7 @@ Result<Nothing> Driver::executeMain() {
             finishRuntime();
             exit(1);
         } catch ( const std::runtime_error& e ) {
-            std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << std::endl;
+            std::cerr << fmt("uncaught C++ exception %s: %s", util::demangle(typeid(e).name()), e.what()) << '\n';
             finishRuntime();
             exit(1);
         }
