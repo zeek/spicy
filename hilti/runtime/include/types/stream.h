@@ -855,13 +855,7 @@ private:
     }
 
     Byte _dereference() const {
-        // TODO(bbannier): Ideally we would `assert(_chunk)` here so clang-tidy
-        // knows that `_chunk` is always not null. Unfortunately it looks like
-        // that fails to it pruning that CFG edge so we have to return instead
-        // here. This should be inconsequential to users as this function must
-        // not be called if the data is invalid.
-        if ( ! _chunk )
-            internalError("dereference of invalid iterator");
+        assert(_chunk);
 
         auto* byte = _chunk->data(_offset);
 
