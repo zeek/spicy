@@ -9,6 +9,7 @@ Checks: '
   -bugprone-macro-parentheses,
   -bugprone-lambda-function-name,
   -bugprone-unchecked-optional-access,
+  -bugprone-switch-missing-default-case,
 
   cert-*,
   -cert-dcl37-c,
