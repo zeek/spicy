@@ -121,32 +121,31 @@ spicy_lib_dir=$(for i in $(${spicy_config} --libdirs); do test -e "${i}/spicy_rt
 spicy_driver=${spicy_lib_dir}/spicy-driver-host.cc
 
 rt_modules=""
-cxxs=""
 
+cc_inputs=""
 if [ "${compile_spicy_driver}" = 1 ]; then
     rt_modules="${spicy_lib_dir}/filter.spicy"
-    cxxs="${spicy_driver}"
+    cc_inputs="${cc_inputs} ${spicy_driver}"
 fi
 
-for i in ${inputs} ${rt_modules}; do
+spicy_inputs=""
+for i in ${inputs}; do
     case "${i}" in
         *.cc)
-            cc=${i}
+            cc_inputs="${cc_inputs} ${i}"
             ;;
         *)
-            # Generate C++ code for HILTI/Spicy source.
-            cc=$(mkcc "${out}")
-            execute "$("${spicy_config}" --spicyc)" -g "${hiltic_flags}" -c -o "${cc}" "${i}" || exit 1
+            spicy_inputs="${spicy_inputs} ${i}"
             ;;
     esac
-
-   cxxs="${cxxs} ${cc}"
 done
 
-# Generate C++ linker code
-cc=$(mkcc "${out}")
-execute "$("${spicy_config}" --spicyc)" "${hiltic_flags}" -g -l -o "${cc}" "${cxxs}" || exit 1
-cxxs="${cxxs} ${cc}"
+
+# Generate C++ output files. We pass `cc_inputs` here as well even though its
+# only effect is to cause emitting of generated files.
+execute "$("${spicy_config}" --spicyc)" "${hiltic_flags}" -x "${dest}/" "${spicy_inputs}" "${cc_inputs}" "${rt_modules}" || exit 1
+
+cxxs="${cc_inputs} $(find "${dest}" -type f)"
 
 # Compile all C++ code into executable
 execute "${cxx}" "${cxxs}" "${ldflags}" -o "${out}" || exit 1
