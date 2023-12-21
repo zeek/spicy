@@ -65,7 +65,6 @@ namespace detail {
 
 class Chain;
 using ChainPtr = IntrusivePtr<Chain>;
-using ConstChainPtr = IntrusivePtr<const Chain>;
 class UnsafeConstIterator;
 
 // Represents a gap of length `size`.
@@ -356,7 +355,7 @@ class SafeConstIterator {
 public:
     using Byte = stream::Byte;
     using Chain = stream::detail::Chain;
-    using ConstChainPtr = stream::detail::ConstChainPtr;
+    using ChainPtr = stream::detail::ChainPtr;
     using Chunk = stream::detail::Chunk;
     using Offset = stream::Offset;
     using Size = stream::Size;
@@ -547,7 +546,7 @@ protected:
     const Chain* chain() const { return _chain.get(); }
 
 private:
-    SafeConstIterator(ConstChainPtr chain, const Offset& offset, const Chunk* chunk)
+    SafeConstIterator(ChainPtr chain, const Offset& offset, const Chunk* chunk)
         : _chain(std::move(chain)), _offset(offset), _chunk(chunk) {
         assert(! isUnset());
     }
@@ -630,7 +629,7 @@ private:
 
     // Parent chain if bound, or null if not. The parent will stay around for
     // at least as long as this iterator.
-    ConstChainPtr _chain = nullptr;
+    ChainPtr _chain = nullptr;
 
     // Global offset inside parent chain. This can be pointing to anywhere
     // inside the stream's sequence space, including potentially being
@@ -673,7 +672,7 @@ class UnsafeConstIterator {
 public:
     using Byte = stream::Byte;
     using Chain = stream::detail::Chain;
-    using ConstChainPtr = stream::detail::ConstChainPtr;
+    using ChainPtr = stream::detail::ChainPtr;
     using Chunk = stream::detail::Chunk;
     using Offset = stream::Offset;
     using Size = stream::Size;
@@ -827,7 +826,7 @@ protected:
     const Chain* chain() const { return _chain; }
 
 private:
-    UnsafeConstIterator(const ConstChainPtr& chain, const Offset& offset, const Chunk* chunk)
+    UnsafeConstIterator(const ChainPtr& chain, const Offset& offset, const Chunk* chunk)
         : _chain(chain.get()), _offset(offset), _chunk(chunk) {
         assert(! isUnset());
     }
@@ -898,25 +897,25 @@ inline std::ostream& operator<<(std::ostream& out, const UnsafeConstIterator& x)
 
 inline SafeConstIterator Chain::begin() const {
     _ensureValid();
-    return {ConstChainPtr(intrusive_ptr::NewRef(), this), offset(), _head.get()};
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), offset(), _head.get()};
 }
 
 inline SafeConstIterator Chain::end() const {
     _ensureValid();
-    return {ConstChainPtr(intrusive_ptr::NewRef(), this), endOffset(), _tail};
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), endOffset(), _tail};
 }
 
 inline SafeConstIterator Chain::at(const Offset& offset) const {
-    return {ConstChainPtr(intrusive_ptr::NewRef(), this), offset, findChunk(offset)};
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), offset, findChunk(offset)};
 }
 
 inline UnsafeConstIterator Chain::unsafeBegin() const {
     _ensureValid();
-    return {ConstChainPtr(intrusive_ptr::NewRef(), this), offset(), _head.get()};
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), offset(), _head.get()};
 }
 inline UnsafeConstIterator Chain::unsafeEnd() const {
     _ensureValid();
-    return {ConstChainPtr(intrusive_ptr::NewRef(), this), endOffset(), _tail};
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), endOffset(), _tail};
 }
 
 inline void Chain::trim(const SafeConstIterator& i) {
@@ -995,7 +994,9 @@ inline const Byte* Chain::data(const Offset& offset, Chunk* hint_prev) const {
 } // namespace detail
 
 inline SafeConstIterator::SafeConstIterator(const UnsafeConstIterator& i)
-    : _chain(detail::ConstChainPtr(intrusive_ptr::NewRef(), i._chain)), _offset(i._offset), _chunk(i._chunk) {}
+    : _chain(detail::ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(i._chain))),
+      _offset(i._offset),
+      _chunk(i._chunk) {}
 
 /**
  * A subrange of a stream instance. The view is maintained through two safe
