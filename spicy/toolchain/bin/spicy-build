@@ -1,10 +1,10 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 usage() {
     cat << EOF
-$(basename $0) [options] <input files>
+$(basename "$0") [options] <input files>
 
     -d          Build a debug version.
     -g          Disable HILTI-side optimizations of the generated code.
@@ -19,26 +19,26 @@ EOF
 }
 
 mktmp() {
-    base=$(basename $1)
+    base=$(basename "$1")
     ext=$2
     cnt=0
     while : ; do
         tmp=${dest}/${base}.${cnt}.tmp.${ext}
-        test -e ${tmp} || break
+        test -e "${tmp}" || break
         cnt=$((cnt + 1))
     done
-    touch ${tmp}
-    echo ${tmp}
+    touch "${tmp}"
+    echo "${tmp}"
 }
 
 mkcc() {
-    tmp=$(mktmp $1 cc)
-    echo ${tmp}
+    tmp=$(mktmp "$1" cc)
+    echo "${tmp}"
 }
 
 execute() {
     # Remove absolute path of executable
-    test "${verbose}" = 1 && echo $@ | sed 's#^[^ ]*/\([a-zA-Z+_-]\{1,\}\) #> \1 #'
+    test "${verbose}" = 1 && echo "$@" | sed 's#^[^ ]*/\([a-zA-Z+_-]\{1,\}\) #> \1 #'
     $@
 }
 
@@ -76,13 +76,13 @@ while getopts "ghdo:Stv" opt; do
     esac
 done
 
-shift $((${OPTIND} - 1))
+shift $((OPTIND - 1))
 
-inputs=$@
+inputs=$*
 test -z "${inputs}" && usage && exit 1
 test -z "${out}" && usage && exit 1
 
-base=$(cd $(dirname $0)/.. && pwd)
+base=$(cd "$(dirname "$0")/.." && pwd)
 
 if [ "${out}" != "${out#/}" ]; then
     # absolute path
@@ -98,11 +98,11 @@ mkdir -p "${dest}"
 trap cleanup EXIT
 
 for i in $(which hilti-config 2>/dev/null) ${base}/bin/hilti-config ${base}/build/bin/hilti-config; do
-   test -x $i && hilti_config=$i && break
+   test -x "$i" && hilti_config=$i && break
 done
 
 for i in $(which spicy-config 2>/dev/null) ${base}/bin/spicy-config ${base}/build/bin/spicy-config; do
-   test -x $i && spicy_config=$i && break
+   test -x "$i" && spicy_config=$i && break
 done
 
 if [ -z "${hilti_config}" ]; then
@@ -128,7 +128,6 @@ if [ "${compile_spicy_driver}" = 1 ]; then
     cxxs="${spicy_driver}"
 fi
 
-n=0
 for i in ${inputs} ${rt_modules}; do
     case "${i}" in
         *.cc)
@@ -136,8 +135,8 @@ for i in ${inputs} ${rt_modules}; do
             ;;
         *)
             # Generate C++ code for HILTI/Spicy source.
-            cc=$(mkcc ${out})
-            execute $(${spicy_config} --spicyc) -g ${hiltic_flags} -c -o ${cc} ${i} || exit 1
+            cc=$(mkcc "${out}")
+            execute "$("${spicy_config}" --spicyc)" -g "${hiltic_flags}" -c -o "${cc}" "${i}" || exit 1
             ;;
     esac
 
@@ -145,9 +144,9 @@ for i in ${inputs} ${rt_modules}; do
 done
 
 # Generate C++ linker code
-cc=$(mkcc ${out})
-execute $(${spicy_config} --spicyc) ${hiltic_flags} -g -l -o ${cc} ${cxxs} || exit 1
+cc=$(mkcc "${out}")
+execute "$("${spicy_config}" --spicyc)" "${hiltic_flags}" -g -l -o "${cc}" "${cxxs}" || exit 1
 cxxs="${cxxs} ${cc}"
 
 # Compile all C++ code into executable
-execute ${cxx} ${cxxs} ${ldflags} -o ${out} || exit 1
+execute "${cxx}" "${cxxs}" "${ldflags}" -o "${out}" || exit 1
