@@ -92,6 +92,12 @@ target_link_libraries(spicy-objects
 target_link_libraries(spicy-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 target_link_libraries(spicy-objects PRIVATE hilti)
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported)
+if (ipo_supported)
+    set_property(TARGET spicy-objects PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
+endif ()
+
 add_library(spicy)
 hilti_link_libraries_in_tree(spicy PUBLIC)
 spicy_link_object_libraries_in_tree(spicy PUBLIC)
