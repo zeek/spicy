@@ -123,8 +123,8 @@ target_include_directories(hilti-objects BEFORE
                            PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
 
 include(CheckIPOSupported)
-check_ipo_supported(RESULT ipo_supported)
-if (ipo_supported)
+check_ipo_supported(RESULT IPO_SUPPORTED)
+if (IPO_SUPPORTED)
     set_property(TARGET hilti-objects PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
 endif ()
 

@@ -93,8 +93,8 @@ target_link_libraries(spicy-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_
 target_link_libraries(spicy-objects PRIVATE hilti)
 
 include(CheckIPOSupported)
-check_ipo_supported(RESULT ipo_supported)
-if (ipo_supported)
+check_ipo_supported(RESULT IPO_SUPPORTED)
+if (IPO_SUPPORTED)
     set_property(TARGET spicy-objects PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
 endif ()
 
