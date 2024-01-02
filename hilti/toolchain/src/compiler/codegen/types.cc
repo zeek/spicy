@@ -191,6 +191,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder<cxx::declaration::Type, Vis
                                                           .aux_types = aux_types,
                                                           .declare_only = true};
 
+                            // NOLINTNEXTLINE(modernize-use-emplace)
                             hook.callee.args.push_back(
                                 cxx::declaration::Argument{.id = "__self",
                                                            .type = cg->compile(type::ValueReference(p.node.as<Type>()),

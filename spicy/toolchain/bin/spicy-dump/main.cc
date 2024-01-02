@@ -195,7 +195,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
 
             case 'S': driver_options.skip_dependencies = true; break;
 
-            case 'v': std::cerr << "spicy-dump v" << hilti::configuration().version_string_long << std::endl; exit(0);
+            case 'v': std::cerr << "spicy-dump v" << hilti::configuration().version_string_long << '\n'; exit(0);
 
             case 'h': usage(); exit(0);
 
@@ -217,6 +217,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
     }
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
     hilti::init();
     spicy::init();
@@ -264,7 +265,7 @@ int main(int argc, char** argv) {
                 JSONPrinter(std::cout, driver.output_options).print(unit->value());
             else {
                 TextPrinter(std::cout, driver.output_options).print(unit->value());
-                std::cout << std::endl;
+                std::cout << '\n';
             }
         }
 
@@ -273,7 +274,7 @@ int main(int argc, char** argv) {
     } catch ( const std::exception& e ) {
         std::cerr << hilti::util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
                                       hilti::util::demangle(typeid(e).name()), e.what())
-                  << std::endl;
+                  << '\n';
         exit(1);
     }
 

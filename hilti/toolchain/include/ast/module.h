@@ -20,10 +20,10 @@ namespace hilti {
 /** AST node representing a HILTI module. */
 class Module : public NodeBase, public node::WithDocString {
 public:
-    Module(ID id, Meta m = Meta()) : NodeBase({std::move(id), statement::Block({}, m)}, std::move(m)) {}
+    Module(ID id, const Meta& m = Meta()) : NodeBase({std::move(id), statement::Block({}, m)}, m) {}
 
-    Module(ID id, std::vector<Declaration> decls, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), statement::Block({}, m), std::move(decls)), std::move(m)) {}
+    Module(ID id, std::vector<Declaration> decls, const Meta& m = Meta())
+        : NodeBase(nodes(std::move(id), statement::Block({}, m), std::move(decls)), m) {}
 
     Module(ID id, std::vector<Declaration> decls, std::vector<Statement> stmts, const Meta& m = Meta())
         : NodeBase(nodes(std::move(id), statement::Block(std::move(stmts), m), std::move(decls)), m) {}

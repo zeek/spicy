@@ -75,7 +75,7 @@ inline bool operator!=(const Declaration& d1, const Declaration& d2) { return ! 
 
 namespace declaration {
 /** Constructs an AST node from any class implementing the `Declaration` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of<trait::isDeclaration, T>::value>* = nullptr>
+template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isDeclaration, T>>* = nullptr>
 inline Node to_node(T t) {
     return Node(Declaration(std::move(t)));
 }

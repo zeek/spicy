@@ -69,7 +69,7 @@ void Manager::summary(std::ostream& out) {
     auto mgr = singleton();
 
     if ( mgr->_all_ledgers.empty() ) {
-        out << "=== No timing information recorded." << std::endl;
+        out << "=== No timing information recorded." << '\n';
         return;
     }
 
@@ -95,5 +95,5 @@ void Manager::summary(std::ostream& out) {
             << fmt("(#%" PRIu64 ")", ledger->_num_completed) << "\n";
 
     out << "\nTotal time: " << prettyTime(total_time) << "\n";
-    out << std::endl;
+    out << '\n';
 }

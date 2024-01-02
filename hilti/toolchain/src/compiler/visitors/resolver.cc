@@ -53,22 +53,20 @@ struct Visitor : public visitor::PostOrder<void, Visitor> {
     bool modified = false;
     std::map<ID, Type> auto_params; // miapping of `auto` parameters inferred, indexed by canonical ID
 
-#if 0
-    std::set<const Node*> seen;
+    // std::set<const Node*> seen;
 
-    void preDispatch(const Node& n, int level) override {
-        std::string prefix = "# ";
+    // void preDispatch(const Node& n, int level) override {
+    //     std::string prefix = "# ";
 
-        if ( seen.find(&n) != seen.end() )
-            prefix = "! ";
-        else
-            seen.insert(&n);
+    //     if ( seen.find(&n) != seen.end() )
+    //         prefix = "! ";
+    //     else
+    //         seen.insert(&n);
 
-        auto indent = std::string(level * 2, ' ');
-        std::cerr << prefix << indent << "> " << n.render() << std::endl;
-        n.scope()->render(std::cerr, "    | ");
-    };
-#endif
+    //     auto indent = std::string(level * 2, ' ');
+    //     std::cerr << prefix << indent << "> " << n.render() << std::endl;
+    //     n.scope()->render(std::cerr, "    | ");
+    // };
 
     // Log debug message recording resolving a epxxression.
     void logChange(const Node& old, const Expression& nexpr) {

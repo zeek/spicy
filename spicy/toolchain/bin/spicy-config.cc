@@ -242,11 +242,11 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        std::cerr << "spicy-config: unknown option " << opt << "; use --help to see list." << std::endl;
+        std::cerr << "spicy-config: unknown option " << opt << "; use --help to see list." << '\n';
         return 1;
     }
 
-    cout << hilti::util::join(result.begin(), result.end(), " ") << std::endl;
+    cout << hilti::util::join(result.begin(), result.end(), " ") << '\n';
 
     return 0;
 }

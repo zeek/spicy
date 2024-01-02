@@ -86,22 +86,20 @@ struct Visitor : public hilti::visitor::PreOrder<void, Visitor> {
     hilti::Unit* unit;
     bool modified = false;
 
-#if 0
-    std::set<Node*> seen;
+    // std::set<Node*> seen;
 
-    void preDispatch(const Node& n, int level) override {
-        std::string prefix = "# ";
+    // void preDispatch(const Node& n, int level) override {
+    //     std::string prefix = "# ";
 
-        if ( seen.find(&n) != seen.end() )
-            prefix = "! ";
-        else
-            seen.insert(&n);
+    //     if ( seen.find(&n) != seen.end() )
+    //         prefix = "! ";
+    //     else
+    //         seen.insert(&n);
 
-        auto indent = std::string(level * 2, ' ');
-        std::cerr << prefix << indent << "> " << n.render() << std::endl;
-        n.scope()->render(std::cerr, "    | ");
-    };
-#endif
+    //     auto indent = std::string(level * 2, ' ');
+    //     std::cerr << prefix << indent << "> " << n.render() << std::endl;
+    //     n.scope()->render(std::cerr, "    | ");
+    // };
 
     // Log debug message recording resolving a expression.
     void logChange(const Node& old, const Expression& nexpr) {

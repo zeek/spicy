@@ -14,8 +14,8 @@ namespace hilti::statement {
 /** AST node for a "while" statement. */
 class For : public NodeBase, public hilti::trait::isStatement {
 public:
-    For(hilti::ID id, hilti::Expression seq, Statement body, Meta m = Meta())
-        : NodeBase(nodes(declaration::LocalVariable(std::move(id), true, id.meta()), std::move(seq), std::move(body)),
+    For(const hilti::ID& id, hilti::Expression seq, Statement body, Meta m = Meta())
+        : NodeBase(nodes(declaration::LocalVariable(id, true, id.meta()), std::move(seq), std::move(body)),
                    std::move(m)) {}
 
     const auto& local() const { return child<hilti::declaration::LocalVariable>(0); }

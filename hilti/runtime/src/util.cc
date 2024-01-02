@@ -35,7 +35,7 @@ void hilti::rt::abort_with_backtrace() {
     fputs("\n--- Aborting in libhilti\n", stderr);
     auto bt = hilti::rt::Backtrace().backtrace();
     for ( const auto& f : *bt )
-        std::cerr << f << std::endl;
+        std::cerr << f << '\n';
     abort();
 }
 

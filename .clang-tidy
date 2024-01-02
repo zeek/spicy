@@ -9,6 +9,8 @@ Checks: '
   -bugprone-macro-parentheses,
   -bugprone-lambda-function-name,
   -bugprone-unchecked-optional-access,
+  -bugprone-switch-missing-default-case,
+  -bugprone-empty-catch,
 
   cert-*,
   -cert-dcl37-c,
@@ -35,6 +37,7 @@ Checks: '
   -misc-confusable-identifiers,
   -misc-const-correctness,
   -misc-use-anonymous-namespace,
+  -misc-include-cleaner,
 
   modernize-*,
   -modernize-avoid-c-arrays,
@@ -42,6 +45,7 @@ Checks: '
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -modernize-return-braced-init-list,
+  -modernize-macro-to-enum,
 
   performance-*,
   portability-*,
@@ -59,7 +63,6 @@ Checks: '
   -readability-qualified-auto,
   -readability-function-cognitive-complexity,
   -readability-function-size,
-  -readability-simplify-boolean-expr,
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'

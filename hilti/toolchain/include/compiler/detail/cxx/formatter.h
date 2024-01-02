@@ -79,7 +79,7 @@ inline Formatter& operator<<(Formatter& f, const T& t) {
     return t(f);
 }
 
-template<typename T, typename std::enable_if_t<std::is_scalar<T>::value>* = nullptr>
+template<typename T, typename std::enable_if_t<std::is_scalar_v<T>>* = nullptr>
 inline Formatter& operator<<(Formatter& f, const T& t) {
     f.next();
     f.stream() << t;

@@ -375,6 +375,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             // TODO(robin): This should compile the struct type, not hardcode
             // the runtime representation. However, we don't have access to
             // the type currently.
+            // NOLINTNEXTLINE(modernize-use-emplace)
             d.args.push_back(cxx::declaration::Argument{
                 .id = "__self",
                 .type = fmt("::hilti::rt::ValueReference<%s>&", id_struct_type),

@@ -220,11 +220,11 @@ int main(int argc, char** argv) {
         if ( opt == "--using-build-dir" )
             exit(hilti::configuration().uses_build_directory ? 0 : 1);
 
-        std::cerr << "hilti-config: unknown option " << opt << "; use --help to see list." << std::endl;
+        std::cerr << "hilti-config: unknown option " << opt << "; use --help to see list." << '\n';
         return 1;
     }
 
-    cout << hilti::util::join(result.begin(), result.end(), " ") << std::endl;
+    cout << hilti::util::join(result.begin(), result.end(), " ") << '\n';
 
     return 0;
 }

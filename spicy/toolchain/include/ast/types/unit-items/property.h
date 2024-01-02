@@ -8,7 +8,6 @@
 
 #include <spicy/ast/aliases.h>
 #include <spicy/ast/types/unit-item.h>
-#include <spicy/ast/types/unit.h>
 
 namespace spicy::type::unit::item {
 

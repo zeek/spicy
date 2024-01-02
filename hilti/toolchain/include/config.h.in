@@ -9,8 +9,6 @@
 
 #include <hilti/rt/filesystem.h>
 
-#include <hilti/base/util.h>
-
 #cmakedefine HAVE_TOOLCHAIN
 
 #define CMAKE_DL_LIBS (std::string("@CMAKE_DL_LIBS@").size() ? "@CMAKE_DL_LIBS@" : "")

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include <hilti/ast/expression.h>
-#include <hilti/ast/operator.h>
 #include <hilti/ast/types/doc-only.h>
 #include <hilti/ast/types/type.h>
 #include <hilti/base/logger.h>

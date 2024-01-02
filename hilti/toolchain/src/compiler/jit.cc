@@ -184,7 +184,13 @@ JIT::JIT(const std::shared_ptr<Context>& context, bool dump_code)
       _dump_code(dump_code),
       _hash(std::hash<std::string>{}(hilti::rt::filesystem::current_path().string())) {}
 
-JIT::~JIT() { _finish(); }
+JIT::~JIT() {
+    try {
+        _finish();
+    } catch ( ... ) {
+        util::cannot_be_reached();
+    }
+}
 
 hilti::Result<std::shared_ptr<const Library>> JIT::build() {
     util::timing::Collector _("hilti/jit");

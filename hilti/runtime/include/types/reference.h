@@ -283,7 +283,7 @@ public:
      * methods into a value reference.
      */
     static ValueReference self(T* t) {
-        static_assert(std::is_base_of<Controllable<T>, T>::value);
+        static_assert(std::is_base_of_v<Controllable<T>, T>);
         assert(t);
         return ValueReference(t);
     }

@@ -383,7 +383,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
     using unit_type = typename UnitRef::element_type;
 
     if constexpr ( sink::detail::supports_sinks<unit_type>::value &&
-                   ! std::is_base_of<hilti::rt::trait::hasParameters, unit_type>::value )
+                   ! std::is_base_of_v<hilti::rt::trait::hasParameters, unit_type> )
         p.__parse_sink = sink::detail::parseFunction<unit_type>();
 
     if constexpr ( detail::has_on_gap<unit_type>::value )

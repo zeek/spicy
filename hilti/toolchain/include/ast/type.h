@@ -407,7 +407,7 @@ inline bool operator==(const Type& t1, const Type& t2) {
 inline bool operator!=(const Type& t1, const Type& t2) { return ! (t1 == t2); }
 
 /** Constructs an AST node from any class implementing the `Type` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of<trait::isType, T>::value>* = nullptr>
+template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isType, T>>* = nullptr>
 inline Node to_node(T t) {
     return Node(Type(std::move(t)));
 }

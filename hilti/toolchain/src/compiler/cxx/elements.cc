@@ -262,12 +262,11 @@ void cxx::Block::addForRange(bool const_, const ID& id, const Expression& seq, c
     _stmts.emplace_back(fmt("for ( %sauto& %s : %s )", c, id, seq), body, flags::AddSeparatorAfter);
 }
 
-#if 0
-void cxx::Block::addForRange(const Expression& init, bool const_, const ID& id, const Expression& seq, cxx::Block body) {
-    auto c = (const_ ? "const " : "");
-    _stmts.emplace_back(fmt("for ( %s; %sauto& %s : %s )", init, c, id, seq), body, flags::AddSeparatorAfter);
-}
-#endif
+// void cxx::Block::addForRange(const Expression& init, bool const_, const ID& id, const Expression& seq,
+//                              cxx::Block body) {
+//     auto c = (const_ ? "const " : "");
+//     _stmts.emplace_back(fmt("for ( %s; %sauto& %s : %s )", init, c, id, seq), body, flags::AddSeparatorAfter);
+// }
 
 void cxx::Block::addSwitch(const Expression& cond, const std::vector<std::pair<Expression, Block>>& cases_,
                            std::optional<Block> default_) {

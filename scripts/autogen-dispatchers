@@ -57,7 +57,7 @@ for (cls, trait) in nodes:
         sys.exit(1)
 
 for (btrait, bcls) in traits.items():
-    print("  if constexpr ( std::is_base_of<{}, Erased>::value ) {{ \\".format(
+    print("  if constexpr ( std::is_base_of_v<{}, Erased> ) {{ \\".format(
         bcls), file=out)
 
     for (cls, trait) in nodes:

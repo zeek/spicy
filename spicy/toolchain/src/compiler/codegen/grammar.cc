@@ -364,7 +364,7 @@ hilti::Result<std::set<Production>> Grammar::lookAheadsForProduction(Production 
 }
 
 void Grammar::printTables(std::ostream& out, bool verbose) {
-    out << "=== Grammar " << _name << std::endl;
+    out << "=== Grammar " << _name << '\n';
 
     for ( const auto& i : _prods ) {
         std::string field;
@@ -375,28 +375,28 @@ void Grammar::printTables(std::ostream& out, bool verbose) {
                 fmt(" [field: %s%s] [item-type: %s] [parse-type: %s]", f->id(), isfp, f->itemType(), f->parseType());
         }
 
-        out << fmt(" %3s %s%s", (_root && i.first == _root ? "(*)" : ""), i.second, field) << std::endl;
+        out << fmt(" %3s %s%s", (_root && i.first == _root ? "(*)" : ""), i.second, field) << '\n';
     }
 
     if ( ! verbose ) {
-        out << std::endl;
+        out << '\n';
         return;
     }
 
-    out << std::endl << "  -- Epsilon:" << std::endl;
+    out << '\n' << "  -- Epsilon:" << '\n';
 
     for ( const auto& i : _nullable )
-        out << fmt("     %s = %s", i.first, i.second) << std::endl;
+        out << fmt("     %s = %s", i.first, i.second) << '\n';
 
-    out << std::endl << "  -- First_1:" << std::endl;
+    out << '\n' << "  -- First_1:" << '\n';
 
     for ( const auto& i : _first )
-        out << fmt("     %s = { %s }", i.first, hilti::util::join(i.second, ", ")) << std::endl;
+        out << fmt("     %s = { %s }", i.first, hilti::util::join(i.second, ", ")) << '\n';
 
-    out << std::endl << "  -- Follow:" << std::endl;
+    out << '\n' << "  -- Follow:" << '\n';
 
     for ( const auto& i : _follow )
-        out << fmt("     %s = { %s }", i.first, hilti::util::join(i.second, ", ")) << std::endl;
+        out << fmt("     %s = { %s }", i.first, hilti::util::join(i.second, ", ")) << '\n';
 
-    out << std::endl;
+    out << '\n';
 }

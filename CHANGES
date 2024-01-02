@@ -1,3 +1,73 @@
+1.10.0-dev.86 | 2024-01-02 16:38:08 +0100
+
+  * Suppress clang-tidy `misc-include-cleaner` lint. (Benjamin Bannier, Corelight)
+
+    This currently triggers a lot of issues. While it seems to be useful
+    getting us to a passing state seems to require substantial work.
+
+  * Remove outdated workaround for clang-tidy. (Benjamin Bannier, Corelight)
+
+    With newer clang-tidy versions this is not needed anymore.
+
+  * Reenable clang-tidy `readability-simplify-boolean-expr` lint. (Benjamin Bannier, Corelight)
+
+    This currently triggers no issues, and the lint seems to be generally
+    useful.
+
+  * Drop `;` after `#pragma`. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `readability-redundant-string-init` lints. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `bugprone-exception-escape` lints. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `misc-header-include-cycle` lints. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `bugprone-use-after-move` lints. (Benjamin Bannier, Corelight)
+
+  * Suppress clang-tidy `bugprone-switch-missing-default-case` lints. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `readability-avoid-unconditional-preprocessor-if` lints. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `modernize-use-emplace` lints. (Benjamin Bannier, Corelight)
+
+  * Suppress clang-tidy `modernize-macro-to-enum` lints. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `performance-avoid-endl` lints. (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy `modernize-type-traits` lints. (Benjamin Bannier, Corelight)
+
+  * Update clang-tidy suppression for newer clang-tidy versions. (Benjamin Bannier, Corelight)
+
+  * Remove nightly task. (Benjamin Bannier, Corelight)
+
+    This task originally tested against Zeek's `master` branch. We do not do
+    that anymore since some time so this task has lost its purpose.
+
+  * Remove `--rpath` flag to `ci/run-ci`. (Benjamin Bannier, Corelight)
+
+    Uses of this flag have been mirroring external setup of
+    `LD_LIBRARY_PATH` in `.cirrus.yml` for some time with no added benefit.
+
+    Drop it instead of investing work in keeping it consistent.
+
+  * Disable building benchmarks in CI. (Benjamin Bannier, Corelight)
+
+    On some platforms the CMake configure phase of 3rdparty/benchmark fails
+    with errors like
+
+    ```
+    CMake Error at 3rdparty/benchmark/CMakeLists.txt:301 (message):
+      Failed to determine the source files for the regular expression backend
+    ```
+
+    Since it is not executed in CI anyway disable it.
+
+  * Refresh LLVM version in CI Docker image. (Benjamin Bannier, Corelight)
+
+  * Remove unused Docker image args. (Benjamin Bannier, Corelight)
+
+  * Bump CI image to ubuntu-22.04. (Benjamin Bannier, Corelight)
+
 1.10.0-dev.64 | 2024-01-02 15:50:26 +0100
 
   * Add dependency of generated file `spicy-build` on source file. (Benjamin Bannier, Corelight)

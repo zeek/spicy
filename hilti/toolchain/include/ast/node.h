@@ -112,13 +112,15 @@ namespace detail {
 class Node final : public node::detail::Node {
 public:
     /** Constructs a node from an instance of a class implementing the `Node` interface. */
-    template<typename T, typename std::enable_if_t<std::is_base_of<trait::isNode, T>::value>* = nullptr>
+    template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isNode, T>>* = nullptr>
     Node(T t) : node::detail::Node(std::move(t)) {}
 
     Node(const Node& other) : node::detail::Node::Node(other), _scope(other._scope) {}
 
     Node(Node&& other) noexcept
-        : node::detail::Node::Node(std::move(other)),
+        // NOTE: Accessing fields of `other` after invoking the base class'
+        // move constructor is safe since initialization of base slices.
+        : node::detail::Node::Node(static_cast<node::detail::Node&&>(other)),
           _control_ptr(std::move(other._control_ptr)),
           _scope(std::move(other._scope)),
           _errors(std::move(other._errors)) {
@@ -293,7 +295,7 @@ public:
     void assertIsA() {
         if ( ! isA<T>() ) {
             std::cerr << "Assertion failure: Node expected to be a " << typeid(T).name() << " but is a "
-                      << typeid_().name() << std::endl;
+                      << typeid_().name() << '\n';
             util::abort_with_backtrace();
         }
     }

@@ -85,7 +85,7 @@ using Expression = expression::detail::Expression;
 using expression::detail::to_node; // NOLINT(misc-unused-using-decls)
 
 /** Constructs an AST node from any class implementing the `Expression` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of<trait::isExpression, T>::value>* = nullptr>
+template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isExpression, T>>* = nullptr>
 inline Node to_node(T t) {
     return Node(Expression(std::move(t)));
 }
