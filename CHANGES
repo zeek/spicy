@@ -1,3 +1,23 @@
+1.10.0-dev.64 | 2024-01-02 15:50:26 +0100
+
+  * Add dependency of generated file `spicy-build` on source file. (Benjamin Bannier, Corelight)
+
+    Without this dependency we never updated the generated file.
+
+  * Remove use of `IntrusivePtr` over `const`. (Benjamin Bannier, Corelight)
+
+    It looks like using a `IntrusivePtr<const T>` interferes with default'ed
+    move constructors and assignment operators so that the non-move versions
+    are called. This can incur additional overhead.
+
+    This patch simply gets rid all `IntrusivePtr<const T>` in favor of
+    `IntrusivePtr<T>` which does not seem to show this issue. It might be
+    possible to instead adjust something e.g., `ManagedObject` so
+    `IntrusivePtr` does not regress when holding semantically `const`
+    values though.
+
+    For a big internal parser this shows runtime improvements up to 2%.
+
 1.10.0-dev.61 | 2024-01-02 15:50:05 +0100
 
   * Fix docs namespace for symbols from `filter` module. (Benjamin Bannier, Corelight)
