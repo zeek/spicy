@@ -1,3 +1,10 @@
+1.10.0-dev.61 | 2024-01-02 15:50:05 +0100
+
+  * Fix docs namespace for symbols from `filter` module. (Benjamin Bannier, Corelight)
+
+    We previously would document these symbols to be in `spicy` even though
+    they are in `filter`.
+
 1.10.0-dev.59 | 2023-12-15 13:29:41 +0100
 
   * Add move ctr for `stream::SafeConstIterator`. (Benjamin Bannier, Corelight)

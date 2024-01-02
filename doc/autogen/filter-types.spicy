@@ -1,6 +1,6 @@
 .. _spicy_zlib:
 
-.. rubric:: ``spicy::Zlib``
+.. rubric:: ``filter::Zlib``
 
 A filter that performs zlib decompression.
 
@@ -10,7 +10,7 @@ A filter that performs zlib decompression.
 
 .. _spicy_base64decode:
 
-.. rubric:: ``spicy::Base64Decode``
+.. rubric:: ``filter::Base64Decode``
 
 A filter that performs Base64 decoding.
 
