@@ -1303,21 +1303,31 @@ public:
     View extract(Byte* dst, uint64_t n) const {
         _ensureValid();
 
-        auto p = unsafeBegin();
-
-        // Fast-path for when we're staying inside the initial chunk.
-        if ( auto chunk = p.chunk(); chunk && chunk->inRange(p.offset() + n) ) {
-            memcpy(dst, chunk->data(p.offset()), n);
-            return View(SafeConstIterator(p + n), _end);
-        }
-
         if ( n > size() )
             throw WouldBlock("end of stream view");
 
-        for ( uint64_t i = 0; i < n; ++i )
-            dst[i] = *p++;
+        const auto p = begin();
 
-        return View(SafeConstIterator(p), _end);
+        const auto* chain = p.chain();
+        assert(chain);
+        assert(chain->isValid());
+        assert(chain->inRange(p.offset()));
+
+        auto offset = p.offset().Ref();
+
+        for ( auto c = chain->findChunk(p.offset()); offset - p.offset().Ref() < n; c = c->next() ) {
+            assert(c);
+
+            const auto into_chunk = offset - c->offset().Ref();
+            const auto remaining = n + p.offset().Ref() - offset;
+            const auto m = std::min(remaining, c->size().Ref() - into_chunk);
+
+            ::memcpy(dst, c->data(offset), m);
+            offset += m;
+            dst += m;
+        }
+
+        return View(p + n, _end);
     }
 
     /**
