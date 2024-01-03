@@ -837,6 +837,9 @@ private:
     }
 
     void _increment(const integer::safe<uint64_t>& n) {
+        if ( n == 0 )
+            return;
+
         _offset += n;
 
         if ( _chunk && _offset < _chunk->endOffset() )
@@ -846,6 +849,9 @@ private:
     }
 
     void _decrement(const integer::safe<uint64_t>& n) {
+        if ( n == 0 )
+            return;
+
         _offset -= n;
 
         if ( _chunk && _offset > _chunk->offset() )
