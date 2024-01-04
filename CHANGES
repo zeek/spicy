@@ -1,3 +1,23 @@
+1.10.0-dev.91 | 2024-01-04 12:44:32 +0100
+
+  * Add unit tests for extracting from expanding Views. (Benjamin Bannier, Corelight)
+
+  * Add unit tests for extracting from Views with gaps. (Benjamin Bannier, Corelight)
+
+  * Add fast pass to noop unsafe stream iterator increment/decrement. (Benjamin Bannier, Corelight)
+
+    We already had this optimization for safe, but not for unsafe iterators.
+
+  * GH-1628: Avoid potentially inefficient data access in `View::extract`. (Benjamin Bannier, Corelight)
+
+    While we already had a fast path to extract data out of `View`s
+    consisting of a single chunk we still would use a potentially
+    inefficient approach when extracting from `View`s over multiple chunks.
+
+    This patch uses the same optimized handling for both cases.
+
+    Closes #1628.
+
 1.10.0-dev.86 | 2024-01-02 16:38:08 +0100
 
   * Suppress clang-tidy `misc-include-cleaner` lint. (Benjamin Bannier, Corelight)
