@@ -1002,6 +1002,32 @@ TEST_CASE("View") {
             Byte dst[1] = {'0'};
             CHECK_THROWS_WITH_AS(Stream().view().extract(dst, sizeof(dst)), "end of stream view", const WouldBlock&);
         }
+
+        SUBCASE("gaps") {
+            auto s = Stream();
+            SUBCASE("just gap") {
+                s.append(nullptr, 3); // Gap.
+                Byte dst[3] = {};
+                REQUIRE_EQ(sizeof(dst), s.size());
+                CHECK_THROWS_WITH_AS(s.view().extract(dst, sizeof(dst)), "data is missing", const MissingData&);
+            }
+
+            SUBCASE("begin in gap") {
+                s.append(nullptr, 2); // Gap.
+                s.append("A");
+                Byte dst[3] = {};
+                REQUIRE_EQ(sizeof(dst), s.size());
+                CHECK_THROWS_WITH_AS(s.view().extract(dst, sizeof(dst)), "data is missing", const MissingData&);
+            }
+
+            SUBCASE("end in gap") {
+                s.append("A");
+                s.append(nullptr, 2); // Gap.
+                Byte dst[3] = {};
+                REQUIRE_EQ(sizeof(dst), s.size());
+                CHECK_THROWS_WITH_AS(s.view().extract(dst, sizeof(dst)), "data is missing", const MissingData&);
+            }
+        }
     }
 
     SUBCASE("sub") {
