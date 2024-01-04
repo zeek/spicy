@@ -630,9 +630,9 @@ freebsd13_task:
     path: build/spicy*.tar.gz
     type: application/gzip
 
-freebsd12_task:
+freebsd14_task:
   freebsd_instance:
-    image_family: freebsd-12-4
+    image_family: freebsd-14-0
     cpu: 8
     memory: 8GB
 
