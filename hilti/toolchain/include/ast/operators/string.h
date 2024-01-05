@@ -21,6 +21,8 @@ STANDARD_OPERATOR_1(string, Size, type::UnsignedInteger(64), type::String(),
                     "Returns the number of characters the string contains.");
 STANDARD_OPERATOR_2(string, Sum, type::String(), type::String(), type::String(),
                     "Returns the concatenation of two strings.");
+STANDARD_OPERATOR_2(string, SumAssign, type::String(), type::String(), type::String(),
+                    "Appends the second string to the first.");
 
 BEGIN_METHOD(string, Encode)
     const auto& signature() const {

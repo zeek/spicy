@@ -1,0 +1,21 @@
+# @TEST-EXEC: ${HILTIC} -dj %INPUT
+
+module Foo {
+
+global x1 = "abc";
+x1 = x1 + "123";
+assert x1 == "abc123";
+
+global x2 = "abc";
+x2 += "123";
+assert x2 == "abc123";
+
+assert |"abc"| == 3;
+
+assert "abc" == "abc";
+assert !( "abc" == "123" );
+
+assert !( "abc" != "abc" );
+assert "abc" != "123";
+
+}
