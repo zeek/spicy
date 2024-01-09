@@ -324,8 +324,16 @@ static int fibo(int i) {
     return x;
 }
 
+bool isMacosAsan() {
+#if defined(HILTI_HAVE_ASAN) && defined(__APPLE__)
+    return true;
+#else
+    return false;
+#endif
+}
 
-TEST_CASE("stack-size-check") {
+// This test produces false positives on macos with ASAN.
+TEST_CASE("stack-size-check" * doctest::skip(isMacosAsan())) {
     hilti::rt::init();
 
     auto f = [&](hilti::rt::resumable::Handle* r) {
