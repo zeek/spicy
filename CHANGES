@@ -1,3 +1,20 @@
+1.10.0-dev.98 | 2024-01-09 13:55:27 +0100
+
+  * Bump dependencies. (Benjamin Bannier, Corelight)
+
+  * GH-1632: Bump justrx to pull in bugfix. (Robin Sommer, Corelight)
+
+    Closes #1632.
+
+  * CI: drop freebsd-12, add freebsd-14. (Benjamin Bannier, Corelight)
+
+  * GH-1500: Add `+=` operator for `string`. (Benjamin Bannier, Corelight)
+
+    This allows appending to a `string` without having to allocate a new
+    string. This might perform better most of the time.
+
+    Closes #1500.
+
 1.9.0-97 | 2024-01-09 10:13:30 +0100
 
   * GH-1632: Bump justrx to pull in bugfix. (Robin Sommer, Corelight)
