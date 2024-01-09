@@ -100,7 +100,7 @@ std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View
     if ( _pimpl->_done )
         throw MatchStateReuse("matching already complete");
 
-    auto [rc, offset] = _advance(data, data.isFrozen());
+    auto [rc, offset] = _advance(data, data.isComplete());
 
     stream::View ndata;
     // `SafeConstIterator` implements both `operator+` and `operator-` for `uint64_t`

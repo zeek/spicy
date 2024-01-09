@@ -324,7 +324,7 @@ TEST_CASE("advance") {
             const auto& rc = std::get<0>(x);
             const auto& unconsumed = std::get<1>(x);
 
-            CHECK_EQ(rc, -1);           // Could consume more data.
+            CHECK_EQ(rc, 1);            // Match found and cannot consume more data.
             CHECK_EQ(unconsumed, ""_b); // Should have consumed entire input.
             CHECK_EQ(unconsumed.offset(), limit);
         }

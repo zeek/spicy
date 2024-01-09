@@ -37,21 +37,6 @@ void spicy::rt::decline_input(const std::string& reason) {
         (*hook)(reason);
 }
 
-// Returns true if EOD can be seen already, even if not reached yet.
-static bool _haveEod(const hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur) {
-    // We've the reached end-of-data if either (1) the bytes object is frozen
-    // (then the input won't change anymore), or (2) our view is limited to
-    // something before the current end (then even appending more data to the
-    // input won't help).
-    if ( data->isFrozen() )
-        return true;
-
-    if ( auto end_offset = cur.endOffset() )
-        return *end_offset <= data->endOffset();
-    else
-        return false;
-}
-
 void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
                               const hilti::rt::stream::View& cur, int64_t lahead,
@@ -134,7 +119,7 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
     auto new_ = cur.size();
 
     while ( old == new_ ) {
-        if ( _haveEod(data, cur) )
+        if ( cur.isComplete() )
             return false;
 
         SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("suspending to wait for more input for stream %p, currently have %lu",
@@ -170,7 +155,7 @@ bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hil
     if ( cur.size() > 0 )
         return false;
 
-    if ( _haveEod(data, cur) )
+    if ( cur.isComplete() )
         return true;
 
     // Wait until we have at least one byte available, because otherwise the

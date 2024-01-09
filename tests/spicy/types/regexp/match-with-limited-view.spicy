@@ -1,0 +1,45 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: cat input.dat | base64 -d | spicy-driver test.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regresssion test for #1634.
+
+module Test;
+
+import spicy;
+
+public type Unit1 = unit() {
+    unit1_field_0 : bytes &size=126;
+                  : bytes &eod {self.unit1_field_1.write($$);}
+    sink unit1_field_1;
+
+    on %init {
+        self.unit1_field_1.connect(new Unit2());
+    }
+};
+
+type Unit2 = unit() {
+    unit2_field_0 : uint32 &byte-order=spicy::ByteOrder::Little;
+    unit2_field_1 : bytes &size=12;
+    unit2_field_3 : Unit3()[] &size=self.unit2_field_0 + 2;
+};
+
+type Unit3 = unit() {
+    unit3_field_0  : bytes &size=36;
+    unit3_field_1  : uint32;
+    unit3_field_2  : bytes &size=24;
+    unit3_field_3  : bytes &size=self.unit3_field_1;
+    unit3_field_4  : /\x00?\x00?\x00?/;
+
+    on %done {
+        print "unit3_field_1 => %d" % self.unit3_field_1;
+        print "unit3_field_2 => %x" % self.unit3_field_2;
+        print "unit3_field_3 => %x" % self.unit3_field_3;
+        print "unit3_field_4 => %x" % self.unit3_field_4;
+    }
+
+};
+
+@TEST-START-FILE input.dat
+AA+e/xhdAAKiK1R/CABFAADHBXcAAEAR71LAqAIBwKgCC8AAwAAAswjBBAAoABAAAAAAAKDel2zREYJxAAEBIgEvAQCg3pds0RGCcQCgJELffaS3qyDaEwAQgHIAAqIrVH8CAAAAAQAAAAIAAAADAP////9bAAAAAACxAAAARwAAALEAAAAAAAAARwAAAAAIADwBAAABysO9lB3UEbJtdms1NTU2MQAAAAAAAgABAAAAAQAAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+JiWJAAsAAAA=
+@TEST-END-FILE

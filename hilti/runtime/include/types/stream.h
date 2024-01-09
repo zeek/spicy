@@ -1068,8 +1068,13 @@ public:
     /** Returns true if the view's size is zero. */
     bool isEmpty() const { return size() == 0; }
 
-    /** Returns true if the instance is currently frozen. */
-    bool isFrozen() const { return _begin.isFrozen(); }
+    /**
+     * Returns true if the view's data is fully available, and won't change
+     * anymore. That's the case if either the underlying stream is frozen, or
+     * if the view is not open-ended and the iterator window is fully
+     * contained inside the stream data available at this point.
+     */
+    bool isComplete() const;
 
     /**
      * Returns true if the view was constructed without a fixed end offset,

@@ -113,6 +113,18 @@ int Chain::numberOfChunks() const {
     return n;
 }
 
+bool View::isComplete() const {
+    _ensureValid();
+
+    if ( _begin.isFrozen() )
+        return true;
+
+    if ( auto end_offset = endOffset() )
+        return *end_offset <= _begin.chain()->endOffset();
+    else
+        return false;
+}
+
 View View::advanceToNextData() const {
     // Start search for next data chunk at the next byte. This
     // ensures that we always advance by at least one byte.
