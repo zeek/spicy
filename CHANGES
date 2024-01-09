@@ -1,3 +1,7 @@
+1.9.0-97 | 2024-01-09 10:13:30 +0100
+
+  * GH-1632: Bump justrx to pull in bugfix. (Robin Sommer, Corelight)
+
 1.10.0-dev.91 | 2024-01-04 12:44:32 +0100
 
   * Add unit tests for extracting from expanding Views. (Benjamin Bannier, Corelight)

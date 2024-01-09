@@ -23,10 +23,6 @@
 
     Returns the concatenation of two strings.
 
-.. spicy:operator:: string::SumAssign string t:string <sp> op:+= <sp> t:string
-
-    Appends the second string to the first.
-
 .. spicy:operator:: string::Unequal bool t:string <sp> op:!= <sp> t:string
 
     Compares two strings lexicographically.
