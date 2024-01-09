@@ -1,3 +1,23 @@
+1.10.0-dev.103 | 2024-01-09 14:00:44 +0100
+
+  * Remove references to Cirrus cron task. (Benjamin Bannier, Corelight)
+
+    We do not schedule CI runs with cron anymore.
+
+  * Run CI ASAN task also for PRs. (Benjamin Bannier, Corelight)
+
+  * Skip tests around stack size on macos with ASAN. (Benjamin Bannier, Corelight)
+
+    These tests produce false positives on macos with ASAN which seem hard
+    to get rid of. Disable them on the smallest possible subset of setups.
+
+  * Fix ASAN false positives introduces with d332827aee7d70cdb642631d7a289751e1d8a36a. (Benjamin Bannier, Corelight)
+
+    Since the logging changes of d332827aee7d70cdb642631d7a289751e1d8a36a
+    ASAN reports false positives on e.g., macos-13.6.2 with its
+    clang-1500.0.40.1. This patch slightly reorganizes the code so these
+    false positiives are not triggered.
+
 1.10.0-dev.98 | 2024-01-09 13:55:27 +0100
 
   * Bump dependencies. (Benjamin Bannier, Corelight)

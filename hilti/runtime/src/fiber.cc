@@ -124,7 +124,12 @@ void __fiber_switch_trampoline(void* argsp) {
 
     auto from = args->from;
     auto to = args->to;
-    HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("switching from %s to %s", *from, *to));
+    // Explicitly put the log message on the stack to work around ASAN false positives on macos.
+    if ( detail::unsafeGlobalState()->debug_logger &&
+         detail::unsafeGlobalState()->debug_logger->isEnabled(debug_stream_fibers) ) {
+        const auto msg = fmt("switching from %s to %s", from, to);
+        HILTI_RT_FIBER_DEBUG("stack-switcher", msg);
+    }
 
     if ( from->_type == detail::Fiber::Type::SharedStack )
         from->_stack_buffer.save();
@@ -351,8 +356,13 @@ void ASAN_NO_OPTIMIZE detail::Fiber::_finishSwitchFiber(const char* tag) {
     size_t prev_size = 0;
     __sanitizer_finish_switch_fiber(current->_asan.fake_stack, &prev_bottom, &prev_size);
 
-    HILTI_RT_FIBER_DEBUG(tag, fmt("asan-finish: prev-stack=%s/%zu fake-stack=%p", prev_bottom, prev_size,
-                                  current->_asan.fake_stack));
+    // Explicitly put the log message on the stack to work around ASAN false positives on macos.
+    if ( detail::unsafeGlobalState()->debug_logger &&
+         detail::unsafeGlobalState()->debug_logger->isEnabled(debug_stream_fibers) ) {
+        const auto msg =
+            fmt("asan-finish: prev-stack=%s/%zu fake-stack=%p", prev_bottom, prev_size, current->_asan.fake_stack);
+        HILTI_RT_FIBER_DEBUG(tag, msg);
+    }
 
     // By construction, the very first time this method is called, we must just
     // have finished switching over from the main fiber. Record its stack.
