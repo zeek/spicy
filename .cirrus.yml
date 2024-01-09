@@ -56,7 +56,7 @@ lint_task:
         path: build/ci
 
 clang17_ubuntu_debug_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+  skip: $CIRRUS_TAG == ''
 
   container:
     dockerfile: ci/Dockerfile
