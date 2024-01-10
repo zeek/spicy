@@ -118,7 +118,18 @@ public:
     bool isGap() const { return _gap_size > 0; };
     bool inRange(const Offset& offset) const { return offset >= _offset && offset < endOffset(); }
     bool isLazy() const { return ! _non_owning_data.empty(); };
-    void makeOwning(Offset begin, Offset end);
+    void makeOwning(Offset begin, Offset end) {
+        if ( isGap() || ! isLazy() )
+            return;
+
+        begin = inRange(begin) ? std::max(begin.Ref(), offset().Ref()) : offset().Ref();
+        end = inRange(end) ? std::min(end.Ref(), endOffset().Ref()) : endOffset().Ref();
+
+        assert(_data.empty());
+        _data = std::string{_non_owning_data.data() + (begin.Ref() - offset().Ref()), end.Ref() - begin.Ref()};
+        _offset = begin;
+        _non_owning_data = "";
+    }
 
     const Byte* data() const {
         if ( isGap() )
