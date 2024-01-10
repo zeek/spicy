@@ -406,6 +406,18 @@ Offset Stream::append_lazy(std::string_view data) {
     return o;
 }
 
+void Chunk::makeOwning(Offset begin, Offset end) {
+    if ( isGap() || ! isLazy() )
+        return;
+
+    auto a = inRange(begin) ? std::max(begin.Ref(), offset().Ref()) : offset().Ref();
+    auto b = inRange(end) ? std::min(end.Ref(), endOffset().Ref()) : endOffset().Ref();
+
+    assert(_data.empty());
+    _data = std::string{_non_owning_data.data() + (offset().Ref() - a), b - a};
+    _non_owning_data = "";
+}
+
 void Stream::commit_chunk_at(Offset offset) {
     if ( auto chunk = this->_chain->findChunk(offset) ) {
         chunk->makeOwning(_chain->offset(), _chain->endOffset());
