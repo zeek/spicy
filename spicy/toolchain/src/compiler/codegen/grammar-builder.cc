@@ -127,13 +127,16 @@ struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
                 // Skipping not supported
             }
 
+            else if ( n.size() )
+                skip = production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), {}, n.meta().location());
+
             else if ( n.parseType().isA<type::Bytes>() ) {
+                // Bytes with fixed size already handled above.
                 auto eod_attr = AttributeSet::find(n.attributes(), "&eod");
-                auto size_attr = AttributeSet::find(n.attributes(), "&size");
                 auto until_attr = AttributeSet::find(n.attributes(), "&until");
                 auto until_including_attr = AttributeSet::find(n.attributes(), "&until-including");
 
-                if ( eod_attr || size_attr || until_attr || until_including_attr )
+                if ( eod_attr || until_attr || until_including_attr )
                     skip = production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), {}, n.meta().location());
             }
 

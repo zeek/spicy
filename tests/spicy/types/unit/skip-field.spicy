@@ -6,6 +6,9 @@
 # Ensure we're actually producing Skip productions for fields where we support it
 # @TEST-EXEC: spicyc -p %INPUT | grep 'Begin parsing production: Skip' >skips.txt
 # @TEST-EXEC: btest-diff skips.txt
+
+# @TEST-EXEC: spicyc -p all-types.spicy | grep 'Begin parsing production: Skip' >all-types-skips.txt
+# @TEST-EXEC: btest-diff all-types-skips.txt
 #
 # @TEST-DOC: Exercise `skip` fields.
 
@@ -19,9 +22,9 @@ public type Root = unit {
 };
 
 type Foo = unit {
-    a: uint8;
+    a: skip uint8;
     : skip bytes &size=2 { print "skip b"; }
-    c: uint8;
+    c: skip int8;
     : skip bytes &size=2 if ( True );
     : skip bytes &size=2 if ( False );
     f: uint8; # == 0x07
@@ -29,6 +32,7 @@ type Foo = unit {
     : skip bytes &until-including=b"DEF";
     : skip Bar; # no skip production for this one
     j: skip Bar; # no skip production for this one
+    : skip Bar &size=1;
     eod: skip bytes &eod;
 };
 
@@ -37,3 +41,28 @@ type Bar = unit {
 };
 
 on Foo::eod { print "skip eos"; }
+
+# @TEST-START-FILE all-types.spicy
+module all_types;
+
+import spicy;
+
+public type Foo = unit {
+    : skip addr &ipv4;
+    : skip addr &ipv6;
+    : skip int8;
+    : skip int16;
+    : skip int32;
+    : skip int64;
+    : skip uint8;
+    : skip uint16;
+    : skip uint32;
+    : skip uint64;
+    : skip bitfield(8) {};
+    : skip real &type=spicy::RealType::IEEE754_Single;
+    : skip real &type=spicy::RealType::IEEE754_Double;
+    : skip Bar &size=1;
+};
+
+type Bar = unit { x: uint8; };
+# @TEST-END-FILE

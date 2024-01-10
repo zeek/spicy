@@ -355,6 +355,15 @@ public:
      */
     void waitForEod();
 
+    /*
+     * Generates code which waits for given input length to be available to
+     * immediately consume and trim it.
+     *
+     * @param size an unsigned integer specifying the length of the input to skip
+     * @param location location associated with the operation
+     */
+    void skip(const Expression& size, const Meta& location = {});
+
     /** Returns a boolean expression that's true if EOD has been reached. */
     Expression atEod();
 
