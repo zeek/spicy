@@ -56,8 +56,6 @@ lint_task:
         path: build/ci
 
 clang17_ubuntu_debug_task:
-  skip: $CIRRUS_TAG == ''
-
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
