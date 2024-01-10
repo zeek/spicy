@@ -269,9 +269,8 @@ TEST_CASE("append") {
 
     SUBCASE("FIXME(bbannier)") {
         {
-            auto lazy = stream::detail::AppendLazy(&s);
             const char* data = "456";
-            lazy.append(data);
+            auto _ = stream::detail::AppendLazy(&s, data);
             CHECK_EQ(s, "123456"_b);
             CHECK_EQ(s.numberOfChunks(), 2);
 
@@ -289,8 +288,7 @@ TEST_CASE("append") {
 
         {
             auto data = std::string("abc");
-            auto lazy = stream::detail::AppendLazy(&s);
-            lazy.append(data);
+            auto _ = stream::detail::AppendLazy(&s, data);
             CHECK_EQ(s, "456abc"_b);
             CHECK_EQ(s.numberOfChunks(), 2);
         }

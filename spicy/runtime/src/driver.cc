@@ -322,13 +322,11 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     // Resume parsing.
                     assert(_input && _resumable);
 
-                    hilti::rt::stream::Offset offset;
+                    std::optional<hilti::rt::stream::detail::AppendLazy> lazy;
 
-                    if ( size )
-                    // (*_input)->append(data, size);
-                    {
+                    if ( size ) {
                         if ( data )
-                            offset = (*_input)->append_lazy(std::string_view{data, size});
+                            lazy = hilti::rt::stream::detail::AppendLazy(_input->get(), std::string_view{data, size});
                         else
                             (*_input)->append(data, size);
                     }
@@ -342,9 +340,6 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
 
                     hilti::rt::profiler::stop(profiler);
                     _resumable->resume();
-
-                    if ( data && size )
-                        (*_input)->commit_chunk_at(offset);
                 }
 
                 if ( *_resumable ) {

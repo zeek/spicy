@@ -1737,23 +1737,16 @@ namespace stream::detail {
 
 class AppendLazy {
 public:
-    AppendLazy(Stream* s) : _s(s) {}
+    AppendLazy(const Stream* s, std::string_view data) : _s(s), _o(AppendLazy::append(s, data)) {}
 
-    void append(std::string_view data) {
-        if ( data.empty() )
-            return;
-
-        // Once we append the current end will point into the chunk.
-        _chunks.push_back(_s->_chain->endOffset());
-
-        _s->_chain->append(std::make_unique<Chunk>(0, data));
-    }
+    AppendLazy(const AppendLazy&) = delete;
+    AppendLazy(AppendLazy&&) = default;
+    AppendLazy& operator=(const AppendLazy&) = delete;
+    AppendLazy& operator=(AppendLazy&&) = default;
 
     void commit() {
-        for ( auto x : _chunks ) {
-            if ( auto* c = _s->_chain->findChunk(x) )
-                c->makeOwning(_s->begin().offset(), _s->endOffset());
-        }
+        if ( auto* c = _s->_chain->findChunk(_o) )
+            c->makeOwning(_s->begin().offset(), _s->endOffset());
     }
 
     ~AppendLazy() {
@@ -1764,8 +1757,18 @@ public:
         }
     }
 
-    Stream* _s;
-    std::vector<Offset> _chunks;
+private:
+    static Offset append(const Stream* s, std::string_view data) {
+        // If we append the current end will point into the chunk.
+        auto o = s->endOffset();
+
+        if ( ! data.empty() )
+            s->_chain->append(std::make_unique<Chunk>(0, data));
+        return o;
+    }
+
+    const Stream* _s;
+    Offset _o;
 };
 
 } // namespace stream::detail
