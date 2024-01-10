@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <memory>
+
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
@@ -392,6 +394,21 @@ void Stream::append(const char* data, size_t len) {
         _chain->append(std::make_unique<Chunk>(0, std::string{data, len}));
     else
         _chain->append(std::make_unique<Chunk>(0, len));
+}
+
+Offset Stream::append_lazy(std::string_view data) {
+    auto o = _chain->endOffset();
+    if ( data.empty() )
+        return o;
+
+    _chain->append(std::make_unique<Chunk>(0, data));
+
+    return o;
+}
+
+void Stream::commit_chunk_at(Offset offset) {
+    if ( auto chunk = this->_chain->findChunk(offset) )
+        chunk->makeOwning();
 }
 
 std::string stream::View::dataForPrint() const {

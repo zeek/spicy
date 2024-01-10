@@ -322,8 +322,16 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     // Resume parsing.
                     assert(_input && _resumable);
 
+                    hilti::rt::stream::Offset offset;
+
                     if ( size )
-                        (*_input)->append(data, size);
+                    // (*_input)->append(data, size);
+                    {
+                        if ( data )
+                            offset = (*_input)->append_lazy(std::string_view{data, size});
+                        else
+                            (*_input)->append(data, size);
+                    }
 
                     if ( eod ) {
                         DRIVER_DEBUG("end of data");
@@ -334,6 +342,9 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
 
                     hilti::rt::profiler::stop(profiler);
                     _resumable->resume();
+
+                    if ( data && size )
+                        (*_input)->commit_chunk_at(offset);
                 }
 
                 if ( *_resumable ) {
