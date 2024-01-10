@@ -268,29 +268,31 @@ TEST_CASE("append") {
     }
 
     SUBCASE("FIXME(bbannier)") {
-        const char* data = "456";
-        auto o = s.append_lazy(data);
-        CHECK_EQ(s, "123456"_b);
-        CHECK_EQ(s.numberOfChunks(), 2);
+        {
+            auto lazy = stream::detail::AppendLazy(&s);
+            const char* data = "456";
+            lazy.append(data);
+            CHECK_EQ(s, "123456"_b);
+            CHECK_EQ(s.numberOfChunks(), 2);
 
-        s.trim(s.begin() + 2);
-        CHECK_EQ(s, "3456"_b);
-        CHECK_EQ(s.numberOfChunks(), 2);
+            s.trim(s.begin() + 2);
+            CHECK_EQ(s, "3456"_b);
+            CHECK_EQ(s.numberOfChunks(), 2);
 
-        s.trim(s.begin() + 1);
-        CHECK_EQ(s, "456"_b);
-        CHECK_EQ(s.numberOfChunks(), 1);
+            s.trim(s.begin() + 1);
+            CHECK_EQ(s, "456"_b);
+            CHECK_EQ(s.numberOfChunks(), 1);
+        }
 
-        s.commit_chunk_at(o);
         CHECK_EQ(s, "456"_b);
         CHECK_EQ(s.numberOfChunks(), 1);
 
         {
             auto data = std::string("abc");
-            auto o = s.append_lazy(data);
+            auto lazy = stream::detail::AppendLazy(&s);
+            lazy.append(data);
             CHECK_EQ(s, "456abc"_b);
             CHECK_EQ(s.numberOfChunks(), 2);
-            s.commit_chunk_at(o);
         }
         CHECK_EQ(s, "456abc"_b);
         CHECK_EQ(s.numberOfChunks(), 2);

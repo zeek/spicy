@@ -64,6 +64,7 @@ enum class Direction : int64_t { Forward, Backward };
 
 namespace detail {
 
+class AppendLazy;
 class Chain;
 using ChainPtr = IntrusivePtr<Chain>;
 class UnsafeConstIterator;
@@ -1628,10 +1629,10 @@ public:
     void append(const char* data, size_t len);
 
     // FIXME(bbannier): document.
-    Offset append_lazy(std::string_view data);
+    Offset append_lazy(std::string_view data); // FIXME(bbannier): remove.
 
     // FIXME(bbannier): document.
-    void commit_chunk_at(Offset offset);
+    void commit_chunk_at(Offset offset); // FIXME(bbannier): remove.
 
     /**
      * Cuts off the beginning of the data up to, but excluding, a given
@@ -1705,6 +1706,8 @@ public:
     static void debugPrint(std::ostream& out, const stream::detail::Chain* chain);
 
 private:
+    friend class stream::detail::AppendLazy;
+
     Stream(Chunk&& ch) : _chain(make_intrusive<Chain>(std::make_unique<Chunk>(std::move(ch)))) {}
 
     ChainPtr _chain; // always non-null
@@ -1729,5 +1732,43 @@ inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
 
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) { return hilti::rt::to_string(x.view()); }
 } // namespace detail::adl
+
+namespace stream::detail {
+
+class AppendLazy {
+public:
+    AppendLazy(Stream* s) : _s(s) {}
+
+    void append(std::string_view data) {
+        if ( data.empty() )
+            return;
+
+        // Once we append the current end will point into the chunk.
+        _chunks.push_back(_s->_chain->endOffset());
+
+        _s->_chain->append(std::make_unique<Chunk>(0, data));
+    }
+
+    void commit() {
+        for ( auto x : _chunks ) {
+            if ( auto* c = _s->_chain->findChunk(x) )
+                c->makeOwning(_s->begin().offset(), _s->endOffset());
+        }
+    }
+
+    ~AppendLazy() {
+        try {
+            commit();
+        } catch ( ... ) {
+            internalError("error committing chunks");
+        }
+    }
+
+    Stream* _s;
+    std::vector<Offset> _chunks;
+};
+
+} // namespace stream::detail
+
 
 } // namespace hilti::rt
