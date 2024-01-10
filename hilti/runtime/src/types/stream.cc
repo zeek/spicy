@@ -407,8 +407,9 @@ Offset Stream::append_lazy(std::string_view data) {
 }
 
 void Stream::commit_chunk_at(Offset offset) {
-    if ( auto chunk = this->_chain->findChunk(offset) )
-        chunk->makeOwning();
+    if ( auto chunk = this->_chain->findChunk(offset) ) {
+        chunk->makeOwning(_chain->offset(), _chain->endOffset());
+    }
 }
 
 std::string stream::View::dataForPrint() const {
