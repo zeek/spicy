@@ -1,0 +1,14 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\001\002\003' | spicy-dump -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Nested &sizes, regression test for #1645.
+
+module foo;
+
+public type X = unit {
+    x: Y[] &size=3;
+};
+
+type Y = unit {
+    y: bytes &eod &size=2;
+};
