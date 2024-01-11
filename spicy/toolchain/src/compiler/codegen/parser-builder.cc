@@ -786,8 +786,8 @@ struct ProductionVisitor
 
         else if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
             // Make sure we parsed the entire &size amount.
-            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
-                                            builder::memberCall(*ncur, "offset", {}));
+            auto missing = builder::lower(builder::memberCall(state().cur, "offset", {}),
+                                          builder::memberCall(*ncur, "offset", {}));
             auto insufficient = builder()->addIf(std::move(missing));
             pushBuilder(insufficient, [&]() {
                 // We didn't parse all the data, which is an error.
@@ -1445,8 +1445,8 @@ struct ProductionVisitor
 
         if ( auto a = AttributeSet::find(p.attributes(), "&size") ) {
             // Make sure we parsed the entire &size amount.
-            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
-                                            builder::memberCall(*ncur, "offset", {}));
+            auto missing = builder::lower(builder::memberCall(state().cur, "offset", {}),
+                                          builder::memberCall(*ncur, "offset", {}));
             auto insufficient = builder()->addIf(std::move(missing));
             pushBuilder(insufficient, [&]() { pb->parseError("&size amount not consumed", a->meta()); });
 
@@ -1600,8 +1600,8 @@ struct ProductionVisitor
 
         else if ( auto a = AttributeSet::find(p.unitType().attributes(), "&size") ) {
             // Make sure we parsed the entire &size amount.
-            auto missing = builder::unequal(builder::memberCall(state().cur, "offset", {}),
-                                            builder::memberCall(*state().ncur, "offset", {}));
+            auto missing = builder::lower(builder::memberCall(state().cur, "offset", {}),
+                                          builder::memberCall(*state().ncur, "offset", {}));
             auto insufficient = builder()->addIf(std::move(missing));
             pushBuilder(insufficient, [&]() { pb->parseError("&size amount not consumed", a->meta()); });
 
