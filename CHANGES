@@ -1,3 +1,7 @@
+1.9.0-109 | 2024-01-11 09:00:08 +0100
+
+  * GH-1634: Fix infinite loop in regular expression parsing. (Robin Sommer, Corelight)
+
 1.9.0-107 | 2024-01-11 08:59:05 +0100
 
   * Bump justrx to pull in bugfix. (Robin Sommer, Corelight)
