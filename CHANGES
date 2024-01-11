@@ -1,3 +1,31 @@
+1.8.3 | 2024-01-11 19:43:24 +0100
+
+  * Drop freebsd-12 from CI. (Benjamin Bannier, Corelight)
+
+    This reached end of life on 2023-12-31 and is not supported anymore.
+
+  * GH-1645: Fix `&size` check. (Robin Sommer, Corelight)
+
+    The current parsing offset could legitimately end up just beyond the
+    `&size` amount.
+
+    Closes #1645.
+
+    (cherry picked from commit 5c92b213fdc304a9ad154a6abf4b19dbb5ec66ea)
+
+  * GH-1617: Fix handling of `%synchronize-*` attributes for units in lists. (Benjamin Bannier, Corelight)
+
+    We previously would not detect `%synchronize-at` or `%synchronize-from`
+    attributes if the unit was not directly in a field, i.e., we mishandled
+    the common case of synchronizing on a unit in a list.
+
+    With this patch we now handle these attributes, regardless of how the
+    unit appears.
+
+    Closes #1617.
+
+    (cherry picked from commit 57debb2d3abb3a89690d10991b1ddfd5e3198e14)
+
 1.8.2 | 2023-10-26 12:42:44 +0200
 
   * Bump FreeBSD versions in CI. (Benjamin Bannier, Corelight)
