@@ -742,39 +742,3 @@ freebsd13_task:
   packages_artifacts:
     path: build/spicy*.tar.gz
     type: application/gzip
-
-freebsd12_task:
-  freebsd_instance:
-    image_family: freebsd-12-4
-    cpu: 8
-    memory: 8GB
-
-  prepare_script: ./ci/prepare_freebsd.sh
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --enable-werror
-  build_script:
-    - ninja -j4 -C build install
-  test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test
-  packaging_script:
-    - ninja -C build package
-
-  packages_artifacts:
-    path: build/spicy*.tar.gz
-    type: application/gzip
