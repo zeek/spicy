@@ -1,3 +1,9 @@
+1.9.0-107 | 2024-01-11 08:59:05 +0100
+
+  * Bump justrx to pull in bugfix. (Robin Sommer, Corelight)
+
+  * CI: Re-enable `clang17_ubuntu_debug_task`. (Robin Sommer, Corelight)
+
 1.10.0-dev.103 | 2024-01-09 14:00:44 +0100
 
   * Remove references to Cirrus cron task. (Benjamin Bannier, Corelight)
