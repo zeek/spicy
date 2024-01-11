@@ -1,3 +1,10 @@
+1.9.0-111 | 2024-01-11 11:55:07 +0100
+
+  * GH-1645: Fix `&size` check. (Robin Sommer, Corelight)
+
+    The current parsing offset could legitimately end up just beyond the
+    `&size` amount.
+
 1.9.0-109 | 2024-01-11 09:00:08 +0100
 
   * GH-1634: Fix infinite loop in regular expression parsing. (Robin Sommer, Corelight)
