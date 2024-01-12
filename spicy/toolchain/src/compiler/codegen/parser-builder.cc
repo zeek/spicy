@@ -1699,6 +1699,9 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Skip& p) {
+        if ( auto c = p.field().condition() )
+            pushBuilder(builder()->addIf(*c));
+
         if ( const auto& ctor = p.ctor() ) {
             pb->skipLiteral(*ctor);
         }
@@ -1709,9 +1712,6 @@ struct ProductionVisitor
             auto until_attr = AttributeSet::find(p.field().attributes(), "&until");
             if ( ! until_attr )
                 until_attr = AttributeSet::find(p.field().attributes(), "&until-including");
-
-            if ( auto c = p.field().condition() )
-                pushBuilder(builder()->addIf(*c));
 
             if ( size_attr ) {
                 auto n = builder()->addTmp("skip", *size_attr->valueAsExpression());
