@@ -1,0 +1,15 @@
+# @TEST-DOC: Check that conditional fields are correctly skipped.
+#
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00abc' | spicy-driver test.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01abc' | spicy-driver test.hlto >>output
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    flag: uint8;
+    : skip /abc/ if (self.flag);
+
+    on %done { print self.offset(); }
+};
