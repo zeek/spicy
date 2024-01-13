@@ -7,11 +7,11 @@
 
 using namespace hilti::rt;
 
-size_t string::size(const std::string& s, DecodeErrorStrategy errors) {
+integer::safe<uint64_t> string::size(const std::string& s, DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
-    size_t len = 0;
+    uint64_t len = 0;
 
     while ( p < e ) {
         utf8proc_int32_t cp;

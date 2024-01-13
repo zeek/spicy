@@ -698,7 +698,7 @@ struct Visitor : hilti::visitor::PreOrder<cxx::Expression, Visitor> {
     // String
 
     result_t operator()(const operator_::string::Sum& n) { return binary(n, "+"); }
-    result_t operator()(const operator_::string::Size& n) { return fmt("%s.size()", op0(n)); }
+    result_t operator()(const operator_::string::Size& n) { return fmt("::hilti::rt::string::size(%s)", op0(n)); }
     result_t operator()(const operator_::string::Equal& n) { return binary(n, "=="); }
     result_t operator()(const operator_::string::Unequal& n) { return binary(n, "!="); }
 

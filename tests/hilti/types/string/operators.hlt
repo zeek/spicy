@@ -1,0 +1,23 @@
+# @TEST-EXEC: ${HILTIC} -dj %INPUT
+
+module Foo {
+
+import hilti;
+
+global x1 = "abc";
+x1 = x1 + "123";
+assert x1 == "abc123";
+
+assert |"abc"| == 3;
+
+assert "abc" == "abc";
+assert !( "abc" == "123" );
+
+assert !( "abc" != "abc" );
+assert "abc" != "123";
+
+assert |"𝔘𝔫𝔦𝔠𝔬𝔡𝔢"| == 7; # 7 codepoints but 28 bytes long.
+assert |"abc"| == 3;
+hilti::print(|"abc"|); # Validates that size operator returns a valid, printable runtime type.
+
+}
