@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -27,7 +28,7 @@ HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
  * @return the length of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-size_t size(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+integer::safe<uint64_t> size(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
 
 /**
  * Computes a lower-case version of an UTF8 string.
