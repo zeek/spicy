@@ -113,7 +113,7 @@ method extern method view<stream> foo::B::parse1(inout value_ref<stream> data, o
     # "<...>/unused-functions.spicy:21:17"
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
     if ( error ) 
@@ -133,7 +133,7 @@ method extern method view<stream> foo::B::parse3(inout value_ref<spicy_rt::Parse
     # "<...>/unused-functions.spicy:21:17"
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
     if ( error ) 
@@ -151,7 +151,7 @@ method extern method view<stream> foo::B::parse2(inout value_ref<B> unit, inout 
     # "<...>/unused-functions.spicy:21:17"
 
     # Begin parsing production: Unit: foo_B ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_B ->
 
     if ( error ) 
@@ -266,7 +266,7 @@ method extern method view<stream> foo::D::parse1(inout value_ref<stream> data, o
     # "<...>/unused-functions.spicy:25:17-27:2"
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( error ) 
@@ -286,7 +286,7 @@ method extern method view<stream> foo::D::parse3(inout value_ref<spicy_rt::Parse
     # "<...>/unused-functions.spicy:25:17-27:2"
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( error ) 
@@ -304,7 +304,7 @@ method extern method view<stream> foo::D::parse2(inout value_ref<D> unit, inout 
     # "<...>/unused-functions.spicy:25:17-27:2"
 
     # Begin parsing production: Unit: foo_D -> foo_C_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_D -> foo_C_2
 
     if ( error ) 

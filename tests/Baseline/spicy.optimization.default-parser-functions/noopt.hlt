@@ -259,7 +259,7 @@ method extern method view<stream> foo::P0::parse1(inout value_ref<stream> data, 
     # "<...>/default-parser-functions.spicy:12:11"
 
     # Begin parsing production: Unit: foo_P0 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P0 ->
 
     if ( __feat%foo@@P0%uses_random_access ) 
@@ -287,7 +287,7 @@ method extern method view<stream> foo::P0::parse3(inout value_ref<spicy_rt::Pars
     # "<...>/default-parser-functions.spicy:12:11"
 
     # Begin parsing production: Unit: foo_P0 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P0 ->
 
     if ( __feat%foo@@P0%uses_random_access ) 
@@ -313,7 +313,7 @@ method extern method view<stream> foo::P0::parse2(inout value_ref<P0> unit, inou
     # "<...>/default-parser-functions.spicy:12:11"
 
     # Begin parsing production: Unit: foo_P0 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P0 ->
 
     if ( __feat%foo@@P0%uses_random_access ) 
@@ -492,7 +492,7 @@ method extern method view<stream> foo::P1::parse1(inout value_ref<stream> data, 
     # "<...>/default-parser-functions.spicy:14:18"
 
     # Begin parsing production: Unit: foo_P1 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P1 ->
 
     if ( __feat%foo@@P1%uses_random_access ) 
@@ -520,7 +520,7 @@ method extern method view<stream> foo::P1::parse3(inout value_ref<spicy_rt::Pars
     # "<...>/default-parser-functions.spicy:14:18"
 
     # Begin parsing production: Unit: foo_P1 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P1 ->
 
     if ( __feat%foo@@P1%uses_random_access ) 
@@ -546,7 +546,7 @@ method extern method view<stream> foo::P1::parse2(inout value_ref<P1> unit, inou
     # "<...>/default-parser-functions.spicy:14:18"
 
     # Begin parsing production: Unit: foo_P1 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P1 ->
 
     if ( __feat%foo@@P1%uses_random_access ) 
@@ -797,7 +797,7 @@ method extern method view<stream> foo::P2::parse1(inout value_ref<stream> data, 
     # "<...>/default-parser-functions.spicy:16:18-21:2"
 
     # Begin parsing production: Unit: foo_P2 -> x y
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P2 -> x y
 
     if ( __feat%foo@@P2%uses_random_access ) 
@@ -825,7 +825,7 @@ method extern method view<stream> foo::P2::parse3(inout value_ref<spicy_rt::Pars
     # "<...>/default-parser-functions.spicy:16:18-21:2"
 
     # Begin parsing production: Unit: foo_P2 -> x y
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P2 -> x y
 
     if ( __feat%foo@@P2%uses_random_access ) 
@@ -851,7 +851,7 @@ method extern method view<stream> foo::P2::parse2(inout value_ref<P2> unit, inou
     # "<...>/default-parser-functions.spicy:16:18-21:2"
 
     # Begin parsing production: Unit: foo_P2 -> x y
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_P2 -> x y
 
     if ( __feat%foo@@P2%uses_random_access ) 

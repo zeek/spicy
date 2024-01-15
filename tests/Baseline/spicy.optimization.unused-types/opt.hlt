@@ -162,7 +162,7 @@ method extern method view<stream> foo::Pub2::parse1(inout value_ref<stream> data
     # "<...>/unused-types.spicy:16:20"
 
     # Begin parsing production: Unit: foo_Pub2 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Pub2 ->
 
     if ( error ) 
@@ -182,7 +182,7 @@ method extern method view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::Pa
     # "<...>/unused-types.spicy:16:20"
 
     # Begin parsing production: Unit: foo_Pub2 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Pub2 ->
 
     if ( error ) 
@@ -200,7 +200,7 @@ method extern method view<stream> foo::Pub2::parse2(inout value_ref<Pub2> unit, 
     # "<...>/unused-types.spicy:16:20"
 
     # Begin parsing production: Unit: foo_Pub2 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Pub2 ->
 
     if ( error ) 
@@ -377,7 +377,7 @@ method extern method view<stream> foo::Pub3::parse1(inout value_ref<stream> data
     # "<...>/unused-types.spicy:29:20-32:2"
 
     # Begin parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
 
     if ( error ) 
@@ -397,7 +397,7 @@ method extern method view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::Pa
     # "<...>/unused-types.spicy:29:20-32:2"
 
     # Begin parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
 
     if ( error ) 
@@ -415,7 +415,7 @@ method extern method view<stream> foo::Pub3::parse2(inout value_ref<Pub3> unit, 
     # "<...>/unused-types.spicy:29:20-32:2"
 
     # Begin parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Pub3 -> foo_Priv5_2 foo_Priv6_2
 
     if ( error ) 
@@ -479,7 +479,7 @@ method extern method view<stream> foo::Priv10::parse1(inout value_ref<stream> da
     # "<...>/unused-types.spicy:43:22-46:2"
 
     # Begin parsing production: Unit: foo_Priv10 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Priv10 ->
 
     if ( error ) 
@@ -499,7 +499,7 @@ method extern method view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::
     # "<...>/unused-types.spicy:43:22-46:2"
 
     # Begin parsing production: Unit: foo_Priv10 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Priv10 ->
 
     if ( error ) 
@@ -517,7 +517,7 @@ method extern method view<stream> foo::Priv10::parse2(inout value_ref<Priv10> un
     # "<...>/unused-types.spicy:43:22-46:2"
 
     # Begin parsing production: Unit: foo_Priv10 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_Priv10 ->
 
     if ( error ) 

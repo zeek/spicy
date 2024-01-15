@@ -465,12 +465,9 @@ struct ProductionVisitor
                 return id_stage1;
             });
 
-        std::vector<Expression> args = {state().data,
-                                        (unit ? builder::optional(type::stream::Iterator()) : state().begin),
-                                        state().cur,
-                                        state().trim,
-                                        state().lahead,
-                                        state().lahead_end,
+        std::vector<Expression> args = {state().data,   (unit ? builder::begin(state().cur) : state().begin),
+                                        state().cur,    state().trim,
+                                        state().lahead, state().lahead_end,
                                         state().error};
 
         if ( ! unit && p.meta().field() )

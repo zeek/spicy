@@ -178,7 +178,7 @@ method extern method view<stream> foo::X4::parse1(inout value_ref<stream> data, 
     # "<...>/feature_requirements.spicy:32:11-34:2"
 
     # Begin parsing production: Unit: foo_X4 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X4 ->
 
     if ( error ) 
@@ -198,7 +198,7 @@ method extern method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::Pars
     # "<...>/feature_requirements.spicy:32:11-34:2"
 
     # Begin parsing production: Unit: foo_X4 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X4 ->
 
     if ( error ) 
@@ -216,7 +216,7 @@ method extern method view<stream> foo::X4::parse2(inout value_ref<X4> unit, inou
     # "<...>/feature_requirements.spicy:32:11-34:2"
 
     # Begin parsing production: Unit: foo_X4 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X4 ->
 
     if ( error ) 
@@ -307,7 +307,7 @@ method extern method view<stream> foo::X5::parse1(inout value_ref<stream> data, 
     # "<...>/feature_requirements.spicy:36:18-40:2"
 
     # Begin parsing production: Unit: foo_X5 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X5 ->
 
     if ( error ) 
@@ -327,7 +327,7 @@ method extern method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::Pars
     # "<...>/feature_requirements.spicy:36:18-40:2"
 
     # Begin parsing production: Unit: foo_X5 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X5 ->
 
     if ( error ) 
@@ -345,7 +345,7 @@ method extern method view<stream> foo::X5::parse2(inout value_ref<X5> unit, inou
     # "<...>/feature_requirements.spicy:36:18-40:2"
 
     # Begin parsing production: Unit: foo_X5 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X5 ->
 
     if ( error ) 
@@ -415,7 +415,7 @@ method extern method view<stream> foo::X6::parse1(inout value_ref<stream> data, 
     # "<...>/feature_requirements.spicy:43:11-46:2"
 
     # Begin parsing production: Unit: foo_X6 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X6 ->
 
     if ( error ) 
@@ -435,7 +435,7 @@ method extern method view<stream> foo::X6::parse3(inout value_ref<spicy_rt::Pars
     # "<...>/feature_requirements.spicy:43:11-46:2"
 
     # Begin parsing production: Unit: foo_X6 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X6 ->
 
     if ( error ) 
@@ -453,7 +453,7 @@ method extern method view<stream> foo::X6::parse2(inout value_ref<X6> unit, inou
     # "<...>/feature_requirements.spicy:43:11-46:2"
 
     # Begin parsing production: Unit: foo_X6 ->
-    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, Null, ncur, True, lahead, lahead_end, error);
+    (ncur, lahead, lahead_end, error) = (*unit).__parse_stage1(data, begin(ncur), ncur, True, lahead, lahead_end, error);
     # End parsing production: Unit: foo_X6 ->
 
     if ( error ) 
