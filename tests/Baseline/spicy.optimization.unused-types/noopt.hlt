@@ -5,7 +5,7 @@ import spicy_rt;
 import hilti;
 
 type Priv1 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
@@ -31,7 +31,7 @@ type Priv1 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_Priv1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 public type Pub2 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
@@ -57,7 +57,7 @@ public type Pub2 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_Pub2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv2 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
@@ -83,7 +83,7 @@ type Priv2 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_Priv2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv3 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
@@ -111,7 +111,7 @@ type Priv3 = struct {
 type Priv4 = struct {
     value_ref<Priv2> anon &optional &anonymous &no-emit;
     value_ref<Priv3> x &optional;
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
@@ -138,7 +138,7 @@ type Priv4 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_Priv4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv5 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
@@ -164,7 +164,7 @@ type Priv5 = struct {
     method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo_Priv5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv6 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
@@ -192,7 +192,7 @@ type Priv6 = struct {
 public type Pub3 = struct {
     value_ref<Priv5> anon_2 &optional &anonymous &no-emit;
     value_ref<Priv6> x &optional;
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
@@ -225,7 +225,7 @@ type Priv9 = enum { A = 0, B = 1, C = 2 };
 public type Priv10 = struct {
     Priv8 en &default=Priv8::A;
     Priv9 em;
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
     spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;

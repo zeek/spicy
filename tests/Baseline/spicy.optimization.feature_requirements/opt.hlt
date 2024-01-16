@@ -14,7 +14,7 @@ type X0 = struct {
 # Type X1 supports the following features:
 #     - uses_random_access
 type X1 = struct {
-    optional<iterator<stream>> __begin &internal &needed-by-feature="uses_random_access";
+    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_0x25_init() ;
@@ -110,7 +110,7 @@ init function void __register_foo_X0() {
 }
 
 method hook void foo::X1::__on_0x25_init() {
-    (*(self.__begin));
+    self.__begin;
 }
 
 init function void __register_foo_X1() {

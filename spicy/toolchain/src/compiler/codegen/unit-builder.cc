@@ -205,7 +205,7 @@ Type CodeGen::compileUnit(const type::Unit& unit, bool declare_only) {
 
     // Fields related to random-access functionality.
     auto attr_uses_random_access = Attribute("&needed-by-feature", builder::string_literal("uses_random_access"));
-    auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::Optional(hilti::type::stream::Iterator()),
+    auto f1 = hilti::declaration::Field(ID("__begin"), hilti::type::stream::Iterator(),
                                         AttributeSet({Attribute("&internal"), attr_uses_random_access}));
     auto f2 = hilti::declaration::Field(ID("__position_update"), hilti::type::Optional(hilti::type::stream::Iterator()),
                                         AttributeSet({Attribute("&internal"), attr_uses_random_access}));
