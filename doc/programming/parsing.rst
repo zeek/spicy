@@ -308,7 +308,7 @@ parser doesn't need to retain their values. In particular for larger
 Skipping Input
 ^^^^^^^^^^^^^^
 
-For cases where your parser just needs to skip over some data, without
+For cases where your parser just needs to skip over some data without
 needing access to its content, Spicy provides a ``skip`` keyword to
 prefix corresponding fields with:
 
@@ -328,11 +328,17 @@ prefix corresponding fields with:
     :show-with: foo.spicy
 
 ``skip`` works for all kinds of fields but is particularly efficient
-with ``bytes`` fields, for which it will generate optimized code
+for fields of known size for which optimized code will be generating
 avoiding the overhead of storing any data.
 
-``skip`` fields may have conditions and hooks attached, like any other
-fields. However, they do not support ``$$`` in expressions and hook.
+``skip`` fields may have conditions and hooks attached, like any other fields.
+However, they do not support ``$$`` in expressions and hook.
+
+Since ``skip`` allows the compiler to optimize the field's parsing
+code---including completely eliding most of it---it remains undefined if any
+side effects associated with the field will take effect. For example,
+``&requires`` attributes might be ignored, ``&convert`` expressions might not
+be evaluated, and hooks could end up not being invoked.
 
 For readability, a ``skip`` field may be named (e.g., ``padding: skip
 bytes &size=3;``), but even with a name, its value cannot be accessed.
