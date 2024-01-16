@@ -1,0 +1,44 @@
+# @TEST-DOC: Validates that offset can be used inside filters
+#
+# @TEST-EXEC: printf 'ABCDEF' | spicy-dump -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+import spicy;
+
+public type X = unit {
+    on %init {
+        self.connect_filter(new Filter);
+    }
+
+    xs: Filtered[];
+} &convert=self.xs;
+
+type Filtered = unit {
+    offset: uint64;
+    data: bytes &size=1;
+} &convert=(self.offset, self.data);
+
+type Filter = unit {
+    %filter;
+
+    on %init {
+        self.forward(encoded_offset(self.offset()));
+        self.forward(b"X");
+    }
+
+    : (bytes &size=1)[3] foreach {
+        self.forward(encoded_offset(self.offset()));
+        self.forward($$);
+    }
+
+    on %done {
+        self.forward(encoded_offset(self.offset()));
+        self.forward(b"Z");
+    }
+};
+
+function encoded_offset(offset: uint64): bytes {
+    return pack(offset, spicy::ByteOrder::Network);
+}
