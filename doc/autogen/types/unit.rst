@@ -58,9 +58,7 @@
     Returns the offset of the current location in the input stream
     relative to the unit's start. If executed from inside a field hook,
     the offset will represent the first byte that the field has been
-    parsed from. If this method is called before the unit's parsing has
-    begun, it will throw a runtime exception. Once parsing has started,
-    the offset will remain available for the unit's entire life time.
+    parsed from.
 
 .. spicy:method:: unit::position unit position False iterator<stream> ()
 
