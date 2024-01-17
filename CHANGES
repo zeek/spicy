@@ -1,3 +1,16 @@
+1.10.0-dev.117 | 2024-01-17 16:43:22 +0100
+
+  * GH-1640: Implement skipping for any field with known size. (Benjamin Bannier, Corelight)
+
+    This patch adds `skip` support for fields with `&size` attribute or of
+    builtin type with known size. If a unit has a known size and it is
+    specified in a `&size` attribute this also allows to skip over unit
+    fields.
+
+  * Add method to field to optionally return its size. (Benjamin Bannier, Corelight)
+
+  * Fix skipping of literal fields with condition. (Benjamin Bannier, Corelight)
+
 1.9.0-111 | 2024-01-11 11:55:07 +0100
 
   * GH-1645: Fix `&size` check. (Robin Sommer, Corelight)

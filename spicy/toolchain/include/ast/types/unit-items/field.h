@@ -129,6 +129,9 @@ public:
     bool isSkip() const { return _is_skip; }
     bool emitHook() const { return ! isAnonymous() || hooks().size(); }
 
+    // Returns the number of bytes the fields consumes if known.
+    std::optional<const Expression> size() const;
+
     const Type& originalType() const {
         if ( _type )
             return (*_type)->as<hilti::declaration::Type>().type();

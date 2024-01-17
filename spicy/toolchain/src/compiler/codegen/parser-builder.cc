@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include "compiler/detail/codegen/parser-builder.h"
+
 #include <algorithm>
 #include <numeric>
 #include <optional>
@@ -30,7 +32,6 @@
 #include <spicy/ast/types/unit-items/sink.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
-#include <spicy/compiler/detail/codegen/parser-builder.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/all.h>
 
@@ -1699,34 +1700,24 @@ struct ProductionVisitor
     }
 
     void operator()(const production::Skip& p) {
+        if ( auto c = p.field().condition() )
+            pushBuilder(builder()->addIf(*c));
+
         if ( const auto& ctor = p.ctor() ) {
             pb->skipLiteral(*ctor);
         }
 
+        else if ( const auto& size = p.field().size() )
+            pb->skip(*size, p.location());
+
         else if ( p.field().parseType().isA<type::Bytes>() ) {
+            // Bytes with fixed size already handled above.
             auto eod_attr = AttributeSet::find(p.field().attributes(), "&eod");
-            auto size_attr = AttributeSet::find(p.field().attributes(), "&size");
             auto until_attr = AttributeSet::find(p.field().attributes(), "&until");
             if ( ! until_attr )
                 until_attr = AttributeSet::find(p.field().attributes(), "&until-including");
 
-            if ( auto c = p.field().condition() )
-                pushBuilder(builder()->addIf(*c));
-
-            if ( size_attr ) {
-                auto n = builder()->addTmp("skip", *size_attr->valueAsExpression());
-                auto loop = builder()->addWhile(builder::greater(n, builder::integer(0U)));
-                pushBuilder(loop, [&]() {
-                    pb->waitForInput(builder::integer(1U), "not enough bytes for skipping", p.location());
-                    auto consume = builder()->addTmp("consume", builder::min(builder::size(state().cur),
-                                                                             *size_attr->valueAsExpression()));
-                    pb->advanceInput(consume);
-                    builder()->addAssign(n, builder::difference(n, consume));
-                    builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});
-                });
-            }
-
-            else if ( eod_attr ) {
+            if ( eod_attr ) {
                 builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
                 auto loop = builder()->addWhile(pb->waitForInputOrEod());
                 pushBuilder(loop, [&]() { pb->advanceInput(builder::size(state().cur)); });
@@ -2397,6 +2388,20 @@ void ParserBuilder::waitForInput(const Expression& min, std::string_view error_m
 
 void ParserBuilder::waitForEod() {
     builder()->addCall("spicy_rt::waitForEod", {state().data, state().cur, _filters(state())});
+}
+
+void ParserBuilder::skip(const Expression& size, const Meta& location) {
+    assert(size.type().template isA<type::UnsignedInteger>());
+
+    auto n = builder()->addTmp("skip", size);
+    auto loop = builder()->addWhile(builder::greater(n, builder::integer(0U)));
+    pushBuilder(loop, [&]() {
+        waitForInput(builder::integer(1U), "not enough bytes for skipping", location);
+        auto consume = builder()->addTmp("consume", builder::min(builder::size(state().cur), size));
+        advanceInput(consume);
+        builder()->addAssign(n, builder::difference(n, consume));
+        builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});
+    });
 }
 
 void ParserBuilder::parseError(const Expression& error_msg, const Meta& location) {
