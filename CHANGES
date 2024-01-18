@@ -1,3 +1,23 @@
+1.10.0-dev.122 | 2024-01-18 08:39:05 +0100
+
+  * Update documentation of `offset()`. (Benjamin Bannier, Corelight)
+
+    The originally documented caveats do not apply anymore, so remove them.
+
+  * Always store a valid begin iterator in units. (Benjamin Bannier, Corelight)
+
+  * Always pass a valid begin iterator to parse methods. (Benjamin Bannier, Corelight)
+
+  * GH-1648: Provide meaningful unit `__begin` value when parsing starts. (Benjamin Bannier, Corelight)
+
+    We previously would not provide `__begin` when starting the initial
+    parse. This meant that e.g., `offset()` was not usable if nothing ever
+    got parsed.
+
+    With this patch we provide a meaningful value now.
+
+    Closes #1648.
+
 1.10.0-dev.117 | 2024-01-17 16:43:22 +0100
 
   * GH-1640: Implement skipping for any field with known size. (Benjamin Bannier, Corelight)

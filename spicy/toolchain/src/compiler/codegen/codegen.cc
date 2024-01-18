@@ -199,13 +199,13 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
     }
 
     result_t operator()(const operator_::unit::Position& n, position_t p) {
-        auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
+        auto begin = builder::member(n.op0(), ID("__begin"));
         auto offset = builder::member(n.op0(), ID("__offset"));
         replaceNode(&p, builder::grouping(builder::sum(begin, offset)));
     }
 
     result_t operator()(const operator_::unit::Input& n, position_t p) {
-        auto begin = builder::deref(builder::grouping(builder::member(n.op0(), ID("__begin"))));
+        auto begin = builder::member(n.op0(), ID("__begin"));
         replaceNode(&p, begin);
     }
 
@@ -215,7 +215,7 @@ struct VisitorPass2 : public hilti::visitor::PreOrder<void, VisitorPass2> {
     }
 
     result_t operator()(const operator_::unit::Find& n, position_t p) {
-        auto begin = builder::deref(builder::member(n.op0(), ID("__begin")));
+        auto begin = builder::member(n.op0(), ID("__begin"));
         auto offset = builder::member(n.op0(), ID("__offset"));
         auto end = builder::sum(begin, offset);
         auto needle = argument(n.op2(), 0);

@@ -61,7 +61,7 @@ ParserState::ParserState(const type::Unit& unit, const Grammar& grammar, Express
       needs_look_ahead(grammar.needsLookAhead()),
       self(hilti::expression::UnresolvedID(ID("self"))),
       data(std::move(data)),
-      begin(builder::optional(builder::begin(cur))),
+      begin(builder::begin(cur)),
       cur(std::move(cur)) {}
 
 void ParserState::printDebug(const std::shared_ptr<builder::Builder>& builder) const {
@@ -266,7 +266,7 @@ struct ProductionVisitor
 
                     if ( unit ) {
                         auto pstate = state();
-                        pstate.begin = builder()->addTmp("begin", builder::optional(builder::begin(state().cur)));
+                        pstate.begin = builder()->addTmp("begin", builder::begin(state().cur));
                         pushState(std::move(pstate));
                         pb->initializeUnit(p.location());
                     }
@@ -338,7 +338,7 @@ struct ProductionVisitor
                             builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
                                                 builder::id("filtered"));
                             args2[0] = builder::id("filtered_data");
-                            args2[1] = builder::optional(type::stream::Iterator());
+                            args2[1] = builder::begin(builder::deref(args2[0]));
                             args2[2] = builder::deref(args2[0]);
                             builder()->addExpression(builder::memberCall(state().self, id_stage2, args2));
 
@@ -465,13 +465,8 @@ struct ProductionVisitor
                 return id_stage1;
             });
 
-        std::vector<Expression> args = {state().data,
-                                        (unit ? builder::optional(type::stream::Iterator()) : state().begin),
-                                        state().cur,
-                                        state().trim,
-                                        state().lahead,
-                                        state().lahead_end,
-                                        state().error};
+        std::vector<Expression> args = {state().data,   state().begin,      state().cur,  state().trim,
+                                        state().lahead, state().lahead_end, state().error};
 
         if ( ! unit && p.meta().field() )
             args.push_back(destination());
@@ -1265,7 +1260,7 @@ struct ProductionVisitor
         builder()->addMemberCall(tmp, "freeze", {});
 
         pstate.data = tmp;
-        pstate.begin = builder()->addTmp("parse_begin", builder::optional(builder::begin(builder::deref(tmp))));
+        pstate.begin = builder()->addTmp("parse_begin", builder::begin(builder::deref(tmp)));
         pstate.cur = builder()->addTmp("parse_cur", type::stream::View(), builder::deref(tmp));
         pstate.ncur = {};
         pushState(std::move(pstate));
@@ -1281,7 +1276,7 @@ struct ProductionVisitor
         pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
 
         auto cur = builder::memberCall(state().cur, "advance", {position});
-        pstate.begin = builder()->addTmp("parse_begin", builder::optional(position));
+        pstate.begin = builder()->addTmp("parse_begin", position);
         pstate.cur = builder()->addTmp("parse_cur", cur);
         pstate.ncur = {};
         pushState(std::move(pstate));
@@ -1847,7 +1842,7 @@ hilti::type::Function ParserBuilder::parseMethodFunctionType(std::optional<type:
 
     auto params = std::vector<type::function::Parameter>{
         builder::parameter("__data", type::ValueReference(type::Stream()), declaration::parameter::Kind::InOut),
-        builder::parameter("__begin", type::Optional(type::stream::Iterator()), declaration::parameter::Kind::In),
+        builder::parameter("__begin", type::stream::Iterator(), declaration::parameter::Kind::In),
         builder::parameter("__cur", type::stream::View(), declaration::parameter::Kind::Copy),
         builder::parameter("__trim", type::Bool(), declaration::parameter::Kind::Copy),
         builder::parameter("__lah", look_ahead::Type, declaration::parameter::Kind::Copy),
@@ -2002,7 +1997,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
             auto pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
             pstate.self = builder::id("unit");
-            pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
+            pstate.begin = builder::begin(builder::id("ncur"));
             pstate.cur = builder::id("ncur");
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
@@ -2049,7 +2044,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
             pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
             pstate.self = builder::id("unit");
-            pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
+            pstate.begin = builder::begin(builder::id("ncur"));
             pstate.cur = builder::id("ncur");
             pstate.trim = builder::bool_(true);
             pstate.lahead = builder::id("lahead");
@@ -2089,7 +2084,7 @@ hilti::type::Struct ParserBuilder::addParserMethods(hilti::type::Struct s, const
 
         auto pstate = ParserState(t, grammar, builder::id("data"), builder::id("cur"));
         pstate.self = builder::id("unit");
-        pstate.begin = builder::optional(builder::begin(builder::id("ncur")));
+        pstate.begin = builder::begin(builder::id("ncur"));
         pstate.cur = builder::id("ncur");
         pstate.trim = builder::bool_(true);
         pstate.lahead = builder::id("lahead");
@@ -2475,7 +2470,7 @@ void ParserBuilder::saveParsePosition() {
 
     guardFeatureCode(state().unit_id, {"uses_offset"}, [&]() {
         auto cur = builder::memberCall(builder::begin(state().cur), "offset", {});
-        auto begin = builder::memberCall(builder::deref(state().begin), "offset", {});
+        auto begin = builder::memberCall(state().begin, "offset", {});
 
         builder()->addAssign(builder::member(state().self, ID("__offset")),
                              builder::cast(builder::difference(cur, begin), type::UnsignedInteger(64)));

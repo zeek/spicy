@@ -1,0 +1,10 @@
+# @TEST-DOC: Validates that offsets can be computed even if nothing was parsed; regression test for #1648.
+#
+# @TEST-EXEC-FAIL: echo | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    on %done { assert self.offset() != 0; }
+};
