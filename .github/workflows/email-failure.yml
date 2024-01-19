@@ -2,7 +2,8 @@
 
 on:
   check_suite:
-    type: ['completed']
+    types:
+      - completed
 
 name: Email about Cirrus CI failures
 jobs:
@@ -20,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           echo "Cirrus CI ${{ github.event.check_suite.conclusion }} on SHA ${{ github.event.check_suite.head_sha }}"
-          echo $MESSAGE
+          echo "$MESSAGE"
           echo "##[error]See $CHECK_RUN_URL for details" && false
         env:
           CHECK_RUN_URL: ${{ fromJson(steps.get_failed_check_run.outputs.data).check_runs[0].html_url }}
