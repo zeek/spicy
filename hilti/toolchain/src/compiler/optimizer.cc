@@ -10,22 +10,42 @@
 
 #include <hilti/rt/util.h>
 
+#include <hilti/ast/attribute.h>
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/default.h>
+#include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/expression.h>
+#include <hilti/ast/declarations/field.h>
 #include <hilti/ast/declarations/function.h>
+#include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/local-variable.h>
+#include <hilti/ast/declarations/parameter.h>
+#include <hilti/ast/declarations/type.h>
 #include <hilti/ast/detail/visitor.h>
+#include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/id.h>
+#include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
+#include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/ternary.h>
+#include <hilti/ast/function.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/operators/function.h>
+#include <hilti/ast/operators/reference.h>
+#include <hilti/ast/operators/struct.h>
+#include <hilti/ast/operators/tuple.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/declaration.h>
+#include <hilti/ast/statements/expression.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/enum.h>
+#include <hilti/ast/types/function.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
@@ -853,8 +873,27 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
                 auto lhs = tryAsBoolLiteral(x.op0());
                 auto rhs = tryAsBoolLiteral(x.op1());
 
+                // If both LHS and RHS are literals fold them.
                 if ( lhs && rhs ) {
                     replaceNode(p, builder::bool_(lhs.value() || rhs.value()));
+                    return true;
+                }
+
+                // If the LHS is a literal short-circuit.
+                if ( lhs && lhs.value() ) {
+                    replaceNode(p, builder::bool_(true));
+                    return true;
+                }
+
+                // If the LHS is some variable and the RHS is a literal `true`
+                // the result is always `true` and we can replace the AND without
+                // removing side-effects.
+                if ( auto lhs = x.op0().tryAs<expression::ResolvedID>();
+                     lhs &&
+                     (lhs->declaration().isA<declaration::GlobalVariable>() ||
+                      lhs->declaration().isA<declaration::LocalVariable>()) &&
+                     rhs && rhs.value() ) {
+                    replaceNode(p, builder::bool_(true));
                     return true;
                 }
             }
@@ -871,8 +910,27 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
                 auto lhs = tryAsBoolLiteral(x.op0());
                 auto rhs = tryAsBoolLiteral(x.op1());
 
+                // If both LHS and RHS are literals fold them.
                 if ( lhs && rhs ) {
                     replaceNode(p, builder::bool_(lhs.value() && rhs.value()));
+                    return true;
+                }
+
+                // If the LHS is a literal short-circuit.
+                if ( lhs && ! lhs.value() ) {
+                    replaceNode(p, builder::bool_(false));
+                    return true;
+                }
+
+                // If the LHS is some variable and the RHS is a literal `false`
+                // the result is always `false` and we can replace the AND without
+                // removing side-effects.
+                if ( auto lhs = x.op0().tryAs<expression::ResolvedID>();
+                     lhs &&
+                     (lhs->declaration().isA<declaration::GlobalVariable>() ||
+                      lhs->declaration().isA<declaration::LocalVariable>()) &&
+                     rhs && ! rhs.value() ) {
+                    replaceNode(p, builder::bool_(false));
                     return true;
                 }
             }
@@ -1416,6 +1474,600 @@ struct MemberVisitor : OptimizerVisitor, visitor::PreOrder<bool, MemberVisitor> 
     }
 };
 
+// Helper function to detect whether a struct has lifecycle hooks attached.
+bool hasLifecycleHooks(const type::Struct& s) {
+    // NOLINTNEXTLINE(readability-use-anyofallof)
+    for ( const auto& f : s.fields() ) {
+        // Currently the only lifecycle hook we have is `~finally`.
+        if ( f.id().str() == "~finally" )
+            return true;
+    }
+
+    return false;
+};
+
+// Optimizer pass which removes dead store and variable declarations.
+struct DeadStoreVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadStoreVisitor> {
+    // We use decl identities here instead of their canonical IDs since for
+    // variables canonical IDs can be ambiguous, #1440. This means that we need
+    // to track names for logging separately.
+    std::unordered_map<uintptr_t, bool> used;
+    std::unordered_map<uintptr_t, ID> names;
+
+    void collect(Node& node) override {
+        _stage = Stage::COLLECT;
+
+        for ( auto i : this->walk(&node) )
+            dispatch(i);
+
+        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
+            HILTI_DEBUG(logging::debug::OptimizerCollect, "dead stores:");
+            for ( const auto& [id, read] : used ) {
+                if ( ! read ) {
+                    assert(names.count(id));
+                    HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s", names[id]));
+                }
+            }
+        }
+    }
+
+    bool prune(Node& node) {
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = modified || *x;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    bool prune_decls(Node& node) override {
+        _stage = OptimizerVisitor::Stage::PRUNE_DECLS;
+        return prune(node);
+    }
+
+    bool prune_uses(Node& node) override {
+        _stage = Stage::PRUNE_USES;
+        return prune(node);
+    }
+
+    result_t operator()(const Module& m, position_t p) {
+        _current_module = &p.node.as<Module>();
+        return false;
+    }
+
+    result_t operator()(const expression::Assign& x, position_t p) {
+        const auto& target_ = x.target();
+        const auto& target = target_.tryAs<expression::ResolvedID>();
+        if ( ! target )
+            return false;
+
+        const auto& decl = target->declaration();
+        if ( ! decl.isA<declaration::LocalVariable>() && ! decl.isA<declaration::GlobalVariable>() )
+            return false;
+
+        // Do not work on assignments to values of struct types which have
+        // lifecycle hooks attached.
+        if ( auto s = target->type().tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
+            return false;
+
+        switch ( _stage ) {
+            case OptimizerVisitor::Stage::PRUNE_USES: {
+                // If the id was not used, drop the assignment.
+                if ( used.count(decl.identity()) && ! used.at(decl.identity()) ) {
+                    HILTI_DEBUG(logging::debug::Optimizer,
+                                util::fmt("removing dead store to '%s' since it is not read (%s)", decl.id(),
+                                          x.meta().location()));
+                    replaceNode(p, x.source());
+                    return true;
+                }
+
+                return false;
+            }
+            case Stage::COLLECT: [[fallthrough]];
+            case OptimizerVisitor::Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const expression::ResolvedID& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                const auto& decl = x.declaration();
+                if ( ! decl.isA<declaration::LocalVariable>() && ! decl.isA<declaration::GlobalVariable>() )
+                    return false;
+
+                auto is_assignment_rhs = [&](const Node& n, position_t p) {
+                    // The node is a LHS in an assignment `x = ...`.
+                    if ( auto parent = p.parent().tryAs<expression::Assign>(); parent && parent->target() == x )
+                        return false;
+
+                    // The ID is not directly used as a LHS in an assignment, but e.g., as a RHS or in some other
+                    // context. We also ignore cases where `x` is in the LHS of a tuple assignment since such
+                    // assignments cannot be removed as easily.
+                    //
+                    // TODO(bbannier): Look into removing tuple assignments if all values on the LHS are dead.
+
+                    return true;
+                };
+
+                used[decl.identity()] |= is_assignment_rhs(x, p);
+                names.insert({decl.identity(), decl.canonicalID()});
+
+                break;
+            }
+            case OptimizerVisitor::Stage::PRUNE_USES:
+            case OptimizerVisitor::Stage::PRUNE_DECLS: break;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const statement::Declaration& x, position_t p) {
+        switch ( _stage ) {
+            case OptimizerVisitor::Stage::COLLECT:
+            case OptimizerVisitor::Stage::PRUNE_USES: return false;
+            case OptimizerVisitor::Stage::PRUNE_DECLS: {
+                const auto& decl = x.declaration();
+
+                if ( const auto& local = decl.tryAs<declaration::LocalVariable>() ) {
+                    // Do not attempt to remove declarations of structs with
+                    // lifecycle hooks.
+                    if ( auto s = local->type().tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
+                        break;
+
+                    // If the local is initialized do not remove it to still
+                    // trigger potential RHS side effects.
+                    //
+                    // TODO(bbannier): We should be able to remove at
+                    // side-effect free initializations from e.g., literals.
+                    if ( local->init() )
+                        break;
+                }
+
+                if ( ! used.count(decl.identity()) || ! used[decl.identity()] ) {
+                    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("removing variable '%s' since it is unused (%s)",
+                                                                     decl.id(), x.meta().location()));
+                    removeNode(p);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
+struct DeadCodeVisitor : OptimizerVisitor, visitor::PreOrder<bool, DeadCodeVisitor> {
+    bool prune_uses(Node& node) override {
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = modified || *x;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    result_t operator()(const Module& m, position_t p) {
+        _current_module = &p.node.as<Module>();
+        return false;
+    }
+
+    result_t operator()(const statement::Expression& x, position_t p) {
+        if ( auto ctor = x.expression().tryAs<expression::Ctor>();
+             ctor && (ctor->isConstant() || ! hasChildWithSideEffects(*ctor, p)) ) {
+            HILTI_DEBUG(logging::debug::Optimizer,
+                        util::fmt("removing side-effect free dead code (%s)", x.meta().location()));
+            removeNode(p);
+            return true;
+        }
+
+        if ( auto call = x.expression().tryAs<operator_::function::Call>();
+             call && ! hasChildWithSideEffects(*call, p) ) {
+            HILTI_DEBUG(logging::debug::Optimizer,
+                        util::fmt("removing side-effect free dead code (%s)", x.meta().location()));
+            removeNode(p);
+            return true;
+        }
+
+        if ( auto call = x.expression().tryAs<operator_::struct_::MemberCall>();
+             call && ! hasChildWithSideEffects(*call, p) ) {
+            HILTI_DEBUG(logging::debug::Optimizer,
+                        util::fmt("removing side-effect free dead code (%s)", x.meta().location()));
+            removeNode(p);
+            return true;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const declaration::Function& x, position_t p) {
+        const auto& function = x.function();
+
+        // If the function already has an empty body we cannot simplify it further here.
+        if ( const auto& body = function.body(); body && *body == statement::Block() )
+            return false;
+
+        // If the function does not return `void` we still need to keep its body.
+        if ( ! function.type().as<type::Function>().result().type().isA<type::Void>() )
+            return false;
+
+        // If the function is not pure we need to keep its body.
+        if ( const auto& attrs = function.attributes(); ! attrs || ! attrs->find("&pure") )
+            return false;
+
+        // If we have a pure function which returns void its body is irrelevant and can be removed.
+        auto new_function = Function(function.id(), function.type(), statement::Block(), function.callingConvention(),
+                                     function.attributes(), function.meta());
+
+        p.node.as<declaration::Function>().setFunction(new_function);
+        return true;
+    }
+
+    bool hasChildWithSideEffects(const Node& node, position_t p) const {
+        auto potentiallyHasSideEffects = [](const Node& it, position_t p) {
+            const type::Function* fn = nullptr;
+            const AttributeSet* attributes = nullptr;
+
+            if ( const auto& call = it.tryAs<operator_::function::Call>() ) {
+                const auto& decl = call->op0().as<expression::ResolvedID>().declaration();
+                const auto& function = decl.as<declaration::Function>().function();
+
+                fn = &function.type().as<type::Function>();
+                if ( const auto& attrs = function.attributes() )
+                    attributes = &attrs.value();
+            }
+
+            else if ( const auto& call = it.tryAs<operator_::struct_::MemberCall>() ) {
+                const auto& field_id = call->op1().as<expression::Member>().id();
+
+                // If we access the self pointer the argument will be `*self`
+                // so we need to strip away the additional dereferencing.
+                const auto* op0 = &call->op0();
+                if ( const auto& deref = op0->tryAs<operator_::value_reference::Deref>() )
+                    op0 = &deref->op0();
+
+                const auto& value = op0->tryAs<expression::ResolvedID>();
+                if ( ! value )
+                    return true;
+
+                const auto& decl = value->declaration();
+
+                std::optional<Type> type;
+                std::optional<type::Struct> struct_;
+                if ( const auto& x = decl.tryAs<declaration::GlobalVariable>() ) {
+                    type = x->type();
+                    struct_ = type->tryAs<type::Struct>();
+                }
+                else if ( const auto& x = decl.tryAs<declaration::LocalVariable>() ) {
+                    type = x->type();
+                    struct_ = type->tryAs<type::Struct>();
+                }
+                else
+                    return true;
+
+                if ( ! struct_ )
+                    return true;
+
+                assert(type);
+
+                const auto& field = struct_->field(field_id);
+                if ( ! field )
+                    return true;
+
+                // Method declared inline.
+                if ( const auto& functions = field->childRefsOfType<Function>(); ! functions.empty() ) {
+                    const auto& function = &functions[0]->as<Function>();
+                    fn = &function->ftype();
+
+                    if ( const auto& attrs = function->attributes() )
+                        attributes = &attrs.value();
+                }
+
+                // Method not declared inline.
+                else if ( const auto& function_ =
+                              scope::lookupID<declaration::Function>(ID(util::fmt("%s::%s", *type->typeID(), field_id)),
+                                                                     p, "function") ) {
+                    const auto& function = function_->first->as<declaration::Function>().function();
+
+                    fn = &function.ftype();
+
+                    if ( const auto& attrs = function.attributes() )
+                        attributes = &attrs.value();
+                }
+
+                else
+                    // Could not resolve method, assume it has side-effects.
+                    //
+                    // TODO(bbannier): This code path is triggered by e.g., the test
+                    // `hilti.types.function.hook-methods-across-units`. We
+                    // should really handle such cases.
+                    return true;
+            }
+
+            if ( fn ) {
+                // Do not remove calls to hooks since they might have
+                // implementations with side-effects elsewhere.
+                if ( fn->flavor() == type::function::Flavor::Hook )
+                    return true;
+
+                // If the function returns a struct type with lifecycle hooks it has side effects.
+                if ( auto s = fn->result().type().tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
+                    return true;
+
+                // If the function is not marked pure it has side effects.
+                if ( ! attributes || ! attributes->find("&pure") )
+                    return true;
+            }
+
+            return false;
+        };
+
+        if ( potentiallyHasSideEffects(node, p) )
+            return true;
+
+        auto v = visitor::PreOrder<>();
+
+        // NOLINTNEXTLINE(readability-use-anyofallof)
+        for ( const auto& child : v.walk(node) ) {
+            if ( potentiallyHasSideEffects(child.node, p) )
+                return true;
+        }
+
+        return false;
+    }
+};
+
+// An optimizer pass which annotates pure functions. This
+// information can be used by other passes to remove dead code.
+struct PureFunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, PureFunctionVisitor> {
+    bool prune_decls(Node& node) override {
+        bool any_modification = false;
+
+        while ( true ) {
+            bool modified = false;
+            for ( auto i : this->walk(&node) ) {
+                if ( auto x = dispatch(i) )
+                    modified = modified || *x;
+            }
+
+            if ( ! modified )
+                break;
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    result_t operator()(const declaration::Function& x, position_t p) {
+        if ( auto new_function = pureFunction(x.function(), p) ) {
+            HILTI_DEBUG(logging::debug::Optimizer, util::fmt("marking function '%s' as pure", x.function().id()));
+
+            p.node.as<declaration::Function>().setFunction(*new_function);
+            return true;
+        }
+
+        return false;
+    }
+
+    result_t operator()(const declaration::Field& x, position_t p) {
+        const Function* fn = nullptr;
+        auto path = p.path;
+
+        if ( const auto& inline_ = x.inlineFunction() ) {
+            // Field already marked pure.
+            if ( const auto& attrs = inline_->attributes(); attrs && attrs->find("&pure") )
+                return false;
+
+            fn = &*inline_;
+            path.emplace_back(const_cast<Node&>(p.node.children()[3]));
+        }
+
+        else {
+            if ( const auto& type = p.parent(2).tryAs<declaration::Type>() ) {
+                if ( auto function_ =
+                         scope::lookupID<declaration::Function>(ID(util::fmt("%s::%s", type->canonicalID(), x.id())), p,
+                                                                "function") ) {
+                    const auto& function = function_->first->as<declaration::Function>();
+
+                    fn = &function.function();
+                    path.emplace_back(const_cast<Node&>(function.children()[0]));
+                }
+            }
+        }
+
+        if ( fn ) {
+            assert(! path.empty());
+            auto& node = path.rbegin()->node;
+            auto pn = position_t{node, path};
+
+            if ( auto new_function = pureFunction(*fn, pn) ) {
+                HILTI_DEBUG(logging::debug::Optimizer,
+                            util::fmt("marking member '%s' as pure (%s)", fn->id(), fn->meta().location()));
+
+                node = new_function.value();
+                return true;
+            }
+        }
+
+        // Methods not declared inline are handled via their function declaration.
+
+        return false;
+    }
+
+    // Helper function which either computes a pure version of the given
+    // input function, or nothing if it cannot detect that the functions is
+    // pure.
+    std::optional<Function> pureFunction(const Function& x, position_t p) const {
+        if ( const auto& attrs = x.attributes() ) {
+            // The function is already marked pure.
+            if ( attrs->find("&pure") )
+                return {};
+
+            // We cannot analyze functions implemented in C++ so they cannot be pure.
+            if ( attrs->find("&cxxname") )
+                return {};
+        }
+
+        // We cannot analyze functions for which we have no body.
+        if ( ! x.body() )
+            return {};
+
+        // We determine whether the function can be pure by looking at all the
+        // IDs it references and members it calls. We assume this function is
+        // pure unless we can find a reason it should not be.
+        auto v = visitor::PreOrder<>();
+        for ( const auto& child : v.walk(p.node) ) {
+            if ( auto id = child.node.tryAs<expression::ResolvedID>() ) {
+                const auto& decl = id->declaration();
+
+                if ( auto local = decl.tryAs<declaration::LocalVariable>() ) {
+                    const auto& type = local->type();
+
+                    // References provide interior mutability regardless of the
+                    // mutability of the param so mark such accesses not as pure.
+                    //
+                    // TODO(bbannier): Trace origin of the data. If it comes from
+                    // inside the function we could still mark such functions pure.
+                    if ( type::isReferenceType(type) )
+                        return {};
+
+                    // Functions accessing local variables can be pure if they
+                    // do not construct struct values of types with lifecycle
+                    // hooks attached.
+                    if ( auto s = type.tryAs<type::Struct>(); s && hasLifecycleHooks(*s) )
+                        return {};
+
+                    continue;
+                }
+
+                else if ( decl.isA<declaration::GlobalVariable>() )
+                    // Functions accessing global variables cannot be pure for now.
+                    //
+                    // TODO(bbannier): Relax this so we only reject globals
+                    // used in the following contexts:
+                    //
+                    // - global of reference type since e.g., any operator
+                    //   could mutate externally visible internal state
+                    // - LHS in an assignment
+                    // - used as `inout` parameter to any function.
+                    // - used with an operator (which could mutate internal global state)
+                    return {};
+
+                else if ( auto fn = decl.tryAs<declaration::Function>() ) {
+                    // If we reference a non-pure function the function is unlikely to be pure.
+                    if ( const auto& attrs = fn->function().attributes(); ! attrs || ! attrs->find("&pure") )
+                        return {};
+                }
+
+                // Accessing keywords is side-effect free.
+                else if ( const auto& e = decl.tryAs<declaration::Expression>();
+                          e && e->expression().isA<expression::Keyword>() ) {
+                    continue;
+                }
+
+                else if ( const auto& param = decl.tryAs<declaration::Parameter>() ) {
+                    // Reference provide interior mutability regardless of the
+                    // mutability of the param so mark such accesses not as pure.
+                    if ( type::isReferenceType(param->type()) )
+                        return {};
+
+                    switch ( param->kind() ) {
+                        // Access to `copy` or `in` parameters is side-effect free.
+                        case declaration::parameter::Kind::Copy: [[fallthrough]];
+                        case declaration::parameter::Kind::In:
+                            continue;
+
+                            // Any other access could have side-effects.
+                        case declaration::parameter::Kind::InOut: [[fallthrough]];
+                        case declaration::parameter::Kind::Unknown: return {};
+                    }
+                }
+
+                else
+                    // Do not mark this function pure if it references any other kinds of IDs.
+                    return {};
+            }
+
+            else if ( auto call = child.node.tryAs<operator_::struct_::MemberCall>() ) {
+                const auto& op0 = call->op0();
+
+                const auto& callee = op0.type().tryAs<type::Struct>();
+                if ( ! callee )
+                    return {};
+
+                auto typeID = op0.type().typeID();
+                if ( ! typeID )
+                    return {};
+
+                const auto& method = call->op1().tryAs<expression::Member>();
+                if ( ! method )
+                    return {};
+
+                auto field = callee->field(method->id());
+                if ( ! field )
+                    return {};
+
+                // Method declared inline.
+                if ( const auto& functions = field->childRefsOfType<Function>(); ! functions.empty() ) {
+                    if ( const auto& attrs = functions[0]->as<Function>().attributes();
+                         ! attrs || ! attrs->find("&pure") )
+                        // Called method not marked pure.
+                        return {};
+                }
+
+                // Method not declared inline.
+                else if ( const auto& function =
+                              scope::lookupID<declaration::Function>(ID(util::fmt("%s::%s", *typeID, field->id())), p,
+                                                                     "function");
+                          function ) {
+                    if ( const auto& attrs = function->first->as<declaration::Function>().function().attributes();
+                         ! attrs || ! attrs->find("&pure") )
+                        // Called method not marked pure.
+                        return {};
+                }
+                else {
+                    return {};
+                }
+            }
+
+            else if ( child.node.isA<operator_::struct_::MemberNonConst>() )
+                return {};
+        }
+
+        auto new_attrs = AttributeSet({Attribute("&pure")});
+        if ( auto attrs = x.attributes() )
+            for ( const auto& attr : attrs->attributes() )
+                new_attrs = AttributeSet::add(std::move(new_attrs), attr);
+
+        auto f = Node(x)._clone().as<Function>();
+        f.setAttributes(new_attrs);
+        return {std::move(f)};
+    }
+};
+
 void Optimizer::run() {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1461,6 +2113,9 @@ void Optimizer::run() {
         {{"constant_folding", []() { return std::make_unique<ConstantFoldingVisitor>(); }},
          {"functions", []() { return std::make_unique<FunctionVisitor>(); }},
          {"members", []() { return std::make_unique<MemberVisitor>(); }},
+         {"dead_code", []() { return std::make_unique<DeadCodeVisitor>(); }},
+         {"dead_store", []() { return std::make_unique<DeadStoreVisitor>(); }},
+         {"pure_function", []() { return std::make_unique<PureFunctionVisitor>(); }},
          {"types", []() { return std::make_unique<TypeVisitor>(); }}};
 
     // If no user-specified passes are given enable all of them.

@@ -7,13 +7,3 @@
 [debug/optimizer] inlining constant 'Foo::t'
 [debug/optimizer] inlining constant 'Foo::t'
 [debug/optimizer] inlining constant 'Foo::t'
-[debug/optimizer] removing declaration for unused function hilti::abort
-[debug/optimizer] removing declaration for unused function hilti::current_time
-[debug/optimizer] removing declaration for unused function hilti::debug
-[debug/optimizer] removing declaration for unused function hilti::debugDedent
-[debug/optimizer] removing declaration for unused function hilti::debugIndent
-[debug/optimizer] removing declaration for unused function hilti::exception_what
-[debug/optimizer] removing declaration for unused function hilti::mktime
-[debug/optimizer] removing declaration for unused function hilti::printValues
-[debug/optimizer] removing declaration for unused function hilti::profiler_start
-[debug/optimizer] removing declaration for unused function hilti::profiler_stop

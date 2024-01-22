@@ -360,6 +360,12 @@
 [debug/optimizer] inlining constant 'foo::__feat%foo@@Pub3%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo@@Pub3%uses_random_access'
 [debug/optimizer] inlining constant 'foo::__feat%foo@@Pub3%uses_random_access'
+[debug/optimizer] marking function '__register_foo_Priv1' as pure
+[debug/optimizer] marking function '__register_foo_Priv2' as pure
+[debug/optimizer] marking function '__register_foo_Priv3' as pure
+[debug/optimizer] marking function '__register_foo_Priv4' as pure
+[debug/optimizer] marking function '__register_foo_Priv5' as pure
+[debug/optimizer] marking function '__register_foo_Priv6' as pure
 [debug/optimizer] removing declaration for unused function foo::Priv1::__parse_foo_Priv1_stage2
 [debug/optimizer] removing declaration for unused function foo::Priv1::__parse_stage1
 [debug/optimizer] removing declaration for unused function foo::Priv1::parse1
@@ -554,6 +560,53 @@
 [debug/optimizer] removing field for unused method foo::__register_foo_Pub3::<anon-struct-28>::parse1
 [debug/optimizer] removing field for unused method foo::__register_foo_Pub3::<anon-struct-28>::parse2
 [debug/optimizer] removing field for unused method foo::__register_foo_Pub3::<anon-struct-28>::parse3
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:13:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:13:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:13:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:13:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:13:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:16:20)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:16:20)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:16:20)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:16:20)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:16:20)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:19:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:19:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:19:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:19:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:19:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:20:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:20:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:20:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:20:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:20:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:21:14-24:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:21:14-24:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:21:14-24:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:21:14-24:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:21:14-24:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:23:5)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:27:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:27:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:27:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:27:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:27:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:28:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:28:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:28:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:28:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:28:14)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:29:20-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:29:20-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:29:20-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:29:20-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:29:20-32:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:31:5)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:43:22-46:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:43:22-46:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:43:22-46:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:43:22-46:2)
+[debug/optimizer] removing side-effect free dead code (<...>/unused-types.spicy:43:22-46:2)
 [debug/optimizer] removing unused member 'foo::Priv10::__begin'
 [debug/optimizer] removing unused member 'foo::Priv10::__filters'
 [debug/optimizer] removing unused member 'foo::Priv10::__offset'

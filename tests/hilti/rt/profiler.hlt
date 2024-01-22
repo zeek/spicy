@@ -7,7 +7,12 @@
 
 module Foo {
 
+import hilti;
+
+global num_called_y = 0;
 function void y() {
+    # Trigger a side effect so this function is not optimized out.
+    ++num_called_y;
 }
 
 function int<64> fibo(int<64> n) {

@@ -1,4 +1,4 @@
-# @TEST-EXEC: hiltic -j %INPUT | sort >output
+# @TEST-EXEC: hiltic -gj %INPUT | sort >output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Test that struct finalizers execute as expected.

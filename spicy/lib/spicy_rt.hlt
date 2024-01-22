@@ -29,7 +29,7 @@ public type Sink = struct {
     method void set_auto_trim(bool enable);
     method void set_initial_sequence_number(uint<64> seq);
     method void set_policy(any policy);
-    method uint<64> size();
+    method uint<64> size() &pure;
     method void skip(uint<64> seq);
     method void trim(uint<64> seq);
     method void write(bytes data, optional<uint<64>> seq = Null, optional<uint<64>> len = Null);
