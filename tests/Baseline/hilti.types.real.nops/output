@@ -38,9 +38,9 @@ extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
 }
 
 extern void __hlt::Foo::__init_module() {
-      __location__("<...>/nops.hlt:11:1-11:36");
+      __location__("<...>/nops.hlt:11:1-11:35");
     if ( ! (0x1.999999999999ap-4 == 0x1.999999999999ap-4) ) {
-        throw ::hilti::rt::AssertionFailure("failed expression '0x1.999999999999ap-4 == 0x1.999999999999ap-4'", "<...>/nops.hlt:11:1-11:36");
+        throw ::hilti::rt::AssertionFailure("failed expression '0x1.999999999999ap-4 == 0x1.999999999999ap-4'", "<...>/nops.hlt:11:1-11:35");
     }
 }
 

@@ -5,5 +5,5 @@
 [error] <...>/ctor-fail.spicy:1:38-1:42: invalid character
 [error] <...>/ctor-fail.spicy:1:38-1:43: invalid character
 [error] <...>/ctor-fail.spicy:1:38-1:44: invalid character
-[error] <...>/ctor-fail.spicy:1:38-1:45: syntax error, unexpected ')'
+[error] <...>/ctor-fail.spicy:1:38-1:44: syntax error, unexpected ')'
 [error] spicyc: parse error

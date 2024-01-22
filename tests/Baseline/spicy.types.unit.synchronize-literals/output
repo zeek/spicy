@@ -5,5 +5,5 @@
 [$a=b"Axy", $b=6, $c=(not set), $d=b"Dxy", $e=(1)]
 [$a=b"Axy", $b=6, $c=(not set), $d=b"Dxy", $e=(1)]
 [$a=b"Axy", $b=6, $c=b"Cxy", $d=(not set), $e=(1)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expecting 'Cxy' (<...>/synchronize-literals.spicy:24:8-24:14)
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize-literals.spicy:25:8-25:13)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expecting 'Cxy' (<...>/synchronize-literals.spicy:24:8-24:13)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize-literals.spicy:25:8-25:12)

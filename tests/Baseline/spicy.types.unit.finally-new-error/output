@@ -3,4 +3,4 @@ Bar init, [$x=(not set)]
 Bar abc
 Bar done, [$x=b"abc"]
 Bar finally - 1, [$x=b"abc"]
-[error] terminating with uncaught exception of type hilti::rt::DivisionByZero: integer division by zero (<...>/finally-new-error.spicy:18:19-18:22)
+[error] terminating with uncaught exception of type hilti::rt::DivisionByZero: integer division by zero (<...>/finally-new-error.spicy:18:19-18:21)

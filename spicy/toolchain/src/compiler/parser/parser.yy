@@ -45,7 +45,8 @@ namespace spicy { namespace detail { class Parser; } }
 #define yylex driver->scanner()->lex
 
 static hilti::Meta toMeta(spicy::detail::parser::location l) {
-    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column, l.end.column));
+    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column,
+                                       (l.end.column > 0 ? l.end.column - 1 : 0)));
 }
 
 static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {
