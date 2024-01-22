@@ -87,6 +87,22 @@ static uint64_t check_int64_range(uint64_t x, bool positive, const hilti::Meta& 
 
 #define __loc__ toMeta(yylhs.location)
 
+#define YYLLOC_DEFAULT(Current, Rhs, N)                                                                                \
+do {                                                                                                                   \
+    bool done = false;                                                                                                 \
+    for ( int i = 1; i <= N; i++ ) {                                                                                   \
+        if ( YYRHSLOC(Rhs, i).begin.line != YYRHSLOC(Rhs, i).end.line ||                                               \
+             YYRHSLOC(Rhs, i).begin.column != YYRHSLOC(Rhs, i).end.column ) {                                          \
+            (Current).begin = YYRHSLOC(Rhs, i).begin;                                                                  \
+            (Current).end = YYRHSLOC(Rhs, N).end;                                                                      \
+            done = true;                                                                                               \
+            break;                                                                                                     \
+        }                                                                                                              \
+    }                                                                                                                  \
+    if ( ! done )                                                                                                      \
+        (Current).begin = (Current).end = YYRHSLOC(Rhs, 0).end;                                                        \
+} while ( false )
+
 static int _field_width = 0;
 
 // We keep a stack of doc strings here that's maintained during parsing. There

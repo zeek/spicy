@@ -26,7 +26,7 @@
 [debug/compiler]     [HILTI] coercing nodes in module Foo
 [debug/compiler]     [HILTI] resolving nodes in module Foo
 [debug/resolver] [hilti::type::UnresolvedID] Foo::Foo2 -> type Bar::Bar1 (foo.hlt:7:1)
-[debug/resolver] [hilti::type::UnresolvedID] Bar::Bar1 -> type Bar::Bar1 (foo.hlt:9:29)
+[debug/resolver] [hilti::type::UnresolvedID] Bar::Bar1 -> type Bar::Bar1 (foo.hlt:9:30)
 [debug/compiler]       -> modified
 [debug/compiler]     [HILTI] normalizing nodes in module Bar
 [debug/compiler]     [HILTI] coercing nodes in module Bar
@@ -35,7 +35,7 @@
 [debug/resolver] [hilti::declaration::Type] setting type ID to Bar::Bar1 (./bar.hlt:6:1)
 [debug/resolver] [hilti::type::UnresolvedID] Foo::Foo1 -> type Foo::Foo1 (./bar.hlt:7:1)
 [debug/resolver] [hilti::type::UnresolvedID] Bar1 -> type Bar::Bar1 (./bar.hlt:9:20)
-[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo1 -> type Foo::Foo1 (./bar.hlt:9:29)
+[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo1 -> type Foo::Foo1 (./bar.hlt:9:30)
 [debug/compiler]       -> modified
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     resetting nodes for module Foo
@@ -75,9 +75,9 @@
 [debug/ast-final]     - declaration::Function %3 <linkage="private" parent_type="%???"> (foo.hlt:9:1) [canon-id: Foo::foo] [@d:XXX]
 [debug/ast-final]         | bar -> declaration::Parameter %5 <is_type_param="false" kind="in"> [canon-id: Foo::foo::bar] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | foo -> declaration::Parameter %4 <is_type_param="false" kind="in"> [canon-id: Foo::foo::foo] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       - Function <cc="<standard>"> (foo.hlt:9:8) [@f:XXX]
+[debug/ast-final]       - Function <cc="<standard>"> (foo.hlt:9:9) [@f:XXX]
 [debug/ast-final]         - ID <name="foo"> (foo.hlt:9:16) [@i:XXX]
-[debug/ast-final]         - type::Function <flavor="standard"> (foo.hlt:9:8) (const) (resolved) [@t:XXX]
+[debug/ast-final]         - type::Function <flavor="standard"> (foo.hlt:9:9) (const) (resolved) [@t:XXX]
 [debug/ast-final]           - type::function::Result (foo.hlt:9:9) [@t:XXX]
 [debug/ast-final]             - type::String (foo.hlt:9:9) (const) (resolved) [@t:XXX]
 [debug/ast-final]           - declaration::Parameter %4 <is_type_param="false" kind="in"> (foo.hlt:9:20) [canon-id: Foo::foo::foo] [@d:XXX]
@@ -85,7 +85,7 @@
 [debug/ast-final]             - type::Bool (prune) (foo.hlt:6:20) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
 [debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
 [debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]           - declaration::Parameter %5 <is_type_param="false" kind="in"> (foo.hlt:9:29) [canon-id: Foo::foo::bar] [@d:XXX]
+[debug/ast-final]           - declaration::Parameter %5 <is_type_param="false" kind="in"> (foo.hlt:9:30) [canon-id: Foo::foo::bar] [@d:XXX]
 [debug/ast-final]             - ID <name="bar"> (foo.hlt:9:40) [@i:XXX]
 [debug/ast-final]             - type::String (prune) (bar.hlt:6:20) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
 [debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
@@ -119,9 +119,9 @@
 [debug/ast-final]     - declaration::Function %14 <linkage="private" parent_type="%???"> (bar.hlt:9:1) [canon-id: Bar::bar] [@d:XXX]
 [debug/ast-final]         | bar -> declaration::Parameter %15 <is_type_param="false" kind="in"> [canon-id: Bar::bar::bar] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | foo -> declaration::Parameter %16 <is_type_param="false" kind="in"> [canon-id: Bar::bar::foo] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       - Function <cc="<standard>"> (bar.hlt:9:8) [@f:XXX]
+[debug/ast-final]       - Function <cc="<standard>"> (bar.hlt:9:9) [@f:XXX]
 [debug/ast-final]         - ID <name="bar"> (bar.hlt:9:16) [@i:XXX]
-[debug/ast-final]         - type::Function <flavor="standard"> (bar.hlt:9:8) (const) (resolved) [@t:XXX]
+[debug/ast-final]         - type::Function <flavor="standard"> (bar.hlt:9:9) (const) (resolved) [@t:XXX]
 [debug/ast-final]           - type::function::Result (bar.hlt:9:9) [@t:XXX]
 [debug/ast-final]             - type::String (bar.hlt:9:9) (const) (resolved) [@t:XXX]
 [debug/ast-final]           - declaration::Parameter %15 <is_type_param="false" kind="in"> (bar.hlt:9:20) [canon-id: Bar::bar::bar] [@d:XXX]
@@ -129,7 +129,7 @@
 [debug/ast-final]             - type::String (prune) (bar.hlt:6:20) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
 [debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
 [debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]           - declaration::Parameter %16 <is_type_param="false" kind="in"> (bar.hlt:9:29) [canon-id: Bar::bar::foo] [@d:XXX]
+[debug/ast-final]           - declaration::Parameter %16 <is_type_param="false" kind="in"> (bar.hlt:9:30) [canon-id: Bar::bar::foo] [@d:XXX]
 [debug/ast-final]             - ID <name="foo"> (bar.hlt:9:40) [@i:XXX]
 [debug/ast-final]             - type::Bool (prune) (foo.hlt:6:20) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
 [debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
