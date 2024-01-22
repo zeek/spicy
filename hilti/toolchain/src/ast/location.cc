@@ -18,7 +18,7 @@ std::string Location::render(bool no_path) const {
         else
             lines = util::fmt(":%d", _from_line);
 
-        if ( _to_line >= 0 && _to_line != _from_line ) {
+        if ( _to_line >= 0 ) {
             if ( _to_character >= 0 )
                 lines += util::fmt("-%d:%d", _to_line, _to_character);
             else

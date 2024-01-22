@@ -3,4 +3,4 @@ Test::X {
   x: 1
   y: 2
 }
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: &requires failed: (self.x == 1) (<...>/void-requires.spicy:12:12)
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: &requires failed: (self.x == 1) (<...>/void-requires.spicy:12:12-12:35)

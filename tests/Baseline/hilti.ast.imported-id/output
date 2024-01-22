@@ -11,10 +11,10 @@
 [debug/compiler]     [HILTI] resolving nodes in module Foo
 [debug/compiler]     parsing file "./bar.hlt" as HILTI code
 [debug/compiler]     registering ".hlt" AST for module Bar ("<...>//bar.hlt")
-[debug/resolver] [hilti::declaration::ImportedModule] import Bar; -> imported (foo.hlt:4:1)
-[debug/resolver] [hilti::declaration::Type] setting type ID to Foo::Foo1 (foo.hlt:6:1)
-[debug/resolver] [hilti::declaration::Type] setting type ID to Foo::Foo2 (foo.hlt:7:1)
-[debug/resolver] [hilti::type::UnresolvedID] Foo1 -> type Foo::Foo1 (foo.hlt:9:20)
+[debug/resolver] [hilti::declaration::ImportedModule] import Bar; -> imported (foo.hlt:4:1-4:12)
+[debug/resolver] [hilti::declaration::Type] setting type ID to Foo::Foo1 (foo.hlt:6:1-6:25)
+[debug/resolver] [hilti::declaration::Type] setting type ID to Foo::Foo2 (foo.hlt:7:1-7:30)
+[debug/resolver] [hilti::type::UnresolvedID] Foo1 -> type Foo::Foo1 (foo.hlt:9:20-9:28)
 [debug/compiler]       -> modified
 [debug/compiler]     new dependency to process: Bar (".hlt")
 [debug/compiler]   processing ASTs, round 1
@@ -25,17 +25,17 @@
 [debug/compiler]     [HILTI] normalizing nodes in module Foo
 [debug/compiler]     [HILTI] coercing nodes in module Foo
 [debug/compiler]     [HILTI] resolving nodes in module Foo
-[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo2 -> type Bar::Bar1 (foo.hlt:7:1)
-[debug/resolver] [hilti::type::UnresolvedID] Bar::Bar1 -> type Bar::Bar1 (foo.hlt:9:30)
+[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo2 -> type Bar::Bar1 (foo.hlt:7:1-7:30)
+[debug/resolver] [hilti::type::UnresolvedID] Bar::Bar1 -> type Bar::Bar1 (foo.hlt:9:30-9:43)
 [debug/compiler]       -> modified
 [debug/compiler]     [HILTI] normalizing nodes in module Bar
 [debug/compiler]     [HILTI] coercing nodes in module Bar
 [debug/compiler]     [HILTI] resolving nodes in module Bar
-[debug/resolver] [hilti::declaration::ImportedModule] import Foo; -> imported (./bar.hlt:4:1)
-[debug/resolver] [hilti::declaration::Type] setting type ID to Bar::Bar1 (./bar.hlt:6:1)
-[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo1 -> type Foo::Foo1 (./bar.hlt:7:1)
-[debug/resolver] [hilti::type::UnresolvedID] Bar1 -> type Bar::Bar1 (./bar.hlt:9:20)
-[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo1 -> type Foo::Foo1 (./bar.hlt:9:30)
+[debug/resolver] [hilti::declaration::ImportedModule] import Foo; -> imported (./bar.hlt:4:1-4:12)
+[debug/resolver] [hilti::declaration::Type] setting type ID to Bar::Bar1 (./bar.hlt:6:1-6:27)
+[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo1 -> type Foo::Foo1 (./bar.hlt:7:1-7:30)
+[debug/resolver] [hilti::type::UnresolvedID] Bar1 -> type Bar::Bar1 (./bar.hlt:9:20-9:28)
+[debug/resolver] [hilti::type::UnresolvedID] Foo::Foo1 -> type Foo::Foo1 (./bar.hlt:9:30-9:43)
 [debug/compiler]       -> modified
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     resetting nodes for module Foo
@@ -55,43 +55,43 @@
 [debug/ast-final]       | Foo1 -> declaration::Type %1 <linkage="public"> [canon-id: Foo::Foo1] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]       | Foo2 -> declaration::Type %2 <linkage="public"> [canon-id: Foo::Foo2] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]       | foo -> declaration::Function %3 <linkage="private" parent_type="%???"> [canon-id: Foo::foo] [@d:XXX] ([@d:XXX])
-[debug/ast-final]     - ID <name="Foo"> (foo.hlt:2:8) [@i:XXX]
+[debug/ast-final]     - ID <name="Foo"> (foo.hlt:2:8-2:11) [@i:XXX]
 [debug/ast-final]     - statement::Block (foo.hlt:2:1-11:2) [@s:XXX]
-[debug/ast-final]     - declaration::ImportedModule <module="%8" parse_extension=".hlt" path="" scope="-"> (foo.hlt:4:1) [canon-id: Bar] [@d:XXX]
+[debug/ast-final]     - declaration::ImportedModule <module="%8" parse_extension=".hlt" path="" scope="-"> (foo.hlt:4:1-4:12) [canon-id: Bar] [@d:XXX]
 [debug/ast-final]         | Bar -> declaration::Module %21 <id="Bar"> [canon-id: Bar] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Bar1 -> declaration::Type %12 <linkage="public"> [canon-id: Bar::Bar1] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Bar2 -> declaration::Type %13 <linkage="public"> [canon-id: Bar::Bar2] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo -> declaration::ImportedModule %20 <module="%6" parse_extension=".hlt" path="" scope="-"> [canon-id: Foo] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | bar -> declaration::Function %14 <linkage="private" parent_type="%???"> [canon-id: Bar::bar] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       - ID <name="Bar"> (foo.hlt:4:8) [@i:XXX]
-[debug/ast-final]     - declaration::Type %1 <linkage="public"> (foo.hlt:6:1) [canon-id: Foo::Foo1] (resolved) [@d:XXX]
-[debug/ast-final]       - ID <name="Foo1"> (foo.hlt:6:13) [@i:XXX]
-[debug/ast-final]       - type::Bool (foo.hlt:6:20) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
-[debug/ast-final]       - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]     - declaration::Type %2 <linkage="public"> (foo.hlt:7:1) [canon-id: Foo::Foo2] (resolved) [@d:XXX]
-[debug/ast-final]       - ID <name="Foo2"> (foo.hlt:7:13) [@i:XXX]
-[debug/ast-final]       - type::String (prune) (bar.hlt:6:20) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
-[debug/ast-final]       - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]     - declaration::Function %3 <linkage="private" parent_type="%???"> (foo.hlt:9:1) [canon-id: Foo::foo] [@d:XXX]
+[debug/ast-final]       - ID <name="Bar"> (foo.hlt:4:8-4:11) [@i:XXX]
+[debug/ast-final]     - declaration::Type %1 <linkage="public"> (foo.hlt:6:1-6:25) [canon-id: Foo::Foo1] (resolved) [@d:XXX]
+[debug/ast-final]       - ID <name="Foo1"> (foo.hlt:6:13-6:17) [@i:XXX]
+[debug/ast-final]       - type::Bool (foo.hlt:6:20-6:24) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
+[debug/ast-final]       - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]     - declaration::Type %2 <linkage="public"> (foo.hlt:7:1-7:30) [canon-id: Foo::Foo2] (resolved) [@d:XXX]
+[debug/ast-final]       - ID <name="Foo2"> (foo.hlt:7:13-7:17) [@i:XXX]
+[debug/ast-final]       - type::String (prune) (bar.hlt:6:20-6:26) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
+[debug/ast-final]       - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]     - declaration::Function %3 <linkage="private" parent_type="%???"> (foo.hlt:9:1-9:45) [canon-id: Foo::foo] [@d:XXX]
 [debug/ast-final]         | bar -> declaration::Parameter %5 <is_type_param="false" kind="in"> [canon-id: Foo::foo::bar] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | foo -> declaration::Parameter %4 <is_type_param="false" kind="in"> [canon-id: Foo::foo::foo] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       - Function <cc="<standard>"> (foo.hlt:9:9) [@f:XXX]
-[debug/ast-final]         - ID <name="foo"> (foo.hlt:9:16) [@i:XXX]
-[debug/ast-final]         - type::Function <flavor="standard"> (foo.hlt:9:9) (const) (resolved) [@t:XXX]
-[debug/ast-final]           - type::function::Result (foo.hlt:9:9) [@t:XXX]
-[debug/ast-final]             - type::String (foo.hlt:9:9) (const) (resolved) [@t:XXX]
-[debug/ast-final]           - declaration::Parameter %4 <is_type_param="false" kind="in"> (foo.hlt:9:20) [canon-id: Foo::foo::foo] [@d:XXX]
-[debug/ast-final]             - ID <name="foo"> (foo.hlt:9:25) [@i:XXX]
-[debug/ast-final]             - type::Bool (prune) (foo.hlt:6:20) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]           - declaration::Parameter %5 <is_type_param="false" kind="in"> (foo.hlt:9:30) [canon-id: Foo::foo::bar] [@d:XXX]
-[debug/ast-final]             - ID <name="bar"> (foo.hlt:9:40) [@i:XXX]
-[debug/ast-final]             - type::String (prune) (bar.hlt:6:20) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]         - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]         - node::None (foo.hlt:6:1) [@n:XXX]
+[debug/ast-final]       - Function <cc="<standard>"> (foo.hlt:9:9-9:44) [@f:XXX]
+[debug/ast-final]         - ID <name="foo"> (foo.hlt:9:16-9:19) [@i:XXX]
+[debug/ast-final]         - type::Function <flavor="standard"> (foo.hlt:9:9-9:44) (const) (resolved) [@t:XXX]
+[debug/ast-final]           - type::function::Result (foo.hlt:9:9-9:15) [@t:XXX]
+[debug/ast-final]             - type::String (foo.hlt:9:9-9:15) (const) (resolved) [@t:XXX]
+[debug/ast-final]           - declaration::Parameter %4 <is_type_param="false" kind="in"> (foo.hlt:9:20-9:28) [canon-id: Foo::foo::foo] [@d:XXX]
+[debug/ast-final]             - ID <name="foo"> (foo.hlt:9:25-9:28) [@i:XXX]
+[debug/ast-final]             - type::Bool (prune) (foo.hlt:6:20-6:24) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]           - declaration::Parameter %5 <is_type_param="false" kind="in"> (foo.hlt:9:30-9:43) [canon-id: Foo::foo::bar] [@d:XXX]
+[debug/ast-final]             - ID <name="bar"> (foo.hlt:9:40-9:43) [@i:XXX]
+[debug/ast-final]             - type::String (prune) (bar.hlt:6:20-6:26) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]         - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]         - node::None (foo.hlt:6:1-6:25) [@n:XXX]
 [debug/ast-final] # [HILTI] Bar: Final AST (round 2)
 [debug/ast-final]   - Module %8 (bar.hlt:2:1-11:2) [@m:XXX]
 [debug/ast-final]       | Bar -> declaration::Module %21 <id="Bar"> [canon-id: Bar] [@d:XXX] ([@d:XXX])
@@ -99,43 +99,43 @@
 [debug/ast-final]       | Bar2 -> declaration::Type %13 <linkage="public"> [canon-id: Bar::Bar2] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]       | Foo -> declaration::ImportedModule %20 <module="%6" parse_extension=".hlt" path="" scope="-"> [canon-id: Foo] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       | bar -> declaration::Function %14 <linkage="private" parent_type="%???"> [canon-id: Bar::bar] [@d:XXX] ([@d:XXX])
-[debug/ast-final]     - ID <name="Bar"> (bar.hlt:2:8) [@i:XXX]
+[debug/ast-final]     - ID <name="Bar"> (bar.hlt:2:8-2:11) [@i:XXX]
 [debug/ast-final]     - statement::Block (bar.hlt:2:1-11:2) [@s:XXX]
-[debug/ast-final]     - declaration::ImportedModule <module="%6" parse_extension=".hlt" path="" scope="-"> (bar.hlt:4:1) [canon-id: Foo] [@d:XXX]
+[debug/ast-final]     - declaration::ImportedModule <module="%6" parse_extension=".hlt" path="" scope="-"> (bar.hlt:4:1-4:12) [canon-id: Foo] [@d:XXX]
 [debug/ast-final]         | Bar -> declaration::ImportedModule %18 <module="%8" parse_extension=".hlt" path="" scope="-"> [canon-id: Bar] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo -> declaration::Module %19 <id="Foo"> [canon-id: Foo] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo1 -> declaration::Type %1 <linkage="public"> [canon-id: Foo::Foo1] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo2 -> declaration::Type %2 <linkage="public"> [canon-id: Foo::Foo2] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | foo -> declaration::Function %3 <linkage="private" parent_type="%???"> [canon-id: Foo::foo] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       - ID <name="Foo"> (bar.hlt:4:8) [@i:XXX]
-[debug/ast-final]     - declaration::Type %12 <linkage="public"> (bar.hlt:6:1) [canon-id: Bar::Bar1] (resolved) [@d:XXX]
-[debug/ast-final]       - ID <name="Bar1"> (bar.hlt:6:13) [@i:XXX]
-[debug/ast-final]       - type::String (bar.hlt:6:20) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
-[debug/ast-final]       - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]     - declaration::Type %13 <linkage="public"> (bar.hlt:7:1) [canon-id: Bar::Bar2] (resolved) [@d:XXX]
-[debug/ast-final]       - ID <name="Bar2"> (bar.hlt:7:13) [@i:XXX]
-[debug/ast-final]       - type::Bool (prune) (foo.hlt:6:20) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
-[debug/ast-final]       - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]     - declaration::Function %14 <linkage="private" parent_type="%???"> (bar.hlt:9:1) [canon-id: Bar::bar] [@d:XXX]
+[debug/ast-final]       - ID <name="Foo"> (bar.hlt:4:8-4:11) [@i:XXX]
+[debug/ast-final]     - declaration::Type %12 <linkage="public"> (bar.hlt:6:1-6:27) [canon-id: Bar::Bar1] (resolved) [@d:XXX]
+[debug/ast-final]       - ID <name="Bar1"> (bar.hlt:6:13-6:17) [@i:XXX]
+[debug/ast-final]       - type::String (bar.hlt:6:20-6:26) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
+[debug/ast-final]       - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]     - declaration::Type %13 <linkage="public"> (bar.hlt:7:1-7:30) [canon-id: Bar::Bar2] (resolved) [@d:XXX]
+[debug/ast-final]       - ID <name="Bar2"> (bar.hlt:7:13-7:17) [@i:XXX]
+[debug/ast-final]       - type::Bool (prune) (foo.hlt:6:20-6:24) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
+[debug/ast-final]       - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]     - declaration::Function %14 <linkage="private" parent_type="%???"> (bar.hlt:9:1-9:45) [canon-id: Bar::bar] [@d:XXX]
 [debug/ast-final]         | bar -> declaration::Parameter %15 <is_type_param="false" kind="in"> [canon-id: Bar::bar::bar] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | foo -> declaration::Parameter %16 <is_type_param="false" kind="in"> [canon-id: Bar::bar::foo] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       - Function <cc="<standard>"> (bar.hlt:9:9) [@f:XXX]
-[debug/ast-final]         - ID <name="bar"> (bar.hlt:9:16) [@i:XXX]
-[debug/ast-final]         - type::Function <flavor="standard"> (bar.hlt:9:9) (const) (resolved) [@t:XXX]
-[debug/ast-final]           - type::function::Result (bar.hlt:9:9) [@t:XXX]
-[debug/ast-final]             - type::String (bar.hlt:9:9) (const) (resolved) [@t:XXX]
-[debug/ast-final]           - declaration::Parameter %15 <is_type_param="false" kind="in"> (bar.hlt:9:20) [canon-id: Bar::bar::bar] [@d:XXX]
-[debug/ast-final]             - ID <name="bar"> (bar.hlt:9:25) [@i:XXX]
-[debug/ast-final]             - type::String (prune) (bar.hlt:6:20) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]           - declaration::Parameter %16 <is_type_param="false" kind="in"> (bar.hlt:9:30) [canon-id: Bar::bar::foo] [@d:XXX]
-[debug/ast-final]             - ID <name="foo"> (bar.hlt:9:40) [@i:XXX]
-[debug/ast-final]             - type::Bool (prune) (foo.hlt:6:20) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]             - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]         - node::None (foo.hlt:6:1) [@n:XXX]
-[debug/ast-final]         - node::None (foo.hlt:6:1) [@n:XXX]
+[debug/ast-final]       - Function <cc="<standard>"> (bar.hlt:9:9-9:44) [@f:XXX]
+[debug/ast-final]         - ID <name="bar"> (bar.hlt:9:16-9:19) [@i:XXX]
+[debug/ast-final]         - type::Function <flavor="standard"> (bar.hlt:9:9-9:44) (const) (resolved) [@t:XXX]
+[debug/ast-final]           - type::function::Result (bar.hlt:9:9-9:15) [@t:XXX]
+[debug/ast-final]             - type::String (bar.hlt:9:9-9:15) (const) (resolved) [@t:XXX]
+[debug/ast-final]           - declaration::Parameter %15 <is_type_param="false" kind="in"> (bar.hlt:9:20-9:28) [canon-id: Bar::bar::bar] [@d:XXX]
+[debug/ast-final]             - ID <name="bar"> (bar.hlt:9:25-9:28) [@i:XXX]
+[debug/ast-final]             - type::String (prune) (bar.hlt:6:20-6:26) (const) (type-id: Bar::Bar1) (resolved) [@t:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]           - declaration::Parameter %16 <is_type_param="false" kind="in"> (bar.hlt:9:30-9:43) [canon-id: Bar::bar::foo] [@d:XXX]
+[debug/ast-final]             - ID <name="foo"> (bar.hlt:9:40-9:43) [@i:XXX]
+[debug/ast-final]             - type::Bool (prune) (foo.hlt:6:20-6:24) (const) (type-id: Foo::Foo1) (resolved) [@t:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]             - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]         - node::None (foo.hlt:6:1-6:25) [@n:XXX]
+[debug/ast-final]         - node::None (foo.hlt:6:1-6:25) [@n:XXX]
 [debug/compiler]   [HILTI] validating module Foo (post)
 [debug/compiler]   [HILTI] validating module Bar (post)
 [debug/compiler]   finalized module Foo

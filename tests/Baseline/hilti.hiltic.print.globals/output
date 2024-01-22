@@ -29,7 +29,7 @@ extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
 }
 
 extern void __hlt::Foo::__init_module() {
-      __location__("<...>/globals.hlt:16:1");
+      __location__("<...>/globals.hlt:16:1-16:16");
     ::hilti::rt::print(Foo::__globals()->X, ::hilti::rt::Bool(true));
 }
 

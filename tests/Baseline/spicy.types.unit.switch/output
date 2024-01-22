@@ -27,8 +27,8 @@ bar
 foo
 foo
 2345
-[error] terminating with uncaught exception of type spicy::rt::ParseError: &size amount not consumed (<...>/switch.spicy:45:8)
-[error] terminating with uncaught exception of type spicy::rt::ParseError: &size amount not consumed (<...>/switch.spicy:45:8)
-[error] terminating with uncaught exception of type spicy::rt::ParseError: &size amount not consumed (<...>/switch.spicy:45:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: &size amount not consumed (<...>/switch.spicy:45:8-45:15)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: &size amount not consumed (<...>/switch.spicy:45:8-45:15)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: &size amount not consumed (<...>/switch.spicy:45:8-45:15)
 [$tag=1, $b1=b"ABC", $b2=(not set)]
 [$tag=2, $b1=(not set), $b2=b"abc"]

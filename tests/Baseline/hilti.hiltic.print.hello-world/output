@@ -16,7 +16,7 @@ namespace __hlt::Foo {
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
-      __location__("<...>/hello-world.hlt:10:1");
+      __location__("<...>/hello-world.hlt:10:1-10:30");
     ::hilti::rt::print(std::string("Hello, world!"), ::hilti::rt::Bool(true));
 }
 

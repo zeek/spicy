@@ -42,11 +42,11 @@ extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
 }
 
 extern void __hlt::Foo::__init_module() {
-      __location__("foo.hlt:10:1");
+      __location__("foo.hlt:10:1-10:39");
     ::hilti::rt::print(std::string("Hello, world from Foo!"), ::hilti::rt::Bool(true));
-      __location__("foo.hlt:11:1");
+      __location__("foo.hlt:11:1-11:18");
     ::hilti::rt::print(Foo::__globals()->foo, ::hilti::rt::Bool(true));
-      __location__("foo.hlt:12:1");
+      __location__("foo.hlt:12:1-12:23");
     ::hilti::rt::print(Bar::__globals()->bar, ::hilti::rt::Bool(true));
 }
 
@@ -99,11 +99,11 @@ extern void __hlt::Bar::__init_globals(::hilti::rt::Context* ctx) {
 }
 
 extern void __hlt::Bar::__init_module() {
-      __location__("bar.hlt:10:1");
+      __location__("bar.hlt:10:1-10:39");
     ::hilti::rt::print(std::string("Hello, world from Bar!"), ::hilti::rt::Bool(true));
-      __location__("bar.hlt:11:1");
+      __location__("bar.hlt:11:1-11:23");
     ::hilti::rt::print(Foo::__globals()->foo, ::hilti::rt::Bool(true));
-      __location__("bar.hlt:12:1");
+      __location__("bar.hlt:12:1-12:18");
     ::hilti::rt::print(Bar::__globals()->bar, ::hilti::rt::Bool(true));
 }
 
