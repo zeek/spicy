@@ -42,3 +42,29 @@ type Filter = unit {
 function encoded_offset(offset: uint64): bytes {
     return pack(offset, spicy::ByteOrder::Network);
 }
+
+# @TEST-START-NEXT
+# This is a regression test for #1655.
+
+# FIXME(bbannier): check outsets here.
+
+module foo;
+
+public type X = unit {
+    headers: Y[];
+};
+
+type Y = unit {
+    on %init {
+        self.connect_filter(new F);
+    }
+
+    data: b"ABCDEF";
+};
+
+type F = unit {
+    %filter;
+    : bytes &eod {
+        self.forward($$);
+    }
+};
