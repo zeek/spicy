@@ -9,10 +9,10 @@
 [$x=(not set), $a=[$a1=(not set), $a2=b"2", $a3=(not set), $a4=(not set)], $as=[]]
 [$x=(not set), $a=[$a1=(not set), $a2=(not set), $a3=3, $a4=(not set)], $as=[]]
 [$x=(not set), $a=[$a1=(not set), $a2=(not set), $a3=(not set), $a4=b"4"], $as=[]]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize-nested.spicy:33:8)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize-nested.spicy:33:8-33:10)
 # Synchronize on vector field
 [$x=b"X", $a=[$a1=(not set), $a2=(not set), $a3=(not set), $a4=(not set)], $as=[[$a1=b"1", $a2=(not set), $a3=(not set), $a4=(not set)]]]
 [$x=b"X", $a=[$a1=(not set), $a2=(not set), $a3=(not set), $a4=(not set)], $as=[[$a1=(not set), $a2=b"2", $a3=(not set), $a4=(not set)]]]
 [$x=b"X", $a=[$a1=(not set), $a2=(not set), $a3=(not set), $a4=(not set)], $as=[[$a1=(not set), $a2=(not set), $a3=3, $a4=(not set)]]]
 [$x=b"X", $a=[$a1=(not set), $a2=(not set), $a3=(not set), $a4=(not set)], $as=[[$a1=(not set), $a2=(not set), $a3=(not set), $a4=b"4"]]]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: no expected look-ahead token found (<...>/synchronize-nested.spicy:48:9)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: no expected look-ahead token found (<...>/synchronize-nested.spicy:48:9-48:19)

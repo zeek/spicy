@@ -23,23 +23,23 @@ extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModul
 
 extern auto __hlt::Foo::test(const std::string& x) -> std::string {
     ::hilti::rt::detail::checkStack();
-      __location__("<...>/yield.hlt:12:5");
+      __location__("<...>/yield.hlt:12:5-12:49");
     ::hilti::rt::print(std::string("HILTI - 1 - argument: "), ::hilti::rt::Bool(false));
-      __location__("<...>/yield.hlt:13:5");
+      __location__("<...>/yield.hlt:13:5-13:19");
     ::hilti::rt::print(x, ::hilti::rt::Bool(true));
-      __location__("<...>/yield.hlt:15:5");
+      __location__("<...>/yield.hlt:15:5-15:10");
     ::hilti::rt::detail::yield();
-      __location__("<...>/yield.hlt:16:5");
+      __location__("<...>/yield.hlt:16:5-16:29");
     ::hilti::rt::print(std::string("HILTI - 2"), ::hilti::rt::Bool(true));
-      __location__("<...>/yield.hlt:17:5");
+      __location__("<...>/yield.hlt:17:5-17:10");
     ::hilti::rt::detail::yield();
-      __location__("<...>/yield.hlt:18:5");
+      __location__("<...>/yield.hlt:18:5-18:29");
     ::hilti::rt::print(std::string("HILTI - 3"), ::hilti::rt::Bool(true));
-      __location__("<...>/yield.hlt:19:5");
+      __location__("<...>/yield.hlt:19:5-19:10");
     ::hilti::rt::detail::yield();
-      __location__("<...>/yield.hlt:20:5");
+      __location__("<...>/yield.hlt:20:5-20:32");
     ::hilti::rt::print(std::string("HILTI - Done"), ::hilti::rt::Bool(true));
-      __location__("<...>/yield.hlt:22:5");
+      __location__("<...>/yield.hlt:22:5-22:25");
     return std::string("test-result");
 }
 

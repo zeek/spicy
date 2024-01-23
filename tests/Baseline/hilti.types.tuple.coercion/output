@@ -17,7 +17,7 @@ namespace __hlt::Foo {
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
-      __location__("<...>/coercion.hlt:14:1");
+      __location__("<...>/coercion.hlt:14:1-14:17");
     ::hilti::rt::print(f(), ::hilti::rt::Bool(true));
 }
 
@@ -25,7 +25,7 @@ extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModul
 
 static auto __hlt::Foo::f() -> std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string> {
     ::hilti::rt::detail::checkStack();
-      __location__("<...>/coercion.hlt:11:5");
+      __location__("<...>/coercion.hlt:11:5-11:24");
     return std::make_tuple(::hilti::rt::integer::safe<std::uint64_t>{123U}, std::string("abc"));
 }
 

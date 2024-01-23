@@ -1,3 +1,23 @@
+1.10.0-dev.129 | 2024-01-23 17:48:19 +0100
+
+  * Adjust end of Bison-generated locations. (Robin Sommer, Corelight)
+
+    The Bison-side end column points one beyond the element, which isn't
+    that nice in error messages, so we adjust them now.
+
+  * Extend location printing to include single-line ranges. (Robin Sommer, Corelight)
+
+    For a location of, e.g., "line 1, column 5 to 10", we now print
+    `1:5-10`, whereas we used to print it as only `1:5`, hence dropping
+    information.
+
+  * Fix Bison locations. (Robin Sommer, Corelight)
+
+    If a Bison rule started with an optional element, its location would
+    start at the end of the *previous* token if that optional element
+    wasn't present. We now skip token locations that are zero-sized at the
+    beginning of a rule.
+
 1.10.0-dev.125 | 2024-01-23 16:27:43 +0100
 
   * Bump 3rdparty/any from `e88b1bf` to `7c76129`

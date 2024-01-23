@@ -44,7 +44,8 @@ namespace hilti { namespace detail { class Parser; } }
 #define yylex driver->scanner()->lex
 
 static hilti::Meta toMeta(hilti::detail::parser::location l) {
-    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column, l.end.column));
+    return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column,
+                                       (l.end.column > 0 ? l.end.column - 1 : 0)));
 }
 
 static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {
@@ -66,6 +67,22 @@ static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
 }
 
 #define __loc__ toMeta(yylhs.location)
+
+#define YYLLOC_DEFAULT(Current, Rhs, N)                                                                                \
+do {                                                                                                                   \
+    bool done = false;                                                                                                 \
+    for ( int i = 1; i <= N; i++ ) {                                                                                   \
+        if ( YYRHSLOC(Rhs, i).begin.line != YYRHSLOC(Rhs, i).end.line ||                                               \
+             YYRHSLOC(Rhs, i).begin.column != YYRHSLOC(Rhs, i).end.column ) {                                          \
+            (Current).begin = YYRHSLOC(Rhs, i).begin;                                                                  \
+            (Current).end = YYRHSLOC(Rhs, N).end;                                                                      \
+            done = true;                                                                                               \
+            break;                                                                                                     \
+        }                                                                                                              \
+    }                                                                                                                  \
+    if ( ! done )                                                                                                      \
+        (Current).begin = (Current).end = YYRHSLOC(Rhs, 0).end;                                                        \
+} while ( false )
 
 static int _field_width = 0;
 

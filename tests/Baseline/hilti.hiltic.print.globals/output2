@@ -23,7 +23,7 @@ extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::
 extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X = std::string("Hello, world!"); }
 
 extern void __hlt::Foo::__init_module() {
-      __location__("<...>/globals.hlt:16:1");
+      __location__("<...>/globals.hlt:16:1-16:15");
     ::hilti::rt::print((*__hlt::Foo::X), ::hilti::rt::Bool(true));
 }
 

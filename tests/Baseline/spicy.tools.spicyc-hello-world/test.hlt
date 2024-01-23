@@ -17,9 +17,9 @@ namespace __hlt::Foo {
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
-      __location__("<...>/spicyc-hello-world.spicy:8:1");
+      __location__("<...>/spicyc-hello-world.spicy:8:1-8:22");
     ::hilti::rt::print(std::string("Hello, world!"), ::hilti::rt::Bool(true));
-      __location__("<...>/spicyc-hello-world.spicy:9:1");
+      __location__("<...>/spicyc-hello-world.spicy:9:1-9:24");
     ::hilti::rt::printValues(std::make_tuple(std::string("Hello"), std::string("world!")), ::hilti::rt::Bool(true));
 }
 

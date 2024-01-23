@@ -3,5 +3,5 @@ hook!
 [$x=b"123"]
 hook!
 [$x=b"123"]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: end-of-data reached before &until expression found (<...>/void-until.spicy:15:19)
-[error] terminating with uncaught exception of type spicy::rt::ParseError: end-of-data reached before &until expression found (<...>/void-until.spicy:15:19)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: end-of-data reached before &until expression found (<...>/void-until.spicy:15:19-15:23)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: end-of-data reached before &until expression found (<...>/void-until.spicy:15:19-15:23)

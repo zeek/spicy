@@ -2,6 +2,6 @@
 [$i=1]
 [$i=1]
 [$i=1]
-[error] test.spicy:4:1: cannot import module 'Bar': cannot find file
+[error] test.spicy:4:1-4:11: cannot import module 'Bar': cannot find file
 [error] spicy-driver: errors encountered during resolving
 [$i=1]

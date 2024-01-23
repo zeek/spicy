@@ -3,4 +3,4 @@ b1, 2345
 b2, <not set>
 b1, <not set>
 b2, 2345
-[error] terminating with uncaught exception of type spicy::rt::ParseError: no matching case in switch statement (<...>/switch-no-default.spicy:13:8-16:14)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: no matching case in switch statement (<...>/switch-no-default.spicy:13:8-16:13)

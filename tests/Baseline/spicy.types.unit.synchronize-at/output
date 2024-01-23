@@ -7,7 +7,7 @@ foo::Test1 {
     data: 123
   }
 }
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize-at.spicy:17:11)
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize-at.spicy:17:11-17:18)
 foo::Test1 {
   foo: foo::Foo {}
   bar: foo::Bar {
