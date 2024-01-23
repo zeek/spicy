@@ -327,6 +327,11 @@ struct ProductionVisitor
                     if ( unit ) {
                         pb->guardFeatureCode(*unit->id(), {"supports_filters"}, [&]() {
                             // If we have a filter attached, we initialize it and change to parse from its output.
+                            auto offset1 =
+                                builder()->addTmp("offset1",
+                                                  builder::memberCall(builder::begin(builder::deref(state().data)),
+                                                                      "offset", {}));
+
                             auto filtered = builder::assign(builder::id("filtered"),
                                                             builder::call("spicy_rt::filter_init",
                                                                           {state().self, state().data, state().cur}));
@@ -335,15 +340,23 @@ struct ProductionVisitor
                             pushBuilder(have_filter);
 
                             auto args2 = args;
-                            builder()->addLocal("filtered_data", type::ValueReference(type::Stream()),
-                                                builder::id("filtered"));
-                            args2[0] = builder::id("filtered_data");
-                            args2[1] = builder::begin(builder::deref(args2[0]));
-                            args2[2] = builder::deref(args2[0]);
+
+                            auto filtered_data =
+                                builder()->addTmp("filtered_data", type::ValueReference(type::Stream()),
+                                                  builder::id("filtered"));
+                            args2[0] = filtered_data;
+                            args2[1] = builder::begin(builder::deref(filtered_data));
+                            args2[2] = builder::deref(filtered_data);
+
                             builder()->addExpression(builder::memberCall(state().self, id_stage2, args2));
 
-                            // Assume the filter consumed the full input.
-                            pb->advanceInput(builder::size(state().cur));
+                            auto offset2 =
+                                builder()->addTmp("offset2",
+                                                  builder::memberCall(builder::begin(builder::deref(state().data)),
+                                                                      "offset", {}));
+
+                            auto advance = builder::difference(offset2, offset1);
+                            pb->advanceInput(advance);
 
                             auto result =
                                 builder::tuple({state().cur, state().lahead, state().lahead_end, state().error});
