@@ -347,12 +347,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Priv1%supports_filters ) 
+        if ( __feat%foo@@Priv1%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Priv1_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Priv1_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -360,6 +362,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -580,12 +583,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Pub2%supports_filters ) 
+        if ( __feat%foo@@Pub2%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Pub2_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Pub2_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -593,6 +598,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -809,12 +815,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Priv2%supports_filters ) 
+        if ( __feat%foo@@Priv2%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Priv2_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Priv2_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -822,6 +830,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -1042,12 +1051,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Priv3%supports_filters ) 
+        if ( __feat%foo@@Priv3%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Priv3_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Priv3_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -1055,6 +1066,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -1275,12 +1287,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Priv4%supports_filters ) 
+        if ( __feat%foo@@Priv4%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Priv4_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Priv4_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -1288,6 +1302,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -1554,12 +1569,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Priv5%supports_filters ) 
+        if ( __feat%foo@@Priv5%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Priv5_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Priv5_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -1567,6 +1584,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -1787,12 +1805,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Priv6%supports_filters ) 
+        if ( __feat%foo@@Priv6%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Priv6_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Priv6_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -1800,6 +1820,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -2020,12 +2041,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Pub3%supports_filters ) 
+        if ( __feat%foo@@Pub3%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Pub3_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Pub3_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -2033,6 +2056,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
@@ -2295,12 +2319,14 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
-        if ( __feat%foo@@Priv10%supports_filters ) 
+        if ( __feat%foo@@Priv10%supports_filters ) {
+            local uint<64> __offset1 = begin((*__data)).offset();
 
             if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> filtered_data = filtered;
-                (*self).__parse_foo_Priv10_stage2(filtered_data, begin((*filtered_data)), (*filtered_data), __trim, __lah, __lahe, __error);
-                __cur = __cur.advance(|__cur|);
+                local value_ref<stream> __filtered_data = filtered;
+                (*self).__parse_foo_Priv10_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+                local uint<64> __offset2 = begin((*__data)).offset();
+                __cur = __cur.advance(__offset2 - __offset1);
 
                 if ( __trim ) 
                     (*__data).trim(begin(__cur));
@@ -2308,6 +2334,7 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
                 __result = (__cur, __lah, __lahe, __error);
             }
 
+        }
 
 
         if ( ! filtered ) 
