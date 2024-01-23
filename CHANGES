@@ -1,3 +1,9 @@
+1.10.0-dev.125 | 2024-01-23 16:27:43 +0100
+
+  * Bump 3rdparty/any from `e88b1bf` to `7c76129`
+
+  * Fix incorrect check_suite type in GH actions [skip CI]. (Benjamin Bannier, Corelight)
+
 1.10.0-dev.122 | 2024-01-18 08:39:05 +0100
 
   * Update documentation of `offset()`. (Benjamin Bannier, Corelight)
