@@ -1009,17 +1009,113 @@ Generally, a field ``bitfield(N)`` field is parsed like an
 ``uint<N>``. The field then supports dereferencing individual bit
 ranges through their labels. The corresponding expressions
 (``self.x.<id>``) have the same ``uint<N>`` type as the parsed value
-itself, with the value shifted to the right so that the lowest
-extracted bit becomes bit 0 of the returned value. As you can see in
+itself, with the value shifted to the right so that the least significant
+extracted bit becomes the least significant bit of the returned value. As you can see in
 the example, the type of the field itself becomes a tuple composed of
 the values of the individual bit ranges.
 
 By default, a bitfield assumes the underlying integer comes in network
 byte order. You can specify a ``&byte-order`` attribute to change that
 (e.g., ``bitfield(32) { ... } &byte-order=spicy::ByteOrder::Little``).
-Furthermore, each bit range can also specify a ``&bit-order``
-attribute to specify the :ref:`ordering <spicy_bitorder>` for its
-bits; the default is ``spicy::BitOrder::LSB0``.
+
+When parsing a ``bitfield(16)`` in network byte order and with bit order
+``spicy::BitOrder::LSB0`` (default value of ``&bit-order``), bits are
+numbered 0 to 15 from right to left.
+
+.. code::
+
+    MSB                           LSB
+          <--   1         <--       0
+    6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+    +---------------+---------------+
+    |               |               |
+    +-------------------------------+
+
+
+This default bit numbering may be surprising given that some RFCs use the inverse
+as documented in `RFC 1700 <https://www.rfc-editor.org/rfc/rfc1700.html>`_.
+Here, the most significant bit is numbered 0 on the left with higher
+bit numbers representing less significant bits to the right.
+Concrete examples would be the `WebSocket framing <https://datatracker.ietf.org/doc/html/rfc6455#section-5.2>`_
+or `IPv4 header <https://datatracker.ietf.org/doc/html/rfc791#section-3.1>`_
+notations.
+
+.. code::
+
+    MSB                           LSB
+    0       -->         1    -->
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6
+    +-+-+-+-+-------+-+-------------+
+    |F|R|R|R| opcode|M| Payload len |
+    |I|S|S|S|  (4)  |A|     (7)     |
+    |N|V|V|V|       |S|             |
+    | |1|2|3|       |K|             |
+    +-+-+-+-+-------+-+-------------+
+
+To express such bitfields more naturally in Spicy, use ``&bit-order=spicy::BitOrder::MSB0``
+on the whole bitfield:
+
+.. spicy-code:: parse-websocket-bitfield.spicy
+
+    module WebSocket;
+
+    public type Header= unit {
+      : bitfield(32) {
+        fin: 0;
+        rsv: 1..3;
+        opcode: 4..7;
+        mask: 8;
+        payload_len: 9..15;
+    } &bit-order=spicy::BitOrder::MSB0
+
+The way to think about this is that the most significant bit of an integer in
+network byte order is always the most left bit and the least significant bit
+the most right one. Specifying the bit order as ``LSB0`` or ``MSB0`` essentially
+sets the bit numbering direction by specifying the location of bit 0.
+
+With little endian byte order, the bits are numbered zigzag-wise and
+``MSB0`` and ``LSB0`` can again be used to change the direction of the bit
+numbering. The following example uses ``spicy::ByteOrder::Little`` and
+the default ``LSB0`` bit order for ``bitfield(16)``. Notice how the most
+significant and least significant bit for a 2 byte little endian integer
+are next to each other.
+
+.. code::
+
+    f: bitfield(16) {
+
+      ...
+
+    } &byte-order=spicy::ByteOrder::Little;
+
+                  LSB MSB
+         <--        0     <--   1
+      7 6 5 4 3 2 1 0 5 4 3 2 1 0 9 8
+    +---------------+---------------+
+    |               |               |
+    +-------------------------------+
+
+With ``MSB0`` as bit order, the bit numbering direction is from left to right, instead:
+
+.. code::
+
+    f: bitfield(16) {
+
+      ...
+
+    } &byte-order=spicy::ByteOrder::Little &bit-order=spicy::BitOrder::MSB0;
+
+                LSB MSB
+        1  -->      0    -->
+    8 9 0 1 2 3 4 5 0 1 2 3 4 5 6 7
+    +---------------+---------------+
+    |               |               |
+    +-------------------------------+
+
+
+Bit numbering with larger sized bitfields in little endian gets only more
+confusing. Prefer network byte ordered bitfields unless it makes sense given
+the spec you're working with.
 
 The individual bit ranges support the ``&convert`` attribute and will
 adjust their types accordingly, just like a regular unit field (see
