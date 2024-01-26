@@ -1,0 +1,143 @@
+# @TEST-EXEC: echo "" | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type X = unit {
+
+  be16_lsb0: bitfield(16) {
+    x0: 0;                # 1
+    x12: 1..2;            # 2 10
+    x35: 3..5;            # 0
+    x79: 7..9;            # 4  100 )
+    x1015: 10..15;        # 32 100000
+    x1015_msb0: 10..15 &bit-order=spicy::BitOrder::MSB0;  # still 32
+    x1015_lsb0: 10..15 &bit-order=spicy::BitOrder::LSB0;  # still 32
+  } &parse-from=b"\x82\x05" {
+    # input         10000010 00000101   \x82\x05
+    #                    1          0
+    # big-lsb0-bits 54321098 76543210
+    assert $$.x0 == 1;
+    assert $$.x12 == 2;
+    assert $$.x35 == 0;
+    assert $$.x79 == 4;
+    assert $$.x1015 == 32;
+    assert $$.x1015_msb0 == 32;
+    assert $$.x1015_lsb0 == 32;
+  }
+
+  le16_lsb0: bitfield(16) {
+    x0: 0;            # 0
+    x12: 1..2;        # 1
+    x35: 3..5;        # 0
+    x79: 7..9;        # 3 011
+    x1015: 10..15;    # 1
+    x1015_msb0: 10..15 &bit-order=spicy::BitOrder::MSB0;  # still 1
+    x1015_lsb0: 10..15 &bit-order=spicy::BitOrder::LSB0;  # still 1
+  } &byte-order=spicy::ByteOrder::Little
+    &parse-from=b"\x82\x05" {
+    # input            10000010 00000101   \x82\x05
+    #                    1           1
+    # little-lsb0-bits 76543210 54321098
+    assert $$.x0 == 0;
+    assert $$.x12 == 1;
+    assert $$.x35 == 0;
+    assert $$.x79 == 3;
+    assert $$.x1015 == 1;
+    assert $$.x1015_msb0 == 1;
+    assert $$.x1015_lsb0 == 1;
+  }
+
+  le16_msb0: bitfield(16) {
+    x0: 0;             # 0
+    x12: 1..2;         # 0
+    x35: 3..5;         # 1 001
+    x79: 7..9;         # 6 110
+    x1015: 10..15;     # 2 000010
+    x1015_msb0: 10..15 &bit-order=spicy::BitOrder::MSB0;  # still 2
+    x1015_lsb0: 10..15 &bit-order=spicy::BitOrder::LSB0;  # still 2
+  } &byte-order=spicy::ByteOrder::Little
+    &bit-order=spicy::BitOrder::MSB0
+    &parse-from=b"\x82\x05" {
+    # input:           10000010 00000101   \x82\x05
+    #                    1      0
+    # little-msb0-bits 89012345 01234567
+    assert $$.x0 == 0;
+    assert $$.x12 == 0;
+    assert $$.x35 == 1;
+    assert $$.x79 == 6;
+    assert $$.x1015_msb0 == 2;
+    assert $$.x1015_lsb0 == 2;
+  }
+
+  le32_lsb0: bitfield(32) {
+    x0: 0;
+    x12: 1..2;
+    x35: 3..5;  # 7 111
+    x79: 7..9;  # 5 101
+    x1015: 10..15; # 32 10000
+    x1923: 19..23;
+    x2527: 25..27; # 7 111
+    x2831: 28..31; # 8 1000
+    x2831_msb0: 28..31 &bit-order=spicy::BitOrder::MSB0;  # still 8
+    x2831_lsb0: 28..31 &bit-order=spicy::BitOrder::LSB0;  # still 8
+    x31: 31; # 1
+  } &byte-order=spicy::ByteOrder::Little
+    &parse-from=b"\xf8\x82\x05\x8f" {
+    # LE is just confusing.
+    # input:           11111000 10000010 00000101 10001111   \xf8\x82\x05\x8f
+    #                                1      2      3
+    # little-lsb0-bits 76543210 54321098 32109876 10987654
+    assert $$.x0 == 0;
+    assert $$.x12 == 0;
+    assert $$.x35 == 7;
+    assert $$.x79 == 5;
+    assert $$.x1015 == 32;
+    assert $$.x1923 == 0;
+    assert $$.x2527 == 7;
+    assert $$.x2831 == 8;
+    assert $$.x2831_msb0 == 8;
+    assert $$.x2831_lsb0 == 8;
+    assert $$.x31 == 1;
+  }
+
+  be32_msb0: bitfield(32) {
+    x0: 0;
+    x12: 1..2;
+    x35: 3..5;
+    x79: 7..9;
+    x1015: 10..15;
+    x1923: 19..23;
+    x2527: 25..27;
+    x2831: 28..31;
+    x2831_msb0: 28..31 &bit-order=spicy::BitOrder::MSB0;
+    x2831_lsb0: 28..31 &bit-order=spicy::BitOrder::LSB0;
+    x31: 31; # 1
+  } &bit-order=spicy::BitOrder::MSB0
+    &parse-from=b"\xf8\x82\x05\x8f" {
+    # input:        11111000 10000010 00000101 10001111   \xf8\x82\x05\x8f
+    #                          1          2          3
+    # big-msb0-bits 01234567 89012345 67890123 45678901
+    assert $$.x0 == 1;
+    assert $$.x12 == 3;
+    assert $$.x35 == 6;
+    assert $$.x79 == 2;
+    assert $$.x1015 == 2;
+    assert $$.x1923 == 5;
+    assert $$.x2527 == 0;
+    assert $$.x2831 == 15;
+    assert $$.x2831_msb0 == 15;
+    assert $$.x2831_lsb0 == 15;
+    assert $$.x31 == 1;
+  }
+
+  on %done {
+    print "be_lsb0", self.be16_lsb0;
+    print "le_lsb0", self.le16_lsb0;
+    print "le_msb0", self.le16_msb0;
+    print "le32_lsb0", self.le32_lsb0;
+    print "be32_msb0", self.be32_msb0;
+  }
+};
