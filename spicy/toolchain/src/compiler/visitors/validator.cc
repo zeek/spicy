@@ -752,6 +752,15 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
                     error(fmt("'%s' can be used at most once", a), p);
             }
         }
+
+        if ( auto t = f.itemType().tryAs<type::Bitfield>() ) {
+            for ( const auto& b : t->bits() ) {
+                if ( AttributeSet::has(b.attributes(), "&bit-order") )
+                    hilti::logger().deprecated(fmt("&bit-order on bitfield item '%s' has no effect and is deprecated",
+                                                   b.id()),
+                                               b.meta().location());
+            }
+        }
     }
 
     void operator()(const spicy::type::unit::item::UnresolvedField& u, position_t p) {

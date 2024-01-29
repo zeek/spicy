@@ -1,3 +1,15 @@
+1.10.0-dev.133 | 2024-01-29 10:59:23 +0100
+
+  * GH-1489: Deprecate &bit-order on bit ranges. (Arne Welzel, Corelight)
+
+    This does not appear to have any effect and allowing it may be
+    confusing to users. Deprecate it with the idea of eventual
+    removal.
+
+  * Add extensive bitfield test including endianness behavior. (Arne Welzel, Corelight)
+
+  * Add bitfield examples. (Arne Welzel, Corelight)
+
 1.10.0-dev.129 | 2024-01-23 17:48:19 +0100
 
   * Adjust end of Bison-generated locations. (Robin Sommer, Corelight)

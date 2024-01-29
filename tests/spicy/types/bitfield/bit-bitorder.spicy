@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc -p -o /dev/null %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test deprecated "&bit-order" attribute on bits emits deprecation warning.
+
+module Mini;
+
+import spicy;
+
+public type X = unit {
+  be16_lsb0: bitfield(16) {
+    x0: 0;
+    x1015: 10..15;
+    x1015_msb0: 10..15 &bit-order=spicy::BitOrder::MSB0;
+    x1015_lsb0: 10..15 &bit-order=spicy::BitOrder::LSB0;
+  };
+};
