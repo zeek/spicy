@@ -1,3 +1,7 @@
+1.10.0-dev.135 | 2024-01-30 12:29:28 +0100
+
+  * GH-1665: Fix running of `codebase` tests. (Benjamin Bannier, Corelight)
+
 1.10.0-dev.133 | 2024-01-29 10:59:23 +0100
 
   * GH-1489: Deprecate &bit-order on bit ranges. (Arne Welzel, Corelight)
