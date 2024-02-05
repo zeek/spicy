@@ -778,6 +778,11 @@ struct ProductionVisitor
 
                 pb->parseError("parsing not done within &max-size bytes", a->meta());
             });
+
+            // For `&max-size` we use `ncur` to store a view limited and slightly larger than the _permissible_ range,
+            // not the _consumed_ range. Update the value with where we ended up during parsing so we can inspect it
+            // below when setting the position after parsing.
+            ncur = state().cur;
         }
 
         else if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
@@ -814,8 +819,17 @@ struct ProductionVisitor
             pb->saveParsePosition();
         }
 
-        if ( ncur )
+        if ( ncur ) {
+            // For `&max-size` we use `ncur` to store a view limited and slightly larger than the _permissible_ range,
+            // not the _consumed_ range. We need to manually compute the actually consumed range from where we ended
+            // parsing in the limited view. We update the value stored in `ncur` so it can be updated below.
+            if ( AttributeSet::find(field->attributes(), "&max-size") )
+                ncur = builder::memberCall(state().cur, "advance",
+                                           {builder::difference(builder::memberCall(*ncur, "offset", {}),
+                                                                builder::memberCall(state().cur, "offset", {}))});
+
             builder()->addAssign(state().cur, *ncur);
+        }
 
         if ( ! meta.container() ) {
             if ( pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
