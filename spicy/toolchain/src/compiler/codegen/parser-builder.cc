@@ -764,6 +764,10 @@ struct ProductionVisitor
         auto ncur = state().ncur;
         state().ncur = {};
 
+        // Epxression tracking `ncur` in case we operate on a limited view from `&max-size` parsing.
+        // This differs from `&size` parsing in that we do not need to consume the full limited view.
+        std::optional<Expression> ncur_max_size;
+
         if ( auto a = AttributeSet::find(field->attributes(), "&max-size") ) {
             // Check that we did not read into the sentinel byte.
             auto cond = builder::greaterEqual(builder::memberCall(state().cur, "offset", {}),
@@ -778,6 +782,10 @@ struct ProductionVisitor
 
                 pb->parseError("parsing not done within &max-size bytes", a->meta());
             });
+
+            // For `&max-size` store away the position into the limited view we ended up parsing to.
+            // This is used below to compute how much data we consumed from the original view.
+            ncur_max_size = state().cur;
         }
 
         else if ( auto a = AttributeSet::find(field->attributes(), "&size") ) {
@@ -813,6 +821,15 @@ struct ProductionVisitor
             popState();
             pb->saveParsePosition();
         }
+
+        else if ( ncur_max_size )
+            // Compute how far to advance for `&max-size` parsing where we operate on a limited view, but do not
+            // necessarily consume it fully. Since `cur` and `ncur_max_size` point to different views we need compute
+            // the difference in offset; this is safe since the limited view is into the original stream `cur` points
+            // to.
+            ncur = builder::memberCall(state().cur, "advance",
+                                       {builder::difference(builder::memberCall(*ncur_max_size, "offset", {}),
+                                                            builder::memberCall(state().cur, "offset", {}))});
 
         if ( ncur )
             builder()->addAssign(state().cur, *ncur);

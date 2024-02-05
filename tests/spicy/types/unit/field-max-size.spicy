@@ -1,13 +1,14 @@
-# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
-# @TEST-EXEC: printf '\000' | spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC: printf '\001\000' | spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '\001\001\000' | spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC-FAIL: printf '\001\001\001\000' | spicy-driver -d test.hlto >>output 2>&1
-# @TEST-EXEC: btest-diff output
-#
 # @TEST-DOC: Validate effects of field-level `&max-size` attribute
+#
+# @TEST-EXEC: spicyc -j -d %INPUT -o test.hlto
 
 module Mini;
+
+# @TEST-EXEC: printf '\000' | spicy-driver -d test.hlto -p Mini::Test >>output 2>&1
+# @TEST-EXEC: printf '\001\000' | spicy-driver -d test.hlto -p Mini::Test >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\001\000' | spicy-driver -d test.hlto -p Mini::Test >>output 2>&1
+# @TEST-EXEC-FAIL: printf '\001\001\001\000' | spicy-driver -d test.hlto -p Mini::Test >>output 2>&1
+# @TEST-EXEC: btest-diff output
 
 const MaxSize = 2;
 
@@ -16,4 +17,20 @@ public type Test = unit {
 
     on %done { print "done", self; }
     on %error { print "error", self; }
+};
+
+# Check that `&max-size` has no effect on how much data is consumed. This is a regression test for #1668.
+# @TEST-EXEC: printf '\001_BC' | spicy-dump -d test.hlto -p Mini::X >>output2 2>&1
+# @TEST-EXEC: printf '\000_BC' | spicy-dump -d test.hlto -p Mini::X >>output2 2>&1
+# @TEST-EXEC: btest-diff output2
+
+public type X = unit {
+    use_max_size: uint8 &convert=cast<bool>($$);
+
+    switch (self.use_max_size) {
+        True -> xs: bytes &until=b"_" &max-size=1;
+        False -> xs: bytes &until=b"_";
+    };
+
+    rest: bytes &eod;
 };
