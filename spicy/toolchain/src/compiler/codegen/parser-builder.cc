@@ -316,11 +316,15 @@ struct ProductionVisitor
                     build_parse_stage1_logic();
 
                     // Call stage 2.
-                    std::vector<Expression> args = {state().data,   state().begin,      state().cur,  state().trim,
+                    auto args = [&]() {
+                        auto args =
+                            std::vector<Expression>{state().data,   state().begin,      state().cur,  state().trim,
                                                     state().lahead, state().lahead_end, state().error};
+                        if ( addl_param )
+                            args.push_back(builder::id(addl_param->id()));
 
-                    if ( addl_param )
-                        args.push_back(builder::id(addl_param->id()));
+                        return args;
+                    };
 
                     builder()->addLocal("filtered", hilti::builder::strong_reference(type::Stream()));
 
@@ -339,16 +343,16 @@ struct ProductionVisitor
                             auto have_filter = builder()->addIf(filtered);
                             pushBuilder(have_filter);
 
-                            auto args2 = args;
+                            auto pstate = state();
+                            pstate.data = builder()->addTmp("filtered_data", type::ValueReference(type::Stream()),
+                                                            builder::id("filtered"));
+                            pstate.cur = builder::deref(pstate.data);
+                            pstate.begin = builder::begin(pstate.cur);
+                            // FIXME(bbannier): set `lahead` and `lahead_end` to refer to the filtered view.
 
-                            auto filtered_data =
-                                builder()->addTmp("filtered_data", type::ValueReference(type::Stream()),
-                                                  builder::id("filtered"));
-                            args2[0] = filtered_data;
-                            args2[1] = builder::begin(builder::deref(filtered_data));
-                            args2[2] = builder::deref(filtered_data);
-
-                            builder()->addExpression(builder::memberCall(state().self, id_stage2, args2));
+                            pushState(pstate);
+                            builder()->addExpression(builder::memberCall(state().self, id_stage2, args()));
+                            popState();
 
                             auto offset2 =
                                 builder()->addTmp("offset2",
@@ -368,7 +372,7 @@ struct ProductionVisitor
 
                     auto not_have_filter = builder()->addIf(builder::not_(builder::id("filtered")));
                     pushBuilder(not_have_filter);
-                    builder()->addAssign(store_result, builder::memberCall(state().self, id_stage2, args));
+                    builder()->addAssign(store_result, builder::memberCall(state().self, id_stage2, args()));
                     popBuilder();
 
                     end_try(try_);
