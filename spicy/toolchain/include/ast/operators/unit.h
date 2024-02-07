@@ -364,7 +364,7 @@ BEGIN_METHOD(unit, Forward)
             hilti::operator_::Signature{.self = hilti::type::constant(spicy::type::Unit(type::Wildcard())),
                                         .result = hilti::type::void_,
                                         .id = "forward",
-                                        .args = {{"data", hilti::type::Bytes()}},
+                                        .args = {{"data", hilti::type::constant(hilti::type::Bytes())}},
                                         .doc = R"(
 If the unit is connected as a filter to another one, this method forwards
 transformed input over to that other one to parse. If the unit is not connected,
