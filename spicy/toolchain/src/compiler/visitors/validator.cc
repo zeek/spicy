@@ -1,6 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <algorithm>
 #include <utility>
 
 #include <spicy/rt/mime.h>
@@ -697,9 +696,8 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
     }
 
     void operator()(const spicy::type::unit::item::Field& f, position_t p) {
-        auto count_attr = AttributeSet::find(f.attributes(), "&count");
-        auto repeat = f.repeatCount();
-        auto is_sub_item = p.parent().isA<spicy::type::unit::item::Field>();
+        const auto count_attr = AttributeSet::find(f.attributes(), "&count");
+        const auto repeat = f.repeatCount();
 
         if ( f.isSkip() ) {
             if ( ! f.sinks().empty() )
@@ -721,11 +719,6 @@ struct VisitorPost : public hilti::visitor::PreOrder<void, VisitorPost>, public 
         else {
             if ( f.originalType().isA<type::RegExp>() ) {
                 error("need regexp constant for parsing a field", p);
-                return;
-            }
-
-            if ( f.originalType().isA<type::Vector>() && is_sub_item ) {
-                error("use [] syntax to parse vectors", p);
                 return;
             }
 
