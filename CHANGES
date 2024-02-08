@@ -1,3 +1,20 @@
+1.10.0-dev.142 | 2024-02-08 17:00:53 +0100
+
+  * GH-1668: Fix incorrect data consumption for `&max-size`. (Benjamin Bannier, Corelight)
+
+    We would previously handle `&size` and `&max-size` almost identical
+    with the only difference that `&max-size` sets up a slightly larger view
+    to accommodate a sentinel. In particular, we also used identical code to
+    set up the position where parsing should resume after such a field.
+
+    This was incorrect as it is in general impossible to tell where parsing
+    continues after a field with `&max-size` since it does not signify a
+    fixed view like `&size`. In this patch we now compute the next position
+    for a `&max-size` field by inspecting the limited view to detect how
+    much data was extracted.
+
+    Closes #1668.
+
 1.10.0-dev.140 | 2024-02-08 13:22:52 +0100
 
   * GH-1522: Drop overzealous validator. (Benjamin Bannier, Corelight)
