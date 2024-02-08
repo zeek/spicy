@@ -33,7 +33,7 @@
     starting position can also be explicitly given, but must lie inside
     the same region.
 
-.. spicy:method:: unit::forward unit forward False void (inout data: bytes)
+.. spicy:method:: unit::forward unit forward False void (data: bytes)
 
     If the unit is connected as a filter to another one, this method
     forwards transformed input over to that other one to parse. If the

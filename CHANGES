@@ -1,3 +1,15 @@
+1.10.0-dev.138 | 2024-02-08 13:20:31 +0100
+
+  * Remove now unused testing `random.seed`. (Benjamin Bannier, Corelight)
+
+  * GH-1659: Lift requirement that `bytes` forwarded from filter be mutable. (Benjamin Bannier, Corelight)
+
+    Since we did not declare the `bytes` argument to `unit::forward`
+    constant it was implicitly mutable so that it was impossible to e.g.,
+    pass literal bytes. This patch uses the originally intended type.
+
+    Closes #1659.
+
 1.10.0-dev.135 | 2024-01-30 12:29:28 +0100
 
   * GH-1665: Fix running of `codebase` tests. (Benjamin Bannier, Corelight)
