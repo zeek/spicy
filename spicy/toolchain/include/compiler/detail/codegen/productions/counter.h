@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
@@ -15,25 +17,29 @@ namespace spicy::detail::codegen::production {
  * A production executing a certain number of times as given by an integer
  * expression.
  */
-class Counter : public ProductionBase, public spicy::trait::isNonTerminal {
+class Counter : public Production {
 public:
-    Counter(const std::string& symbol, Expression e, Production body, const Location& l = location::None)
-        : ProductionBase(symbol, l), _expression(std::move(e)), _body(std::move(body)) {}
+    Counter(ASTContext* /* ctx */, const std::string& symbol, ExpressionPtr e, std::unique_ptr<Production> body,
+            const Location& l = location::None)
+        : Production(symbol, l), _expression(std::move(e)), _body(std::move(body)) {}
 
-    const Expression& expression() const { return _expression; }
-    const Production& body() const { return _body; }
+    auto body() const { return _body.get(); }
 
-    // Production API
-    std::vector<std::vector<Production>> rhss() const { return {{_body}}; }
-    std::optional<spicy::Type> type() const { return {}; }
-    bool nullable() const { return production::nullable(rhss()); }
-    bool eodOk() const { return nullable(); }
-    bool atomic() const { return false; }
-    std::string render() const { return hilti::util::fmt("counter(%s): %s", _expression, _body.symbol()); }
+    bool isAtomic() const final { return false; };
+    bool isEodOk() const final { return isNullable(); };
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return production::isNullable(rhss()); };
+    bool isTerminal() const final { return false; };
+    ExpressionPtr expression() const final { return _expression; }
+
+    std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
+    std::string dump() const override { return hilti::util::fmt("counter(%s): %s", _expression, _body->symbol()); }
+
+    SPICY_PRODUCTION
 
 private:
-    Expression _expression;
-    Production _body;
+    ExpressionPtr _expression;
+    std::unique_ptr<Production> _body;
 };
 
 } // namespace spicy::detail::codegen::production

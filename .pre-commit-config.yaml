@@ -18,7 +18,7 @@ repos:
     language: python
     stages: ["commit"]
     types: [text]
-    exclude: '^tests|NOTES|README|^(CHANGES|VERSION|scripts/ninja-build-stats|\.gitmodules|\.paths|.*\.(decl|json|rst|t2d))$'
+    exclude: '^tests|NOTES|README|autogen|^(CHANGES|VERSION|scripts/ninja-build-stats|\.gitmodules|\.paths|.*\.(decl|json|rst|t2d|txt))$'
 
   - id: autogen-docs
     name: Check that generated documentation is up-to-date

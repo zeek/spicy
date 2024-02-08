@@ -12,16 +12,11 @@
 
 #include <hilti/compiler/context.h>
 
-#include <spicy/ast/aliases.h>
-#include <spicy/ast/types/unit.h>
-#include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/ast/forward.h>
 
 namespace hilti::type {
 class Struct;
 } // namespace hilti::type
-namespace hilti::builder {
-class Builder;
-} // namespace hilti::builder
 
 namespace spicy::detail {
 
@@ -29,7 +24,13 @@ class CodeGen;
 
 namespace codegen {
 
+class Grammar;
+class Production;
 struct ProductionVisitor;
+
+namespace production {
+class Meta;
+}
 
 /**
  * Conveys to the parsing logic for literals what the caller wants them to
@@ -57,30 +58,27 @@ enum class LiteralMode {
 };
 
 namespace detail {
-constexpr hilti::util::enum_::Value<LiteralMode> literal_modes[] = {{LiteralMode::Default, "default"},
-                                                                    {LiteralMode::Try, "try"},
-                                                                    {LiteralMode::Search, "search"}};
+constexpr hilti::util::enum_::Value<LiteralMode> LiteralModes[] = {{LiteralMode::Default, "default"},
+                                                                   {LiteralMode::Try, "try"},
+                                                                   {LiteralMode::Search, "search"}};
 } // namespace detail
 
-constexpr auto to_string(LiteralMode cc) { return hilti::util::enum_::to_string(cc, detail::literal_modes); }
+constexpr auto to_string(LiteralMode cc) { return hilti::util::enum_::to_string(cc, detail::LiteralModes); }
 
 namespace look_ahead {
 
-/** Type for storing a look-ahead ID. */
-extern const hilti::Type Type;
+/**
+ * Value representing "no look-ahead" symbol through a zero, a value different
+ * from any look-ahead ID. With 0 being the value, it can be used in a boolean
+ * context to evaluate to false.
+ */
+const int64_t None = 0;
 
 /**
- * Expression representing "no look-ahead" symbol through a zero, a value
- * different from any look-ahead ID. With 0 being the value, it can be used
- * in a boolean context to evaluate to false.
+ * Value representing a virtual "end-of-data" symbol through a value different
+ * from any look-ahead ID (and also from `None`).
  */
-extern const hilti::Expression None;
-
-/**
- * Expression representing a virtual "end-of-data" symbol through a value
- * different from any look-ahead ID (and also from `None`).
- */
-extern const hilti::Expression Eod;
+const int64_t Eod = -1;
 
 } // namespace look_ahead
 
@@ -94,7 +92,8 @@ extern const hilti::Expression Eod;
  * stack. To change it back, one pops that struct from the stack.
  */
 struct ParserState {
-    ParserState(const type::Unit& unit, const Grammar& grammar, Expression data, Expression cur);
+    ParserState(Builder* builder, const type::UnitPtr& unit, const Grammar& grammar, ExpressionPtr data,
+                ExpressionPtr cur);
     ParserState(const ParserState& other) = default;
     ParserState(ParserState&& other) = default;
     ParserState& operator=(const ParserState& other) = default;
@@ -107,10 +106,10 @@ struct ParserState {
      *
      * @param block bock to add the generated code to
      */
-    void printDebug(const std::shared_ptr<hilti::builder::Builder>& b) const;
+    void printDebug(Builder* builder) const;
 
     /** Unit type that's currently being compiled. */
-    std::reference_wrapper<const type::Unit> unit;
+    type::UnitPtr unit;
 
     /** Type name of unit type that is currently being compiled. */
     ID unit_id;
@@ -118,38 +117,38 @@ struct ParserState {
     /** True if the current grammar needs look-ahead tracking. */
     bool needs_look_ahead;
 
-    /**< Expression referencing the current parse object. */
-    Expression self;
+    /**< ExpressionPtr referencing the current parse object. */
+    ExpressionPtr self;
 
-    /**< Expression referencing the stream instance we're working on. */
-    Expression data;
+    /**< ExpressionPtr referencing the stream instance we're working on. */
+    ExpressionPtr data;
 
-    /**< Expression referencing the beginning of the current unit inside data. */
-    Expression begin;
+    /**< ExpressionPtr referencing the beginning of the current unit inside data. */
+    ExpressionPtr begin;
 
-    /**< Expression referencing the current view inside 'data'. */
-    Expression cur;
+    /**< ExpressionPtr referencing the current view inside 'data'. */
+    ExpressionPtr cur;
 
     /**< If set, expression referencing a new `cur` to set after parsing the current rule. */
-    std::optional<Expression> ncur;
+    std::optional<ExpressionPtr> ncur;
 
     /**
      * Boolean expression indicating whether the input data can be trimmed
      * once consumed.
      */
-    Expression trim;
+    ExpressionPtr trim;
 
     /**
-     * Expression with the current look-ahead symbol, or `look_ahead::None`
-     * if none. Look ahead-symbols are of type `look_ahead::Type`.
+     * ExpressionPtr with the current look-ahead symbol, or `look_ahead::None`
+     * if none. Look ahead-symbols are of type `look_ahead::QualifiedTypePtr`.
      */
-    Expression lahead = look_ahead::None;
+    ExpressionPtr lahead;
 
     /**
-     * Expression with a iterator pointing to the end of the current
+     * ExpressionPtr with a iterator pointing to the end of the current
      * look-ahead symbol. Only well-defined if *lahead* is set.
      */
-    Expression lahead_end;
+    ExpressionPtr lahead_end;
 
     /** Mode for parsing literals. */
     LiteralMode literal_mode = LiteralMode::Default;
@@ -158,18 +157,22 @@ struct ParserState {
      * Target for storing extracted capture groups; set only when needed &
      * desired.
      */
-    std::optional<Expression> captures;
+    std::optional<ExpressionPtr> captures;
 
     /**
-     * Expression holding the last parse error if any. This field is set only in sync or trial mode.
+     * ExpressionPtr holding the last parse error if any. This field is set only in sync or trial mode.
      */
-    Expression error;
+    ExpressionPtr error;
 };
 
 /** Generates the parsing logic for a unit type. */
 class ParserBuilder {
 public:
-    ParserBuilder(CodeGen* cg) : _cg(cg) {}
+    ParserBuilder(CodeGen* cg);
+
+    CodeGen* cg() const { return _cg; }
+    ASTContext* context() const;
+    const hilti::Options& options() const;
 
     /**
      * Pushes new parsing state onto the stack. The new state will then be
@@ -192,7 +195,7 @@ public:
      * from a host application. This version returns just the data remaining
      * after parsing the unit.
      */
-    Expression parseMethodExternalOverload1(const type::Unit& t);
+    ExpressionPtr parseMethodExternalOverload1(const type::Unit& t);
 
     /**
      * Returns an expression referencing the 2nd version of a publicly
@@ -200,7 +203,7 @@ public:
      * from a host application. This version returns the parsed object
      * plus the data remaining after parsing the unit.
      */
-    Expression parseMethodExternalOverload2(const type::Unit& t);
+    ExpressionPtr parseMethodExternalOverload2(const type::Unit& t);
 
     /**
      * Returns an expression referencing the 3rd version of a publicly
@@ -209,32 +212,32 @@ public:
      * object of type `spicy::rt::ParsedUnit`, plus the data remaining after
      * parsing the unit.
      */
-    Expression parseMethodExternalOverload3(const type::Unit& t);
+    ExpressionPtr parseMethodExternalOverload3(const type::Unit& t);
 
     /**
      * Returns an expression referencing a publicly visible function
      * instantiating a unit's `%context` type. If the unit does not set
      * `%context`, the returned expression will evaluate to null at runtime.
      */
-    Expression contextNewFunction(const type::Unit& t);
+    ExpressionPtr contextNewFunction(const type::Unit& t);
 
     /**
      * Adds a unit's external parsing methods to the HILTI struct
      * corresponding to the parse object. Returns the modified type.
      */
-    hilti::type::Struct addParserMethods(hilti::type::Struct s, const type::Unit& t, bool declare_only);
+    void addParserMethods(hilti::type::Struct* s, const type::UnitPtr& t, bool declare_only);
 
     /** Returns statement builder currently being active. */
-    auto builder() { return _builders.back(); }
+    Builder* builder() const;
 
     /** Activates a statement builder for subsequent code. */
-    auto pushBuilder(std::shared_ptr<hilti::builder::Builder> b) {
+    auto pushBuilder(std::shared_ptr<Builder> b) {
         _builders.emplace_back(b);
         return b;
     }
 
     /** Creates a new statement builder and activates it for subsequent code. */
-    std::shared_ptr<hilti::builder::Builder> pushBuilder();
+    std::shared_ptr<Builder> pushBuilder();
 
     /** Deactivates the most recent statement builder. */
     auto popBuilder() {
@@ -261,7 +264,7 @@ public:
     ScopeGuard makeScopeGuard() { return ScopeGuard(this); }
 
     /** Activates a statement builder for subsequent code. */
-    auto pushBuilder(std::shared_ptr<hilti::builder::Builder> b, const std::function<void()>& func) {
+    auto pushBuilder(std::shared_ptr<Builder> b, const std::function<void()>& func) {
         pushBuilder(b);
         func();
         popBuilder();
@@ -269,14 +272,14 @@ public:
     }
 
     /** Generates code that parses an instance of a specific type. */
-    Expression parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst);
+    ExpressionPtr parseType(const UnqualifiedTypePtr& t, const production::Meta& meta, const ExpressionPtr& dst);
 
     /** Generates code that parses an instance of a specific type into an expression yielding a `Result` of `t`. */
-    Expression parseTypeTry(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst);
+    ExpressionPtr parseTypeTry(const UnqualifiedTypePtr& t, const production::Meta& meta, const ExpressionPtr& dst);
 
     /** Returns the type for a `parse_stageX` unit method. */
-    hilti::type::Function parseMethodFunctionType(std::optional<type::function::Parameter> addl_param = {},
-                                                  const Meta& m = {});
+    std::shared_ptr<hilti::type::Function> parseMethodFunctionType(
+        const hilti::type::function::ParameterPtr& addl_param = {}, const Meta& m = {});
 
     /**
      * Generates code that parses an instance of a specific literal, meaning
@@ -293,7 +296,7 @@ public:
      * Literal mode `Search` behaves like `Try`, but will advance the input
      * until a match has been found or EOD is reached.
      */
-    Expression parseLiteral(const Production& p, const std::optional<Expression>& dst);
+    ExpressionPtr parseLiteral(const Production& p, const ExpressionPtr& dst);
 
     /**
      * Generates code that skips over an instance of a specific literal,
@@ -315,7 +318,7 @@ public:
      * @param error_msg message to report with parse error if end-of-data is reached
      * @param location location associated with the operation.
      */
-    void waitForInput(const Expression& min, std::string_view error_msg, const Meta& location);
+    void waitForInput(const ExpressionPtr& min, std::string_view error_msg, const Meta& location);
 
     /**
      * Generates code that ensures that either a minimum amount of data is
@@ -328,7 +331,7 @@ public:
      * @return A boolean expression that's true if sufficient bytes are
      * available, and false if end-of-data has been reached.
      */
-    Expression waitForInputOrEod(const Expression& min);
+    ExpressionPtr waitForInputOrEod(const ExpressionPtr& min);
 
     /**
      * Generates code that waits for more input. If end-of-data is reached
@@ -347,7 +350,7 @@ public:
      * @return A boolean expression that's true if more bytes have become
      * available, and false if end-of-data has been reached.
      */
-    Expression waitForInputOrEod();
+    ExpressionPtr waitForInputOrEod();
 
     /**
      * Generates code that waits for end-of-data to be obtained (but not
@@ -362,10 +365,10 @@ public:
      * @param size an unsigned integer specifying the length of the input to skip
      * @param location location associated with the operation
      */
-    void skip(const Expression& size, const Meta& location = {});
+    void skip(const ExpressionPtr& size, const Meta& location = {});
 
     /** Returns a boolean expression that's true if EOD has been reached. */
-    Expression atEod();
+    ExpressionPtr atEod();
 
     /**
      * Generates code that advances the current view to the next position which is not a gap.
@@ -380,14 +383,14 @@ public:
      * @param i expression that's either the number of bytes to move ahead,
      * a stream iterator to move to, or a new stream view to use from now on.
      */
-    void advanceInput(const Expression& i);
+    void advanceInput(const ExpressionPtr& i);
 
     /**
      * Generates code that sets the current view.
      *
      * @param i expression that's the new view to use.
      */
-    void setInput(const Expression& i);
+    void setInput(const ExpressionPtr& i);
 
     /**
      * Generates code that saves the current parsing position inside the
@@ -409,19 +412,22 @@ public:
      *
      * @param dst A RHS expression of type bytes to store the token into.
      */
-    void consumeLookAhead(std::optional<Expression> dst = {});
+    void consumeLookAhead(const ExpressionPtr& dst = nullptr);
 
     /** Generates code that triggers a parse error exception. */
-    void parseError(std::string_view error_msg, const Meta& location);
+    void parseError(std::string_view error_msg, const Meta& meta = {});
 
     /** Generates code that triggers a parse error exception. */
-    void parseError(const Expression& error_msg, const Meta& location);
+    void parseError(const ExpressionPtr& error_msg, const Meta& meta = {});
 
     /** Generates code that triggers a parse error exception. */
-    void parseError(std::string_view fmt, const std::vector<Expression>& args, const Meta& location);
+    void parseError(std::string_view fmt, const Expressions& args, const Meta& meta = {});
+
+    /** Generates code that triggers a parse error exception. */
+    void parseError(std::string_view fmt, const ExpressionPtr& orig_except);
 
     /** Called when a field has been updated. */
-    void newValueForField(const production::Meta& meta, const Expression& value, const Expression& dd);
+    void newValueForField(const production::Meta& meta, const ExpressionPtr& value, const ExpressionPtr& dd);
 
     /**
      * Signal that new values for fields are reported through custom logic,
@@ -439,8 +445,8 @@ public:
      * Called when a container item has been parsed. Returns a boolean
      * expression that true if container parsing is to continue.
      */
-    Expression newContainerItem(const type::unit::item::Field& field, const Expression& self, const Expression& item,
-                                bool need_value);
+    ExpressionPtr newContainerItem(const type::unit::item::Field& field, const ExpressionPtr& self,
+                                   const ExpressionPtr& item, bool need_value);
 
     /**
      * Applies a field's `&convert` expression to a value, and returns the
@@ -449,8 +455,8 @@ public:
      * that destination (and then it might not need create a tmp to store the
      * result in).
      */
-    Expression applyConvertExpression(const type::unit::item::Field& field, const Expression& value,
-                                      std::optional<Expression> dst = {});
+    ExpressionPtr applyConvertExpression(const type::unit::item::Field& field, const ExpressionPtr& value,
+                                         std::optional<ExpressionPtr> dst = {});
 
     /**
      * Trims the input's beginning to the current parsing position,
@@ -490,7 +496,7 @@ public:
      *
      * @returns an opaque cookie to pass into `finishLoopBody()`.
      */
-    Expression initLoopBody();
+    ExpressionPtr initLoopBody();
 
     /**
      * Wrap up parsing the body of loop of "something". Must only be called
@@ -500,7 +506,7 @@ public:
      * @param cookie opaque cookie received from `initLoopBody()`
      * @param l location associated with the loop body
      */
-    void finishLoopBody(const Expression& cookie, const Location& l);
+    void finishLoopBody(const ExpressionPtr& cookie, const Location& l);
 
     /**
      * Add a guard block around feature-dependent unit code. This helper
@@ -511,23 +517,24 @@ public:
      * @param features identifiers of the feature, will be combined with OR.
      * @param f callback building the feature-dependent code.
      */
-    void guardFeatureCode(const ID& unit_id, const std::vector<std::string_view>& features,
+    void guardFeatureCode(const type::UnitPtr& unit, const std::vector<std::string_view>& features,
                           const std::function<void()>& f);
 
-    CodeGen* cg() const { return _cg; }
-    std::shared_ptr<hilti::Context> context() const;
-    const hilti::Options& options() const;
+    QualifiedTypePtr lookAheadType() const;
+    hilti::ExpressionPtr featureConstant(const type::UnitPtr& unit, std::string_view feature);
 
 private:
     friend struct spicy::detail::codegen::ProductionVisitor;
     CodeGen* _cg;
 
-    Expression _parseType(const Type& t, const production::Meta& meta, const std::optional<Expression>& dst,
-                          bool is_try);
+    ExpressionPtr _parseType(const UnqualifiedTypePtr& t, const production::Meta& meta, const ExpressionPtr& dst,
+                             bool is_try);
+
+    ExpressionPtr _filters(const ParserState& state);
 
     std::vector<ParserState> _states;
-    std::vector<std::shared_ptr<hilti::builder::Builder>> _builders;
-    std::map<ID, Expression> _functions;
+    std::vector<std::shared_ptr<Builder>> _builders;
+    std::map<ID, ExpressionPtr> _functions;
     bool _report_new_value_for_field = true;
 };
 

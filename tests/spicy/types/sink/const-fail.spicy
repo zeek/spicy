@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test checking that we cannot write to a sink parameter if it's not `inout`.
+
+module Mini;
+
+function f1(inout x: sink) {
+    x.write(b"xyz"); # ok
+}
+
+function f2(x: sink) {
+    x.write(b"xyz"); # fail
+}

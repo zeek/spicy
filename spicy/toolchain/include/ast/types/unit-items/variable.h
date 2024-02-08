@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
 #include <utility>
 
-#include <spicy/ast/aliases.h>
-#include <spicy/ast/engine.h>
+#include <hilti/ast/attribute.h>
+#include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
+
 #include <spicy/ast/types/unit-item.h>
-#include <spicy/ast/types/unit.h>
 
 namespace spicy::type::unit::item {
 
@@ -18,30 +21,33 @@ namespace spicy::type::unit::item {
  * identify assignments in the generated code. To do that, we'd need to trap
  * struct field assignments at the C++ level.
  */
-class Variable : public hilti::NodeBase, public spicy::trait::isUnitItem {
+class Variable : public unit::Item {
 public:
-    Variable(ID id, Type type, const std::optional<Expression>& default_, std::optional<AttributeSet> attrs = {},
-             Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(type), default_, std::move(attrs)), std::move(m)) {}
+    auto default_() const { return child<Expression>(1); }
+    auto attributes() const { return child<AttributeSet>(2); }
 
-    const auto& id() const { return child<ID>(0); }
-    auto default_() const { return children()[2].tryAs<Expression>(); }
-    auto attributes() const { return children()[3].tryAs<AttributeSet>(); }
+    bool isOptional() const { return attributes()->has("&optional"); }
 
-    bool isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
+    QualifiedTypePtr itemType() const final { return child<QualifiedType>(0); }
 
-    bool operator==(const Variable& other) const {
-        return id() == other.id() && itemType() == other.itemType() && default_() == other.default_() &&
-               attributes() == other.attributes();
+    bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
+
+    std::string_view displayName() const final { return "unit variable"; }
+
+    static auto create(ASTContext* ctx, ID id, QualifiedTypePtr type, ExpressionPtr default_, AttributeSetPtr attrs,
+                       const Meta& meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        return std::shared_ptr<Variable>(
+            new Variable(ctx, {std::move(type), std::move(default_), attrs}, std::move(id), meta));
     }
 
-    // Unit item interface
-    const Type& itemType() const { return child<Type>(1); }
-    bool isResolved() const { return type::isResolved(itemType()); }
-    auto isEqual(const Item& other) const { return node::isEqual(this, other); }
+protected:
+    Variable(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
+        : unit::Item(ctx, std::move(children), std::move(id), meta) {}
 
-    // Node interface.
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(spicy, Variable)
 };
 
 } // namespace spicy::type::unit::item

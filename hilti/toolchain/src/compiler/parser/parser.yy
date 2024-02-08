@@ -12,6 +12,7 @@
 namespace hilti { namespace detail { class Parser; } }
 
 #include <hilti/compiler/detail/parser/driver.h>
+#include <hilti/ast/builder/all.h>
 
 %}
 
@@ -21,8 +22,8 @@ namespace hilti { namespace detail { class Parser; } }
     @$.begin.filename = @$.end.filename = driver->currentFile();
 };
 
-%parse-param {class Driver* driver}
-%lex-param   {class Driver* driver}
+%parse-param {Driver* driver} {Builder* builder}
+%lex-param   {Driver* driver}
 
 %define api.namespace {hilti::detail::parser}
 %define api.parser.class {Parser}
@@ -33,7 +34,7 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 113
+%expect 112
 %expect-rr 209
 
 %{
@@ -48,21 +49,21 @@ static hilti::Meta toMeta(hilti::detail::parser::location l) {
                                        (l.end.column > 0 ? l.end.column - 1 : 0)));
 }
 
-static hilti::Type iteratorForType(hilti::Type t, bool const_, hilti::Meta m) {
-    if ( hilti::type::isIterable(t) )
-        return t.iteratorType(const_);
+static hilti::QualifiedTypePtr iteratorForType(hilti::Builder* builder, hilti::QualifiedTypePtr t, hilti::Meta m) {
+    if ( auto iter = t->type()->iteratorType() )
+        return iter;
     else {
-        hilti::logger().error(hilti::util::fmt("type '%s' is not iterable", t), m.location());
-        return hilti::type::Error(m);
+        hilti::logger().error(hilti::util::fmt("type '%s' is not iterable", *t), m.location());
+        return builder->qualifiedType(builder->typeError(), hilti::Constness::Const);
         }
 }
 
-static hilti::Type viewForType(hilti::Type t, hilti::Meta m) {
-    if ( hilti::type::isViewable(t) )
-        return t.viewType();
+static hilti::QualifiedTypePtr viewForType(hilti::Builder* builder, hilti::QualifiedTypePtr t, hilti::Meta m) {
+    if ( auto v = t->type()->viewType() )
+        return v;
     else {
-        hilti::logger().error(hilti::util::fmt("type '%s' is not viewable", t), m.location());
-        return hilti::type::Error(m);
+        hilti::logger().error(hilti::util::fmt("type '%s' is not viewable", *t), m.location());
+        return builder->qualifiedType(builder->typeError(), hilti::Constness::Const);
         }
 }
 
@@ -240,53 +241,51 @@ static int _field_width = 0;
 %token WEAK_REF "weak_ref"
 %token YIELD "yield"
 
-%type <hilti::ID>                                     local_id scoped_id dotted_id function_id scoped_function_id
-%type <hilti::Declaration>                            local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
-%type <std::vector<hilti::Declaration>>               struct_fields union_fields opt_union_fields
-%type <hilti::Type>                                   base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type bitfield_type
-%type <hilti::Ctor>                                   ctor tuple struct_ list regexp map set
-%type <hilti::Expression>                             expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g
-%type <std::vector<hilti::Expression>>                opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
-%type <std::optional<hilti::Expression>>              opt_func_default_expr
-%type <hilti::Function>                               function_with_body method_with_body hook_with_body function_without_body
-%type <hilti::type::function::Parameter>              func_param
-%type <hilti::declaration::parameter::Kind>           opt_func_param_kind
-%type <hilti::type::function::Result>                 func_result
-%type <hilti::type::function::Flavor>                 func_flavor opt_func_flavor
-%type <hilti::function::CallingConvention>            opt_func_cc
-%type <hilti::declaration::Linkage>                   opt_linkage
-%type <std::vector<hilti::type::function::Parameter>> func_params opt_func_params opt_struct_params
-%type <hilti::Statement>                              stmt stmt_decl stmt_expr block braced_block
-%type <std::vector<hilti::Statement>>                 stmts opt_stmts
-%type <std::optional<hilti::Statement>>               opt_else_block
-%type <hilti::Attribute>                              attribute
-%type <std::optional<hilti::AttributeSet>>            opt_attributes
-%type <hilti::type::tuple::Element>                   tuple_type_elem
-%type <std::vector<hilti::type::tuple::Element>>      tuple_type_elems
-%type <std::vector<hilti::ctor::struct_::Field>>      struct_elems
-%type <hilti::ctor::struct_::Field>                   struct_elem
-%type <std::vector<hilti::ctor::map::Element>>        map_elems opt_map_elems
-%type <hilti::ctor::map::Element>                     map_elem
-%type <hilti::type::enum_::Label>                     enum_label
-%type <std::vector<hilti::type::enum_::Label>>        enum_labels
-%type <std::vector<hilti::type::bitfield::Bits>>      bitfield_bits opt_bitfield_bits
-%type <hilti::type::bitfield::Bits>                   bitfield_bits_spec
-%type <std::vector<std::string>>                      re_patterns
-%type <std::string>                                   re_pattern_constant
-%type <hilti::statement::switch_::Case>               switch_case
-%type <std::vector<hilti::statement::switch_::Case>>  switch_cases opt_switch_cases
-%type <hilti::statement::try_::Catch>                 try_catch
-%type <std::vector<hilti::statement::try_::Catch>>    try_catches
-%type <hilti::type::Flags>                            opt_type_flags /* type_flag */
+%type <hilti::ID>                               local_id scoped_id dotted_id function_id scoped_function_id
+%type <hilti::DeclarationPtr>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
+%type <hilti::Declarations>                     struct_fields union_fields opt_union_fields
+%type <hilti::UnqualifiedTypePtr>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
+%type <hilti::QualifiedTypePtr>                 qtype
+%type <hilti::CtorPtr>                          ctor tuple struct_ list regexp map set
+%type <hilti::ExpressionPtr>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_func_default_expr
+%type <hilti::Expressions>                      opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
+%type <hilti::FunctionPtr>                      function_with_body method_with_body hook_with_body function_without_body
+%type <hilti::type::function::ParameterPtr>     func_param
+%type <hilti::parameter::Kind>                  opt_func_param_kind
+%type <hilti::type::function::Flavor>           func_flavor opt_func_flavor
+%type <hilti::function::CallingConvention>      opt_func_cc
+%type <hilti::declaration::Linkage>             opt_linkage
+%type <hilti::type::function::Parameters>       func_params opt_func_params opt_struct_params
+%type <hilti::StatementPtr>                     stmt stmt_decl stmt_expr block braced_block opt_else_block
+%type <hilti::Statements>                       stmts opt_stmts
+%type <hilti::AttributePtr>                     attribute
+%type <hilti::AttributeSetPtr>                  opt_attributes
+%type <hilti::type::tuple::ElementPtr>          tuple_type_elem
+%type <hilti::type::tuple::Elements>            tuple_type_elems
+%type <hilti::ctor::struct_::Fields>            struct_elems
+%type <hilti::ctor::struct_::FieldPtr>          struct_elem
+%type <hilti::ctor::map::Elements>              map_elems opt_map_elems
+%type <hilti::ctor::map::ElementPtr>            map_elem
+%type <hilti::type::enum_::LabelPtr>            enum_label
+%type <hilti::type::enum_::Labels>              enum_labels
+%type <hilti::type::bitfield::BitRanges>        bitfield_bit_ranges opt_bitfield_bit_ranges
+%type <hilti::type::bitfield::BitRangePtr>      bitfield_bit_range
+%type <std::vector<std::string>>                re_patterns
+%type <std::string>                             re_pattern_constant
+%type <hilti::statement::switch_::CasePtr>      switch_case
+%type <hilti::statement::switch_::Cases>        switch_cases opt_switch_cases
+%type <hilti::statement::try_::CatchPtr>        try_catch
+%type <hilti::statement::try_::Catches>         try_catches
 
-%type <std::pair<std::vector<hilti::Declaration>, std::vector<hilti::Statement>>> global_scope_items
+%type <std::pair<Declarations, Statements>>     global_scope_items
 
 %%
 
 %start module;
 
 module        : MODULE local_id '{'
-                global_scope_items '}'           { auto m = hilti::Module($2, std::move($4.first), std::move($4.second), __loc__);
+                global_scope_items '}'           { auto uid = declaration::module::UID($2, hilti::rt::filesystem::path(*driver->currentFile()));
+                                                   auto m = builder->declarationModule(uid, {}, std::move($4.first), std::move($4.second), __loc__);
                                                    driver->setDestinationModule(std::move(m));
                                                  }
               ;
@@ -328,61 +327,61 @@ global_scope_decl
               | import_decl                      { $$ = std::move($1); }
               | property_decl                    { $$ = std::move($1); }
 
-type_decl     : opt_linkage TYPE scoped_id '=' type opt_attributes ';'
-                                                 { $$ = hilti::declaration::Type(std::move($3), std::move($5), std::move($6), std::move($1), __loc__); }
+type_decl     : opt_linkage TYPE scoped_id '=' qtype opt_attributes ';'
+                                                 { $$ = builder->declarationType(std::move($3), std::move($5), std::move($6), std::move($1), __loc__); }
 
 constant_decl : opt_linkage CONST scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::Constant($3, $5, $1, __loc__); }
+                                                 { $$ = builder->declarationConstant($3, $5, $1, __loc__); }
               | opt_linkage CONST type scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::Constant($4, $3, $6, $1, __loc__); }
+                                                 { $$ = builder->declarationConstant($4, builder->qualifiedType($3, Constness::Const), $6, $1, __loc__); }
               ;
 
-local_decl    : LOCAL local_id '=' expr ';'     { $$ = hilti::declaration::LocalVariable($2, $4, false, __loc__); }
-              | LOCAL type local_id opt_type_arguments';' { $$ = hilti::declaration::LocalVariable($3, $2, $4, {}, false, __loc__); }
-              | LOCAL type local_id '=' expr ';'
-                                                 { $$ = hilti::declaration::LocalVariable($3, $2, $5, false, __loc__); }
+local_decl    : LOCAL local_id '=' expr ';'     { $$ = builder->declarationLocalVariable($2, $4, __loc__); }
+              | LOCAL qtype local_id opt_type_arguments ';' { $$ = builder->declarationLocalVariable($3, $2, $4, {}, __loc__); }
+              | LOCAL qtype local_id '=' expr ';'
+                                                 { $$ = builder->declarationLocalVariable($3, $2, $5, __loc__); }
               | LOCAL AUTO local_id '=' expr ';'
-                                                 { $$ = hilti::declaration::LocalVariable($3, $5, false, __loc__); }
+                                                 { $$ = builder->declarationLocalVariable($3, $5, __loc__); }
               ;
 
 local_init_decl
-              : LOCAL type local_id '=' expr
-                                                 { $$ = hilti::declaration::LocalVariable($3, $2, $5, false, __loc__); }
+              : LOCAL qtype local_id '=' expr
+                                                 { $$ = builder->declarationLocalVariable($3, $2, $5, __loc__); }
               | LOCAL AUTO local_id '=' expr
-                                                 { $$ = hilti::declaration::LocalVariable($3, $5, false, __loc__); }
+                                                 { $$ = builder->declarationLocalVariable($3, $5, __loc__); }
               ;
 
 global_decl   : opt_linkage GLOBAL scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($3, $5, $1, __loc__); }
-              | opt_linkage GLOBAL type scoped_id opt_type_arguments ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($4, $3, $5, {}, $1, __loc__); }
-              | opt_linkage GLOBAL type scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($4, $3, $6, $1, __loc__); }
+                                                 { $$ = builder->declarationGlobalVariable($3, $5, $1, __loc__); }
+              | opt_linkage GLOBAL qtype scoped_id opt_type_arguments ';'
+                                                 { $$ = builder->declarationGlobalVariable($4, $3, $5, {}, $1, __loc__); }
+              | opt_linkage GLOBAL qtype scoped_id '=' expr ';'
+                                                 { $$ = builder->declarationGlobalVariable($4, $3, $6, $1, __loc__); }
               | opt_linkage GLOBAL AUTO scoped_id '=' expr ';'
-                                                 { $$ = hilti::declaration::GlobalVariable($4, $6, $1, __loc__); }
+                                                 { $$ = builder->declarationGlobalVariable($4, $6, $1, __loc__); }
               ;
 
 opt_type_arguments
               : '(' opt_exprs ')'                { $$ = std::move($2); }
-              | /* empty */                      { $$ = std::vector<Expression>{}; }
+              | /* empty */                      { $$ = hilti::Expressions{}; }
 
 function_decl : opt_linkage FUNCTION function_with_body
-                                                 { $$ = hilti::declaration::Function($3, $1, __loc__); }
-              | opt_linkage HOOK hook_with_body              { $$ = hilti::declaration::Function($3, $1, __loc__); }
+                                                 { $$ = builder->declarationFunction($3, $1, __loc__); }
+              | opt_linkage HOOK hook_with_body              { $$ = builder->declarationFunction($3, $1, __loc__); }
 
 
-              | METHOD method_with_body          { $$ = hilti::declaration::Function($2, hilti::declaration::Linkage::Struct, __loc__); }
+              | METHOD method_with_body          { $$ = builder->declarationFunction($2, hilti::declaration::Linkage::Struct, __loc__); }
               | DECLARE opt_linkage function_without_body ';'
-                                                 { $$ = hilti::declaration::Function($3, $2, __loc__); }
+                                                 { $$ = builder->declarationFunction($3, $2, __loc__); }
               ;
 
-import_decl   : IMPORT local_id ';'              { $$ = hilti::declaration::ImportedModule(std::move($2), std::string(".hlt"), __loc__); }
-              | IMPORT local_id FROM dotted_id ';' { $$ = hilti::declaration::ImportedModule(std::move($2), std::string(".hlt"), std::move($4), __loc__); }
+import_decl   : IMPORT local_id ';'              { $$ = builder->declarationImportedModule(std::move($2), std::string(".hlt"), __loc__); }
+              | IMPORT local_id FROM dotted_id ';' { $$ = builder->declarationImportedModule(std::move($2), std::string(".hlt"), std::move($4), __loc__); }
               ;
 
 
-property_decl : PROPERTY ';'                     { $$ = hilti::declaration::Property(ID(std::move($1)), __loc__); }
-              | PROPERTY '=' expr ';'            { $$ = hilti::declaration::Property(ID(std::move($1)), std::move($3), __loc__); }
+property_decl : PROPERTY ';'                     { $$ = builder->declarationProperty(ID(std::move($1)), __loc__); }
+              | PROPERTY '=' expr ';'            { $$ = builder->declarationProperty(ID(std::move($1)), std::move($3), __loc__); }
 
 opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Linkage::Public; }
               | PRIVATE                          { $$ = hilti::declaration::Linkage::Private; }
@@ -401,31 +400,31 @@ scoped_function_id:
               | SCOPED_FINALIZE                  { $$ = hilti::ID($1, __loc__); }
 
 function_with_body
-              : opt_func_cc func_result scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
+              : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
-                                                    auto ftype = hilti::type::Function($2, $5, type::function::Flavor::Standard, __loc__);
-                                                    $$ = hilti::Function($3, std::move(ftype), $8, $1, $7, __loc__);
+                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Standard, __loc__);
+                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $1, $7, __loc__);
                                                  }
 
 method_with_body
-              : opt_func_cc func_result scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
+              : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
-                                                    auto ftype = hilti::type::Function($2, $5, type::function::Flavor::Method, __loc__);
-                                                    $$ = hilti::Function($3, std::move(ftype), $8, $1, $7, __loc__);
+                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Method, __loc__);
+                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $1, $7, __loc__);
                                                  }
 
 hook_with_body
-              : opt_func_cc func_result scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
+              : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
-                                                    auto ftype = hilti::type::Function($2, $5, type::function::Flavor::Hook, __loc__);
-                                                    $$ = hilti::Function($3, std::move(ftype), $8, $1, $7, __loc__);
+                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Hook, __loc__);
+                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $1, $7, __loc__);
                                                  }
 
 function_without_body
-              : opt_func_flavor opt_func_cc func_result scoped_function_id '(' opt_func_params ')' opt_attributes
+              : opt_func_flavor opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes
                                                  {
-                                                    auto ftype = hilti::type::Function($3, $6, $1, __loc__);
-                                                    $$ = hilti::Function($4, std::move(ftype), {}, $2, $8, __loc__);
+                                                    auto ftype = builder->typeFunction($3, $6, $1, __loc__);
+                                                    $$ = builder->function($4, std::move(ftype), {}, $2, $8, __loc__);
                                                  }
 
 opt_func_flavor : func_flavor                    { $$ = $1; }
@@ -439,21 +438,23 @@ opt_func_cc     : EXTERN                         { $$ = hilti::function::Calling
                 | /* empty */                    { $$ = hilti::function::CallingConvention::Standard; }
 
 opt_func_params : func_params                    { $$ = std::move($1); }
-               | /* empty */                     { $$ = std::vector<hilti::type::function::Parameter>{}; }
+               | /* empty */                     { $$ = hilti::type::function::Parameters(); }
 
 func_params : func_params ',' func_param { $$ = std::move($1); $$.push_back($3); }
-                | func_param                     { $$ = std::vector<hilti::type::function::Parameter>{$1}; }
+                | func_param                     { $$ = hilti::type::function::Parameters{$1}; }
 
-func_param      : opt_func_param_kind type local_id opt_func_default_expr opt_attributes
-                                                 { $$ = hilti::type::function::Parameter($3, $2, $1, $4, $5, __loc__); }
+func_param      : opt_func_param_kind func_param_type local_id opt_func_default_expr opt_attributes
+                                                 { $$ = builder->declarationParameter($3, $2, $1, $4, $5, __loc__); }
                 ;
 
-func_result   : type                             { $$ = hilti::type::function::Result(std::move($1), __loc__); }
+func_param_type : type                           { $$ = std::move($1); }
+                | AUTO                           { $$ = builder->typeAuto(__loc__); }
+                ;
 
 opt_func_param_kind
-              : COPY                             { $$ = hilti::declaration::parameter::Kind::Copy; }
-              | INOUT                            { $$ = hilti::declaration::parameter::Kind::InOut; }
-              | /* empty */                      { $$ = hilti::declaration::parameter::Kind::In; }
+              : COPY                             { $$ = hilti::parameter::Kind::Copy; }
+              | INOUT                            { $$ = hilti::parameter::Kind::InOut; }
+              | /* empty */                      { $$ = hilti::parameter::Kind::In; }
               ;
 
 opt_func_default_expr : '=' expr                 { $$ = std::move($2); }
@@ -463,74 +464,74 @@ opt_func_default_expr : '=' expr                 { $$ = std::move($2); }
 /* Statements */
 
 block         : braced_block                     { $$ = std::move($1); }
-              | stmt                             { $$ = hilti::statement::Block({$1}, __loc__); }
+              | stmt                             { $$ = builder->statementBlock({$1}, __loc__); }
               ;
 
-braced_block  : '{' opt_stmts '}'                { $$ = hilti::statement::Block(std::move($2), __loc__); }
+braced_block  : '{' opt_stmts '}'                { $$ = builder->statementBlock(std::move($2), __loc__); }
 
 opt_stmts     : stmts                            { $$ = std::move($1); }
-              | /* empty */                      { $$ = std::vector<hilti::Statement>{}; }
+              | /* empty */                      { $$ = hilti::Statements(); }
 
 stmts         : stmts stmt                       { $$ = std::move($1); $$.push_back($2); }
-              | stmt                             { $$ = std::vector<hilti::Statement>{std::move($1)}; }
+              | stmt                             { $$ = hilti::Statements{std::move($1)}; }
 
 stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | stmt_decl                        { $$ = std::move($1); }
-              | RETURN ';'                       { $$ = hilti::statement::Return(__loc__); }
-              | RETURN expr ';'                  { $$ = hilti::statement::Return(std::move($2), __loc__); }
-              | THROW expr ';'                   { $$ = hilti::statement::Throw(std::move($2), __loc__); }
-              | THROW  ';'                       { $$ = hilti::statement::Throw(__loc__); }
-              | YIELD ';'                        { $$ = hilti::statement::Yield(__loc__); }
-              | BREAK ';'                        { $$ = hilti::statement::Break(__loc__); }
-              | CONTINUE ';'                     { $$ = hilti::statement::Continue(__loc__); }
+              | RETURN ';'                       { $$ = builder->statementReturn(__loc__); }
+              | RETURN expr ';'                  { $$ = builder->statementReturn(std::move($2), __loc__); }
+              | THROW expr ';'                   { $$ = builder->statementThrow(std::move($2), __loc__); }
+              | THROW  ';'                       { $$ = builder->statementThrow(__loc__); }
+              | YIELD ';'                        { $$ = builder->statementYield(__loc__); }
+              | BREAK ';'                        { $$ = builder->statementBreak(__loc__); }
+              | CONTINUE ';'                     { $$ = builder->statementContinue(__loc__); }
               | IF '(' expr ')' block opt_else_block
-                                                 { $$ = hilti::statement::If(std::move($3), std::move($5), std::move($6), __loc__); }
+                                                 { $$ = builder->statementIf(std::move($3), std::move($5), std::move($6), __loc__); }
               | IF '(' local_init_decl ')' block opt_else_block
-                                                 { $$ = hilti::statement::If(std::move($3), {}, std::move($5), std::move($6), __loc__); }
+                                                 { $$ = builder->statementIf(std::move($3), {}, std::move($5), std::move($6), __loc__); }
               | IF '(' local_init_decl ';' expr ')' block opt_else_block
-                                                 { $$ = hilti::statement::If(std::move($3), std::move($5), std::move($7), std::move($8), __loc__); }
+                                                 { $$ = builder->statementIf(std::move($3), std::move($5), std::move($7), std::move($8), __loc__); }
               | WHILE '(' local_init_decl ';' expr ')' block opt_else_block
-                                                 { $$ = hilti::statement::While(std::move($3), std::move($5), std::move($7), std::move($8), __loc__); }
+                                                 { $$ = builder->statementWhile(std::move($3), std::move($5), std::move($7), std::move($8), __loc__); }
               | WHILE '(' expr ')' block opt_else_block
-                                                 { $$ = hilti::statement::While(std::move($3), std::move($5), std::move($6), __loc__); }
+                                                 { $$ = builder->statementWhile(std::move($3), std::move($5), std::move($6), __loc__); }
               | WHILE '(' local_init_decl ')' block opt_else_block
-                                                 { $$ = hilti::statement::While(std::move($3), {}, std::move($5), std::move($6), __loc__); }
+                                                 { $$ = builder->statementWhile(std::move($3), {}, std::move($5), std::move($6), __loc__); }
               | FOR '(' local_id IN expr ')' block
-                                                 { $$ = hilti::statement::For(std::move($3), std::move($5), std::move($7), __loc__); }
+                                                 { $$ = builder->statementFor(std::move($3), std::move($5), std::move($7), __loc__); }
               | SWITCH '(' expr ')' '{' opt_switch_cases '}'
-                                                 { $$ = hilti::statement::Switch(std::move($3), std::move($6), __loc__); }
+                                                 { $$ = builder->statementSwitch(std::move($3), std::move($6), __loc__); }
               | SWITCH '(' local_init_decl ')' '{' opt_switch_cases '}'
-                                                 { $$ = hilti::statement::Switch(std::move($3), std::move($6), __loc__); }
+                                                 { $$ = builder->statementSwitch(std::move($3), std::move($6), __loc__); }
               | TRY block try_catches
-                                                 { $$ = hilti::statement::Try(std::move($2), std::move($3), __loc__); }
-              | ASSERT expr ';'                  { $$ = hilti::statement::Assert(std::move($2), {}, __loc__); }
-              | ASSERT expr ':' expr ';'         { $$ = hilti::statement::Assert(std::move($2), std::move($4), __loc__); }
-              | ASSERT_EXCEPTION expr ';'        { $$ = hilti::statement::Assert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
+                                                 { $$ = builder->statementTry(std::move($2), std::move($3), __loc__); }
+              | ASSERT expr ';'                  { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
+              | ASSERT expr ':' expr ';'         { $$ = builder->statementAssert(std::move($2), std::move($4), __loc__); }
+              | ASSERT_EXCEPTION expr ';'        { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
               | ASSERT_EXCEPTION expr ':' expr ';'
-                                                 { $$ = hilti::statement::Assert(hilti::statement::assert::Exception(), std::move($2), {}, std::move($4), __loc__); }
+                                                 { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, std::move($4), __loc__); }
 
-              | ADD expr ';'                     { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
+              | ADD expr ';'                     { auto op = $2->tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )
                                                         error(@$, "'add' must be used with index expression only");
 
-                                                   auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Add, op->operands(), __loc__);
-                                                   $$ = hilti::statement::Expression(std::move(expr), __loc__);
+                                                   auto expr = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Add, op->operands(), __loc__);
+                                                   $$ = builder->statementExpression(std::move(expr), __loc__);
                                                  }
 
-              | DELETE expr ';'                  { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
+              | DELETE expr ';'                  { auto op = $2->tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )
                                                         error(@$, "'delete' must be used with index expressions only");
 
-                                                   auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Delete, op->operands(), __loc__);
-                                                   $$ = hilti::statement::Expression(std::move(expr), __loc__);
+                                                   auto expr = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Delete, op->operands(), __loc__);
+                                                   $$ = builder->statementExpression(std::move(expr), __loc__);
                                                  }
 
-              | UNSET expr ';'                   { auto op = $2.tryAs<hilti::expression::UnresolvedOperator>();
+              | UNSET expr ';'                   { auto op = $2->tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Member) )
                                                         error(@$, "'unset' must be used with member expressions only");
 
-                                                   auto expr = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unset, op->operands(), __loc__);
-                                                   $$ = hilti::statement::Expression(std::move(expr), __loc__);
+                                                   auto expr = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Unset, op->operands(), __loc__);
+                                                   $$ = builder->statementExpression(std::move(expr), __loc__);
                                                  }
 ;
 
@@ -543,74 +544,72 @@ opt_switch_cases
               | /* empty */                      { $$ = {}; }
 
 switch_cases  : switch_cases switch_case         { $$ = std::move($1); $$.push_back(std::move($2)); }
-              | switch_case                      { $$ = std::vector<hilti::statement::switch_::Case>({ std::move($1) }); }
+              | switch_case                      { $$ = hilti::statement::switch_::Cases({std::move($1)}); }
 
-switch_case   : CASE exprs ':' block             { $$ = hilti::statement::switch_::Case(std::move($2), std::move($4), __loc__); }
-              | DEFAULT ':' block                { $$ = hilti::statement::switch_::Case(hilti::statement::switch_::Default(), std::move($3), __loc__); }
+switch_case   : CASE exprs ':' block             { $$ = builder->statementSwitchCase(std::move($2), std::move($4), __loc__); }
+              | DEFAULT ':' block                { $$ = builder->statementSwitchCase(hilti::statement::switch_::Default(), std::move($3), __loc__); }
 
 try_catches   : try_catches try_catch            { $$ = std::move($1); $$.push_back(std::move($2)); }
-              | try_catch                        { $$ = std::vector<hilti::statement::try_::Catch>({ std::move($1) }); }
+              | try_catch                        { $$ = hilti::statement::try_::Catches({ std::move($1) }); }
 
-try_catch     : CATCH '(' type local_id ')' block
-                                                 { $$ = hilti::statement::try_::Catch(declaration::Parameter($4, $3, declaration::parameter::Kind::In, {}, __loc__), std::move($6), __loc__); }
-              | CATCH block                      { $$ = hilti::statement::try_::Catch(std::move($2), __loc__); }
+try_catch     : CATCH '(' func_param_type local_id ')' block
+                                                 { $$ = builder->statementTryCatch(builder->declarationParameter($4, $3, parameter::Kind::In, {}, {}, __loc__), std::move($6), __loc__); }
+              | CATCH block                      { $$ = builder->statementTryCatch(std::move($2), __loc__); }
 
-stmt_decl     : local_decl                       { $$ = hilti::statement::Declaration($1, __loc__); }
-              | type_decl                        { $$ = hilti::statement::Declaration($1, __loc__); }
-              | constant_decl                    { $$ = hilti::statement::Declaration($1, __loc__); }
+stmt_decl     : local_decl                       { $$ = builder->statementDeclaration($1, __loc__); }
+              | type_decl                        { $$ = builder->statementDeclaration($1, __loc__); }
+              | constant_decl                    { $$ = builder->statementDeclaration($1, __loc__); }
               ;
 
-stmt_expr     : expr                             { $$ = hilti::statement::Expression($1, __loc__); }
+stmt_expr     : expr                             { $$ = builder->statementExpression($1, __loc__); }
 
 /* Types */
 
 base_type_no_attrs
-              : ANY                              { $$ = hilti::type::Any(__loc__); }
-              | ADDRESS                          { $$ = hilti::type::Address(__loc__); }
-              | AUTO                             { $$ = hilti::type::auto_; }
-              | BOOL                             { $$ = hilti::type::Bool(__loc__); }
-              | BYTES                            { $$ = hilti::type::Bytes(__loc__); }
-              | ERROR                            { $$ = hilti::type::Error(__loc__); }
-              | INTERVAL                         { $$ = hilti::type::Interval(__loc__); }
-              | NETWORK                          { $$ = hilti::type::Network(__loc__); }
-              | PORT                             { $$ = hilti::type::Port(__loc__); }
-              | REAL                             { $$ = hilti::type::Real(__loc__); }
-              | REGEXP                           { $$ = hilti::type::RegExp(__loc__); }
-              | STREAM                           { $$ = hilti::type::Stream(__loc__); }
-              | STRING                           { $$ = hilti::type::String(__loc__); }
-              | TIME                             { $$ = hilti::type::Time(__loc__); }
-              | VOID                             { $$ = hilti::type::void_; }
+              : ANY                              { $$ = builder->typeAny(__loc__); }
+              | ADDRESS                          { $$ = builder->typeAddress(__loc__); }
+              | BOOL                             { $$ = builder->typeBool(__loc__); }
+              | BYTES                            { $$ = builder->typeBytes(__loc__); }
+              | ERROR                            { $$ = builder->typeError(__loc__); }
+              | INTERVAL                         { $$ = builder->typeInterval(__loc__); }
+              | NETWORK                          { $$ = builder->typeNetwork(__loc__); }
+              | PORT                             { $$ = builder->typePort(__loc__); }
+              | REAL                             { $$ = builder->typeReal(__loc__); }
+              | REGEXP                           { $$ = builder->typeRegExp(__loc__); }
+              | STREAM                           { $$ = builder->typeStream(__loc__); }
+              | STRING                           { $$ = builder->typeString(__loc__); }
+              | TIME                             { $$ = builder->typeTime(__loc__); }
+              | VOID                             { $$ = builder->typeVoid(__loc__); }
 
-              | INT type_param_begin CUINTEGER type_param_end            { $$ = hilti::type::SignedInteger($3, __loc__); }
-              | INT type_param_begin '*' type_param_end                  { $$ = hilti::type::SignedInteger(hilti::type::Wildcard(), __loc__); }
-              | UINT type_param_begin CUINTEGER type_param_end           { $$ = hilti::type::UnsignedInteger($3, __loc__); }
-              | UINT type_param_begin '*' type_param_end                 { $$ = hilti::type::UnsignedInteger(hilti::type::Wildcard(), __loc__); }
+              | INT type_param_begin CUINTEGER type_param_end            { $$ = builder->typeSignedInteger($3, __loc__); }
+              | INT type_param_begin '*' type_param_end                  { $$ = builder->typeSignedInteger(hilti::type::Wildcard(), __loc__); }
+              | UINT type_param_begin CUINTEGER type_param_end           { $$ = builder->typeUnsignedInteger($3, __loc__); }
+              | UINT type_param_begin '*' type_param_end                 { $$ = builder->typeUnsignedInteger(hilti::type::Wildcard(), __loc__); }
 
-              | OPTIONAL type_param_begin type type_param_end            { $$ = hilti::type::Optional($3, __loc__); }
-              | RESULT type_param_begin type type_param_end              { $$ = hilti::type::Result($3, __loc__); }
-              | VIEW type_param_begin type type_param_end                { $$ = viewForType(std::move($3), __loc__); }
-              | ITERATOR type_param_begin type type_param_end            { $$ = iteratorForType(std::move($3), false, __loc__); }
-              | CONST_ITERATOR type_param_begin type type_param_end      { $$ = iteratorForType(std::move($3), true, __loc__); }
-              | STRONG_REF type_param_begin type type_param_end          { $$ = hilti::type::StrongReference($3, __loc__); }
-              | STRONG_REF type_param_begin '*' type_param_end           { $$ = hilti::type::StrongReference(hilti::type::Wildcard(), __loc__); }
-              | VALUE_REF type_param_begin type type_param_end           { $$ = hilti::type::ValueReference($3, __loc__); }
-              | VALUE_REF type_param_begin '*' type_param_end            { $$ = hilti::type::ValueReference(hilti::type::Wildcard(), __loc__); }
-              | WEAK_REF type_param_begin type type_param_end            { $$ = hilti::type::WeakReference($3, __loc__); }
-              | WEAK_REF type_param_begin '*' type_param_end             { $$ = hilti::type::WeakReference(hilti::type::Wildcard(), __loc__); }
+              | OPTIONAL type_param_begin qtype type_param_end           { $$ = builder->typeOptional($3, __loc__); }
+              | RESULT type_param_begin qtype type_param_end             { $$ = builder->typeResult($3, __loc__); }
+              | VIEW type_param_begin qtype type_param_end               { $$ = viewForType(builder, std::move($3), __loc__)->type(); }
+              | ITERATOR type_param_begin qtype type_param_end           { $$ = iteratorForType(builder, std::move($3), __loc__)->type(); }
+              | STRONG_REF type_param_begin qtype type_param_end         { $$ = builder->typeStrongReference($3, __loc__); }
+              | STRONG_REF type_param_begin '*' type_param_end           { $$ = builder->typeStrongReference(hilti::type::Wildcard(), __loc__); }
+              | VALUE_REF type_param_begin qtype type_param_end          { $$ = builder->typeValueReference($3, __loc__); }
+              | VALUE_REF type_param_begin '*' type_param_end            { $$ = builder->typeValueReference(hilti::type::Wildcard(), __loc__); }
+              | WEAK_REF type_param_begin qtype type_param_end           { $$ = builder->typeWeakReference($3, __loc__); }
+              | WEAK_REF type_param_begin '*' type_param_end             { $$ = builder->typeWeakReference(hilti::type::Wildcard(), __loc__); }
 
-              | LIST type_param_begin '*' type_param_end                 { $$ = hilti::type::List(hilti::type::Wildcard(), __loc__); }
-              | LIST type_param_begin type type_param_end                { $$ = hilti::type::List(std::move($3), __loc__); }
-              | VECTOR type_param_begin '*' type_param_end               { $$ = hilti::type::Vector(hilti::type::Wildcard(), __loc__); }
-              | VECTOR type_param_begin type type_param_end              { $$ = hilti::type::Vector(std::move($3), __loc__); }
-              | SET type_param_begin '*' type_param_end                  { $$ = hilti::type::Set(hilti::type::Wildcard(), __loc__); }
-              | SET type_param_begin type type_param_end                 { $$ = hilti::type::Set(std::move($3), __loc__); }
-              | MAP type_param_begin '*' type_param_end                  { $$ = hilti::type::Map(hilti::type::Wildcard(), __loc__); }
-              | MAP type_param_begin type ',' type type_param_end        { $$ = hilti::type::Map(std::move($3), std::move($5), __loc__); }
+              | LIST type_param_begin '*' type_param_end                 { $$ = builder->typeList(hilti::type::Wildcard(), __loc__); }
+              | LIST type_param_begin qtype type_param_end               { $$ = builder->typeList(std::move($3), __loc__); }
+              | VECTOR type_param_begin '*' type_param_end               { $$ = builder->typeVector(hilti::type::Wildcard(), __loc__); }
+              | VECTOR type_param_begin qtype type_param_end             { $$ = builder->typeVector(std::move($3), __loc__); }
+              | SET type_param_begin '*' type_param_end                  { $$ = builder->typeSet(hilti::type::Wildcard(), __loc__); }
+              | SET type_param_begin qtype type_param_end                { $$ = builder->typeSet(std::move($3), __loc__); }
+              | MAP type_param_begin '*' type_param_end                  { $$ = builder->typeMap(hilti::type::Wildcard(), __loc__); }
+              | MAP type_param_begin qtype ',' qtype type_param_end      { $$ = builder->typeMap(std::move($3), std::move($5), __loc__); }
 
-              | EXCEPTION                        { $$ = hilti::type::Exception(__loc__); }
-              | EXCEPTION ':' type               { $$ = hilti::type::Exception(std::move($3), __loc__); }
+              | EXCEPTION                        { $$ = builder->typeException(__loc__); }
+              | '[' EXCEPTION ':' type ']'       { $$ = builder->typeException(std::move($4), __loc__); }
 
-              | LIBRARY_TYPE '(' CSTRING ')'     { $$ = hilti::type::Library(std::move($3), __loc__); }
+              | LIBRARY_TYPE '(' CSTRING ')'     { $$ = builder->typeLibrary(std::move($3), __loc__); }
 
               | tuple_type                       { $$ = std::move($1); }
               | struct_type                      { $$ = std::move($1); }
@@ -619,13 +618,17 @@ base_type_no_attrs
               | bitfield_type                    { $$ = std::move($1); }
               ;
 
-base_type     : base_type_no_attrs opt_type_flags
-                                                 { $$ = type::addFlags($1, $2); }
+base_type     : base_type_no_attrs               { $$ = $1; }
               ;
 
 type          : base_type                        { $$ = std::move($1); }
               | function_type                    { $$ = std::move($1); }
-              | scoped_id                        { $$ = hilti::type::UnresolvedID(std::move($1)); }
+              | scoped_id                        { $$ = builder->typeName(std::move($1), __loc__); }
+              ;
+
+qtype         : type                             { $$ = builder->qualifiedType(std::move($1), Constness::Mutable, __loc__); }
+              | CONST type                       { $$ = builder->qualifiedType(std::move($2), Constness::Const, __loc__); }
+              | AUTO                             { $$ = builder->qualifiedType(builder->typeAuto(__loc__), Constness::Const, __loc__); }
               ;
 
 type_param_begin:
@@ -636,228 +639,225 @@ type_param_end:
               '>'
               { driver->enableExpressionMode(); }
 
-opt_type_flags: /* empty */                      { $$ = hilti::type::Flags(); }
-              /*  type_flag opt_type_flags         { $$ = $1 + $2; } -- no type flags currently */
-
-function_type : opt_func_flavor FUNCTION '(' opt_func_params ')' ARROW func_result
-                                                 { $$ = hilti::type::Function($7, $4, $1, __loc__); }
+function_type : opt_func_flavor FUNCTION '(' opt_func_params ')' ARROW qtype
+                                                 { $$ = builder->typeFunction($7, $4, $1, __loc__); }
               ;
 
-tuple_type    : TUPLE type_param_begin '*' type_param_end                { $$ = hilti::type::Tuple(hilti::type::Wildcard(), __loc__); }
-              | TUPLE type_param_begin tuple_type_elems type_param_end   { $$ = hilti::type::Tuple(std::move($3), __loc__); }
+tuple_type    : TUPLE type_param_begin '*' type_param_end                { $$ = builder->typeTuple(hilti::type::Wildcard(), __loc__); }
+              | TUPLE type_param_begin tuple_type_elems type_param_end   { $$ = builder->typeTuple(std::move($3), __loc__); }
               ;
 
 tuple_type_elems
               : tuple_type_elems ',' tuple_type_elem
                                                  { $$ = std::move($1); $$.push_back(std::move($3)); }
-              | tuple_type_elem                  { $$ = std::vector<hilti::type::tuple::Element>{ std::move($1) }; }
+              | tuple_type_elem                  { $$ = hilti::type::tuple::Elements{std::move($1)}; }
               ;
 
 tuple_type_elem
-              : type                             { $$ = hilti::type::tuple::Element(hilti::ID(), std::move($1), __loc__); }
-              | local_id ':' type                { $$ = hilti::type::tuple::Element(std::move($1), std::move($3), __loc__); }
+              : qtype                             { $$ = builder->typeTupleElement(hilti::ID(), std::move($1), __loc__); }
+              | local_id ':' qtype                { $$ = builder->typeTupleElement(std::move($1), std::move($3), __loc__); }
               ;
 
-struct_type   : STRUCT opt_struct_params '{' struct_fields '}'     { $$ = hilti::type::Struct(std::move($2), std::move($4), __loc__); }
+struct_type   : STRUCT opt_struct_params '{' struct_fields '}'     { $$ = builder->typeStruct(std::move($2), std::move($4), __loc__); }
 
 opt_struct_params
               : '(' opt_func_params ')'          { $$ = std::move($2); }
-              | /* empty */                      { $$ = std::vector<hilti::type::function::Parameter>{}; }
+              | /* empty */                      { $$ = hilti::type::function::Parameters{}; }
 
 struct_fields : struct_fields struct_field       { $$ = std::move($1); $$.push_back($2); }
-              | /* empty */                      { $$ = std::vector<Declaration>{}; }
+              | /* empty */                      { $$ = hilti::Declarations{}; }
 
-struct_field  : type local_id opt_attributes ';' { $$ = hilti::declaration::Field(std::move($2), std::move($1), std::move($3), __loc__); }
-              | func_flavor opt_func_cc func_result function_id '(' opt_func_params ')' opt_attributes ';' {
-                                                   auto ftype = hilti::type::Function(std::move($3), std::move($6), $1, __loc__);
-                                                   $$ = hilti::declaration::Field(std::move($4), $2, std::move(ftype), $8, __loc__);
+struct_field  : qtype local_id opt_attributes ';' { $$ = builder->declarationField(std::move($2), std::move($1), std::move($3), __loc__); }
+              | func_flavor opt_func_cc qtype function_id '(' opt_func_params ')' opt_attributes ';' {
+                                                   auto ftype = builder->typeFunction(std::move($3), std::move($6), $1, __loc__);
+                                                   $$ = builder->declarationField(std::move($4), $2, std::move(ftype), $8, __loc__);
                                                    }
-              | func_flavor opt_func_cc func_result function_id '(' opt_func_params ')' opt_attributes braced_block {
-                                                   auto ftype = hilti::type::Function(std::move($3), std::move($6), $1, __loc__);
-                                                   auto func = hilti::Function($4, std::move(ftype), std::move($9), $2, {});
-                                                   $$ = hilti::declaration::Field($4, std::move(func), $8, __loc__);
+              | func_flavor opt_func_cc qtype function_id '(' opt_func_params ')' opt_attributes braced_block {
+                                                   auto ftype = builder->typeFunction(std::move($3), std::move($6), $1, __loc__);
+                                                   auto func = builder->function($4, std::move(ftype), std::move($9), $2, {});
+                                                   $$ = builder->declarationField($4, std::move(func), $8, __loc__);
                                                    }
 
 union_type    : UNION opt_attributes'{' opt_union_fields '}'
-                                                 { $$ = hilti::type::Union(std::move($4), __loc__); }
+                                                 { $$ = builder->typeUnion(std::move($4), __loc__); }
 
 opt_union_fields : union_fields                  { $$ = $1; }
-              | /* empty */                      { $$ = std::vector<Declaration>(); }
+              | /* empty */                      { $$ = hilti::Declarations{}; }
 
 union_fields  : union_fields ',' union_field     { $$ = std::move($1); $$.push_back(std::move($3)); }
-              | union_field                      { $$ = std::vector<Declaration>(); $$.push_back(std::move($1)); }
+              | union_field                      { $$ = hilti::Declarations{}; $$.push_back(std::move($1)); }
 
-union_field  : type local_id opt_attributes      { $$ = hilti::declaration::Field(std::move($2), std::move($1), std::move($3), __loc__); }
+union_field  : qtype local_id opt_attributes      { $$ = builder->declarationField(std::move($2), std::move($1), std::move($3), __loc__); }
 
-enum_type     : ENUM '{' enum_labels '}'         { $$ = hilti::type::Enum(std::move($3), __loc__); }
-              | ENUM '<' '*' '>'                 { $$ = hilti::type::Enum(type::Wildcard(), __loc__); }
+enum_type     : ENUM '{' enum_labels '}'         { $$ = builder->typeEnum(std::move($3), __loc__); }
+              | ENUM '<' '*' '>'                 { $$ = builder->typeEnum(type::Wildcard(), __loc__); }
 
 enum_labels   : enum_labels ',' enum_label       { $$ = std::move($1); $$.push_back(std::move($3)); }
               | enum_labels ','                  { $$ = std::move($1); }
-              | enum_label                       { $$ = std::vector<hilti::type::enum_::Label>(); $$.push_back(std::move($1)); }
+              | enum_label                       { $$ = hilti::type::enum_::Labels(); $$.push_back(std::move($1)); }
               ;
 
-enum_label    : local_id                         { $$ = hilti::type::enum_::Label(std::move($1), __loc__); }
-              | local_id '=' CUINTEGER           { $$ = hilti::type::enum_::Label(std::move($1), $3, __loc__); }
+enum_label    : local_id                         { $$ = builder->typeEnumLabel(std::move($1), __loc__); }
+              | local_id '=' CUINTEGER           { $$ = builder->typeEnumLabel(std::move($1), $3, __loc__); }
               ;
 
 bitfield_type : BITFIELD '(' CUINTEGER ')'
                                                  { _field_width = $3; }
-                '{' opt_bitfield_bits '}'
-                                                 { $$ = hilti::type::Bitfield($3, $7, {}, __loc__); }
+                '{' opt_bitfield_bit_ranges '}'
+                                                 { $$ = builder->typeBitfield($3, $7, {}, __loc__); }
 
-opt_bitfield_bits
-              : bitfield_bits
+opt_bitfield_bit_ranges
+              : bitfield_bit_ranges
                                                  { $$ = std::move($1); }
-              | /* empty */                      { $$ = std::vector<hilti::type::bitfield::Bits>(); }
+              | /* empty */                      { $$ = type::bitfield::BitRanges(); }
 
-bitfield_bits
-              : bitfield_bits bitfield_bits_spec
+bitfield_bit_ranges
+              : bitfield_bit_ranges bitfield_bit_range
                                                  { $$ = std::move($1); $$.push_back(std::move($2));  }
-              | bitfield_bits_spec               { $$ = std::vector<hilti::type::bitfield::Bits>(); $$.push_back(std::move($1)); }
+              | bitfield_bit_range               { $$ = type::bitfield::BitRanges(); $$.push_back(std::move($1)); }
 
-bitfield_bits_spec
+bitfield_bit_range
               : local_id ':' CUINTEGER DOTDOT CUINTEGER opt_attributes ';'
-                                                 { $$ = hilti::type::bitfield::Bits(std::move($1), $3, $5, _field_width, std::move($6), __loc__); }
+                                                 { $$ = builder->typeBitfieldBitRange(std::move($1), $3, $5, _field_width, std::move($6), __loc__); }
               | local_id ':' CUINTEGER opt_attributes ';'
-                                                 { $$ = hilti::type::bitfield::Bits(std::move($1), $3, $3, _field_width, std::move($4), __loc__); }
+                                                 { $$ = builder->typeBitfieldBitRange(std::move($1), $3, $3, _field_width, std::move($4), __loc__); }
 /* Expressions */
 
 expr          : expr_0                           { $$ = std::move($1); }
               ;
 
 opt_exprs     : exprs                            { $$ = std::move($1); }
-              | /* empty */                      { $$ = std::vector<Expression>(); }
+              | /* empty */                      { $$ = hilti::Expressions(); }
 
 exprs         : exprs ',' expr                   { $$ = std::move($1); $$.push_back(std::move($3)); }
-              | expr                             { $$ = std::vector<Expression>{std::move($1)}; }
+              | expr                             { $$ = hilti::Expressions{std::move($1)}; }
 
 expr_0        : expr_1                           { $$ = std::move($1); }
               ;
 
-expr_1        : expr_2 '=' expr_1                { $$ = hilti::expression::Assign(std::move($1), std::move($3), __loc__); }
-              | expr_2 MINUSASSIGN expr_1        { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::DifferenceAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 PLUSASSIGN expr_1         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SumAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 TIMESASSIGN expr_1        { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::MultipleAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 DIVIDEASSIGN expr_1       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::DivisionAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 '?' expr_1 ':' expr_1     { $$ = hilti::expression::Ternary(std::move($1), std::move($3), std::move($5), __loc__); }
+expr_1        : expr_2 '=' expr_1                { $$ = builder->expressionAssign(std::move($1), std::move($3), __loc__); }
+              | expr_2 MINUSASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DifferenceAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_2 PLUSASSIGN expr_1         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SumAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_2 TIMESASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MultipleAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_2 DIVIDEASSIGN expr_1       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DivisionAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_2 '?' expr_1 ':' expr_1     { $$ = builder->expressionTernary(std::move($1), std::move($3), std::move($5), __loc__); }
               | expr_2                           { $$ = std::move($1); }
 
-expr_2        : expr_2 OR expr_3                 { $$ = hilti::expression::LogicalOr(std::move($1), std::move($3), __loc__); }
+expr_2        : expr_2 OR expr_3                 { $$ = builder->expressionLogicalOr(std::move($1), std::move($3), __loc__); }
               | expr_3                           { $$ = std::move($1); }
 
-expr_3        : expr_3 AND expr_4                { $$ = hilti::expression::LogicalAnd(std::move($1), std::move($3), __loc__); }
+expr_3        : expr_3 AND expr_4                { $$ = builder->expressionLogicalAnd(std::move($1), std::move($3), __loc__); }
               | expr_4                           { $$ = std::move($1); }
 
-expr_4        : expr_4 EQ expr_5                 { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Equal, {std::move($1), std::move($3)}, __loc__); }
-              | expr_4 NEQ expr_5                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unequal, {std::move($1), std::move($3)}, __loc__); }
+expr_4        : expr_4 EQ expr_5                 { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Equal, {std::move($1), std::move($3)}, __loc__); }
+              | expr_4 NEQ expr_5                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Unequal, {std::move($1), std::move($3)}, __loc__); }
               | expr_5                           { $$ = std::move($1); }
 
-expr_5        : expr_5 '<' expr_6                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Lower, {std::move($1), std::move($3)}, __loc__); }
-              | expr_5 '>' expr_6                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Greater, {std::move($1), std::move($3)}, __loc__); }
-              | expr_5 GEQ expr_6                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::GreaterEqual, {std::move($1), std::move($3)}, __loc__); }
-              | expr_5 LEQ expr_6                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::LowerEqual, {std::move($1), std::move($3)}, __loc__); }
+expr_5        : expr_5 '<' expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Lower, {std::move($1), std::move($3)}, __loc__); }
+              | expr_5 '>' expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Greater, {std::move($1), std::move($3)}, __loc__); }
+              | expr_5 GEQ expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::GreaterEqual, {std::move($1), std::move($3)}, __loc__); }
+              | expr_5 LEQ expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::LowerEqual, {std::move($1), std::move($3)}, __loc__); }
               | expr_6                           { $$ = std::move($1); }
 
-expr_6        : expr_6 '|' expr_7                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::BitOr, {std::move($1), std::move($3)}, __loc__); }
+expr_6        : expr_6 '|' expr_7                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitOr, {std::move($1), std::move($3)}, __loc__); }
               | expr_7                           { $$ = std::move($1); }
 
-expr_7        : expr_7 '^' expr_8                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::BitXor, {std::move($1), std::move($3)}, __loc__); }
+expr_7        : expr_7 '^' expr_8                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitXor, {std::move($1), std::move($3)}, __loc__); }
               | expr_8                           { $$ = std::move($1); }
 
-expr_8        : expr_8 '&' expr_9                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::BitAnd, {std::move($1), std::move($3)}, __loc__); }
+expr_8        : expr_8 '&' expr_9                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitAnd, {std::move($1), std::move($3)}, __loc__); }
               | expr_9                           { $$ = std::move($1); }
 
-expr_9        : expr_9 SHIFTLEFT expr_a          { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::ShiftLeft, {std::move($1), std::move($3)}, __loc__); }
-              | expr_9 SHIFTRIGHT expr_a         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::ShiftRight, {std::move($1), std::move($3)}, __loc__); }
+expr_9        : expr_9 SHIFTLEFT expr_a          { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::ShiftLeft, {std::move($1), std::move($3)}, __loc__); }
+              | expr_9 SHIFTRIGHT expr_a         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::ShiftRight, {std::move($1), std::move($3)}, __loc__); }
               | expr_a                           { $$ = std::move($1); }
 
-expr_a        : expr_a '+' expr_b                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Sum, {std::move($1), std::move($3)}, __loc__); }
-              | expr_a '-' expr_b                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Difference, {std::move($1), std::move($3)}, __loc__); }
+expr_a        : expr_a '+' expr_b                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Sum, {std::move($1), std::move($3)}, __loc__); }
+              | expr_a '-' expr_b                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Difference, {std::move($1), std::move($3)}, __loc__); }
               | expr_b                           { $$ = std::move($1); }
 
-expr_b        : expr_b '%' expr_c                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Modulo, {std::move($1), std::move($3)}, __loc__); }
-              | expr_b '*' expr_c                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Multiple, {std::move($1), std::move($3)}, __loc__); }
-              | expr_b '/' expr_c                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Division, {std::move($1), std::move($3)}, __loc__); }
-              | expr_b POW expr_c                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Power, {std::move($1), std::move($3)}, __loc__); }
+expr_b        : expr_b '%' expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Modulo, {std::move($1), std::move($3)}, __loc__); }
+              | expr_b '*' expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Multiple, {std::move($1), std::move($3)}, __loc__); }
+              | expr_b '/' expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Division, {std::move($1), std::move($3)}, __loc__); }
+              | expr_b POW expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Power, {std::move($1), std::move($3)}, __loc__); }
               | expr_c                           { $$ = std::move($1); }
 
-expr_c        : '!' expr_c                       { $$ = hilti::expression::LogicalNot(std::move($2), __loc__); }
-              | '*' expr_c                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Deref, {std::move($2)}, __loc__); }
-              | '~' expr_c                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Negate, {std::move($2)}, __loc__); }
-              | '|' expr_c '|'                   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Size, {std::move($2)}, __loc__); }
-              | MINUSMINUS expr_c                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::DecrPrefix, {std::move($2)}, __loc__); }
-              | PLUSPLUS expr_c                  { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::IncrPrefix, {std::move($2)}, __loc__); }
+expr_c        : '!' expr_c                       { $$ = builder->expressionLogicalNot(std::move($2), __loc__); }
+              | '*' expr_c                       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Deref, {std::move($2)}, __loc__); }
+              | '~' expr_c                       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Negate, {std::move($2)}, __loc__); }
+              | '|' expr_c '|'                   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Size, {std::move($2)}, __loc__); }
+              | MINUSMINUS expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DecrPrefix, {std::move($2)}, __loc__); }
+              | PLUSPLUS expr_c                  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::IncrPrefix, {std::move($2)}, __loc__); }
               | expr_d                           { $$ = std::move($1); }
 
-expr_d        : expr_d '(' opt_exprs ')'         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Call, {std::move($1), hilti::expression::Ctor(hilti::ctor::Tuple(std::move($3), __loc__))}, __loc__); }
-              | expr_d '.' member_expr           { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Member, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d '.' member_expr '(' opt_exprs ')' { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::MemberCall, {std::move($1), std::move($3), hilti::expression::Ctor(hilti::ctor::Tuple(std::move($5), __loc__))}, __loc__); }
-              | expr_d '[' expr ']'              { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Index, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d HASATTR member_expr       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::HasMember, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d IN expr_d                 { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d NOT_IN expr_d             { $$ = hilti::expression::LogicalNot(hilti::expression::UnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__)); }
-              | expr_d MINUSMINUS                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::DecrPostfix, {std::move($1)}, __loc__); }
-              | expr_d PLUSPLUS                  { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::IncrPostfix, {std::move($1)}, __loc__); }
-              | expr_d TRYATTR member_expr       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::TryMember, {std::move($1), std::move($3)}, __loc__); }
+expr_d        : expr_d '(' opt_exprs ')'         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Call, {std::move($1), builder->expressionCtor(builder->ctorTuple(std::move($3), __loc__))}, __loc__); }
+              | expr_d '.' member_expr           { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Member, {std::move($1), std::move($3)}, __loc__); }
+              | expr_d '.' member_expr '(' opt_exprs ')' { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MemberCall, {std::move($1), std::move($3), builder->expressionCtor(builder->ctorTuple(std::move($5), __loc__))}, __loc__); }
+              | expr_d '[' expr ']'              { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Index, {std::move($1), std::move($3)}, __loc__); }
+              | expr_d HASATTR member_expr       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::HasMember, {std::move($1), std::move($3)}, __loc__); }
+              | expr_d IN expr_d                 { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__); }
+              | expr_d NOT_IN expr_d             { $$ = builder->expressionLogicalNot(builder->expressionUnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__)); }
+              | expr_d MINUSMINUS                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DecrPostfix, {std::move($1)}, __loc__); }
+              | expr_d PLUSPLUS                  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::IncrPostfix, {std::move($1)}, __loc__); }
+              | expr_d TRYATTR member_expr       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::TryMember, {std::move($1), std::move($3)}, __loc__); }
               | expr_e                           { $$ = std::move($1); }
 
-expr_e        : BEGIN_ '(' expr ')'              { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
-              | CAST type_param_begin type type_param_end '(' expr ')'   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Cast, {std::move($6), hilti::expression::Type_(std::move($3))}, __loc__); }
-              | END_ '(' expr ')'                { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
-              | MOVE '(' expr ')'                { $$ = hilti::expression::Move(std::move($3), __loc__); }
-              | PACK tuple_expr   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Pack, {std::move($2)}, __loc__); }
-              | UNPACK type_param_begin type type_param_end tuple_expr   { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::Unpack, {hilti::expression::Type_(std::move($3)), std::move($5), hilti::expression::Ctor(hilti::ctor::Bool(false), __loc__)}, __loc__); }
-              | NEW expr                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {std::move($2), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
-              | NEW type                         { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple({}, __loc__))}, __loc__); }
-              | NEW type '(' opt_exprs ')'       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::New, {hilti::expression::Type_(std::move($2)), hilti::expression::Ctor(hilti::ctor::Tuple(std::move($4), __loc__))}, __loc__); }
-              | TYPEINFO '(' expr ')'            { $$ = hilti::expression::TypeInfo(std::move($3), __loc__); }
-              | TYPEINFO '(' base_type ')'       { $$ = hilti::expression::TypeInfo(expression::Type_(std::move($3)), __loc__); }
+expr_e        : BEGIN_ '(' expr ')'              { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
+              | CAST type_param_begin qtype type_param_end '(' expr ')'   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Cast, {std::move($6), builder->expressionType(std::move($3))}, __loc__); }
+              | END_ '(' expr ')'                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
+              | MOVE '(' expr ')'                { $$ = builder->expressionMove(std::move($3), __loc__); }
+              | PACK tuple_expr   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Pack, {std::move($2)}, __loc__); }
+              | UNPACK type_param_begin qtype type_param_end tuple_expr   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Unpack, {builder->expressionType(std::move($3)), std::move($5), builder->expressionCtor(builder->ctorBool(false), __loc__)}, __loc__); }
+              | NEW expr                         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {std::move($2), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
+              | NEW qtype                        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionType(std::move($2)), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
+              | NEW qtype '(' opt_exprs ')'      { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionType(std::move($2)), builder->expressionCtor(builder->ctorTuple(std::move($4), __loc__))}, __loc__); }
+              | TYPEINFO '(' expr ')'            { $$ = builder->expressionTypeInfo(std::move($3), __loc__); }
+              | TYPEINFO '(' base_type ')'       { $$ = builder->expressionTypeInfo(builder->expressionType(builder->qualifiedType(std::move($3), Constness::Mutable)), __loc__); }
               | expr_f                           { $$ = std::move($1); }
 
-expr_f        : ctor                             { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
+expr_f        : ctor                             { $$ = builder->expressionCtor(std::move($1), __loc__); }
               | ctor_expr                        { $$ = std::move($1); }
-              | '-' expr_f                       { $$ = hilti::expression::UnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
+              | '-' expr_f                       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
               | '[' expr FOR local_id IN expr ']'
-                                                 { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
+                                                 { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
               | '[' expr FOR local_id IN expr IF expr ']'
-                                                 { $$ = hilti::expression::ListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
+                                                 { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
               | expr_g                           { $$ = std::move($1); }
 
-expr_g        : '(' expr ')'                     { $$ = hilti::expression::Grouping(std::move($2)); }
-              | scoped_id                        { $$ = hilti::expression::UnresolvedID(std::move($1), __loc__); }
-              | DOLLARDOLLAR                     { $$ = hilti::expression::UnresolvedID(std::move("__dd"), __loc__);}
-              | SCOPE                            { $$ = hilti::expression::Keyword(hilti::expression::keyword::Kind::Scope, __loc__); }
+expr_g        : '(' expr ')'                     { $$ = builder->expressionGrouping(std::move($2)); }
+              | scoped_id                        { $$ = builder->expressionName(std::move($1), __loc__); }
+              | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("__dd"), __loc__);}
+              | SCOPE                            { $$ = builder->expressionKeyword(hilti::expression::keyword::Kind::Scope, __loc__); }
 
 
-member_expr   : local_id                         { $$ = hilti::expression::Member(std::move($1), __loc__); }
-              | ERROR                            { $$ = hilti::expression::Member(ID("error", __loc__), __loc__); } // allow methods of that name even though reserved keyword
+member_expr   : local_id                         { $$ = builder->expressionMember(std::move($1), __loc__); }
+              | ERROR                            { $$ = builder->expressionMember(ID("error", __loc__), __loc__); } // allow methods of that name even though reserved keyword
 
 /* Constants */
 
-ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __loc__); }
-              | CBYTES                           { $$ = hilti::ctor::Bytes(std::move($1), __loc__); }
-              | CSTRING                          { $$ = hilti::ctor::String($1, false, __loc__); }
-              | CUINTEGER                        { $$ = hilti::ctor::UnsignedInteger($1, 64, __loc__); }
+ctor          : CBOOL                            { $$ = builder->ctorBool($1, __loc__); }
+              | CBYTES                           { $$ = builder->ctorBytes(std::move($1), __loc__); }
+              | CSTRING                          { $$ = builder->ctorString($1, false, __loc__); }
+              | CUINTEGER                        { $$ = builder->ctorUnsignedInteger($1, 64, __loc__); }
               | '+' CUINTEGER                    { if ( $2 > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) )
                                                     logger().error("integer constant out of range", __loc__.location());
 
-                                                   $$ = hilti::ctor::SignedInteger($2, 64, __loc__);
+                                                   $$ = builder->ctorSignedInteger($2, 64, __loc__);
                                                  }
-              | CUREAL                           { $$ = hilti::ctor::Real($1, __loc__); }
-              | '+' CUREAL                       { $$ = hilti::ctor::Real($2, __loc__);; }
-              | CNULL                            { $$ = hilti::ctor::Null(__loc__); }
+              | CUREAL                           { $$ = builder->ctorReal($1, __loc__); }
+              | '+' CUREAL                       { $$ = builder->ctorReal($2, __loc__);; }
+              | CNULL                            { $$ = builder->ctorNull(__loc__); }
 
-              | CADDRESS                         { $$ = hilti::ctor::Address(hilti::ctor::Address::Value($1), __loc__); }
-              | CADDRESS '/' CUINTEGER           { $$ = hilti::ctor::Network(hilti::ctor::Network::Value($1, $3), __loc__); }
-              | CPORT                            { $$ = hilti::ctor::Port(hilti::ctor::Port::Value($1), __loc__); }
+              | CADDRESS                         { $$ = builder->ctorAddress(hilti::rt::Address($1), __loc__); }
+              | CADDRESS '/' CUINTEGER           { $$ = builder->ctorNetwork(hilti::rt::Network($1, $3), __loc__); }
+              | CPORT                            { $$ = builder->ctorPort(hilti::rt::Port($1), __loc__); }
 
               /* There are more here that we could move into ctor_expr and have them use namedCtor.
                  But not sure if that'd change much so leaving here for now.
               */
-              | OPTIONAL '(' expr ')'            { $$ = hilti::ctor::Optional(std::move($3), __loc__); }
+              | OPTIONAL '(' expr ')'            { $$ = builder->ctorOptional(std::move($3), __loc__); }
               | DEFAULT type_param_begin type type_param_end '(' opt_exprs ')'
-                                                 { $$ = hilti::ctor::Default(std::move($3), std::move($6), __loc__); }
+                                                 { $$ = builder->ctorDefault(std::move($3), std::move($6), __loc__); }
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
               | regexp                           { $$ = std::move($1); }
@@ -866,65 +866,65 @@ ctor          : CBOOL                            { $$ = hilti::ctor::Bool($1, __
               | tuple                            { $$ = std::move($1); }
               ;
 
-ctor_expr     : INTERVAL '(' expr ')'            { $$ = hilti::builder::namedCtor("interval", { std::move($3) }, __loc__); }
-              | INTERVAL_NS '(' expr ')'         { $$ = hilti::builder::namedCtor("interval_ns", { std::move($3) }, __loc__); }
-              | TIME '(' expr ')'                { $$ = hilti::builder::namedCtor("time", { std::move($3) }, __loc__); }
-              | TIME_NS '(' expr ')'             { $$ = hilti::builder::namedCtor("time_ns", { std::move($3) }, __loc__); }
-              | STREAM '(' expr ')'              { $$ = hilti::builder::namedCtor("stream", { std::move($3) }, __loc__); }
-              | ERROR '(' expr ')'               { $$ = hilti::builder::namedCtor("error", { std::move($3) }, __loc__); }
-              | INT8 '(' expr ')'                { $$ = hilti::builder::namedCtor("int8", { std::move($3) }, __loc__); }
-              | INT16 '(' expr ')'               { $$ = hilti::builder::namedCtor("int16", { std::move($3) }, __loc__); }
-              | INT32 '(' expr ')'               { $$ = hilti::builder::namedCtor("int32", { std::move($3) }, __loc__); }
-              | INT64 '(' expr ')'               { $$ = hilti::builder::namedCtor("int64", { std::move($3) }, __loc__); }
-              | UINT8 '(' expr ')'               { $$ = hilti::builder::namedCtor("uint8", { std::move($3) }, __loc__); }
-              | UINT16 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint16", { std::move($3) }, __loc__); }
-              | UINT32 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint32", { std::move($3) }, __loc__); }
-              | UINT64 '(' expr ')'              { $$ = hilti::builder::namedCtor("uint64", { std::move($3) }, __loc__); }
-              | PORT '(' expr ',' expr ')'       { $$ = hilti::builder::namedCtor("port", {std::move($3), std::move($5)}, __loc__); }
+ctor_expr     : INTERVAL '(' expr ')'            { $$ = builder->namedCtor("interval", { std::move($3) }, __loc__); }
+              | INTERVAL_NS '(' expr ')'         { $$ = builder->namedCtor("interval_ns", { std::move($3) }, __loc__); }
+              | TIME '(' expr ')'                { $$ = builder->namedCtor("time", { std::move($3) }, __loc__); }
+              | TIME_NS '(' expr ')'             { $$ = builder->namedCtor("time_ns", { std::move($3) }, __loc__); }
+              | STREAM '(' expr ')'              { $$ = builder->namedCtor("stream", { std::move($3) }, __loc__); }
+              | ERROR '(' expr ')'               { $$ = builder->namedCtor("error", { std::move($3) }, __loc__); }
+              | INT8 '(' expr ')'                { $$ = builder->namedCtor("int8", { std::move($3) }, __loc__); }
+              | INT16 '(' expr ')'               { $$ = builder->namedCtor("int16", { std::move($3) }, __loc__); }
+              | INT32 '(' expr ')'               { $$ = builder->namedCtor("int32", { std::move($3) }, __loc__); }
+              | INT64 '(' expr ')'               { $$ = builder->namedCtor("int64", { std::move($3) }, __loc__); }
+              | UINT8 '(' expr ')'               { $$ = builder->namedCtor("uint8", { std::move($3) }, __loc__); }
+              | UINT16 '(' expr ')'              { $$ = builder->namedCtor("uint16", { std::move($3) }, __loc__); }
+              | UINT32 '(' expr ')'              { $$ = builder->namedCtor("uint32", { std::move($3) }, __loc__); }
+              | UINT64 '(' expr ')'              { $$ = builder->namedCtor("uint64", { std::move($3) }, __loc__); }
+              | PORT '(' expr ',' expr ')'       { $$ = builder->namedCtor("port", {std::move($3), std::move($5)}, __loc__); }
               ;
 
-tuple         : '(' opt_tuple_elems1 ')'         { $$ = hilti::ctor::Tuple(std::move($2), __loc__); }
+tuple         : '(' opt_tuple_elems1 ')'         { $$ = builder->ctorTuple(std::move($2), __loc__); }
 
 opt_tuple_elems1
-              : tuple_elem                       { $$ = std::vector<hilti::Expression>{std::move($1)}; }
-              | tuple_elem ',' opt_tuple_elems2  { $$ = std::vector<hilti::Expression>{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
-              | /* empty */                      { $$ = std::vector<hilti::Expression>(); }
+              : tuple_elem                       { $$ = hilti::Expressions{std::move($1)}; }
+              | tuple_elem ',' opt_tuple_elems2  { $$ = hilti::Expressions{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
+              | /* empty */                      { $$ = hilti::Expressions(); }
 
 opt_tuple_elems2
-              : tuple_elem                       { $$ = std::vector<hilti::Expression>{ std::move($1)}; }
-              | tuple_elem ',' opt_tuple_elems2  { $$ = std::vector<hilti::Expression>{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
-              | /* empty */                      { $$ = std::vector<hilti::Expression>(); }
+              : tuple_elem                       { $$ = hilti::Expressions{ std::move($1)}; }
+              | tuple_elem ',' opt_tuple_elems2  { $$ = hilti::Expressions{std::move($1)}; $$.insert($$.end(), $3.begin(), $3.end()); }
+              | /* empty */                      { $$ = hilti::Expressions(); }
 
 
 tuple_elem    : expr                             { $$ = std::move($1); }
               ;
 
-tuple_expr    : tuple                            { $$ = hilti::expression::Ctor(std::move($1), __loc__); }
+tuple_expr    : tuple                            { $$ = builder->expressionCtor(std::move($1), __loc__); }
 
-list          : '[' opt_exprs ']'                { $$ = hilti::ctor::List(std::move($2), __loc__); }
-              | LIST '(' opt_exprs ')'           { $$ = hilti::ctor::List(std::move($3), __loc__); }
-              | LIST type_param_begin type type_param_end '(' opt_tuple_elems1 ')'
-                                                 { $$ = hilti::ctor::List(std::move($3), std::move($6), __loc__); }
-              | VECTOR '(' opt_exprs ')'         { $$ = hilti::ctor::Vector(std::move($3), __loc__); }
-              | VECTOR type_param_begin type type_param_end '(' opt_tuple_elems1 ')'
-                                                 { $$ = hilti::ctor::Vector(std::move($3), std::move($6), __loc__); }
+list          : '[' opt_exprs ']'                { $$ = builder->ctorList(std::move($2), __loc__); }
+              | LIST '(' opt_exprs ')'           { $$ = builder->ctorList(std::move($3), __loc__); }
+              | LIST type_param_begin qtype type_param_end '(' opt_tuple_elems1 ')'
+                                                 { $$ = builder->ctorList(std::move($3), std::move($6), __loc__); }
+              | VECTOR '(' opt_exprs ')'         { $$ = builder->ctorVector(std::move($3), __loc__); }
+              | VECTOR type_param_begin qtype type_param_end '(' opt_tuple_elems1 ')'
+                                                 { $$ = builder->ctorVector(std::move($3), std::move($6), __loc__); }
 
-set           : SET '(' opt_exprs ')'            { $$ = hilti::ctor::Set(std::move($3), __loc__); }
-              | SET type_param_begin type type_param_end '(' opt_tuple_elems1 ')'
-                                                 { $$ = hilti::ctor::Set(std::move($3), std::move($6), __loc__); }
+set           : SET '(' opt_exprs ')'            { $$ = builder->ctorSet(std::move($3), __loc__); }
+              | SET type_param_begin qtype type_param_end '(' opt_tuple_elems1 ')'
+                                                 { $$ = builder->ctorSet(std::move($3), std::move($6), __loc__); }
 
-map           : MAP '(' opt_map_elems ')'        { $$ = hilti::ctor::Map(std::move($3), __loc__); }
-              | MAP type_param_begin type ',' type type_param_end '(' opt_map_elems ')'
-                                                 { $$ = hilti::ctor::Map(std::move($3), std::move($5), std::move($8), __loc__); }
+map           : MAP '(' opt_map_elems ')'        { $$ = builder->ctorMap(std::move($3), __loc__); }
+              | MAP type_param_begin qtype ',' qtype type_param_end '(' opt_map_elems ')'
+                                                 { $$ = builder->ctorMap(std::move($3), std::move($5), std::move($8), __loc__); }
 
-struct_       : '[' struct_elems ']'         { $$ = hilti::ctor::Struct(std::move($2), __loc__); }
+struct_       : '[' struct_elems ']'         { $$ = builder->ctorStruct(std::move($2), __loc__); }
 
 struct_elems  : struct_elems ',' struct_elem     { $$ = std::move($1); $$.push_back($3); }
-              | struct_elem                      { $$ = std::vector<hilti::ctor::struct_::Field>{ std::move($1) }; }
+              | struct_elem                      { $$ = hilti::ctor::struct_::Fields{ std::move($1) }; }
 
-struct_elem   : '$' local_id  '=' expr           { $$ = hilti::ctor::struct_::Field(std::move($2), std::move($4)); }
+struct_elem   : '$' local_id  '=' expr           { $$ = builder->ctorStructField(std::move($2), std::move($4)); }
 
-regexp        : re_patterns opt_attributes       { $$ = hilti::ctor::RegExp(std::move($1), std::move($2), __loc__); }
+regexp        : re_patterns opt_attributes      { $$ = builder->ctorRegExp(std::move($1), std::move($2), __loc__); }
 
 re_patterns   : re_patterns '|' re_pattern_constant
                                                  { $$ = $1; $$.push_back(std::move($3)); }
@@ -935,20 +935,20 @@ re_pattern_constant
                                                  { $$ = std::move($3); }
 
 opt_map_elems : map_elems                        { $$ = std::move($1); }
-              | /* empty */                      { $$ = std::vector<hilti::ctor::map::Element>(); }
+              | /* empty */                      { $$ = hilti::ctor::map::Elements(); }
 
 map_elems     : map_elems ',' map_elem           { $$ = std::move($1); $$.push_back(std::move($3)); }
-              | map_elem                         { $$ = std::vector<hilti::ctor::map::Element>(); $$.push_back(std::move($1)); }
+              | map_elem                         { $$ = hilti::ctor::map::Elements(); $$.push_back(std::move($1)); }
 
-map_elem      : expr ':' expr                    { $$ = hilti::ctor::map::Element($1, $3, __loc__); }
+map_elem      : expr ':' expr                    { $$ = builder->ctorMapElement($1, $3, __loc__); }
 
 
-attribute     : ATTRIBUTE                       { $$ = hilti::Attribute(std::move($1), __loc__); }
-              | ATTRIBUTE '=' expr              { $$ = hilti::Attribute(std::move($1), std::move($3), __loc__); }
+attribute     : ATTRIBUTE                       { $$ = builder->attribute(std::move($1), __loc__); }
+              | ATTRIBUTE '=' expr              { $$ = builder->attribute(std::move($1), std::move($3), __loc__); }
 
 opt_attributes
-              : opt_attributes attribute        { $$ = hilti::AttributeSet::add($1, $2); }
-              | /* empty */                     { $$ = {}; }
+              : opt_attributes attribute        { $1->add(builder->context(), $2); $$ = $1; }
+              | /* empty */                     { $$ = builder->attributeSet({}, __loc__); }
 
 %%
 

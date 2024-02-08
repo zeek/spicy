@@ -47,8 +47,8 @@
 
 .. spicy:method:: vector::sub vector sub False vector (end: uint<64>)
 
-    Extracts a subsequence of vector elements spanning from the beginning
-    to (but not including) the index *end* as a new vector.
+    Extracts a subsequence of vector elements spanning from index *begin*
+    to (but not including) index *end*.
 
 .. rubric:: Operators
 

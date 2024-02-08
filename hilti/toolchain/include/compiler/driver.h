@@ -5,11 +5,13 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -56,7 +58,6 @@ struct Options {
     bool report_resource_usage = false; /**< print summary of runtime resource usage at termination */
     bool report_times = false;          /**< Report break-down of driver's execution time. */
     bool dump_code = false;             /**< Record all final HILTI and C++ code to disk for debugging. */
-    bool global_optimizations = true;   /**< whether to run global HILTI optimizations on the generated code. */
     bool enable_profiling = false;      /**< Insert profiling instrumentation into generated C++ code */
     std::vector<hilti::rt::filesystem::path>
         inputs; /**< files to compile; these will be automatically pulled in by ``Driver::run()`` */
@@ -119,17 +120,35 @@ public:
     Result<Nothing> parseOptions(int argc, char** argv);
 
     /**
-     * Schedules a unit for compilation. The driver will compile the unit once
-     * `compile()` is called. If a module of the same ID or path has been added
-     * previously, this will have no further effect.
+     * Registers a unit with the driver for compilation. If a unit with the
+     * same UID is already known, this is a no-op.
      *
-     * The `hookAddInput()` and `hookNewASTPreCompilation()` hooks will be
-     * called immediately for the new module.
-     *
-     * @param u unit to schedule for compilation
-     * @return set if successful; otherwise the result provides an error message
+     * @param unit unit to register
      */
-    Result<Nothing> addInput(const std::shared_ptr<Unit>& u);
+    void registerUnit(const std::shared_ptr<Unit>& unit) { _addUnit(unit); }
+
+    /**
+     * Looks up a previously registered by its UID.
+     *
+     * @param uid UID to look up
+     * @return pointer to unit, or null if not found
+     */
+    Unit* lookupUnit(const declaration::module::UID& uid) const {
+        auto i = _units.find(uid);
+        return i != _units.end() ? i->second.get() : nullptr;
+    }
+
+    /**
+     * Changes the process extension of an existing unit.
+     *
+     * This also updates the unit's module by changing its UID accordingly.
+     *
+     * @param uid UID of the unit to change, which must correspond to a known
+     * unit
+     * @param ext new process extension; no other unit of the same name must
+     * exist yet with that extension
+     */
+    void updateProcessExtension(const declaration::module::UID& uid, const hilti::rt::filesystem::path& ext);
 
     /**
      * Schedules a source file for compilation. The file will be parsed
@@ -145,11 +164,20 @@ public:
      */
     Result<Nothing> addInput(const hilti::rt::filesystem::path& path);
 
+    /**
+     * Schedules an already existing module for compilation. This is useful
+     * when input modules are generated in-memory on the fly. The module must
+     * have already been added to the AST. It will now be registered as a
+     * source unit for full processing (compilation to C++; JIT) just as any
+     * on-disk source files added with `addInput(<path>)`.
+     *
+     * @param uid UID of the existing module
+     * @return set if successful; otherwise the result provides an error message
+     */
+    Result<Nothing> addInput(declaration::module::UID uid);
+
     /** Returns true if at least one input file has been added. */
-    bool hasInputs() const {
-        return ! (_pending_units.empty() && _processed_units.empty() && _processed_paths.empty() &&
-                  _libraries.empty() && _external_cxxs.empty());
-    }
+    bool hasInputs() const { return ! (_units.empty() && _libraries.empty() && _external_cxxs.empty()); }
 
     /** Returns the driver options currently in effect. */
     const auto& driverOptions() const { return _driver_options; }
@@ -194,6 +222,12 @@ public:
      */
     const auto& context() const { return _ctx; }
 
+    /**
+     * Returns the current builder. Valid only once compilation has
+     * started, otherwise null.
+     */
+    auto* builder() const { return _builder.get(); }
+
     /** Shortcut to return the current context's options. */
     const auto& options() const { return _ctx->options(); }
 
@@ -235,6 +269,8 @@ public:
     Result<Nothing> run();
 
 protected:
+    friend class ASTContext;
+
     /**
      * Prints a usage message to stderr. The message summarizes the options
      * understood by `parseOptions()`.
@@ -356,6 +392,16 @@ protected:
     void printHiltiException(const hilti::rt::Exception& e);
 
     /**
+     * Instantiates a new builder tied to a given context. Derived class can
+     * override this to create a builder own their own type (as long as that's
+     * derived from `hilti::Builder`).
+     *
+     * @param ctx context to create builder for
+     * @return new builder instance
+     */
+    virtual std::unique_ptr<Builder> createBuilder(ASTContext* ctx) const;
+
+    /**
      * Hook for derived classes to add more options to the getopt() option
      * string.
      */
@@ -384,30 +430,33 @@ protected:
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST has
-     * been loaded. This hook will run before the AST has been compiled (and
-     * hence it'll be fully unprocessed).
+     * been initially set up for processing by a plugin. This hook will run
+     * before the AST has been processed any further by that plugin.
      */
-    virtual void hookNewASTPreCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
+    virtual void hookNewASTPreCompilation(const Plugin& plugin, const std::shared_ptr<ASTRoot>& root) {}
 
     /**
-     * Hook for derived classes to execute custom code when a code unit has
-     * been finalized. This hook will run after the AST has been be fully
-     * processed by the suitable plugin, but before it's being transformed.
-     */
-    virtual void hookNewASTPostCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
-
-    /**
-     * Hook for derived classes to execute custom code when all input files
-     * have been fully processes by a plugin. If the hook returns an error that
-     * will abort all further processing. The hook may add further inputs files
-     * through the `add()` methods, which will then be compiled next. This
-     * hook will execute again once all new inputs have likewise been compiled.
-     * The new files, however, must not need processing by any plugin that has
-     * already completed compilation previously.
+     * Hook for derived classes to execute custom code when an HILTI AST been
+     * finalized by a plugin. This hook will run after the AST has been be
+     * fully processed by that plugin, but before it's being transformed.
      *
-     * @param plugin plugin that has finished now
+     * The hook may modify the AST further, including adding new modules. If it
+     * does indicate so with its return value, AST processing will start over
+     * again to fully resolve the modified AST. Once that's done, this hook
+     * will execute again. Note, however, that the hook cannot add anything to
+     * the AST that depends on *previous& plugins, as they won't execute again.
+     *
+     * @param plugin the plugin that has processed the AST
+     * @param root the AST that has been processed
+     * @return true if the AST has been modified and needs to be reprocessed
      */
-    virtual Result<Nothing> hookCompilationFinished(const Plugin& plugin) { return Nothing(); }
+    virtual bool hookNewASTPostCompilation(const Plugin& plugin, const std::shared_ptr<ASTRoot>& root) { return false; }
+
+    /**
+     * Hook for derived classes to execute custom code when the AST has been
+     * fully processed and transformed to its final state.
+     */
+    virtual Result<Nothing> hookCompilationFinished(const std::shared_ptr<ASTRoot>& root) { return Nothing(); }
 
     /**
      * Hook for derived classes to execute custom code when the HILTI runtime
@@ -429,7 +478,7 @@ private:
     // Backend for adding a new unit.
     void _addUnit(const std::shared_ptr<Unit>& unit);
 
-    // Run a specific plugini's AST passes on all units with the corresponding extension.
+    // Run a specific plugin's AST passes on all units with the corresponding extension.
     Result<Nothing> _resolveUnitsWithPlugin(const Plugin& plugin, std::vector<std::shared_ptr<Unit>> units, int& round);
 
     // Runs a specific plugin's transform step on a given set of units.
@@ -478,19 +527,18 @@ private:
     driver::Options _driver_options;
     hilti::Options _compiler_options;
 
-    std::vector<std::shared_ptr<Unit>> _pending_units;
-    std::set<ID> _processed_units;
-    std::set<hilti::rt::filesystem::path> _processed_paths;
-
     std::shared_ptr<Context> _ctx;                      // driver's compiler context
+    std::unique_ptr<hilti::Builder> _builder;           // driver builder tied to its context
     std::unique_ptr<hilti::JIT> _jit;                   // driver's JIT instance
     std::shared_ptr<const hilti::rt::Library> _library; // Compiled code
 
+    std::map<declaration::module::UID, std::shared_ptr<Unit>> _units;
     std::vector<CxxCode> _generated_cxxs;
     std::unordered_map<std::string, Library> _libraries;
     std::vector<hilti::rt::filesystem::path> _external_cxxs;
     std::vector<linker::MetaData> _mds;
-    std::vector<std::shared_ptr<Unit>> _hlts;
+
+    std::unordered_set<std::string> _processed_paths;
 
     bool _runtime_initialized = false; // true once initRuntime() has succeeded
     std::set<std::string> _tmp_files;  // all tmp files created, so that we can clean them up.

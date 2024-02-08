@@ -6,7 +6,7 @@
 
 .. rubric:: Operators
 
-.. spicy:operator:: exception::Call exception exception-type(string)
+.. spicy:operator:: exception::Call exception~value exception(string)
 
     Instantiates an instance of the exception type carrying the error
     message *msg*.

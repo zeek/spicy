@@ -16,6 +16,7 @@
 #include <string>
 
 #include <hilti/ast/all.h>
+#include <hilti/ast/builder/builder.h>
 #include <hilti/base/result.h>
 
 #undef YY_DECL
@@ -26,6 +27,7 @@
                                         hilti::detail::parser::Driver* driver)
 
 #ifndef __FLEX_LEXER_H
+// NOLINTNEXTLINE
 #define yyFlexLexer HiltiFlexLexer
 #include <FlexLexer.h>
 
@@ -40,16 +42,19 @@ inline const DebugStream Parser("parser");
 
 namespace detail::parser {
 
+extern Result<ModulePtr> parseSource(Builder* builder, std::istream& in, const std::string& filename);
+
 class Parser;
 class Scanner;
 
 /** Driver for flex/bison. */
 class Driver {
 public:
-    Result<hilti::Node> parse(std::istream& in, const std::string& filename);
+    Result<ModulePtr> parse(Builder* builder, std::istream& in, const std::string& filename);
 
     Scanner* scanner() const { return _scanner; }
     Parser* parser() const { return _parser; }
+    Builder* builder() const { return _builder; }
 
     // Methods for the parser.
 
@@ -61,13 +66,16 @@ public:
     void disableExpressionMode();
     void enableDottedIDMode();
     void disableDottedIDMode();
-    void setDestinationModule(Module&& m) { _module = std::move(m); }
+
+    void setDestinationModule(const ModulePtr& m) { _module = m; }
 
 private:
-    Module _module;
+    Builder* _builder = nullptr;
     std::string _filename;
     Parser* _parser = nullptr;
     Scanner* _scanner = nullptr;
+
+    ModulePtr _module;
     int _expression_mode = 0;
 };
 

@@ -2,40 +2,48 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
 
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
 /** A production simply skipping input data. */
-class Skip : public ProductionBase, public spicy::trait::isTerminal {
+class Skip : public Production {
 public:
-    Skip(const std::string& symbol, const NodeRef& field, std::optional<Production> ctor,
+    Skip(ASTContext* ctx, const std::string& symbol, type::unit::item::FieldPtr field, std::unique_ptr<Production> ctor,
          const Location& l = location::None)
-        : ProductionBase(symbol, l), _field(field), _ctor(std::move(ctor)) {}
+        : Production(symbol, l),
+          _field(std::move(field)),
+          _ctor(std::move(ctor)),
+          _void(QualifiedType::create(ctx, hilti::type::Void::create(ctx), hilti::Constness::Const)) {}
 
-    const auto& field() const { return _field.as<type::unit::item::Field>(); }
+    const auto& field() const { return _field; }
     const auto& ctor() const { return _ctor; }
 
-    auto fieldRef() const { return NodeRef(_field); }
+    bool isAtomic() const final { return true; };
+    bool isEodOk() const final { return _field->attributes()->has("&eod"); };
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return false; };
+    bool isTerminal() const final { return true; };
 
-    spicy::Type type() const { return type::void_; }
-    bool nullable() const { return false; }
-    bool eodOk() const {
-        const auto attrs = field().attributes();
-        return attrs && attrs->has("&eod");
+    QualifiedTypePtr type() const final { return _void; };
+
+    std::string dump() const override {
+        return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : _field->print());
     }
-    bool atomic() const { return true; }
 
-    std::string render() const { return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : to_string(_field)); }
+    SPICY_PRODUCTION
 
 private:
-    Node _field; // stores a shallow copy of the reference passed into ctor
-    std::optional<Production> _ctor;
+    type::unit::item::FieldPtr _field; // stores a shallow copy of the reference passed into ctor
+    std::unique_ptr<Production> _ctor;
+    QualifiedTypePtr _void;
 };
 
 } // namespace spicy::detail::codegen::production

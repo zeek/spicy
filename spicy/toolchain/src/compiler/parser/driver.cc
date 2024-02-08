@@ -4,10 +4,10 @@
 #include <utility>
 
 #include <hilti/base/logger.h>
+#include <hilti/base/timing.h>
 
 #include <spicy/compiler/detail/parser/driver.h>
 #include <spicy/compiler/detail/parser/scanner.h>
-#include <spicy/global.h>
 
 /** We compile with a source property to find this. */
 #include <__parser.h>
@@ -15,24 +15,25 @@
 using namespace spicy;
 using namespace spicy::detail::parser;
 
-hilti::Result<hilti::Node> spicy::parseSource(std::istream& in, const std::string& filename) {
-    return Driver().parse(in, filename);
+hilti::Result<ModulePtr> detail::parser::parseSource(Builder* builder, std::istream& in, const std::string& filename) {
+    hilti::util::timing::Collector _("spicy/compiler/ast/parser");
+
+    return Driver().parse(builder, in, filename);
 }
 
-hilti::Result<Expression> spicy::parseExpression(const std::string& expr, const Meta& meta) {
+hilti::Result<ExpressionPtr> detail::parser::parseExpression(Builder* builder, const std::string& expr,
+                                                             const Meta& meta) {
     spicy::detail::parser::Driver driver;
-    auto n = driver.parseExpression(expr, meta);
-    if ( ! n )
-        return n.error();
-
-    return n->as<Expression>();
+    return driver.parseExpression(builder, expr, meta);
 }
 
 namespace hilti::logging::debug {
 inline const DebugStream Parser("parser");
 } // namespace hilti::logging::debug
 
-hilti::Result<hilti::Node> Driver::parse(std::istream& in, const std::string& filename) {
+hilti::Result<ModulePtr> Driver::parse(Builder* builder, std::istream& in, const std::string& filename) {
+    _builder = builder;
+
     auto old_errors = hilti::logger().errors();
     _filename = filename;
     _line = 1;
@@ -41,7 +42,7 @@ hilti::Result<hilti::Node> Driver::parse(std::istream& in, const std::string& fi
     Scanner scanner(&in);
     _scanner = &scanner;
 
-    Parser parser(this);
+    Parser parser(this, _builder);
     _parser = &parser;
 
     hilti::logging::Stream dbg_stream_parser(hilti::logging::debug::Parser);
@@ -53,13 +54,17 @@ hilti::Result<hilti::Node> Driver::parse(std::istream& in, const std::string& fi
 
     _parser->parse();
 
+    _builder = nullptr;
+
     if ( hilti::logger().errors() > old_errors )
         return hilti::result::Error("parse error");
 
-    return hilti::to_node(_module);
+    return _module;
 }
 
-hilti::Result<hilti::Node> Driver::parseExpression(const std::string& expression, const Meta& m) {
+hilti::Result<ExpressionPtr> Driver::parseExpression(Builder* builder, const std::string& expression, const Meta& m) {
+    _builder = builder;
+
     auto old_errors = hilti::logger().errors();
 
     if ( m.location() ) {
@@ -78,7 +83,7 @@ hilti::Result<hilti::Node> Driver::parseExpression(const std::string& expression
     Scanner scanner(&str);
     _scanner = &scanner;
 
-    Parser parser(this);
+    Parser parser(this, _builder);
     _parser = &parser;
 
     hilti::logging::Stream dbg_stream_parser(hilti::logging::debug::Parser);
@@ -90,10 +95,12 @@ hilti::Result<hilti::Node> Driver::parseExpression(const std::string& expression
 
     _parser->parse();
 
+    _builder = nullptr;
+
     if ( hilti::logger().errors() > old_errors )
         return hilti::result::Error("parse error");
 
-    return hilti::to_node(_expression);
+    return _expression;
 }
 
 int Driver::nextToken() {
@@ -144,6 +151,6 @@ void Driver::docField(const std::string& s) {
     // TODO
 }
 
-const DocString& Driver::docGet() const { return _doc; }
-DocString&& Driver::docGetAndClear() { return std::move(_doc); }
-void Driver::docClear() { _doc = DocString(); }
+const hilti::DocString& Driver::docGet() const { return _doc; }
+hilti::DocString&& Driver::docGetAndClear() { return std::move(_doc); }
+void Driver::docClear() { _doc = hilti::DocString(); }

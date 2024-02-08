@@ -76,61 +76,63 @@
 
     Creates a 8-bit unsigned integer value.
 
-.. spicy:operator:: integer::Cast bool cast<bool-type>(int)
+.. spicy:operator:: integer::Cast bool cast<bool>(int)
 
     Converts the value to a boolean by comparing against zero
 
-.. spicy:operator:: integer::Cast enum cast<enum-type>(int)
+.. spicy:operator:: integer::Cast bool cast<bool>(uint)
+
+    Converts the value to a boolean by comparing against zero
+
+.. spicy:operator:: integer::Cast enum cast<enum>(int)
 
     Converts the value into an enum instance. The value does *not* need to
     correspond to any of the target type's enumerator labels.
 
-.. spicy:operator:: integer::Cast enum cast<enum-type>(uint)
+.. spicy:operator:: integer::Cast enum cast<enum>(uint)
 
     Converts the value into an enum instance. The value does *not* need to
-    correspond to any of the target type's enumerator labels. It must not
-    be larger than the maximum that a *signed* 64-bit integer value can
-    represent.
+    correspond to any of the target type's enumerator labels.
 
-.. spicy:operator:: integer::Cast int cast<int-type>(int)
+.. spicy:operator:: integer::Cast int cast<int>(int)
 
-    Converts the value into another signed integer type, accepting any
+    Converts the value into a different signed integer type, accepting any
     loss of information.
 
-.. spicy:operator:: integer::Cast int cast<int-type>(uint)
+.. spicy:operator:: integer::Cast int cast<int>(uint)
 
     Converts the value into a signed integer type, accepting any loss of
     information.
 
-.. spicy:operator:: integer::Cast interval cast<interval-type>(int)
+.. spicy:operator:: integer::Cast interval cast<interval>(int)
 
     Interprets the value as number of seconds.
 
-.. spicy:operator:: integer::Cast interval cast<interval-type>(uint)
+.. spicy:operator:: integer::Cast interval cast<interval>(uint)
 
     Interprets the value as number of seconds.
 
-.. spicy:operator:: integer::Cast real cast<real-type>(int)
+.. spicy:operator:: integer::Cast real cast<real>(int)
 
     Converts the value into a real, accepting any loss of information.
 
-.. spicy:operator:: integer::Cast real cast<real-type>(uint)
+.. spicy:operator:: integer::Cast real cast<real>(uint)
 
     Converts the value into a real, accepting any loss of information.
 
-.. spicy:operator:: integer::Cast time cast<time-type>(uint)
+.. spicy:operator:: integer::Cast time cast<time>(uint)
 
-    Interprets the value as number of seconds since the UNIX epoch.
+    Interprets the value as number of seconds.
 
-.. spicy:operator:: integer::Cast uint cast<uint-type>(int)
+.. spicy:operator:: integer::Cast uint cast<uint>(int)
 
     Converts the value into an unsigned integer type, accepting any loss
     of information.
 
-.. spicy:operator:: integer::Cast uint cast<uint-type>(uint)
+.. spicy:operator:: integer::Cast uint cast<uint>(uint)
 
-    Converts the value into another unsigned integer type, accepting any
-    loss of information.
+    Converts the value into a different unsigned integer type, accepting
+    any loss of information.
 
 .. spicy:operator:: integer::DecrPostfix int op: t:int op:--
 
@@ -162,7 +164,7 @@
 
 .. spicy:operator:: integer::DifferenceAssign uint t:uint <sp> op:-= <sp> t:uint
 
-    Decrements the first value by the second.
+    Decrements the first value by the second, assigning the new value.
 
 .. spicy:operator:: integer::Division int t:int <sp> op:/ <sp> t:int
 
@@ -284,7 +286,7 @@
 
     Inverts the sign of the integer.
 
-.. spicy:operator:: integer::SignNeg int op:- t:uint op:
+.. spicy:operator:: integer::SignNeg uint op:- t:uint op:
 
     Inverts the sign of the integer.
 

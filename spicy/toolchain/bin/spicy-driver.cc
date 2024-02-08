@@ -22,6 +22,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"compiler-debug", required_argument, nullptr, 'D'},
                                               {"debug", no_argument, nullptr, 'd'},
                                               {"debug-addl", required_argument, nullptr, 'X'},
+                                              {"disable-optimizations", no_argument, nullptr, 'g'},
                                               {"enable-profiling", no_argument, nullptr, 'Z'},
                                               {"file", required_argument, nullptr, 'f'},
                                               {"batch-file", required_argument, nullptr, 'F'},
@@ -40,10 +41,10 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
 static bool require_accept = false; // --require-accept
 
 static bool accepted = false; // set by hook_accept_input()
-static void hook_accept_input() { accepted = true; }
+static void hookAcceptInput() { accepted = true; }
 
 static bool declined = false; // set by hook_decline_input()
-static void hook_decline_input(const std::string& reason) { declined = true; }
+static void hookDeclineInput(const std::string& reason) { declined = true; }
 
 class SpicyDriver : public spicy::Driver, public spicy::rt::Driver {
 public:
@@ -93,6 +94,7 @@ void SpicyDriver::usage() {
            "called "
            "decline_input().\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
+           "  -g | --disable-optimizations    Disable HILTI-side optimizations of the generated code.\n"
            "  -i | --increment <i>            Feed data incrementally in chunks of size n.\n"
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"
@@ -134,7 +136,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABcD:f:F:hdJX:Vlp:i:SRL:UZ", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABcD:f:F:ghdJX:Vlp:i:SRL:UZ", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -162,6 +164,11 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'F': {
                 opt_file = optarg;
                 opt_input_is_batch = true;
+                break;
+            }
+
+            case 'g': {
+                compiler_options.global_optimizations = false;
                 break;
             }
 
@@ -257,8 +264,8 @@ int main(int argc, char** argv) {
     spicy::init();
 
     auto config = spicy::rt::configuration::get();
-    config.hook_accept_input = hook_accept_input;
-    config.hook_decline_input = hook_decline_input;
+    config.hook_accept_input = hookAcceptInput;
+    config.hook_decline_input = hookDeclineInput;
     spicy::rt::configuration::set(std::move(config));
 
     SpicyDriver driver;

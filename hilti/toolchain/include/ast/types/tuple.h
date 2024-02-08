@@ -3,86 +3,87 @@
 #pragma once
 
 #include <algorithm>
-#include <functional>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
-#include <hilti/ast/id.h>
+#include <hilti/ast/forward.h>
 #include <hilti/ast/type.h>
+#include <hilti/base/util.h>
 
 namespace hilti::type {
 
 namespace tuple {
 
-/** AST node for a tuple element. */
-class Element : public NodeBase {
+/** Base class for tuple element nodes. */
+class Element final : public Node {
 public:
-    explicit Element(Type t, Meta m = Meta()) : NodeBase(nodes(node::none, std::move(t)), std::move(m)) {}
-    Element(ID id, Type t, Meta m = Meta())
-        : NodeBase(nodes(id ? std::move(id) : node::none, std::move(t)), std::move(m)) {}
-    Element(Meta m = Meta()) : NodeBase(nodes(node::none, node::none), std::move(m)) {}
+    ~Element() final;
 
-    auto id() const { return children()[0].tryAs<ID>(); }
-    const auto& type() const { return child<Type>(1); }
+    const auto& id() const { return _id; }
+    auto type() const { return child<QualifiedType>(0); }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"id", _id}};
+        return Node::properties() + p;
+    }
 
-    bool operator==(const Element& other) const { return id() == other.id() && type() == other.type(); }
+    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, Meta meta = {}) {
+        return std::shared_ptr<Element>(new Element(ctx, {type}, std::move(id), std::move(meta)));
+    }
+
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, Meta meta = {}) {
+        return std::shared_ptr<Element>(new Element(ctx, {type}, ID(), std::move(meta)));
+    }
+
+protected:
+    Element(ASTContext* ctx, Nodes children, ID id, Meta meta = {})
+        : Node(ctx, std::move(children), std::move(meta)), _id(std::move(id)) {}
+
+    HILTI_NODE(hilti, Element);
+
+private:
+    ID _id;
 };
 
-inline Node to_node(Element f) { return Node(std::move(f)); }
+using ElementPtr = std::shared_ptr<Element>;
+using Elements = std::vector<std::shared_ptr<Element>>;
 
 } // namespace tuple
 
 /** AST node for a tuple type. */
-class Tuple : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isSortable {
+class Tuple : public UnqualifiedType {
 public:
-    Tuple(std::vector<Type> t, Meta m = Meta()) : TypeBase(nodes(_typesToElements(std::move(t))), std::move(m)) {}
-    Tuple(std::vector<tuple::Element> e, Meta m = Meta()) : TypeBase(nodes(std::move(e)), std::move(m)) {}
-    Tuple(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(std::move(m)), _wildcard(true) {}
+    auto elements() const { return children<tuple::Element>(0, {}); }
+    std::optional<std::pair<int, type::tuple::ElementPtr>> elementByID(const ID& id) const;
 
-    auto elements() const { return children<tuple::Element>(0, -1); }
-    std::optional<std::pair<int, const type::tuple::Element*>> elementByID(const ID& id) const;
+    std::string_view typeClass() const final { return "tuple"; }
 
-    bool operator==(const Tuple& other) const {
-        if ( _wildcard || other._wildcard )
-            return _wildcard && other._wildcard;
+    bool isAllocable() const final { return true; }
+    bool isResolved(node::CycleDetector* cd) const final;
+    bool isSortable() const final { return true; }
 
-        return elements() == other.elements();
+    static auto create(ASTContext* ctx, type::tuple::Elements elements, Meta meta = {}) {
+        return std::shared_ptr<Tuple>(new Tuple(ctx, std::move(elements), std::move(meta)));
     }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const {
-        const auto& cs = children();
-
-        return std::all_of(cs.begin(), cs.end(), [&](const auto& c) {
-            auto t = c.template tryAs<Type>();
-            return ! t || type::detail::isResolved(*t, rstate);
-        });
+    static auto create(ASTContext* ctx, const QualifiedTypes& types, const Meta& meta = {}) {
+        auto elements = util::transform(types, [&](const auto& t) { return tuple::Element::create(ctx, t, meta); });
+        return std::shared_ptr<Tuple>(new Tuple(ctx, std::move(elements), meta));
     }
 
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"wildcard", _wildcard}}; }
-
-private:
-    std::vector<tuple::Element> _typesToElements(std::vector<Type>&& types) {
-        std::vector<tuple::Element> elements;
-        elements.reserve(types.size());
-        for ( auto&& t : types )
-            elements.emplace_back(std::move(t), t.meta());
-
-        return elements;
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<Tuple>(new Tuple(ctx, Wildcard(), m));
     }
 
-    bool _wildcard = false;
+protected:
+    Tuple(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Tuple(ASTContext* ctx, Wildcard _, const Meta& meta) : UnqualifiedType(ctx, Wildcard(), {"tuple(*)"}, meta) {}
+
+
+    HILTI_NODE(hilti, Tuple)
 };
 
 } // namespace hilti::type

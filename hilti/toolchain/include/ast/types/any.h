@@ -2,26 +2,28 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for an "any" type. */
-class Any : public TypeBase {
+/** AST node for an `any` type. */
+class Any : public UnqualifiedType {
 public:
-    Any(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    static auto create(ASTContext* ctx, Meta m = Meta()) { return std::shared_ptr<Any>(new Any(ctx, std::move(m))); }
 
-    bool operator==(const Any& /* other */) const { return true; }
+    std::string_view typeClass() const final { return "any"; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
+    bool isAllocable() const override { return true; }
+    bool isSortable() const override { return true; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+protected:
+    // We create this as no-match type because we handle matching against `any` explicitly.
+    Any(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {type::NeverMatch()}, std::move(meta)) {}
+
+    HILTI_NODE(hilti, Any);
 };
 
 } // namespace hilti::type

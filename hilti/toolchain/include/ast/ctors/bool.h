@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
@@ -9,28 +10,28 @@
 
 namespace hilti::ctor {
 
-/** AST node for a boolean constructor. */
-class Bool : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `bool` ctor. */
+class Bool : public Ctor {
 public:
-    Bool(bool v, const Meta& m = Meta()) : NodeBase(nodes(type::Bool(m)), m), _value(v) {}
+    const auto& value() const { return _value; }
 
-    auto value() const { return _value; }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    bool operator==(const Bool& other) const { return value() == other.value(); }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", _value}};
+        return Ctor::properties() + p;
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, bool v, const Meta& meta = {}) {
+        return std::shared_ptr<Bool>(
+            new Bool(ctx, {QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)}, v, meta));
+    }
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"value", _value}}; }
+protected:
+    Bool(ASTContext* ctx, Nodes children, bool v, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(v) {}
+
+    HILTI_NODE(hilti, Bool)
 
 private:
     bool _value;

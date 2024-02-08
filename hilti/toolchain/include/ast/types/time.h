@@ -2,25 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a time type. */
-class Time : public TypeBase, trait::isAllocable, trait::isSortable {
+/** AST node for a `time` type. */
+class Time : public UnqualifiedType {
 public:
-    Time(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    std::string_view typeClass() const final { return "time"; }
 
-    bool operator==(const Time& /* other */) const { return true; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Time>(new Time(ctx, std::move(meta)));
+    }
+
+protected:
+    Time(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"time"}, std::move(meta)) {}
+
+    HILTI_NODE(hilti, Time)
 };
 
 } // namespace hilti::type

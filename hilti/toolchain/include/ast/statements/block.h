@@ -2,37 +2,36 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/statement.h>
-#include <hilti/ast/statements/expression.h>
 
 namespace hilti::statement {
 
-/** AST node for a statement block. */
-class Block : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a block statement. */
+class Block : public Statement {
 public:
-    Block(std::vector<Statement> stmts = {}, Meta m = Meta()) : NodeBase(nodes(std::move(stmts)), std::move(m)) {}
-
     auto statements() const { return childrenOfType<Statement>(); }
 
-    bool operator==(const Block& /* other */) const {
-        // return statements() == other.statements();
-        return true; // FIXME
+    void add(ASTContext* ctx, StatementPtr s) { addChild(ctx, std::move(s)); }
+
+    /** Internal method for use by builder API only. */
+    void _add(ASTContext* ctx, const StatementPtr& s) { addChild(ctx, s); }
+
+    /** Internal method for use by builder API only. */
+    auto _lastStatement() { return children().back()->as<Statement>(); }
+
+    static auto create(ASTContext* ctx, Statements stmts, Meta meta = {}) {
+        return std::shared_ptr<Block>(new Block(ctx, std::move(stmts), std::move(meta)));
     }
 
-    /** Internal method for use by builder API only. */
-    void _add(Statement s) { addChild(std::move(s)); }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return create(ctx, {}, std::move(meta)); }
 
-    /** Internal method for use by builder API only. */
-    auto& _lastStatementNode() { return children().back(); }
+protected:
+    Block(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Block)
 };
 
 } // namespace hilti::statement

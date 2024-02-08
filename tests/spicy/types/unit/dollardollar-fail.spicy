@@ -17,4 +17,5 @@ module Test;
 
 public type X = unit {
     : skip bytes &size=1 { print $$; }
+    : void { print $$; }
 };

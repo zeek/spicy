@@ -1,7 +1,6 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include "compiler/init.h"
-
+#include <hilti/compiler/init.h>
 #include <hilti/compiler/plugin.h>
 
 void hilti::init() {
@@ -10,7 +9,7 @@ void hilti::init() {
     if ( initialized )
         return;
 
-    plugin::registry().register_(detail::create_hilti_plugin());
+    plugin::registry().register_(detail::createHiltiPlugin());
 
     initialized = true;
 }

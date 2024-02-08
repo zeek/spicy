@@ -5,11 +5,11 @@
     Returns the referenced instance, or throws an exception if none or
     expired.
 
-.. spicy:operator:: strong_reference::Equal bool t:strong_ref <sp> op:== <sp> t:<no-doc> $commutative$
+.. spicy:operator:: strong_reference::Equal bool t:strong_ref <sp> op:== <sp> t:strong_ref
 
     Returns true if both operands reference the same instance.
 
-.. spicy:operator:: strong_reference::Unequal bool t:strong_ref <sp> op:!= <sp> t:<no-doc> $commutative$
+.. spicy:operator:: strong_reference::Unequal bool t:strong_ref <sp> op:!= <sp> t:strong_ref
 
     Returns true if the two operands reference different instances.
 

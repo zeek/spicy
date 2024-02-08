@@ -2,25 +2,24 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
-#include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
 namespace hilti::statement {
 
-/** AST node for a ``break`` statement. */
-class Break : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a `break` statement. */
+class Break : public Statement {
 public:
-    Break(Meta m = Meta()) : NodeBase({}, std::move(m)) {}
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Break>(new Break(ctx, {}, std::move(meta)));
+    }
 
-    bool operator==(const Break& /* other */) const { return true; }
+protected:
+    Break(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Break)
 };
 
 } // namespace hilti::statement

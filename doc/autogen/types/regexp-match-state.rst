@@ -1,6 +1,6 @@
 .. rubric:: Methods
 
-.. spicy:method:: regexp_match_state::advance spicy::MatchState advance False tuple<int<32>,~view<stream>> (data: bytes, final: bool = True)
+.. spicy:method:: regexp_match_state::advance spicy::MatchState advance False tuple<int<32>,~view<stream>> (data: bytes, [ final: bool = False ])
 
     Feeds a chunk of data into the token match state, continuing matching
     where it left off last time. If *final* is true, this is assumed to be
@@ -11,7 +11,7 @@
     not be used again once an integer larger or equal zero has been
     returned.
 
-.. spicy:method:: regexp_match_state::advance spicy::MatchState advance False tuple<int<32>,~view<stream>> (data: view<stream>)
+.. spicy:method:: regexp_match_state::advance spicy::MatchState advance False tuple<int<32>,~view<stream>> (data: view<stream>, [ final: bool = False ])
 
     Feeds a chunk of data into the token match state, continuing matching
     where it left off last time. If the underlying view is frozen, this

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -11,26 +12,27 @@ namespace hilti::type {
 
 namespace detail {
 
-// CHECK: IntegerBase = TypeBase
-/** Base class for an AST node representing an integer type. */
-class IntegerBase : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isSortable {
+/** Common base class for an AST node representing an integer type. */
+class IntegerBase : public UnqualifiedType {
 public:
-    IntegerBase(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(std::move(m)), _wildcard(true) {}
-    IntegerBase(int width, Meta m = Meta()) : TypeBase(std::move(m)), _width(width) {}
-    IntegerBase(Meta m = Meta()) : TypeBase(std::move(m)) {}
-
     auto width() const { return _width; }
 
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"width", _width}}; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
+
+    node::Properties properties() const final {
+        auto p = node::Properties{{"width", _width}};
+        return UnqualifiedType::properties() + p;
+    }
+
+protected:
+    IntegerBase(ASTContext* ctx, type::Unification u, Nodes children, unsigned int width, const Meta& m = Meta())
+        : UnqualifiedType(ctx, std::move(u), std::move(children), m), _width(width) {}
+    IntegerBase(ASTContext* ctx, Wildcard _, type::Unification u, const Meta& m = Meta())
+        : UnqualifiedType(ctx, Wildcard(), std::move(u), m) {}
 
 private:
-    bool _wildcard = false;
-    int _width = 0;
+    unsigned int _width = 0;
 };
 
 } // namespace detail
@@ -38,29 +40,40 @@ private:
 /** AST node for a signed integer type. */
 class SignedInteger : public detail::IntegerBase {
 public:
-    using detail::IntegerBase::IntegerBase;
+    std::string_view typeClass() const final { return "int"; }
 
-    bool operator==(const SignedInteger& other) const { return width() == other.width(); }
+    static std::shared_ptr<SignedInteger> create(ASTContext* ctx, unsigned int width, const Meta& m = Meta());
 
-    /** Implements the `Type` interface. */
-    std::vector<Node> typeParameters() const;
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<SignedInteger>(new SignedInteger(ctx, Wildcard(), m));
+    }
 
-    /** Implements the `Node` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+protected:
+    SignedInteger(ASTContext* ctx, const Nodes& children, unsigned int width, const Meta& m = Meta())
+        : IntegerBase(ctx, {util::fmt("int%" PRIu64, width)}, children, width, m) {}
+    SignedInteger(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) : IntegerBase(ctx, Wildcard(), {"int<*>"}, m) {}
+
+    HILTI_NODE(hilti, SignedInteger)
 };
 
 /** AST node for an unsigned integer type. */
 class UnsignedInteger : public detail::IntegerBase {
 public:
-    using detail::IntegerBase::IntegerBase;
+    std::string_view typeClass() const final { return "uint"; }
 
-    bool operator==(const UnsignedInteger& other) const { return width() == other.width(); }
+    static std::shared_ptr<UnsignedInteger> create(ASTContext* ctx, unsigned int width, const Meta& m = Meta());
 
-    /** Implements the `Type` interface. */
-    std::vector<Node> typeParameters() const;
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<UnsignedInteger>(new UnsignedInteger(ctx, Wildcard(), m));
+    }
 
-    /** Implements the `Node` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
+protected:
+    UnsignedInteger(ASTContext* ctx, const Nodes& children, unsigned int width, const Meta& m = Meta())
+        : IntegerBase(ctx, {util::fmt("uint%" PRIu64, width)}, children, width, m) {}
+    UnsignedInteger(ASTContext* ctx, Wildcard _, const Meta& m = Meta())
+        : IntegerBase(ctx, Wildcard(), {"uint<*>"}, m) {}
+
+    HILTI_NODE(hilti, UnsignedInteger);
 };
 
 } // namespace hilti::type

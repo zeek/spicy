@@ -183,6 +183,8 @@ def fmtType(ty):
         return "<any>"
 
     ty = ty.replace("<*>", "")
+    ty = ty.replace("const ", "")
+    ty = ty.replace("hilti::", "spicy::")
     ty = re.sub("\\s+{\\s+}", "", ty)  # e.g., "enum { }" -> "enum"
     # e.g., type<enum> -> "enum-type"
     ty = re.sub("type<([^>0-9]+)>", "\\1-type", ty)
@@ -192,7 +194,7 @@ def fmtType(ty):
 class Operand:
     def __init__(self, m):
         self.const = m.get("const")
-        self.mutable = m.get("mutable")
+        self.kind = m.get("kind")
         self.default = m.get("default")
         self.id = m.get("id")
         self.optional = m.get("optional")
@@ -266,10 +268,10 @@ class Method:
 
     def rst(self):
         def arg(a):
-            if a.const or not a.mutable:
+            if a.kind == "in":
                 qual = ""
             else:
-                qual = "inout "
+                qual = a.kind + " "
 
             return a.rst(prefix=qual)
 

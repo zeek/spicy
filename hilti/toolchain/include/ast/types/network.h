@@ -2,25 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a network type. */
-class Network : public TypeBase, trait::isAllocable, trait::isSortable {
+/** AST node for a `network` type. */
+class Network : public UnqualifiedType {
 public:
-    Network(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    std::string_view typeClass() const final { return "network"; }
 
-    bool operator==(const Network& /* other */) const { return true; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Network>(new Network(ctx, std::move(meta)));
+    }
+
+protected:
+    Network(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"network"}, std::move(meta)) {}
+
+    HILTI_NODE(hilti, Network)
 };
 
 } // namespace hilti::type

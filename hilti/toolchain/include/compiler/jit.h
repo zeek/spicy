@@ -210,14 +210,14 @@ private:
         void finish();
 
         using CmdLine = std::vector<std::string>;
-        std::deque<std::tuple<JobID, CmdLine>> _jobs_pending;
+        std::deque<std::tuple<JobID, CmdLine>> jobs_pending;
 
-        JobID _job_counter = 0;
+        JobID job_counter = 0;
 
-        std::map<JobID, Job> _jobs;
+        std::map<JobID, Job> jobs;
     };
-    JobRunner _runner;
 
+    JobRunner _runner;
     std::size_t _hash = 0;
 };
 

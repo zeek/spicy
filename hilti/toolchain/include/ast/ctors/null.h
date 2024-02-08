@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
@@ -9,26 +10,20 @@
 
 namespace hilti::ctor {
 
-/** AST node for a null constructor. */
-class Null : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `Null` ctor. */
+class Null : public Ctor {
 public:
-    Null(const Meta& m = Meta()) : NodeBase(nodes(type::Null(m)), m) {}
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    bool operator==(const Null& /* other */) const { return true; }
+    static auto create(ASTContext* ctx, const Meta& meta = {}) {
+        return std::shared_ptr<Null>(
+            new Null(ctx, {QualifiedType::create(ctx, type::Null::create(ctx, meta), Constness::Const)}, meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+protected:
+    Null(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Null)
 };
 
 } // namespace hilti::ctor

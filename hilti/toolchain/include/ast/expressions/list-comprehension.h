@@ -5,57 +5,45 @@
 #include <memory>
 #include <utility>
 
+#include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/list.h>
-#include <hilti/ast/types/vector.h>
 
 namespace hilti::expression {
 
 /** AST node for a vector comprehension expression. */
-class ListComprehension : public NodeBase, public trait::isExpression {
+class ListComprehension : public Expression {
 public:
-    ListComprehension(Expression input, Expression output, const ID& id, std::optional<Expression> cond,
-                      Meta m = Meta())
-        : NodeBase(nodes(std::move(input), std::move(output),
-                         declaration::LocalVariable(id, type::auto_, true, id.meta()), std::move(cond),
-                         type::List(type::auto_, m)),
-                   std::move(m)) {}
-
-    const auto& input() const { return child<Expression>(0); }
-    const auto& output() const { return child<Expression>(1); }
-    const auto& local() const { return child<declaration::LocalVariable>(2); }
-    auto localRef() const { return NodeRef(children()[2]); }
-    auto condition() const { return children()[3].tryAs<Expression>(); }
+    auto input() const { return child<Expression>(0); }
+    auto output() const { return child<Expression>(1); }
+    auto local() const { return child<declaration::LocalVariable>(2); }
+    auto condition() const { return child<Expression>(3); }
 
     /**
-     * Returns the output expressions's scope. Note that the scope is shared
+     * Returns the output expression's scope. Note that the scope is shared
      * among any copies of an instance.
      */
-    IntrusivePtr<Scope> scope() const { return children()[1].scope(); }
+    auto scope() const { return output()->scope(); }
 
-    void setLocalType(const Type& t) { children()[2].as<declaration::LocalVariable>().setType(t); }
-    void setElementType(const Type& x) { children()[4] = type::List(x); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(4); }
 
-    bool operator==(const ListComprehension& other) const {
-        return input() == other.input() && output() == other.output() && local() == other.local() &&
-               condition() == other.condition();
+    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 4, t); }
+
+    static auto create(ASTContext* ctx, const ExpressionPtr& input, const ExpressionPtr& output, const ID& id,
+                       const ExpressionPtr& cond, const Meta& meta = {}) {
+        auto local = declaration::LocalVariable::create(ctx, id, QualifiedType::createAuto(ctx, meta), meta);
+        auto list = QualifiedType::create(ctx, type::List::create(ctx, QualifiedType::createAuto(ctx, meta), meta),
+                                          Constness::Const);
+        return std::shared_ptr<ListComprehension>(new ListComprehension(ctx, {input, output, local, cond, list}, meta));
     }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return false; }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return true; }
-    /** Implements `Expression` interface. */
-    const Type& type() const { return children()[4].as<Type>(); }
+protected:
+    ListComprehension(ASTContext* ctx, Nodes children, Meta meta)
+        : Expression(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return input().isConstant(); }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
-
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, ListComprehension)
 };
 
 } // namespace hilti::expression

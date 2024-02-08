@@ -2,25 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a regexp type. */
-class RegExp : public TypeBase, trait::isAllocable, trait::isRuntimeNonTrivial {
+/** AST node for a regular expression type. */
+class RegExp : public UnqualifiedType {
 public:
-    RegExp(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    std::string_view typeClass() const final { return "regexp"; }
 
-    bool operator==(const RegExp& /* other */) const { return true; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<RegExp>(new RegExp(ctx, std::move(meta)));
+    }
+
+protected:
+    RegExp(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"regexp"}, std::move(meta)) {}
+
+    HILTI_NODE(hilti, RegExp)
 };
 
 } // namespace hilti::type

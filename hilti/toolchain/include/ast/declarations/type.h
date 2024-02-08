@@ -2,68 +2,64 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
-#include <hilti/ast/id.h>
+#include <hilti/ast/declaration.h>
 #include <hilti/ast/type.h>
 
 namespace hilti::declaration {
 
 /** AST node for a type declaration. */
-class Type : public DeclarationBase {
+class Type : public Declaration {
 public:
-    Type(ID id, ::hilti::Type type, Linkage linkage = Linkage::Private, Meta m = Meta())
-        : DeclarationBase({std::move(id), std::move(type), node::none}, std::move(m)), _linkage(linkage) {}
-
-    Type(ID id, ::hilti::Type type, std::optional<AttributeSet> attrs, Linkage linkage = Linkage::Private,
-         Meta m = Meta())
-        : DeclarationBase(nodes(std::move(id), std::move(type), std::move(attrs)), std::move(m)), _linkage(linkage) {}
-
-    const auto& type() const { return child<hilti::Type>(1); }
-    NodeRef typeRef() const { return NodeRef(children()[1]); }
-    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
+    auto type() const { return child<QualifiedType>(0); }
+    auto attributes() const { return child<AttributeSet>(1); }
 
     bool isOnHeap() const {
         if ( auto x = attributes() )
-            return x->find("&on-heap").has_value();
+            return x->find("&on-heap") != nullptr;
         else
             return false;
     }
 
     /** Shortcut to `type::typeID()` for the declared type. */
-    auto typeID() const { return children()[1].as<hilti::Type>().typeID(); }
+    auto typeID() const { return child<QualifiedType>(0)->type()->typeID(); }
 
     /** Shortcut to `type::cxxID()` for the declared type. */
-    auto cxxID() const { return children()[1].as<hilti::Type>().cxxID(); }
+    auto cxxID() const { return child<QualifiedType>(0)->type()->cxxID(); }
 
-    /** Shortcut to `type::resolvedID()` for the declared type. */
-    auto resolvedID() const { return children()[1].as<hilti::Type>().resolvedID(); }
+    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
 
-    void setType(const ::hilti::Type& t) { children()[1] = t; }
+    void addAttribute(ASTContext* ctx, const AttributePtr& a) { attributes()->add(ctx, a); }
 
-    bool operator==(const Type& other) const { return id() == other.id() && type() == other.type(); }
+    node::Properties properties() const final {
+        auto p = node::Properties{};
+        return Declaration::properties() + p;
+    }
 
-    /** Internal method for use by builder API only. */
-    // auto& _typeNode() { return children()[1]; }
+    std::string_view displayName() const final { return "type"; }
 
-    /** Implements `Declaration` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Declaration` interface. */
-    const ID& id() const { return child<ID>(0); }
-    /** Implements `Declaration` interface. */
-    Linkage linkage() const { return _linkage; }
-    /** Implements `Declaration` interface. */
-    std::string displayName() const { return "type"; };
-    /** Implements `Declaration` interface. */
-    auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, AttributeSetPtr attrs,
+                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"linkage", to_string(_linkage)}}; }
+        return std::shared_ptr<Type>(new Type(ctx, {type, attrs}, std::move(id), linkage, std::move(meta)));
+    }
 
-private:
-    Linkage _linkage;
+    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type,
+                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
+        return create(ctx, std::move(id), type, AttributeSet::create(ctx), linkage, std::move(meta));
+    }
+
+protected:
+    Type(ASTContext* ctx, Nodes children, ID id, declaration::Linkage linkage, Meta meta)
+        : Declaration(ctx, std::move(children), std::move(id), linkage, std::move(meta)) {}
+
+    HILTI_NODE(hilti, Type)
 };
 
 } // namespace hilti::declaration

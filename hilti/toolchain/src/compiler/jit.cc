@@ -188,7 +188,7 @@ JIT::~JIT() {
     try {
         _finish();
     } catch ( ... ) {
-        util::cannot_be_reached();
+        util::cannotBeReached();
     }
 }
 
@@ -224,7 +224,7 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
 }
 
 void JIT::JobRunner::finish() {
-    for ( auto&& [id, job] : _jobs ) {
+    for ( auto&& [id, job] : jobs ) {
         auto [status, ec] = job.process->stop(reproc::stop_actions{
             .first = {.action = reproc::stop::terminate, .timeout = reproc::milliseconds(1000)},
             .second = {.action = reproc::stop::kill, .timeout = reproc::milliseconds::max()},
@@ -237,7 +237,7 @@ void JIT::JobRunner::finish() {
         // triggered a non-zero exist status, we ignore the status returned from `stop`.
     }
 
-    _jobs.clear();
+    jobs.clear();
 }
 
 void JIT::_finish() {
@@ -458,21 +458,21 @@ Result<JIT::JobRunner::JobID> JIT::JobRunner::_scheduleJob(const hilti::rt::file
     for ( auto&& a : args )
         cmdline.push_back(std::move(a));
 
-    auto jid = ++_job_counter;
+    auto jid = ++job_counter;
     HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] %s", jid, util::join(cmdline, " ")));
 
-    _jobs_pending.emplace_back(jid, cmdline);
+    jobs_pending.emplace_back(jid, cmdline);
     return jid;
 }
 
 Result<Nothing> JIT::JobRunner::_spawnJob() {
-    if ( _jobs_pending.empty() )
+    if ( jobs_pending.empty() )
         return {};
 
-    auto [jid, cmdline] = _jobs_pending.front();
-    _jobs_pending.pop_front();
+    auto [jid, cmdline] = jobs_pending.front();
+    jobs_pending.pop_front();
 
-    Job& job = _jobs[jid];
+    Job& job = jobs[jid];
     job.process = std::make_unique<reproc::process>();
 
     reproc::options options;
@@ -483,7 +483,7 @@ Result<Nothing> JIT::JobRunner::_spawnJob() {
     auto ec = job.process->start(cmdline, options);
 
     if ( ec ) {
-        _jobs.erase(jid);
+        jobs.erase(jid);
         return result::Error(util::fmt("process '%s' failed to start: %s", util::join(cmdline), ec.message()));
     }
 
@@ -491,7 +491,7 @@ Result<Nothing> JIT::JobRunner::_spawnJob() {
         HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] -> pid %u", jid, pid));
     }
     else {
-        _jobs.erase(jid);
+        jobs.erase(jid);
         return result::Error(
             util::fmt("could not determine PID of process '%s %s': %s", util::join(cmdline), ec.message()));
     }
@@ -500,7 +500,7 @@ Result<Nothing> JIT::JobRunner::_spawnJob() {
 }
 
 Result<Nothing> JIT::JobRunner::_waitForJobs() {
-    if ( _jobs_pending.empty() && _jobs.empty() )
+    if ( jobs_pending.empty() && jobs.empty() )
         return Nothing();
 
     // Cap parallelism for background jobs.
@@ -518,7 +518,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
     if ( hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").has_value() )
         parallelism = 1;
     else if ( auto e = hilti::rt::getenv("HILTI_JIT_PARALLELISM") )
-        parallelism = util::chars_to_uint64(e->c_str(), 10, [&]() {
+        parallelism = util::charsToUInt64(e->c_str(), 10, [&]() {
             rt::fatalError(util::fmt("expected unsigned integer but received '%s' for HILTI_JIT_PARALLELISM", *e));
         });
     else {
@@ -532,15 +532,15 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
 
     std::vector<result::Error> errors;
 
-    while ( ! _jobs_pending.empty() || ! _jobs.empty() ) {
+    while ( ! jobs_pending.empty() || ! jobs.empty() ) {
         // If we still have jobs pending, spawn up to `parallelism` parallel background jobs.
-        while ( ! _jobs_pending.empty() && _jobs.size() < parallelism )
+        while ( ! jobs_pending.empty() && jobs.size() < parallelism )
             _spawnJob();
 
         std::vector<reproc::event::source> sources;
         std::vector<JobID> ids;
 
-        for ( auto&& [id, job] : _jobs ) {
+        for ( auto&& [id, job] : jobs ) {
             sources.push_back(
                 reproc::event::source{.process = *job.process,
                                       .interests = reproc::event::out | reproc::event::err | reproc::event::exit,
@@ -557,7 +557,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
         for ( size_t i = 0; i < sources.size(); ++i ) {
             auto&& source = sources[i];
             auto id = ids[i];
-            auto& job = _jobs[id];
+            auto& job = jobs[id];
 
             if ( ! source.events )
                 continue;
@@ -569,7 +569,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
                 auto [status, ec] = job.process->wait(reproc::milliseconds(0));
 
                 if ( ec ) {
-                    _jobs.erase(id);
+                    jobs.erase(id);
                     errors.emplace_back(util::fmt("could not wait for process: %s", ec.message()));
                 }
 
@@ -585,11 +585,11 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
                     std::string stderr__ = job.stderr_.empty() ?
                                                "(no error output)" :
                                                std::string("JIT output: \n") + util::trim(job.stderr_);
-                    _jobs.erase(id);
+                    jobs.erase(id);
                     errors.emplace_back("JIT compilation failed", stderr__);
                 }
 
-                _jobs.erase(id);
+                jobs.erase(id);
             }
         }
     }

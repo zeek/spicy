@@ -1,0 +1,34 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEST-DOC: Ensure that the internal &on-heap conversion works correctly for units imported from other modules.
+
+module A;
+
+import B;
+
+type A_Body = unit {
+  value: uint64;
+};
+
+type A_Message = unit {
+  body: A_Body;
+};
+
+public type Foo = unit {
+  msg1: A_Message { $$.body.value; }
+  msg2: B::B_Message { $$.body.value; }
+};
+
+@TEST-START-FILE b.spicy
+
+module B;
+
+type B_Body = unit {
+  value: uint64;
+};
+
+type B_Message = unit {
+  body: B_Body;
+};
+
+@TEST-END-FILE

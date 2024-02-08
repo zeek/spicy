@@ -14,18 +14,18 @@ enum class Engine {
 };
 
 namespace detail {
-constexpr hilti::util::enum_::Value<Engine> engines[] = {
+constexpr hilti::util::enum_::Value<Engine> Engines[] = {
     {Engine::Parser, "parser"},
     {Engine::Composer, "composer"},
     {Engine::All, "parser/composer"},
 };
 } // namespace detail
 
-constexpr auto to_string(Engine f) { return hilti::util::enum_::to_string(f, detail::engines); }
+constexpr auto to_string(Engine f) { return hilti::util::enum_::to_string(f, detail::Engines); }
 
 namespace engine {
 constexpr auto from_string(const std::string_view& s) {
-    return hilti::util::enum_::from_string<Engine>(s, detail::engines);
+    return hilti::util::enum_::from_string<Engine>(s, detail::Engines);
 }
 } // namespace engine
 

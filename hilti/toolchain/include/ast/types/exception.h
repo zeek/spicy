@@ -2,38 +2,43 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/unknown.h>
 
 namespace hilti::type {
 
-/** AST node for an `exception` type. */
-class Exception : public TypeBase, trait::isAllocable, trait::isParameterized {
+/** AST node for a `exception` type. */
+class Exception : public UnqualifiedType {
 public:
-    Exception(Meta m = Meta()) : TypeBase({node::none}, std::move(m)) {}
-    Exception(Type base, Meta m = Meta()) : TypeBase({std::move(base)}, std::move(m)) {}
-    Exception(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({node::none}, std::move(m)), _wildcard(true) {}
+    auto baseType() const { return child<UnqualifiedType>(0); }
 
-    hilti::optional_ref<const Type> baseType() const { return children()[0].tryAs<Type>(); }
+    std::string_view typeClass() const final { return "exception"; }
 
-    bool operator==(const Exception& other) const { return baseType() == other.baseType(); }
+    bool isAllocable() const final { return true; }
+    bool isNameType() const final { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const {
-        return baseType().has_value() ? type::detail::isResolved(baseType(), rstate) : true;
+    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& base, Meta meta = {}) {
+        return std::shared_ptr<Exception>(new Exception(ctx, {base}, std::move(meta)));
     }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
 
-private:
-    bool _wildcard = false;
+    static auto create(ASTContext* ctx, const Meta& meta = {}) { return create(ctx, nullptr, meta); }
+
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<Exception>(new Exception(ctx, Wildcard(), {type::Unknown::create(ctx, m)}, m));
+    }
+
+protected:
+    Exception(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Exception(ASTContext* ctx, Wildcard _, const Nodes& children, const Meta& meta)
+        : UnqualifiedType(ctx, Wildcard(), {"exception(*)"}, children, meta) {}
+
+    bool isResolved(node::CycleDetector* cd) const final { return baseType() ? baseType()->isResolved(cd) : true; }
+
+    HILTI_NODE(hilti, Exception)
 };
 
 } // namespace hilti::type

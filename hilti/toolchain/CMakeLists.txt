@@ -12,66 +12,94 @@ flex_target(scanner_hilti src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner
 bison_target_pp(parser_hilti src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc DEFINES_FILE
                 ${AUTOGEN_CC}/__parser.h)
 
+bison_source(src/compiler/plugin.cc ${AUTOGEN_CC})
 bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__parser.cc ${AUTOGEN_CC})
 
-include(TypeErase)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/node.api NO)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/ctor.api YES)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/declaration.api YES)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/expression.api YES)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/expressions/resolved-operator.api YES)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/operator.api YES)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/statement.api YES)
-autogen_type_erased(SOURCES_TYPE_ERASED include/hilti/ast/type.api YES)
-
-include(ASTOperators)
-autogen_operators(SOURCES_OPERATORS hilti include/hilti/ast/operators ${AUTOGEN_H}/operators.decl
-                  ${AUTOGEN_CC}/operators-implementations.cc)
-
-autogen_dispatchers(
-    SOURCES_TYPE_ERASED ${AUTOGEN_H}/__dispatchers.h "hilti/ast/all.h"
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/hilti/ast/nodes.decl ${AUTOGEN_H}/operators.decl)
-
 set(SOURCES
+    src/ast/ast-context.cc
+    src/ast/attribute.cc
     src/ast/builder/builder.cc
-    src/ast/builder/type.cc
-    src/ast/declarations/imported-module.cc
+    src/ast/declarations/module.cc
+    src/ast/declarations/function.cc
+    src/ast/declarations/field.cc
     src/ast/doc-string.cc
+    src/ast/visitor.cc
+    src/ast/ctor.cc
+    src/ast/ctors/bitfield.cc
+    src/ast/ctors/map.cc
+    src/ast/ctors/struct.cc
+    src/ast/declaration.cc
     src/ast/expression.cc
-    src/ast/expressions
-    src/ast/expressions/id.cc
+    src/ast/function.cc
+    src/ast/expressions/name.cc
     src/ast/location.cc
     src/ast/meta.cc
-    src/ast/module.cc
     src/ast/node.cc
-    src/ast/node_ref.cc
+    src/ast/operator.cc
+    src/ast/operator-registry.cc
+    src/ast/operators/address.cc
+    src/ast/operators/bitfield.cc
+    src/ast/operators/bool.cc
+    src/ast/operators/bytes.cc
+    src/ast/operators/enum.cc
+    src/ast/operators/error.cc
+    src/ast/operators/exception.cc
+    src/ast/operators/function.cc
+    src/ast/operators/generic.cc
+    src/ast/operators/interval.cc
+    src/ast/operators/list.cc
+    src/ast/operators/map.cc
+    src/ast/operators/network.cc
+    src/ast/operators/optional.cc
+    src/ast/operators/port.cc
+    src/ast/operators/real.cc
+    src/ast/operators/reference.cc
+    src/ast/operators/regexp.cc
+    src/ast/operators/result.cc
+    src/ast/operators/set.cc
+    src/ast/operators/signed-integer.cc
+    src/ast/operators/stream.cc
+    src/ast/operators/string.cc
+    src/ast/operators/struct.cc
+    src/ast/operators/time.cc
+    src/ast/operators/tuple.cc
+    src/ast/operators/union.cc
+    src/ast/operators/unsigned-integer.cc
+    src/ast/operators/vector.cc
+    src/ast/statement.cc
+    src/ast/type.cc
     src/ast/scope.cc
     src/ast/scope-lookup.cc
-    src/ast/type.cc
+    src/ast/statements/switch.cc
+    src/ast/statements/try.cc
     src/ast/types/bitfield.cc
     src/ast/types/enum.cc
+    src/ast/types/function.cc
     src/ast/types/integer.cc
-    src/ast/types/library.cc
+    src/ast/types/name.cc
+    src/ast/types/operand-list.cc
     src/ast/types/struct.cc
     src/ast/types/tuple.cc
+    src/ast/types/union.cc
+    src/ast/visitor-dispatcher.cc
     src/base/code-formatter.cc
     src/base/logger.cc
     src/base/preprocessor.cc
     src/base/timing.cc
-    src/base/type_erase.cc
     src/base/util.cc
+    src/compiler/ast-dumper.cc
     src/compiler/codegen/codegen.cc
     src/compiler/codegen/coercions.cc
     src/compiler/codegen/ctors.cc
-    src/compiler/codegen/expressions.cc
     src/compiler/codegen/expressions.cc
     src/compiler/codegen/operators.cc
     src/compiler/codegen/statements.cc
     src/compiler/codegen/types.cc
     src/compiler/codegen/unpack.cc
-    src/compiler/coercion.cc
+    src/compiler/coercer.cc
+    src/compiler/constant-folder.cc
     src/compiler/context.cc
     src/compiler/cxx/elements.cc
     src/compiler/cxx/formatter.cc
@@ -83,19 +111,16 @@ set(SOURCES
     src/compiler/optimizer.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
+    src/compiler/printer.cc
+    src/compiler/resolver.cc
+    src/compiler/scope-builder.cc
+    src/compiler/type-unifier.cc
     src/compiler/unit.cc
-    src/compiler/visitors/coercer.cc
-    src/compiler/visitors/constant-folder.cc
-    src/compiler/visitors/normalizer.cc
-    src/compiler/visitors/printer.cc
-    src/compiler/visitors/renderer.cc
-    src/compiler/visitors/resolver.cc
-    src/compiler/visitors/scope-builder.cc
-    src/compiler/visitors/validator.cc
+    src/compiler/validator.cc
     src/global.cc
-    # Already included in hilti-rt, which we pull in.
-    # src/3rdparty/utf8proc/utf8proc.c
-    ${SOURCES_TYPE_ERASED}
+    # # Already included in hilti-rt, which we pull in.
+    # # src/3rdparty/utf8proc/utf8proc.c
+    # ${SOURCES_TYPE_ERASED}
     ${SOURCES_OPERATORS}
     ${AUTOGEN_CC}/config.cc
     ${BISON_parser_hilti_OUTPUTS}

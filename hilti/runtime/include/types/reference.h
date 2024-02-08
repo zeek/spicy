@@ -132,7 +132,7 @@ public:
 
         try {
             if ( auto ptr = std::get<T*>(_ptr) ) {
-                if constexpr ( std::is_base_of<Controllable<T>, T>::value )
+                if constexpr ( std::is_base_of_v<Controllable<T>, T> )
                     return ptr->shared_from_this();
                 else
                     throw IllegalReference("cannot dynamically create reference for type");
@@ -299,7 +299,7 @@ private:
      * stays around.
      */
     explicit ValueReference(T* t) : _ptr(t) {
-        static_assert(std::is_base_of<Controllable<T>, T>::value);
+        static_assert(std::is_base_of_v<Controllable<T>, T>);
         assert(t);
     }
 

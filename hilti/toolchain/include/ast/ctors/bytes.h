@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -10,28 +11,28 @@
 
 namespace hilti::ctor {
 
-/** AST node for a bytes constructor. */
-class Bytes : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `bytes` ctor. */
+class Bytes : public Ctor {
 public:
-    Bytes(std::string v, const Meta& m = Meta()) : NodeBase(nodes(type::Bytes(m)), m), _value(std::move(v)) {}
+    const auto& value() const { return _value; }
 
-    auto value() const { return _value; }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    bool operator==(const Bytes& other) const { return value() == other.value(); }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", _value}};
+        return Ctor::properties() + p;
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, std::string value, const Meta& meta = {}) {
+        return CtorPtr(new Bytes(ctx, {QualifiedType::create(ctx, type::Bytes::create(ctx, meta), Constness::Const)},
+                                 std::move(value), meta));
+    }
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"value", _value}}; }
+protected:
+    Bytes(ASTContext* ctx, Nodes children, std::string value, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(std::move(value)) {}
+
+    HILTI_NODE(hilti, Bytes)
 
 private:
     std::string _value;

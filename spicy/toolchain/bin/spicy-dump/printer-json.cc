@@ -111,11 +111,11 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
             }
 
             auto offsets = json::object();
-            const auto& __offsets = spicy::rt::get_offsets_for_unit(*struct_, v);
-            if ( _options.include_offsets && __offsets ) {
+            const auto& offsets_ = spicy::rt::get_offsets_for_unit(*struct_, v);
+            if ( _options.include_offsets && offsets_ ) {
                 auto fields = struct_->fields();
 
-                for ( const auto&& [index, offset] : enumerate(*__offsets) ) {
+                for ( const auto&& [index, offset] : enumerate(*offsets_) ) {
                     auto o = json::object();
 
                     if ( offset ) {

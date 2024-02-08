@@ -5,11 +5,11 @@
     Returns the referenced instance, or throws an exception if none or
     expired.
 
-.. spicy:operator:: value_reference::Equal bool t:value_ref <sp> op:== <sp> t:<no-doc> $commutative$
+.. spicy:operator:: value_reference::Equal bool t:value_ref <sp> op:== <sp> t:value_ref
 
     Returns true if the values of both operands are equal.
 
-.. spicy:operator:: value_reference::Unequal bool t:value_ref <sp> op:!= <sp> t:<no-doc> $commutative$
+.. spicy:operator:: value_reference::Unequal bool t:value_ref <sp> op:!= <sp> t:value_ref
 
     Returns true if the values of both operands are not equal.
 

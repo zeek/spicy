@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <spicy/ast/types/unit.h>
+#include <hilti/ast/expression.h>
+
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
@@ -15,34 +18,43 @@ namespace spicy::detail::codegen::production {
  * A pair of alternatives between which we decide based on a boolean
  * expression.
  */
-class Boolean : public ProductionBase, public spicy::trait::isNonTerminal {
+class Boolean : public Production {
 public:
-    Boolean(const std::string& symbol, Expression e, Production alt1, Production alt2,
-            const Location& l = location::None)
-        : ProductionBase(symbol, l),
+    Boolean(ASTContext* /* ctx */, const std::string& symbol, ExpressionPtr e, std::unique_ptr<Production> alt1,
+            std::unique_ptr<Production> alt2, const hilti::Location& l = hilti::location::None)
+        : Production(symbol, l),
           _expression(std::move(e)),
           _alternatives(std::make_pair(std::move(alt1), std::move(alt2))) {}
 
-    const Expression& expression() const { return _expression; }
-    const std::pair<Production, Production>& alternatives() const { return _alternatives; }
+    std::pair<Production*, Production*> alternatives() const {
+        return std::make_pair(_alternatives.first.get(), _alternatives.second.get());
+    }
 
-    // Production API
-    std::vector<std::vector<Production>> rhss() const { return {{_alternatives.first}, {_alternatives.second}}; }
-    std::optional<spicy::Type> type() const { return {}; }
-    bool nullable() const { return production::nullable(rhss()); }
-    bool eodOk() const {
+    bool isAtomic() const final { return false; };
+    bool isEodOk() const final {
         // Always false. If one of the branches is ok with no data, it will
         // indicate so itself.
         return false;
     }
-    bool atomic() const { return false; }
-    std::string render() const {
-        return hilti::util::fmt("true: %s / false: %s", _alternatives.first.symbol(), _alternatives.second.symbol());
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return production::isNullable(rhss()); };
+    bool isTerminal() const final { return false; };
+
+    std::vector<std::vector<Production*>> rhss() const final {
+        return {{_alternatives.first.get()}, {_alternatives.second.get()}};
     }
 
+    ExpressionPtr expression() const final { return _expression; }
+
+    std::string dump() const final {
+        return hilti::util::fmt("true: %s / false: %s", _alternatives.first->symbol(), _alternatives.second->symbol());
+    }
+
+    SPICY_PRODUCTION
+
 private:
-    Expression _expression;
-    std::pair<Production, Production> _alternatives;
+    ExpressionPtr _expression;
+    std::pair<std::unique_ptr<Production>, std::unique_ptr<Production>> _alternatives;
 };
 
 } // namespace spicy::detail::codegen::production

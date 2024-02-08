@@ -1,6 +1,6 @@
 # @TEST-DOC: Validates normalization of `&cxxname` values.
 
-# @TEST-EXEC: spicyc -c %INPUT -o /dev/null -D normalizer >output 2>&1
+# @TEST-EXEC: spicyc -c %INPUT -o /dev/null -D resolver 2>&1 | grep 'Attribute.*cxxname=' >output
 # @TEST-EXEC: btest-diff output
 
 module foo;

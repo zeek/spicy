@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
+#include <hilti/ast/type.h>
 
 namespace hilti::statement {
 
@@ -18,17 +20,30 @@ struct Exception {};
 } // namespace assert
 
 /** AST node for an assert statement. */
-class Assert : public NodeBase, public hilti::trait::isStatement {
+class Assert : public Statement {
 public:
+    auto expression() const { return child<::hilti::Expression>(0); }
+    auto exception() const { return child<UnqualifiedType>(1); }
+    auto message() const { return child<::hilti::Expression>(2); }
+    bool expectException() const { return _expect_exception; }
+
+    node::Properties properties() const final {
+        auto p = node::Properties{{"expect_exception", _expect_exception}};
+        return Statement::properties() + p;
+    }
+
+    void setExpression(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 0, c); }
+
     /**
-     * Creates an assert statement that expects an exception to evaluate to true at runtime.
+     * Creates an assert statement that expects an expression to evaluate to true at runtime.
      *
      * @param e expression to evaluate at runtime
-     * @param msg message to report an runtime if assertions fails
+     * @param msg optional message to report an runtime if assertions fails
      * @param m meta information for AST node
      */
-    Assert(::hilti::Expression expr, std::optional<::hilti::Expression> msg, Meta m = Meta())
-        : NodeBase(nodes(std::move(expr), node::none, std::move(msg)), std::move(m)) {}
+    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const ExpressionPtr& msg = nullptr, Meta meta = {}) {
+        return std::shared_ptr<Assert>(new Assert(ctx, {expr, nullptr, msg}, false, std::move(meta)));
+    }
 
     /**
      * Creates an assert statement that expects an exception to occur when
@@ -37,33 +52,22 @@ public:
      * @param assert::Exception tag to select this constructor
      * @param e expression to evaluate at runtime
      * @param type exception type that's expected to be thrown when *e* is evaluated; unset of any exception
-     * @param msg message to report an runtime if assertions fails
+     * @param msg optional message to report an runtime if assertions fails
      * @param m meta information for AST node
      */
-    Assert(assert::Exception /*unused*/, ::hilti::Expression expr, std::optional<Type> excpt,
-           std::optional<::hilti::Expression> msg, Meta m = Meta())
-        : NodeBase(nodes(std::move(expr), std::move(excpt), std::move(msg)), std::move(m)), _expects_exception(true) {}
-
-    bool expectsException() const { return _expects_exception; }
-    const auto& expression() const { return child<::hilti::Expression>(0); }
-    auto exception() const { return children()[1].tryAs<Type>(); }
-    auto message() const { return children()[2].tryAs<::hilti::Expression>(); }
-
-    void setCondition(const hilti::Expression& c) { children()[0] = c; }
-
-    bool operator==(const Assert& other) const {
-        return _expects_exception == other._expects_exception && expression() == other.expression() &&
-               exception() == other.exception() && message() == other.message();
+    static auto create(ASTContext* ctx, assert::Exception /*unused*/, const ExpressionPtr& expr,
+                       const UnqualifiedTypePtr& excpt, const ExpressionPtr& msg = nullptr, const Meta& meta = {}) {
+        return std::shared_ptr<Assert>(new Assert(ctx, {expr, excpt, msg}, true, meta));
     }
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
+protected:
+    Assert(ASTContext* ctx, Nodes children, bool expect_exception, Meta meta)
+        : Statement(ctx, std::move(children), std::move(meta)), _expect_exception(expect_exception) {}
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"expects-exception", _expects_exception}}; }
+    HILTI_NODE(hilti, Assert)
 
 private:
-    bool _expects_exception = false;
+    bool _expect_exception;
 };
 
 } // namespace hilti::statement

@@ -1,71 +1,73 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include "ast/types/unit-items/field.h"
-
-#include <optional>
-
-#include <hilti/ast/builder/all.h>
-#include <hilti/ast/types/bitfield.h>
+#include <hilti/ast/types/name.h>
 #include <hilti/ast/types/reference.h>
-#include <hilti/ast/types/vector.h>
+#include <hilti/ast/visitor.h>
 
-#include <spicy/ast/detail/visitor.h>
+#include <spicy/ast/builder/builder.h>
+#include <spicy/ast/types/unit-items/field.h>
+#include <spicy/ast/types/unit.h>
 
-using namespace hilti;
 using namespace spicy;
 using namespace spicy::detail;
 
-namespace builder = hilti::builder;
+std::optional<std::pair<ExpressionPtr, QualifiedTypePtr>> type::unit::item::Field::convertExpression() const {
+    if ( auto convert = attributes()->find("&convert") )
+        return std::make_pair(*convert->valueAsExpression(), nullptr);
 
-std::optional<std::pair<const Expression, std::optional<const Type>>> spicy::type::unit::item::Field::
-    convertExpression() const {
-    if ( auto convert = AttributeSet::find(attributes(), "&convert") )
-        return std::make_pair((*convert->valueAsExpression()).get(), std::nullopt);
+    auto t = parseType();
 
-    Type t = parseType();
-
-    if ( auto x = t.tryAs<type::ValueReference>() )
+    if ( auto x = t->type()->tryAs<hilti::type::ValueReference>() )
         t = x->dereferencedType();
 
-    if ( auto x = t.tryAs<type::Unit>() ) {
-        if ( auto convert = AttributeSet::find(x->attributes(), "&convert") )
+    if ( auto x = t->type()->tryAs<type::Unit>() ) {
+        if ( auto convert = x->attributes()->find("&convert") )
             return std::make_pair(*convert->valueAsExpression(), std::move(t));
     }
 
     return {};
 }
 
-struct SizeVisitor : visitor::PreOrder<Expression, SizeVisitor> {
-    SizeVisitor(const spicy::type::unit::item::Field& field) : _field(field) {}
+void type::unit::item::Field::setDDType(ASTContext* ctx, const QualifiedTypePtr& t) {
+    setChild(ctx, 0, hilti::expression::Keyword::createDollarDollarDeclaration(ctx, t));
+}
 
-    const spicy::type::unit::item::Field& _field;
+struct SizeVisitor : hilti::visitor::PreOrder {
+    SizeVisitor(Builder* builder, const spicy::type::unit::item::Field& field) : builder(builder), field(field) {}
 
-    result_t operator()(const spicy::type::Address&) {
-        if ( AttributeSet::find(_field.attributes(), "&ipv4") )
-            return builder::integer(4U);
-        else if ( AttributeSet::find(_field.attributes(), "&ipv6") )
-            return builder::integer(16U);
+    Builder* builder;
+    const spicy::type::unit::item::Field& field;
+    ExpressionPtr result;
+
+    void operator()(hilti::type::Address* n) final {
+        if ( field.attributes()->has("&ipv4") )
+            result = builder->integer(4U);
+        else if ( field.attributes()->has("&ipv6") )
+            result = builder->integer(16U);
         else
             hilti::rt::cannot_be_reached();
     }
 
-    result_t operator()(const spicy::type::SignedInteger& n) { return builder::integer(n.width() / 8U); }
-    result_t operator()(const spicy::type::UnsignedInteger& n) { return builder::integer(n.width() / 8U); }
-    result_t operator()(const spicy::type::Bitfield& n) { return builder::integer(n.width() / 8U); }
+    void operator()(hilti::type::SignedInteger* n) final { result = builder->integer(n->width() / 8U); }
+    void operator()(hilti::type::UnsignedInteger* n) final { result = builder->integer(n->width() / 8U); }
+    void operator()(hilti::type::Bitfield* n) final { result = builder->integer(n->width() / 8U); }
 
-    result_t operator()(const spicy::type::Real&) {
-        auto type = *_field.attributes()->find("&type")->valueAsExpression();
-        return builder::ternary(builder::equal(type, builder::id("spicy::RealType::IEEE754_Single")),
-                                builder::integer(4U), builder::integer(8U));
+    void operator()(hilti::type::Real*) final {
+        auto type = *field.attributes()->find("&type")->valueAsExpression();
+        result = builder->ternary(builder->equal(type, builder->id("spicy::RealType::IEEE754_Single")),
+                                  builder->integer(4U), builder->integer(8U));
     }
 };
 
-std::optional<const Expression> spicy::type::unit::item::Field::size() const {
-    if ( const auto& size = AttributeSet::find(attributes(), "&size") )
-        return {size.value().valueAsExpression()->get()};
+ExpressionPtr spicy::type::unit::item::Field::size(ASTContext* ctx) const {
+    Builder builder(ctx);
 
-    if ( auto size = SizeVisitor(*this).dispatch(parseType()) )
-        return {*std::move(size)};
+    if ( const auto& size = attributes()->find("&size") )
+        return *size->valueAsExpression();
 
-    return {};
+    if ( auto size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(),
+                                              [](const auto& v) { return v.result; }) )
+        return size;
+
+    return nullptr;
 }

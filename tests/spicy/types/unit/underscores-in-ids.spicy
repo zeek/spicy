@@ -1,0 +1,22 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEST-DOC:  Regression test catching if multiple underscores in IDs lead to trouble
+
+module Test;
+
+type Foo = unit {
+	x: uint32 { }
+	y: Foo_[];
+};
+
+type Foo_ = unit {
+	v: Foo__;
+};
+
+type Foo__ = unit {
+	v: Foo___;
+};
+
+type Foo___ = unit {
+	v: uint8;
+};

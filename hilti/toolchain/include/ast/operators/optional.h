@@ -2,12 +2,14 @@
 
 #pragma once
 
-#include <hilti/ast/operators/common.h>
-#include <hilti/ast/types/result.h>
+#include <memory>
+#include <string>
 
+#include <hilti/ast/operators/common.h>
+
+// NOLINTNEXTLINE(modernize-concat-nested-namespaces)
 namespace hilti::operator_ {
 
-STANDARD_OPERATOR_1(optional, Deref, operator_::dereferencedType(0), type::constant(type::Optional(type::Wildcard())),
-                    "Returns the element stored, or throws an exception if none.");
+HILTI_NODE_OPERATOR(hilti, optional, Deref)
 
-} // namespace hilti::operator_
+}

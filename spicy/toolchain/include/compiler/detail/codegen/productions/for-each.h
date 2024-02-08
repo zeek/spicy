@@ -2,33 +2,40 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
 /** A production executing until interrupted by a foreach hook. */
-class ForEach : public ProductionBase, public spicy::trait::isNonTerminal {
+class ForEach : public Production {
 public:
-    ForEach(const std::string& symbol, Production body, bool eod_ok, const Location& l = location::None)
-        : ProductionBase(symbol, l), _body(std::move(body)), _eod_ok(eod_ok) {}
+    ForEach(ASTContext* /* ctx */, const std::string& symbol, std::unique_ptr<Production> body, bool eod_ok,
+            const Location& l = location::None)
+        : Production(symbol, l), _body(std::move(body)), _eod_ok(eod_ok) {}
 
-    const Production& body() const { return _body; }
+    const auto* body() const { return _body.get(); }
 
-    // Production API
-    std::vector<std::vector<Production>> rhss() const { return {{_body}}; }
-    std::optional<spicy::Type> type() const { return {}; }
-    bool nullable() const { return production::nullable(rhss()); }
-    bool eodOk() const { return _eod_ok ? _eod_ok : nullable(); }
-    bool atomic() const { return false; }
-    std::string render() const { return hilti::util::fmt("foreach: %s", _body.symbol()); }
+    bool isAtomic() const final { return false; };
+    bool isEodOk() const final { return _eod_ok ? _eod_ok : isNullable(); };
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return production::isNullable(rhss()); };
+    bool isTerminal() const final { return false; };
+
+    std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
+
+    std::string dump() const override { return hilti::util::fmt("foreach: %s", _body->symbol()); }
+
+    SPICY_PRODUCTION
 
 private:
-    Production _body;
+    std::unique_ptr<Production> _body;
     bool _eod_ok;
 };
 

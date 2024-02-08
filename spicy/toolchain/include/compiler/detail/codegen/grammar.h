@@ -3,18 +3,23 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/location.h>
+#include <hilti/base/result.h>
+
 #include <spicy/compiler/detail/codegen/production.h>
 
 namespace spicy::detail::codegen {
 
+class Production;
+
 namespace production {
-class Resolved;
-using Unresolved = Resolved;
+class Deferred;
 } // namespace production
 
 /** A Spicy grammar. Each unit is translated into a grammar for parsing. */
@@ -29,13 +34,14 @@ public:
      * @param root top-level root production
      * @param l associated location
      */
-    Grammar(std::string name, Location l = location::None) : _name(std::move(name)), _location(std::move(l)) {}
+    Grammar(std::string name, hilti::Location l = hilti::location::None)
+        : _name(std::move(name)), _location(std::move(l)) {}
     Grammar() = default;
-    Grammar(const Grammar&) = default;
+    Grammar(const Grammar&) = delete;
     Grammar(Grammar&&) = default;
     ~Grammar() = default;
     Grammar& operator=(Grammar&&) = default;
-    Grammar& operator=(const Grammar&) = default;
+    Grammar& operator=(const Grammar&) = delete;
 
     /**
      * Returns the name of the grammar. The name uniquely identifies the
@@ -44,24 +50,24 @@ public:
     const std::string& name() const { return _name; }
 
     /** Returns the location associated with the production. */
-    const Location& location() const { return _location; }
+    const hilti::Location& location() const { return _location; }
 
     /**
      * Resolves an previous place-holder production with an actual production.
      * Once resolved, parser table construction will use the actual production
      * everywhere where the place-holder is referenced.
      */
-    void resolve(production::Unresolved* r, Production p);
+    void resolve(production::Deferred* r, std::unique_ptr<Production> p);
 
-    /** Returns a the actual production a resolved production refers to. */
-    const Production& resolved(const production::Resolved& r) const;
+    /** Returns the actual production a resolved production refers to. */
+    Production* resolved(const production::Deferred* r) const;
 
     /**
-     * Sets the root produnction for the grammar. This recursively adds all
-     * childrens of the root to the grammar, too. The root production cannot
-     * be changeda anymore once set.
+     * Sets the root production for the grammar. This recursively adds all
+     * children of the root to the grammar, too. The root production cannot
+     * be changed anymore once set.
      */
-    Result<Nothing> setRoot(const Production& p);
+    hilti::Result<hilti::Nothing> setRoot(std::unique_ptr<Production> p);
 
     /**
      * Freezes the grammar, computes the parsing tables for all previously
@@ -70,17 +76,12 @@ public:
      * will be left in an undefined state.
      *
      * @return error if the parsing tables couldn't be computed (e.g., due to
-     * ambiguties); the error description will then be describing the issue.
+     * ambiguities); the error description will then be describing the issue.
      */
-    Result<Nothing> finalize();
+    hilti::Result<hilti::Nothing> finalize();
 
     /** Returns the root production, if set already. */
-    std::optional<Production> root() const {
-        if ( _root )
-            return _prods.at(*_root);
-
-        return {};
-    }
+    Production* root() const { return _root.get(); }
 
     /**
      * Returns a closure of all the grammar's productions starting with the
@@ -89,7 +90,7 @@ public:
      *
      * @note will return an empty map until the root production gets set.
      */
-    const std::map<std::string, Production>& productions() const { return _prods; }
+    const auto& productions() const { return _prods; }
 
     /**
      * Returns the set of look-ahead terminals for a given production.
@@ -102,8 +103,7 @@ public:
      * non-terminal led to the set being ambiguous. Note that the set may
      * contain terminals that are not literals.
      */
-    hilti::Result<std::set<Production>> lookAheadsForProduction(Production p,
-                                                                std::optional<Production> parent = {}) const;
+    hilti::Result<production::Set> lookAheadsForProduction(const Production* p, const Production* parent = {}) const;
 
     /** Returns true if the grammar needs look-ahead for parsing.
      *
@@ -119,28 +119,29 @@ public:
     void printTables(std::ostream& out, bool verbose = false);
 
 private:
-    void _addProduction(const Production& p);
+    void _addProduction(Production* p);
     void _simplify();
-    Result<Nothing> _computeTables();
-    Result<Nothing> _check();
-    std::set<Production> _computeClosure(const Production& p);
-    bool _add(std::map<std::string, std::set<std::string>>* tbl, const Production& dst,
-              const std::set<std::string>& src, bool changed);
-    bool _isNullable(const Production& p) const;
-    bool _isNullable(std::vector<Production>::const_iterator i, std::vector<Production>::const_iterator j) const;
-    std::set<std::string> _getFirst(const Production& p) const;
-    std::set<std::string> _getFirstOfRhs(const std::vector<Production>& rhs) const;
-    std::string _productionLocation(const Production& p) const;
-    std::vector<std::vector<Production>> _rhss(const Production& p) const;
+    hilti::Result<hilti::Nothing> _computeTables();
+    hilti::Result<hilti::Nothing> _check();
+    production::Set _computeClosure(Production* p);
+    bool _add(std::map<std::string, std::set<std::string>>* tbl, Production* dst, const std::set<std::string>& src,
+              bool changed);
+    bool _isNullable(const Production* p) const;
+    bool _isNullable(std::vector<Production*>::const_iterator i, std::vector<Production*>::const_iterator j) const;
+    std::set<std::string> _getFirst(const Production* p) const;
+    std::set<std::string> _getFirstOfRhs(const std::vector<Production*>& rhs) const;
+    std::string _productionLocation(const Production* p) const;
+    std::vector<std::vector<Production*>> _rhss(const Production* p);
 
     std::string _name;
-    Location _location;
-    std::optional<std::string> _root;
+    hilti::Location _location;
+    std::unique_ptr<Production> _root;
 
     // Computed by _computeTables()
     bool _needs_look_ahead = false;
-    std::map<std::string, Production> _prods;
-    std::map<std::string, std::string> _resolved;
+    std::map<std::string, Production*> _prods;
+    std::map<std::string, std::string> _resolved_mapping;
+    std::vector<std::unique_ptr<Production>> _resolved; // retains ownership for resolved productions
     std::vector<std::string> _nterms;
     std::map<std::string, bool> _nullable;
     std::map<std::string, std::set<std::string>> _first;

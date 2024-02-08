@@ -1,69 +1,96 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include "compiler/plugin.h"
+#include <hilti/ast/builder/builder.h>
 
-#include <hilti/compiler/plugin.h>
-#include <hilti/compiler/printer.h>
-
-#include <spicy/ast/aliases.h>
+#include <spicy/ast/builder/builder.h>
 #include <spicy/autogen/config.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
-#include <spicy/compiler/detail/coercion.h>
-#include <spicy/compiler/detail/visitors.h>
-#include <spicy/global.h>
+#include <spicy/compiler/detail/coercer.h>
+#include <spicy/compiler/detail/parser/driver.h>
+#include <spicy/compiler/detail/plugin.h>
+#include <spicy/compiler/detail/printer.h>
+#include <spicy/compiler/detail/resolver.h>
+#include <spicy/compiler/detail/scope-builder.h>
+#include <spicy/compiler/detail/type-unifier.h>
+#include <spicy/compiler/detail/validator.h>
 
 using namespace spicy;
 using namespace spicy::detail;
 
-hilti::Plugin spicy::detail::create_spicy_plugin() {
+hilti::Plugin spicy::detail::createSpicyPlugin() {
     return hilti::Plugin{
         .component = "Spicy",
         .order = 5, // before HILTI
         .extension = ".spicy",
         .cxx_includes = {"spicy/rt/libspicy.h"},
 
-        .library_paths =
-            [](const std::shared_ptr<hilti::Context>& /* ctx */) { return spicy::configuration().spicy_library_paths; },
+        .library_paths = [](const hilti::Context* /* ctx */) { return spicy::configuration().spicy_library_paths; },
 
-        .parse = [](std::istream& in, const hilti::rt::filesystem::path& path) { return parseSource(in, path); },
+        .unify_type = type_unifier::detail::unifyType,
 
-        .coerce_ctor = [](Ctor c, const Type& dst,
-                          bitmask<hilti::CoercionStyle> style) { return detail::coerceCtor(std::move(c), dst, style); },
+        .parse =
+            [](hilti::Builder* builder, std::istream& in, const hilti::rt::filesystem::path& path) {
+                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                return parser::parseSource(spicy_builder, in, path);
+            },
 
-        .coerce_type = [](Type t, const Type& dst,
-                          bitmask<hilti::CoercionStyle> style) { return detail::coerceType(std::move(t), dst, style); },
+        .coerce_ctor =
+            [](hilti::Builder* builder, const CtorPtr& c, const QualifiedTypePtr& dst,
+               bitmask<hilti::CoercionStyle> style) {
+                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                return coercer::coerceCtor(spicy_builder, c, dst, style);
+            },
+
+        .coerce_type =
+            [](hilti::Builder* builder, const QualifiedTypePtr& t, const QualifiedTypePtr& dst,
+               bitmask<hilti::CoercionStyle> style) {
+                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                return coercer::coerceType(spicy_builder, t, dst, style);
+            },
+
+        .ast_init =
+            [](hilti::Builder* builder, const ASTRootPtr& root) {
+                hilti::util::timing::Collector _("spicy/compiler/ast/init");
+
+                if ( builder->options().import_standard_modules ) {
+                    builder->context()->importModule(builder, "hilti", {}, ".hlt", {}, {});
+                    builder->context()->importModule(builder, "spicy_rt", {}, ".hlt", {}, {});
+                    builder->context()->importModule(builder, "spicy", {}, ".spicy", {}, {});
+                }
+            },
 
         .ast_build_scopes =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
-                ast::buildScopes(ctx, m, u);
+            [](hilti::Builder* builder, const ASTRootPtr& root) {
+                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                scope_builder::build(spicy_builder, root);
                 return false;
             },
 
-        .ast_normalize = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
-                            hilti::Unit* u) { return ast::normalize(ctx, m, u); },
-
-        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, hilti::Node* m,
-                         hilti::Unit* u) { return ast::coerce(ctx, m, u); },
-
-        .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
-                          hilti::Unit* u) { return ast::resolve(ctx, m, u); },
+        .ast_resolve =
+            [](hilti::Builder* builder, const NodePtr& root) {
+                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                return resolver::resolve(spicy_builder, root);
+            },
 
         .ast_validate_pre =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
-                ast::validate_pre(ctx, m, u);
+            [](hilti::Builder* builder, const ASTRootPtr& m) {
+                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                validator::validatePre(spicy_builder, m);
                 return false;
             },
 
         .ast_validate_post =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, hilti::Unit* u) {
-                ast::validate_post(ctx, m, u);
+            [](hilti::Builder* builder, const ASTRootPtr& root) {
+                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                validator::validatePost(spicy_builder, root);
                 return false;
             },
 
-        .ast_print = [](const Node& root, hilti::printer::Stream& out) { return ast::print(root, out); },
+        .ast_print = [](const NodePtr& node, hilti::printer::Stream& out) { return printer::print(out, node); },
 
-        .ast_transform = [](const std::shared_ptr<hilti::Context>& ctx, Node* n, hilti::Unit* u) -> bool {
-            return CodeGen(ctx).compileModule(n, u);
+        .ast_transform = [](hilti::Builder* builder, const ASTRootPtr& m) -> bool {
+            auto spicy_builder = static_cast<spicy::Builder*>(builder);
+            return CodeGen(spicy_builder).compileAST(m);
         },
     };
 }

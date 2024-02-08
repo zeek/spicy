@@ -3,44 +3,53 @@
 #include <iomanip>
 #include <sstream>
 
-#include <hilti/ast/expressions/id.h>
+#include <hilti/ast/builder/builder.h>
+#include <hilti/ast/ctors/enum.h>
+#include <hilti/ast/declarations/constant.h>
+#include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/module.h>
+#include <hilti/ast/declarations/type.h>
+#include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/node.h>
-#include <hilti/ast/types/unresolved-id.h>
+#include <hilti/ast/type.h>
+#include <hilti/ast/visitor.h>
 #include <hilti/base/util.h>
-#include <hilti/compiler/detail/visitors.h>
+#include <hilti/compiler/detail/ast-dumper.h>
 
 using namespace hilti;
+using namespace hilti::detail;
 
-const Node node::none = None::create();
-
-static std::string fmtDoc(const std::optional<DocString>& doc) {
-    if ( ! (doc && *doc) )
-        return "";
-
-    const int max_doc = 40;
-    std::string rendering;
-
-    auto summary = util::join(doc->summary(), " ");
-    if ( ! summary.empty() ) {
-        auto summary_dots = (summary.size() > max_doc || doc->summary().size() > 1 ? "..." : "");
-        rendering += util::fmt(R"(summary: "%s%s")", summary.substr(0, max_doc), summary_dots);
+Node::~Node() {
+    for ( auto& c : _children ) {
+        if ( c )
+            c->_clearParent();
     }
-
-    auto text = util::join(doc->text(), " ");
-    if ( ! text.empty() ) {
-        if ( ! rendering.empty() )
-            rendering += " ";
-
-        auto text_dots = (text.size() > max_doc || doc->text().size() > 1 ? "..." : "");
-        rendering += util::fmt(R"(doc: "%s%s")", text.substr(0, max_doc), text_dots);
-    }
-
-    return util::fmt(" (%s)", rendering);
 }
 
-std::string Node::render(bool include_location) const {
-    auto f = [&](const node::Properties::value_type& x) {
-        return util::fmt("%s=%s", x.first, std::quoted(node::detail::to_string(x.second)));
+std::string Node::dump() const {
+    std::stringstream s;
+    s << '\n';
+    ast_dumper::dump(s, const_cast<Node*>(this)->as<Node>());
+    return s.str();
+}
+
+std::string Node::renderSelf(bool include_location) const {
+    auto f = [](const node::Properties::value_type& x) {
+        return util::fmt("%s=%s", x.first, std::quoted(node::to_string(x.second)));
+    };
+
+    auto name = [](const Node* n) {
+        auto name = n->typename_();
+
+        // Prettify the name a bit.
+        if ( util::startsWith(name, "detail::") )
+            name = util::join(util::slice(util::split(name, "::"), 2), "::");
+
+        return name;
+    };
+
+    auto identity = [&name](const Node* n) {
+        return util::fmt("@%s:%p", util::tolower(name(n).substr(0, 1)), n->identity());
     };
 
     std::vector<std::string> props;
@@ -53,67 +62,16 @@ std::string Node::render(bool include_location) const {
     if ( ! props.empty() )
         sprops = util::fmt(" <%s>", util::join(props, " "));
 
-    // Prettify the name a bit.
-    auto name = typename_();
-    name = util::replace(name, "hilti::", "");
+    auto location = (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().dump(true)) : "";
+    auto no_inherit_scope = (inheritScope() ? "" : " (no-inherit-scope)");
+    auto parent = (_parent ? util::fmt(" [parent %s]", identity(_parent)) : " [no parent]");
 
-    if ( util::startsWith(name, "detail::") )
-        name = util::join(util::slice(util::split(name, "::"), 2), "::");
+    auto s = util::fmt("%s%s%s%s%s", name(this), sprops, parent, no_inherit_scope, location);
 
-    auto location = (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().render(true)) : "";
-    auto id = rid() ? util::fmt(" %s", renderedRid()) : "";
-    auto prune = (this->pruneWalk() ? " (prune)" : "");
+    if ( auto derived_render = _dump(); ! derived_render.empty() )
+        s += std::string(" ") + derived_render;
 
-    std::string type;
-
-    if ( auto x = this->tryAs<expression::ResolvedID>() )
-        type = util::fmt(" (type: %s [@t:%p])", x->type(), x->type().identity());
-
-    auto s = util::fmt("%s%s%s%s%s%s", name, id, sprops, type, prune, location);
-
-    if ( auto t = this->tryAs<Type>() ) {
-        std::vector<std::string> flags;
-
-        if ( type::isConstant(*t) )
-            flags.emplace_back("const");
-        else
-            flags.emplace_back("non-const");
-
-        s += util::fmt(" (%s)", util::join(flags, ", "));
-
-        if ( t->hasFlag(type::Flag::NoInheritScope) )
-            s += util::fmt(" (top-level scope)");
-
-        if ( auto tid = t->typeID() )
-            s += util::fmt(" (type-id: %s)", *tid);
-
-        if ( auto cppid = t->cxxID() )
-            s += util::fmt(" (cxx-id: %s)", *cppid);
-
-        if ( t->isWildcard() )
-            s += " (wildcard)";
-
-        s += (type::isResolved(t) ? " (resolved)" : " (not resolved)");
-    }
-
-    else if ( auto e = this->tryAs<Expression>() ) {
-        s += (e->isConstant() ? " (const)" : " (non-const)");
-        s += (type::isResolved(e->type()) ? " (resolved)" : " (not resolved)");
-    }
-
-    else if ( auto d = this->tryAs<Declaration>() ) {
-        s += util::fmt(" [canon-id: %s]", d->canonicalID() ? d->canonicalID().str() : "not set");
-
-        if ( auto t = this->tryAs<declaration::Type>() )
-            s += (type::isResolved(t->type()) ? " (resolved)" : " (not resolved)");
-
-        s += fmtDoc(d->documentation());
-    }
-
-    else if ( auto m = this->tryAs<Module>() )
-        s += fmtDoc(m->documentation());
-
-    s += util::fmt(" [@%s:%p]", util::tolower(name.substr(0, 1)), identity());
+    s += util::fmt(" [%s]", identity(this));
 
     // Format errors last on the line since they are not properly delimited.
     if ( hasErrors() )
@@ -130,44 +88,147 @@ std::string Node::render(bool include_location) const {
     return s;
 }
 
-void Node::print(std::ostream& out, bool compact) const { detail::printAST(*this, out, compact); }
+void Node::print(std::ostream& out, bool compact) const {
+    printer::print(out, const_cast<Node*>(this)->shared_from_this(), compact);
+}
 
 std::string Node::print() const {
     std::stringstream out;
-    detail::printAST(*this, out, true);
+    printer::print(out, const_cast<Node*>(this)->shared_from_this(), true);
     return out.str();
 }
 
-node::Properties operator+(const node::Properties& p1, const node::Properties& p2) {
-    node::Properties p;
-
-    for ( auto& i : p1 )
-        p.insert(i);
-
-    for ( auto& i : p2 )
-        p.insert(i);
-
-    return p;
-}
-
-void node::detail::flattenedChildren(const hilti::Node& n, node::Set<hilti::Node>* dst) {
-    const auto& children = n.children();
-    for ( const auto& i : children ) {
-        dst->insert(i);
-        flattenedChildren(i, dst);
-    }
-}
-
-static void _destroyChildrenRecursively(Node* n) {
-    for ( auto& c : n->children() ) {
-        if ( ! c.pruneWalk() )
-            _destroyChildrenRecursively(&c);
+void Node::replaceChild(ASTContext* ctx, const Node* old, NodePtr new_) {
+    for ( auto i = 0U; i < _children.size(); i++ ) {
+        if ( _children[i].get() == old ) {
+            setChild(ctx, i, std::move(new_));
+            return;
+        }
     }
 
-    n->children().clear();
+    logger().internalError("child not found");
+}
+
+void Node::replaceChildren(ASTContext* ctx, Nodes children) {
+    clearChildren();
+
+    for ( auto&& c : children )
+        addChild(ctx, std::move(c));
+}
+
+void Node::clearChildren() {
+    for ( auto& c : _children ) {
+        if ( c )
+            c->_clearParent();
+    }
+
+    _children.clear();
 }
 
 void Node::destroyChildren() {
-    _destroyChildrenRecursively(this);
-    children().clear();
+    for ( auto n : visitor::RangePostOrder(this->as<Node>(), "") ) {
+        if ( auto scope = n->scope() )
+            scope->clear();
+
+        n->clearChildren();
+    }
+}
+
+NodePtr Node::_newChild(ASTContext* ctx, NodePtr child) {
+    if ( child->_parent )
+        return node::deepcopy(ctx, child);
+    else
+        return child;
+}
+
+void Node::_checkThisForCastBackend() const {
+    if ( dynamic_cast<const QualifiedType*>(this) )
+        logger().internalError("as/tryAs/isA used on a QualifiedType; probably meant to use its type() instead");
+}
+
+NodePtr node::detail::deepcopy(ASTContext* ctx, const NodePtr& n, bool force) {
+    if ( ! n )
+        return nullptr;
+
+    if ( ! force && ! n->_parent )
+        return n;
+
+    auto clone = n->_clone(ctx);
+
+    for ( const auto& c : n->children() )
+        clone->addChild(ctx, c); // this will copy the children recursively (because they have a parent already)
+
+    return clone;
+}
+
+// Helper looking up an ID inside a node's direct scope, applying visibility rules.
+static std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> _lookupID(const ID& id, const Node* n) {
+    assert(n->scope());
+    auto resolved = n->scope()->lookupAll(id);
+
+    if ( resolved.empty() ) {
+        auto err = result::Error(util::fmt("unknown ID '%s'", id));
+        return std::make_pair(false, std::move(err));
+    }
+
+    if ( resolved.size() > 1 ) {
+        auto err = result::Error(util::fmt("ID '%s' is ambiguous", id));
+        return std::make_pair(true, std::move(err));
+    }
+
+    const auto& r = resolved.front();
+    assert(r.node);
+    const auto& d = r.node;
+
+    if ( d->isA<declaration::Module>() || d->isA<declaration::ImportedModule>() ) {
+        auto err = result::Error(util::fmt("cannot refer to module '%s' through an ID in this context", id));
+        return std::make_pair(true, std::move(err));
+    }
+
+    if ( r.external && d->linkage() != declaration::Linkage::Public ) {
+        bool ok = false;
+
+        // We allow access to types (and type-derived constants) to
+        // make it less cumbersome to define external hooks.
+
+        if ( d->isA<declaration::Type>() )
+            ok = true;
+
+        if ( auto c = d->tryAs<declaration::Constant>() ) {
+            if ( auto ctor = c->value()->tryAs<expression::Ctor>(); ctor && ctor->ctor()->isA<ctor::Enum>() )
+                ok = true;
+        }
+
+        if ( ! ok ) {
+            auto err = result::Error(util::fmt("'%s' has not been declared public", id));
+            return std::make_pair(true, std::move(err));
+        }
+    }
+
+    auto x = std::make_pair(resolved.front().node, ID(resolved.front().qualified));
+    return std::make_pair(true, std::move(x));
+}
+
+Result<std::pair<DeclarationPtr, ID>> Node::lookupID(const ID& id, const std::string_view& what) const {
+    for ( const auto* n = this; n; n = n->parent() ) {
+        if ( ! n->scope() )
+            continue;
+
+        auto [stop, resolved] = _lookupID(id, n);
+        if ( resolved )
+            // Found it.
+            return resolved;
+
+        if ( stop )
+            // Pass back error.
+            return std::move(resolved);
+
+        if ( ! n->inheritScope() ) {
+            // Advance to module scope directly.
+            while ( n->parent() && (! n->parent()->isA<declaration::Module>()) )
+                n = n->parent();
+        }
+    }
+
+    return result::Error(util::fmt("unknown ID '%s'", id));
 }

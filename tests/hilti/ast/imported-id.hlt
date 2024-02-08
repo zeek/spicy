@@ -1,5 +1,5 @@
 # @TEST-GROUP: no-jit
-# @TEST-EXEC: ${HILTIC} -c -D compiler,resolver,ast-final foo.hlt >output 2>&1
+# @TEST-EXEC: ${HILTIC} -c -D compiler,driver,resolver,ast-final foo.hlt >output 2>&1
 # @TEST-EXEC: btest-diff output
 
 @TEST-START-FILE foo.hlt

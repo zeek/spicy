@@ -1,4 +1,4 @@
-# @TEST-EXEC:  ${SCRIPTS}/printf '\x01\x02\x03' | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  ${SCRIPTS}/printf '\x01\x02\x03' | spicy-driver -D ast-stats -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 # @TEST-EXEC:  btest-diff .stderr
 #

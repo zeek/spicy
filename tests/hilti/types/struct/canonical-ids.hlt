@@ -1,7 +1,7 @@
 # @TEST-EXEC: hiltic -D ast-declarations -p %INPUT 2>output >/dev/null
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-DOC: Records internal canonical IDs for an example struct.
+# @TEST-DOC: Records internal canonical IDs for a set of declarations.
 
 module Foo {
 
@@ -16,6 +16,5 @@ s1.test("a", 3);
 
 # Anonymous struct ctor.
 [$foo=42, $bar="string"];
-
 
 }

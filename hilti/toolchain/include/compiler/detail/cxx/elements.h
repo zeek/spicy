@@ -12,6 +12,7 @@
 #include <hilti/rt/json-fwd.h>
 
 #include <hilti/ast/id.h>
+#include <hilti/ast/type.h>
 #include <hilti/base/id-base.h>
 #include <hilti/base/util.h>
 
@@ -59,9 +60,6 @@ using Attribute = Element<element::Type::Attribute>; /**< C++ function attribute
 using Linkage = Element<element::Type::Linkage>;     /**< C++ linkage specification */
 using Type = Element<element::Type::Type>;           /**< C++ type */
 
-/** Captures whether a `cxx::Expression` has LHS or RHS semantics. */
-enum class Side { LHS, RHS };
-
 /**
  * Represents a C++-side expression, stored as a string of the C++ code along
  * with a associated "side".
@@ -85,12 +83,12 @@ private:
     Side _side = Side::LHS;
 };
 
-extern std::string normalize_id(std::string id);
+extern std::string normalizeID(std::string id);
 
 /** A C++ ID. */
-class ID : public detail::IDBase<ID, normalize_id> {
+class ID : public detail::IDBase<ID, normalizeID> {
 public:
-    using Base = detail::IDBase<ID, normalize_id>;
+    using Base = detail::IDBase<ID, normalizeID>;
     using Base::IDBase;
     ID() = default;
     explicit ID(const ::hilti::ID& id) : Base(std::string(id)) {}
@@ -100,7 +98,7 @@ public:
     }
 
     /** Wrapper to construct an ID from an already normalized string name. */
-    static ID fromNormalized(std::string id) { return ID(std::move(id), Base::AlreadyNormalized()); }
+    static ID fromNormalized(const std::string& id) { return ID(id, Base::AlreadyNormalized()); }
 };
 
 extern void to_json(nlohmann::json& j, const cxx::ID& id);   // NOLINT
@@ -120,13 +118,13 @@ struct Local {
     Local(const Local&) = default;
     Local& operator=(Local&&) = default;
     Local& operator=(const Local&) = default;
-    Local(cxx::ID _id = {}, cxx::Type _type = {}, std::vector<cxx::Expression> _args = {},
-          std::optional<cxx::Expression> _init = {}, Linkage _linkage = {})
-        : id(std::move(_id)),
-          type(std::move(_type)),
-          args(std::move(_args)),
-          init(std::move(_init)),
-          linkage(std::move(_linkage)) {}
+    Local(cxx::ID id = {}, cxx::Type type = {}, std::vector<cxx::Expression> args = {},
+          std::optional<cxx::Expression> init = {}, Linkage linkage = {})
+        : id(std::move(id)),
+          type(std::move(type)),
+          args(std::move(args)),
+          init(std::move(init)),
+          linkage(std::move(linkage)) {}
 
     cxx::ID id;
     cxx::Type type;
@@ -188,14 +186,14 @@ struct Type {
     bool forward_decl_prio = false;
     bool no_using = false; // turned on automatically for types starting with "struct"
 
-    Type(cxx::ID _id = {}, cxx::Type _type = {}, std::string _inline_code = {}, bool _forward_decl = false,
-         bool _forward_decl_prio = false, bool _no_using = false)
-        : id(std::move(_id)),
-          type(std::move(_type)),
-          inline_code(std::move(_inline_code)),
-          forward_decl(_forward_decl),
-          forward_decl_prio(_forward_decl_prio),
-          no_using(_no_using) {}
+    Type(cxx::ID id = {}, cxx::Type type = {}, std::string inline_code = {}, bool forward_decl = false,
+         bool forward_decl_prio = false, bool no_using = false)
+        : id(std::move(id)),
+          type(std::move(type)),
+          inline_code(std::move(inline_code)),
+          forward_decl(forward_decl),
+          forward_decl_prio(forward_decl_prio),
+          no_using(no_using) {}
 
     bool operator==(const Type& other) const {
         return id == other.id && type == other.type && inline_code == other.inline_code &&

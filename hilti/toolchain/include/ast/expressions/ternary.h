@@ -2,43 +2,39 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 
 namespace hilti::expression {
 
 /** AST node for a ternary expression. */
-class Ternary : public NodeBase, public trait::isExpression {
+class Ternary : public Expression {
 public:
-    Ternary(Expression cond, Expression true_, Expression false_, Meta m = Meta())
-        : NodeBase({std::move(cond), std::move(true_), std::move(false_)}, std::move(m)) {}
+    auto condition() const { return child<Expression>(0); }
+    auto true_() const { return child<Expression>(1); }
+    auto false_() const { return child<Expression>(2); }
 
-    const auto& condition() const { return child<Expression>(0); }
-    const auto& true_() const { return child<Expression>(1); }
-    const auto& false_() const { return child<Expression>(2); }
-
-    bool operator==(const Ternary& other) const {
-        return condition() == other.condition() && true_() == other.true_() && false_() == other.false_();
+    QualifiedTypePtr type() const final {
+        // TODO(robin): Currently we enforce both having the same type; we
+        // might need to coerce to target type though.
+        return true_()->type();
     }
 
-    void setFalse(const Expression& expr) { children()[2] = expr; }
+    void setTrue(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 1, std::move(e)); }
+    void setFalse(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 2, std::move(e)); }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return false; }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return true_().isTemporary() || false_().isTemporary(); }
-    /** Implements `Expression` interface. */
-    const Type& type() const {
-        return true_().type();
-    } // TODO(robin): Currentluy we enforce both having the same type; we might need to coerce to target type though
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return false; }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const ExpressionPtr& true_,
+                       const ExpressionPtr& false_, const Meta& meta = {}) {
+        return std::shared_ptr<Ternary>(new Ternary(ctx, {cond, true_, false_}, meta));
+    }
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+protected:
+    Ternary(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
+
+    HILTI_NODE(hilti, Ternary)
 };
 
 } // namespace hilti::expression

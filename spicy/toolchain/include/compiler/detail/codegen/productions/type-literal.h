@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <hilti/ast/expressions/type.h>
 
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
@@ -16,21 +18,28 @@ namespace spicy::detail::codegen::production {
  * the parsing can for tell for sure that an instance of it must be coming
  * up. This is, e.g., the case for embedded objects.
  */
-class TypeLiteral : public ProductionBase, public spicy::trait::isLiteral {
+class TypeLiteral : public Production {
 public:
-    TypeLiteral(const std::string& symbol, spicy::Type type, const Location& l = location::None)
-        : ProductionBase(symbol, l), _type(std::move(type)) {}
+    TypeLiteral(ASTContext* ctx, const std::string& symbol, QualifiedTypePtr type, const Location& l = location::None)
+        : Production(symbol, l), _type(std::move(type)), _expr(hilti::expression::Type_::create(ctx, _type)) {}
 
-    Expression expression() const { return hilti::expression::Type_(_type); }
-    std::optional<spicy::Type> type() const { return _type; }
-    bool nullable() const { return false; }
-    bool eodOk() const { return nullable(); }
-    bool atomic() const { return true; }
-    int64_t tokenID() const { return static_cast<int64_t>(production::tokenID(hilti::util::fmt("%s", _type))); }
-    std::string render() const { return hilti::util::fmt("%s", _type); }
+    bool isAtomic() const final { return true; };
+    bool isEodOk() const final { return false; };
+    bool isLiteral() const final { return true; };
+    bool isNullable() const final { return false; };
+    bool isTerminal() const final { return true; };
+
+    ExpressionPtr expression() const final { return _expr; }
+    QualifiedTypePtr type() const final { return _type; };
+    int64_t tokenID() const final { return static_cast<int64_t>(Production::tokenID(_type->print())); }
+
+    std::string dump() const final { return _type->print(); }
+
+    SPICY_PRODUCTION
 
 private:
-    spicy::Type _type;
+    QualifiedTypePtr _type;
+    ExpressionPtr _expr;
 };
 
 } // namespace spicy::detail::codegen::production

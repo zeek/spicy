@@ -2,18 +2,13 @@
 
 #pragma once
 
-#include <cstddef>
 #include <map>
-#include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
-#include <hilti/ast/node-ref.h>
-#include <hilti/base/intrusive-ptr.h>
+#include <hilti/ast/forward.h>
 
 namespace hilti {
 
@@ -21,24 +16,43 @@ class Declaration;
 class ID;
 
 /**
- * Identifier scope. A scope maps identifiers to AST nodes (more precisely: to
- * references to AST nodes). An identifier can be mapped to more than one node.
+ * Scope mapping a set of identifiers to target declarations. An identifier can
+ * be mapped to more than one target.
  */
-class Scope : public intrusive_ptr::ManagedObject {
+class Scope {
 public:
     Scope() = default;
     ~Scope() = default;
 
-    void insert(NodeRef&& n);
-    void insert(const ID& id, NodeRef&& n);
+    /**
+     * Inserts a declaration into the scope.
+     *
+     * @param d declaration to insert
+     */
+    void insert(const DeclarationPtr& d);
+
+    /**
+     * Inserts a declaration into it's scope under a given ID.
+     *
+     * @param id ID to insert the declaration under, which does not need to match the declaration's own ID
+     * @param d declaration to insert
+     */
+    void insert(const ID& id, DeclarationPtr d);
+
+    /**
+     * Inserts a place-holder into the scope that let's lookup fail here if it
+     * would normally return that ID.
+     *
+     * @param id ID to insert the place-holder under
+     */
     void insertNotFound(const ID& id);
 
     /** Returns if there's at least one mapping for an ID.  */
     bool has(const ID& id) const { return ! _findID(id).empty(); }
 
-    /** Result typer for the lookup methods. */
+    /** Result type for the lookup methods. */
     struct Referee {
-        NodeRef node;          /**< node that ID maps to */
+        DeclarationPtr node;   /**< node that ID maps to */
         std::string qualified; /**< qualified ID with full path used to find it */
         bool external{};       /**< true if found in a different (imported) module  */
     };
@@ -66,7 +80,9 @@ public:
      * @param out stream to print to
      * @param prefix string to prefix each printed scope item with
      */
-    void render(std::ostream& out, const std::string& prefix = "") const;
+    void dump(std::ostream& out, const std::string& prefix = "") const;
+
+    std::string print() const;
 
     Scope(const Scope& other) = delete;
     Scope(Scope&& other) = delete;
@@ -74,17 +90,7 @@ public:
     Scope& operator=(Scope&& other) = delete;
 
 private:
-    // Specialized implementation for `NodeRef` hashing and equality checks for
-    // nodes referencing declarations.
-    struct NodeRefHash {
-        std::size_t operator()(const hilti::NodeRef& n) const;
-    };
-
-    struct NodeRefEqual {
-        bool operator()(const hilti::NodeRef& a, const hilti::NodeRef& b) const;
-    };
-
-    using ItemMap = std::map<std::string, std::unordered_set<NodeRef, NodeRefHash, NodeRefEqual>>;
+    using ItemMap = std::map<std::string, std::unordered_set<DeclarationPtr>>;
 
     std::vector<Referee> _findID(const ID& id, bool external = false) const;
     std::vector<Referee> _findID(const Scope* scope, const ID& id, bool external = false) const;

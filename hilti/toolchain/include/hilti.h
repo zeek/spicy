@@ -6,9 +6,8 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
-#include <hilti/compiler/coercion.h>
+#include <hilti/compiler/coercer.h>
 #include <hilti/compiler/driver.h>
 #include <hilti/compiler/jit.h>
 #include <hilti/compiler/plugin.h>
 #include <hilti/compiler/unit.h>
-#include <hilti/global.h>

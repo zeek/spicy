@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/rt/types/interval.h>
@@ -11,32 +12,32 @@
 
 namespace hilti::ctor {
 
-/** AST node for a interval constructor. */
-class Interval : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `interval` ctor. */
+class Interval : public Ctor {
 public:
-    using Value = hilti::rt::Interval;
+    const auto& value() const { return _value; }
 
-    Interval(Value interval, const Meta& m = Meta()) : NodeBase(nodes(type::Interval(m)), m), _interval(interval) {}
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    const auto& value() const { return _interval; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", to_string(_value)}};
+        return Ctor::properties() + p;
+    }
 
-    bool operator==(const Interval& other) const { return value() == other.value(); }
+    static auto create(ASTContext* ctx, hilti::rt::Interval v, const Meta& meta = {}) {
+        return std::shared_ptr<Interval>(
+            new Interval(ctx, {QualifiedType::create(ctx, type::Interval::create(ctx, meta), Constness::Const)}, v,
+                         meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"interval", to_string(_interval)}}; }
+protected:
+    Interval(ASTContext* ctx, Nodes children, hilti::rt::Interval v, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(v) {}
+
+    HILTI_NODE(hilti, Interval)
 
 private:
-    Value _interval;
+    hilti::rt::Interval _value;
 };
 
 } // namespace hilti::ctor

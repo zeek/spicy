@@ -2,40 +2,39 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/expression.h>
-#include <hilti/ast/id.h>
 
 namespace hilti::declaration {
 
-/** AST node for a declaration of a module property. */
-class Property : public DeclarationBase {
+/** AST node for a property declaration. */
+class Property : public Declaration {
 public:
-    Property(ID id, Meta m = Meta()) : DeclarationBase(nodes(std::move(id), node::none), std::move(m)) {}
+    auto expression() const { return childTryAs<::hilti::Expression>(0); }
 
-    Property(ID id, hilti::Expression attr, Meta m = Meta())
-        : DeclarationBase(nodes(std::move(id), std::move(attr)), std::move(m)) {}
+    std::string_view displayName() const final { return "property"; }
 
-    auto expression() const { return children()[1].tryAs<hilti::Expression>(); }
+    static auto create(ASTContext* ctx, ID id, Meta meta = {}) {
+        return std::shared_ptr<Property>(new Property(ctx, {}, std::move(id), std::move(meta)));
+    }
 
-    bool operator==(const Property& other) const { return id() == other.id() && expression() == other.expression(); }
+    static auto create(ASTContext* ctx, ID id, const ExpressionPtr& expr, Meta meta = {}) {
+        return std::shared_ptr<Property>(new Property(ctx, {expr}, std::move(id), std::move(meta)));
+    }
 
-    /** Implements `Declaration` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Declaration` interface. */
-    const ID& id() const { return child<ID>(0); }
-    /** Implements `Declaration` interface. */
-    Linkage linkage() const { return Linkage::Private; }
-    /** Implements `Declaration` interface. */
-    std::string displayName() const { return "property"; };
-    /** Implements `Declaration` interface. */
-    auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
+protected:
+    Property(ASTContext* ctx, Nodes children, ID id, Meta meta)
+        : Declaration(ctx, std::move(children), std::move(id), Linkage::Private, std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Property)
 };
+
+using PropertyPtr = std::shared_ptr<Property>;
+using Properties = std::vector<Property>;
 
 } // namespace hilti::declaration

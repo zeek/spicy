@@ -1,9 +1,6 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
-///
-/// Outputs paths and flags for using HILTI.
-///
-/// TODO: Currently we do not support installation outside of the built-tree
-/// and all values returned here are thus in-tree.
+//
+// Outputs paths and flags for using HILTI.
 
 #include <iostream>
 #include <list>

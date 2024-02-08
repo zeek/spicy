@@ -2,40 +2,57 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
+#include <hilti/ast/expression.h>
+#include <hilti/ast/types/void.h>
 
-#include <spicy/ast/aliases.h>
 #include <spicy/ast/types/unit-item.h>
 
 namespace spicy::type::unit::item {
 
-/** AST node for a unit property. */
-class Property : public hilti::NodeBase, public spicy::trait::isUnitItem {
+/**
+ * AST node for a unit sink.
+ */
+class Property : public unit::Item {
 public:
-    Property(ID id, std::optional<AttributeSet> attrs = {}, bool inherited = false, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), node::none, std::move(attrs)), std::move(m)), _inherited(inherited) {}
+    auto expression() const { return child<Expression>(0); }
+    auto attributes() const { return child<AttributeSet>(1); }
+    auto inherited() const { return _inherited; }
 
-    Property(ID id, Expression expr, std::optional<AttributeSet> attrs = {}, bool inherited = false, Meta m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(expr), std::move(attrs)), std::move(m)), _inherited(inherited) {}
+    QualifiedTypePtr itemType() const final { return child<QualifiedType>(2); }
 
-    const auto& id() const { return child<ID>(0); }
-    auto expression() const { return children()[1].tryAs<Expression>(); }
-    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
-    bool inherited() const { return _inherited; }
+    bool isResolved(hilti::node::CycleDetector* cd) const final { return true; }
 
-    bool operator==(const Property& other) const {
-        return id() == other.id() && expression() == other.expression() && attributes() == other.attributes();
+    std::string_view displayName() const final { return "unit property"; }
+
+    static auto create(ASTContext* ctx, ID id, AttributeSetPtr attrs, bool inherited = false, const Meta& meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        return std::shared_ptr<Property>(new Property(ctx,
+                                                      node::flatten(nullptr, attrs, hilti::type::Void::create(ctx)),
+                                                      std::move(id), false, meta));
     }
 
-    // Unit field interface
-    const Type& itemType() const { return type::void_; }
-    bool isResolved() const { return type::isResolved(itemType()); }
-    auto isEqual(const Item& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, ID id, ExpressionPtr expr, AttributeSetPtr attrs, bool inherited = false,
+                       const Meta& meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
 
-    // Node interface.
-    auto properties() const { return node::Properties{{"inherited", _inherited}}; }
+        return std::shared_ptr<Property>(
+            new Property(ctx, node::flatten(std::move(expr), attrs, hilti::type::Void::create(ctx)), std::move(id),
+                         inherited, meta));
+    }
+
+protected:
+    Property(ASTContext* ctx, Nodes children, ID id, bool inherited, const Meta& meta)
+        : unit::Item(ctx, std::move(children), std::move(id), meta), _inherited(inherited) {}
+
+    HILTI_NODE(spicy, Property)
 
 private:
     bool _inherited;

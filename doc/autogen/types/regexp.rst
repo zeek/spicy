@@ -36,7 +36,7 @@
     and will throw a runtime exception if used with a regular expression
     compiled from a set.
 
-.. spicy:method:: regexp::token_matcher regexp token_matcher False hilti::MatchState ()
+.. spicy:method:: regexp::token_matcher regexp token_matcher False spicy::MatchState ()
 
     Initializes state for matching regular expression incrementally
     against chunks of future input. The expression is considered anchored,

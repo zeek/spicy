@@ -2,37 +2,43 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/unknown.h>
 
 namespace hilti::type {
 
-/** AST node for a "result" type. */
-class Result : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isDereferenceable {
+/** AST node for an `result<T>` type. */
+class Result : public UnqualifiedType {
 public:
-    Result(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({type::unknown}, std::move(m)), _wildcard(true) {}
-    Result(Type ct, Meta m = Meta()) : TypeBase({std::move(ct)}, std::move(m)) {}
+    std::string_view typeClass() const final { return "result"; }
 
-    const Type& dereferencedType() const { return children()[0].as<Type>(); }
+    QualifiedTypePtr dereferencedType() const final { return child(0)->as<QualifiedType>(); }
 
-    bool operator==(const Result& other) const { return dereferencedType() == other.dereferencedType(); }
+    bool isAllocable() const final { return true; }
+    bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& t, Meta m = Meta()) {
+        return std::shared_ptr<Result>(new Result(ctx, {t}, std::move(m)));
+    }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<Result>(
+            new Result(ctx, Wildcard(), {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
+                       m));
+    }
 
-private:
-    bool _wildcard = false;
+protected:
+    Result(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Result(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, Wildcard(), {"result(*)"}, std::move(children), std::move(meta)) {}
+
+
+    HILTI_NODE(hilti, Result)
 };
 
 } // namespace hilti::type

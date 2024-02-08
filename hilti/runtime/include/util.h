@@ -364,8 +364,8 @@ constexpr auto transform_result_value(const C&) {
     else if constexpr ( std::is_same_v<C, Set<X>> ) {
         return Set<Y>();
     }
-
-    // No default value defined for type.
+    else
+        return std::vector<Y>(); // fallback
 }
 
 } // namespace detail
