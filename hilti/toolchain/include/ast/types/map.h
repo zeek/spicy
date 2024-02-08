@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
+#include <hilti/ast/forward.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/tuple.h>
 #include <hilti/ast/types/unknown.h>
@@ -13,99 +15,93 @@ namespace hilti::type {
 namespace map {
 
 /** AST node for a map iterator type. */
-class Iterator : public TypeBase,
-                 trait::isIterator,
-                 trait::isDereferenceable,
-                 trait::isAllocable,
-                 trait::isMutable,
-                 trait::isRuntimeNonTrivial,
-                 trait::isParameterized {
+class Iterator : public UnqualifiedType {
 public:
-    Iterator(Type ktype, Type vtype, bool const_, const Meta& m = Meta())
-        : TypeBase(nodes(type::Tuple({std::move(ktype), std::move(vtype)}, m)), m), _const(const_) {}
-    Iterator(Wildcard /*unused*/, bool const_ = true, Meta m = Meta())
-        : TypeBase(nodes(type::unknown, type::unknown), std::move(m)), _wildcard(true), _const(const_) {}
+    std::string_view typeClass() const final { return "iterator<map>"; }
 
-    const Type& keyType() const {
-        if ( auto t = children()[0].tryAs<type::Tuple>() )
-            return t->elements()[0].type();
-        else
-            return child<Type>(0);
+    QualifiedTypePtr keyType() const { return dereferencedType()->type()->as<type::Tuple>()->elements()[0]->type(); }
+    QualifiedTypePtr valueType() const { return dereferencedType()->type()->as<type::Tuple>()->elements()[1]->type(); }
+    QualifiedTypePtr dereferencedType() const final { return child<QualifiedType>(0); }
+
+    bool isAllocable() const final { return true; }
+    bool isMutable() const final { return true; }
+
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& ktype, const QualifiedTypePtr& vtype,
+                       const Meta& meta = {}) {
+        return std::shared_ptr<Iterator>(
+            new Iterator(ctx, {QualifiedType::create(ctx, type::Tuple::create(ctx, {ktype, vtype}), Constness::Const)},
+                         meta));
     }
 
-    const Type& valueType() const {
-        if ( auto t = children()[0].tryAs<type::Tuple>() )
-            return t->elements()[1].type();
-        else
-            return child<Type>(0);
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& meta = Meta()) {
+        return std::shared_ptr<Iterator>(
+            new Iterator(ctx, Wildcard(),
+                         {QualifiedType::create(
+                             ctx,
+                             type::Tuple::create(ctx, {QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
+                                                                             Constness::Const),
+                                                       QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
+                                                                             Constness::Const)}),
+                             Constness::Const)},
+                         meta));
     }
 
-    /** Returns true if the container elements aren't modifiable. */
-    bool isConstant() const { return _const; }
+protected:
+    Iterator(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Iterator(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, Wildcard(), {"iterator(map(*))"}, std::move(children), std::move(meta)) {}
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
-    /** Implements the `Type` interface. */
-    const Type& dereferencedType() const { return child<Type>(0); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"const", _const}}; }
-
-    bool operator==(const Iterator& other) const {
-        return keyType() == other.keyType() && valueType() == other.valueType();
+    bool isResolved(node::CycleDetector* cd) const final {
+        return keyType()->isResolved(cd) && valueType()->isResolved(cd);
     }
 
-private:
-    bool _wildcard = false;
-    bool _const = false;
+    HILTI_NODE(hilti, Iterator)
 };
 
 } // namespace map
 
-/** AST node for a map type. */
-class Map : public TypeBase,
-            trait::isAllocable,
-            trait::isMutable,
-            trait::isIterable,
-            trait::isRuntimeNonTrivial,
-            trait::isParameterized {
+/** AST node for a `map` type. */
+class Map : public UnqualifiedType {
 public:
-    Map(const Type& k, const Type& v, const Meta& m = Meta())
-        : TypeBase(nodes(map::Iterator(k, v, true, m), map::Iterator(k, v, false, m)), m) {}
-    Map(Wildcard /*unused*/, const Meta& m = Meta())
-        : TypeBase(nodes(map::Iterator(Wildcard{}, true, m), map::Iterator(Wildcard{}, false, m)), m),
-          _wildcard(true) {}
+    QualifiedTypePtr keyType() const { return iteratorType()->type()->as<map::Iterator>()->keyType(); }
+    QualifiedTypePtr valueType() const { return iteratorType()->type()->as<map::Iterator>()->valueType(); }
 
-    const Type& keyType() const { return child<map::Iterator>(0).keyType(); }
-    const Type& valueType() const { return child<map::Iterator>(0).valueType(); }
+    std::string_view typeClass() const final { return "map"; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const {
-        return type::detail::isResolved(iteratorType(true), rstate) &&
-               type::detail::isResolved(iteratorType(false), rstate);
+    QualifiedTypePtr iteratorType() const final { return child<QualifiedType>(0); }
+    QualifiedTypePtr elementType() const final { return valueType(); }
+
+    bool isAllocable() const final { return true; }
+    bool isMutable() const final { return true; }
+    bool isResolved(node::CycleDetector* cd) const final { return iteratorType()->isResolved(cd); }
+
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& ktype, const QualifiedTypePtr& vtype,
+                       const Meta& meta = {}) {
+        return std::shared_ptr<Map>(
+            new Map(ctx,
+                    {QualifiedType::create(ctx, map::Iterator::create(ctx, ktype, vtype, meta), Constness::NonConst)},
+                    meta));
     }
-    /** Implements the `Type` interface. */
-    const Type& elementType() const { return valueType(); }
-    /** Implements the `Type` interface. */
-    const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
 
-    bool operator==(const Map& other) const { return iteratorType(true) == other.iteratorType(true); }
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<Map>(
+            new Map(ctx, Wildcard(),
+                    {QualifiedType::create(ctx, map::Iterator::create(ctx, Wildcard(), m), Constness::NonConst)}, m));
+    }
 
-private:
-    bool _wildcard = false;
+protected:
+    Map(ASTContext* ctx, Nodes children, Meta meta) : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Map(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, Wildcard(), {"map(*)"}, std::move(children), std::move(meta)) {}
+
+
+    void newlyQualified(const QualifiedType* qtype) const final {
+        valueType()->setConst(qtype->constness());
+        iteratorType()->type()->dereferencedType()->setConst(qtype->constness());
+    }
+
+    HILTI_NODE(hilti, Map)
 };
 
 } // namespace hilti::type

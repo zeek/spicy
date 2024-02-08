@@ -2,23 +2,26 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
-#include <hilti/ast/meta.h>
-#include <hilti/ast/node.h>
 #include <hilti/ast/statement.h>
 
+#include <spicy/ast/forward.h>
+
 namespace spicy::statement {
-class Reject : public hilti::NodeBase, public hilti::trait::isStatement {
+
+/** AST node for a `break` statement. */
+class Reject : public Statement {
 public:
-    Reject(hilti::Meta m = hilti::Meta()) : hilti::NodeBase(std::move(m)) {}
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Reject>(new Reject(ctx, {}, std::move(meta)));
+    }
 
-    friend bool operator==(const Reject&, const Reject&) { return false; }
+protected:
+    Reject(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    // Statement interface.
-    auto isEqual(const hilti::Statement& other) const { return hilti::node::isEqual(this, other); }
-
-    // Node interface.
-    auto properties() const { return hilti::node::Properties{}; }
+    HILTI_NODE(spicy, Reject)
 };
+
 } // namespace spicy::statement

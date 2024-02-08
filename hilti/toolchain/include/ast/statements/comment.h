@@ -2,35 +2,50 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
 namespace hilti::statement {
 
 namespace comment {
 enum class Separator { After, BeforeAndAfter, Before };
+
+namespace detail {
+constexpr util::enum_::Value<Separator> Conventions[] = {
+    {Separator::After, "after"},
+    {Separator::BeforeAndAfter, "before-and-after"},
+    {Separator::Before, "before"},
+};
+} // namespace detail
+
+constexpr auto to_string(Separator cc) { return util::enum_::to_string(cc, detail::Conventions); }
+
 } // namespace comment
 
 /** AST node for an comment that will be passed through code generation.. */
-class Comment : public NodeBase, public hilti::trait::isStatement {
+class Comment : public Statement {
 public:
-    Comment(std::string comment, comment::Separator separator = comment::Separator::Before,
-            const Meta& /* m */ = Meta())
-        : _comment(std::move(comment)), _separator(separator) {}
-
     auto comment() const { return _comment; }
     auto separator() const { return _separator; }
 
-    bool operator==(const Comment& other) const { return comment() == other.comment(); }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"comment", _comment}, {"separator", to_string(_separator)}};
+        return Statement::properties() + p;
+    }
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, std::string comment, comment::Separator separator = comment::Separator::Before,
+                       Meta meta = {}) {
+        return std::shared_ptr<Comment>(new Comment(ctx, {}, std::move(comment), separator, std::move(meta)));
+    }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"comment", _comment}}; }
+protected:
+    Comment(ASTContext* ctx, Nodes children, std::string comment, comment::Separator separator, Meta meta)
+        : Statement(ctx, std::move(children), std::move(meta)), _comment(std::move(comment)), _separator(separator) {}
+
+    HILTI_NODE(hilti, Comment)
 
 private:
     std::string _comment;

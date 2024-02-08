@@ -2,27 +2,26 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
-#include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
-#include <spicy/ast/aliases.h>
+#include <spicy/ast/forward.h>
 
 namespace spicy::statement {
 
-/** AST node for Spicy's `stop` statement. */
-class Stop : public hilti::NodeBase, public hilti::trait::isStatement {
+/** AST node for a `break` statement. */
+class Stop : public Statement {
 public:
-    Stop(Meta m = Meta()) : hilti::NodeBase(std::move(m)) {}
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Stop>(new Stop(ctx, {}, std::move(meta)));
+    }
 
-    bool operator==(const Stop& /* other */) const { return true; }
+protected:
+    Stop(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    // Statement interface.
-    auto isEqual(const hilti::Statement& other) const { return hilti::node::isEqual(this, other); }
-
-    // Node interface.
-    auto properties() const { return hilti::node::Properties{}; }
+    HILTI_NODE(spicy, Stop)
 };
 
 } // namespace spicy::statement

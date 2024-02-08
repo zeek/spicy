@@ -83,10 +83,10 @@ TEST_CASE("cacheDirectory") {
     }
 }
 
-TEST_CASE("remove_duplicates") {
-    CHECK_EQ(hilti::util::remove_duplicates(std::vector<int>{}), std::vector<int>{});
-    CHECK_EQ(hilti::util::remove_duplicates(std::vector<int>{4, 3, 2, 1}), std::vector<int>{4, 3, 2, 1});
-    CHECK_EQ(hilti::util::remove_duplicates(std::vector<int>{7, 8, 3, 8, 3, 5, 0, 7}), std::vector<int>{7, 8, 3, 5, 0});
+TEST_CASE("removeDuplicates") {
+    CHECK_EQ(hilti::util::removeDuplicates(std::vector<int>{}), std::vector<int>{});
+    CHECK_EQ(hilti::util::removeDuplicates(std::vector<int>{4, 3, 2, 1}), std::vector<int>{4, 3, 2, 1});
+    CHECK_EQ(hilti::util::removeDuplicates(std::vector<int>{7, 8, 3, 8, 3, 5, 0, 7}), std::vector<int>{7, 8, 3, 5, 0});
 }
 
 TEST_SUITE_END();

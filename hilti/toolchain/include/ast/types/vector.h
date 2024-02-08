@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
@@ -12,80 +13,73 @@ namespace hilti::type {
 namespace vector {
 
 /** AST node for a vector iterator type. */
-class Iterator : public TypeBase,
-                 trait::isIterator,
-                 trait::isDereferenceable,
-                 trait::isAllocable,
-                 trait::isMutable,
-                 trait::isRuntimeNonTrivial,
-                 trait::isParameterized {
+class Iterator : public UnqualifiedType {
 public:
-    Iterator(Type etype, bool const_, Meta m = Meta())
-        : TypeBase(nodes(std::move(etype)), std::move(m)), _const(const_) {}
-    Iterator(Wildcard /*unused*/, bool const_ = true, Meta m = Meta())
-        : TypeBase(nodes(type::unknown), std::move(m)), _wildcard(true), _const(const_) {}
+    std::string_view typeClass() const final { return "iterator<vector>"; }
 
-    /** Returns true if the container elements aren't modifiable. */
-    bool isConstant() const { return _const; }
+    QualifiedTypePtr dereferencedType() const final { return child<QualifiedType>(0); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return type::detail::isResolved(dereferencedType(), rstate); }
-    /** Implements the `Type` interface. */
-    const Type& dereferencedType() const { return child<Type>(0); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"const", _const}}; }
+    bool isAllocable() const final { return true; }
+    bool isMutable() const final { return true; }
+    bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
 
-    bool operator==(const Iterator& other) const { return dereferencedType() == other.dereferencedType(); }
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& etype, Meta meta = {}) {
+        return std::shared_ptr<Iterator>(new Iterator(ctx, {etype}, std::move(meta)));
+    }
 
-private:
-    bool _wildcard = false;
-    bool _const = false;
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<Iterator>(
+            new Iterator(ctx, Wildcard(), {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
+                         m));
+    }
+
+protected:
+    Iterator(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Iterator(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, Wildcard(), {"iterator(vector(*))"}, std::move(children), std::move(meta)) {}
+
+
+    HILTI_NODE(hilti, Iterator)
 };
 
 } // namespace vector
 
-/** AST node for a vector type. */
-class Vector : public TypeBase,
-               trait::isAllocable,
-               trait::isMutable,
-               trait::isIterable,
-               trait::isRuntimeNonTrivial,
-               trait::isParameterized {
+/** AST node for a `vector` type. */
+class Vector : public UnqualifiedType {
 public:
-    Vector(const Type& t, const Meta& m = Meta())
-        : TypeBase(nodes(vector::Iterator(t, true, m), vector::Iterator(t, false, m)), m) {}
-    Vector(Wildcard /*unused*/, const Meta& m = Meta())
-        : TypeBase(nodes(vector::Iterator(Wildcard{}, true, m), vector::Iterator(Wildcard{}, false, m)), m),
-          _wildcard(true) {}
+    QualifiedTypePtr elementType() const final { return iteratorType()->type()->dereferencedType(); }
+    QualifiedTypePtr iteratorType() const final { return child<QualifiedType>(0); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const {
-        return type::detail::isResolved(iteratorType(true), rstate) &&
-               type::detail::isResolved(iteratorType(false), rstate);
+    std::string_view typeClass() const final { return "vector"; }
+
+    bool isAllocable() const final { return true; }
+    bool isMutable() const final { return true; }
+    bool isResolved(node::CycleDetector* cd) const final { return iteratorType()->isResolved(cd); }
+
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& t, const Meta& meta = {}) {
+        return std::shared_ptr<Vector>(
+            new Vector(ctx, {QualifiedType::create(ctx, vector::Iterator::create(ctx, t, meta), Constness::NonConst)},
+                       meta));
     }
-    /** Implements the `Type` interface. */
-    const Type& elementType() const { return child<vector::Iterator>(0).dereferencedType(); }
-    /** Implements the `Type` interface. */
-    const Type& iteratorType(bool const_) const { return const_ ? child<Type>(0) : child<Type>(1); }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return children(); }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
 
-    bool operator==(const Vector& other) const { return elementType() == other.elementType(); }
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<Vector>(
+            new Vector(ctx, Wildcard(),
+                       {QualifiedType::create(ctx, vector::Iterator::create(ctx, Wildcard(), m), Constness::NonConst)},
+                       m));
+    }
 
-private:
-    bool _wildcard = false;
+protected:
+    Vector(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Vector(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, Wildcard(), {"vector(*)"}, std::move(children), std::move(meta)) {}
+
+
+    void newlyQualified(const QualifiedType* qtype) const final { elementType()->setConst(qtype->constness()); }
+
+    HILTI_NODE(hilti, Vector)
 };
 
 } // namespace hilti::type

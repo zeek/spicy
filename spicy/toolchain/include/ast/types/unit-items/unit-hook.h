@@ -2,34 +2,43 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
 #include <utility>
 
-#include <spicy/ast/aliases.h>
+#include <hilti/ast/attribute.h>
+#include <hilti/ast/type.h>
+
+#include <spicy/ast/declarations/hook.h>
 #include <spicy/ast/types/unit-item.h>
-#include <spicy/ast/types/unit.h>
 
 namespace spicy::type::unit::item {
 
-/** AST node for a unit hook. */
-class UnitHook : public hilti::NodeBase, public spicy::trait::isUnitItem {
+/**
+ * AST node for a unit hook.
+ */
+class UnitHook : public unit::Item {
 public:
-    UnitHook(const ID& id, Hook hook, Meta m = Meta()) : NodeBase(nodes(id, std::move(hook)), std::move(m)) {
-        children()[1].as<Hook>().setID(id);
+    auto hook() const { return child<spicy::declaration::Hook>(0); }
+    auto location() const { return hook()->location(); }
+
+    QualifiedTypePtr itemType() const final { return hook()->function()->type(); }
+
+    bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
+
+    std::string displayName() const final { return "unit hook"; }
+
+    static auto create(ASTContext* ctx, const ID& id, spicy::declaration::HookPtr hook, const Meta& meta = {}) {
+        auto h = std::shared_ptr<UnitHook>(new UnitHook(ctx, {std::move(hook)}, id, meta));
+        h->hook()->setID(id);
+        return h;
     }
 
-    const auto& id() const { return child<ID>(0); }
-    const auto& hook() const { return child<Hook>(1); }
-    const auto& location() const { return children()[0].location(); }
+protected:
+    UnitHook(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
+        : unit::Item(ctx, std::move(children), std::move(id), meta) {}
 
-    bool operator==(const UnitHook& other) const { return id() == other.id() && hook() == other.hook(); }
-
-    // Unit field interface
-    const Type& itemType() const { return hook().function().type(); }
-    bool isResolved() const { return type::isResolved(itemType()); }
-    auto isEqual(const Item& other) const { return node::isEqual(this, other); }
-
-    // Node interface.
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(spicy, UnitHook)
 };
 
 } // namespace spicy::type::unit::item

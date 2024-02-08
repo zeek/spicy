@@ -3,6 +3,7 @@
 #pragma once
 
 #include <spicy/ast/types/unit-items/field.h>
+#include <spicy/ast/types/unit-items/property.h>
 #include <spicy/ast/types/unit-items/sink.h>
 #include <spicy/ast/types/unit-items/switch.h>
 #include <spicy/ast/types/unit-items/unit-hook.h>

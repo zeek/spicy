@@ -6,7 +6,7 @@
     recent ``&try`` attribute. Turns into a parse error if there's no
     ``&try`` in scope.
 
-.. spicy:method:: unit::connect_filter unit connect_filter False void (filter: strong_ref<unit>)
+.. spicy:method:: unit::connect_filter unit connect_filter False void (inout filter: strong_ref<unit>)
 
     Connects a separate filter unit to transform the unit's input
     transparently before parsing. The filter unit will see the original
@@ -16,12 +16,12 @@
     Filters can be connected only before a unit's parsing begins. The
     latest possible point is from inside the target unit's ``%init`` hook.
 
-.. spicy:method:: unit::context unit context False <context>& ()
+.. spicy:method:: unit::context unit context False <context~type>& ()
 
     Returns a reference to the ``%context`` instance associated with the
     unit.
 
-.. spicy:method:: unit::find unit find False optional<iterator<stream>> (needle: bytes, [ dir: enum ], [ start: iterator<stream> ])
+.. spicy:method:: unit::find unit find False optional<iterator<stream>> (needle: bytes, [ dir: spicy::Direction ], [ start: iterator<stream> ])
 
     Searches a *needle* pattern inside the input region defined by where
     the unit began parsing and its current parsing position. If executed
@@ -64,9 +64,7 @@
 
     Returns an iterator to the current position in the unit's input
     stream. If executed from inside a field hook, the position will
-    represent the first byte that the field has been parsed from. If this
-    method is called before the unit's parsing has begun, it will throw a
-    runtime exception.
+    represent the first byte that the field has been parsed from.
 
 .. spicy:method:: unit::set_input unit set_input False void (i: iterator<stream>)
 
@@ -76,18 +74,18 @@
 
 .. rubric:: Operators
 
-.. spicy:operator:: unit::HasMember bool t:unit <sp> op:?. <sp> t:<field>
+.. spicy:operator:: unit::HasMember <field~type> t:<unit> <sp> op:?. <sp> t:<field>
 
     Returns true if the unit's field has a value assigned (not counting
     any ``&default``).
 
-.. spicy:operator:: unit::Member <field~type> t:unit <sp> op:. <sp> t:<field>
+.. spicy:operator:: unit::Member <field~type> t:<unit> <sp> op:. <sp> t:<field>
 
     Retrieves the value of a unit's field. If the field does not have a
     value assigned, it returns its ``&default`` expression if that has
     been defined; otherwise it triggers an exception.
 
-.. spicy:operator:: unit::TryMember <field~type> t:unit <sp> op:.? <sp> t:<field>
+.. spicy:operator:: unit::TryMember <field~type> t:<unit> <sp> op:.? <sp> t:<field>
 
     Retrieves the value of a unit's field. If the field does not have a
     value assigned, it returns its ``&default`` expression if that has

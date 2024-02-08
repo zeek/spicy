@@ -11,6 +11,7 @@ Checks: '
   -bugprone-unchecked-optional-access,
   -bugprone-switch-missing-default-case,
   -bugprone-empty-catch,
+  -bugprone-forward-declaration-namespace,
 
   cert-*,
   -cert-dcl37-c,
@@ -55,19 +56,18 @@ Checks: '
   -readability-container-size-empty,
   -readability-convert-member-functions-to-static,
   -readability-else-after-return,
-  -readability-implicit-bool-conversion,
+  -readability-function-cognitive-complexity,
+  -readability-function-size,
   -readability-identifier-length,
+  -readability-implicit-bool-conversion,
   -readability-magic-numbers,
   -readability-make-member-function-const,
   -readability-named-parameter,
   -readability-qualified-auto,
-  -readability-function-cognitive-complexity,
-  -readability-function-size,
+  -readability-simplify-boolean-expr,
+  -readability-use-anyofallof,
+  -readability-identifier-naming
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'
 WarningsAsErrors: '*'
-
-CheckOptions:
-      - key:             performance-unnecessary-value-param.AllowedTypes
-        value:           hilti::NodeRef

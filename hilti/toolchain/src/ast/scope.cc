@@ -5,38 +5,22 @@
 #include <hilti/rt/util.h>
 
 #include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/module.h>
+#include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/scope.h>
+#include <hilti/ast/type.h>
+
 
 using namespace hilti;
 
-std::size_t Scope::NodeRefHash::operator()(const hilti::NodeRef& n) const {
-    if ( n ) {
-        const auto& l = n->location();
-        return rt::hashCombine(std::hash<std::string>()(l.file()), l.from(), l.to());
-    }
+void Scope::insert(const ID& id, DeclarationPtr&& d) { _items[id].insert(std::move(d)); }
+void Scope::insert(DeclarationPtr&& d) { _items[d->id()].insert(d); }
 
-    return 0;
-}
-
-bool Scope::NodeRefEqual::operator()(const hilti::NodeRef& a, const hilti::NodeRef& b) const {
-    const auto& a_ = a->as<Declaration>();
-    const auto& b_ = b->as<Declaration>();
-    return a_ == b_;
-}
-
-void Scope::insert(const ID& id, NodeRef&& n) { _items[id].insert(std::move(n)); }
-
-void Scope::insert(NodeRef&& n) {
-    assert(n && n->isA<Declaration>());
-    const auto& d = n->as<Declaration>();
-    insert(d.id(), std::move(n));
-}
-
-void Scope::insertNotFound(const ID& id) { _items[std::string(id)] = {NodeRef(node::none)}; }
+void Scope::insertNotFound(const ID& id) { _items[std::string(id)] = {nullptr}; }
 
 static auto createRefs(const std::vector<Scope::Referee>& refs, const std::string& ns, bool external) {
     std::vector<Scope::Referee> result;
@@ -56,15 +40,17 @@ static auto createRefs(const NodeSet& refs, const std::string& id, bool external
     std::vector<Scope::Referee> result;
     result.reserve(refs.size());
 
-    std::transform(refs.begin(), refs.end(), std::back_inserter(result), [&](const auto& n) {
-        return Scope::Referee{.node = NodeRef(n), .qualified = id, .external = external};
-    });
+    std::transform(refs.begin(), refs.end(), std::back_inserter(result),
+                   [&](const auto& n) { return Scope::Referee{.node = n, .qualified = id, .external = external}; });
 
     return result;
 }
 
 
 std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, bool external) const {
+    if ( ! scope )
+        return {};
+
     // Try all subpaths.
     //
     // TODO: This method needs a cleanup, pretty ugly.
@@ -82,10 +68,10 @@ std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, boo
                 return createRefs(i->second, h, external);
 
             for ( const auto& v : (*i).second ) {
-                Scope* scope_ = v->scope().get();
+                Scope* scope_ = v->scope();
 
                 if ( auto m = v->tryAs<declaration::Module>() )
-                    scope_ = m->root().scope().get();
+                    scope_ = m->scope();
 
                 auto e = v->isA<declaration::ImportedModule>();
 
@@ -104,19 +90,25 @@ std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, boo
 
 std::vector<Scope::Referee> Scope::_findID(const ID& id, bool external) const { return _findID(this, id, external); }
 
-void Scope::render(std::ostream& out, const std::string& prefix) const {
+void Scope::dump(std::ostream& out, const std::string& prefix) const {
     for ( const auto& [k, v] : items() ) {
+        if ( v.empty() ) {
+            out << util::fmt("%s%s -> <stop-lookup-here>\n", prefix, k);
+            continue;
+        }
+
         for ( const auto& x : v ) {
             if ( ! x ) {
                 out << util::fmt("%s%s -> <invalid-ref>\n", prefix, k);
                 continue;
             }
 
-            auto s = util::fmt("%s%s -> %s", prefix, k, x->render(false));
+            auto s = util::fmt("%s%s -> %s", prefix, k, x->renderSelf(false));
 
             if ( x ) {
                 if ( auto d = x->tryAs<declaration::Expression>() )
-                    s += util::fmt(" (type: %s @t:%p)", d->expression().type(), d->expression().type().identity());
+                    s += util::fmt(" (type: [@e:%s] [@t:%s])", d->expression()->type()->identity(),
+                                   d->expression()->type()->identity());
                 else
                     s += util::fmt(" ([@d:%p])", x->identity());
             }
@@ -124,4 +116,10 @@ void Scope::render(std::ostream& out, const std::string& prefix) const {
             out << s << '\n';
         }
     }
+}
+
+std::string Scope::print() const {
+    std::stringstream ss;
+    dump(ss);
+    return ss.str();
 }

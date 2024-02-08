@@ -2,414 +2,582 @@
 
 #pragma once
 
+#include <unistd.h>
+
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <typeinfo>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
+#include <hilti/ast/ast-context.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/node.h>
-#include <hilti/base/type_erase.h>
-#include <hilti/base/util.h>
+#include <hilti/ast/visitor.h>
 
 namespace hilti {
 
-namespace trait {
-/** Trait for classes implementing the `Type` interface. */
-class isType : public isNode {};
-} // namespace trait
-
-class Type;
+namespace builder {
+class NodeBuilder;
+}
 
 namespace declaration {
 class Parameter;
-}
+class Type;
+} // namespace declaration
+
+namespace type::function {
+using Parameter = declaration::Parameter;
+} // namespace type::function
 
 namespace type {
 
-namespace function {
-using Parameter = declaration::Parameter;
+/** Strong type argument for type constructors. */
+struct Wildcard {
+    explicit Wildcard() = default;
+};
+
+/** Strong type argument to `Unification` constructor. */
+struct NeverMatch {
+    explicit NeverMatch() = default;
+};
+
+namespace detail {
+using ResolvedState = std::unordered_set<uintptr_t>;
 }
 
-namespace trait {
-class isAllocable {};
-class isSortable {};
-class isDereferenceable {};
-class isIterable {};
-class isIterator {};
-class isMutable {};
-class isParameterized {};
-class isReferenceType {};
-class isRuntimeNonTrivial {};
-class isView {};
-class isViewable {};
-class supportsWildcard {};
-class takesArguments {};
-} // namespace trait
+} // namespace type
 
-using ResolvedState = std::unordered_set<uintptr_t>;
+namespace type {
 
-/** Additional flags to associated with types. */
-enum class Flag {
-    /** Set to make the type `const`. */
-    Constant = (1U << 0U),
-
-    /** Set to make the type `non-const`. */
-    NonConstant = (1U << 1U),
+/**
+ * Represent a type's unification string. Two types with the same unification
+ * string are considered equivalent during AST processing.
+ */
+struct Unification {
+    /** Creates a unset unification string, which will never match any other. */
+    Unification() = default;
 
     /**
-     * Marks the type as having a top-level scope that does not derive scope content
-     * from other nodes above it in the AST (except for truly global IDs).
+     * Create a unification from a pre-computed serialization string.
+     *
+     * @param serialization string representation of the unification; must not be empty
      */
-    NoInheritScope = (1U << 2U),
-
-    /** When walking over an AST, skip this node's children. This allows to
-     * break cycles. */
-    PruneWalk = (1U << 3U),
-};
-
-/**
- * Stores a set of flags associated with a type.
- *
- * TODO: Replace with 3rd-party/ArticleEnumClass-v2/EnumClass.h
- */
-class Flags {
-public:
-    Flags() = default;
-    Flags(Flag f) : _flags(static_cast<uint64_t>(f)) {}
-    Flags(const Flags&) = default;
-    Flags(Flags&&) noexcept = default;
-    ~Flags() = default;
-
-    /** Returns true if a given flag has been set. */
-    bool has(Flag f) const { return _flags & static_cast<uint64_t>(f); }
-
-    /** Sets (or clear) a given flag. */
-    void set(type::Flag flag, bool set = true) {
-        if ( set )
-            _flags |= static_cast<uint64_t>(flag);
-        else
-            _flags &= ~static_cast<uint64_t>(flag);
+    Unification(std::string serialization) : _serialization(std::move(serialization)) {
+        assert(! _serialization->empty());
     }
 
-    Flags operator+(Flag f) {
-        auto x = Flags(*this);
-        x.set(f);
-        return x;
+    /**
+     * Create a unification that's guaranteed to never match any other unification.
+     *
+     * @param never_match unused
+     */
+    Unification(NeverMatch _) : _serialization("") {}
+
+    Unification(const Unification& other) = default;
+    Unification(Unification&& other) = default;
+    ~Unification() = default;
+
+    Unification& operator=(const Unification& other) = default;
+    Unification& operator=(Unification&& other) = default;
+
+    /**
+     * Returns a string representation of the unification string. This is
+     * human-readable for display purposes.
+     */
+    std::string str() const {
+        if ( ! _serialization.has_value() )
+            return "<unset>";
+
+        if ( _serialization->empty() )
+            return "<never-match>";
+
+        return *_serialization;
     }
 
-    Flags operator+(const Flags& other) const {
-        auto x = Flags();
-        x._flags = _flags | other._flags;
-        return x;
+    /** Forwards to `str()`. */
+    operator std::string() const { return str(); }
+
+    /** Returns true if unification string has been set. */
+    operator bool() const { return _serialization.has_value(); }
+
+    /**
+     * Returns true if two unifications are equivalent. Will always return
+     * false if any of the is set to never-match, or not set at all.
+     */
+    bool operator==(const Unification& other) const {
+        if ( ! (_serialization.has_value() && other._serialization.has_value()) )
+            return false;
+
+        if ( _serialization->empty() || other._serialization->empty() )
+            return false;
+
+        return *_serialization == *other._serialization;
     }
 
-    Flags& operator+=(Flag f) {
-        set(f);
-        return *this;
-    }
-    Flags& operator+=(const Flags& other) {
-        _flags |= other._flags;
-        return *this;
-    }
-
-    Flags operator-(const Flags& other) const {
-        auto x = Flags();
-        x._flags = _flags & ~other._flags;
-        return x;
-    }
-
-    Flags& operator-=(Flag f) {
-        set(f, false);
-        return *this;
-    }
-    Flags& operator-=(const Flags& other) {
-        _flags &= ~other._flags;
-        return *this;
-    }
-
-    Flags& operator=(Flag f) {
-        set(f);
-        return *this;
-    }
-    Flags& operator=(const Flags&) = default;
-    Flags& operator=(Flags&&) noexcept = default;
-
-    bool operator==(Flags other) const { return _flags == other._flags; }
-
-    bool operator!=(Flags other) const { return _flags != other._flags; }
+    bool operator!=(const Unification& other) const { return ! (*this == other); }
 
 private:
-    uint64_t _flags = 0;
+    std::optional<std::string> _serialization; // set but empty means never-match
 };
+} // namespace type
 
-inline Flags operator+(Flag f1, Flag f2) { return Flags(f1) + f2; }
 
-namespace detail {
+namespace type {
 
-struct State {
-    std::optional<ID> id;
-    std::optional<ID> cxx;
-    std::optional<ID> resolved_id;
-    type::Flags flags;
-};
+/**
+ * Follows any `type::Name` reference chains to the actual, eventual type.
+ *
+ * Note that you will rarely need to call this function manually because
+ * `QualifiedType::type()` follows type chains automatically by default. Doing
+ * it that way is always preferred to calling `follow()` manually.
+ *
+ * @returns The eventual type found at the end of the chain. If there's not
+ * `type::Name` encountered,  that's `t` itself. If a `type::Name` is
+ * encountered that has not been resolved yet, returns that `type::Name` itself.
+ */
+extern UnqualifiedTypePtr follow(const UnqualifiedTypePtr& t);
 
-#include <hilti/autogen/__type.h>
-} // namespace detail
+/**
+ * Follows any `type::Name` reference chains to the actual, eventual type.
+ *
+ * Note that you will rarely need to call this function manually because
+ * `QualifiedType::type()` follows type chains automatically by default. Doing
+ * it that way is always preferred to calling `follow()` manually.
+ *
+ * @returns The eventual type found at the end of the chain. If there's not
+ * `type::Name` encountered,  that's `t` itself. If a `type::Name` is
+ * encountered that has not been resolved yet, returns that `type::Name` itself.
+ */
+extern UnqualifiedType* follow(UnqualifiedType* t);
 
 } // namespace type
 
-class Type : public type::detail::Type {
+/** * Base class for classes implementing unqualified types. */
+class UnqualifiedType : public Node {
 public:
-    using type::detail::Type::Type;
+    ~UnqualifiedType() override;
 
-    std::optional<ID> resolvedID() const { return _state().resolved_id; }
+    /**
+     * Returns the index the AST context associates with the type. This may
+     * become set during AST resolving. If not set yet, returns `None`.
+     */
+    auto typeIndex() const { return _type_index; }
 
-    void setCxxID(ID id) {
-        // We always normalize cxx IDs so they refer to fully qualified names.
-        if ( ! util::startsWith(id, "::") )
-            _state().cxx = util::fmt("::%s", id);
-        else
-            _state().cxx = std::move(id);
+    /**
+     * Returns the index the AST context associates with the declaration
+     * declaring this type. This may become set during AST resolving. If not
+     * set yet, returns `None`.
+     */
+    auto declarationIndex() const { return _declaration_index; }
+
+    /**
+     * Sets the type's declaration index that the context maintains. Note that
+     * this does not update any state inside the context, so ensure setting it
+     * to something valid.
+     *
+     * @param index index to set
+     */
+    void setDeclarationIndex(ast::DeclarationIndex index) {
+        assert(index);
+        _declaration_index = index;
     }
 
-    void setTypeID(ID id) { _state().id = std::move(id); }
-    void addFlag(type::Flag f) { _state().flags += f; }
+    /**
+     * Returns the declaration declaring this type, or null if none. This is a
+     * shortcut for retrieving the `decclarationIndex()` and then looking it up
+     * in the AST context. That means, the index must have been set for this to
+     * return anything.
+     */
+    std::shared_ptr<declaration::Type> typeDeclaration() const;
 
-    /** Implements the `Type` interface. */
-    bool hasFlag(type::Flag f) const { return _state().flags.has(f); }
-    /** Implements the `Type` interface. */
-    const type::Flags& flags() const { return _state().flags; }
-    /** Implements the `Type` interface. */
-    bool _isConstant() const { return _state().flags.has(type::Flag::Constant); }
-    /** Implements the `Type` interface. */
-    const std::optional<ID>& typeID() const { return _state().id; }
-    /** Implements the `Type` interface. */
-    const std::optional<ID>& cxxID() const { return _state().cxx; }
-    /** Implements the `Type` interface. */
-    const type::detail::State& _state() const { return _state_; }
-    /** Implements the `Type` interface. */
-    type::detail::State& _state() { return _state_; }
-    /** Implements the `Node` interface. */
-    bool pruneWalk() const { return hasFlag(type::Flag::PruneWalk); }
+    /**
+     * Returns the C++ ID associated with this type, if any. This is a shortcut
+     * to retrieving the associated declaration's C++ ID, which is set through
+     * a `&cxxname` attribute.
+     */
+    ID cxxID() const;
+
+    /**
+     * Returns the ID associated with this type, if any. This is a shortcut to
+     * retrieving the associated declaration's fully-qualified ID, if
+     * available.
+     */
+    ID typeID() const;
+
+    /**
+     * Returns the canonical ID associated with this type, if any. This is a
+     * shortcut to retrieving the associated declaration's canonical ID, if
+     * available.
+     */
+    ID canonicalID() const;
+
+    /**
+     * Returns true if the type is a wildcard type. That means that all other
+     * instances of the same type class coerce into this type, independent of
+     * any further parameters or other AST child nodes. In HILTI source code,
+     * this typically corresponds to a type `T<*>`.
+     */
+    bool isWildcard() const { return _is_wildcard; }
+
+    /** Returns the type's current unification string. */
+    const auto& unification() const { return _unification; }
+
+    /**
+     * Returns true if the type was declaraed with the `&on-heap` attribute
+     * set. This requires the type to have a `declarationIndex()` already,
+     * otherwise it will default to false.
+     */
+    bool isOnHeap() const;
+
+    /**
+     * Attempts to set the type unification string for this type. If it can't
+     * be set (yet), returns false. If it's already set, returns true without
+     * changing anything.
+     */
+    bool unify(ASTContext* ctx, const NodePtr& scope_root = nullptr);
+
+    /**
+     * Sets the type's unification string explicitly. Should normally be called
+     * only by the type unifier.
+     *
+     * @param u unification string to set
+     */
+    void setUnification(type::Unification u) { _unification = std::move(u); }
+
+    /**
+     * Returns a static string that's descriptive and unique for all instances
+     * of this type class. This is used to determine whether two types are of
+     * the same class when comparing them for equality.
+     */
+    virtual std::string_view typeClass() const = 0;
+
+    /**
+     * For deferenceable types, returns the type of dereferenced elements.
+     * Returns null for all other types.
+     */
+    virtual QualifiedTypePtr dereferencedType() const { return {}; }
+
+    /**
+     * For container types, returns the type of elements. Returns null for all
+     * other types.
+     */
+    virtual QualifiedTypePtr elementType() const { return {}; }
+
+    /**
+     * For iterable types, returns the type of an iterator. Returns null for
+     * all other types.
+     */
+    virtual QualifiedTypePtr iteratorType() const { return {}; }
+
+    /** Returns any parameters the type expects on construction. */
+    virtual hilti::node::Set<type::function::Parameter> parameters() const { return {}; }
+
+    /**
+     * For viewable types, returns the type of a view. Returns null for all
+     * other types.
+     */
+    virtual QualifiedTypePtr viewType() const { return {}; }
+
+    /** Returns true for types that can be used to instantiate variables. */
+    virtual bool isAllocable() const { return false; }
+
+    /** Returns true for types for which values can be modified after creation. */
+    virtual bool isMutable() const { return false; }
+
+    /** Returns true for types that are compared by name, not structurally. */
+    virtual bool isNameType() const { return false; }
+
+    /** Returns true for HILTI types that implement a reference to another type. */
+    virtual bool isReferenceType() const { return false; }
+
+    /** * Returns true if a type is fully resolved. */
+    virtual bool isResolved(node::CycleDetector* cd = nullptr) const { return true; }
+
+    /** Returns true for HILTI types that can be compared for ordering at runtime. */
+    virtual bool isSortable() const { return false; }
+
+    /**
+     * For internal use. Called when an unqualified type has been embedded into
+     * a qualified type, allowing the former to adjust for constness if
+     * necessary.
+     *
+     * @param qtype the qualified type now embedding this type
+     */
+    virtual void newlyQualified(const QualifiedType* qtype) const {}
+
+    hilti::node::Properties properties() const override;
+
+protected:
+    friend class ASTContext;
+    friend UnqualifiedTypePtr hilti::type::follow(const UnqualifiedTypePtr& t);
+    friend UnqualifiedType* hilti::type::follow(UnqualifiedType* t);
+
+    UnqualifiedType(ASTContext* ctx, type::Unification&& u, Meta meta)
+        : Node::Node(ctx, std::move(meta)), _context(ctx), _unification(std::move(u)) {}
+    UnqualifiedType(ASTContext* ctx, type::Unification&& u, Nodes children, Meta meta)
+        : Node::Node(ctx, std::move(children), std::move(meta)), _context(ctx), _unification(std::move(u)) {}
+    UnqualifiedType(ASTContext* ctx, type::Wildcard _, type::Unification&& u, const Meta& meta)
+        : Node::Node(ctx, {}, meta), _context(ctx), _unification(std::move(u)), _is_wildcard(true) {}
+    UnqualifiedType(ASTContext* ctx, type::Wildcard _, type::Unification&& u, Nodes children, Meta meta)
+        : Node::Node(ctx, std::move(children), std::move(meta)),
+          _context(ctx),
+          _unification(std::move(u)),
+          _is_wildcard(true) {}
+
+    // Returns the AST context that this type is part of.
+    auto context() const { return _context; }
+
+    // For the AST context to set the declaration index.
+    void setTypeIndex(ast::TypeIndex index) {
+        assert(index);
+        _type_index = index;
+    }
+
+    /** Implements `Node` interface. */
+    std::string _dump() const override;
+
+    HILTI_NODE_BASE(hilti, Type);
+
+private:
+    ASTContext* _context;
+
+    type::Unification _unification;           // types unification string if known yet
+    bool _is_wildcard = false;                // true if types is presenting a wildcard type
+    ast::TypeIndex _type_index;               // type index associated with the type, if any
+    ast::DeclarationIndex _declaration_index; // type index associated with the type, if any
 };
 
-/** Creates an AST node representing a `Type`. */
-inline Node to_node(Type t) { return Node(std::move(t)); }
+/** Selects left-hand-side or right-hand-side semantics for an expression. */
+enum class Side { LHS, RHS };
 
-/** Renders a type as HILTI source code. */
-inline std::ostream& operator<<(std::ostream& out, Type t) { return out << to_node(std::move(t)); }
+/** Selects constant or non-constant semantics for an expression. */
+enum Constness { Const, NonConst };
 
-/**
- * Base class for classes implementing the `Type` interface. This class
- * provides implementations for some interface methods shared that are shared
- * by all types.
- */
-class TypeBase : public NodeBase, public hilti::trait::isType {
+/** AST node presenting a type along with associated constness and RHS/LHS semantics. */
+class QualifiedType : public Node {
 public:
-    using NodeBase::NodeBase;
+    /**
+     * Returns the underlying type. By default, this follows any `type::Name` references.
+     *
+     * @param follow if true, follows any `type::Name` references to the actual type
+     */
+    UnqualifiedTypePtr type(bool follow = true) const { return follow ? type::follow(_type()) : _type(); }
+
+    /** Returns true if the qualified type is constant. */
+    bool isConstant() const { return _constness == Const; }
+
+    /** Returns the type's constness. */
+    auto constness() const { return _constness; }
+
+    /**
+     * Returns true if the underlying unqualified type is fully resolved. This
+     * method recurses through any subtypes (but avoids getting tripped up by
+     * cycles).
+     */
+    bool isResolved(node::CycleDetector* cd = nullptr) const;
+
+    /** Returns true if the type is a wildcard type. */
+    bool isWildcard() const { return _type()->isWildcard(); }
+
+    /** Returns true if the type is `auto`. */
+    bool isAuto() const;
+
+    /** Returns the type's "sideness". */
+    auto side() const { return _side; }
+
+    /**
+     * Sets the constness of the type.
+     *
+     * @param is_const true if the type is constant
+     */
+    void setConst(Constness constness) { _constness = constness; }
+
+    /** Implements `Node` interface. */
+    hilti::node::Properties properties() const override;
+
+    /**
+     * Factory method.
+     *
+     * @param ctx context to use
+     * @param t underlying type to wrap
+     * @param is_constant true if the type is constant
+     * @param m meta data to attach
+     */
+    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_, Meta m = Meta()) {
+        if ( ! m )
+            m = t->meta();
+
+        auto qt = std::shared_ptr<QualifiedType>(new QualifiedType(ctx, Nodes{t}, const_, Side::RHS, std::move(m)));
+        qt->type()->unify(ctx);
+        qt->_type()->newlyQualified(qt.get());
+        return qt;
+    }
+
+    /**
+     * Factory method.
+     *
+     * @param ctx context to use
+     * @param t underlying type to wrap
+     * @param is_constant true if the type is constant
+     * @param side the type's "sideness"
+     * @param m meta data to attach
+     */
+    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_, Side side,
+                       const Meta& m = Meta()) {
+        auto qt = std::shared_ptr<QualifiedType>(new QualifiedType(ctx, Nodes{t}, const_, side, m));
+        qt->type()->unify(ctx);
+        qt->_type()->newlyQualified(qt.get());
+        return qt;
+    }
+
+    /**
+     * Factory method creating a qualified type linking directly to an already
+     * existing unqualified type.
+     *
+     * This avoid copying the existing type over into a child, and can help to
+     * breaks reference cycles.
+     *
+     * @param ctx context to use
+     * @param t underlying type to wrap
+     * @param is_constant true if the type is constant
+     * @param m meta data to attach
+     */
+    static QualifiedTypePtr createExternal(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_,
+                                           const Meta& m = Meta());
+
+    static QualifiedTypePtr createExternal(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_, Side side,
+                                           const Meta& m = Meta());
+
+    /**
+     * Shortcut to create a qualified type wrapping a `type::Auto` instance.
+     * This sets sideness to RHS, and constness to false.
+     */
+    static QualifiedTypePtr createAuto(ASTContext* ctx, const Meta& m = Meta());
+
+    /**
+     * Shortcut to create a qualified type wrapping a `type::Auto` instance.
+     * This sets constness to false.
+     */
+    static QualifiedTypePtr createAuto(ASTContext* ctx, Side side, const Meta& m = Meta());
+
+    /** Factory method creating a copy of the type with "sideness" changed to LHS. */
+    auto recreateAsLhs(ASTContext* ctx) const {
+        return QualifiedType::create(ctx, _type(), Constness::NonConst, Side::LHS);
+    }
+
+    /** Factory method creating a copy of the type with constness changed to constant. */
+    auto recreateAsConst(ASTContext* ctx) const {
+        return QualifiedType::create(ctx, _type(), Constness::Const, Side::RHS);
+    }
+
+    /** Factory method creating a copy of the type with constness changed to non-constant. */
+    auto recreateAsNonConst(ASTContext* ctx) const {
+        return QualifiedType::create(ctx, _type(), Constness::NonConst, Side::RHS);
+    }
+
+protected:
+    friend class ASTContext;
+
+    QualifiedType(ASTContext* ctx, Nodes children, Constness constness, Side side, Meta meta)
+        : Node(ctx, std::move(children), std::move(meta)), _context(ctx), _constness(constness), _side(side) {}
+
+    QualifiedType(ASTContext* ctx, Nodes children, const UnqualifiedTypePtr& t, Constness constness, Side side,
+                  Meta meta)
+        : Node(ctx, std::move(children), std::move(meta)),
+          _context(ctx),
+          _external(ctx->register_(t)),
+          _constness(constness),
+          _side(side) {}
+
+    /** Implements `Node` interface. */
+    std::string _dump() const final;
+
+    HILTI_NODE(hilti, QualifiedType);
+
+private:
+    // Internal version of _type() that doesn't follow name references.
+    UnqualifiedTypePtr _type() const;
+
+    ASTContext* _context; // context that the node is part of
+
+    ast::TypeIndex _external; // for external types, the index of the type
+    Constness _constness;
+    Side _side = Side::RHS;
 };
 
 namespace type {
-namespace detail {
-extern void applyPruneWalk(hilti::Type& t);
-} // namespace detail
-
-inline Type pruneWalk(Type t) {
-    detail::applyPruneWalk(t);
-    return t;
-}
 
 /**
- * Copies an existing type, adding additional type flags.
- *
- * @param t original type
- * @param flags additional flags
- * @return new type with the additional flags set
+ * Returns true if a type is fully resolved. This asks the type's `isResolved`
+ * handler whether it considers itself resolved.
  */
-inline hilti::Type addFlags(const Type& t, const type::Flags& flags) {
-    auto x = Type(t);
-    x._state().flags += flags;
-    return x;
-}
+inline bool isResolved(const UnqualifiedTypePtr& t) { return t->isResolved(); }
 
 /**
- * Copies an existing type, removing specified type flags.
- *
- * @param t original type
- * @param flags flags to remove
- * @return new type with the flags removed
+ * Returns true if a type is fully resolved. This asks the type's `isResolved`
+ * handler whether it considers itself resolved.
  */
-inline hilti::Type removeFlags(const Type& t, const type::Flags& flags) {
-    auto x = Type(t);
-    x._state().flags -= flags;
-    return x;
-}
+inline bool isResolved(const UnqualifiedType* t) { return t->isResolved(); }
 
 /**
- * Copies an existing type, setting its C++ ID as emitted by the code generator.
- *
- * @param t original type
- * @param id new C++ ID
- * @return new type with the C++ ID set accordindly
+ * Returns true if a qualified type's wrapped type is fully resolved. This asks
+ * the type's `isResolved` handler whether it considers itself resolved.
  */
-inline hilti::Type setCxxID(const Type& t, ID id) {
-    auto x = Type(t);
-    x._state().cxx = std::move(id);
-    return x;
-}
+inline bool isResolved(const QualifiedTypePtr& t) { return isResolved(t->type()); }
 
 /**
- * Copies an existing type, setting its associated type ID.
- *
- * @param t original type
- * @param id new type ID
- * @return new type with associateed type ID set accordindly
+ * Returns true if two types are semantically equal. This returns true only if
+ * both types have been fully resolved already.
  */
-inline hilti::Type setTypeID(const Type& t, ID id) {
-    auto x = Type(t);
-    x._state().id = std::move(id);
-    return x;
-}
+inline bool same(const UnqualifiedTypePtr& t1, const UnqualifiedTypePtr& t2) {
+    auto t1_ = follow(t1);
+    auto t2_ = follow(t2);
 
-/**
- * Place-holder class used to enable overloading of type constructors when
- * creating wildcard types.
- */
-class Wildcard {};
-
-/** Returns true for HILTI types that can be used to instantiate variables. */
-inline bool isAllocable(const Type& t) { return t._isAllocable(); }
-
-/** Returns true for HILTI types that can be compared for ordering at runtime. */
-inline bool isSortable(const Type& t) { return t._isSortable(); }
-
-/** Returns true for HILTI types that one can iterator over. */
-inline bool isDereferenceable(const Type& t) { return t._isDereferenceable(); }
-
-/** Returns true for HILTI types that one can iterator over. */
-inline bool isIterable(const Type& t) { return t._isIterable(); }
-
-/** Returns true for HILTI types that represent iterators. */
-inline bool isIterator(const Type& t) { return t._isIterator(); }
-
-/** Returns true for HILTI types that are parameterized with a set of type parameters. */
-inline bool isParameterized(const Type& t) { return t._isParameterized(); }
-
-/** Returns true for HILTI types that implement a reference to another type. */
-inline bool isReferenceType(const Type& t) { return t._isReferenceType(); }
-
-/** Returns true for HILTI types that can change their value. */
-inline bool isMutable(const Type& t) { return t._isMutable(); }
-
-/** Returns true for HILTI types that, when compiled, correspond to non-POD C++ types. */
-inline bool isRuntimeNonTrivial(const Type& t) { return t._isRuntimeNonTrivial(); }
-
-/** Returns true for HILTI types that represent iterators. */
-inline bool isView(const Type& t) { return t._isView(); }
-
-/** Returns true for HILTI types that one can create a view for. */
-inline bool isViewable(const Type& t) { return t._isViewable(); }
-
-/** Returns true for HILTI types that may receive type arguments on instantiations. */
-inline bool takesArguments(const Type& t) { return t._takesArguments(); }
-
-/**
- * Returns true if the type is marked constant.
- *
- * \todo Note that currently we track this consistently only for mutable
- * types. Ideally, this would always return true for non-mutable types, but
- * doing so breaks some coercion code currently.
- */
-inline bool isConstant(const Type& t) {
-    return t.flags().has(type::Flag::Constant) || (! isMutable(t) && ! t.flags().has(type::Flag::NonConstant));
-}
-
-/** Returns a `const` version of a type. */
-inline auto constant(Type t) {
-    t._state().flags -= type::Flag::NonConstant;
-    t._state().flags += type::Flag::Constant;
-    return t;
-}
-
-/**
- * Returns a not `const` version of a type. If `force` is true, then even
- * immutable types are marked as non-const. This is usually not what one wants.
- */
-inline auto nonConstant(Type t, bool force = false) {
-    t._state().flags -= type::Flag::Constant;
-
-    if ( force )
-        t._state().flags += type::Flag::NonConstant;
-
-    return t;
-}
-
-namespace detail {
-// Internal backends for the `isResolved()`.
-extern bool isResolved(const hilti::Type& t, ResolvedState* rstate);
-
-inline bool isResolved(const std::optional<hilti::Type>& t, ResolvedState* rstate) {
-    return t.has_value() ? isResolved(*t, rstate) : true;
-}
-
-inline bool isResolved(const std::optional<const hilti::Type>& t, ResolvedState* rstate) {
-    return t.has_value() ? isResolved(*t, rstate) : true;
-}
-} // namespace detail
-
-/** Returns true if the type has been fully resolved, including all sub-types it may include. */
-extern bool isResolved(const Type& t);
-
-/** Returns true if the type has been fully resolved, including all sub-types it may include. */
-inline bool isResolved(const std::optional<Type>& t) { return t.has_value() ? isResolved(*t) : true; }
-
-/** Returns true if the type has been fully resolved, including all sub-types it may include. */
-inline bool isResolved(const std::optional<const Type>& t) { return t.has_value() ? isResolved(*t) : true; }
-
-/** Returns true if two types are identical, ignoring for their constnesses. */
-inline bool sameExceptForConstness(const Type& t1, const Type& t2) {
-    if ( &t1 == &t2 )
+    if ( t1_->unification() == t2_->unification() )
         return true;
 
-    if ( t1.typeID() && t2.typeID() )
-        return *t1.typeID() == *t2.typeID();
+    return false;
+}
 
-    if ( t1.cxxID() && t2.cxxID() )
-        return *t1.cxxID() == *t2.cxxID();
+/**
+ * Returns true if two types are semantically equal. This returns true only if
+ * both types have been fully resolved already.
+ */
+inline bool same(const QualifiedTypePtr& t1, const QualifiedTypePtr& t2) {
+    if ( t1->isConstant() != t2->isConstant() )
+        return false;
 
-    return t1.isEqual(t2) || t2.isEqual(t1);
+    auto t1_ = t1->type(); // performs follow
+    auto t2_ = t2->type(); // performs follow
+
+    if ( t1_->unification() == t2_->unification() )
+        return true;
+
+    return false;
+}
+
+/**
+ * Returns true if two types are semantically equal ignoring their constness.
+ * This returns true only if both types have been fully resolved already.
+ */
+inline bool sameExceptForConstness(const QualifiedTypePtr& t1, const QualifiedTypePtr& t2) {
+    if ( ! isResolved(t1) || ! isResolved(t2) )
+        return false;
+
+    auto t1_ = t1->type(); // performs follow
+    auto t2_ = t2->type(); // performs follow
+
+    if ( t1_->unification() == t2_->unification() )
+        return true;
+
+    if ( (t1_->isWildcard() || t2_->isWildcard()) && t1_->typeClass() == t2_->typeClass() )
+        return true;
+
+    return false;
 }
 
 } // namespace type
-
-inline bool operator==(const Type& t1, const Type& t2) {
-    if ( &t1 == &t2 )
-        return true;
-
-    if ( type::isMutable(t1) || type::isMutable(t2) ) {
-        if ( type::isConstant(t1) && ! type::isConstant(t2) )
-            return false;
-
-        if ( type::isConstant(t2) && ! type::isConstant(t1) )
-            return false;
-    }
-
-    if ( t1.typeID() && t2.typeID() )
-        return *t1.typeID() == *t2.typeID();
-
-    if ( t1.cxxID() && t2.cxxID() )
-        return *t1.cxxID() == *t2.cxxID();
-
-    // Type comparison is not fully symmetric, it's good enough
-    // if one type believes it matches the other one.
-    return t1.isEqual(t2) || t2.isEqual(t1);
-}
-
-inline bool operator!=(const Type& t1, const Type& t2) { return ! (t1 == t2); }
-
-/** Constructs an AST node from any class implementing the `Type` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isType, T>>* = nullptr>
-inline Node to_node(T t) {
-    return Node(Type(std::move(t)));
-}
-
 } // namespace hilti

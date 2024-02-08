@@ -1,0 +1,24 @@
+# @TEST-EXEC:      ${HILTIC} -j success.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: ${HILTIC} -j failure.hlt >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that standard modules are available only if explicitly imported.
+
+@TEST-START-FILE success.hlt
+module Test {
+
+import hilti;
+
+hilti::print("Hello, world!\n"); # works, we have imported it
+
+}
+@TEST-END-FILE
+
+@TEST-START-FILE failure.hlt
+module Test {
+
+hilti::print("Hello, world!\n"); # fails, we have not imported it
+
+}
+
+@TEST-END-FILE

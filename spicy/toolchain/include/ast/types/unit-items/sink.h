@@ -2,36 +2,45 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
 #include <utility>
 
-#include <spicy/ast/aliases.h>
-#include <spicy/ast/engine.h>
+#include <hilti/ast/attribute.h>
+#include <hilti/ast/type.h>
+
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/types/unit-item.h>
-#include <spicy/ast/types/unit.h>
 
 namespace spicy::type::unit::item {
 
 /**
  * AST node for a unit sink.
  */
-class Sink : public hilti::NodeBase, public spicy::trait::isUnitItem {
+class Sink : public unit::Item {
 public:
-    Sink(ID id, std::optional<AttributeSet> attrs = {}, const Meta& m = Meta())
-        : NodeBase(nodes(std::move(id), std::move(attrs), type::Sink(m)), m) {}
+    auto attributes() const { return child<AttributeSet>(0); }
 
-    const auto& id() const { return child<ID>(0); }
-    auto attributes() const { return children()[1].tryAs<AttributeSet>(); }
+    QualifiedTypePtr itemType() const final { return child<QualifiedType>(1); }
 
-    bool operator==(const Sink& other) const { return id() == other.id() && attributes() == other.attributes(); }
+    bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
 
-    // Unit field interface
-    const Type& itemType() const { return child<Type>(2); }
-    bool isResolved() const { return type::isResolved(itemType()); }
-    auto isEqual(const Item& other) const { return node::isEqual(this, other); }
+    std::string displayName() const final { return "unit sink"; }
 
-    // Node interface.
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, ID id, AttributeSetPtr attrs, const Meta& meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        return std::shared_ptr<Sink>(
+            new Sink(ctx, {attrs, QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::NonConst)},
+                     std::move(id), meta));
+    }
+
+protected:
+    Sink(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
+        : unit::Item(ctx, std::move(children), std::move(id), meta) {}
+
+    HILTI_NODE(spicy, Sink)
 };
 
 } // namespace spicy::type::unit::item

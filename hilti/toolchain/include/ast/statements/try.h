@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -14,61 +16,54 @@ namespace hilti::statement {
 
 namespace try_ {
 
-/**
- * AST node for a `catch` block.
- */
-class Catch : public NodeBase {
+/** AST node for a `catch` block. */
+class Catch final : public Node {
 public:
-    Catch(hilti::Statement body, Meta m = Meta()) : NodeBase(nodes(node::none, std::move(body)), std::move(m)) {}
-    Catch(const hilti::Declaration& param, Statement body, Meta m = Meta())
-        : NodeBase(nodes(param, std::move(body)), std::move(m)) {
-        if ( ! param.isA<hilti::declaration::Parameter>() )
-            logger().internalError("'catch' hilti::Declaration must be parameter");
+    ~Catch() final;
+
+    auto parameter() const { return child<declaration::Parameter>(0); }
+    auto body() const { return child<hilti::Statement>(1); }
+
+    static auto create(ASTContext* ctx, const DeclarationPtr& param, const StatementPtr& body, Meta meta = {}) {
+        return std::shared_ptr<Catch>(new Catch(ctx, {param, body}, std::move(meta)));
     }
-    Catch() = default;
 
-    auto parameter() const { return children()[0].tryAs<declaration::Parameter>(); }
-    auto parameterRef() const {
-        return children()[0].isA<declaration::Parameter>() ? NodeRef(children()[0]) : NodeRef();
+    static auto create(ASTContext* ctx, const StatementPtr& body, Meta meta = {}) {
+        return std::shared_ptr<Catch>(new Catch(ctx, {nullptr, body}, std::move(meta)));
     }
-    const auto& body() const { return child<hilti::Statement>(1); }
 
-    /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return children()[1]; }
+protected:
+    Catch(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, std::move(children), std::move(meta)) {
+        if ( child(0) && ! child(0)->isA<declaration::Parameter>() )
+            logger().internalError("'catch' first child must be parameter");
+    }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    std::string _dump() const final;
 
-    bool operator==(const Catch& other) const { return parameter() == other.parameter() && body() == other.body(); }
+    HILTI_NODE(hilti, Catch);
 };
+
+using CatchPtr = std::shared_ptr<Catch>;
+using Catches = std::vector<CatchPtr>;
 
 } // namespace try_
 
-/** AST node for a "try" statement. */
-class Try : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a `try` statement. */
+class Try : public Statement {
 public:
-    Try(hilti::Statement body, std::vector<try_::Catch> catches, Meta m = Meta())
-        : NodeBase(nodes(std::move(body), std::move(catches)), std::move(m)) {}
+    auto body() const { return child<hilti::Statement>(0); }
+    auto catches() const { return children<try_::Catch>(1, {}); }
 
-    const auto& body() const { return child<hilti::Statement>(0); }
-    auto catches() const { return children<try_::Catch>(1, -1); }
+    void addCatch(ASTContext* ctx, const try_::CatchPtr& c) { addChild(ctx, c); }
 
-    bool operator==(const Try& other) const { return body() == other.body() && catches() == other.catches(); }
+    static auto create(ASTContext* ctx, StatementPtr body, const try_::Catches& catches, Meta meta = {}) {
+        return std::shared_ptr<Try>(new Try(ctx, node::flatten(std::move(body), catches), std::move(meta)));
+    }
 
-    /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return children()[0]; }
+protected:
+    Try(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    /** Internal method for use by builder API only. */
-    auto& _lastCatchNode() { return children().back(); }
-
-    /** Internal method for use by builder API only. */
-    void _addCatch(try_::Catch catch_) { addChild(std::move(catch_)); }
-
-    /** Implements the `Statement` interface. */
-    auto isEqual(const hilti::Statement& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Try)
 };
 
 } // namespace hilti::statement

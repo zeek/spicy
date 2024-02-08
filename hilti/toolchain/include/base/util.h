@@ -31,7 +31,7 @@
 
 namespace hilti::util::detail {
 /** Helper that forwards to `Logger`. */
-void __internal_error(const std::string& s);
+void internalError(const std::string& s);
 } // namespace hilti::util::detail
 
 #undef TINYFORMAT_ERROR
@@ -41,13 +41,6 @@ void __internal_error(const std::string& s);
 namespace hilti {
 
 struct Configuration;
-
-/**
- * Helper macro to mark variables that are intentionally unused. This
- * silences the compiler warning. From
- * http://stackoverflow.com/questions/777261/avoiding-unused-variables-warnings-when-using-assert-in-a-release-build
- */
-#define _UNUSED(x) ((void)(x));
 
 /** Tests if class is derived from another. */
 #define IF_DERIVED_FROM(t, cls) typename std::enable_if_t<std::is_base_of_v<cls, t>>* = nullptr
@@ -67,12 +60,21 @@ namespace util {
 using hilti::rt::demangle;
 
 /** Aborts with an internal error saying we should not be where we are. */
-extern void cannot_be_reached() __attribute__((noreturn));
+extern void cannotBeReached() __attribute__((noreturn));
 
 /** Returns a type's demangled C++ name. */
 template<typename T>
 std::string typename_() {
-    return demangle(typeid(T).name());
+    std::string id = demangle(typeid(T).name());
+    if ( id.find("hilti::") == 0 )
+        id = id.substr(sizeof("hilti::") - 1);
+
+    return id;
+}
+
+template<typename T>
+std::string typename_(const T&) {
+    return typename_<T>();
 }
 
 /** sprintf-style string formatting. */
@@ -85,7 +87,7 @@ using hilti::rt::transform; // NOLINT(misc-unused-using-decls)
 
 /** Applies a function to each element of a set, returning a vector with the results. */
 template<typename X, typename F>
-auto transform_to_vector(const std::set<X>& x, F f) {
+auto transformToVector(const std::set<X>& x, F f) {
     using Y = typename std::invoke_result_t<F, X&>;
     std::vector<Y> y;
     y.reserve(x.size());
@@ -109,22 +111,22 @@ auto filter(const C& x, F f) {
 template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
          typename = decltype(std::end(std::declval<T>()))>
 constexpr auto enumerate(T&& iterable) {
-    struct iterator {
+    struct Iterator {
         size_t i;
         TIter iter;
-        bool operator!=(const iterator& other) const { return iter != other.iter; }
+        bool operator!=(const Iterator& other) const { return iter != other.iter; }
         void operator++() {
             ++i;
             ++iter;
         }
         auto operator*() const { return std::tie(i, *iter); }
     };
-    struct iterable_wrapper {
+    struct IterableWrapper {
         T iterable;
-        auto begin() { return iterator{0, std::begin(iterable)}; }
-        auto end() { return iterator{0, std::end(iterable)}; }
+        auto begin() { return Iterator{0, std::begin(iterable)}; }
+        auto end() { return Iterator{0, std::end(iterable)}; }
     };
-    return iterable_wrapper{std::forward<T>(iterable)};
+    return IterableWrapper{std::forward<T>(iterable)};
 }
 
 /** Splits a string at all occurrences of a delimiter. */
@@ -297,7 +299,7 @@ extern uint64_t hash(const char* data, size_t len);
  * Returns the valid value range for a signed integer of a given width.
  * Supports only standard widths 8/16/32/64.
  */
-constexpr std::pair<intmax_t, intmax_t> signed_integer_range(int width) {
+constexpr std::pair<intmax_t, intmax_t> signedIntegerRange(unsigned int width) {
     switch ( width ) {
         case 8: return std::make_pair(INT8_MIN, INT8_MAX);
         case 16: return std::make_pair(INT16_MIN, INT16_MAX);
@@ -311,7 +313,7 @@ constexpr std::pair<intmax_t, intmax_t> signed_integer_range(int width) {
  * Returns the valid value range for an unsigned integer of a given width.
  * Supports only standard widths 8/16/32/64.
  */
-constexpr std::pair<uintmax_t, uintmax_t> unsigned_integer_range(int width) {
+constexpr std::pair<uintmax_t, uintmax_t> unsignedIntegerRange(unsigned int width) {
     switch ( width ) {
         case 8: return std::make_pair(0, UINT8_MAX);
         case 16: return std::make_pair(0, UINT16_MAX);
@@ -329,7 +331,7 @@ constexpr std::pair<uintmax_t, uintmax_t> unsigned_integer_range(int width) {
  * @param handler: an error-handling function object or lambda.
  */
 template<typename Error>
-uint64_t chars_to_uint64(const char* dgts, int base, Error handler) {
+uint64_t charsToUInt64(const char* dgts, int base, Error handler) {
     errno = 0;
     char* cp;
     auto u = strtoull(dgts, &cp, base);
@@ -347,7 +349,7 @@ uint64_t chars_to_uint64(const char* dgts, int base, Error handler) {
  * @param handler: an error-handling function object or lambda.
  */
 template<typename Error>
-double chars_to_double(const char* dgts, Error handler) {
+double charsToDouble(const char* dgts, Error handler) {
     errno = 0;
     char* cp;
     auto d = strtod(dgts, &cp);
@@ -417,7 +419,7 @@ using hilti::rt::createTemporaryFile; // NOLINT(misc-unused-using-decls)
 hilti::rt::filesystem::path currentExecutable();
 
 /** Dumps a backtrace to stderr and then aborts execution. */
-[[noreturn]] extern void abort_with_backtrace();
+[[noreturn]] extern void abortWithBacktrace();
 
 /** Parses an string into an integer value. */
 template<class Iter, typename Result>
@@ -459,7 +461,7 @@ std::vector<std::pair<A, B>> zip2(const std::vector<A>& lhs, const std::vector<B
 
 /** Returns the keys of a map as a set. */
 template<typename A, typename B>
-std::set<A> map_keys(const std::map<A, B>& m) {
+std::set<A> mapKeys(const std::map<A, B>& m) {
     std::set<A> l;
 
     for ( const auto& i : m )
@@ -470,7 +472,7 @@ std::set<A> map_keys(const std::map<A, B>& m) {
 
 /** Returns the values of a map as a set. */
 template<typename A, typename B>
-std::set<B> map_values(const std::map<A, B>& m) {
+std::set<B> mapValues(const std::map<A, B>& m) {
     std::set<B> l;
 
     for ( const auto& i : m )
@@ -481,7 +483,7 @@ std::set<B> map_values(const std::map<A, B>& m) {
 
 /** Returns the keys of a map as a set. */
 template<typename A, typename B>
-std::set<A> map_keys(const std::unordered_map<A, B>& m) {
+std::set<A> mapKeys(const std::unordered_map<A, B>& m) {
     std::set<A> l;
 
     for ( const auto& i : m )
@@ -492,7 +494,7 @@ std::set<A> map_keys(const std::unordered_map<A, B>& m) {
 
 /** Returns the values of a map as a set. */
 template<typename A, typename B>
-std::set<B> map_values(const std::unordered_map<A, B>& m) {
+std::set<B> mapValues(const std::unordered_map<A, B>& m) {
     std::set<B> l;
 
     for ( const auto& i : m )
@@ -501,9 +503,9 @@ std::set<B> map_values(const std::unordered_map<A, B>& m) {
     return l;
 }
 
-/** Returns the difference of two sets. This is a convenience wrapper around std::set_difference. */
+/** Returns the difference of two sets. This is a convenience wrapper around std::setDifference. */
 template<typename A, typename Compare = std::less<A>>
-std::set<A, Compare> set_difference(const std::set<A, Compare>& a, const std::set<A, Compare>& b) {
+std::set<A, Compare> setDifference(const std::set<A, Compare>& a, const std::set<A, Compare>& b) {
     std::set<A, Compare> r;
     std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(r, r.end()), Compare());
     return r;
@@ -511,7 +513,7 @@ std::set<A, Compare> set_difference(const std::set<A, Compare>& a, const std::se
 
 /** Returns the intersection of two sets. This is a convenience wrapper around std::set_intersection. */
 template<typename A, typename Compare = std::less<A>>
-std::set<A, Compare> set_intersection(std::set<A, Compare>& a, std::set<A, Compare>& b) {
+std::set<A, Compare> setIntersection(std::set<A, Compare>& a, std::set<A, Compare>& b) {
     std::set<A, Compare> r;
     std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::inserter(r, r.end()), Compare());
     return r;
@@ -519,7 +521,7 @@ std::set<A, Compare> set_intersection(std::set<A, Compare>& a, std::set<A, Compa
 
 /** Returns the union of two sets. This is a convenience wrapper around std::set_union. */
 template<typename A, typename Compare = std::less<A>>
-std::set<A, Compare> set_union(const std::set<A, Compare>& a, const std::set<A, Compare>& b) {
+std::set<A, Compare> setUnion(const std::set<A, Compare>& a, const std::set<A, Compare>& b) {
     std::set<A, Compare> r;
     std::set_union(a.begin(), a.end(), b.begin(), b.end(), std::inserter(r, r.end()), Compare());
     return r;
@@ -543,7 +545,7 @@ std::vector<T>& append(std::vector<T>& v1, const std::vector<T>& v2) {
 
 /** Remov duplicates from a vector without changing order. */
 template<typename T>
-std::vector<T> remove_duplicates(std::vector<T> v) {
+std::vector<T> removeDuplicates(std::vector<T> v) {
     std::set<T> seen;
     std::vector<T> out;
 
@@ -609,7 +611,7 @@ struct Value {
  * @throws `std::out_of_range` if *name* is not found in *values*
  */
 template<typename Enum, std::size_t Size>
-constexpr auto from_string(const std::string_view name, const Value<Enum> (&values)[Size]) {
+constexpr auto from_string(std::string_view name, const Value<Enum> (&values)[Size]) {
     for ( const auto& v : values )
         if ( v.name == name )
             return v.value;

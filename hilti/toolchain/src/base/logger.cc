@@ -130,7 +130,7 @@ void Logger::fatalError(const std::string& msg, const Location& l) {
 
 void Logger::internalError(const std::string& msg, const Location& l) {
     report(_output_std, logging::Level::InternalError, 0, "", msg, l);
-    util::abort_with_backtrace();
+    util::abortWithBacktrace();
 }
 
 void Logger::_debug(const logging::DebugStream& dbg, const std::string& msg, const Location& l) {

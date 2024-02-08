@@ -2,41 +2,34 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <hilti/ast/declaration.h>
-#include <hilti/ast/types/reference.h>
-#include <hilti/ast/types/struct.h>
 
-#include <spicy/ast/hook.h>
+#include <spicy/ast/declarations/hook.h>
 
 namespace spicy::declaration {
 
 /** AST node for a declaration of an external (i.e., module-level) unit hook. */
-class UnitHook : public hilti::DeclarationBase {
+class UnitHook : public Declaration {
 public:
-    UnitHook(const ID& id, const Hook& hook, Meta m = Meta()) : DeclarationBase(hilti::nodes(id, hook), std::move(m)) {
-        children()[1].as<Hook>().setID(id);
+    auto hook() const { return child<declaration::Hook>(0); }
+
+    std::string displayName() const final { return "unit hook"; }
+
+    static auto create(ASTContext* ctx, const ID& id, const declaration::HookPtr& hook, Meta meta = {}) {
+        auto h = std::shared_ptr<UnitHook>(new UnitHook(ctx, {hook}, id, std::move(meta)));
+        h->hook()->setID(id);
+        return h;
     }
 
-    const auto& hook() const { return child<Hook>(1); }
+protected:
+    UnitHook(ASTContext* ctx, Nodes children, ID id, Meta meta)
+        : Declaration(ctx, std::move(children), std::move(id), hilti::declaration::Linkage::Private, std::move(meta)) {}
 
-    bool operator==(const UnitHook& other) const { return id() == other.id() && hook() == other.hook(); }
-
-    /** Implements `Declaration` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Declaration` interface. */
-    const ID& id() const { return child<ID>(0); }
-    /** Implements `Declaration` interface. */
-    Linkage linkage() const { return Linkage::Private; }
-    /** Implements `Declaration` interface. */
-    std::string displayName() const { return "unit hook"; };
-    /** Implements `Declaration` interface. */
-    auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
-
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, UnitHook)
 };
 
 } // namespace spicy::declaration

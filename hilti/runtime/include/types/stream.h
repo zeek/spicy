@@ -263,7 +263,7 @@ public:
     UnsafeConstIterator unsafeEnd() const;
 
     // Returns a newly allocated chain with the same content.
-    ChainPtr deepCopy() const;
+    ChainPtr copy() const;
 
     /** Appends a new chunk to the end. */
     void append(std::unique_ptr<Chunk> chunk);
@@ -1365,12 +1365,15 @@ public:
 
     /** Returns an safe iterator pointint to the beginning of the view. */
     const SafeConstIterator& begin() const { return _begin; }
+    const SafeConstIterator& cbegin() const { return _begin; }
 
     /** Returns a safe iterator representing the end of the instance. */
     SafeConstIterator end() const {
         assert(_begin.chain());
         return _end ? *_end : _begin.chain()->end();
     }
+
+    SafeConstIterator cend() const { return end(); }
 
     /** State for block-wise iteration of a stream instance. */
     struct Block {
@@ -1530,7 +1533,7 @@ public:
      * Constructs a stream from another stream instance.
      * @param other instance to create this stream from
      */
-    Stream(const Stream& other) : _chain(other._chain->deepCopy()) {}
+    Stream(const Stream& other) : _chain(other._chain->copy()) {}
 
     /**
      * Constructs a stream from another stream instance.
@@ -1561,7 +1564,7 @@ public:
             return *this;
 
         _chain->invalidate();
-        _chain = other._chain->deepCopy();
+        _chain = other._chain->copy();
         return *this;
     }
 
@@ -1622,9 +1625,11 @@ public:
 
     /** Returns a safe iterator representing the first byte of the instance. */
     SafeConstIterator begin() const { return _chain->begin(); }
+    SafeConstIterator cbegin() const { return begin(); }
 
     /** Returns a safe iterator representing the end of the instance. */
     SafeConstIterator end() const { return _chain->end(); }
+    SafeConstIterator cend() const { return end(); }
 
     /** Returns an unsafe iterator representing the first byte of the instance. */
     UnsafeConstIterator unsafeBegin() const { return _chain->unsafeBegin(); }

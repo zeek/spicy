@@ -1,5 +1,6 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/compiler/driver.h>
 
 using namespace spicy;
@@ -16,6 +17,10 @@ void Driver::setSpicyCompilerOptions(const spicy::Options& options) {
     auto hilti_options = hiltiOptions();
     hilti_options.setAuxOption("spicy.track_offsets", options.track_offsets);
     setCompilerOptions(std::move(hilti_options));
+}
+
+std::unique_ptr<hilti::Builder> Driver::createBuilder(hilti::ASTContext* ctx) const {
+    return std::make_unique<Builder>(ctx);
 }
 
 std::string Driver::hookAddCommandLineOptions() { return "Q"; }

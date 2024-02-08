@@ -2,40 +2,31 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
-#include <hilti/ast/expression.h>
-#include <hilti/ast/id.h>
-#include <hilti/ast/types/struct.h>
+#include <hilti/ast/types/union.h>
 
 namespace hilti::ctor {
 
-/** AST node for a struct constructor. */
-class Union : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `union` ctor. */
+class Union : public Ctor {
 public:
-    Union(Type unit_type, Expression value, Meta m = Meta())
-        : NodeBase(nodes(std::move(unit_type), std::move(value)), std::move(m)) {}
-
     /** Returns the value to initialize the unit with. */
-    const Expression& value() const { return child<Expression>(1); }
+    ExpressionPtr value() const { return child<Expression>(1); }
 
-    bool operator==(const Union& other) const { return type() == other.type() && value() == other.value(); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    /** Implements `Ctor` interface. */
-    const Type& type() const { return child<Type>(0); }
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, const ExpressionPtr& value,
+                       const Meta& meta = {}) {
+        return std::shared_ptr<Union>(new Union(ctx, {type, value}, meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+protected:
+    Union(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Union)
 };
 
 } // namespace hilti::ctor

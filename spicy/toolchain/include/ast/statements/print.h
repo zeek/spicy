@@ -2,33 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
 
-#include <spicy/ast/aliases.h>
+#include <spicy/ast/forward.h>
 
 namespace spicy::statement {
 
-class Print : public hilti::NodeBase, public hilti::trait::isStatement {
+/** AST node for a `break` statement. */
+class Print : public Statement {
 public:
-    Print(std::vector<hilti::Expression> e, Meta m = Meta())
-        : hilti::NodeBase(hilti::nodes(std::move(e)), std::move(m)) {}
+    auto expressions() const { return children<hilti::Expression>(0, {}); }
 
-    auto expressions() const { return children<hilti::Expression>(0, -1); }
-
-    bool operator==(const Print& /* other */) const {
-        // return expressions() == other.expressions(); FIXME
-        return false;
+    static auto create(ASTContext* ctx, Expressions expressions, Meta meta = {}) {
+        return std::shared_ptr<Print>(new Print(ctx, std::move(expressions), std::move(meta)));
     }
 
-    // Statement interface.
-    auto isEqual(const hilti::Statement& other) const { return hilti::node::isEqual(this, other); }
+protected:
+    Print(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    // Node interface.
-    auto properties() const { return hilti::node::Properties{}; }
+    HILTI_NODE(spicy, Print)
 };
 
 } // namespace spicy::statement

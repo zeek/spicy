@@ -2,91 +2,101 @@
 
 #pragma once
 
-#include <functional>
+#include <memory>
 #include <utility>
-#include <vector>
 
-#include <hilti/ast/attribute.h>
+#include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/field.h>
-#include <hilti/ast/expression.h>
 #include <hilti/ast/function.h>
-#include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/function.h>
-#include <hilti/ast/types/unknown.h>
 
 namespace hilti::type {
 
-/** AST node for a struct type. */
-class Union : public TypeBase, trait::isAllocable, trait::isParameterized, trait::isMutable {
+/** AST node for a `union` type. */
+class Union : public UnqualifiedType {
 public:
-    Union(std::vector<Declaration> fields, Meta m = Meta())
-        : TypeBase(nodes(node::none, std::move(fields)), std::move(m)) {}
-    Union(Wildcard /*unused*/, Meta m = Meta()) : TypeBase(nodes(node::none), std::move(m)), _wildcard(true) {}
-
     auto fields() const { return childrenOfType<declaration::Field>(); }
 
-    hilti::optional_ref<const declaration::Field> field(const ID& id) const {
+    declaration::FieldPtr field(const ID& id) const {
         for ( const auto& f : fields() ) {
-            if ( f.id() == id )
+            if ( f->id() == id )
                 return f;
         }
 
         return {};
     }
 
+    hilti::node::Set<declaration::Field> fields(const ID& id) const {
+        hilti::node::Set<declaration::Field> x;
+        for ( const auto& f : fields() ) {
+            if ( f->id() == id )
+                x.push_back(f);
+        }
+
+        return x;
+    }
+
     unsigned int index(const ID& id) const {
         for ( const auto&& [i, f] : util::enumerate(fields()) ) {
-            if ( f.id() == id )
+            if ( f->id() == id )
                 return i + 1;
         }
 
         return 0;
     }
 
-    bool operator==(const Union& other) const { return fields() == other.fields(); }
+    auto hasFinalizer() const { return field("~finally") != nullptr; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const {
-        for ( auto c = ++children().begin(); c != children().end(); c++ ) {
-            if ( ! c->as<declaration::Field>().isResolved(rstate) )
-                return false;
-        }
-
-        return true;
+    hilti::node::Set<type::function::Parameter> parameters() const final {
+        return childrenOfType<type::function::Parameter>();
     }
 
-    /** Implements the `Type` interface. */
-    auto typeParameters() const {
-        std::vector<Node> params;
-        for ( auto c = ++children().begin(); c != children().end(); c++ )
-            params.emplace_back(c->as<declaration::Field>().type());
-        return params;
+    void addField(ASTContext* ctx, DeclarationPtr f) {
+        assert(f->isA<declaration::Field>());
+        addChild(ctx, std::move(f));
     }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    std::string_view typeClass() const final { return "union"; }
 
-    /**
-     * Copies an existing type and adds a new field to the copy.
-     *
-     * @param s original type
-     * @param f field to add
-     * @return new typed with field added
-     */
-    static Union addField(const Union& s, declaration::Field f) {
-        auto x = Type(s)._clone().as<Union>();
-        x.addChild(std::move(f));
-        return x;
+    bool isAllocable() const final { return true; }
+    bool isMutable() const final { return true; }
+    bool isNameType() const final { return true; }
+    bool isResolved(node::CycleDetector* cd) const final;
+
+    static auto create(ASTContext* ctx, const declaration::Parameters& params, Declarations fields,
+                       const Meta& meta = {}) {
+        for ( auto&& p : params )
+            p->setIsTypeParameter();
+
+        return std::shared_ptr<Union>(new Union(ctx, node::flatten(params, std::move(fields)), -1, meta));
     }
+
+    static auto create(ASTContext* ctx, const Declarations& fields, const Meta& meta = {}) {
+        return create(ctx, declaration::Parameters{}, fields, meta);
+    }
+
+    union AnonymousUnion {};
+    static auto create(ASTContext* ctx, AnonymousUnion _, Declarations fields, const Meta& meta = {}) {
+        return std::shared_ptr<Union>(new Union(ctx, std::move(fields), ++anon_union_counter, meta));
+    }
+
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& meta = {}) {
+        return std::shared_ptr<Union>(new Union(ctx, Wildcard(), meta));
+    }
+
+protected:
+    Union(ASTContext* ctx, const Nodes& children, int64_t anon_union, const Meta& meta)
+        : UnqualifiedType(ctx, {}, children, meta), _anon_union(anon_union) {}
+
+    Union(ASTContext* ctx, Wildcard _, const Meta& meta) : UnqualifiedType(ctx, Wildcard(), {"union(*)"}, meta) {}
+
+    HILTI_NODE(hilti, Union)
 
 private:
-    bool _wildcard = false;
+    int64_t _anon_union = -1;
+
+    static int64_t anon_union_counter;
 };
 
 } // namespace hilti::type

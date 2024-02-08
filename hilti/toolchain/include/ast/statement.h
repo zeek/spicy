@@ -2,45 +2,25 @@
 
 #pragma once
 
+#include <string>
 #include <utility>
 
+#include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
-#include <hilti/base/type_erase.h>
 
 namespace hilti {
 
-namespace trait {
-/** Trait for classes implementing the `Statement` interface. */
-class isStatement : public isNode {};
-} // namespace trait
+/** Base class for statement nodes. */
+class Statement : public Node {
+public:
+    ~Statement() override;
 
-namespace statement::detail {
-#include <hilti/autogen/__statement.h>
+protected:
+    Statement(ASTContext* ctx, Nodes children, Meta meta) : Node::Node(ctx, std::move(children), std::move(meta)) {}
 
-/** Creates an AST node representing a `Statement`. */
-inline Node to_node(Statement t) { return Node(std::move(t)); }
+    std::string _dump() const override;
 
-/** Renders a statement as HILTI source code. */
-inline std::ostream& operator<<(std::ostream& out, Statement s) { return out << to_node(std::move(s)); }
-
-inline bool operator==(const Statement& x, const Statement& y) {
-    if ( &x == &y )
-        return true;
-
-    assert(x.isEqual(y) == y.isEqual(x)); // Expected to be symmetric.
-    return x.isEqual(y);
-}
-
-inline bool operator!=(const Statement& s1, const Statement& s2) { return ! (s1 == s2); }
-
-} // namespace statement::detail
-
-using Statement = statement::detail::Statement;
-
-/** Constructs an AST node from any class implementing the `Statement` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isStatement, T>>* = nullptr>
-inline Node to_node(T t) {
-    return Node(Statement(std::move(t)));
-}
+    HILTI_NODE_BASE(hilti, Statement);
+};
 
 } // namespace hilti

@@ -2,75 +2,64 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/type.h>
-#include <hilti/ast/function.h>
-#include <hilti/ast/id.h>
-#include <hilti/ast/statement.h>
+#include <hilti/ast/node-range.h>
+#include <hilti/ast/operator-registry.h>
+#include <hilti/ast/operator.h>
 #include <hilti/ast/types/struct.h>
+#include <hilti/ast/types/type.h>
 
 namespace hilti::declaration {
 
-/** AST node for a declaration of an function. */
-class Function : public DeclarationBase {
+/** AST node for a function declaration. */
+class Function : public Declaration {
 public:
-    Function(::hilti::Function function, Linkage linkage = Linkage::Private, Meta m = Meta())
-        : DeclarationBase(nodes(std::move(function)), std::move(m)), _linkage(linkage) {}
+    ~Function() override {}
 
-    const ::hilti::Function& function() const { return child<::hilti::Function>(0); }
+    auto function() const { return child<::hilti::Function>(0); }
 
-    /**
-     * Returns the parent declaration associated with the function, if any. For
-     * methods, this will the declaration of the corresponding struct type.
-     */
-    hilti::optional_ref<const Declaration> parent() const {
-        if ( _parent )
-            return _parent->as<Declaration>();
-        else
-            return {};
+    /** Returns an operator corresponding to a call to the function that the declaration corresponds to. */
+    const auto& operator_() const { return _operator; }
+
+    auto linkedDeclarationIndex() const { return _linked_declaration_index; }
+    auto linkedPrototypeIndex() const { return _linked_prototype_index; }
+
+    void setOperator(const Operator* op) { _operator = op; }
+    void setLinkedDeclarationIndex(ast::DeclarationIndex index) {
+        assert(index);
+        _linked_declaration_index = index;
+    }
+    void setLinkedPrototypeIndex(ast::DeclarationIndex index) {
+        assert(index);
+        _linked_prototype_index = index;
     }
 
-    /**
-     * If the parent declaration associated with the function refers to a valid
-     * struct type, returns that type.
-     */
-    hilti::optional_ref<const type::Struct> parentStructType() const {
-        if ( ! _parent )
-            return {};
+    std::string displayName() const final { return "function"; }
 
-        return _parent->as<declaration::Type>().type().tryAs<type::Struct>();
+    node::Properties properties() const final;
+
+    static std::shared_ptr<Function> create(ASTContext* ctx, const FunctionPtr& function,
+                                            declaration::Linkage linkage = Linkage::Private, const Meta& meta = {}) {
+        return std::shared_ptr<Function>(new Function(ctx, {function}, function->id(), linkage, meta));
     }
 
-    void setFunction(const ::hilti::Function& f) { children()[0] = f; }
-    void setLinkage(Linkage x) { _linkage = x; }
-    void setParentRef(NodeRef p) {
-        assert(p && p->isA<Declaration>());
-        _parent = std::move(p);
-    }
+protected:
+    Function(ASTContext* ctx, Nodes children, ID id, declaration::Linkage linkage, Meta meta)
+        : Declaration(ctx, std::move(children), std::move(id), linkage, std::move(meta)) {}
 
-    bool operator==(const Function& other) const { return id() == other.id() && function() == other.function(); }
-
-    /** Implements `Declaration` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Declaration` interface. */
-    const ID& id() const { return function().id(); }
-    /** Implements `Declaration` interface. */
-    Linkage linkage() const { return _linkage; }
-    /** Implements `Declaration` interface. */
-    std::string displayName() const { return "function"; };
-    /** Implements `Declaration` interface. */
-    auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
-
-    /** Implements `Node` interface. */
-    auto properties() const {
-        return node::Properties{{"linkage", to_string(_linkage)}, {"parent_type", _parent.renderedRid()}};
-    }
+    HILTI_NODE(hilti, Function)
 
 private:
-    Linkage _linkage;
-    NodeRef _parent;
+    const Operator* _operator = nullptr;
+
+    ast::DeclarationIndex _linked_declaration_index;
+    ast::DeclarationIndex _linked_prototype_index;
 };
 
 } // namespace hilti::declaration

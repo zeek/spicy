@@ -2,48 +2,52 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/ctor.h>
-#include <hilti/ast/expression.h>
 #include <hilti/ast/types/regexp.h>
 
 namespace hilti::ctor {
 
-/** AST node for a RegExp constructor. */
-class RegExp : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a regular expression ctor. */
+class RegExp : public Ctor {
 public:
-    RegExp(std::vector<std::string> p, std::optional<AttributeSet> attrs = {}, const Meta& m = Meta())
-        : NodeBase(nodes(type::RegExp(m), std::move(attrs)), m), _patterns(std::move(p)) {}
-
-    auto attributes() const { return children()[1].tryAs<AttributeSet>(); }
-    const auto& value() const { return _patterns; }
+    const auto& value() const { return _value; }
+    auto attributes() const { return child<AttributeSet>(1); }
 
     /**
      * Returns true if this pattern does not need support for capturing groups.
      */
-    bool isNoSub() const { return AttributeSet::find(attributes(), "&nosub").has_value(); }
+    bool isNoSub() const { return attributes()->find("&nosub") != nullptr; }
 
-    bool operator==(const RegExp& other) const { return value() == other.value(); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"patterns", util::join(_patterns, " | ")}}; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", util::join(_value, " | ")}};
+        return Ctor::properties() + p;
+    }
+
+    static auto create(ASTContext* ctx, std::vector<std::string> v, AttributeSetPtr attrs, const Meta& meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        return CtorPtr(
+            new RegExp(ctx, {QualifiedType::create(ctx, type::RegExp::create(ctx, meta), Constness::Const), attrs},
+                       std::move(v), meta));
+    }
+
+protected:
+    RegExp(ASTContext* ctx, Nodes children, std::vector<std::string> v, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(std::move(v)) {}
+
+    HILTI_NODE(hilti, RegExp)
 
 private:
-    std::vector<std::string> _patterns;
+    std::vector<std::string> _value;
 };
 
 } // namespace hilti::ctor

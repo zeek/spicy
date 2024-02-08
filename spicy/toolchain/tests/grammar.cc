@@ -4,43 +4,70 @@
 
 #include <utility>
 
+#include <hilti/ast/builder/builder.h>
 #include <hilti/ast/ctors/bytes.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/compiler/init.h>
 
 #include <spicy/compiler/detail/codegen/grammar.h>
 #include <spicy/compiler/detail/codegen/productions/all.h>
 #include <spicy/spicy.h>
 
-static auto literal(const std::string& symbol, std::string value) {
-    auto c = hilti::ctor::Bytes(std::move(value));
-    return spicy::detail::codegen::production::Ctor(symbol, std::move(c));
+using Ps = std::vector<std::unique_ptr<spicy::detail::codegen::Production>>;
+
+template<class... Args>
+auto make_prods(Args... args) {
+    std::vector<std::unique_ptr<spicy::detail::codegen::Production>> rv;
+    (rv.emplace_back(std::move(args)), ...);
+    return rv;
 }
 
-static auto sequence(const std::string& symbol, std::vector<spicy::detail::codegen::Production> l) {
-    return spicy::detail::codegen::production::Sequence(symbol, std::move(l));
+static auto literal(hilti::ASTContext* ctx, const std::string& symbol, std::string value) {
+    auto c = hilti::ctor::Bytes::create(ctx, std::move(value));
+    return std::make_unique<spicy::detail::codegen::production::Ctor>(ctx, symbol, c);
 }
 
-static auto variable(const std::string& symbol, spicy::Type t) {
-    return spicy::detail::codegen::production::Variable(symbol, std::move(t));
+static auto sequence(hilti::ASTContext* ctx, const std::string& symbol, Ps l) {
+    return std::make_unique<spicy::detail::codegen::production::Sequence>(ctx, symbol, std::move(l));
 }
 
-static auto type_literal(const std::string& symbol, spicy::Type t) {
-    return spicy::detail::codegen::production::TypeLiteral(symbol, std::move(t));
+static auto variable(hilti::ASTContext* ctx, const std::string& symbol, const hilti::UnqualifiedTypePtr& t) {
+    return std::make_unique<
+        spicy::detail::codegen::production::Variable>(ctx, symbol,
+                                                      hilti::QualifiedType::create(ctx, t, hilti::Constness::NonConst));
 }
 
-static auto unresolved() { return spicy::detail::codegen::production::Unresolved(); }
-
-static auto lookAhead(const std::string& symbol, spicy::detail::codegen::Production a1,
-                      spicy::detail::codegen::Production a2) {
-    return spicy::detail::codegen::production::LookAhead(symbol, std::move(a1), std::move(a2),
-                                                         spicy::detail::codegen::production::look_ahead::Default::None);
+static auto type_literal(hilti::ASTContext* ctx, const std::string& symbol, const spicy::UnqualifiedTypePtr& t) {
+    return std::make_unique<
+        spicy::detail::codegen::production::TypeLiteral>(ctx, symbol,
+                                                         hilti::QualifiedType::create(ctx, t, hilti::Constness::Const));
 }
 
-static auto epsilon() { return spicy::detail::codegen::production::Epsilon(); }
+static auto resolved(hilti::ASTContext* ctx) {
+    auto x = std::make_unique<spicy::detail::codegen::production::Deferred>(ctx);
+    return std::make_pair(x.get(), std::move(x));
+}
+
+template<typename T>
+static auto reference(hilti::ASTContext* ctx, const std::unique_ptr<T>& p) {
+    return std::make_unique<spicy::detail::codegen::production::Reference>(ctx, p.get());
+}
+
+static auto lookAhead(hilti::ASTContext* ctx, const std::string& symbol,
+                      std::unique_ptr<spicy::detail::codegen::Production> a1,
+                      std::unique_ptr<spicy::detail::codegen::Production> a2) {
+    return std::make_unique<
+        spicy::detail::codegen::production::LookAhead>(ctx, symbol, std::move(a1), std::move(a2),
+                                                       spicy::detail::codegen::production::look_ahead::Default::None);
+}
+
+static auto epsilon(hilti::ASTContext* ctx) {
+    return std::make_unique<spicy::detail::codegen::production::Epsilon>(ctx);
+}
 
 static hilti::Result<hilti::Nothing> finalize(spicy::detail::codegen::Grammar* g,
-                                              const spicy::detail::codegen::Production& root) {
-    if ( auto result = g->setRoot(root); ! result )
+                                              std::unique_ptr<spicy::detail::codegen::Production> root) {
+    if ( auto result = g->setRoot(std::move(root)); ! result )
         return result;
 
     if ( auto result = g->finalize(); ! result )
@@ -52,12 +79,13 @@ static hilti::Result<hilti::Nothing> finalize(spicy::detail::codegen::Grammar* g
 TEST_SUITE_BEGIN("Grammar");
 
 TEST_CASE("basic") {
+    hilti::ASTContext ctx(nullptr);
+
     auto g = spicy::detail::codegen::Grammar("basic");
-    auto l1 = literal("l1", "l1-val");
-    auto l2 = literal("l2", "l2-val");
-    auto l3 = literal("l3", "l3-val");
-    auto r = sequence("S", {l1, l2, l3});
-    CHECK(finalize(&g, r));
+    auto prods =
+        make_prods(literal(&ctx, "l1", "l1-val"), literal(&ctx, "l2", "l2-val"), literal(&ctx, "l3", "l3-val"));
+    auto r = sequence(&ctx, "S", std::move(prods));
+    CHECK(finalize(&g, std::move(r)));
 }
 
 TEST_CASE("example1") {
@@ -67,93 +95,121 @@ TEST_CASE("example1") {
     //
     // Ambiguity expected.
 
+    hilti::init();
+    hilti::ASTContext ctx(nullptr);
+
     auto g = spicy::detail::codegen::Grammar("example1");
 
-    auto a = literal("a", "a");
-    auto b = literal("b", "b");
-    auto c = literal("c", "c");
-    auto d = literal("d", "d");
+    auto a = literal(&ctx, "a1", "a");
+    auto a_r1 = reference(&ctx, a);
+    auto b = literal(&ctx, "b1", "b");
+    auto b_r1 = reference(&ctx, b);
+    auto c = literal(&ctx, "c1", "c");
+    auto c_r1 = reference(&ctx, c);
 
-    auto A = unresolved();
-    auto C = unresolved();
-    auto D = unresolved();
+    auto [A_, A] = resolved(&ctx);
+    auto A_r1 = reference(&ctx, A);
+    auto A_r2 = reference(&ctx, A);
+    auto A_r3 = reference(&ctx, A);
 
-    auto cC = sequence("cC", {c, C});
-    auto bD = sequence("bD", {b, D});
-    auto AD = sequence("AD", {A, D});
-    auto aA = sequence("aA", {a, A});
+    auto [C_, C] = resolved(&ctx);
 
-    g.resolve(&A, lookAhead("A", epsilon(), a));
-    auto B = lookAhead("B", epsilon(), bD);
-    g.resolve(&C, lookAhead("C", AD, b));
-    g.resolve(&D, lookAhead("D", aA, c));
+    auto [D_, D] = resolved(&ctx);
+    auto D_r1 = reference(&ctx, D);
 
-    auto ABA = sequence("ABA", {A, B, A});
-    auto S = lookAhead("S", ABA, cC);
+    auto cC = sequence(&ctx, "cC", make_prods(std::move(c), std::move(C)));
+    auto bD = sequence(&ctx, "bD", make_prods(std::move(b), std::move(D)));
+    auto AD = sequence(&ctx, "AD", make_prods(std::move(A), std::move(D_r1)));
+    auto aA = sequence(&ctx, "aA", make_prods(std::move(a), std::move(A_r1)));
 
-    CHECK_EQ(finalize(&g, S),
+    g.resolve(A_, lookAhead(&ctx, "A", epsilon(&ctx), std::move(a_r1)));
+    auto B = lookAhead(&ctx, "B", epsilon(&ctx), std::move(bD));
+    g.resolve(C_, lookAhead(&ctx, "C", std::move(AD), std::move(b_r1)));
+    g.resolve(D_, lookAhead(&ctx, "D", std::move(aA), std::move(c_r1)));
+
+    auto ABA = sequence(&ctx, "ABA", make_prods(std::move(A_r2), std::move(B), std::move(A_r3)));
+    auto S = lookAhead(&ctx, "S", std::move(ABA), std::move(cC));
+
+    auto rc = finalize(&g, std::move(S));
+    CHECK_EQ(rc,
              hilti::Result<hilti::Nothing>(hilti::result::Error(
-                 "grammar example1, production A is ambiguous for look-ahead symbol(s) { b\"a\" (bytes) }\n")));
+                 "grammar example1, production A is ambiguous for look-ahead symbol(s) { b\"a\" (const bytes) }\n")));
 }
 
 TEST_CASE("example2") {
     //  Simple example grammar from "Parsing Techniques", Fig. 8.9
-
+    hilti::init();
+    hilti::ASTContext ctx(nullptr);
     auto g = spicy::detail::codegen::Grammar("example2");
 
-    auto hs = literal("hs", "#");
-    auto pl = literal("pl", "(");
-    auto pr = literal("pr", ")");
-    auto no = literal("no", "!");
-    auto qu = literal("qu", "?");
-    auto st = variable("st", spicy::type::Bytes());
+    auto hs = literal(&ctx, "hs", "#");
+    auto pl = literal(&ctx, "pl", "(");
+    auto pr = literal(&ctx, "pr", ")");
+    auto no = literal(&ctx, "no", "!");
+    auto qu = literal(&ctx, "qu", "?");
+    auto st = variable(&ctx, "st", hilti::type::Bytes::create(&ctx));
+    auto st_r1 = reference(&ctx, st);
 
-    auto FsQ = unresolved();
-    auto SS = unresolved();
-    auto FFs = unresolved();
+    auto [FsQ_, FsQ] = resolved(&ctx);
+    auto [SS_, SS] = resolved(&ctx);
+    auto [FFs_, FFs] = resolved(&ctx);
 
-    auto F = sequence("Fact", {no, st});
-    auto Q = sequence("Question", {qu, st});
-    auto S = lookAhead("Session", FsQ, SS);
-    g.resolve(&SS, sequence("SS", {pl, S, pr, S}));
-    auto Fs = lookAhead("Facts", FFs, epsilon());
-    g.resolve(&FsQ, sequence("FsQ", {Fs, Q}));
-    g.resolve(&FFs, sequence("FFs", {F, Fs}));
-    auto root = sequence("Start", {S, hs});
-    CHECK(finalize(&g, root));
+    auto F = sequence(&ctx, "Fact", make_prods(std::move(no), std::move(st)));
+    auto Q = sequence(&ctx, "Question", make_prods(std::move(qu), std::move(st_r1)));
+    auto S = lookAhead(&ctx, "Session", std::move(FsQ), std::move(SS));
+    auto S_r1 = reference(&ctx, S);
+    auto S_r2 = reference(&ctx, S);
+
+    g.resolve(SS_, sequence(&ctx, "SS", make_prods(std::move(pl), std::move(S), std::move(pr), std::move(S_r1))));
+    auto Fs = lookAhead(&ctx, "Facts", std::move(FFs), epsilon(&ctx));
+    auto Fs_r1 = reference(&ctx, Fs);
+    g.resolve(FsQ_, sequence(&ctx, "FsQ", make_prods(std::move(Fs), std::move(Q))));
+    g.resolve(FFs_, sequence(&ctx, "FFs", make_prods(std::move(F), std::move(Fs_r1))));
+    auto root = sequence(&ctx, "Start", make_prods(std::move(S_r2), std::move(hs)));
+    CHECK(finalize(&g, std::move(root)));
 }
 
 TEST_CASE("example3") {
+    hilti::init();
+    hilti::ASTContext ctx(nullptr);
     auto g = spicy::detail::codegen::Grammar("example3");
 
-    auto hdrkey = ::type_literal("HdrKey", spicy::type::Bytes());
-    auto hdrval = ::type_literal("HdrVal", spicy::type::Bytes());
-    auto colon = literal("colon", ":");
-    auto ws = literal("ws", "[ \t]*");
-    auto nl = literal("nl", "[\r\n]");
-    auto header = sequence("Header", {hdrkey, ws, colon, ws, hdrval, nl});
-    auto list1 = unresolved();
-    auto list2 = lookAhead("List2", list1, epsilon());
-    g.resolve(&list1, sequence("List1", {header, list2}));
-    auto all = lookAhead("All", list2, nl);
-    CHECK(finalize(&g, all));
+    auto hdrkey = ::type_literal(&ctx, "HdrKey", hilti::type::Bytes::create(&ctx));
+    auto hdrval = ::type_literal(&ctx, "HdrVal", hilti::type::Bytes::create(&ctx));
+    auto colon = literal(&ctx, "colon", ":");
+    auto ws = literal(&ctx, "ws", "[ \t]*");
+    auto ws_r1 = reference(&ctx, ws);
+    auto nl = literal(&ctx, "nl", "[\r\n]");
+    auto nl_r1 = reference(&ctx, nl);
+    auto header = sequence(&ctx, "Header",
+                           make_prods(std::move(hdrkey), std::move(ws), std::move(colon), std::move(ws_r1),
+                                      std::move(hdrval), std::move(nl)));
+    auto [list1_, list1] = resolved(&ctx);
+    auto list2 = lookAhead(&ctx, "List2", std::move(list1), epsilon(&ctx));
+    auto list2_r1 = reference(&ctx, list2);
+    g.resolve(list1_, sequence(&ctx, "List1", make_prods(std::move(header), std::move(list2))));
+    auto all = lookAhead(&ctx, "All", std::move(list2_r1), std::move(nl_r1));
+    CHECK(finalize(&g, std::move(all)));
 }
 
 TEST_CASE("example4") {
+    hilti::init();
+    hilti::ASTContext ctx(nullptr);
     auto g = spicy::detail::codegen::Grammar("example4");
 
-    auto hdrkey = literal("hk", "hv");
-    auto hdrval = literal("hv", "hk");
-    auto colon = literal("colon", ":");
-    auto ws = literal("ws", "[ \t]*");
-    auto nl = literal("nl", "[\r\n]");
-    // auto header = sequence("Header", {hdrkey, ws, colon, ws, hdrval, nl});
-    auto all = unresolved();
-    auto list1 = unresolved();
-    auto list2 = lookAhead("List2", ws, epsilon());
-    g.resolve(&list1, sequence("List1", {list2}));
-    g.resolve(&all, sequence("All", {list2, colon}));
-    CHECK(finalize(&g, all));
+    auto hdrkey = literal(&ctx, "hk", "hv");
+    auto hdrval = literal(&ctx, "hv", "hk");
+    auto colon = literal(&ctx, "colon", ":");
+    auto ws = literal(&ctx, "ws", "[ \t]*");
+    auto nl = literal(&ctx, "nl", "[\r\n]");
+    // auto header = sequence(&ctx, "Header", {hdrkey, ws, colon, ws, hdrval, nl});
+    auto [all_, all] = resolved(&ctx);
+    auto [list1_, list1] = resolved(&ctx);
+    auto list2 = lookAhead(&ctx, "List2", std::move(ws), epsilon(&ctx));
+    auto list2_r1 = reference(&ctx, list2);
+    g.resolve(list1_, sequence(&ctx, "List1", make_prods(std::move(list2))));
+    g.resolve(all_, sequence(&ctx, "All", make_prods(std::move(list2_r1), std::move(colon))));
+    CHECK(finalize(&g, std::move(all)));
 }
 
 TEST_SUITE_END();

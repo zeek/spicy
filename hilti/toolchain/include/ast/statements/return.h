@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
@@ -9,23 +10,23 @@
 
 namespace hilti::statement {
 
-/** AST node for a "return" statement. */
-class Return : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a `return` statement. */
+class Return : public Statement {
 public:
-    Return(Meta m = Meta()) : NodeBase({node::none}, std::move(m)) {}
-    Return(hilti::Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+    auto expression() const { return child<::hilti::Expression>(0); }
 
-    auto expression() const { return children()[0].tryAs<hilti::Expression>(); }
+    void setExpression(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 0, c); }
 
-    void setExpression(const hilti::Expression& c) { children()[0] = c; }
+    static auto create(ASTContext* ctx, const ExpressionPtr& expr, Meta meta = {}) {
+        return std::shared_ptr<Return>(new Return(ctx, {expr}, std::move(meta)));
+    }
 
-    bool operator==(const Return& other) const { return expression() == other.expression(); }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return create(ctx, nullptr, std::move(meta)); }
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
+protected:
+    Return(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Return)
 };
 
 } // namespace hilti::statement

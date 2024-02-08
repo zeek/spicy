@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
@@ -21,52 +21,57 @@ enum class Default { First, Second, None };
  * A pair of alternatives between which we can decide with one token of
  * look-ahead.
  */
-class LookAhead : public ProductionBase, public spicy::trait::isNonTerminal {
+class LookAhead : public Production {
 public:
-    LookAhead(const std::string& symbol, Production alt1, Production alt2, look_ahead::Default def,
-              const Location& l = location::None)
-        : ProductionBase(symbol, l),
-          _alternatives(std::make_pair(std::move(alt1), std::move(alt2))),
-          _default(def),
-          _lahs(new std::pair<std::set<Production>, std::set<Production>>) {}
+    LookAhead(ASTContext* /* ctx */, const std::string& symbol, std::unique_ptr<Production> alt1,
+              std::unique_ptr<Production> alt2, look_ahead::Default def, const Location& l = location::None)
+        : Production(symbol, l), _alternatives(std::make_pair(std::move(alt1), std::move(alt2))), _default(def) {}
 
-    LookAhead(const std::string& symbol, Production alt1, Production alt2, const Location& l = location::None)
-        : LookAhead(symbol, std::move(alt1), std::move(alt2), look_ahead::Default::None, l) {}
+    LookAhead(ASTContext* ctx, const std::string& symbol, std::unique_ptr<Production> alt1,
+              std::unique_ptr<Production> alt2, const Location& l = location::None)
+        : LookAhead(ctx, symbol, std::move(alt1), std::move(alt2), look_ahead::Default::None, l) {}
 
     /** Returns the two alternatives. */
-    const std::pair<Production, Production>& alternatives() const { return _alternatives; }
+    std::pair<Production*, Production*> alternatives() const {
+        return std::make_pair(_alternatives.first.get(), _alternatives.second.get());
+    }
 
     /** Returns what's the default alternative. */
-    look_ahead::Default default_() const { return _default; }
+    const auto& default_() const { return _default; }
+
+    bool isAtomic() const final { return false; };
+    bool isEodOk() const final { return isNullable(); };
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return production::isNullable(rhss()); };
+    bool isTerminal() const final { return false; };
+
+    std::vector<std::vector<Production*>> rhss() const final {
+        return {{_alternatives.first.get()}, {_alternatives.second.get()}};
+    }
+
+    std::string dump() const final;
 
     /**
      * Returns the look-aheads for the two alternatives. This function will
      * return a valid value only after the instance has been added to a
      * `Grammar`, as that's when the look-aheads are computed.
      */
-    const std::pair<std::set<Production>, std::set<Production>>& lookAheads() const { return *_lahs; }
+    const auto& lookAheads() const { return _lahs; }
 
     /**
      * Sets the look-aheads for the two alternatives. This function is called
      * from a `Grammar` when the production is added to it.
      */
-    void setLookAheads(std::pair<std::set<Production>, std::set<Production>>&& lahs) { *_lahs = std::move(lahs); }
+    void setLookAheads(std::pair<std::set<Production*>, std::set<Production*>>&& lahs) { _lahs = std::move(lahs); }
 
-    // Production API
-    std::vector<std::vector<Production>> rhss() const { return {{_alternatives.first}, {_alternatives.second}}; }
-    std::optional<spicy::Type> type() const { return {}; }
-    bool nullable() const { return production::nullable(rhss()); }
-    bool eodOk() const { return nullable(); }
-    bool atomic() const { return false; }
-    std::string render() const;
+    SPICY_PRODUCTION
 
 private:
-    std::pair<Production, Production> _alternatives;
+    std::pair<std::unique_ptr<Production>, std::unique_ptr<Production>> _alternatives;
+
     look_ahead::Default _default;
 
-    // This violates value-semantics but we need to share updates with
-    // existing copies of the production
-    std::shared_ptr<std::pair<std::set<Production>, std::set<Production>>> _lahs;
+    std::pair<std::set<Production*>, std::set<Production*>> _lahs;
 };
 
 } // namespace spicy::detail::codegen::production

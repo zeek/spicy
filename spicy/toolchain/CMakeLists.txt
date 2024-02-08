@@ -14,38 +14,24 @@ flex_target(scanner_spicy src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner
 bison_target_pp(parser_spicy src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc DEFINES_FILE
                 ${AUTOGEN_CC}/__parser.h)
 
+bison_source(src/compiler/plugin.cc ${AUTOGEN_CC})
 bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__parser.cc ${AUTOGEN_CC})
 
-include(TypeErase)
-autogen_type_erased(SOURCES_TYPE_ERASED include/spicy/ast/types/unit-item.api YES)
-autogen_type_erased(SOURCES_TYPE_ERASED include/spicy/compiler/detail/codegen/production.api NO)
-
 include(ASTOperators)
-autogen_operators(SOURCES_OPERATORS spicy include/spicy/ast/operators ${AUTOGEN_H}/operators.decl
-                  ${AUTOGEN_CC}/operators-implementations.cc)
 
-autogen_dispatchers(
-    SOURCES_TYPE_ERASED
-    ${AUTOGEN_H}/__dispatchers.h
-    "spicy/ast/all.h"
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../hilti/toolchain/include/hilti/ast/nodes.decl
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/spicy/ast/nodes.decl
-    ${AUTOGEN_H_HILTI}/operators.decl
-    ${AUTOGEN_H}/operators.decl)
-
-autogen_dispatchers(
-    PRODUCTIONS_TYPE_ERASED ${AUTOGEN_H}/__dispatchers-productions.h "spicy/ast/all.h"
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/compiler/detail/codegen/productions.decl)
+autogen_operators(SOURCES_OPERATORS spicy src/ast/operators ${AUTOGEN_H} ${AUTOGEN_CC})
 
 set(SOURCES_COMPILER
     src/ast/hook.cc
-    src/ast/types.cc
+    src/ast/operators/unit.cc
+    src/ast/operators/sink.cc
     src/ast/types/unit.cc
+    src/ast/types/unit-item.cc
     src/ast/types/unit-items/field.cc
     src/ast/types/unit-items/switch.cc
-    src/compiler/coercion.cc
+    src/ast/visitor-dispatcher.cc
     src/compiler/codegen/codegen.cc
     src/compiler/codegen/grammar.cc
     src/compiler/codegen/grammar-builder.cc
@@ -57,19 +43,17 @@ set(SOURCES_COMPILER
     src/compiler/codegen/productions/switch.cc
     src/compiler/codegen/productions/while.cc
     src/compiler/codegen/unit-builder.cc
+    src/compiler/coercer.cc
     src/compiler/driver.cc
     src/compiler/init.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
-    src/compiler/visitors/coercer.cc
-    src/compiler/visitors/normalizer.cc
-    src/compiler/visitors/resolver.cc
-    src/compiler/visitors/printer.cc
-    src/compiler/visitors/scope-builder.cc
-    src/compiler/visitors/validator.cc
-    ${SOURCES_TYPE_ERASED}
+    src/compiler/printer.cc
+    src/compiler/resolver.cc
+    src/compiler/scope-builder.cc
+    src/compiler/type-unifier.cc
+    src/compiler/validator.cc
     ${SOURCES_OPERATORS}
-    ${PRODUCTIONS_TYPE_ERASED}
     ${AUTOGEN_CC}/config.cc
     ${BISON_parser_spicy_OUTPUTS}
     ${FLEX_scanner_spicy_OUTPUTS})

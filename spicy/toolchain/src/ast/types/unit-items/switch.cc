@@ -2,17 +2,19 @@
 
 #include <hilti/ast/builder/all.h>
 
-#include <spicy/ast/detail/visitor.h>
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/switch.h>
+#include <spicy/ast/visitor.h>
 
 using namespace spicy;
 using namespace spicy::detail;
 
+spicy::type::unit::item::switch_::Case::~Case() {}
+
 bool spicy::type::unit::item::Switch::hasNoFields() const {
     for ( const auto& c : cases() ) {
-        for ( const auto& f : c.items() ) {
-            if ( ! f.itemType().isA<type::Void>() )
+        for ( const auto& f : c->items() ) {
+            if ( ! f->itemType()->type()->isA<hilti::type::Void>() )
                 return false;
         }
     }
@@ -20,18 +22,14 @@ bool spicy::type::unit::item::Switch::hasNoFields() const {
     return true;
 }
 
-hilti::optional_ref<const spicy::type::unit::item::switch_::Case> spicy::type::unit::item::Switch::case_(
-    const type::unit::item::Field& x) {
+spicy::type::unit::item::switch_::CasePtr spicy::type::unit::item::Switch::case_(
+    const type::unit::item::FieldPtr& field) const {
     for ( const auto& c : cases() ) {
-        for ( const auto& f : c.items() ) {
-            if ( f == x )
+        for ( const auto& i : c->items() ) {
+            if ( i == field )
                 return c;
         }
     }
 
     return {};
-}
-
-bool spicy::type::unit::item::switch_::Case::operator==(const Case& other) const {
-    return expressions() == other.expressions() && items() == other.items();
 }

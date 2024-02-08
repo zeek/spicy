@@ -2,6 +2,8 @@
 
 module spicy_rt {
 
+%skip-implementation;
+
 import hilti;
 
 public type Backtrack = exception &cxxname="spicy::rt::Backtrack";
@@ -64,7 +66,7 @@ public type Parser = struct {
     any context_new;
     TypeInfo type_info;
     string description;
-    any mime_types;
+    vector<MIMEType> mime_types;
     vector<ParserPort> ports;
 } &cxxname="spicy::rt::Parser";
 

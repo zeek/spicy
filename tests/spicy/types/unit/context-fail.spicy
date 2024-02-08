@@ -9,8 +9,11 @@ type A = unit { # needs public
     %context = string;
 };
 
-public type B = unit {
+public type B1 = unit {
     %context; # no argument
+};
+
+public type B2 = unit {
     %context = 42; # needs type
 };
 

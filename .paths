@@ -1,6 +1,7 @@
 hilti/runtime/include                                       hilti/runtime/src
 hilti/toolchain/bin
 hilti/toolchain/include                                     hilti/toolchain/src
+hilti/toolchain/include/ast/detail                          hilti/toolchain/src/ast
 hilti/toolchain/include/compiler/detail                     hilti/toolchain/src/compiler
 hilti/toolchain/include/compiler/detail/codegen/codegen.h   hilti/toolchain/src/compiler/codegen
 hilti/toolchain/include/compiler/detail/visitors.h          hilti/toolchain/src/compiler/visitors

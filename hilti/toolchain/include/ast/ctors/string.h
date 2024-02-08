@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -10,30 +11,29 @@
 
 namespace hilti::ctor {
 
-/** AST node for a string constructor. */
-class String : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `string` ctor. */
+class String : public Ctor {
 public:
-    String(std::string v, bool is_literal = false, const Meta& m = Meta())
-        : NodeBase(nodes(type::String(m)), m), _value(std::move(v)), _is_literal(is_literal) {}
+    const auto& value() const { return _value; }
+    auto isLiteral() const { return _is_literal; }
 
-    const auto& value() const& { return _value; }
-    bool isLiteral() const { return _is_literal; }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    bool operator==(const String& other) const { return value() == other.value(); }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", _value}, {"is_literal", _is_literal}};
+        return Ctor::properties() + p;
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, std::string value, bool is_literal, const Meta& meta = {}) {
+        return CtorPtr(new String(ctx, {QualifiedType::create(ctx, type::String::create(ctx, meta), Constness::Const)},
+                                  std::move(value), is_literal, meta));
+    }
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"value", _value}, {"is_literal", _is_literal}}; }
+protected:
+    String(ASTContext* ctx, Nodes children, std::string value, bool is_literal, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(std::move(value)), _is_literal(is_literal) {}
+
+    HILTI_NODE(hilti, String)
 
 private:
     std::string _value;

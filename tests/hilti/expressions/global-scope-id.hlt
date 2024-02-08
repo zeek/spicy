@@ -1,0 +1,16 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST0-DOC: Test using `::` to access a global variable.
+
+module X {
+
+const int<32> x = 1;
+
+function auto foo(int<32> x) {
+    return ::x;
+}
+
+assert foo(2) == 1;
+
+}

@@ -52,7 +52,7 @@ namespace debug {} // namespace debug
 enum class Level { Debug, Info, Warning, Error, FatalError, InternalError };
 
 namespace detail {
-constexpr util::enum_::Value<Level> levels[] = {
+constexpr util::enum_::Value<Level> Levels[] = {
     {Level::Debug, "debug"},
     {Level::Info, "info"},
     {Level::Warning, "warning"},
@@ -62,10 +62,10 @@ constexpr util::enum_::Value<Level> levels[] = {
 };
 } // namespace detail
 
-constexpr auto to_string(Level m) { return util::enum_::to_string(m, detail::levels); }
+constexpr auto to_string(Level m) { return util::enum_::to_string(m, detail::Levels); }
 
 namespace level {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Level>(s, detail::levels); }
+constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Level>(s, detail::Levels); }
 } // namespace level
 
 /** Ostream-variant that forwards output to the central logger. */
@@ -127,52 +127,61 @@ public:
     void fatalError(const std::string& msg, const Location& l = location::None) __attribute__((noreturn));
     void internalError(const std::string& msg, const Location& l = location::None) __attribute__((noreturn));
 
+    void info(const std::string& msg, const Node* n) { info(msg, n->location()); }
+    void warning(const std::string& msg, const Node* n) { warning(msg, n->location()); }
+    void deprecated(const std::string& msg, const Node* n) { deprecated(msg, n->location()); }
+    void error(const std::string& msg, const Node* n) { error(msg, n->location()); }
+    void fatalError(const std::string& msg, const Node* n) __attribute__((noreturn)) { fatalError(msg, n->location()); }
+    void internalError(const std::string& msg, const Node* n) __attribute__((noreturn)) {
+        internalError(msg, n->location());
+    }
+
     /** Use HILTI_DEBUG(...) instead. */
     void _debug(const logging::DebugStream& dbg, const std::string& msg, const Location& l = location::None);
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    void log(std::string msg, const T& n) {
-        log(msg, to_node(n).location());
+    template<typename T>
+    void log(std::string msg, const std::shared_ptr<T>& n) {
+        log(msg, n->location());
     }
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    void info(std::string msg, const T& n) {
-        info(msg, to_node(n).location());
+    template<typename T>
+    void info(std::string msg, const std::shared_ptr<T>& n) {
+        info(msg, n->location());
     }
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    void warning(std::string msg, const T& n) {
-        warning(msg, to_node(n).location());
+    template<typename T>
+    void warning(std::string msg, const std::shared_ptr<T>& n) {
+        warning(msg, n->location());
     }
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    void error(std::string msg, const T& n) {
-        error(msg, to_node(n).location());
+    template<typename T>
+    void error(std::string msg, const std::shared_ptr<T>& n) {
+        error(msg, n->location());
     }
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    void error(std::string msg, std::vector<std::string> context, const T& n) {
-        error(msg, context, to_node(n).location());
+    template<typename T>
+    void error(std::string msg, std::vector<std::string> context, const std::shared_ptr<T>& n) {
+        error(msg, context, n.location());
     }
 
-    template<typename R, typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    void error(Result<R> r, const T& n) {
-        error(r.error().description(), to_node(n).location());
+    template<typename R, typename T>
+    void error(Result<R> r, const std::shared_ptr<T>& n) {
+        error(r.error().description(), n.location());
     }
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    __attribute__((noreturn)) void fatalError(std::string msg, const T& n) {
-        fatalError(msg, to_node(n).location());
+    template<typename T>
+    __attribute__((noreturn)) void fatalError(std::string msg, const std::shared_ptr<T>& n) {
+        fatalError(msg, n->location());
     }
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    __attribute__((noreturn)) void internalError(std::string msg, const T& n) {
-        internalError(msg, to_node(n).location());
+    template<typename T>
+    __attribute__((noreturn)) void internalError(std::string msg, const std::shared_ptr<T>& n) {
+        internalError(msg, n->location());
     }
 
-    template<typename T, IF_DERIVED_FROM(T, trait::isNode)>
-    void debug(const logging::DebugStream& dbg, std::string msg, const T& n) {
-        debug(dbg, msg, to_node(n).location());
+    template<typename T>
+    void debug(const logging::DebugStream& dbg, std::string msg, const std::shared_ptr<T>& n) {
+        debug(dbg, msg, n->location());
     }
 
     void debugEnable(const logging::DebugStream& dbg);
@@ -236,8 +245,8 @@ namespace logging {
  */
 class DebugPushIndent {
 public:
-    DebugPushIndent(const logging::DebugStream& dbg) : dbg(dbg) { logger().debugPushIndent(dbg); }
-    ~DebugPushIndent() { logger().debugPopIndent(dbg); }
+    DebugPushIndent(const logging::DebugStream& dbg) : _dbg(dbg) { logger().debugPushIndent(_dbg); }
+    ~DebugPushIndent() { logger().debugPopIndent(_dbg); }
 
     DebugPushIndent() = delete;
     DebugPushIndent(const DebugPushIndent&) = delete;
@@ -246,7 +255,7 @@ public:
     DebugPushIndent& operator=(DebugPushIndent&&) noexcept = delete;
 
 private:
-    const logging::DebugStream& dbg;
+    const logging::DebugStream& _dbg;
 };
 
 } // namespace logging

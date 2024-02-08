@@ -91,7 +91,7 @@ void Chain::trim(const Offset& offset) {
     _head_offset = offset;
 }
 
-ChainPtr Chain::deepCopy() const {
+ChainPtr Chain::copy() const {
     _ensureValid();
 
     auto nchain = make_intrusive<Chain>();

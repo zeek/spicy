@@ -1,19 +1,19 @@
 .. rubric:: Operators
 
-.. spicy:operator:: real::Cast int cast<int-type>(real)
+.. spicy:operator:: real::Cast int cast<int>(real)
 
     Converts the value to a signed integer type, accepting any loss of
     information.
 
-.. spicy:operator:: real::Cast interval cast<interval-type>(real)
+.. spicy:operator:: real::Cast interval cast<interval>(real)
 
     Interprets the value as number of seconds.
 
-.. spicy:operator:: real::Cast time cast<time-type>(real)
+.. spicy:operator:: real::Cast time cast<time>(real)
 
     Interprets the value as number of seconds since the UNIX epoch.
 
-.. spicy:operator:: real::Cast uint cast<uint-type>(real)
+.. spicy:operator:: real::Cast uint cast<uint>(real)
 
     Converts the value to an unsigned integer type, accepting any loss of
     information.

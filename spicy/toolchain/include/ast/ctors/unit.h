@@ -2,68 +2,65 @@
 
 #pragma once
 
-#include <algorithm>
+#include <memory>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/ctors/struct.h>
-#include <hilti/ast/expression.h>
-#include <hilti/ast/id.h>
-#include <hilti/ast/types/auto.h>
-#include <hilti/ast/types/struct.h>
+#include <hilti/ast/types/bool.h>
 
+#include <spicy/ast/forward.h>
 #include <spicy/ast/types/unit.h>
 
 namespace spicy::ctor {
 
 namespace unit {
-/** AST node for a unit field constructor. */
+/**
+ * AST node for a unit field constructor (which is just the same as a struct
+ * field constructor).
+ */
 using Field = hilti::ctor::struct_::Field;
+using FieldPtr = hilti::ctor::struct_::FieldPtr;
+using Fields = hilti::ctor::struct_::Fields;
 } // namespace unit
 
-/** AST node for a unit conunitor. */
-class Unit : public hilti::NodeBase, public hilti::trait::isCtor {
+/** AST node for a unit constructor. */
+class Unit : public Ctor {
 public:
-    Unit(std::vector<unit::Field> f, Meta m = Meta())
-        : hilti::NodeBase(nodes(type::auto_, std::move(f)), std::move(m)) {}
-    Unit(std::vector<unit::Field> f, Type t, Meta m = Meta())
-        : NodeBase(nodes(std::move(t), std::move(f)), std::move(m)) {}
-
     /** Returns all fields that the constructor initializes. */
-    auto fields() const { return children<unit::Field>(1, -1); }
+    auto fields() const { return children<unit::Field>(1, {}); }
 
     /*** Returns the unit type the constructor is producing. */
     auto utype() const { return child<type::Unit>(0); }
 
     /** Returns a field initialized by the constructor through its ID. */
-    hilti::optional_ref<const unit::Field> field(const ID& id) const {
+    unit::FieldPtr field(const ID& id) const {
         for ( const auto& f : fields() ) {
-            if ( f.id() == id )
+            if ( f->id() == id )
                 return f;
         }
 
         return {};
     }
 
-    void setType(const Type& x) { children()[0] = x; }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    bool operator==(const Unit& other) const { return fields() == other.fields(); }
+    void setType(ASTContext* ctx, QualifiedTypePtr t) { setChild(ctx, 0, std::move(t)); }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
+    static auto create(ASTContext* ctx, ctor::unit::Fields fields, const Meta& meta = {}) {
+        auto auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
+        return std::shared_ptr<Unit>(new Unit(ctx, node::flatten(std::move(auto_), std::move(fields)), meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, ctor::unit::Fields fields, QualifiedTypePtr t, const Meta& meta = {}) {
+        return std::shared_ptr<Unit>(new Unit(ctx, node::flatten(std::move(t), std::move(fields)), meta));
+    }
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+protected:
+    Unit(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+
+    HILTI_NODE(hilti, Unit)
 };
+
 
 } // namespace spicy::ctor

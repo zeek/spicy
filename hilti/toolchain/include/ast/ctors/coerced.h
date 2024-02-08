@@ -2,38 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
-#include <hilti/ast/type.h>
 
 namespace hilti::ctor {
 
 /** AST node for a constructor that's been coerced from one type to another. */
-class Coerced : public NodeBase, public hilti::trait::isCtor {
+class Coerced : public Ctor {
 public:
-    Coerced(Ctor orig, Ctor new_, Meta m = Meta()) : NodeBase({std::move(orig), std::move(new_)}, std::move(m)) {}
+    auto originalCtor() const { return child<Ctor>(0); }
+    auto coercedCtor() const { return child<Ctor>(1); }
 
-    const auto& originalCtor() const { return child<Ctor>(0); }
-    const auto& coercedCtor() const { return child<Ctor>(1); }
+    QualifiedTypePtr type() const final { return coercedCtor()->type(); }
 
-    bool operator==(const Coerced& other) const {
-        return originalCtor() == other.originalCtor() && coercedCtor() == other.coercedCtor();
+    static auto create(ASTContext* ctx, const CtorPtr& orig, const CtorPtr& new_, const Meta& meta = {}) {
+        return std::shared_ptr<Coerced>(new Coerced(ctx, {orig, new_}, meta));
     }
 
-    /** Implements `Ctor` interface. */
-    const Type& type() const { return coercedCtor().type(); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return coercedCtor().isConstant(); }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return coercedCtor().isLhs(); }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return coercedCtor().isTemporary(); }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+protected:
+    Coerced(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Coerced)
 };
 
 } // namespace hilti::ctor

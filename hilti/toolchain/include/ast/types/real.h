@@ -2,26 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a floating point type. */
-class Real : public TypeBase, trait::isAllocable, trait::isSortable {
+/** AST node for a `real` type. */
+class Real : public UnqualifiedType {
 public:
-    Real(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    std::string_view typeClass() const final { return "real"; }
 
-    bool operator==(const Real& /* other */) const { return true; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Real>(new Real(ctx, std::move(meta)));
+    }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+protected:
+    Real(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"real"}, std::move(meta)) {}
+
+    HILTI_NODE(hilti, Real)
 };
 
 } // namespace hilti::type

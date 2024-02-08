@@ -1,0 +1,101 @@
+#! /usr/bin/env python3
+#
+# # Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
+import os
+import os.path
+import sys
+
+if len(sys.argv) < 6 or sys.argv[4] != "--":
+    print("Usage: %s <scope-ns> <autogen-dir-include> <autogen-dir-src> -- <*.cc>" % sys.argv[0], file=sys.stderr)
+    sys.exit(1)
+
+scope = sys.argv[1]
+autogen_h = sys.argv[2]
+os.makedirs(autogen_h, exist_ok=True)
+
+autogen_cc = sys.argv[3]
+os.makedirs(autogen_h, exist_ok=True)
+
+cc = sys.argv[5:]
+
+dispatcher_h = open(os.path.join(autogen_h, "__ast-visitor-dispatcher.h"), "w")
+dispatcher_cc = open(os.path.join(autogen_cc, "ast-visitor-dispatcher.cc"), "w")
+forward_h = open(os.path.join(autogen_h, "__ast-forward.h"), "w")
+operators_h = open(os.path.join(autogen_h, "__ast-operators.h"), "w")
+
+print("""
+#include <{scope}/ast/all.h>
+#include <{scope}/ast/visitor-dispatcher.h>
+
+using namespace hilti;
+using namespace {scope};
+""".format(scope=scope), file=dispatcher_cc)
+
+print("""
+#pragma once
+
+namespace {scope}::operator_ {{
+""".format(scope=scope), file=operators_h)
+
+def output(scope, cls, base, ns, name):
+    print("virtual void operator()(%s::operator_::%s::%s* n) {}" % (scope, ns, name), file=dispatcher_h)
+    print("%s_NODE_IMPLEMENTATION_2(%s, operator_::%s::%s, ResolvedOperator, Expression)" % (scope.upper(), scope, ns, name), file=dispatcher_cc)
+    print("namespace operator_::%s { class %s; }" % (ns, name), file=forward_h)
+    print("HILTI_NODE_OPERATOR(%s, %s, %s)" % (scope, ns, name), file=operators_h)
+
+### Main.
+
+for file in cc:
+
+    in_class = False
+    in_if0 = False
+    in_if_level = 0
+
+    for line in open(file):
+        line = line.strip()
+
+        if in_if0:
+            if line.startswith("#if"):
+                in_if_level += 1
+
+            if line.startswith("#endif"):
+                in_if_level -= 1
+
+            if in_if_level == 0:
+                in_if0 = False
+
+            continue
+
+        if line.startswith("#if 0"):
+            in_if0 = True
+            in_if_level = 1
+            continue
+
+        if line.find("HILTI_OPERATOR_IMPLEMENTATION") >= 0:
+            continue
+
+        if not in_class:
+
+            if not line.startswith("class"):
+                continue
+
+            m = [i.strip() for i in line.split()]
+
+            [cls, base] = (m[1], m[4])
+            in_class = True
+
+        else:
+            i = line.find("HILTI_OPERATOR")
+            if i >= 0:
+                i = line.find(",", i) + 2
+                j = line.find(")", i)
+                assert j > i
+                op = line[i:j].strip()
+                m = op.split("::")
+                ns = "::".join(m[:-1])
+                name = m[-1]
+
+                output(scope, cls, base, ns, name)
+
+print("}", file=operators_h)

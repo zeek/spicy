@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/ast/builder/builder.h>
+#include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/types/bitfield.h>
 #include <hilti/base/cache.h>
@@ -60,10 +62,10 @@ struct CxxTypeInfo {
  */
 class CodeGen {
 public:
-    CodeGen(const std::shared_ptr<Context>& context) : _context(context) {}
+    CodeGen(const std::shared_ptr<Context>& context);
 
     /** Entry point for code generation. */
-    Result<cxx::Unit> compileModule(Node& root, hilti::Unit* hilti_unit,
+    Result<cxx::Unit> compileModule(const ModulePtr& module,
                                     bool include_implementation); // NOLINT(google-runtime-references)
 
     /** Entry point for generating additional cross-unit C++ code through HILTI's linker. */
@@ -71,37 +73,40 @@ public:
 
     std::shared_ptr<Context> context() const { return _context.lock(); }
     const Options& options() const { return context()->options(); }
+    auto* builder() const { return _builder.get(); }
 
     // These must be called only while a module is being compiled.
-    std::optional<cxx::declaration::Type> typeDeclaration(const hilti::Type& t);
-    std::list<cxx::declaration::Type> typeDependencies(const hilti::Type& t);
-    cxx::Type compile(const hilti::Type& t, codegen::TypeUsage usage);
-    cxx::Expression compile(const hilti::Expression& e, bool lhs = false);
-    cxx::Expression compile(const hilti::Ctor& c, bool lhs = false);
-    cxx::Expression compile(const hilti::expression::ResolvedOperator& o, bool lhs = false);
-    cxx::Block compile(const hilti::Statement& s, cxx::Block* b = nullptr);
-    cxx::declaration::Function compile(const ID& id, type::Function ft, declaration::Linkage linkage,
+    std::optional<cxx::declaration::Type> typeDeclaration(const QualifiedTypePtr& t);
+    std::list<cxx::declaration::Type> typeDependencies(const QualifiedTypePtr& t);
+    cxx::Type compile(const QualifiedTypePtr& t, codegen::TypeUsage usage);
+    cxx::Expression compile(const hilti::ExpressionPtr& e, bool lhs = false);
+    cxx::Expression compile(const hilti::CtorPtr& c, bool lhs = false);
+    cxx::Expression compile(const std::shared_ptr<hilti::expression::ResolvedOperator>& o, bool lhs = false);
+    cxx::Block compile(const hilti::StatementPtr& s, cxx::Block* b = nullptr);
+    cxx::declaration::Function compile(const ID& id, const std::shared_ptr<type::Function>& ft,
+                                       declaration::Linkage linkage,
                                        function::CallingConvention cc = function::CallingConvention::Standard,
-                                       const std::optional<AttributeSet>& fattrs = {},
-                                       std::optional<cxx::ID> namespace_ = {});
+                                       const AttributeSetPtr& fattrs = {}, std::optional<cxx::ID> namespace_ = {});
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
                                                       const hilti::node::Set<declaration::Parameter>& params);
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
                                                       const hilti::node::Range<declaration::Parameter>& params);
-    std::optional<cxx::Expression> typeDefaultValue(const hilti::Type& t);
-    codegen::TypeUsage parameterKindToTypeUsage(declaration::parameter::Kind);
+    std::optional<cxx::Expression> typeDefaultValue(const QualifiedTypePtr& t);
+    codegen::TypeUsage parameterKindToTypeUsage(parameter::Kind);
 
-    cxx::Expression typeInfo(const hilti::Type& t);
-    void addTypeInfoDefinition(const hilti::Type& t);
+    cxx::Expression typeInfo(const QualifiedTypePtr& t);
+    void addTypeInfoDefinition(const QualifiedTypePtr& t);
 
-    cxx::Expression coerce(const cxx::Expression& e, const Type& src, const Type& dst); // only for supported coercions
-    cxx::Expression pack(const Expression& data, const std::vector<Expression>& args);
-    cxx::Expression pack(const hilti::Type& t, const cxx::Expression& data, const std::vector<cxx::Expression>& args);
-    cxx::Expression unpack(const hilti::Type& t, const Expression& data, const std::vector<Expression>& args,
-                           bool throw_on_error);
-    cxx::Expression unpack(const hilti::Type& t, const Type& data_type, const cxx::Expression& data,
+    cxx::Expression coerce(const cxx::Expression& e, const QualifiedTypePtr& src,
+                           const QualifiedTypePtr& dst); // only for supported coercions
+    cxx::Expression pack(const ExpressionPtr& data, const Expressions& args);
+    cxx::Expression pack(const QualifiedTypePtr& t, const cxx::Expression& data,
+                         const std::vector<cxx::Expression>& args);
+    cxx::Expression unpack(const QualifiedTypePtr& t, QualifiedTypePtr data_type, const ExpressionPtr& data,
+                           const Expressions& args, bool throw_on_error);
+    cxx::Expression unpack(const QualifiedTypePtr& t, QualifiedTypePtr data_type, const cxx::Expression& data,
                            const std::vector<cxx::Expression>& args, bool throw_on_error);
-    void addDeclarationFor(const hilti::Type& t) { _need_decls.push_back(t); }
+    void addDeclarationFor(const QualifiedTypePtr& t) { _need_decls.push_back(t); }
 
     cxx::Expression addTmp(const std::string& prefix, const cxx::Type& t);
     cxx::Expression addTmp(const std::string& prefix, const cxx::Expression& init);
@@ -109,7 +114,7 @@ public:
     cxx::Expression startProfiler(const std::string& name, cxx::Block* block = nullptr, bool insert_at_front = false);
     void stopProfiler(const cxx::Expression& profiler, cxx::Block* block = nullptr);
 
-    cxx::Expression unsignedIntegerToBitfield(const type::Bitfield& t, const cxx::Expression& value,
+    cxx::Expression unsignedIntegerToBitfield(const std::shared_ptr<type::Bitfield>& t, const cxx::Expression& value,
                                               const cxx::Expression& bitorder);
 
     /**
@@ -120,7 +125,7 @@ public:
      * @param n node to generate the ID for
      *
      */
-    cxx::ID uniqueID(const std::string& prefix, const Node& n);
+    cxx::ID uniqueID(const std::string& prefix, const NodePtr& n);
 
     cxx::Expression self() const { return _self.back(); }
     void pushSelf(detail::cxx::Expression e) { _self.push_back(std::move(e)); }
@@ -138,26 +143,28 @@ public:
     void disablePrioritizeTypes() { --_prioritize_types; }
     bool prioritizeTypes() const { return _prioritize_types > 0; }
 
-    cxx::Unit* unit() const;        // will abort if not compiling a module.
-    hilti::Unit* hiltiUnit() const; // will abort if not compiling a module.
+    cxx::Unit* unit() const;                         // will abort if not compiling a module.
+    hilti::declaration::Module* hiltiModule() const; // will abort if not compiling a module.
 
 private:
-    const codegen::CxxTypeInfo& _getOrCreateTypeInfo(const hilti::Type& t);
+    const codegen::CxxTypeInfo& _getOrCreateTypeInfo(const QualifiedTypePtr& t);
 
     // Adapt expression so that it can be used as a LHS. If expr is already a
     // LHS, it's returned directly. Otherwise it assigns it over into a
     // temporary, which is then returned.
-    cxx::Expression _makeLhs(cxx::Expression expr, const Type& type);
+    cxx::Expression _makeLhs(cxx::Expression expr, const QualifiedTypePtr& type);
+
+    std::weak_ptr<Context> _context;
+    std::unique_ptr<Builder> _builder;
 
     std::unique_ptr<cxx::Unit> _cxx_unit;
-    hilti::Unit* _hilti_unit = nullptr;
-    std::weak_ptr<Context> _context;
-    std::vector<detail::cxx::Expression> _self = {{"__self", cxx::Side::LHS}};
-    std::vector<detail::cxx::Expression> _dd = {{"__dd", cxx::Side::LHS}};
+    hilti::declaration::Module* _hilti_module = nullptr;
+    std::vector<detail::cxx::Expression> _self = {{"__self", Side::LHS}};
+    std::vector<detail::cxx::Expression> _dd = {{"__dd", Side::LHS}};
     std::vector<detail::cxx::Block*> _cxx_blocks;
     std::vector<detail::cxx::declaration::Local> _tmps;
     std::map<std::string, int> _tmp_counters;
-    std::vector<hilti::Type> _need_decls;
+    std::vector<QualifiedTypePtr> _need_decls;
     hilti::util::Cache<cxx::ID, codegen::CxxTypes> _cache_types_storage;
     hilti::util::Cache<cxx::ID, codegen::CxxTypeInfo> _cache_type_info;
     hilti::util::Cache<cxx::ID, cxx::declaration::Type> _cache_types_declarations;

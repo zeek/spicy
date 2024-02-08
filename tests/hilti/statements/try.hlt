@@ -8,8 +8,8 @@ import hilti;
 global int<64> catches = 0;
 
 type E1 = exception;
-type E2 = exception : E1;
-type E3 = exception : E1;
+type E2 = [exception : E1];
+type E3 = [exception : E1];
 
 try {
     throw E1("e1");

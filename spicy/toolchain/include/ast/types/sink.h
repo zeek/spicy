@@ -2,25 +2,28 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
+#include <spicy/ast/forward.h>
+
 namespace spicy::type {
 
 /** AST node for a Sink type. */
-class Sink : public hilti::TypeBase, hilti::type::trait::isAllocable {
+class Sink : public UnqualifiedType {
 public:
-    Sink(hilti::Meta m = hilti::Meta()) : TypeBase(std::move(m)) {}
+    static auto create(ASTContext* ctx, const Meta& meta = {}) { return std::shared_ptr<Sink>(new Sink(ctx, meta)); }
 
-    bool operator==(const Sink& /* other */) const { return true; }
+    std::string_view typeClass() const final { return "sink"; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const hilti::Type& other) const { return hilti::node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(hilti::type::ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return hilti::node::Properties{}; }
+    bool isAllocable() const final { return true; }
+
+protected:
+    Sink(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {"sink"}, meta) {}
+
+    HILTI_NODE(spicy, Sink)
 };
 
 } // namespace spicy::type

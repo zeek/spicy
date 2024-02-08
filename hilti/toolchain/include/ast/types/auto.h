@@ -2,35 +2,27 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for an "auto" type. */
-class Auto : public TypeBase, type::trait::isAllocable {
+/** AST node for an `auto` type. */
+class Auto : public UnqualifiedType {
 public:
-    bool operator==(const Auto& /* other */) const { return true; }
+    static auto create(ASTContext* ctx, const Meta& m = Meta()) { return std::shared_ptr<Auto>(new Auto(ctx, m)); }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return false; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    std::string_view typeClass() const final { return "auto"; }
 
-    /**
-     * Wrapper around constructor so that we can make it private. Don't use
-     * this, use the singleton `type::auto_` instead.
-     */
-    static Auto create(Meta m = Meta()) { return Auto(std::move(m)); }
+    bool isResolved(node::CycleDetector* cd) const final { return false; }
 
-private:
-    Auto(Meta m = Meta()) : TypeBase(std::move(m)) {}
+protected:
+    Auto(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {}, meta) {}
+
+
+    HILTI_NODE(hilti, Auto);
 };
-
-/** Singleton. */
-static const Type auto_ = Auto::create(Location("<singleton>"));
 
 } // namespace hilti::type

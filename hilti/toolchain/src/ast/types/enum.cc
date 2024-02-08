@@ -5,76 +5,61 @@
 
 #include <hilti/ast/ctors/enum.h>
 #include <hilti/ast/declarations/constant.h>
+#include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/types/enum.h>
 
 using namespace hilti;
 
-std::vector<Declaration> type::Enum::_normalizeLabels(std::vector<type::enum_::Label> labels) {
-    auto max = std::max_element(labels.begin(), labels.end(),
-                                [](const auto& l1, const auto& l2) { return l1.value() < l2.value(); });
-    auto next_value = (max != labels.end() ? max->value() + 1 : 0);
+type::enum_::Label::~Label() {}
 
-    std::vector<Declaration> nlabels;
+void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
+    auto max = std::max_element(labels.begin(), labels.end(),
+                                [](const auto& l1, const auto& l2) { return l1->value() < l2->value(); });
+    auto next_value = (max != labels.end() ? (*max)->value() + 1 : 0);
+
+    auto enum_type = QualifiedType::createExternal(ctx, as<type::Enum>(), Constness::NonConst);
 
     for ( auto&& l : labels ) {
-        if ( util::tolower(l.id()) == "undef" )
+        if ( util::tolower(l->id()) == "undef" )
             throw std::out_of_range("reserved enum label 'Undef' cannot be redefined");
 
-        type::enum_::Label nlabel;
+        if ( l->value() < 0 )
+            l->setValue(next_value++);
 
-        if ( l.value() < 0 )
-            nlabel = type::enum_::Label(l.id(), next_value++, l.meta());
-        else
-            nlabel = std::move(l);
+        l->setEnumType(ctx, enum_type);
 
-        Declaration d = declaration::Constant(nlabel.id(), expression::Ctor(ctor::Enum(nlabel)));
-        nlabels.push_back(std::move(d));
+        auto d = declaration::Constant::create(ctx, l->id(), expression::Ctor::create(ctx, ctor::Enum::create(ctx, l)));
+        addChild(ctx, std::move(d));
     }
 
-    auto undef_label = type::enum_::Label(ID("Undef"), -1);
-    auto undef = declaration::Constant(undef_label.id(), expression::Ctor(ctor::Enum(undef_label)));
-    nlabels.emplace_back(std::move(std::move(undef)));
+    auto undef_label = type::enum_::Label::create(ctx, ID("Undef"), -1, meta())->as<type::enum_::Label>();
+    undef_label->setEnumType(ctx, enum_type);
 
-    return nlabels;
+    auto undef_decl =
+        declaration::Constant::create(ctx, undef_label->id(),
+                                      expression::Ctor::create(ctx, ctor::Enum::create(ctx, undef_label)));
+
+    addChild(ctx, std::move(undef_decl));
 }
 
-std::vector<std::reference_wrapper<const type::enum_::Label>> type::Enum::labels() const {
-    std::vector<std::reference_wrapper<const enum_::Label>> labels;
+type::enum_::Labels type::Enum::labels() const {
+    enum_::Labels labels;
 
-    for ( const auto& c : children() ) {
-        const auto& label =
-            c.as<declaration::Constant>().value().as<expression::Ctor>().ctor().as<ctor::Enum>().value();
-        labels.emplace_back(label);
-    }
+    for ( auto d : labelDeclarations() )
+        labels.emplace_back(
+            d->as<declaration::Constant>()->value()->as<expression::Ctor>()->ctor()->as<ctor::Enum>()->value());
 
     return labels;
 }
 
-std::vector<std::reference_wrapper<const type::enum_::Label>> type::Enum::uniqueLabels() const {
-    auto pred_gt = [](const enum_::Label& e1, const enum_::Label& e2) { return e1.value() > e2.value(); };
-    auto pred_eq = [](const enum_::Label& e1, const enum_::Label& e2) { return e1.value() == e2.value(); };
+type::enum_::Labels type::Enum::uniqueLabels() const {
+    auto pred_gt = [](const auto& e1, const auto& e2) { return e1->value() > e2->value(); };
+    auto pred_eq = [](const auto& e1, const auto& e2) { return e1->value() == e2->value(); };
 
     auto in = labels();
-    std::vector<std::reference_wrapper<const enum_::Label>> out;
+    enum_::Labels out;
     std::copy(in.begin(), in.end(), std::back_inserter(out));
     std::sort(out.begin(), out.end(), pred_gt);
     out.erase(std::unique(out.begin(), out.end(), pred_eq), out.end());
     return out;
-}
-
-
-void type::Enum::initLabelTypes(Node* n) {
-    auto& etype = n->as<type::Enum>();
-
-    std::vector<Node> nlabels;
-
-    for ( const auto& l : etype.labels() ) {
-        auto nlabel = enum_::Label(l.get(), NodeRef(*n));
-        Declaration d = declaration::Constant(nlabel.id(), expression::Ctor(ctor::Enum(nlabel)));
-        nlabels.emplace_back(std::move(d));
-    }
-
-    n->children() = std::move(nlabels);
-
-    etype._initialized = true;
 }

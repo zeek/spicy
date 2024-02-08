@@ -30,7 +30,7 @@ static std::string prettyTime(Duration d) {
             return fmt("%.2f%s", static_cast<double>(x.count()) / factor, unit);
     }
 
-    cannot_be_reached();
+    cannotBeReached();
 };
 
 static std::string prettyTimeForUnit(Duration d, double factor, const std::string& unit) {

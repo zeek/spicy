@@ -11,8 +11,8 @@
 ## p2,l3
 module Test {
 
-import spicy_rt;
 import hilti;
+import spicy_rt;
 
 ## It's a Foo type.
 type Foo = struct {

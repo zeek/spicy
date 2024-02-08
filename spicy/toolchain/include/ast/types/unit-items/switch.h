@@ -2,13 +2,19 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
-#include <hilti/ast/types/vector.h>
+#include <hilti/ast/attribute.h>
+#include <hilti/ast/node.h>
+#include <hilti/ast/type.h>
+#include <hilti/ast/types/void.h>
 
-#include <spicy/ast/aliases.h>
 #include <spicy/ast/engine.h>
+#include <spicy/ast/forward.h>
+#include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/field.h>
 
 namespace spicy::type::unit::item {
@@ -16,24 +22,12 @@ namespace spicy::type::unit::item {
 namespace switch_ {
 
 /** AST node for a unit switch's case. */
-class Case : public hilti::NodeBase {
+class Case : public Node {
 public:
-    Case(std::vector<Expression> exprs, std::vector<type::unit::Item> items, Meta m = Meta())
-        : NodeBase(hilti::nodes(std::move(items), std::move(exprs)), std::move(m)) {}
-
-    /** Constructor for a default case. */
-    Case(std::vector<type::unit::Item> items, Meta m = Meta())
-        : NodeBase(hilti::nodes(std::move(items)), std::move(m)) {}
-
-    /** Constructor for look-ahead case. */
-    Case(type::unit::Item field, Meta m = Meta())
-        : NodeBase(hilti::nodes(std::move(field)), std::move(m)), _look_ahead(true) {}
-
-    Case() = default;
+    ~Case() override;
 
     auto expressions() const { return childrenOfType<Expression>(); }
     auto items() const { return childrenOfType<type::unit::Item>(); }
-    auto itemRefs() const { return childRefsOfType<type::unit::Item>(); }
 
     /** Returns true if this is the default case. */
     bool isDefault() const { return expressions().empty() && ! _look_ahead; }
@@ -42,45 +36,58 @@ public:
     bool isLookAhead() const { return _look_ahead; }
 
     /** Returns true if all items have been resolved. */
-    bool isResolved() const {
+    bool isResolved(hilti::node::CycleDetector* cd = nullptr) const {
         for ( const auto& i : items() ) {
-            if ( ! i.isResolved() )
+            if ( ! i->isResolved(cd) )
                 return false;
         }
 
         return true;
     }
 
-    auto properties() const { return node::Properties{{"default", isDefault()}, {"look-ahead", isLookAhead()}}; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"look-ahead", _look_ahead}, {"default", isDefault()}};
+        return Node::properties() + p;
+    }
 
-    bool operator==(const Case& other) const;
+    static auto create(ASTContext* ctx, const Expressions& exprs, const type::unit::Items& items,
+                       const Meta& m = Meta()) {
+        return std::shared_ptr<Case>(new Case(ctx, node::flatten(exprs, items), false, m));
+    }
+
+    /** Factory function for a default case. */
+    static auto create(ASTContext* ctx, const type::unit::Items& items, const Meta& m = Meta()) {
+        return std::shared_ptr<Case>(new Case(ctx, items, false, m));
+    }
+
+    /** Factory function for a look-ahead case. */
+    static auto create(ASTContext* ctx, const type::unit::ItemPtr& field, const Meta& m = Meta()) {
+        return std::shared_ptr<Case>(new Case(ctx, {field}, true, m));
+    }
+
+protected:
+    Case(ASTContext* ctx, Nodes children, bool look_ahead, Meta meta)
+        : Node::Node(ctx, std::move(children), std::move(meta)), _look_ahead(look_ahead) {}
+
+    HILTI_NODE(spicy, Case);
 
 private:
     bool _look_ahead = false;
 };
 
-inline Node to_node(Case c) { return Node(std::move(c)); }
+using CasePtr = std::shared_ptr<Case>;
+using Cases = std::vector<CasePtr>;
 
 } // namespace switch_
 
-/** AST node for a unit field. */
-class Switch : public hilti::NodeBase, public spicy::trait::isUnitItem {
+class Switch : public unit::Item {
 public:
-    Switch(std::optional<Expression> expr, const std::vector<switch_::Case>& cases, Engine e,
-           std::optional<Expression> cond, std::vector<Hook> hooks, std::optional<AttributeSet> attributes,
-           Meta m = Meta())
-        : NodeBase(nodes(std::move(expr), std::move(cond), std::move(attributes), cases, std::move(hooks)),
-                   std::move(m)),
-          _engine(e) {}
-
     Engine engine() const { return _engine; }
-    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
+    auto expression() const { return child<Expression>(0); }
+    auto condition() const { return child<Expression>(1); }
+    auto attributes() const { return child<AttributeSet>(2); }
     auto cases() const { return childrenOfType<switch_::Case>(); }
-    auto condition() const { return children()[1].tryAs<Expression>(); }
-    auto expression() const { return children()[0].tryAs<Expression>(); }
-    auto hooks() const { return childrenOfType<Hook>(); }
-
-    auto itemRefs() const { return childRefsOfType<type::unit::Item>(); }
+    auto hooks() const { return childrenOfType<declaration::Hook>(); }
 
     /** Returns true if there's no field storing information. */
     bool hasNoFields() const;
@@ -88,31 +95,48 @@ public:
     /**
      * Returns the case that an field is part of, if any.
      *
-     * i: The field.
+     * field: The field.
      */
-    hilti::optional_ref<const switch_::Case> case_(const type::unit::item::Field& x);
+    switch_::CasePtr case_(const type::unit::item::FieldPtr& field) const;
 
-    bool operator==(const Switch& other) const {
-        return expression() == other.expression() && engine() == other.engine() && condition() == other.condition() &&
-               cases() == other.cases() && hooks() == other.hooks();
-    }
+    QualifiedTypePtr itemType() const final { return child<QualifiedType>(3); }
 
-    // Unit item interface
-    const Type& itemType() const { return type::void_; }
-
-    bool isResolved() const {
+    bool isResolved(hilti::node::CycleDetector* cd) const final {
         for ( const auto& c : cases() ) {
-            if ( ! c.isResolved() )
+            if ( ! c->isResolved(cd) )
                 return false;
         }
 
         return true;
     }
 
-    auto isEqual(const Item& other) const { return node::isEqual(this, other); }
+    std::string displayName() const final { return "unit switch"; }
 
-    // Node interface.
-    auto properties() const { return node::Properties{{"engine", to_string(_engine)}}; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"engine", to_string(_engine)}};
+        return unit::Item::properties() + p;
+    }
+
+    static auto create(ASTContext* ctx, ExpressionPtr expr, type::unit::item::switch_::Cases cases, Engine engine,
+                       ExpressionPtr cond, spicy::declaration::Hooks hooks, AttributeSetPtr attrs,
+                       const Meta& meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        return std::shared_ptr<Switch>(
+            new Switch(ctx,
+                       node::flatten(std::move(expr), std::move(cond), attrs,
+                                     QualifiedType::create(ctx, hilti::type::Void::create(ctx),
+                                                           hilti::Constness::Const),
+                                     std::move(cases), std::move(hooks)),
+                       engine, meta));
+    }
+
+protected:
+    Switch(ASTContext* ctx, Nodes children, Engine engine, const Meta& meta)
+        : unit::Item(ctx, std::move(children), ID(), meta), _engine(engine) {}
+
+    HILTI_NODE(spicy, Switch)
 
 private:
     Engine _engine;

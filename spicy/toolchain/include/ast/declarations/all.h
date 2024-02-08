@@ -2,4 +2,5 @@
 
 #pragma once
 
+#include <spicy/ast/declarations/hook.h>
 #include <spicy/ast/declarations/unit-hook.h>

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/rt/types/time.h>
@@ -11,32 +12,31 @@
 
 namespace hilti::ctor {
 
-/** AST node for a time constructor. */
-class Time : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `time` ctor. */
+class Time : public Ctor {
 public:
-    using Value = hilti::rt::Time;
+    const auto& value() const { return _value; }
 
-    Time(Value time, const Meta& m = Meta()) : NodeBase(nodes(type::Time(m)), m), _time(time) {}
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    const auto& value() const { return _time; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", to_string(_value)}};
+        return Ctor::properties() + p;
+    }
 
-    bool operator==(const Time& other) const { return value() == other.value(); }
+    static auto create(ASTContext* ctx, hilti::rt::Time v, const Meta& meta = {}) {
+        return std::shared_ptr<Time>(
+            new Time(ctx, {QualifiedType::create(ctx, type::Time::create(ctx, meta), Constness::Const)}, v, meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"time", to_string(_time)}}; }
+protected:
+    Time(ASTContext* ctx, Nodes children, hilti::rt::Time v, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(v) {}
+
+    HILTI_NODE(hilti, Time)
 
 private:
-    Value _time;
+    hilti::rt::Time _value;
 };
 
 } // namespace hilti::ctor

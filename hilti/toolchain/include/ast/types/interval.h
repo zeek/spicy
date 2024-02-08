@@ -2,25 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for an interval type. */
-class Interval : public TypeBase, trait::isAllocable, trait::isSortable {
+/** AST node for a `interval` type. */
+class Interval : public UnqualifiedType {
 public:
-    Interval(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    std::string_view typeClass() const final { return "interval"; }
 
-    bool operator==(const Interval& /* other */) const { return true; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Interval>(new Interval(ctx, std::move(meta)));
+    }
+
+protected:
+    Interval(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"interval"}, std::move(meta)) {}
+
+    HILTI_NODE(hilti, Interval)
 };
 
 } // namespace hilti::type

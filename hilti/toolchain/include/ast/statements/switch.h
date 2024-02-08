@@ -2,16 +2,18 @@
 
 #pragma once
 
-#include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <hilti/ast/declarations/local-variable.h>
+#include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/expression.h>
-#include <hilti/ast/expressions/id.h>
+#include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/statement.h>
+#include <hilti/base/logger.h>
 
 namespace hilti::statement {
 
@@ -31,105 +33,108 @@ using Default = struct {};
  * added to a `Switch` statement, and the new versions are stored separately
  * from the original expressions.
  */
-class Case : public NodeBase {
+class Case final : public Node {
 public:
-    Case(hilti::Expression expr, Statement body, Meta m = Meta())
-        : NodeBase(nodes(std::move(body), std::move(expr)), std::move(m)), _end_exprs(2) {}
-    Case(std::vector<hilti::Expression> exprs, Statement body, Meta m = Meta())
-        : NodeBase(nodes(std::move(body), std::move(exprs)), std::move(m)),
-          _end_exprs(static_cast<int>(children().size())) {}
-    Case(Default /*unused*/, Statement body, Meta m = Meta())
-        : NodeBase(nodes(std::move(body)), std::move(m)), _end_exprs(1) {}
-    Case() = default;
+    ~Case() final;
 
     auto expressions() const { return children<hilti::Expression>(1, _end_exprs); }
-    auto preprocessedExpressions() const { return children<hilti::Expression>(_end_exprs, -1); }
-    const auto& body() const { return child<Statement>(0); }
-
+    auto body() const { return child<Statement>(0); }
     bool isDefault() const { return expressions().empty(); }
 
-    /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return children()[0]; }
+    auto preprocessedExpressions() const { return children<hilti::Expression>(_end_exprs, {}); }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
-
-    bool operator==(const Case& other) const { return expressions() == other.expressions() && body() == other.body(); }
-
-private:
-    friend class hilti::statement::Switch;
-
-    void _preprocessExpressions(const std::string& id) {
-        children().erase(children().begin() + _end_exprs, children().end());
-        children().reserve(static_cast<size_t>(_end_exprs) * 2); // avoid resizing/invalidation below on emplace
-
-        for ( const auto& e : expressions() ) {
-            hilti::Expression n =
-                expression::UnresolvedOperator(operator_::Kind::Equal, {expression::UnresolvedID(ID(id)), e}, e.meta());
-
-            children().emplace_back(std::move(n));
-        }
+    static auto create(ASTContext* ctx, const Expressions& exprs, const StatementPtr& body, Meta meta = {}) {
+        return std::shared_ptr<Case>(new Case(ctx, node::flatten(body, exprs), std::move(meta)));
     }
 
-    int _end_exprs{};
+    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const StatementPtr& body, Meta meta = {}) {
+        return create(ctx, Expressions{expr}, body, std::move(meta));
+    }
+
+    static auto create(ASTContext* ctx, switch_::Default /*unused*/, const StatementPtr& body, Meta meta = {}) {
+        return create(ctx, Expressions{}, body, std::move(meta));
+    }
+
+protected:
+    friend class statement::Switch;
+
+    Case(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, std::move(children), std::move(meta)) {
+        _end_exprs = static_cast<int>(Node::children().size());
+    }
+
+    void _preprocessExpressions(ASTContext* ctx, const std::string& id) {
+        Expressions exprs;
+        for ( const auto& e : expressions() ) {
+            auto n = expression::UnresolvedOperator::create(ctx, operator_::Kind::Equal,
+                                                            {expression::Name::create(ctx, ID(id), e->meta()), e},
+                                                            e->meta());
+
+            exprs.push_back(n);
+        }
+
+        removeChildren(_end_exprs, {});
+        addChildren(ctx, std::move(exprs));
+    }
+
+    std::string _dump() const final;
+
+    HILTI_NODE(hilti, Case);
+
+private:
+    int _end_exprs;
 };
 
-inline Node to_node(Case c) { return Node(std::move(c)); }
+using CasePtr = std::shared_ptr<Case>;
+using Cases = std::vector<CasePtr>;
 
 } // namespace switch_
 
-/** AST node for a "switch" statement. */
-class Switch : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a `switch` statement. */
+class Switch : public Statement {
 public:
-    Switch(hilti::Expression cond, const std::vector<switch_::Case>& cases, const Meta& m = Meta())
-        : Switch(hilti::declaration::LocalVariable(hilti::ID("__x"), std::move(cond), true, m), cases, m) {}
+    auto condition() const { return child<declaration::LocalVariable>(0); }
+    auto cases() const { return children<switch_::Case>(1, {}); }
 
-    Switch(const hilti::Declaration& cond, const std::vector<switch_::Case>& cases, Meta m = Meta())
-        : NodeBase(nodes(cond, cases), std::move(m)) {
-        if ( ! cond.isA<declaration::LocalVariable>() )
-            logger().internalError("initialization for 'switch' must be a local declaration");
-    }
-
-    const auto& condition() const { return children()[0].as<hilti::declaration::LocalVariable>(); }
-    auto conditionRef() const { return NodeRef(children()[0]); }
-    auto cases() const { return children<switch_::Case>(1, -1); }
-
-    hilti::optional_ref<const switch_::Case> default_() const {
-        for ( const auto& c : children<switch_::Case>(1, -1) ) {
-            if ( c.isDefault() )
+    switch_::CasePtr default_() const {
+        for ( const auto& c : cases() ) {
+            if ( c->isDefault() )
                 return c;
         }
-        return {};
+
+        return nullptr;
     }
 
-    void preprocessCases() {
+    void preprocessCases(ASTContext* ctx) {
         if ( _preprocessed )
             return;
 
-        for ( auto c = children().begin() + 1; c != children().end(); c++ )
-            c->as<switch_::Case>()._preprocessExpressions(condition().id());
+        for ( const auto& c : cases() )
+            c->_preprocessExpressions(ctx, condition()->id());
 
         _preprocessed = true;
     }
 
-    bool operator==(const Switch& other) const {
-        return condition() == other.condition() && default_() == other.default_() && cases() == other.cases();
-    }
 
-    /** Internal method for use by builder API only. */
-    auto& _lastCaseNode() { return children().back(); }
-
-    /** Internal method for use by builder API only. */
-    void _addCase(switch_::Case case_) {
-        addChild(std::move(case_));
+    void addCase(ASTContext* ctx, const switch_::CasePtr& c) {
+        addChild(ctx, c);
         _preprocessed = false;
     }
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, DeclarationPtr cond, const switch_::Cases& cases, Meta meta = {}) {
+        return std::shared_ptr<Switch>(new Switch(ctx, node::flatten(std::move(cond), cases), std::move(meta)));
+    }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const switch_::Cases& cases, Meta meta = {}) {
+        return create(ctx, declaration::LocalVariable::create(ctx, ID("__x"), cond), cases, std::move(meta));
+    }
+
+protected:
+    Switch(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {
+        if ( ! child(0)->isA<declaration::LocalVariable>() )
+            logger().internalError("initialization for 'switch' must be a local declaration");
+    }
+
+    HILTI_NODE(hilti, Switch)
 
 private:
     bool _preprocessed = false;

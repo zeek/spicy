@@ -2,36 +2,32 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/library.h>
 
 namespace hilti::expression {
 
-/** AST node for a "move" expression. */
-class TypeInfo : public NodeBase, public trait::isExpression {
+/** AST node for a `typeinfo` expression. */
+class TypeInfo : public Expression {
 public:
-    TypeInfo(Expression e, Meta m = Meta())
-        : NodeBase(nodes(std::move(e), Type(type::Library("hilti::rt::TypeInfo const*"))), std::move(m)) {}
+    auto expression() const { return child<Expression>(0); }
 
-    const auto& expression() const { return child<Expression>(0); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
 
-    bool operator==(const TypeInfo& other) const { return expression() == other.expression(); }
+    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
+        auto ti =
+            QualifiedType::create(ctx, type::Library::create(ctx, "hilti::rt::TypeInfo const*"), Constness::Const);
+        return std::shared_ptr<TypeInfo>(new TypeInfo(ctx, {expr, ti}, meta));
+    }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return false; }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return true; }
-    /** Implements `Expression` interface. */
-    const auto& type() const { return child<Type>(1); }
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return true; }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+protected:
+    TypeInfo(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, TypeInfo)
 };
 
 } // namespace hilti::expression

@@ -3,6 +3,4 @@
 #pragma once
 
 #include <hilti/ast/builder/builder.h>
-#include <hilti/ast/builder/declaration.h>
-#include <hilti/ast/builder/expression.h>
-#include <hilti/ast/builder/type.h>
+#include <hilti/ast/builder/node-factory.h>

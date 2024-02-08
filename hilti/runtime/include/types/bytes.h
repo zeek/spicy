@@ -234,9 +234,11 @@ public:
 
     /** Returns an iterator representing the first byte of the instance. */
     const_iterator begin() const { return const_iterator(0U, getControl()); }
+    const_iterator cbegin() const { return const_iterator(0U, getControl()); }
 
     /** Returns an iterator representing the end of the instance. */
     const_iterator end() const { return const_iterator(size(), getControl()); }
+    const_iterator cend() const { return const_iterator(size(), getControl()); }
 
     /** Returns an iterator referring to the given offset. */
     const_iterator at(Offset o) const { return begin() + o; }

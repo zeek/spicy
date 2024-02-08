@@ -50,7 +50,7 @@ public:
      *
      * @param no_path if true, do not include the file
      */
-    std::string render(bool no_path = false) const;
+    std::string dump(bool no_path = false) const;
 
     /**
      * Returns true if the location is set. A location is unset if it equals
@@ -58,8 +58,8 @@ public:
      */
     explicit operator bool() const;
 
-    /** Forwards to `render()`. */
-    operator std::string() const { return render(); }
+    /** Forwards to `dump()`. */
+    operator std::string() const { return dump(); }
 
     bool operator<(const Location& other) const {
         return std::tie(_file, _from_line, _from_character, _to_line, _to_character) <
@@ -82,12 +82,12 @@ private:
     friend struct std::hash<Location>;
 };
 
-/** Forwards to `Location::render()`. */
-inline auto to_string(const Location& l) { return l.render(); }
+/** Forwards to `Location::dump()`. */
+inline auto to_string(const Location& l) { return l.dump(); }
 
-/** Forwards to `Location::render()`. */
+/** Forwards to `Location::dump()`. */
 inline std::ostream& operator<<(std::ostream& out, const Location& l) {
-    out << l.render();
+    out << l.dump();
     return out;
 }
 

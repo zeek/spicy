@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -61,6 +62,8 @@ public:
     void setSpicyCompilerOptions(const spicy::Options& options);
 
 protected:
+    std::unique_ptr<hilti::Builder> createBuilder(hilti::ASTContext* ctx) const override;
+
     std::string hookAddCommandLineOptions() override;
     bool hookProcessCommandLineOption(int opt, const char* optarg) override;
     std::string hookAugmentUsage() override;

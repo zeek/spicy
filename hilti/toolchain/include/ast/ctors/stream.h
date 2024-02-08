@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -10,28 +11,28 @@
 
 namespace hilti::ctor {
 
-/** AST node for a stream constructor. */
-class Stream : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `stream` ctor. */
+class Stream : public Ctor {
 public:
-    Stream(std::string v, const Meta& m = Meta()) : NodeBase(nodes(type::Stream(m)), m), _value(std::move(v)) {}
+    const auto& value() const { return _value; }
 
-    auto value() const { return _value; }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    bool operator==(const Stream& other) const { return value() == other.value(); }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", _value}};
+        return Ctor::properties() + p;
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+    static auto create(ASTContext* ctx, std::string value, const Meta& meta = {}) {
+        return CtorPtr(new Stream(ctx, {QualifiedType::create(ctx, type::Stream::create(ctx, meta), Constness::Const)},
+                                  std::move(value), meta));
+    }
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"value", _value}}; }
+protected:
+    Stream(ASTContext* ctx, Nodes children, std::string value, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(std::move(value)) {}
+
+    HILTI_NODE(hilti, Stream)
 
 private:
     std::string _value;

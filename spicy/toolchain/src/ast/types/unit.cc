@@ -1,26 +1,34 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <spicy/ast/detail/visitor.h>
+#include <hilti/ast/expressions/type.h>
+#include <hilti/ast/types/reference.h>
+
+#include <spicy/ast/types/unit-items/property.h>
+#include <spicy/ast/types/unit-items/sink.h>
+#include <spicy/ast/types/unit-items/switch.h>
+#include <spicy/ast/types/unit-items/unresolved-field.h>
+#include <spicy/ast/types/unit-items/variable.h>
 #include <spicy/ast/types/unit.h>
+#include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
-#include <spicy/compiler/detail/visitors.h>
 
 using namespace spicy;
+using namespace spicy::type;
 
-static NodeRef _itemByName(const Node& i, const ID& id) {
-    if ( auto x = i.tryAs<type::unit::item::Field>(); x && x->id() == id )
-        return NodeRef(i);
+static NodePtr itemByNameBackend(const NodePtr& i, const ID& id) {
+    if ( auto x = i->tryAs<unit::item::Field>(); x && x->id() == id )
+        return i;
 
-    if ( auto x = i.tryAs<type::unit::item::Variable>(); x && x->id() == id )
-        return NodeRef(i);
+    if ( auto x = i->tryAs<unit::item::Variable>(); x && x->id() == id )
+        return i;
 
-    if ( auto x = i.tryAs<type::unit::item::Sink>(); x && x->id() == id )
-        return NodeRef(i);
+    if ( auto x = i->tryAs<unit::item::Sink>(); x && x->id() == id )
+        return i;
 
-    if ( auto x = i.tryAs<type::unit::item::Switch>() ) {
+    if ( auto x = i->tryAs<unit::item::Switch>() ) {
         for ( const auto& c : x->cases() ) {
-            for ( const auto& si : c.itemRefs() ) {
-                if ( auto x = _itemByName(*si, id) )
+            for ( const auto& si : c->items() ) {
+                if ( auto x = itemByNameBackend(si, id) )
                     return x;
             }
         }
@@ -29,52 +37,101 @@ static NodeRef _itemByName(const Node& i, const ID& id) {
     return {};
 }
 
-hilti::optional_ref<const type::unit::Item> type::Unit::itemByName(const ID& id) const {
-    for ( const auto& i : itemRefs() ) {
-        if ( auto x = _itemByName(i, id) )
-            return x->as<type::unit::Item>();
+UnqualifiedTypePtr Unit::contextType() const {
+    if ( auto context = propertyItem("%context") )
+        if ( auto ty = context->expression()->type()->type()->tryAs<hilti::type::Type_>() )
+            return ty->typeValue()->type();
+
+    return {};
+}
+
+unit::item::PropertyPtr Unit::propertyItem(const std::string& name) const {
+    for ( const auto& i : items<unit::item::Property>() ) {
+        if ( i->id() == name )
+            return i;
     }
 
     return {};
 }
 
-NodeRef type::Unit::itemRefByName(const ID& id) const {
-    for ( const auto& i : itemRefs() ) {
-        if ( auto x = _itemByName(*i, id) )
-            return x;
+unit::item::Properties Unit::propertyItems(const std::string& name) const {
+    unit::item::Properties props;
+
+    for ( const auto& i : items<unit::item::Property>() ) {
+        if ( i->id() == name )
+            props.push_back(i);
+    }
+
+    return props;
+}
+
+
+bool Unit::isResolved(node::CycleDetector* cd) const {
+    if ( isWildcard() )
+        return true;
+
+    if ( ! self() )
+        return false;
+
+    for ( const auto& c : children() ) {
+        if ( auto i = c->template tryAs<unit::Item>(); i && ! i->isResolved(cd) )
+            return false;
+
+        if ( auto p = c->template tryAs<hilti::declaration::Parameter>(); p && ! p->isResolved(cd) )
+            return false;
+    }
+
+    return true;
+}
+
+unit::ItemPtr Unit::itemByName(const ID& id) const {
+    for ( const auto& i : items() ) {
+        if ( auto x = itemByNameBackend(i, id) )
+            return x->as<unit::Item>();
     }
 
     return {};
 }
 
-struct AssignFieldIndicesVisitor : public hilti::visitor::PreOrder<void, AssignFieldIndicesVisitor> {
-    AssignFieldIndicesVisitor(uint64_t next_index) : next_index(next_index) {}
+namespace {
+struct AssignItemIndicesVisitor : public visitor::PreOrder {
+    void operator()(unit::item::Field* n) final {
+        n->setIndex(index++);
 
-    result_t operator()(const type::unit::item::Field& n, position_t p) {
-        p.node.as<type::unit::item::Field>().setIndex(next_index++);
+        if ( auto sub = n->item() )
+            dispatch(sub);
     }
 
-    result_t operator()(const type::unit::item::UnresolvedField& n, position_t p) {
-        p.node.as<type::unit::item::UnresolvedField>().setIndex(next_index++);
+    void operator()(unit::item::UnresolvedField* n) final {
+        n->setIndex(index++);
+
+        if ( auto sub = n->item() )
+            dispatch(sub);
     }
 
-    uint64_t next_index;
+    void operator()(unit::item::Switch* n) final {
+        for ( auto& c : n->cases() ) {
+            for ( auto& i : c->items() )
+                dispatch(i);
+        }
+    }
+
+    uint64_t index = 0;
 };
+} // namespace
 
-std::vector<type::unit::Item> type::detail::AssignIndices::assignIndices(std::vector<unit::Item> items) {
-    std::vector<unit::Item> new_items;
-    new_items.reserve(items.size());
+void Unit::_assignItemIndices() {
+    AssignItemIndicesVisitor assigner;
 
-    AssignFieldIndicesVisitor v(_next_index);
+    for ( auto& item : items() )
+        assigner.dispatch(item);
+}
 
-    for ( auto&& item : items ) {
-        auto nitem = Node(std::move(item));
-        for ( auto&& c : v.walk(&nitem) )
-            v.dispatch(c);
+void Unit::_setSelf(ASTContext* ctx) {
+    auto qtype = QualifiedType::createExternal(ctx, as<UnqualifiedType>(), hilti::Constness::NonConst);
+    auto self = hilti::expression::Keyword::create(ctx, hilti::expression::keyword::Kind::Self, qtype);
 
-        new_items.push_back(std::move(nitem.as<type::unit::Item>()));
-    }
+    auto decl = hilti::declaration::Expression::create(ctx, ID("self"), self, {}, meta());
 
-    _next_index = v.next_index;
-    return new_items;
+    setChild(ctx, 0, std::move(decl));
 }

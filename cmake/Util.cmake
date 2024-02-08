@@ -211,7 +211,9 @@ macro (BISON_TARGET_PP Name BisonInput BisonOutput)
     endforeach ()
 
     # Invoke the actual Bison processing.
-    bison_target(${args})
+    bison_target(
+        ${args}
+        COMPILE_FLAGS "--file-prefix-map=${BisonInputPP}=${CMAKE_CURRENT_SOURCE_DIR}/${BisonInput}")
 
     check_cxx_compiler_flag("-Wunused-but-set-variable" have_unused_but_set_variable)
     if (have_unused_but_set_variable)

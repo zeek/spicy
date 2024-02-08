@@ -4,21 +4,20 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <utility>
 
+#include <hilti/ast/declarations/module.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/id.h>
-#include <hilti/ast/module.h>
-#include <hilti/ast/node-ref.h>
 #include <hilti/ast/type.h>
-#include <hilti/base/visitor-types.h>
+#include <hilti/base/logger.h>
 
 namespace hilti::scope {
-
 namespace detail {
 /** Internal backend to `hilti::lookupID()`. */
-std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Node& n);
+std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> lookupID(const ID& id, const Node* n);
 } // namespace detail
 
 /**
@@ -28,68 +27,87 @@ std::pair<bool, Result<std::pair<NodeRef, ID>>> lookupID(const ID& id, const Nod
  *
  * @tparam D class implementing the `Declaration` interface that we expecting the ID to resolve to
  * @param id id to look up
- * @param p AST position where to start the lookup; we'll traverse up the AST from there
+ * @param n AST position where to start the lookup; we'll traverse up the AST from there
  * @param what textual description of what we're looking for (i.e., of *D*); used in error messages
  * @return node if resolved, or an appropriate error if not
  */
 template<typename D>
-Result<std::pair<NodeRef, ID>> lookupID(const ID& id, const visitor::Position<Node&>& p, const std::string_view& what) {
-    if ( ! id )
+Result<std::pair<std::shared_ptr<D>, ID>> lookupID(ID id, Node* n, const std::string_view& what) {
+    if ( id.empty() )
         logger().internalError("lookupID() called with empty ID");
 
-    for ( auto i = p.path.rbegin(); i != p.path.rend(); ++i ) {
-        auto [stop, resolved] = detail::lookupID(id, **i);
-
+    while ( n ) {
+        auto [stop, resolved] = detail::lookupID(id, n);
         if ( resolved ) {
-            if ( auto d = (*resolved).first->tryAs<D>() ) {
-                if ( ! resolved->second.namespace_() ) {
-                    // If it's from module's scope, qualify the ID.
-                    if ( auto m = (*i)->tryAs<Module>() )
-                        return std::make_pair(resolved->first, ID(m->id(), resolved->second));
-                }
+            if ( ! resolved->first )
+                // null pointer means a forced not found.
+                return result::Error(util::fmt("ID '%s' not found", id));
 
-                else
-                    return std::move(resolved);
-            }
+            if ( auto d = resolved->first->tryAs<D>() )
+                return std::make_pair(d, resolved->second);
             else
                 return result::Error(util::fmt("ID '%s' does not resolve to a %s (but to a %s)", id, what,
-                                               (*resolved).first->as<Declaration>().displayName()));
+                                               (*resolved).first->displayName()));
         }
 
         if ( stop )
             // Pass back error.
-            return std::move(resolved);
+            return resolved.error();
 
-        // If the type has the NoInheritScope flag, we skip everything else
-        // in remainder of the path except for the top-level module, to which
-        // we then jump directly. One exception: If the type is part of a
-        // type declaration, we need to check the declaration's scope still
-        // as well; that's the "if" clause below allowing to go one further
-        // step up, and the "else" clause then stopping during the next
-        // round.
         bool skip_to_module = false;
+        bool skip_to_root = false;
 
-        if ( auto t = (*i)->tryAs<Type>(); t && t->hasFlag(type::Flag::NoInheritScope) ) {
-            if ( auto x = i; ++x != p.path.rend() && (*x)->tryAs<declaration::Type>() )
+        // Let "::<ID>" skip to module scope directly.
+        if ( id.length() > 1 && id.sub(0).empty() ) {
+            skip_to_module = true;
+            id = id.sub(1, -1);
+        }
+
+        // Let "~<ID>" skip to root scope directly. This is for internal use of
+        // IDs accessible there through standard imports.
+        if ( util::startsWith(id.str(), "~") ) {
+            skip_to_root = true;
+            id = ID(id.str().substr(1));
+        }
+
+        // If the node does not have the inheritScope flag, we skip everything
+        // else in remainder of the path except for the top-level module, to
+        // which we then jump directly. One exception: If the node is part of a
+        // type declaration, we need to check the declaration's scope still as
+        // well; that's the "if" clause below allowing to go one further step
+        // up, and the "else" clause then stopping during the next round.
+        if ( auto t = n->tryAs<UnqualifiedType>(); t && ! t->inheritScope() ) {
+            if ( n->parent() && n->parent()->tryAs<declaration::Type>() )
                 // Ignore, we'll cover this in next round in the case below.
                 continue;
 
             skip_to_module = true;
         }
-        else if ( auto t = (*i)->tryAs<declaration::Type>(); t && t->type().hasFlag(type::Flag::NoInheritScope) )
+        else if ( auto t = n->tryAs<declaration::Type>(); t && ! t->type()->inheritScope() )
             skip_to_module = true;
 
         if ( skip_to_module ) {
             // Advance to module scope directly.
-            while ( ++i != p.path.rend() ) {
-                if ( (*i)->isA<Module>() )
+            while ( (n = n->parent()) ) {
+                if ( n->isA<declaration::Module>() )
                     break;
             }
-            --i; // for-loop will increase
+        }
+        else if ( skip_to_root ) {
+            // Advance to root scope directly.
+            n = n->parent<ASTRoot>();
+            assert(n);
+        }
+        else {
+            if ( n->isA<declaration::Module>() )
+                // Don't go beyond module scope (i.e., don't go into the root node)
+                // This avoids finding implicit system imports.
+                break;
+
+            n = n->parent();
         }
     }
 
     return result::Error(util::fmt("unknown ID '%s'", id));
 }
-
 } // namespace hilti::scope

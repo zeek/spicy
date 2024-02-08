@@ -2,26 +2,26 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a null type. */
-class Null : public TypeBase {
+/** * AST node for a null type. */
+class Null : public UnqualifiedType {
 public:
-    Null(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    std::string_view typeClass() const final { return "null"; }
 
-    bool operator==(const Null& /* other */) const { return true; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Null>(new Null(ctx, std::move(meta)));
+    }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
+protected:
+    Null(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"null"}, std::move(meta)) {}
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Null)
 };
 
 } // namespace hilti::type

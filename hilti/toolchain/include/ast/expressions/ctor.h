@@ -2,35 +2,31 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 
 namespace hilti::expression {
 
 /** AST node for a constructor expression. */
-class Ctor : public NodeBase, public trait::isExpression {
+class Ctor : public Expression {
 public:
-    Ctor(hilti::Ctor c, Meta m = Meta()) : NodeBase({std::move(c)}, std::move(m)) {}
+    auto ctor() const { return child<hilti::Ctor>(0); }
 
-    const auto& ctor() const { return child<::hilti::Ctor>(0); }
+    QualifiedTypePtr type() const final { return ctor()->type(); }
 
-    bool operator==(const Ctor& other) const { return ctor() == other.ctor(); }
+    static auto create(ASTContext* ctx, const CtorPtr& ctor, const Meta& meta = {}) {
+        assert(ctor->isA<hilti::Ctor>());
+        return std::shared_ptr<Ctor>(new Ctor(ctx, {ctor}, meta));
+    }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return ctor().isLhs(); }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return ctor().isTemporary(); }
-    /** Implements `Expression` interface. */
-    const auto& type() const { return ctor().type(); }
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return ctor().isConstant(); }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+protected:
+    Ctor(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Ctor)
 };
 
 } // namespace hilti::expression

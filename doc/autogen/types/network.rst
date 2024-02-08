@@ -1,6 +1,6 @@
 .. rubric:: Methods
 
-.. spicy:method:: network::family net family False hilti::AddressFamily ()
+.. spicy:method:: network::family net family False spicy::AddressFamily ()
 
     Returns the protocol family of the network, which can be IPv4 or IPv6.
 

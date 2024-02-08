@@ -2,68 +2,62 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
-#include <hilti/ast/ctors/null.h>
-#include <hilti/ast/expressions/ctor.h>
-#include <hilti/ast/types/any.h>
-#include <hilti/ast/types/auto.h>
+#include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/error.h>
 #include <hilti/ast/types/result.h>
 
 namespace hilti::ctor {
 
-/** AST node for a constructor for a result value. */
-class Result : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `optional` ctor. */
+class Result : public Ctor {
 public:
-    Result(Expression v, Meta m = Meta()) : NodeBase(nodes(type::Result(type::auto_), std::move(v)), std::move(m)) {}
+    QualifiedTypePtr dereferencedType() const { return type()->type()->as<type::Result>()->dereferencedType(); }
 
-    hilti::optional_ref<const Expression> value() const {
+    ExpressionPtr value() const {
         const auto& e = child<Expression>(1);
 
-        if ( e.type() != type::Error() )
+        if ( ! e->type()->type()->isA<type::Error>() )
             return e;
-
-        return {};
+        else
+            return {};
     }
 
-    hilti::optional_ref<const Expression> error() const {
+    ExpressionPtr error() const {
         const auto& e = child<Expression>(1);
 
-        if ( e.type() == type::Error() )
+        if ( e->type()->type()->isA<type::Error>() )
             return e;
-
-        return {};
+        else
+            return {};
     }
 
-    const Type& dereferencedType() const { return children()[0].as<type::Result>().dereferencedType(); }
-
-    void setDereferencedType(Type x) { children()[0] = type::Result(std::move(x)); }
-
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-
-    /** Implements `Ctor` interface. */
-    bool isConstant() const {
-        if ( auto v = value() )
-            return v->isConstant();
-
-        return true;
+    QualifiedTypePtr type() const final {
+        if ( auto e = child(0) )
+            return child<QualifiedType>(0);
+        else
+            return child<Expression>(1)->type();
     }
 
-    bool operator==(const Result& other) const { return value() == other.value() && error() == other.error(); }
+    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
 
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
+    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
+        return std::shared_ptr<Result>(new Result(ctx,
+                                                  {
+                                                      nullptr,
+                                                      expr,
+                                                  },
+                                                  meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+protected:
+    Result(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Result)
 };
 
 } // namespace hilti::ctor

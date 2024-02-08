@@ -71,6 +71,9 @@ public:
     /** Removes an item from the cache. */
     void remove(const Key& key) { _cache.erase(key); }
 
+    /** Remove all items from the cache. */
+    void clear() { _cache.clear(); }
+
 private:
     std::map<Key, Value> _cache;
 };

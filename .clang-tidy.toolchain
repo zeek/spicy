@@ -1,0 +1,52 @@
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
+---
+InheritParentConfig: true
+
+CheckOptions:
+  - key:  readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:  readability-identifier-naming.StructCase
+    value: CamelCase
+  - key:  readability-identifier-naming.UnionCase
+    value: CamelCase
+  - key:  readability-identifier-naming.MemberCase
+    value: lower_case
+  - key:  readability-identifier-naming.MemberIgnoredRegexp
+    value: '.*_$'
+  - key:  readability-identifier-naming.ConstantMemberCase
+    value: lower_case
+  - key:  readability-identifier-naming.ConstantMemberIgnoredRegexp
+    value: '^_.*'
+  - key:  readability-identifier-naming.VariableCase
+    value: lower_case
+  - key:  readability-identifier-naming.VariableIgnoredRegexp
+    value: '^_.*|.*_$'
+  - key:  readability-identifier-naming.MethodCase
+    value: camelBack
+  - key: readability-identifier-naming.MethodIgnoredRegexp
+    value: '^_.*|.*_$|^to_.*|^from_.*'
+  - key:  readability-identifier-naming.ConstantCase
+    value: CamelCase
+  - key:  readability-identifier-naming.LocalConstantIgnoredRegexp
+    value: '.*_$'
+  - key:  readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key:  readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.FunctionIgnoredRegexp
+    value: '^to_.*|^from_.*|.*_$|atoi_n|uitoa_n'
+  - key:  readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.NamespaceIgnoredRegexp
+    value: '.*_$'
+  - key:  readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key:  readability-identifier-naming.ParameterIgnoredRegexp
+    value: '.*_$'
+  - key:  readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+  - key:  readability-identifier-naming.PrivateMemberPrefix
+    value: _
+  - key:  readability-identifier-naming.PrivateMethodPrefix
+    value: _

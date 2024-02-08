@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
@@ -10,19 +11,18 @@
 namespace hilti::statement {
 
 /** AST node for an expression statement. */
-class Expression : public NodeBase, public hilti::trait::isStatement {
+class Expression : public Statement {
 public:
-    Expression(hilti::Expression e, Meta m = Meta()) : NodeBase({std::move(e)}, std::move(m)) {}
+    auto expression() const { return child<hilti::Expression>(0); }
 
-    const auto& expression() const { return child<::hilti::Expression>(0); }
+    static auto create(ASTContext* ctx, const ExpressionPtr& e, Meta meta = {}) {
+        return std::shared_ptr<Expression>(new Expression(ctx, {e}, std::move(meta)));
+    }
 
-    bool operator==(const Expression& other) const { return expression() == other.expression(); }
+protected:
+    Expression(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Expression)
 };
 
 } // namespace hilti::statement

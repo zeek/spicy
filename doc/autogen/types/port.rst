@@ -1,12 +1,12 @@
 .. rubric:: Methods
 
-.. spicy:method:: port::protocol port protocol False hilti::Protocol ()
+.. spicy:method:: port::protocol port protocol False spicy::Protocol ()
 
     Returns the protocol the port is using (such as UDP or TCP).
 
 .. rubric:: Operators
 
-.. spicy:operator:: port::Call port port(uint<16>, enum)
+.. spicy:operator:: port::Call port port(uint<16>, spicy::Protocol)
 
     Creates a port instance.
 

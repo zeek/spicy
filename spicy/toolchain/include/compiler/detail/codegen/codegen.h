@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -12,14 +13,20 @@
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/node.h>
 #include <hilti/base/uniquer.h>
+#include <hilti/compiler/driver.h>
 #include <hilti/compiler/unit.h>
 
-#include <spicy/ast/types/unit-items/field.h>
-#include <spicy/ast/types/unit.h>
+#include <spicy/ast/builder/builder.h>
+#include <spicy/ast/forward.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/parser-builder.h>
 
 namespace spicy::detail {
+
+namespace codegen {
+class GrammarBuilder;
+class ParserBuilder;
+} // namespace codegen
 
 /**
  * Spicy's code generator. This is the main internal entry point for
@@ -29,51 +36,76 @@ namespace spicy::detail {
  */
 class CodeGen {
 public:
-    CodeGen(const std::shared_ptr<hilti::Context>& context) : _context(context), _gb(this), _pb(this) {}
+    CodeGen(Builder* builder) : _builder(builder), _gb(this), _pb(this) {}
+
+    auto builder() const { return _builder; }
+    auto context() const { return builder()->context(); }
+    auto driver() const { return context()->driver(); }
+    const auto& compilerContext() const { return driver()->context(); }
+    const auto& options() const { return compilerContext()->options(); }
 
     /** Entry point for transformation from a Spicy AST to a HILTI AST. */
-    bool compileModule(hilti::Node* root, hilti::Unit* u);
+    bool compileAST(const ASTRootPtr& root);
 
-    auto context() const { return _context.lock(); }
-    const auto& options() const { return context()->options(); }
+    /** Turns a Spicy unit into a HILTI struct, along with all the necessary implementation code. */
+    UnqualifiedTypePtr compileUnit(
+        const type::UnitPtr& unit,
+        bool declare_only = true); // Compiles a Unit type into its HILTI struct representation.
 
-    hilti::Type compileUnit(const type::Unit& unit,
-                            bool declare_only = true); // Compiles a Unit type into its HILTI struct representation.
-
-    std::optional<hilti::declaration::Function> compileHook(
-        const type::Unit& unit, const ID& id,
-        std::optional<std::reference_wrapper<const type::unit::item::Field>> field, bool foreach, bool debug,
-        std::vector<type::function::Parameter> params, std::optional<hilti::Statement> body,
-        std::optional<Expression> /*priority*/, const hilti::Meta& meta);
+    std::shared_ptr<hilti::declaration::Function> compileHook(const type::Unit& unit, const ID& id,
+                                                              std::shared_ptr<type::unit::item::Field> field,
+                                                              bool foreach, bool debug,
+                                                              hilti::type::function::Parameters params,
+                                                              const hilti::StatementPtr& body,
+                                                              const ExpressionPtr& priority, const hilti::Meta& meta);
 
     // These must be called only while a module is being compiled.
     codegen::ParserBuilder* parserBuilder() { return &_pb; }
     codegen::GrammarBuilder* grammarBuilder() { return &_gb; }
-    hilti::Unit* hiltiUnit() const;     // will abort if not compiling a module.
-    hilti::Module* hiltiModule() const; // will abort if not compiling a module.
+    hilti::declaration::Module* hiltiModule() const; // will abort if not compiling a module.
     auto uniquer() { return &_uniquer; }
 
     const auto& moduleProperties() const { return _properties; }
     void recordModuleProperty(hilti::declaration::Property p) { _properties.emplace_back(std::move(p)); }
 
-    void addDeclaration(Declaration d) {
-        _decls_added.insert(d.id());
+    /**
+     * Records a mapping from a Spicy type to its corresponding, compiled HILTI
+     * type. This is used to track compiled types during code generation
+     * without immediately performance the actual replacement of the AST node.
+     * We leave the latter to a later stage, which will replace all recorded
+     * mappings at the end when its safe to modify the AST.
+     */
+    auto recordTypeMapping(UnqualifiedType* from, UnqualifiedTypePtr to) { _type_mappings[from] = std::move(to); }
+
+    /**
+     * Records a new declaration to be added to the current module. The
+     * additional will be performed at the end of codegen when its safe to
+     * modify the AST.
+     */
+    void addDeclaration(DeclarationPtr d) {
+        _decls_added.insert(d->id());
         _new_decls.push_back(std::move(d));
     }
 
+    /**
+     * Returns true if a declaration with the given ID has been scheduled for
+     * additional via `addDeclaration()` already.
+     */
     bool haveAddedDeclaration(const ID& id) { return _decls_added.find(id) != _decls_added.end(); }
 
-
 private:
-    std::weak_ptr<hilti::Context> _context;
+    bool _compileModule(const ModulePtr& module, int pass);
+    void _updateDeclarations(visitor::MutatingPostOrder* v, hilti::declaration::Module* module);
+
+    Builder* _builder;
     codegen::GrammarBuilder _gb;
     codegen::ParserBuilder _pb;
 
     std::vector<hilti::declaration::Property> _properties;
+    std::map<UnqualifiedType*, UnqualifiedTypePtr> _type_mappings;
 
-    hilti::Unit* _hilti_unit = nullptr;
-    hilti::Node* _root = nullptr;
-    std::vector<Declaration> _new_decls;
+    hilti::declaration::Module* _hilti_module = nullptr;
+    Declarations _new_decls;
     std::unordered_set<ID> _decls_added;
     hilti::util::Uniquer<std::string> _uniquer;
 };

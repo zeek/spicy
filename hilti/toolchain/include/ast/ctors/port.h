@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/rt/types/port.h>
@@ -11,32 +12,31 @@
 
 namespace hilti::ctor {
 
-/** AST node for a port constructor. */
-class Port : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `port` ctor. */
+class Port : public Ctor {
 public:
-    using Value = hilti::rt::Port;
+    const auto& value() const { return _value; }
 
-    Port(const Value& port, const Meta& m = Meta()) : NodeBase(nodes(type::Port(m)), m), _port(port) {}
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    const auto& value() const { return _port; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", to_string(_value)}};
+        return Ctor::properties() + p;
+    }
 
-    bool operator==(const Port& other) const { return value() == other.value(); }
+    static auto create(ASTContext* ctx, hilti::rt::Port v, const Meta& meta = {}) {
+        return std::shared_ptr<Port>(
+            new Port(ctx, {QualifiedType::create(ctx, type::Port::create(ctx, meta), Constness::Const)}, v, meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"port", to_string(_port)}}; }
+protected:
+    Port(ASTContext* ctx, Nodes children, hilti::rt::Port v, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(v) {}
+
+    HILTI_NODE(hilti, Port)
 
 private:
-    Value _port;
+    hilti::rt::Port _value;
 };
 
 } // namespace hilti::ctor

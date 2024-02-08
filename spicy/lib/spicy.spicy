@@ -2,6 +2,8 @@
 
 module spicy;
 
+%skip-implementation;
+
 # Note: Retain the formatting here, doc/scripts/autogen-spicy-lib is picking up on that.
 
 ## Specifies an address' IP family.

@@ -7,13 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include <hilti/rt/filesystem.h>
-
 #include <hilti/ast/declaration.h>
-#include <hilti/ast/expression.h>
-#include <hilti/ast/id.h>
-#include <hilti/ast/module.h>
-#include <hilti/base/result.h>
+#include <hilti/ast/declarations/module.h>
 
 namespace hilti {
 
@@ -22,7 +17,7 @@ class Unit;
 namespace declaration {
 
 /**
- * AST node for a declaration of imported module.
+ * AST node for a declaration of an imported module.
  *
  * We associate an explicit "parse extension" with an imported module that
  * specifies which plugin is to parse the code into an AST. Note that this does
@@ -31,59 +26,64 @@ namespace declaration {
  * itself as well. This separation allows, for example, to import a piece of
  * HILTI source code into a Spicy AST.
  */
-class ImportedModule : public DeclarationBase {
+class ImportedModule : public Declaration {
 public:
-    ImportedModule(ID id, const std::string& parse_extension, Meta m = Meta())
-        : DeclarationBase({std::move(id)}, std::move(m)), _parse_extension(parse_extension) {}
+    const auto& path() const { return _path; }
+    const auto& scope() const { return _scope; }
+    const auto& searchDirectories() const { return _dirs; }
+    const auto& parseExtension() const { return _parse_extension; }
 
-    ImportedModule(ID id, const std::string& parse_extension, std::optional<ID> search_scope, Meta m = Meta())
-        : DeclarationBase({std::move(id)}, std::move(m)),
-          _parse_extension(parse_extension),
-          _scope(std::move(search_scope)) {}
+    auto uid() const { return _uid; }
+    void setUID(declaration::module::UID uid) { _uid = std::move(uid); }
 
-    ImportedModule(ID id, const std::string& parse_extension, std::optional<ID> search_scope,
-                   std::vector<hilti::rt::filesystem::path> search_dirs, Meta m = Meta())
-        : DeclarationBase({std::move(id)}, std::move(m)),
+    std::string displayName() const final { return "imported module"; }
+
+    node::Properties properties() const final {
+        auto p = node::Properties{
+            {"path", _path.native()},
+            {"ext", _parse_extension.native()},
+            {"scope", _scope ? _scope.str() : std::string("<n/a>")},
+            {"dirs", util::join(_dirs)},
+            {"uid", _uid ? _uid->str() : std::string("<n/a>")},
+        };
+        return Declaration::properties() + p;
+    }
+
+    static auto create(ASTContext* ctx, ID id, const std::string& parse_extension, Meta meta = {}) {
+        return std::shared_ptr<ImportedModule>(
+            new ImportedModule(ctx, std::move(id), {}, parse_extension, {}, {}, std::move(meta)));
+    }
+
+    static auto create(ASTContext* ctx, ID id, const std::string& parse_extension, ID search_scope, Meta meta = {}) {
+        return DeclarationPtr(
+            new ImportedModule(ctx, std::move(id), {}, parse_extension, std::move(search_scope), {}, std::move(meta)));
+    }
+
+    static auto create(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, Meta meta = {}) {
+        return std::shared_ptr<ImportedModule>(
+            new ImportedModule(ctx, std::move(id), std::move(path), {}, {}, {}, std::move(meta)));
+    }
+
+protected:
+    ImportedModule(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, const std::string& parse_extension,
+                   ID search_scope, std::vector<hilti::rt::filesystem::path> search_dirs, Meta meta)
+        : Declaration(ctx, {}, std::move(id), Linkage::Private, std::move(meta)),
+          _path(std::move(path)),
           _parse_extension(parse_extension),
           _scope(std::move(search_scope)),
           _dirs(std::move(search_dirs)) {}
 
-    ImportedModule(ID id, const hilti::rt::filesystem::path& path, Meta m = Meta())
-        : DeclarationBase({std::move(id)}, std::move(m)), _parse_extension(path.extension()), _path(path) {}
-
-    hilti::rt::filesystem::path parseExtension() const { return _parse_extension; }
-
-    auto path() const { return _path; }
-    auto scope() const { return _scope; }
-    auto unit() const { return _unit.lock(); }
-    const auto& searchDirectories() const { return _dirs; }
-
-    /** Sets both extensions to the same value. */
-    void setUnit(const std::shared_ptr<Unit>& unit) { _unit = unit; }
-
-    bool operator==(const ImportedModule& other) const { return id() == other.id(); }
-
-    /** Implements `Declaration` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Declaration` interface. */
-    const ID& id() const { return child<ID>(0); }
-    /** Implements `Declaration` interface. */
-    Linkage linkage() const { return Linkage::Private; }
-    /** Implements `Declaration` interface. */
-    std::string displayName() const { return "imported module"; };
-    /** Implements `Declaration` interface. */
-    auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
-
-    /** Implements `Node` interface. */
-    node::Properties properties() const;
+    HILTI_NODE(hilti, ImportedModule)
 
 private:
-    std::weak_ptr<hilti::Unit> _unit;
-    hilti::rt::filesystem::path _parse_extension;
     hilti::rt::filesystem::path _path;
-    std::optional<ID> _scope;
+    hilti::rt::filesystem::path _parse_extension;
+    ID _scope;
     std::vector<hilti::rt::filesystem::path> _dirs;
+
+    std::optional<declaration::module::UID> _uid;
 };
 
 } // namespace declaration
+
 } // namespace hilti
