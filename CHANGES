@@ -1,3 +1,14 @@
+1.10.0-dev.140 | 2024-02-08 13:22:52 +0100
+
+  * GH-1522: Drop overzealous validator. (Benjamin Bannier, Corelight)
+
+    This validator was intended to reject incorrect parsing of vectors but instead
+    ending up rejecting all vector parsing if the vector elements itself produced
+    vectors. Since this code has no test and it seems to have no clear purpose this
+    patch drops this validation.
+
+    Closes #1522.
+
 1.10.0-dev.138 | 2024-02-08 13:20:31 +0100
 
   * Remove now unused testing `random.seed`. (Benjamin Bannier, Corelight)
