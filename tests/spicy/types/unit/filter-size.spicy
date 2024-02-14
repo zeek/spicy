@@ -1,0 +1,41 @@
+# @TEST-EXEC: spicyc -dj %INPUT -o foo.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00ABC' | spicy-dump -d foo.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01ABC' | spicy-dump -d foo.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '\x02ABC' | spicy-dump -d foo.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type RestrictFilteredUnit = enum {
+    NONE = 0,
+    SIZE = 1,
+    MAX_SIZE = 2,
+};
+
+const N: uint64 = 1;
+
+public type X = unit {
+    restrict: uint8 &convert=RestrictFilteredUnit($$);
+    switch (self.restrict) {
+        RestrictFilteredUnit::NONE -> y: Y;
+        RestrictFilteredUnit::SIZE -> y: Y &size=N;
+        RestrictFilteredUnit::MAX_SIZE -> y: Y &max-size=N;
+    };
+    z: bytes &eod &requires=|$$| != 0;
+};
+
+type Y = unit {
+    on %init {
+        self.connect_filter(new F);
+    }
+
+    data: bytes &size=N;
+};
+
+type F = unit {
+    %filter;
+
+    filter_input: bytes &size=N {
+        self.forward($$);
+    }
+};

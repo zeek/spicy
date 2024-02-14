@@ -1,3 +1,14 @@
+1.10.0-dev.144 | 2024-02-14 15:55:35 +0100
+
+  * GH-1652: Fix filters consuming too much data. (Benjamin Bannier, Corelight)
+
+    We would previously assume that a filter would consume all available
+    data. This only holds if the filter is attached to a top-level unit, but
+    in general not if some sub-unit uses a filter. With this patch we
+    explicitly compute how much data is consumed.
+
+    Closes #1652.
+
 1.10.0-dev.142 | 2024-02-08 17:00:53 +0100
 
   * GH-1668: Fix incorrect data consumption for `&max-size`. (Benjamin Bannier, Corelight)
