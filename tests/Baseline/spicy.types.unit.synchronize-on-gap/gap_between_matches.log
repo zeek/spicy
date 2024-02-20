@@ -13,8 +13,8 @@
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1024 for stream 0xXXXXXXXX
 [spicy-verbose]     failed to parse list element, will try to synchronize at next possible element
-[spicy-verbose]     - state: type=sync::X1 input="<gap>..." stream=0xXXXXXXXX offsets=1/0/1/1025 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
+[spicy-verbose]     - state: type=sync::X1 input="" stream=0xXXXXXXXX offsets=1025/0/1025/1025 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
 [spicy-verbose]     - state: type=sync::X1 input="BC" stream=0xXXXXXXXX offsets=1025/0/1025/1027 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="B" recovering=yes
