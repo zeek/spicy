@@ -1,0 +1,55 @@
+# @TEST-DOC: Validates synchronization via `%synchronize-at` property.
+#
+# @TEST-EXEC: spicyc -d -j %INPUT -o foo.hlto
+
+# @TEST-EXEC: ${SCRIPTS}/printf 'foobar123' | spicy-driver -d foo.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '1234567' | spicy-driver -d foo.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '123bar4567' | spicy-driver -d foo.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf '123bar4567' | spicy-driver -d foo.hlto -i 1 >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type Foo = unit {
+    data: /foobar/;
+};
+
+type Bar = unit {
+    %synchronize-at = sync;
+    data: bytes &eod;
+};
+
+public type Test = unit {
+    foo: Foo;
+    bar: Bar &synchronize;
+
+    on %synced {
+        confirm;
+    }
+
+    on %done {
+        print self;
+    }
+};
+
+function sync(v: view<stream>): tuple<int8, uint64> {
+    if (|v| < 3) {
+        print "Requesting more data: %s" % v;
+        return (0, 3 - |v|);
+    }
+
+    if (v == b"bar") {
+        print "Exact match: %s" % v;
+        return (1, 0);
+    }
+
+    local find = v.find(b"bar");
+    if (find[0]) {
+        print "Find match: %s" % v;
+        return (1, cast<uint64>(find[1] - begin(v)));
+    }
+
+    return (-1, 0);
+}
+
+# FIXME(bbannier): check with function not matching signature.

@@ -1231,26 +1231,66 @@ struct ProductionVisitor : public production::Visitor {
             const auto synchronize_at = unit_type->propertyItem("%synchronize-at");
             const auto synchronize_after = unit_type->propertyItem("%synchronize-after");
 
-            Expression* e = nullptr;
-
-            if ( synchronize_at )
-                e = synchronize_at->expression();
-
-            if ( synchronize_after )
-                e = synchronize_after->expression();
-
-            if ( e ) {
+            // Synchronize at a look-ahead.
+            auto synchronizeLahead = [&](const Expression& e) {
                 const auto id = "synchronize";
-                const auto ctor_ = e->tryAs<hilti::expression::Ctor>();
+                const auto ctor_ = e.tryAs<hilti::expression::Ctor>();
                 assert(ctor_);
                 auto ctor = std::make_unique<production::Ctor>(context(), cg()->uniquer()->get(id), ctor_->ctor(),
                                                                ctor_->meta().location());
                 getLookAhead({ctor.get()}, id, ctor->location(), LiteralMode::Search);
                 validateSearchResult();
+            };
 
-                if ( synchronize_after )
-                    pb->consumeLookAhead();
+            // Support for `%synchronize-at` with a function.
+            auto synchronizeFunction = [&](const hilti::expression::Name& fn) {
+                pushBuilder(builder()->addWhile(builder()->bool_(true)), [&]() {
+                    auto found = builder()->addTmp("found", builder()->typeSignedInteger(8));
+                    auto num = builder()->addTmp("num", builder()->typeUnsignedInteger(64));
+                    auto sync = builder()->call(fn.id(), {state().cur});
+                    builder()->addAssign(builder()->tuple({found, num}), sync);
 
+                    auto err_eod = "not enough bytes to synchronize";
+
+                    auto switch_ = builder()->addSwitch(found);
+                    pushBuilder(switch_.addCase(builder()->integer(1)), [&]() {
+                        // We have found a match at `num`, jump to it and exit stop search.
+                        pb->advanceInput(num);
+                        builder()->addBreak();
+                    });
+                    pushBuilder(switch_.addCase(builder()->integer(0)), [&]() {
+                        // Input could be match, wait for requested additional bytes.
+                        pb->waitForInput(builder()->sum(builder()->size(state().cur), num), err_eod,
+                                         synchronize_at->meta());
+                    });
+                    pushBuilder(switch_.addCase(builder()->integer(-1)), [&]() {
+                        // Input can never match. Consume it fully and wait for fresh data.
+                        pb->advanceInput(builder()->size(state().cur));
+                        pb->waitForInput(builder()->integer(1U), err_eod, synchronize_at->meta());
+                    });
+                });
+
+                // Construct an artificial lookahead so we can reuse `validateSearchResult`.
+                auto pstate = state();
+                pstate.lahead = builder()->integer(1);
+                pushState(pstate);
+                validateSearchResult();
+                popState();
+            };
+
+            if ( synchronize_at ) {
+                if ( synchronize_at->expression()->isA<hilti::expression::Ctor>() )
+                    synchronizeLahead(*synchronize_at->expression());
+
+                else if ( auto fn = synchronize_at->expression()->tryAs<hilti::expression::Name>() )
+                    synchronizeFunction(*fn);
+
+                return;
+            }
+
+            if ( synchronize_after ) {
+                synchronizeLahead(*synchronize_after->expression());
+                pb->consumeLookAhead();
                 return;
             }
         }
