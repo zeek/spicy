@@ -1,0 +1,28 @@
+# @TEST-DOC: Validates that if a gap is encountered during recovery we can still resynchronize.
+#
+# @TEST-EXEC: spicyc -dj -o sync.hlto sync.spicy
+# @TEST-EXEC: HILTI_DEBUG=spicy-verbose spicy-driver -F gap_between_matches sync.hlto >gap_between_matches.log 2>&1
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff gap_between_matches.log
+
+# @TEST-START-FILE sync.spicy
+module sync;
+
+public type X1 = unit {
+    %port = 80/tcp;
+    xs: (/(A|B|C)/ &synchronize)[];
+    on %synced {
+        confirm;
+    }
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE gap_between_matches
+!spicy-batch v2
+@begin-flow id1 stream 80/tcp
+@data id1 1
+A
+@gap id1 1024
+@data id1 2
+BC
+@end-flow id1
+# @TEST-END-FILE
