@@ -921,6 +921,19 @@ properties:
     synchronization point during :ref:`error recovery <error_recovery>`.
     The literal is left in the input stream.
 
+``%synchronize-at = ID;``
+    Specifies a function to synchronize the input. The function must take a
+    ``view<stream>`` as only argument, and return a ``tuple<int8, uint64>``
+    with the following semantics:
+
+    - ``int8`` value is ``1``: synchronization point *is* in the view at the
+      offset specified by the ``uint64`` value.
+    - ``int8`` value is ``0``: synchronization point *could be* in the view,
+      need at least the number of bytes specified in ``uint64`` value to
+      decide.
+    - ``int8`` value is ``-1``: synchronization point not in view and never
+      will, call function again with new data.
+
 .. _synchronize-after:
 
 ``%synchronize-after = EXPR;``
