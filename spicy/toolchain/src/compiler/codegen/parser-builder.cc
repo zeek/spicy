@@ -1242,6 +1242,10 @@ struct ProductionVisitor
         pushBuilder(builder()->addWhile(search_start, builder::bool_(true)), [&]() {
             // Generate code which synchronizes the input. This will throw a parse error
             // if we hit EOD which will implicitly break from the loop.
+
+            // The current input has failed, either since it does not match or since
+            // data was missing. Advance the input to go to the next data.
+            pb->advanceToNextData();
             syncProduction(p);
 
             pushBuilder(builder()->addIf(builder::equal(builder::id("search_start"), state().cur)), [&]() {

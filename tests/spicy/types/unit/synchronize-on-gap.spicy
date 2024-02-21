@@ -1,0 +1,54 @@
+# @TEST-DOC: Validates that if a gap is encountered during recovery we can still resynchronize.
+#
+# @TEST-EXEC: spicyc -dj -o sync.hlto sync.spicy
+
+# @TEST-EXEC: HILTI_DEBUG=spicy-verbose spicy-driver -p sync::X1 -F gap_between_matches sync.hlto >gap_between_matches.log 2>&1
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff gap_between_matches.log
+
+# @TEST-EXEC: HILTI_DEBUG=spicy-verbose spicy-driver -p sync::X2 -F gap_while_matching sync.hlto >gap_while_matching.log 2>&1
+# @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff gap_while_matching.log
+
+# @TEST-START-FILE sync.spicy
+module sync;
+
+public type X1 = unit {
+    %port = 80/tcp;
+    xs: (/(A|B|C)/ &synchronize)[];
+    on %synced {
+        confirm;
+    }
+};
+
+# Test gap during regex match, regression test for #1667.
+public type X2 = unit {
+    %port = 81/tcp;
+    xs: (/AB/ &synchronize)[];
+    on %synced {
+        confirm;
+    }
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE gap_between_matches
+!spicy-batch v2
+@begin-flow id1 stream 80/tcp
+@data id1 1
+A
+@gap id1 1024
+@data id1 2
+BC
+@end-flow id1
+# @TEST-END-FILE
+
+# @TEST-START-FILE gap_while_matching
+!spicy-batch v2
+@begin-flow id1 stream 81/tcp
+@data id1 1
+A
+@gap id1 1024
+@data id1 2
+AB
+@data id1 2
+AB
+@end-flow id1
+# @TEST-END-FILE

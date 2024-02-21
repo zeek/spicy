@@ -1,3 +1,31 @@
+1.10.0-dev.147 | 2024-02-21 10:30:22 +0100
+
+  * GH-1667: Always advance input before attempting resynchronization. (Benjamin Bannier, Corelight)
+
+    When we enter resynchronization after hitting a parse error we
+    previously would have left the input alone, even though we know it fails
+    to parse. We then relied fully on resynchronization to advance the
+    input.
+
+    While this just pushed work downstream when synchronizing on literals,
+    it could cause us loosing input if synchronizing on regular expressions
+    if we happened to fail parsing due to a gap which is now at the front of
+    the input (parse errors from gaps are the most likely resynchronization
+    scenario when parsing genuine traffic); in this case the regular
+    expression would synchronize at the second byte after the input and we
+    would synchronize only at a later position.
+
+    With this patch we always forcibly advance the input to the next non-gap
+    position. This has no effect for synchronization on literals, but allows
+    it to happen earlier for regular expressions.
+
+    Closes #1667.
+
+  * Refactor test `spicy.types.unit.synchronize-on-gap`. (Benjamin Bannier, Corelight)
+
+    This refactoring cleans up how we feed gaps into the parser to testing
+    with more inputs simpler.
+
 1.10.0-dev.144 | 2024-02-14 15:55:35 +0100
 
   * GH-1652: Fix filters consuming too much data. (Benjamin Bannier, Corelight)
