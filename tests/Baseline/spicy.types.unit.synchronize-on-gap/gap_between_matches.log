@@ -16,17 +16,20 @@
 [spicy-verbose]     - trimming input
 [spicy-verbose]     - state: type=sync::X1 input="" stream=0xXXXXXXXX offsets=1025/0/1025/1025 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
-[spicy-verbose]     resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
-[spicy-verbose]     - state: type=sync::X1 input="BC" stream=0xXXXXXXXX offsets=1025/0/1025/1027 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="B" recovering=yes
+[spicy-verbose]     resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
+[spicy-verbose]     - state: type=sync::X1 input="XBC" stream=0xXXXXXXXX offsets=1025/0/1025/1028 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=sync::X1 input="XBC" stream=0xXXXXXXXX offsets=1025/0/1025/1028 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - trimming input
+[spicy-verbose]     - state: type=sync::X1 input="BC" stream=0xXXXXXXXX offsets=1026/0/1026/1028 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="B" recovering=yes
 [spicy-verbose]     successfully synchronized
-[spicy-verbose]     - state: type=sync::X1 input="BC" stream=0xXXXXXXXX offsets=1025/0/1025/1027 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="B" recovering=no
+[spicy-verbose]     - state: type=sync::X1 input="BC" stream=0xXXXXXXXX offsets=1026/0/1026/1028 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="B" recovering=no
 [spicy-verbose]     - parsing production: Ctor: _anon -> /(A|B|C)/ (regexp) (container 'xs')
 [spicy-verbose]       - consuming look-ahead token
 [spicy-verbose]       - trimming input
 [spicy-verbose]       - trimming input
 [spicy-verbose]     - got container item
-[spicy-verbose]     - state: type=sync::X1 input="C" stream=0xXXXXXXXX offsets=1026/0/1026/1027 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="C" recovering=no
-[spicy-verbose]     - state: type=sync::X1 input="C" stream=0xXXXXXXXX offsets=1026/0/1026/1027 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="C" recovering=no
+[spicy-verbose]     - state: type=sync::X1 input="C" stream=0xXXXXXXXX offsets=1027/0/1027/1028 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="C" recovering=no
+[spicy-verbose]     - state: type=sync::X1 input="C" stream=0xXXXXXXXX offsets=1027/0/1027/1028 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="C" recovering=no
 [spicy-verbose]     - parsing production: Ctor: _anon -> /(A|B|C)/ (regexp) (container 'xs')
 [spicy-verbose]       - consuming look-ahead token
 [spicy-verbose]       - trimming input

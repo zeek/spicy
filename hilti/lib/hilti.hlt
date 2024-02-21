@@ -32,8 +32,8 @@ declare public time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<
 
 declare public void abort() &cxxname="hilti::rt::abort_with_backtrace" &have_prototype;
 
-declare public optional<Profiler> profiler_start(string name) &cxxname="hilti::rt::profiler::start" &have_prototype;
-declare public void profiler_stop(optional<Profiler> p) &cxxname="hilti::rt::profiler::stop" &have_prototype;
+declare public optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="hilti::rt::profiler::start" &have_prototype;
+declare public void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="hilti::rt::profiler::stop" &have_prototype;
 
 # Base type for all exceptions.
 public type Exception = exception &cxxname="hilti::rt::Exception";

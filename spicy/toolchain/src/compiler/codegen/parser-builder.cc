@@ -280,9 +280,13 @@ struct ProductionVisitor : public production::Visitor {
                     pstate.error = builder()->id("__error");
 
                     std::optional<PathTracker> path_tracker;
+                    ExpressionPtr profiler;
+
                     if ( unit->typeID() ) {
                         path_tracker = PathTracker(&_path, unit->typeID());
-                        builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
+                        auto offset = builder()->memberCall(pstate.cur, "offset");
+                        profiler =
+                            builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")), offset);
                     }
 
                     std::vector<QualifiedTypePtr> x =
@@ -376,6 +380,12 @@ struct ProductionVisitor : public production::Visitor {
 
                     end_try(try_);
                     run_finally();
+
+                    if ( profiler ) {
+                        auto offset = builder()->memberCall(builder()->index(store_result, 0), "offset");
+                        builder()->stopProfiler(profiler, offset);
+                    }
+
                     popState();
 
                     builder()->addReturn(store_result);
@@ -555,10 +565,12 @@ struct ProductionVisitor : public production::Visitor {
 
         std::optional<ExpressionPtr> pre_container_offset;
         std::optional<PathTracker> path_tracker;
-        std::optional<ExpressionPtr> profiler;
+        ExpressionPtr profiler;
+
         if ( is_field_owner ) {
             path_tracker = PathTracker(&_path, field->id());
-            profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")));
+            auto offset = builder()->memberCall(state().cur, "offset");
+            profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")), offset);
             pre_container_offset = preParseField(*p, meta);
         }
 
@@ -608,8 +620,10 @@ struct ProductionVisitor : public production::Visitor {
         if ( is_field_owner ) {
             postParseField(*p, meta, pre_container_offset);
 
-            if ( profiler )
-                builder()->stopProfiler(*profiler);
+            if ( profiler ) {
+                auto offset = builder()->memberCall(state().cur, "offset");
+                builder()->stopProfiler(profiler, offset);
+            }
 
             path_tracker.reset();
         }
@@ -1172,8 +1186,15 @@ struct ProductionVisitor : public production::Visitor {
         if ( while_ && while_->expression() )
             hilti::logger().error("&synchronize cannot be used on while loops with conditions");
 
+        ExpressionPtr profiler;
+
         // Helper to validate the parser state after search for a lookahead.
         auto validateSearchResult = [&]() {
+            if ( profiler ) {
+                auto offset = builder()->memberCall(state().cur, "offset");
+                builder()->stopProfiler(profiler, offset);
+            }
+
             pushBuilder(builder()->addIf(builder()->or_(pb->atEod(), builder()->not_(state().lahead))), [&]() {
                 // We land here if we failed to find successfully find any sync
                 // token in the input stream, or because we ran into EOD. We cannot
@@ -1196,6 +1217,9 @@ struct ProductionVisitor : public production::Visitor {
 
         else if ( const auto& unit = p->tryAs<production::Unit>() )
             unit_type = unit->unitType();
+
+        auto offset = builder()->memberCall(state().cur, "offset");
+        profiler = builder()->startProfiler(hilti::util::fmt("spicy/unit/%s/__synchronize__", state().unit_id), offset);
 
         if ( unit_type ) {
             const auto synchronize_at = unit_type->propertyItem("%synchronize-at");
@@ -2557,7 +2581,17 @@ void ParserBuilder::skip(const ExpressionPtr& size, const Meta& location) {
 }
 
 void ParserBuilder::advanceToNextData() {
+    auto offset = builder()->memberCall(state().cur, "offset");
+    auto profiler = builder()->startProfiler(hilti::util::fmt("spicy/unit/%s/__gap__", state().unit_id), offset);
+
     builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance_to_next_data"));
+
+    if ( profiler ) {
+        auto offset = builder()->memberCall(state().cur, "offset");
+        // advance_to_next_data() always moves one byte ahead, so we subtract that
+        builder()->stopProfiler(profiler, builder()->difference(offset, builder()->integer(1)));
+    }
+
     trimInput();
 }
 

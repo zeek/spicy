@@ -17,8 +17,8 @@ class Profiler;
 
 namespace profiler {
 
-std::optional<Profiler> start(std::string_view name);
-void stop(std::optional<Profiler>& p);
+std::optional<Profiler> start(std::string_view name, std::optional<uint64_t> volume = std::nullopt);
+void stop(std::optional<Profiler>& p, std::optional<uint64_t> volume = std::nullopt);
 
 namespace detail {
 
@@ -66,8 +66,12 @@ public:
     /** Returns true if the profiler is currently taking an active measurement. */
     operator bool() const { return ! _name.empty(); }
 
-    /** Take and return a single measurement. */
-    static profiler::Measurement snapshot();
+    /**
+     * Take and return a single measurement.
+     *
+     * @param volume optional current absolute volume to record with the measurement
+     */
+    static profiler::Measurement snapshot(std::optional<uint64_t> volume = std::nullopt);
 
 protected:
     /**
@@ -75,11 +79,14 @@ protected:
      * `profiler::start()` instead.
      *
      * @param name descriptive, unique name of the block of code to profile
+     * @param volume optional initial absolute volume to record with the measurement
      */
-    Profiler(std::string_view name) : _name(name), _start(snapshot()) { _register(); }
+    Profiler(std::string_view name, std::optional<uint64_t> volume) : _name(name), _start(snapshot(volume)) {
+        _register();
+    }
 
 private:
-    friend std::optional<Profiler> profiler::start(std::string_view name);
+    friend std::optional<Profiler> profiler::start(std::string_view name, std::optional<uint64_t> volume);
     friend void profiler::detail::done();
 
     void _register() const;
@@ -95,11 +102,12 @@ namespace profiler {
  * instances goes out of scope, whatever comes first.
  *
  * @param name descriptive, unique name of the block of code to profile.
+ * @param volume optional initial absolute volume to record with the measurement
  * @return profiler instance representing the active measurement
  */
-inline std::optional<Profiler> start(std::string_view name) {
+inline std::optional<Profiler> start(std::string_view name, std::optional<uint64_t> volume) {
     if ( ::hilti::rt::detail::unsafeGlobalState()->profiling_enabled )
-        return Profiler(name);
+        return Profiler(name, volume);
     else
         return {};
 }
@@ -109,10 +117,11 @@ inline std::optional<Profiler> start(std::string_view name) {
  * was started.
  *
  * @param p profiler instance to stop
+ * @param volume optional absolute volume to record with the final measurement
  */
-inline void stop(std::optional<Profiler>& p) {
+inline void stop(std::optional<Profiler>& p, std::optional<uint64_t> volume) {
     if ( p )
-        p->record(Profiler::snapshot());
+        p->record(Profiler::snapshot(volume));
 }
 
 /**

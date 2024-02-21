@@ -674,11 +674,12 @@
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:33:72-33:86) [@a:XXX]
 [debug/ast-final]               - <empty>
-[debug/ast-final]       - declaration::Function <canonical-id="hilti::profiler_start" declaration="-" fqid="hilti::profiler_start" id="profiler_start" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:35:1-35:116) [@d:XXX]
+[debug/ast-final]       - declaration::Function <canonical-id="hilti::profiler_start" declaration="-" fqid="hilti::profiler_start" id="profiler_start" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:35:1-35:148) [@d:XXX]
 [debug/ast-final]           | name -> declaration::Parameter <canonical-id="hilti::name" declaration="-" fqid="name" id="name" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]         - Function <cc="<standard>" id="profiler_start"> [parent @d:XXX] (hilti.hlt:35:16-35:115) [@f:XXX]
-[debug/ast-final]           - QualifiedType <const="true" side="rhs"> [parent @f:XXX] (hilti.hlt:35:16-35:115) [@q:XXX]
-[debug/ast-final]             - type::Function <declaration="-" flavor="standard" type="-" unified="function(result:optional(library(hilti::rt::Profiler)), string)" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:16-35:115) (resolved) [@t:XXX]
+[debug/ast-final]           | size -> declaration::Parameter <canonical-id="hilti::size" declaration="-" fqid="size" id="size" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]         - Function <cc="<standard>" id="profiler_start"> [parent @d:XXX] (hilti.hlt:35:16-35:147) [@f:XXX]
+[debug/ast-final]           - QualifiedType <const="true" side="rhs"> [parent @f:XXX] (hilti.hlt:35:16-35:147) [@q:XXX]
+[debug/ast-final]             - type::Function <declaration="-" flavor="standard" type="-" unified="function(result:optional(library(hilti::rt::Profiler)), string, optional(uint64))" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:16-35:147) (resolved) [@t:XXX]
 [debug/ast-final]               - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:35:16-35:33) [@q:XXX]
 [debug/ast-final]                 - type::Optional <declaration="-" type="-" unified="optional(library(hilti::rt::Profiler))" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:16-35:33) (resolved) [@t:XXX]
 [debug/ast-final]                   - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:35:25-35:32) [@q:XXX]
@@ -688,20 +689,38 @@
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:50-35:55) (resolved) [@t:XXX]
 [debug/ast-final]                 - <empty>
 [debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:35:61-35:60) [@a:XXX]
+[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::size" declaration="-" fqid="size" id="size" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:35:63-35:92) (resolved) [@d:XXX]
+[debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @d:XXX] (hilti.hlt:35:63-35:80) [@q:XXX]
+[debug/ast-final]                   - type::Optional <declaration="-" type="-" unified="optional(uint64)" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:63-35:80) (resolved) [@t:XXX]
+[debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:35:72-35:79) [@q:XXX]
+[debug/ast-final]                       - type::UnsignedInteger <declaration="-" type="-" unified="uint64" width="64" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:72-35:79) (resolved) [@t:XXX]
+[debug/ast-final]                 - expression::Ctor [parent @d:XXX] (hilti.hlt:35:89-35:92)  (const)  (resolved) [@e:XXX]
+[debug/ast-final]                   - ctor::Coerced [parent @e:XXX] (hilti.hlt:35:89-35:92) [@c:XXX]
+[debug/ast-final]                     - ctor::Null [parent @c:XXX] (hilti.hlt:35:89-35:92) [@c:XXX]
+[debug/ast-final]                       - QualifiedType <const="true" side="rhs"> [parent @c:XXX] (hilti.hlt:35:89-35:92) [@q:XXX]
+[debug/ast-final]                         - type::Null <declaration="-" type="-" unified="null" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:89-35:92) (resolved) [@t:XXX]
+[debug/ast-final]                     - ctor::Optional [parent @c:XXX] [@c:XXX]
+[debug/ast-final]                       - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
+[debug/ast-final]                         - type::Optional <declaration="-" type="-" unified="optional(uint64)" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
+[debug/ast-final]                           - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:35:72-35:79) [@q:XXX]
+[debug/ast-final]                             - type::UnsignedInteger <declaration="-" type="-" unified="uint64" width="64" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:72-35:79) (resolved) [@t:XXX]
+[debug/ast-final]                       - <empty>
+[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:35:93-35:92) [@a:XXX]
 [debug/ast-final]           - <empty>
-[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:35:62-35:61) [@a:XXX]
-[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:35:62-35:61) [@a:XXX]
+[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:35:94-35:93) [@a:XXX]
+[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:35:94-35:93) [@a:XXX]
 [debug/ast-final]               - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - ctor::String <is_literal="true" value="::hilti::rt::profiler::start"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:35:101-35:115) [@a:XXX]
+[debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:35:133-35:147) [@a:XXX]
 [debug/ast-final]               - <empty>
-[debug/ast-final]       - declaration::Function <canonical-id="hilti::profiler_stop" declaration="-" fqid="hilti::profiler_stop" id="profiler_stop" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:36:1-36:109) [@d:XXX]
+[debug/ast-final]       - declaration::Function <canonical-id="hilti::profiler_stop" declaration="-" fqid="hilti::profiler_stop" id="profiler_stop" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:36:1-36:141) [@d:XXX]
 [debug/ast-final]           | p -> declaration::Parameter <canonical-id="hilti::p" declaration="-" fqid="p" id="p" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]         - Function <cc="<standard>" id="profiler_stop"> [parent @d:XXX] (hilti.hlt:36:16-36:108) [@f:XXX]
-[debug/ast-final]           - QualifiedType <const="true" side="rhs"> [parent @f:XXX] (hilti.hlt:36:16-36:108) [@q:XXX]
-[debug/ast-final]             - type::Function <declaration="-" flavor="standard" type="-" unified="function(result:void, optional(library(hilti::rt::Profiler)))" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:16-36:108) (resolved) [@t:XXX]
+[debug/ast-final]           | size -> declaration::Parameter <canonical-id="hilti::size_2" declaration="-" fqid="size" id="size" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]         - Function <cc="<standard>" id="profiler_stop"> [parent @d:XXX] (hilti.hlt:36:16-36:140) [@f:XXX]
+[debug/ast-final]           - QualifiedType <const="true" side="rhs"> [parent @f:XXX] (hilti.hlt:36:16-36:140) [@q:XXX]
+[debug/ast-final]             - type::Function <declaration="-" flavor="standard" type="-" unified="function(result:void, optional(library(hilti::rt::Profiler)), optional(uint64))" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:16-36:140) (resolved) [@t:XXX]
 [debug/ast-final]               - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:36:16-36:19) [@q:XXX]
 [debug/ast-final]                 - type::Void <declaration="-" type="-" unified="void" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:16-36:19) (resolved) [@t:XXX]
 [debug/ast-final]               - declaration::Parameter <canonical-id="hilti::p" declaration="-" fqid="p" id="p" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:36:35-36:54) (resolved) [@d:XXX]
@@ -711,14 +730,31 @@
 [debug/ast-final]                       - type::Name <builtin="false" declaration="-" id="Profiler" resolved-type="T11" type="-" unified="library(hilti::rt::Profiler)" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:44-36:51) (resolved) [@t:XXX]
 [debug/ast-final]                 - <empty>
 [debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:36:55-36:54) [@a:XXX]
+[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::size_2" declaration="-" fqid="size" id="size" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:36:57-36:86) (resolved) [@d:XXX]
+[debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @d:XXX] (hilti.hlt:36:57-36:74) [@q:XXX]
+[debug/ast-final]                   - type::Optional <declaration="-" type="-" unified="optional(uint64)" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:57-36:74) (resolved) [@t:XXX]
+[debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:36:66-36:73) [@q:XXX]
+[debug/ast-final]                       - type::UnsignedInteger <declaration="-" type="-" unified="uint64" width="64" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:66-36:73) (resolved) [@t:XXX]
+[debug/ast-final]                 - expression::Ctor [parent @d:XXX] (hilti.hlt:36:83-36:86)  (const)  (resolved) [@e:XXX]
+[debug/ast-final]                   - ctor::Coerced [parent @e:XXX] (hilti.hlt:36:83-36:86) [@c:XXX]
+[debug/ast-final]                     - ctor::Null [parent @c:XXX] (hilti.hlt:36:83-36:86) [@c:XXX]
+[debug/ast-final]                       - QualifiedType <const="true" side="rhs"> [parent @c:XXX] (hilti.hlt:36:83-36:86) [@q:XXX]
+[debug/ast-final]                         - type::Null <declaration="-" type="-" unified="null" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:83-36:86) (resolved) [@t:XXX]
+[debug/ast-final]                     - ctor::Optional [parent @c:XXX] [@c:XXX]
+[debug/ast-final]                       - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
+[debug/ast-final]                         - type::Optional <declaration="-" type="-" unified="optional(uint64)" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
+[debug/ast-final]                           - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:36:66-36:73) [@q:XXX]
+[debug/ast-final]                             - type::UnsignedInteger <declaration="-" type="-" unified="uint64" width="64" wildcard="false"> [parent @q:XXX] (hilti.hlt:36:66-36:73) (resolved) [@t:XXX]
+[debug/ast-final]                       - <empty>
+[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:36:87-36:86) [@a:XXX]
 [debug/ast-final]           - <empty>
-[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:36:56-36:55) [@a:XXX]
-[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:36:56-36:55) [@a:XXX]
+[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:36:88-36:87) [@a:XXX]
+[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:36:88-36:87) [@a:XXX]
 [debug/ast-final]               - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - ctor::String <is_literal="true" value="::hilti::rt::profiler::stop"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:36:94-36:108) [@a:XXX]
+[debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:36:126-36:140) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::Exception" declaration="D14" fqid="hilti::Exception" id="Exception" linkage="public"> [parent @d:XXX] (hilti.hlt:39:1-39:66) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:39:25-39:33) [@q:XXX]
@@ -895,24 +931,24 @@
 [debug/ast-stats]   - # AST rounds 3
 [debug/ast-stats]   - # context declarations: 22
 [debug/ast-stats]   - # context types: 15
-[debug/ast-stats]   - # nodes: 642
+[debug/ast-stats]   - # nodes: 674
 [debug/ast-stats]   - # nodes > 1%:
 [debug/ast-stats]     - Attribute: 43
-[debug/ast-stats]     - AttributeSet: 56
+[debug/ast-stats]     - AttributeSet: 58
 [debug/ast-stats]     - Function: 15
-[debug/ast-stats]     - QualifiedType: 171
+[debug/ast-stats]     - QualifiedType: 181
 [debug/ast-stats]     - ctor::Enum: 29
 [debug/ast-stats]     - ctor::String: 29
 [debug/ast-stats]     - declaration::Constant: 29
 [debug/ast-stats]     - declaration::Function: 15
-[debug/ast-stats]     - declaration::Parameter: 22
+[debug/ast-stats]     - declaration::Parameter: 24
 [debug/ast-stats]     - declaration::Type: 17
-[debug/ast-stats]     - expression::Ctor: 60
+[debug/ast-stats]     - expression::Ctor: 62
 [debug/ast-stats]     - type::Enum: 8
 [debug/ast-stats]     - type::Function: 16
 [debug/ast-stats]     - type::Name: 11
 [debug/ast-stats]     - type::String: 38
-[debug/ast-stats]     - type::UnsignedInteger: 8
+[debug/ast-stats]     - type::UnsignedInteger: 12
 [debug/ast-stats]     - type::Void: 7
 [debug/ast-stats]     - type::enum_::Label: 29
 [debug/compiler]   finalized AST

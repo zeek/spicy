@@ -587,8 +587,8 @@ public:
 
     bool empty() const { return block()->statements().empty() && _tmps().empty(); }
 
-    std::optional<ExpressionPtr> startProfiler(std::string_view name);
-    void stopProfiler(ExpressionPtr profiler);
+    ExpressionPtr startProfiler(std::string_view name, ExpressionPtr size = nullptr);
+    void stopProfiler(ExpressionPtr profiler, ExpressionPtr size = nullptr);
 
 protected:
     Builder(Builder* parent) : NodeFactory(parent->context()), _state(parent->_state) {}
