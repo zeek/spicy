@@ -2374,8 +2374,10 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         guardFeatureCode(state().unit_id, {"is_filter"},
                          [&]() { builder()->addCall("spicy_rt::filter_forward_eod", {state().self}); });
 
-    for ( const auto& s : unit.items<type::unit::item::Sink>() )
-        builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
+    guardFeatureCode(state().unit_id, {"supports_sinks"}, [&]() {
+        for ( const auto& s : unit.items<type::unit::item::Sink>() )
+            builder()->addMemberCall(builder::member(state().self, s.id()), "close", {}, l);
+    });
 }
 
 Expression _filters(const ParserState& state) {

@@ -44,3 +44,8 @@ type X6 = unit {
     sink data;
     on %init { self.data.write(b""); }
 };
+
+# Unused sink functionality should be removed.
+type X7 = unit {
+    sink data;
+};

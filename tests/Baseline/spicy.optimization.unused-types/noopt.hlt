@@ -383,6 +383,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Priv1%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Priv1%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Priv1%uses_random_access || __feat%foo@@Priv1%uses_offset ) 
@@ -451,6 +454,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Priv1%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Priv1%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -619,6 +625,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Pub2%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Pub2%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Pub2%uses_random_access || __feat%foo@@Pub2%uses_offset ) 
@@ -687,6 +696,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Pub2%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Pub2%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -851,6 +863,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Priv2%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Priv2%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Priv2%uses_random_access || __feat%foo@@Priv2%uses_offset ) 
@@ -919,6 +934,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Priv2%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Priv2%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1087,6 +1105,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Priv3%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Priv3%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Priv3%uses_random_access || __feat%foo@@Priv3%uses_offset ) 
@@ -1155,6 +1176,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Priv3%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Priv3%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1323,6 +1347,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Priv4%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Priv4%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Priv4%uses_random_access || __feat%foo@@Priv4%uses_offset ) 
@@ -1437,6 +1464,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Priv4%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Priv4%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1605,6 +1635,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Priv5%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Priv5%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Priv5%uses_random_access || __feat%foo@@Priv5%uses_offset ) 
@@ -1673,6 +1706,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Priv5%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Priv5%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1841,6 +1877,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Priv6%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Priv6%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Priv6%uses_random_access || __feat%foo@@Priv6%uses_offset ) 
@@ -1909,6 +1948,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Priv6%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Priv6%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -2077,6 +2119,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Pub3%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Pub3%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Pub3%uses_random_access || __feat%foo@@Pub3%uses_offset ) 
@@ -2191,6 +2236,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Pub3%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Pub3%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -2355,6 +2403,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@Priv10%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@Priv10%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@Priv10%uses_random_access || __feat%foo@@Priv10%uses_offset ) 
@@ -2423,6 +2474,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@Priv10%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@Priv10%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
