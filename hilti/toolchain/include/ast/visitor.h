@@ -22,9 +22,10 @@ class Iterator {
 public:
     using value_type = NodePtr;
 
-    Iterator() = default;
+    Iterator() { _path.reserve(20); }
     Iterator(const NodePtr& root, bool include_empty, std::string_view limit_to_tag)
         : _include_empty(include_empty), _limit_to_tag(limit_to_tag) {
+        _path.reserve(20);
         if ( root )
             _path.emplace_back(root, -1);
     }
