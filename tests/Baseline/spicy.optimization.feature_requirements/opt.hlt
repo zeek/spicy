@@ -101,6 +101,12 @@ const bool __feat%foo@@X6%is_filter = False;
 const bool __feat%foo@@X6%supports_filters = False;
 const bool __feat%foo@@X6%supports_sinks = True;
 const bool __feat%foo@@X6%synchronization = False;
+const bool __feat%foo@@X7%uses_offset = False;
+const bool __feat%foo@@X7%uses_random_access = False;
+const bool __feat%foo@@X7%is_filter = False;
+const bool __feat%foo@@X7%supports_filters = False;
+const bool __feat%foo@@X7%supports_sinks = False;
+const bool __feat%foo@@X7%synchronization = False;
 
 method hook void foo::X0::__on_0x25_init() {
     self.__offset;
@@ -383,7 +389,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     }
     catch ( hilti::SystemException __except ) {
         default<void>();
-        (*(*self).data).close();
+        
+            (*(*self).data).close();
+
         (*self).__error = __error;
         default<void>();
         __error = (*self).__error;
@@ -402,7 +410,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
     (*self).__error = __error;
     default<void>();
     __error = (*self).__error;
-    (*(*self).data).close();
+    
+        (*(*self).data).close();
+
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
     return __result;
@@ -471,6 +481,9 @@ init function void __register_foo_X6() {
         spicy_rt::registerParser(foo::X6::__parser, $scope, Null);
     }
 
+}
+
+init function void __register_foo_X7() {
 }
 
 }

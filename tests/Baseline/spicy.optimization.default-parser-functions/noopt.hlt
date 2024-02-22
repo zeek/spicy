@@ -178,6 +178,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@P0%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@P0%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@P0%uses_random_access || __feat%foo@@P0%uses_offset ) 
@@ -246,6 +249,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@P0%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@P0%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -414,6 +420,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@P1%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@P1%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@P1%uses_random_access || __feat%foo@@P1%uses_offset ) 
@@ -482,6 +491,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@P1%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@P1%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -652,6 +664,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@P2%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@P2%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@P2%uses_random_access || __feat%foo@@P2%uses_offset ) 
@@ -790,6 +805,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@P2%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@P2%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);

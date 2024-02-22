@@ -1,3 +1,13 @@
+1.10.0-dev.149 | 2024-02-22 09:48:01 +0100
+
+  * GH-1585: Put closing of unit sinks behind feature guard. (Benjamin Bannier, Corelight)
+
+    This code gets emitted, regardless of whether a sink was actually
+    connected or not. Put it behind a feature guard so it does not enable
+    the feature on its own.
+
+    Closes #1585.
+
 1.10.0-dev.147 | 2024-02-21 10:30:22 +0100
 
   * GH-1667: Always advance input before attempting resynchronization. (Benjamin Bannier, Corelight)

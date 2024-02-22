@@ -246,6 +246,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@A%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@A%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@A%uses_random_access || __feat%foo@@A%uses_offset ) 
@@ -314,6 +317,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@A%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@A%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -482,6 +488,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@B%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@B%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@B%uses_random_access || __feat%foo@@B%uses_offset ) 
@@ -550,6 +559,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@B%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@B%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -714,6 +726,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@C%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@C%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@C%uses_random_access || __feat%foo@@C%uses_offset ) 
@@ -782,6 +797,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@C%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@C%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -950,6 +968,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@D%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
+
+        if ( __feat%foo@@D%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@D%uses_random_access || __feat%foo@@D%uses_offset ) 
@@ -1033,6 +1054,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@D%supports_filters ) 
         spicy_rt::filter_disconnect(self);
+
+
+    if ( __feat%foo@@D%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1201,6 +1225,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
         if ( __feat%foo@@F%is_filter ) 
             spicy_rt::filter_forward_eod(self);
 
+
+        if ( __feat%foo@@F%supports_sinks ) 
+
         (*self).__error = __error;
 
         if ( __feat%foo@@F%uses_random_access || __feat%foo@@F%uses_offset ) 
@@ -1273,6 +1300,9 @@ method method tuple<view<stream>, int<64>, iterator<stream>, optional<hilti::Rec
 
     if ( __feat%foo@@F%is_filter ) 
         spicy_rt::filter_forward_eod(self);
+
+
+    if ( __feat%foo@@F%supports_sinks ) 
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
