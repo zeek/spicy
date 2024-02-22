@@ -527,13 +527,14 @@ public:
 
     /**
      * Casts a node into a particular class. The cast must be a valid C++
-     * dynamic pointer cast, otherwise execution will abort with an internal error.
+     * dynamic pointer cast, otherwise, in release builds, results are
+     * undefined (and will probably crash). In debug builds, we'll catch
+     * invalid cases and abort with an internal error.
      */
     template<typename T>
     auto as() {
 #ifndef NDEBUG
         _checkThisForCast<T>();
-#endif
 
         if ( auto p = std::dynamic_pointer_cast<T>(shared_from_this()) )
             return p;
@@ -542,6 +543,9 @@ public:
                                       hilti::util::typename_<T>(), typename_())
                   << std::endl;
         hilti::util::abortWithBacktrace();
+#else
+        return std::static_pointer_cast<T>(shared_from_this());
+#endif
     }
 
     /**
