@@ -160,7 +160,6 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                         continue;
                 }
 
-
                 error(fmt("redefinition of '%s' defined in %s", id, first_node->location()), node.get());
             }
         }

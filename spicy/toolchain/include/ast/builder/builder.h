@@ -31,4 +31,16 @@ public:
 using Builder = hilti::ExtendedBuilderTemplate<BuilderBase>;
 using BuilderPtr = std::shared_ptr<Builder>;
 
+namespace builder {
+
+/**
+ * Parses a string as an expression in Spicy syntax.
+ *
+ * @param builder the builder to use for parsing
+ * @param expr the expression to parse
+ * @param meta meta information to attach to the resulting expression
+ */
+hilti::Result<hilti::ExpressionPtr> parseExpression(Builder* builder, const std::string& expr, const hilti::Meta& meta);
+
+} // namespace builder
 } // namespace spicy

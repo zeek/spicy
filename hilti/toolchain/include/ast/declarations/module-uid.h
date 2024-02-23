@@ -27,6 +27,7 @@ struct UID {
                                                     derive from file name */
     hilti::rt::filesystem::path
         process_extension; /**< language extension determining how to process this module *after* parsing */
+    bool in_memory;        /**< true if the module does not correspond to a file on disk */
 
     /**
      * Constructor creating a UID from a module name and a path to its source
@@ -41,7 +42,8 @@ struct UID {
           unique(_makeUnique(this->id)),
           path(util::normalizePath(path)),
           parse_extension(path.extension()),
-          process_extension(path.extension()) {
+          process_extension(path.extension()),
+          in_memory(false) {
         assert(this->id && ! path.empty());
     }
 
@@ -59,7 +61,8 @@ struct UID {
         : id(id),
           unique(_makeUnique(this->id)),
           parse_extension(parse_extension),
-          process_extension(process_extension) {
+          process_extension(process_extension),
+          in_memory(true) {
         assert(this->id && ! parse_extension.empty() && ! process_extension.empty());
         //  just make up a path
         path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s", id, ++_no_file_counter, process_extension, parse_extension);

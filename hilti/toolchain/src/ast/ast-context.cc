@@ -99,6 +99,14 @@ Result<declaration::module::UID> ASTContext::importModule(
     return uid;
 }
 
+std::shared_ptr<declaration::Module> ASTContext::newModule(Builder* builder, const ID& id,
+                                                           const hilti::rt::filesystem::path& process_extension) {
+    auto uid = declaration::module::UID(id, process_extension, process_extension);
+    auto m = builder->declarationModule(uid);
+    _addModuleToAST(m);
+    return module(uid);
+}
+
 Result<declaration::module::UID> ASTContext::_parseSource(
     Builder* builder, const hilti::rt::filesystem::path& path, const ID& scope,
     std::optional<hilti::rt::filesystem::path> process_extension) {
@@ -330,20 +338,30 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
         if ( auto rc = _validate(builder, plugin, true); ! rc )
             return rc;
 
-        if ( auto rc = _resolve(builder, plugin); ! rc )
-            return rc;
+        _driver->hookNewASTPreCompilation(plugin, _root);
+
+        while ( true ) {
+            if ( auto rc = _resolve(builder, plugin); ! rc )
+                return rc;
+
+            if ( _driver->hookNewASTPostCompilation(plugin, _root) ) {
+                HILTI_DEBUG(logging::debug::Compiler, "  -> modified by driver plugin");
+            }
+            else
+                break;
+        }
 
         if ( auto rc = _validate(builder, plugin, false); ! rc )
             return rc;
 
         _checkAST(true);
 
-        if ( auto rc = driver->hookCompilationFinished(plugin); ! rc )
-            return rc;
-
         if ( auto rc = _transform(builder, plugin); ! rc )
             return rc;
     }
+
+    if ( auto rc = driver->hookCompilationFinished(_root); ! rc )
+        return rc;
 
     if ( _context->options().global_optimizations ) {
         if ( auto rc = _optimize(builder); ! rc )

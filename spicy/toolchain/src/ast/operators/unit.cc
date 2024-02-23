@@ -87,7 +87,7 @@ public:
         auto builder = Builder(builder_);
         return {
             .kind = Kind::Unset,
-            .op0 = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "unit"},
+            .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "unit"},
             .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
             .result = {hilti::Const, builder.typeVoid()},
             .ns = "unit",

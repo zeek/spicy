@@ -62,7 +62,7 @@ std::string _printOperator(operator_::Kind kind, const std::vector<std::string>&
             case operator_::Kind::Unequal: return fmt("%s != %s", ops[0], ops[1]);
             case operator_::Kind::Unpack: return fmt("unpack<%s>(%s)", ops[0], ops[1]);
             case operator_::Kind::Unknown: logger().internalError("\"unknown\" operator");
-            case operator_::Kind::Unset: return fmt("unset %s", ops[0]);
+            case operator_::Kind::Unset: return fmt("unset %s.%s", ops[0], ops[1]);
         }
 
         util::cannotBeReached();

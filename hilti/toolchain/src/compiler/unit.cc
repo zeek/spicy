@@ -38,6 +38,7 @@ Result<std::shared_ptr<Unit>> Unit::fromCXX(const std::shared_ptr<Context>& cont
 }
 
 std::shared_ptr<Unit> Unit::fromExistingUID(const std::shared_ptr<Context>& context, declaration::module::UID uid) {
+    assert(context->astContext()->module(uid));
     return std::shared_ptr<Unit>(new Unit(context, std::move(uid)));
 }
 

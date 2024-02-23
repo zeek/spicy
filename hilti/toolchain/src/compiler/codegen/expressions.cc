@@ -71,7 +71,7 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->catchException() )
             result =
                 fmt("::hilti::rt::DeferredExpression<%s>([=]() -> %s { try { return %s; } catch ( ... ) { return "
-                    "::hilti::rt::result::Error(\"n/a\"); } })",
+                    "{}; } })",
                     type, type, value);
         else
             result = fmt("::hilti::rt::DeferredExpression<%s>([=]() -> %s { return %s; })", type, type, value);

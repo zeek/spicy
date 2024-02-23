@@ -164,6 +164,8 @@ public:
      */
     Result<Nothing> addInput(const hilti::rt::filesystem::path& path);
 
+    Result<Nothing> addInput(const declaration::module::UID& uid);
+
     /** Returns true if at least one input file has been added. */
     bool hasInputs() const { return ! (_units.empty() && _libraries.empty() && _external_cxxs.empty()); }
 
@@ -418,30 +420,33 @@ protected:
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST has
-     * been loaded. This hook will run before the AST has been compiled (and
-     * hence it'll be fully unprocessed).
+     * been initially set up for processing by a plugin. This hook will run
+     * before the AST has been processed any further by that plugin.
      */
-    virtual void hookNewASTPreCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
+    virtual void hookNewASTPreCompilation(const Plugin& plugin, const std::shared_ptr<ASTRoot>& root) {}
 
     /**
-     * Hook for derived classes to execute custom code when a code unit has
-     * been finalized. This hook will run after the AST has been be fully
-     * processed by the suitable plugin, but before it's being transformed.
-     */
-    virtual void hookNewASTPostCompilation(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
-
-    /**
-     * Hook for derived classes to execute custom code when all input files
-     * have been fully processes by a plugin. If the hook returns an error that
-     * will abort all further processing. The hook may add further inputs files
-     * through the `add()` methods, which will then be compiled next. This
-     * hook will execute again once all new inputs have likewise been compiled.
-     * The new files, however, must not need processing by any plugin that has
-     * already completed compilation previously.
+     * Hook for derived classes to execute custom code when an HILTI AST been
+     * finalized by a plugin. This hook will run after the AST has been be
+     * fully processed by that plugin, but before it's being transformed.
      *
-     * @param plugin plugin that has finished now
+     * The hook may modify the AST further, including adding new modules. If it
+     * does indicate so with its return value, AST processing will start over
+     * again to fully resolve the modified AST. Once that's done, this hook
+     * will execute again. Note, however, that the hook cannot add anything to
+     * the AST that depends on *previous& plugins, as they won't execute again.
+     *
+     * @param plugin the plugin that has processed the AST
+     * @param root the AST that has been processed
+     * @return true if the AST has been modified and needs to be reprocessed
      */
-    virtual Result<Nothing> hookCompilationFinished(const Plugin& plugin) { return Nothing(); }
+    virtual bool hookNewASTPostCompilation(const Plugin& plugin, const std::shared_ptr<ASTRoot>& root) { return false; }
+
+    /**
+     * Hook for derived classes to execute custom code when the AST has been
+     * fully processed and transformed to its final state.
+     */
+    virtual Result<Nothing> hookCompilationFinished(const std::shared_ptr<ASTRoot>& root) { return Nothing(); }
 
     /**
      * Hook for derived classes to execute custom code when the HILTI runtime

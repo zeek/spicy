@@ -178,6 +178,10 @@ public:
                                                   const std::optional<hilti::rt::filesystem::path>& process_extension,
                                                   std::vector<hilti::rt::filesystem::path> search_dirs);
 
+    /** Adds a new, empty module to the AST. */
+    std::shared_ptr<declaration::Module> newModule(Builder* builder, const ID& id,
+                                                   const hilti::rt::filesystem::path& process_extension);
+
     /**
      * Retrieves a module node from the AST given its UID. Returns null if no
      * such module exists.

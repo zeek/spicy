@@ -511,8 +511,6 @@ void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
     HILTI_DEBUG(logging::debug::Driver, fmt("adding unit %s (%s)", unit->uid(), unit->uid().path.native()));
     unit->module()->setSkipImplementation(false);
     _units.emplace(unit->uid(), unit);
-
-    hookNewASTPreCompilation(unit);
 }
 
 Result<void*> Driver::_symbol(const std::string& symbol) {
@@ -599,6 +597,19 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     return error("unsupported file type", path);
 }
 
+Result<Nothing> Driver::addInput(const declaration::module::UID& uid) {
+    if ( ! context()->astContext()->module(uid) )
+        return error(fmt("in-memory module %s does not exist", uid.unique));
+
+    auto unit = Unit::fromExistingUID(context(), uid);
+    assert(unit);
+
+    unit->setRequiresCompilation();
+    _addUnit(unit);
+
+    return Nothing();
+}
+
 Result<Nothing> Driver::_codegenUnits() {
     if ( _stage != Stage::COMPILED )
         logger().internalError("unexpected driver stage in codegenUnits()");
@@ -646,8 +657,6 @@ Result<Nothing> Driver::compileUnits() {
     for ( const auto& [uid, unit] : _units ) {
         if ( _driver_options.dump_code )
             dumpUnit(*unit);
-
-        hookNewASTPostCompilation(unit);
     }
 
     if ( _driver_options.output_hilti ) {

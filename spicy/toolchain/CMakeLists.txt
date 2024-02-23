@@ -20,6 +20,7 @@ bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__parser.cc ${AUTOGEN_CC})
 
 set(SOURCES_COMPILER
+    src/ast/builder/builder.cc
     src/ast/hook.cc
     src/ast/operators/unit.cc
     src/ast/operators/sink.cc
