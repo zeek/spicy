@@ -28,6 +28,7 @@
 #include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/expressions/unresolved-operator.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/operators/all.h>
 #include <hilti/ast/statements/break.h>
 #include <hilti/ast/statements/continue.h>
 #include <hilti/ast/statements/declaration.h>
@@ -52,7 +53,6 @@
 #include <hilti/ast/types/union.h>
 #include <hilti/ast/types/unknown.h>
 #include <hilti/ast/types/void.h>
-#include <hilti/autogen/__ast-operators.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/validator.h>

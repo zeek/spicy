@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace hilti {
@@ -126,7 +127,484 @@ namespace operator_::struct_ {
 class MemberCall;
 }
 
-#include <hilti/autogen/__ast-forward.h>
+
+namespace operator_ {
+
+namespace address {
+class Equal;
+class Unequal;
+class Family;
+} // namespace address
+
+namespace bitfield {
+class Member;
+class HasMember;
+} // namespace bitfield
+
+namespace bool_ {
+class Equal;
+class Unequal;
+class BitAnd;
+class BitOr;
+class BitXor;
+} // namespace bool_
+
+namespace bytes {
+namespace iterator {
+class Deref;
+class IncrPostfix;
+class IncrPrefix;
+class Equal;
+class Unequal;
+class Lower;
+class LowerEqual;
+class Greater;
+class GreaterEqual;
+class Difference;
+class Sum;
+class SumAssign;
+} // namespace iterator
+
+class Size;
+class Equal;
+class Unequal;
+class Greater;
+class GreaterEqual;
+class In;
+class Lower;
+class LowerEqual;
+class Sum;
+class SumAssignBytes;
+class SumAssignStreamView;
+class SumAssignUInt8;
+class Find;
+class LowerCase;
+class UpperCase;
+class At;
+class Split;
+class Split1;
+class StartsWith;
+class Strip;
+class SubIterators;
+class SubIterator;
+class SubOffsets;
+class Join;
+class ToIntAscii;
+class ToUIntAscii;
+class ToIntBinary;
+class ToUIntBinary;
+class ToTimeAscii;
+class ToTimeBinary;
+class Decode;
+class Match;
+} // namespace bytes
+
+namespace enum_ {
+class Equal;
+class Unequal;
+class CastToSignedInteger;
+class CastToUnsignedInteger;
+class CtorSigned;
+class CtorUnsigned;
+class HasLabel;
+} // namespace enum_
+
+namespace error {
+class Ctor;
+class Description;
+} // namespace error
+
+namespace exception {
+class Ctor;
+class Description;
+} // namespace exception
+
+namespace generic {
+class Pack;
+class Unpack;
+class Begin;
+class End;
+class New;
+} // namespace generic
+
+namespace interval {
+class Equal;
+class Unequal;
+class Sum;
+class Difference;
+class Greater;
+class GreaterEqual;
+class Lower;
+class LowerEqual;
+class MultipleUnsignedInteger;
+class MultipleReal;
+class CtorSignedIntegerNs;
+class CtorSignedIntegerSecs;
+class CtorUnsignedIntegerNs;
+class CtorUnsignedIntegerSecs;
+class CtorRealSecs;
+class Seconds;
+class Nanoseconds;
+} // namespace interval
+
+namespace list {
+
+namespace iterator {
+class Deref;
+class IncrPostfix;
+class IncrPrefix;
+class Equal;
+class Unequal;
+} // namespace iterator
+
+class Size;
+class Equal;
+class Unequal;
+
+} // namespace list
+
+namespace map {
+
+namespace iterator {
+class Deref;
+class IncrPostfix;
+class IncrPrefix;
+class Equal;
+class Unequal;
+} // namespace iterator
+
+class Size;
+class Equal;
+class Unequal;
+class In;
+class Delete;
+class IndexConst;
+class IndexNonConst;
+class IndexAssign;
+class Get;
+class Clear;
+
+} // namespace map
+
+namespace network {
+class Equal;
+class Unequal;
+class In;
+class Family;
+class Prefix;
+class Length;
+} // namespace network
+
+namespace optional {
+class Deref;
+}
+
+namespace port {
+class Equal;
+class Unequal;
+class Ctor;
+class Protocol;
+} // namespace port
+
+namespace real {
+class SignNeg;
+class Difference;
+class DifferenceAssign;
+class Division;
+class DivisionAssign;
+class Equal;
+class Greater;
+class GreaterEqual;
+class Lower;
+class LowerEqual;
+class Modulo;
+class Multiple;
+class MultipleAssign;
+class Power;
+class Sum;
+class SumAssign;
+class Unequal;
+class CastToUnsignedInteger;
+class CastToSignedInteger;
+class CastToTime;
+class CastToInterval;
+} // namespace real
+
+namespace strong_reference {
+class Deref;
+class Equal;
+class Unequal;
+} // namespace strong_reference
+
+namespace weak_reference {
+class Deref;
+class Equal;
+class Unequal;
+} // namespace weak_reference
+
+namespace value_reference {
+class Deref;
+class Equal;
+class Unequal;
+} // namespace value_reference
+
+namespace regexp {
+class Match;
+class Find;
+class MatchGroups;
+class TokenMatcher;
+} // namespace regexp
+
+namespace regexp_match_state {
+class AdvanceBytes;
+class AdvanceView;
+} // namespace regexp_match_state
+
+namespace result {
+class Deref;
+class Error;
+} // namespace result
+
+namespace set {
+
+namespace iterator {
+class Deref;
+class IncrPostfix;
+class IncrPrefix;
+class Equal;
+class Unequal;
+} // namespace iterator
+
+class Size;
+class Equal;
+class Unequal;
+class In;
+class Add;
+class Delete;
+class Clear;
+
+} // namespace set
+
+namespace signed_integer {
+class DecrPostfix;
+class DecrPrefix;
+class IncrPostfix;
+class IncrPrefix;
+class SignNeg;
+class Difference;
+class DifferenceAssign;
+class Division;
+class DivisionAssign;
+class Equal;
+class Greater;
+class GreaterEqual;
+class Lower;
+class LowerEqual;
+class Modulo;
+class Multiple;
+class MultipleAssign;
+class Power;
+class Sum;
+class SumAssign;
+class Unequal;
+class CastToSigned;
+class CastToUnsigned;
+class CastToReal;
+class CastToEnum;
+class CastToInterval;
+class CastToBool;
+class CtorSigned8;
+class CtorSigned16;
+class CtorSigned32;
+class CtorSigned64;
+class CtorUnsigned8;
+class CtorUnsigned16;
+class CtorUnsigned32;
+class CtorUnsigned64;
+} // namespace signed_integer
+
+namespace stream {
+
+namespace iterator {
+class Deref;
+class IncrPostfix;
+class IncrPrefix;
+class Equal;
+class Unequal;
+class Lower;
+class LowerEqual;
+class Greater;
+class GreaterEqual;
+class Difference;
+class Sum;
+class SumAssign;
+class Offset;
+class IsFrozen;
+} // namespace iterator
+
+namespace view {
+class Size;
+class InBytes;
+class InView;
+class EqualView;
+class EqualBytes;
+class UnequalView;
+class UnequalBytes;
+class Offset;
+class AdvanceBy;
+class AdvanceToNextData;
+class Limit;
+class AdvanceTo;
+class Find;
+class At;
+class StartsWith;
+class SubIterators;
+class SubIterator;
+class SubOffsets;
+} // namespace view
+
+class Ctor;
+class Size;
+class Unequal;
+class SumAssignView;
+class SumAssignBytes;
+class Freeze;
+class Unfreeze;
+class IsFrozen;
+class At;
+class Trim;
+
+} // namespace stream
+
+namespace string {
+class Equal;
+class Unequal;
+class Size;
+class Sum;
+class SumAssign;
+class Modulo;
+class Encode;
+} // namespace string
+
+namespace struct_ {
+class Unset;
+class MemberNonConst;
+class MemberConst;
+class TryMember;
+class HasMember;
+} // namespace struct_
+
+namespace time {
+class Equal;
+class Unequal;
+class SumInterval;
+class DifferenceTime;
+class DifferenceInterval;
+class Greater;
+class GreaterEqual;
+class Lower;
+class LowerEqual;
+class CtorSignedIntegerNs;
+class CtorSignedIntegerSecs;
+class CtorUnsignedIntegerNs;
+class CtorUnsignedIntegerSecs;
+class CtorRealSecs;
+class Seconds;
+class Nanoseconds;
+} // namespace time
+
+namespace tuple {
+class Equal;
+class Unequal;
+class Index;
+class Member;
+class CustomAssign;
+} // namespace tuple
+
+namespace union_ {
+class Equal;
+class Unequal;
+class MemberConst;
+class MemberNonConst;
+class HasMember;
+} // namespace union_
+
+namespace unsigned_integer {
+class DecrPostfix;
+class DecrPrefix;
+class IncrPostfix;
+class IncrPrefix;
+class SignNeg;
+class Difference;
+class DifferenceAssign;
+class Division;
+class DivisionAssign;
+class Equal;
+class Greater;
+class GreaterEqual;
+class Lower;
+class LowerEqual;
+class Modulo;
+class Multiple;
+class MultipleAssign;
+class Power;
+class Sum;
+class SumAssign;
+class Unequal;
+class Negate;
+class BitAnd;
+class BitOr;
+class BitXor;
+class ShiftLeft;
+class ShiftRight;
+class CastToUnsigned;
+class CastToSigned;
+class CastToReal;
+class CastToEnum;
+class CastToInterval;
+class CastToTime;
+class CastToBool;
+class CtorSigned8;
+class CtorSigned16;
+class CtorSigned32;
+class CtorSigned64;
+class CtorUnsigned8;
+class CtorUnsigned16;
+class CtorUnsigned32;
+class CtorUnsigned64;
+} // namespace unsigned_integer
+
+namespace vector {
+
+namespace iterator {
+class Deref;
+class IncrPostfix;
+class IncrPrefix;
+class Equal;
+class Unequal;
+} // namespace iterator
+
+class Size;
+class Equal;
+class Unequal;
+class IndexConst;
+class IndexNonConst;
+class Sum;
+class SumAssign;
+class Assign;
+class PushBack;
+class PopBack;
+class Front;
+class Back;
+class Reserve;
+class Resize;
+class At;
+class SubRange;
+class SubEnd;
+
+} // namespace vector
+
+} // namespace operator_
 
 namespace statement {
 class Assert;

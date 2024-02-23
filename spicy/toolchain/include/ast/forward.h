@@ -43,7 +43,46 @@ using HookPtr = std::shared_ptr<Hook>;
 using Hooks = std::vector<HookPtr>;
 } // namespace declaration
 
-#include <spicy/autogen/__ast-forward.h>
+namespace operator_ {
+
+namespace sink {
+class SizeValue;
+class SizeReference;
+class Close;
+class Connect;
+class ConnectMIMETypeString;
+class ConnectMIMETypeBytes;
+class ConnectFilter;
+class Gap;
+class SequenceNumber;
+class SetAutoTrim;
+class SetInitialSequenceNumber;
+class SetPolicy;
+class Skip;
+class Trim;
+class Write;
+} // namespace sink
+
+namespace unit {
+class Unset;
+class MemberNonConst;
+class MemberConst;
+class TryMember;
+class HasMember;
+class Offset;
+class Position;
+class Input;
+class SetInput;
+class Find;
+class ConnectFilter;
+class Forward;
+class ForwardEod;
+class Backtrack;
+class ContextConst;
+class ContextNonConst;
+} // namespace unit
+
+} // namespace operator_
 
 namespace operator_::unit {
 class MemberCall;

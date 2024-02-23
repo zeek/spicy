@@ -10,8 +10,8 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/grouping.h>
 #include <hilti/ast/expressions/name.h>
+#include <hilti/ast/operators/all.h>
 #include <hilti/ast/types/integer.h>
-#include <hilti/autogen/__ast-operators.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
 #include <hilti/base/util.h>

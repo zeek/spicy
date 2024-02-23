@@ -12,8 +12,24 @@
 namespace spicy {
 
 namespace operator_ {
-HILTI_NODE_OPERATOR(spicy, unit, MemberCall); // AST node for instantiated call operator
-}
+HILTI_NODE_OPERATOR(spicy, unit, Backtrack)
+HILTI_NODE_OPERATOR(spicy, unit, ConnectFilter)
+HILTI_NODE_OPERATOR(spicy, unit, ContextConst)
+HILTI_NODE_OPERATOR(spicy, unit, ContextNonConst)
+HILTI_NODE_OPERATOR(spicy, unit, Find)
+HILTI_NODE_OPERATOR(spicy, unit, Forward)
+HILTI_NODE_OPERATOR(spicy, unit, ForwardEod)
+HILTI_NODE_OPERATOR(spicy, unit, HasMember)
+HILTI_NODE_OPERATOR(spicy, unit, Input)
+HILTI_NODE_OPERATOR(spicy, unit, MemberCall);
+HILTI_NODE_OPERATOR(spicy, unit, MemberConst)
+HILTI_NODE_OPERATOR(spicy, unit, MemberNonConst)
+HILTI_NODE_OPERATOR(spicy, unit, Offset)
+HILTI_NODE_OPERATOR(spicy, unit, Position)
+HILTI_NODE_OPERATOR(spicy, unit, SetInput)
+HILTI_NODE_OPERATOR(spicy, unit, TryMember)
+HILTI_NODE_OPERATOR(spicy, unit, Unset)
+} // namespace operator_
 
 namespace unit {
 

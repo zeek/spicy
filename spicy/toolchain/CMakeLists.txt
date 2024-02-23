@@ -19,10 +19,6 @@ bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__parser.cc ${AUTOGEN_CC})
 
-include(ASTOperators)
-
-autogen_operators(SOURCES_OPERATORS spicy src/ast/operators ${AUTOGEN_H} ${AUTOGEN_CC})
-
 set(SOURCES_COMPILER
     src/ast/hook.cc
     src/ast/operators/unit.cc

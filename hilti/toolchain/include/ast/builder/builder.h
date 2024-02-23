@@ -96,8 +96,8 @@ public:
         return statementDeclaration(declarationLocalVariable(std::move(id_), t, {}, std::move(m)));
     }
 
-    auto local(ID id_, ExpressionPtr init, Meta m = Meta()) {
-        return statementDeclaration(declarationLocalVariable(std::move(id_), std::move(init), std::move(m)));
+    auto local(ID id_, ExpressionPtr init, const Meta& m = Meta()) {
+        return statementDeclaration(declarationLocalVariable(std::move(id_), std::move(init), m));
     }
 
     auto local(ID id_, const QualifiedTypePtr& t, ExpressionPtr init, Meta m = Meta()) {
@@ -114,8 +114,8 @@ public:
     }
 
     auto global(ID id_, const ExpressionPtr& init, declaration::Linkage linkage = declaration::Linkage::Private,
-                Meta m = Meta()) {
-        return declarationGlobalVariable(std::move(id_), init, linkage, std::move(m));
+                const Meta& m = Meta()) {
+        return declarationGlobalVariable(std::move(id_), init, linkage, m);
     }
 
     auto global(ID id_, const QualifiedTypePtr& t, ExpressionPtr init,
@@ -558,8 +558,8 @@ public:
         block()->_add(context(), statementComment(std::move(comment), separator, m));
     }
 
-    void addReturn(ExpressionPtr e, Meta m = Meta()) {
-        block()->_add(context(), statementReturn(std::move(e), std::move(m)));
+    void addReturn(const ExpressionPtr& e, Meta m = Meta()) {
+        block()->_add(context(), statementReturn(e, std::move(m)));
     }
 
     void addReturn(const CtorPtr& c, const Meta& m = Meta()) {

@@ -10,8 +10,13 @@
 namespace hilti {
 
 namespace operator_ {
-HILTI_NODE_OPERATOR(hilti, struct_, MemberCall); // AST node for instantiated call operator
-}
+HILTI_NODE_OPERATOR(hilti, struct_, HasMember)
+HILTI_NODE_OPERATOR(hilti, struct_, MemberCall);
+HILTI_NODE_OPERATOR(hilti, struct_, MemberConst)
+HILTI_NODE_OPERATOR(hilti, struct_, MemberNonConst)
+HILTI_NODE_OPERATOR(hilti, struct_, TryMember)
+HILTI_NODE_OPERATOR(hilti, struct_, Unset)
+} // namespace operator_
 
 namespace struct_ {
 
@@ -30,6 +35,6 @@ public:
 private:
     std::weak_ptr<declaration::Field> _fdecl;
 };
-} // namespace struct_
 
+} // namespace struct_
 } // namespace hilti

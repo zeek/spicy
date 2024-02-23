@@ -9,8 +9,13 @@
 namespace hilti {
 
 namespace operator_ {
-HILTI_NODE_OPERATOR(hilti, generic, CastedCoercion); // AST node for instantiated call operator
-}
+HILTI_NODE_OPERATOR(hilti, generic, CastedCoercion);
+HILTI_NODE_OPERATOR(hilti, generic, Pack)
+HILTI_NODE_OPERATOR(hilti, generic, Unpack)
+HILTI_NODE_OPERATOR(hilti, generic, Begin)
+HILTI_NODE_OPERATOR(hilti, generic, End)
+HILTI_NODE_OPERATOR(hilti, generic, New)
+} // namespace operator_
 
 namespace generic {
 
@@ -30,6 +35,6 @@ public:
 
     std::string name() const final { return "generic::CastedCoercion"; }
 };
-} // namespace generic
 
+} // namespace generic
 } // namespace hilti

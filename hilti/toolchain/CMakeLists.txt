@@ -17,10 +17,6 @@ bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__parser.cc ${AUTOGEN_CC})
 
-include(ASTOperators)
-
-autogen_operators(SOURCES_OPERATORS hilti src/ast/operators ${AUTOGEN_H} ${AUTOGEN_CC})
-
 set(SOURCES
     src/ast/ast-context.cc
     src/ast/attribute.cc

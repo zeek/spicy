@@ -54,8 +54,37 @@ public:
     using hilti::visitor::Dispatcher::operator();
 
     virtual void operator()(spicy::operator_::unit::MemberCall*) {}
-#include <spicy/autogen/__ast-visitor-dispatcher.h>
-
+    virtual void operator()(spicy::operator_::sink::SizeValue* n) {}
+    virtual void operator()(spicy::operator_::sink::SizeReference* n) {}
+    virtual void operator()(spicy::operator_::sink::Close* n) {}
+    virtual void operator()(spicy::operator_::sink::Connect* n) {}
+    virtual void operator()(spicy::operator_::sink::ConnectMIMETypeString* n) {}
+    virtual void operator()(spicy::operator_::sink::ConnectMIMETypeBytes* n) {}
+    virtual void operator()(spicy::operator_::sink::ConnectFilter* n) {}
+    virtual void operator()(spicy::operator_::sink::Gap* n) {}
+    virtual void operator()(spicy::operator_::sink::SequenceNumber* n) {}
+    virtual void operator()(spicy::operator_::sink::SetAutoTrim* n) {}
+    virtual void operator()(spicy::operator_::sink::SetInitialSequenceNumber* n) {}
+    virtual void operator()(spicy::operator_::sink::SetPolicy* n) {}
+    virtual void operator()(spicy::operator_::sink::Skip* n) {}
+    virtual void operator()(spicy::operator_::sink::Trim* n) {}
+    virtual void operator()(spicy::operator_::sink::Write* n) {}
+    virtual void operator()(spicy::operator_::unit::Unset* n) {}
+    virtual void operator()(spicy::operator_::unit::MemberNonConst* n) {}
+    virtual void operator()(spicy::operator_::unit::MemberConst* n) {}
+    virtual void operator()(spicy::operator_::unit::TryMember* n) {}
+    virtual void operator()(spicy::operator_::unit::HasMember* n) {}
+    virtual void operator()(spicy::operator_::unit::Offset* n) {}
+    virtual void operator()(spicy::operator_::unit::Position* n) {}
+    virtual void operator()(spicy::operator_::unit::Input* n) {}
+    virtual void operator()(spicy::operator_::unit::SetInput* n) {}
+    virtual void operator()(spicy::operator_::unit::Find* n) {}
+    virtual void operator()(spicy::operator_::unit::ConnectFilter* n) {}
+    virtual void operator()(spicy::operator_::unit::Forward* n) {}
+    virtual void operator()(spicy::operator_::unit::ForwardEod* n) {}
+    virtual void operator()(spicy::operator_::unit::Backtrack* n) {}
+    virtual void operator()(spicy::operator_::unit::ContextConst* n) {}
+    virtual void operator()(spicy::operator_::unit::ContextNonConst* n) {}
     virtual void operator()(spicy::declaration::Hook*) {}
     virtual void operator()(spicy::ctor::Unit*) {}
     virtual void operator()(spicy::declaration::UnitHook*) {}
