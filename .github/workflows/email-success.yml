@@ -8,7 +8,7 @@ on:
 name: Email about successful Cirrus CI builds
 jobs:
   continue:
-    name: After Cirrus CI Failure
+    name: After Cirrus CI Success
     if: github.event.check_suite.app.name == 'Cirrus CI' && github.event.check_suite.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
