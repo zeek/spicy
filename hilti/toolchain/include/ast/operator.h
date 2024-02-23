@@ -191,6 +191,8 @@ struct Operand {
     Operand(Operand&&) = default;
     Operand(const Operand&) = default;
 
+    ~Operand() = default;
+
     Operand& operator=(Operand&&) = default;
     Operand& operator=(const Operand&) = default;
 

@@ -55,6 +55,11 @@ public:
         }
     }
 
+    Env(const Env&) = delete;
+    Env(Env&&) = default;
+    Env& operator=(const Env&) = delete;
+    Env& operator=(Env&&) = default;
+
 private:
     std::pair<std::string, std::optional<std::string>> _prev;
 };

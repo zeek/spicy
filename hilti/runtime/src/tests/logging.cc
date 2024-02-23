@@ -27,6 +27,11 @@ public:
         std::swap(_prev, detail::globalState()->debug_logger);
     }
 
+    TestLogger(const TestLogger&) = delete;
+    TestLogger(TestLogger&&) = default;
+    TestLogger& operator=(const TestLogger&) = delete;
+    TestLogger& operator=(TestLogger&&) = default;
+
     ~TestLogger() { detail::globalState()->debug_logger = std::move(_prev); }
 
     auto lines() const { return _file.lines(); }

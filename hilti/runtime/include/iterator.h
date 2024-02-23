@@ -18,6 +18,9 @@ public:
 
     Range(const Range&) = delete;
     Range(Range&&) = delete;
+
+    ~Range() = default;
+
     Range& operator=(const Range&) = delete;
     Range& operator=(Range&&) = delete;
 

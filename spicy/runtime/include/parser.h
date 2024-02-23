@@ -322,6 +322,11 @@ public:
     ParseError(const hilti::rt::result::Error& e) : RecoverableFailure(e.description()) {}
 
     ~ParseError() override; /* required to create vtable, see hilti::rt::Exception */
+
+    ParseError(const ParseError&) = default;
+    ParseError(ParseError&&) = default;
+    ParseError& operator=(const ParseError&) = default;
+    ParseError& operator=(ParseError&&) = default;
 };
 
 /**
@@ -333,12 +338,22 @@ class Backtrack : public ParseError {
 public:
     Backtrack() : ParseError("backtracking outside of &try scope") {}
     ~Backtrack() override;
+
+    Backtrack(const Backtrack&) = default;
+    Backtrack(Backtrack&&) = default;
+    Backtrack& operator=(const Backtrack&) = default;
+    Backtrack& operator=(Backtrack&&) = default;
 };
 
 class MissingData : public ParseError {
 public:
     MissingData(std::string_view location = "") : ParseError("missing data", location) {}
     ~MissingData() override; /* required to create vtable, see hilti::rt::Exception */
+
+    MissingData(const MissingData&) = default;
+    MissingData(MissingData&&) = default;
+    MissingData& operator=(const MissingData&) = default;
+    MissingData& operator=(MissingData&&) = default;
 };
 
 /**

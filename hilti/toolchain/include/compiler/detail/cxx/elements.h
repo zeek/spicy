@@ -120,6 +120,8 @@ struct Local {
     Local(const Local&) = default;
     Local& operator=(Local&&) = default;
     Local& operator=(const Local&) = default;
+    ~Local() = default;
+
     Local(cxx::ID _id = {}, cxx::Type _type = {}, std::vector<cxx::Expression> _args = {},
           std::optional<cxx::Expression> _init = {}, Linkage _linkage = {})
         : id(std::move(_id)),

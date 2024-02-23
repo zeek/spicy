@@ -32,6 +32,11 @@ struct OneFilter {
               hilti::rt::Resumable _resumable)
         : parse(std::move(_parse)), input(std::move(_input)), resumable(std::move(_resumable)) {}
 
+    ~OneFilter() = default;
+
+    OneFilter& operator=(const OneFilter&) = delete;
+    OneFilter& operator=(OneFilter&&) = default;
+
     Parse1Function parse;
     hilti::rt::ValueReference<hilti::rt::Stream> input;
     hilti::rt::Resumable resumable;

@@ -98,6 +98,12 @@ public:
         }
     }
 
+    FileGuard() = default;
+    FileGuard(const FileGuard&) = delete;
+    FileGuard(FileGuard&&) = delete;
+    FileGuard& operator=(const FileGuard&) = delete;
+    FileGuard& operator=(FileGuard&&) = delete;
+
 private:
     std::vector<hilti::rt::filesystem::path> _paths;
 };

@@ -12,6 +12,12 @@ struct RuntimeWrapper {
         spicy::rt::done();
         hilti::rt::done();
     }
+
+    RuntimeWrapper() = default;
+    RuntimeWrapper(const RuntimeWrapper&) = delete;
+    RuntimeWrapper(RuntimeWrapper&&) = delete;
+    RuntimeWrapper& operator=(const RuntimeWrapper&) = delete;
+    RuntimeWrapper& operator=(RuntimeWrapper&&) = delete;
 };
 
 // NOLINTNEXTLINE(bugprone-exception-escape)

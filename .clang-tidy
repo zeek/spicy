@@ -27,6 +27,8 @@ Checks: '
   -clang-diagnostic-range-loop-analysis,
   -clang-analyzer-core.StackAddressEscape,
 
+  cppcoreguidelines-special-member-functions,
+
   misc-*,
   -misc-macro-parentheses,
   -misc-non-private-member-variables-in-classes,

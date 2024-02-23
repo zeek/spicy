@@ -145,6 +145,11 @@ public:
     /** Destructor. */
     ~Context();
 
+    Context(const Context&) = default;
+    Context(Context&&) = default;
+    Context& operator=(const Context&) = default;
+    Context& operator=(Context&&) = default;
+
     /** Returns the context's compiler options. */
     const Options& options() const { return _options; }
 
