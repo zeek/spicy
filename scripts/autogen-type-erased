@@ -134,7 +134,7 @@ def parseMethod(s):
 
     m = Method()
 
-    i = re.search("(.*) *with *default *(\{.*)$", s)
+    i = re.search("(.*) *with *default *({.*)$", s)
 
     if i:
         s = i.group(1)
