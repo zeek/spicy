@@ -7,6 +7,10 @@ function bool private_used() {
     return False;
 }
 
+public function bool public_unused() {
+    return False;
+}
+
 public function extern bool extern_unused1() {
     return False;
 }
