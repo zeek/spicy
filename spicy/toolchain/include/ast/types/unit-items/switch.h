@@ -24,8 +24,6 @@ namespace switch_ {
 /** AST node for a unit switch's case. */
 class Case : public Node {
 public:
-    ~Case() override;
-
     auto expressions() const { return childrenOfType<Expression>(); }
     auto items() const { return childrenOfType<type::unit::Item>(); }
 
@@ -110,7 +108,7 @@ public:
         return true;
     }
 
-    std::string displayName() const final { return "unit switch"; }
+    std::string_view displayName() const final { return "unit switch"; }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"engine", to_string(_engine)}};

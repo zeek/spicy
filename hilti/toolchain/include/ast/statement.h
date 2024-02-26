@@ -12,9 +12,6 @@ namespace hilti {
 
 /** Base class for statement nodes. */
 class Statement : public Node {
-public:
-    ~Statement() override;
-
 protected:
     Statement(ASTContext* ctx, Nodes children, Meta meta) : Node::Node(ctx, std::move(children), std::move(meta)) {}
 

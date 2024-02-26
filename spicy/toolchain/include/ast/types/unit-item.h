@@ -15,8 +15,6 @@ namespace spicy::type::unit {
 /** Base class for all unit items. */
 class Item : public hilti::Declaration {
 public:
-    ~Item() override;
-
     /** Returns the type of the parsed unit item. */
     virtual QualifiedTypePtr itemType() const = 0;
 

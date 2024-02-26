@@ -21,7 +21,7 @@ QualifiedTypePtr itemType(Builder* builder, const Expressions& operands) {
              operands[0]->type()->type()->as<type::Union>()->field(operands[1]->as<expression::Member>()->id()) )
         return field->type();
     else
-        return builder->qualifiedType(builder->typeUnknown(), Const);
+        return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 }
 
 void checkName(expression::ResolvedOperator* op) {
@@ -37,7 +37,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "union_",
             .doc = "Compares two unions element-wise.",
         };
@@ -59,7 +59,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "union_",
             .doc = "Compares two unions element-wise.",
         };
@@ -135,7 +135,7 @@ public:
             .kind = Kind::HasMember,
             .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard()), "<union>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "union_",
             .doc = "Returns true if the union's field is set.",
         };

@@ -53,7 +53,7 @@ struct TypeParser {
 
     ExpressionPtr performUnpack(const ExpressionPtr& target, const UnqualifiedTypePtr& t, unsigned int len,
                                 const Expressions& unpack_args, const Meta& m, bool is_try) {
-        auto qt = builder()->qualifiedType(t, hilti::Constness::NonConst);
+        auto qt = builder()->qualifiedType(t, hilti::Constness::Mutable);
 
         if ( ! is_try ) {
             auto error_msg = fmt("expecting %d bytes for unpacking value", len);
@@ -264,11 +264,11 @@ struct Visitor : public visitor::PreOrder {
             if ( until_attr )
                 until_expr =
                     builder()->coerceTo(*until_attr->valueAsExpression(),
-                                        builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::NonConst));
+                                        builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Mutable));
             else
                 until_expr =
                     builder()->coerceTo(*until_including_attr->valueAsExpression(),
-                                        builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::NonConst));
+                                        builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Mutable));
 
             auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
             auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
@@ -305,9 +305,9 @@ struct Visitor : public visitor::PreOrder {
                 auto found = builder()->id(found_id);
                 auto it = builder()->id(it_id);
                 builder()->addLocal(found_id,
-                                    builder()->qualifiedType(builder()->typeBool(), hilti::Constness::NonConst));
+                                    builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
                 builder()->addLocal(it_id, builder()->qualifiedType(builder()->typeStreamIterator(),
-                                                                    hilti::Constness::NonConst));
+                                                                    hilti::Constness::Mutable));
                 builder()->addAssign(builder()->tuple({found, it}), find);
 
                 ExpressionPtr match = builder()->memberCall(state().cur, "sub", {it});

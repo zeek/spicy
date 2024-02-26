@@ -58,7 +58,7 @@ public:
     void setIsTypeParameter() { _is_type_param = true; }
     void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
 
-    std::string displayName() const final { return "parameter"; }
+    std::string_view displayName() const final { return "parameter"; }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"kind", to_string(_kind)}, {"is_type_param", _is_type_param}};
@@ -97,10 +97,9 @@ protected:
 private:
     static QualifiedTypePtr _qtype(ASTContext* ctx, const UnqualifiedTypePtr& t, parameter::Kind kind) {
         switch ( kind ) {
-            case parameter::Kind::Copy: return QualifiedType::create(ctx, t, Constness::NonConst, Side::LHS, t->meta());
+            case parameter::Kind::Copy: return QualifiedType::create(ctx, t, Constness::Mutable, Side::LHS, t->meta());
             case parameter::Kind::In: return QualifiedType::create(ctx, t, Constness::Const, Side::RHS, t->meta());
-            case parameter::Kind::InOut:
-                return QualifiedType::create(ctx, t, Constness::NonConst, Side::LHS, t->meta());
+            case parameter::Kind::InOut: return QualifiedType::create(ctx, t, Constness::Mutable, Side::LHS, t->meta());
             default:
                 return QualifiedType::create(ctx, type::Unknown::create(ctx), Constness::Const, Side::RHS, t->meta());
         }

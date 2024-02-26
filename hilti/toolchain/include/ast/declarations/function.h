@@ -20,14 +20,23 @@ namespace hilti::declaration {
 /** AST node for a function declaration. */
 class Function : public Declaration {
 public:
-    ~Function() override {}
-
     auto function() const { return child<::hilti::Function>(0); }
 
     /** Returns an operator corresponding to a call to the function that the declaration corresponds to. */
-    const auto& operator_() const { return _operator; }
+    auto operator_() const { return _operator; }
 
+    /**
+     * Returns the declaration index of a type declaration that's semantically
+     * linked to this function declaration. That could for example be the
+     * struct type for methods or hooks. Note that this is different from the
+     * function's own declaration.
+     */
     auto linkedDeclarationIndex() const { return _linked_declaration_index; }
+
+    /**
+     * Returns the index of a function declaration that's prototyping this
+     * function if that's separate from the function's own declaration.
+     */
     auto linkedPrototypeIndex() const { return _linked_prototype_index; }
 
     void setOperator(const Operator* op) { _operator = op; }
@@ -40,7 +49,7 @@ public:
         _linked_prototype_index = index;
     }
 
-    std::string displayName() const final { return "function"; }
+    std::string_view displayName() const final { return "function"; }
 
     node::Properties properties() const final;
 

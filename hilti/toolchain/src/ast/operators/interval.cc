@@ -18,7 +18,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
         };
@@ -35,7 +35,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
         };
@@ -52,7 +52,7 @@ public:
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Returns the sum of the intervals.",
         };
@@ -69,7 +69,7 @@ public:
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Returns the difference of the intervals.",
         };
@@ -86,7 +86,7 @@ public:
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -103,7 +103,7 @@ public:
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -120,7 +120,7 @@ public:
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -137,7 +137,7 @@ public:
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -154,7 +154,7 @@ public:
             .kind = Kind::Multiple,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Multiples the interval with the given factor.",
         };
@@ -171,7 +171,7 @@ public:
             .kind = Kind::Multiple,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Multiplies the interval with the given factor.",
         };
@@ -191,7 +191,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of nanoseconds.",
         };
@@ -211,7 +211,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of seconds.",
         };
@@ -231,7 +231,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of nanoseconds.",
         };
@@ -251,7 +251,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of seconds.",
         };
@@ -271,7 +271,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeReal()},
                 },
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of seconds.",
         };
@@ -288,7 +288,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeInterval()},
             .member = "seconds",
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "interval",
             .doc = R"(
 Returns the interval as a real value representing seconds.
@@ -307,7 +307,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeInterval()},
             .member = "nanoseconds",
-            .result = {Const, builder->typeSignedInteger(64)},
+            .result = {Constness::Const, builder->typeSignedInteger(64)},
             .ns = "interval",
             .doc = R"(
 Returns the interval as an integer value representing nanoseconds.

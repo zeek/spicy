@@ -24,7 +24,7 @@ QualifiedTypePtr _itemType(Builder* builder, const Expressions& operands) {
              operands[0]->type()->type()->as<type::Bitfield>()->bits(operands[1]->as<expression::Member>()->id()) )
         return range->itemType();
     else
-        return builder->qualifiedType(builder->typeUnknown(), Const);
+        return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 }
 
 void _checkName(expression::ResolvedOperator* op) {
@@ -65,7 +65,7 @@ public:
             .kind = Kind::HasMember,
             .op0 = {parameter::Kind::In, builder->typeBitfield(type::Wildcard()), "<bitfield>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<name>"},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bitfield",
             .doc = "Returns true if the bitfield's element has a value.",
         };

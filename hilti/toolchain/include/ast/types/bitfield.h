@@ -35,7 +35,7 @@ public:
     auto dd() const { return child<declaration::Expression>(3); }
     auto ddType() const { return dd()->expression()->type(); }
 
-    std::string displayName() const final { return "bit range"; }
+    std::string_view displayName() const final { return "bit range"; }
 
     node::Properties properties() const final {
         auto p = node::Properties{

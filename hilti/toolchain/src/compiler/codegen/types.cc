@@ -13,7 +13,6 @@
 #include <hilti/compiler/detail/cxx/all.h>
 #include <hilti/compiler/unit.h>
 
-#include "base/util.h"
 
 using namespace hilti;
 using namespace hilti::detail;

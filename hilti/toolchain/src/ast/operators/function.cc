@@ -8,8 +8,6 @@
 using namespace hilti;
 using namespace hilti::operator_;
 
-hilti::function::Call::~Call() {}
-
 operator_::Signature hilti::function::Call::signature(Builder* builder) const {
     auto fdecl = _fdecl.lock();
     assert(fdecl);
@@ -23,7 +21,7 @@ operator_::Signature hilti::function::Call::signature(Builder* builder) const {
         .kind = Kind::Call,
         .op0 = {parameter::Kind::In, std::move(ftype)}, // will be found through scope lookup, not by name matching
         .op1 = {parameter::Kind::In, params},
-        .result = {result->isConstant() ? Const : NonConst, result->type()},
+        .result = {result->isConstant() ? Constness::Const : Constness::Mutable, result->type()},
         .skip_doc = true,
     };
 }

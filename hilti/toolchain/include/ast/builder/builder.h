@@ -495,18 +495,18 @@ public:
     ExpressionPtr addTmp(const std::string& prefix, const QualifiedTypePtr& t, const Expressions& args = {});
     ExpressionPtr addTmp(const std::string& prefix, const QualifiedTypePtr& t, const ExpressionPtr& init);
     ExpressionPtr addTmp(const std::string& prefix, const UnqualifiedTypePtr& t, const Expressions& args = {}) {
-        return addTmp(prefix, qualifiedType(t, Constness::NonConst), args);
+        return addTmp(prefix, qualifiedType(t, Constness::Mutable), args);
     }
     ExpressionPtr addTmp(const std::string& prefix, const UnqualifiedTypePtr& t, const ExpressionPtr& init) {
-        return addTmp(prefix, qualifiedType(t, Constness::NonConst), init);
+        return addTmp(prefix, qualifiedType(t, Constness::Mutable), init);
     }
 
     void addLocal(ID id, const QualifiedTypePtr& t, Meta m = Meta()) {
         block()->_add(context(), local(std::move(id), t, std::move(m)));
     }
 
-    void addLocal(ID id, ExpressionPtr init, Meta m = Meta()) {
-        block()->_add(context(), local(std::move(id), std::move(init), std::move(m)));
+    void addLocal(ID id, ExpressionPtr init, const Meta& m = Meta()) {
+        block()->_add(context(), local(std::move(id), std::move(init), m));
     }
 
     void addLocal(ID id, const QualifiedTypePtr& t, ExpressionPtr init, Meta m = Meta()) {

@@ -7,6 +7,7 @@
 
 #include <hilti/ast/operators/common.h>
 
+// NOLINTNEXTLINE(modernize-concat-nested-namespaces)
 namespace hilti::operator_ {
 
 HILTI_NODE_OPERATOR(hilti, port, Equal)

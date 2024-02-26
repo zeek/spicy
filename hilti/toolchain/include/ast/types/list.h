@@ -59,14 +59,14 @@ public:
 
     static auto create(ASTContext* ctx, const QualifiedTypePtr& t, const Meta& meta = {}) {
         return std::shared_ptr<List>(
-            new List(ctx, {QualifiedType::create(ctx, list::Iterator::create(ctx, t, meta), Constness::NonConst)},
+            new List(ctx, {QualifiedType::create(ctx, list::Iterator::create(ctx, t, meta), Constness::Mutable)},
                      meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
         return std::shared_ptr<List>(
             new List(ctx, Wildcard(),
-                     {QualifiedType::create(ctx, list::Iterator::create(ctx, Wildcard(), m), Constness::NonConst)}, m));
+                     {QualifiedType::create(ctx, list::Iterator::create(ctx, Wildcard(), m), Constness::Mutable)}, m));
     }
 
 protected:

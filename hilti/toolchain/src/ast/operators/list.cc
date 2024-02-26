@@ -83,7 +83,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "list::iterator",
             .doc = "Returns true if two lists iterators refer to the same location.",
         };
@@ -105,7 +105,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "list::iterator",
             .doc = "Returns true if two lists iterators refer to different locations.",
         };
@@ -127,7 +127,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "list",
             .doc = "Returns the number of elements a list contains.",
         };
@@ -144,7 +144,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "list",
             .doc = "Compares two lists element-wise.",
         };
@@ -166,7 +166,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "list",
             .doc = "Compares two lists element-wise.",
         };

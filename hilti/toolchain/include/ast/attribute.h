@@ -16,13 +16,11 @@ namespace hilti {
 /** AST node for an attribute. */
 class Attribute : public Node {
 public:
-    ~Attribute() override;
-
     /** Returns the name of the attribute, including the leading `&`. */
     const auto& tag() const { return _tag; }
 
     /** Returns true if an argument is associated with the attribute. */
-    bool hasValue() const { return child(0) != nullptr; }
+    auto hasValue() const { return child(0) != nullptr; }
 
     /**
      * Returns the attribute associated with the node.
@@ -112,13 +110,8 @@ private:
 /** AST node holding a set of `Attribute` nodes. */
 class AttributeSet : public Node {
 public:
-    ~AttributeSet() override;
-
     /** Returns the set's attributes. */
     auto attributes() const { return children<Attribute>(0, {}); }
-
-    /** Returns true if the set is empty. */
-    bool empty() const { return attributes().empty(); }
 
     /**
      * Retrieves an attribute with a given name from the set. If multiple
@@ -149,7 +142,7 @@ public:
     void remove(std::string_view tag);
 
     /** Returns true if the set has at least one element. */
-    operator bool() const { return ! empty(); }
+    operator bool() const { return ! attributes().empty(); }
 
     static auto create(ASTContext* ctx, Attributes attrs = {}, Meta m = Meta()) {
         return std::shared_ptr<AttributeSet>(new AttributeSet(ctx, Nodes{std::move(attrs)}, std::move(m)));

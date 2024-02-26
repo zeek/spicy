@@ -35,7 +35,7 @@ struct LiteralParser {
         if ( auto field = production->meta().field() )
             return pb->builder()->addTmp("c", field->parseType());
 
-        return pb->builder()->addTmp("c", pb->builder()->qualifiedType(t, hilti::Constness::NonConst));
+        return pb->builder()->addTmp("c", pb->builder()->qualifiedType(t, hilti::Constness::Mutable));
     }
 };
 
@@ -149,7 +149,7 @@ struct Visitor : public visitor::PreOrder {
             pushBuilder(body);
 
             builder()->addLocal(ID("rc"),
-                                builder()->qualifiedType(builder()->typeSignedInteger(32), hilti::Constness::NonConst));
+                                builder()->qualifiedType(builder()->typeSignedInteger(32), hilti::Constness::Mutable));
 
             builder()->addAssign(builder()->tuple({builder()->id("rc"), builder()->id("ncur")}),
                                  builder()->memberCall(builder()->id("ms"), "advance", {builder()->id("ncur")}),

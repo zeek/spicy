@@ -58,7 +58,7 @@ repos:
   rev: 0.8.0
   hooks:
   - id: cpplint
-    exclude: '3rdparty/|__node-factory.h'
+    exclude: '3rdparty/'
     args: ["--quiet"]
     stages: ["commit"]
 

@@ -3,9 +3,7 @@
 #pragma once
 
 #include <string>
-#include <unordered_set>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
@@ -13,15 +11,9 @@
 
 namespace hilti {
 
-namespace type {
-using ResolvedState = std::unordered_set<uintptr_t>;
-}
-
 /** Base class for expression nodes. */
 class Expression : public Node {
 public:
-    ~Expression() override;
-
     /** Returns true if the expression's type is constant. */
     auto isConstant() const { return type()->isConstant(); }
 

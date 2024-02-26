@@ -65,7 +65,7 @@ public:
         const expression::UnresolvedOperator* op);
 
     /** Returns all available operators. */
-    const auto& operators() { return _operators; }
+    const auto& operators() const { return _operators; }
 
     /**
      * Registers an operator with the registry. It will not immediately become
@@ -116,7 +116,7 @@ private:
  * Retrieves an operator by name. Raises an internal error if there's no
  * operator available under that name.
  */
-inline auto get(const std::string_view& name) {
+inline auto get(std::string_view name) {
     if ( auto op = Registry::singleton().byName(name) )
         return op;
     else

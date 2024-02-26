@@ -54,7 +54,7 @@ static hilti::QualifiedTypePtr iteratorForType(spicy::Builder* builder, hilti::Q
         return iter;
     else {
         hilti::logger().error(hilti::util::fmt("type '%s' is not iterable", *t), m.location());
-        return builder->qualifiedType(builder->typeError(), hilti::Const);
+        return builder->qualifiedType(builder->typeError(), hilti::Constness::Const);
         }
 }
 
@@ -63,7 +63,7 @@ static hilti::QualifiedTypePtr viewForType(spicy::Builder* builder, hilti::Quali
         return v;
     else {
         hilti::logger().error(hilti::util::fmt("type '%s' is not viewable", *t), m.location());
-        return builder->qualifiedType(builder->typeError(), hilti::Const);
+        return builder->qualifiedType(builder->typeError(), hilti::Constness::Const);
         }
 }
 
@@ -657,7 +657,7 @@ type          : base_type                        { $$ = std::move($1); }
               | scoped_id                        { $$ = builder->typeName(std::move($1)); }
               ;
 
-qtype         : type                             { $$ = builder->qualifiedType(std::move($1), hilti::Constness::NonConst, __loc__); }
+qtype         : type                             { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable, __loc__); }
               | CONST type                       { $$ = builder->qualifiedType(std::move($2), hilti::Constness::Const, __loc__); }
               | AUTO                             { $$ = builder->qualifiedType(builder->typeAuto(__loc__), hilti::Constness::Const, __loc__); }
               ;
@@ -764,13 +764,13 @@ unit_sink     : SINK local_id opt_attributes ';' { $$ = builder->typeUnitItemSin
 unit_property : PROPERTY opt_attributes ';'      { $$ = builder->typeUnitItemProperty(ID(std::move($1)), std::move($2), false, __loc__); };
               | PROPERTY '=' expr opt_attributes';'
                                                  { $$ = builder->typeUnitItemProperty(ID(std::move($1)), std::move($3), std::move($4), false, __loc__); };
-              | PROPERTY '=' base_type_no_ref ';'       { $$ = builder->typeUnitItemProperty(ID(std::move($1)), builder->expressionType(builder->qualifiedType(std::move($3), hilti::Constness::NonConst)), {}, false, __loc__); };
+              | PROPERTY '=' base_type_no_ref ';'       { $$ = builder->typeUnitItemProperty(ID(std::move($1)), builder->expressionType(builder->qualifiedType(std::move($3), hilti::Constness::Mutable)), {}, false, __loc__); };
 
 
 unit_field    : opt_unit_field_id opt_unit_field_engine opt_skip base_type opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  {   if ( $4->isA<hilti::type::Vector>() )
                                                          error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     $$ = builder->typeUnitItemUnresolvedField(std::move($1), builder->qualifiedType(std::move($4), hilti::Constness::NonConst), std::move($2), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__);
+                                                     $$ = builder->typeUnitItemUnresolvedField(std::move($1), builder->qualifiedType(std::move($4), hilti::Constness::Mutable), std::move($2), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__);
                                                  }
 
               | opt_unit_field_id opt_unit_field_engine opt_skip unit_field_ctor opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
@@ -805,7 +805,7 @@ unit_field_in_container
               | scoped_id opt_unit_field_args opt_unit_field_repeat opt_attributes
                                                  { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), {}, false, std::move($2), std::move($3), {}, std::move($4), {}, {}, __loc__); }
               | base_type opt_unit_field_repeat opt_unit_field_args opt_attributes
-                                                 { $$ = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($1), hilti::Constness::NonConst), {}, false, std::move($3), std::move($2), {}, std::move($4), {}, {}, __loc__); }
+                                                 { $$ = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($1), hilti::Constness::Mutable), {}, false, std::move($3), std::move($2), {}, std::move($4), {}, {}, __loc__); }
 
 unit_wide_hook : ON unit_hook_id unit_hook       { $$ = builder->typeUnitItemUnitHook(std::move($2), std::move($3), __loc__); }
 
@@ -1011,7 +1011,7 @@ expr_g        : '(' expr ')'                     { $$ = builder->expressionGroup
               | scoped_id                        { $$ = builder->expressionName(std::move($1), __loc__); }
               | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("__dd"), __loc__);}
               | DOLLAR_NUMBER                    { // $N -> $@[N] (with $@ being available internally only, not exposed to users)
-                                                   auto captures = builder->expressionKeyword(hilti::expression::keyword::Kind::Captures, builder->qualifiedType(builder->typeName("~hilti::Captures"), hilti::Constness::NonConst), __loc__);
+                                                   auto captures = builder->expressionKeyword(hilti::expression::keyword::Kind::Captures, builder->qualifiedType(builder->typeName("~hilti::Captures"), hilti::Constness::Mutable), __loc__);
                                                    auto index = builder->expressionCtor(builder->ctorUnsignedInteger($1, 64, __loc__), __loc__);
                                                    $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Index, {std::move(captures), std::move(index)}, __loc__);
                                                  }

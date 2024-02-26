@@ -345,7 +345,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         // Strong reference (instead of value reference) so that copying unit
         // instances doesn't copy the sink.
         auto sink = builder()->typeStrongReference(
-            builder()->qualifiedType(builder()->typeName("spicy_rt::Sink", n->meta()), hilti::Constness::NonConst));
+            builder()->qualifiedType(builder()->typeName("spicy_rt::Sink", n->meta()), hilti::Constness::Mutable));
         replaceNode(n, sink);
     }
 

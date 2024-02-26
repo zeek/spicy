@@ -30,12 +30,12 @@ struct VisitorScopeBuilder : visitor::PostOrder {
 
     void operator()(type::unit::item::Field* n) final {
         if ( auto d = n->dd() )
-            n->getOrCreateScope()->insert(std::move(d));
+            n->getOrCreateScope()->insert(d);
     }
 
     void operator()(declaration::UnitHook* n) final {
         if ( auto d = n->hook()->dd() )
-            n->getOrCreateScope()->insert(std::move(d));
+            n->getOrCreateScope()->insert(d);
 
         if ( auto t = builder->context()->lookup(n->hook()->unitTypeIndex()) ) {
             auto u = t->as<type::Unit>();
@@ -49,7 +49,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
 
     void operator()(declaration::Hook* n) final {
         if ( auto d = n->dd() )
-            n->getOrCreateScope()->insert(std::move(d));
+            n->getOrCreateScope()->insert(d);
         else
             // Force the scope lookup to stop here so that we don't find any
             // higher-level `$$`, which may have a different type.

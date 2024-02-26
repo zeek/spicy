@@ -34,7 +34,7 @@ static auto sequence(hilti::ASTContext* ctx, const std::string& symbol, Ps l) {
 static auto variable(hilti::ASTContext* ctx, const std::string& symbol, const hilti::UnqualifiedTypePtr& t) {
     return std::make_unique<
         spicy::detail::codegen::production::Variable>(ctx, symbol,
-                                                      hilti::QualifiedType::create(ctx, t, hilti::Constness::NonConst));
+                                                      hilti::QualifiedType::create(ctx, t, hilti::Constness::Mutable));
 }
 
 static auto type_literal(hilti::ASTContext* ctx, const std::string& symbol, const spicy::UnqualifiedTypePtr& t) {

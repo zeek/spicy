@@ -21,7 +21,7 @@ public:
         return {
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeUnsignedInteger(8)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(8)},
             .ns = "bytes::iterator",
             .doc = "Returns the character the iterator is pointing to.",
         };
@@ -36,7 +36,7 @@ public:
         return {
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
-            .result = {NonConst, builder->typeBytesIterator()},
+            .result = {Constness::Mutable, builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Advances the iterator by one byte, returning the previous position.",
         };
@@ -51,7 +51,7 @@ public:
         return {
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
-            .result = {NonConst, builder->typeBytesIterator()},
+            .result = {Constness::Mutable, builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Advances the iterator by one byte, returning the new position.",
         };
@@ -67,7 +67,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -86,7 +86,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -104,7 +104,7 @@ public:
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -122,7 +122,7 @@ public:
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -140,7 +140,7 @@ public:
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -158,7 +158,7 @@ public:
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -176,7 +176,7 @@ public:
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Const, builder->typeSignedInteger(64)},
+            .result = {Constness::Const, builder->typeSignedInteger(64)},
             .ns = "bytes::iterator",
             .doc =
                 "Returns the number of bytes between the two iterators. The result will be negative if the second "
@@ -197,7 +197,7 @@ public:
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Const, builder->typeBytesIterator()},
+            .result = {Constness::Const, builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Returns an iterator which is pointing the given number of bytes beyond the one passed in.",
         };
@@ -213,7 +213,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {NonConst, builder->typeBytesIterator()},
+            .result = {Constness::Mutable, builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Advances the iterator by the given number of bytes.",
         };
@@ -230,7 +230,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc = "Returns the number of bytes the value contains.",
         };
@@ -246,7 +246,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -262,7 +262,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -278,7 +278,7 @@ public:
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -294,7 +294,7 @@ public:
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -310,7 +310,7 @@ public:
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = "Returns true if the right-hand-side value contains the left-hand-side value as a subsequence.",
         };
@@ -326,7 +326,7 @@ public:
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -342,7 +342,7 @@ public:
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -358,7 +358,7 @@ public:
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = "Returns the concatenation of two bytes values.",
         };
@@ -374,7 +374,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = "Appends one bytes value to another.",
         };
@@ -390,7 +390,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = "Appends a view of stream data to a bytes instance.",
         };
@@ -406,7 +406,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(8)},
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = "Appends a single byte to the data.",
         };
@@ -426,8 +426,10 @@ public:
                         .name = "needle",
                         .type = {parameter::Kind::In, builder->typeBytes()},
                     },
-                .result = {Const, builder->typeTuple({builder->qualifiedType(builder->typeBool(), Const),
-                                                      builder->qualifiedType(builder->typeBytesIterator(), Const)})},
+                .result = {Constness::Const,
+                           builder->typeTuple(
+                               {builder->qualifiedType(builder->typeBool(), Constness::Const),
+                                builder->qualifiedType(builder->typeBytesIterator(), Constness::Const)})},
                 .ns = "bytes",
                 .doc = R"(
 Searches *needle* in the value's content. Returns a tuple of a boolean and an
@@ -463,7 +465,7 @@ public:
                     .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
                     .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE"),
                 },
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns a lower-case version of the bytes value, assuming it is
@@ -497,7 +499,7 @@ public:
                     .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
                     .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE"),
                 },
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns an upper-case version of the bytes value, assuming it is
@@ -524,7 +526,7 @@ public:
                     .name = "i",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeBytesIterator()},
+            .result = {Constness::Const, builder->typeBytesIterator()},
             .ns = "bytes",
             .doc = R"(
 Returns an iterator representing the offset *i* inside the bytes value.
@@ -549,7 +551,8 @@ public:
                     .type = {parameter::Kind::In, builder->typeBytes()},
                     .optional = true,
                 },
-            .result = {Const, builder->typeVector(builder->qualifiedType(builder->typeBytes(), NonConst))},
+            .result = {Constness::Const,
+                       builder->typeVector(builder->qualifiedType(builder->typeBytes(), Constness::Mutable))},
             .ns = "bytes",
             .doc = R"(
 Splits the bytes value at each occurrence of *sep* and returns a vector
@@ -578,8 +581,9 @@ public:
                     .type = {parameter::Kind::In, builder->typeBytes()},
                     .optional = true,
                 },
-            .result = {Const, builder->typeTuple({builder->qualifiedType(builder->typeBytes(), Const),
-                                                  builder->qualifiedType(builder->typeBytes(), Const)})},
+            .result = {Constness::Const,
+                       builder->typeTuple({builder->qualifiedType(builder->typeBytes(), Constness::Const),
+                                           builder->qualifiedType(builder->typeBytes(), Constness::Const)})},
             .ns = "bytes",
             .doc = R"(
 Splits the bytes value at the first occurrence of *sep* and returns the two parts
@@ -607,7 +611,7 @@ public:
                     .name = "b",
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = R"(
 Returns true if the bytes value starts with *b*.
@@ -638,7 +642,7 @@ public:
                     .type = {parameter::Kind::In, builder->typeBytes()},
                     .optional = true,
                 },
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Removes leading and/or trailing sequences of all characters in *set* from the bytes
@@ -670,7 +674,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeBytesIterator()},
                 },
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns the subsequence from *begin* to (but not including) *end*.
@@ -694,7 +698,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeBytesIterator()},
                 },
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns the subsequence from the value's beginning to (but not including) *end*.
@@ -723,7 +727,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns the subsequence from offset *begin* to (but not including) offset *end*.
@@ -747,7 +751,7 @@ public:
                     .name = "parts",
                     .type = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
                 },
-            .result = {Const, builder->typeBytes()},
+            .result = {Constness::Const, builder->typeBytes()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -775,7 +779,7 @@ public:
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Const, builder->typeSignedInteger(64)},
+            .result = {Constness::Const, builder->typeSignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -803,7 +807,7 @@ public:
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -830,7 +834,7 @@ public:
                     .name = "byte_order",
                     .type = {parameter::Kind::In, builder->typeName("hilti::ByteOrder")},
                 },
-            .result = {Const, builder->typeSignedInteger(64)},
+            .result = {Constness::Const, builder->typeSignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -856,7 +860,7 @@ public:
                     .name = "byte_order",
                     .type = {parameter::Kind::In, builder->typeName("hilti::ByteOrder")},
                 },
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -883,7 +887,7 @@ public:
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -910,7 +914,7 @@ public:
                     .name = "byte_order",
                     .type = {parameter::Kind::In, builder->typeName("hilti::ByteOrder")},
                 },
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -944,7 +948,7 @@ public:
                     .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
                     .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE"),
                 },
-            .result = {Const, builder->typeString()},
+            .result = {Constness::Const, builder->typeString()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -978,7 +982,8 @@ public:
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Const, builder->typeResult(builder->qualifiedType(builder->typeBytes(), Constness::Const))},
+            .result = {Constness::Const,
+                       builder->typeResult(builder->qualifiedType(builder->typeBytes(), Constness::Const))},
             .ns = "bytes",
             .doc =
                 R"(

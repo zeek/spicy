@@ -273,7 +273,7 @@ inline std::string what(const Exception& e) { return e.description(); }
  */
 inline std::string what(const std::exception& e) { return e.what(); }
 
-/** Returns the message associated with an exception. */
+/** Returns the location associated with an exception. */
 inline std::string where(const Exception& e) { return e.location(); }
 
 } // namespace exception

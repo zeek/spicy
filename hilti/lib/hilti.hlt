@@ -2,6 +2,7 @@
 
 module hilti {
 
+# Ignore this module for code generation, we just need the declarations.
 %skip-implementation;
 
 public type BitOrder = enum { LSB0, MSB0 } &cxxname="hilti::rt::integer::BitOrder";

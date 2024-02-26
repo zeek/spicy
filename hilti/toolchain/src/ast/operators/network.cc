@@ -17,7 +17,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeNetwork()},
             .op1 = {parameter::Kind::In, builder->typeNetwork()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "network",
             .doc = "Compares two network values.",
         };
@@ -34,7 +34,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeNetwork()},
             .op1 = {parameter::Kind::In, builder->typeNetwork()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "network",
             .doc = "Compares two network values.",
         };
@@ -51,7 +51,7 @@ public:
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeAddress()},
             .op1 = {parameter::Kind::In, builder->typeNetwork()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "network",
             .doc = "Returns true if the address is part of the network range.",
         };
@@ -68,7 +68,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeNetwork()},
             .member = "family",
-            .result = {Const, builder->typeName("hilti::AddressFamily")},
+            .result = {Constness::Const, builder->typeName("hilti::AddressFamily")},
             .ns = "network",
             .doc = R"(
 Returns the protocol family of the network, which can be IPv4 or IPv6.
@@ -87,7 +87,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeNetwork()},
             .member = "prefix",
-            .result = {Const, builder->typeAddress()},
+            .result = {Constness::Const, builder->typeAddress()},
             .ns = "network",
             .doc = R"(
 Returns the network's prefix as a masked IP address.
@@ -106,7 +106,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeNetwork()},
             .member = "length",
-            .result = {Const, builder->typeSignedInteger(64)},
+            .result = {Constness::Const, builder->typeSignedInteger(64)},
             .ns = "network",
             .doc = R"(
 Returns the length of the network's prefix.

@@ -40,7 +40,7 @@ public:
         return Declaration::properties() + p;
     }
 
-    std::string displayName() const final { return "type"; }
+    std::string_view displayName() const final { return "type"; }
 
     static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, AttributeSetPtr attrs,
                        declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {

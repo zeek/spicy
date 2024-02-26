@@ -81,7 +81,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "vector::iterator",
             .doc = "Returns true if two vector iterators refer to the same location.",
         };
@@ -104,7 +104,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "vector::iterator",
             .doc = "Returns true if two vector iterators refer to different locations.",
         };
@@ -127,7 +127,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "vector",
             .doc = "Returns the number of elements a vector contains.",
         };
@@ -144,7 +144,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "vector",
             .doc = "Compares two vectors element-wise.",
         };
@@ -166,7 +166,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "vector",
             .doc = "Compares two vectors element-wise.",
         };
@@ -231,7 +231,7 @@ public:
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result_doc = "<vector<*>",
+            .result_doc = "vector<*>",
             .ns = "vector",
             .doc = "Returns the concatenation of two vectors.",
         };
@@ -257,7 +257,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result_doc = "<vector<*>",
+            .result_doc = "vector<*>",
             .ns = "vector",
             .doc = "Concatenates another vector to the vector.",
         };
@@ -294,7 +294,7 @@ public:
                     .name = "x",
                     .type = {parameter::Kind::In, builder->typeAny()},
                 },
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Assigns *x* to the *i*th element of the vector. If the vector contains less
@@ -320,7 +320,7 @@ public:
                     .name = "x",
                     .type = {parameter::Kind::In, builder->typeAny()},
                 },
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Appends *x* to the end of the vector.
@@ -339,7 +339,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
             .member = "pop_back",
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Removes the last element from the vector, which must be non-empty.
@@ -411,7 +411,7 @@ public:
                     .name = "n",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Reserves space for at least *n* elements. This operation does not change the
@@ -437,7 +437,7 @@ public:
                     .name = "n",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Resizes the vector to hold exactly *n* elements. If *n* is larger than the
@@ -496,7 +496,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result_doc = "<vector<*>>",
+            .result_doc = "vector<*>",
             .ns = "vector",
             .doc = R"(
 Extracts a subsequence of vector elements spanning from index *begin*
@@ -525,7 +525,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result_doc = "<vector<*>>",
+            .result_doc = "vector<*>",
             .ns = "vector",
             .doc = R"(
 Extracts a subsequence of vector elements spanning from index *begin*

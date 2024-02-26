@@ -19,7 +19,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "time",
             .doc = "Compares two time values.",
         };
@@ -36,7 +36,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "time",
             .doc = "Compares two time values.",
         };
@@ -53,7 +53,7 @@ public:
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "time",
             .doc = "Adds the interval to the time.",
         };
@@ -70,7 +70,7 @@ public:
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "time",
             .doc = "Returns the difference of the times.",
         };
@@ -87,7 +87,7 @@ public:
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "time",
             .doc = "Subtracts the interval from the time.",
         };
@@ -104,7 +104,7 @@ public:
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -121,7 +121,7 @@ public:
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -138,7 +138,7 @@ public:
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -155,7 +155,7 @@ public:
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeTime()},
             .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -175,7 +175,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of nanoseconds.",
         };
@@ -195,7 +195,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of seconds.",
         };
@@ -215,7 +215,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of nanoseconds.",
         };
@@ -235,7 +235,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of seconds.",
         };
@@ -255,7 +255,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeReal()},
                 },
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of seconds.",
         };
@@ -272,7 +272,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeTime()},
             .member = "seconds",
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "time",
             .doc = R"(
 Returns the time as a real value representing seconds since the UNIX epoch.
@@ -291,7 +291,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeTime()},
             .member = "nanoseconds",
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "time",
             .doc = R"(
 Returns the time as an integer value representing nanoseconds since the UNIX epoch.

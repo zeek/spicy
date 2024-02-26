@@ -15,7 +15,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "string",
             .doc = "Compares two strings lexicographically.",
         };
@@ -32,7 +32,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "string",
             .doc = "Compares two strings lexicographically.",
         };
@@ -48,7 +48,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeString()},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "string",
             .doc = "Returns the number of characters the string contains.",
         };
@@ -65,7 +65,7 @@ public:
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Const, builder->typeString()},
+            .result = {Constness::Const, builder->typeString()},
             .ns = "string",
             .doc = "Returns the concatenation of two strings.",
         };
@@ -82,7 +82,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Const, builder->typeString()},
+            .result = {Constness::Const, builder->typeString()},
             .ns = "string",
             .doc = "Appends the second string to the first.",
         };
@@ -98,7 +98,7 @@ public:
         return {.kind = Kind::Modulo,
                 .op0 = {parameter::Kind::In, builder->typeString()},
                 .op1 = {parameter::Kind::In, builder->typeAny()},
-                .result = {Const, builder->typeString()},
+                .result = {Constness::Const, builder->typeString()},
                 .ns = "string",
                 .doc = "Renders a printf-style format string."};
     }
@@ -116,7 +116,7 @@ public:
                 .param0 = {.name = "charset",
                            .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
                            .default_ = builder->expressionName("hilti::Charset::UTF8")},
-                .result = {Const, builder->typeBytes()},
+                .result = {Constness::Const, builder->typeBytes()},
                 .ns = "string",
                 .doc = "Converts the string into a binary representation encoded with the given character set."};
     };

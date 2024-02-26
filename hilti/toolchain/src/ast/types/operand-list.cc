@@ -21,7 +21,7 @@ QualifiedTypePtr operand_list::Operand::_makeOperandType(ASTContext* ctx, parame
             break;
 
         case parameter::Kind::InOut:
-            qtype = QualifiedType::create(ctx, type, Constness::NonConst, Side::LHS, type->meta());
+            qtype = QualifiedType::create(ctx, type, Constness::Mutable, Side::LHS, type->meta());
             break;
 
         case parameter::Kind::Unknown: logger().internalError("unknown operand kind"); break;

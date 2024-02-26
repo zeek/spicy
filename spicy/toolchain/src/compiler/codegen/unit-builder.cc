@@ -133,7 +133,7 @@ struct FieldBuilder : public visitor::PreOrder {
 
         auto nf =
             builder()->declarationField(s->id(),
-                                        builder()->qualifiedType(builder()->typeSink(), hilti::Constness::NonConst),
+                                        builder()->qualifiedType(builder()->typeSink(), hilti::Constness::Mutable),
                                         attrs, s->meta());
         addField(std::move(nf));
     }
@@ -178,9 +178,9 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
 
     if ( auto context = unit->contextType() ) {
         auto attrs = builder()->attributeSet({builder()->attribute("&internal")});
-        auto ftype = builder()->typeStrongReference(builder()->qualifiedType(context, hilti::Constness::NonConst));
+        auto ftype = builder()->typeStrongReference(builder()->qualifiedType(context, hilti::Constness::Mutable));
         auto f =
-            builder()->declarationField(ID("__context"), builder()->qualifiedType(ftype, hilti::Constness::NonConst),
+            builder()->declarationField(ID("__context"), builder()->qualifiedType(ftype, hilti::Constness::Mutable),
                                         attrs, unit->meta());
         v.addField(std::move(f));
     }
@@ -221,13 +221,13 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
     // Fields related to random-access functionality.
     auto attr_uses_random_access =
         builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_random_access"));
-    auto iter = builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::NonConst);
+    auto iter = builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Mutable);
     auto f1 = builder()->declarationField(ID("__begin"), iter,
                                           builder()->attributeSet(
                                               {builder()->attribute("&internal"), attr_uses_random_access}));
     auto f2 =
         builder()->declarationField(ID("__position_update"),
-                                    builder()->qualifiedType(builder()->typeOptional(iter), hilti::Constness::NonConst),
+                                    builder()->qualifiedType(builder()->typeOptional(iter), hilti::Constness::Mutable),
                                     builder()->attributeSet(
                                         {builder()->attribute("&internal"), attr_uses_random_access}));
     v.addField(std::move(f1));
@@ -238,7 +238,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
     auto f3 =
         builder()->declarationField(ID("__offset"),
                                     builder()->qualifiedType(builder()->typeUnsignedInteger(64),
-                                                             hilti::Constness::NonConst),
+                                                             hilti::Constness::Mutable),
                                     builder()->attributeSet({builder()->attribute("&internal"), attr_uses_offset}));
     v.addField(std::move(f3));
 
@@ -277,7 +277,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
 
         auto sink = builder()->declarationField(ID("__sink"),
                                                 builder()->qualifiedType(builder()->typeName("spicy_rt::SinkState"),
-                                                                         hilti::Constness::NonConst),
+                                                                         hilti::Constness::Mutable),
                                                 attrs);
         v.addField(std::move(sink));
     }
@@ -289,8 +289,8 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                    builder()->qualifiedType(builder()->typeStrongReference(
                                                                 builder()->qualifiedType(builder()->typeName(
                                                                                              "spicy_rt::Filters"),
-                                                                                         hilti::Constness::NonConst)),
-                                                            hilti::Constness::NonConst),
+                                                                                         hilti::Constness::Mutable)),
+                                                            hilti::Constness::Mutable),
                                    builder()->attributeSet(
                                        {builder()->attribute("&internal"),
                                         builder()->attribute("&needed-by-feature",
@@ -305,8 +305,8 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                    builder()->qualifiedType(builder()->typeWeakReference(
                                                                 builder()->qualifiedType(builder()->typeName(
                                                                                              "spicy_rt::Forward"),
-                                                                                         hilti::Constness::NonConst)),
-                                                            hilti::Constness::NonConst),
+                                                                                         hilti::Constness::Mutable)),
+                                                            hilti::Constness::Mutable),
                                    builder()->attributeSet(
                                        {builder()->attribute("&internal"),
                                         builder()->attribute("&needed-by-feature",
@@ -315,12 +315,12 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
     }
 
     auto ft = _pb.parseMethodFunctionType({}, unit->meta());
-    v.addField(builder()->declarationField(ID("__parse_stage1"),
-                                           builder()->qualifiedType(ft, hilti::Constness::NonConst), {}));
+    v.addField(
+        builder()->declarationField(ID("__parse_stage1"), builder()->qualifiedType(ft, hilti::Constness::Mutable), {}));
 
     if ( auto convert = unit->attributes()->find("&convert") ) {
         auto expression = *convert->valueAsExpression();
-        auto result = builder()->qualifiedType(builder()->typeAuto(), hilti::Constness::NonConst);
+        auto result = builder()->qualifiedType(builder()->typeAuto(), hilti::Constness::Mutable);
         auto ftype = builder()->typeFunction(result, {}, hilti::type::function::Flavor::Method, expression->meta());
 
         _pb.pushBuilder();

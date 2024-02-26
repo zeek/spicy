@@ -84,8 +84,8 @@ NodePtr deepcopy(ASTContext* ctx, const NodePtr& n, bool force);
  *
  * If `force` is true, this always happens. If `force` it false, the copy takes
  * place only if the node does not currently have a parent node, meaning it's
- * not part of an AST. The latter behaviour is usually what one wants because
- * it performs the copy only if for then adding the node to an AST.
+ * not part of an AST. The latter behavior is usually what one wants because
+ * it performs the copy only if then adding the node to an AST.
  */
 template<typename T>
 std::shared_ptr<T> deepcopy(ASTContext* ctx, const std::shared_ptr<T>& n, bool force = false) {
@@ -97,7 +97,7 @@ std::shared_ptr<T> deepcopy(ASTContext* ctx, const std::shared_ptr<T>& n, bool f
 
 /** Value of a node property, stored as part of `Properties`. */
 using PropertyValue = std::variant<bool, const char*, double, int, int64_t, unsigned int, uint64_t, std::string, ID,
-                                   std::optional<std::string>, std::optional<uint64_t>>;
+                                   std::optional<uint64_t>>;
 
 /** Renders a property value into a string for display. */
 inline std::string to_string(const PropertyValue& v) {
@@ -109,7 +109,6 @@ inline std::string to_string(const PropertyValue& v) {
         auto operator()(int64_t i) { return util::fmt("%" PRId64, i); }
         auto operator()(const std::string& s) { return util::escapeUTF8(s); }
         auto operator()(const ID& id) { return id.str(); }
-        auto operator()(const std::optional<std::string>& s) { return s ? util::escapeUTF8(*s) : "<not set>"; }
         auto operator()(const std::optional<uint64_t>& u) { return u ? util::fmt("%" PRIu64, *u) : "<not set>"; }
         auto operator()(unsigned int u) { return util::fmt("%u", u); }
         auto operator()(uint64_t u) { return util::fmt("%" PRIu64, u); }
@@ -169,7 +168,9 @@ public:
      * @return parent node, or null if the requested parent does not exist
      */
     Node* parent(int i = 1) const {
-        assert(i > 0);
+        if ( i == 0 )
+            return nullptr;
+
         Node* p = _parent;
         for ( ; p && i > 1; i-- )
             p = p->_parent;
@@ -788,7 +789,7 @@ private:
 
     // Prepares a node for being added as a child, deep-copying it if it
     // already has a parent.
-    static NodePtr _newChild(ASTContext* ctx, NodePtr&& child);
+    static NodePtr _newChild(ASTContext* ctx, NodePtr child);
 
     // Clears the node's parent pointer.
     void _clearParent() { _parent = nullptr; }

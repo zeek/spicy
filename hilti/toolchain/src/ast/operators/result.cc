@@ -37,7 +37,7 @@ public:
         return {.kind = Kind::MemberCall,
                 .self = {parameter::Kind::In, builder->typeResult(type::Wildcard())},
                 .member = "error",
-                .result = {Const, builder->typeError()},
+                .result = {Constness::Const, builder->typeError()},
                 .ns = "result",
                 .doc =
                     "Retrieves the error stored inside the result instance. Will throw a ``NoError`` "

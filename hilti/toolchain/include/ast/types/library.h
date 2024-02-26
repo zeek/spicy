@@ -35,16 +35,15 @@ public:
         return std::shared_ptr<Library>(new Library(ctx, cxx_name, std::move(meta)));
     }
 
-protected:
+private:
     Library(ASTContext* ctx, std::string cxx_name, Meta meta)
         : UnqualifiedType(ctx, {util::fmt("library(%s)", cxx_name)}, std::move(meta)),
           _cxx_name(_normalize(std::move(cxx_name))) {}
 
     HILTI_NODE(hilti, Library)
 
-private:
     std::string _normalize(std::string name) {
-        if ( name.find("::") == 0 )
+        if ( util::startsWith(name, "::") )
             return name;
         else
             return std::string("::") + name;

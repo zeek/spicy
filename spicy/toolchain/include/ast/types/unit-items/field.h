@@ -101,7 +101,7 @@ public:
         return type() || item() || itemType()->isResolved(cd);
     }
 
-    std::string displayName() const final { return "unit field"; }
+    std::string_view displayName() const final { return "unit field"; }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"engine", to_string(_engine)},

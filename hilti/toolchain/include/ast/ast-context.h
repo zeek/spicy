@@ -83,7 +83,7 @@ public:
     auto str() const { return _value > 0 ? std::string(1, Prefix) + std::to_string(_value) : std::string("-"); }
 
     /** Returns true if the index is not `None` (i.e., zero). */
-    explicit operator bool() const { return _value != 0; }
+    explicit operator bool() const { return *this != None; }
 
     bool operator==(const ContextIndex& other) const { return _value == other._value; }
     bool operator!=(const ContextIndex& other) const { return _value != other._value; }
@@ -93,10 +93,10 @@ public:
     ContextIndex& operator=(const ContextIndex& other) = default;
     ContextIndex& operator=(ContextIndex&& other) noexcept = default;
 
-    inline static const ContextIndex None; /**< index with reserved value zero representing an unset index */
+    inline static const ContextIndex None{0}; /**< index with reserved value zero representing an unset index */
 
 private:
-    size_t _value;
+    uint64_t _value;
 };
 
 template<char Prefix>
@@ -381,7 +381,7 @@ private:
     // Dumps the accumulated state tables of the context to a debugging stream.
     void _dumpDeclarations(const logging::DebugStream& stream, const Plugin& plugin);
 
-    Context* _context;                   // compier context
+    Context* _context = nullptr;         // compiler context
     std::shared_ptr<ASTRoot> _root;      // root node of the AST
     bool _resolved = false;              // true if `processAST()` has finished successfully
     Driver* _driver = nullptr;           // pointer to compiler drive during `processAST()`, null outside of that

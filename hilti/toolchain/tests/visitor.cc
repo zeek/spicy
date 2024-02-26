@@ -19,16 +19,16 @@
 static auto ast() {
     auto ctx = std::make_unique<hilti::ASTContext>(nullptr);
     auto builder = hilti::Builder(ctx.get());
-    auto s = builder.declarationType(hilti::ID("s"),
-                                     builder.qualifiedType(builder.typeString(), hilti::Constness::NonConst));
-    auto i32 = builder.declarationType(hilti::ID("i32"), builder.qualifiedType(builder.typeSignedInteger(32),
-                                                                               hilti::Constness::NonConst));
+    auto s =
+        builder.declarationType(hilti::ID("s"), builder.qualifiedType(builder.typeString(), hilti::Constness::Mutable));
+    auto i32 = builder.declarationType(hilti::ID("i32"),
+                                       builder.qualifiedType(builder.typeSignedInteger(32), hilti::Constness::Mutable));
     auto d =
-        builder.declarationType(hilti::ID("d"), builder.qualifiedType(builder.typeReal(), hilti::Constness::NonConst));
+        builder.declarationType(hilti::ID("d"), builder.qualifiedType(builder.typeReal(), hilti::Constness::Mutable));
     auto e = builder.declarationLocalVariable(hilti::ID("e"),
                                               builder.qualifiedType(builder.typeVoid(), hilti::Constness::Const));
     auto c = builder.declarationLocalVariable(hilti::ID("c"),
-                                              builder.qualifiedType(builder.typeBool(), hilti::Constness::NonConst),
+                                              builder.qualifiedType(builder.typeBool(), hilti::Constness::Mutable),
                                               builder.expressionCtor(builder.ctorBool(true)));
 
     hilti::Declarations x = {s, i32, d, e, c};
@@ -174,8 +174,7 @@ TEST_CASE("Copy node by value on insert") {
     auto builder = hilti::Builder(ctx.get());
 
     std::shared_ptr<hilti::Declaration> d =
-        builder.declarationType(hilti::ID("x"),
-                                builder.qualifiedType(builder.typeString(), hilti::Constness::NonConst));
+        builder.declarationType(hilti::ID("x"), builder.qualifiedType(builder.typeString(), hilti::Constness::Mutable));
     auto uid = hilti::declaration::module::UID("m", "/tmp/m.hlt");
     auto m = builder.declarationModule(uid, {}, {d});
     REQUIRE(m->declarations().size() == 1);

@@ -19,8 +19,6 @@ namespace try_ {
 /** AST node for a `catch` block. */
 class Catch final : public Node {
 public:
-    ~Catch() final;
-
     auto parameter() const { return child<declaration::Parameter>(0); }
     auto body() const { return child<hilti::Statement>(1); }
 

@@ -116,11 +116,11 @@ void Node::replaceChildren(ASTContext* ctx, Nodes children) {
         addChild(ctx, std::move(c));
 }
 
-NodePtr Node::_newChild(ASTContext* ctx, NodePtr&& child) {
+NodePtr Node::_newChild(ASTContext* ctx, NodePtr child) {
     if ( child->_parent )
         return node::deepcopy(ctx, child);
     else
-        return std::move(child);
+        return child;
 }
 
 void Node::_checkThisForCastBackend() const {

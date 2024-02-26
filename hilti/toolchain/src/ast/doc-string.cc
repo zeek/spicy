@@ -7,17 +7,17 @@
 using namespace hilti;
 using namespace hilti::detail;
 
-std::string DocString::_normalize(std::string line) const {
-    line = util::trim(line);
+std::string DocString::_normalize(const std::string& line) const {
+    auto line_ = util::trim(line);
 
-    if ( util::startsWith(line, "##!") )
-        line = line.substr(3);
-    else if ( util::startsWith(line, "##<") )
-        line = line.substr(3);
-    else if ( util::startsWith(line, "##") )
-        line = line.substr(2);
+    if ( util::startsWith(line_, "##!") )
+        line_ = line_.substr(3);
+    else if ( util::startsWith(line_, "##<") )
+        line_ = line_.substr(3);
+    else if ( util::startsWith(line_, "##") )
+        line_ = line_.substr(2);
 
-    return util::trim(line);
+    return util::trim(line_);
 }
 
 void DocString::print(std::ostream& out) const {

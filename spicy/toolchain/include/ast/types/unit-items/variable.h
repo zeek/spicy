@@ -32,7 +32,7 @@ public:
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
 
-    std::string displayName() const final { return "unit variable"; }
+    std::string_view displayName() const final { return "unit variable"; }
 
     static auto create(ASTContext* ctx, ID id, QualifiedTypePtr type, ExpressionPtr default_, AttributeSetPtr attrs,
                        const Meta& meta = {}) {

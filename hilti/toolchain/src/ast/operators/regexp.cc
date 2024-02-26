@@ -29,7 +29,7 @@ public:
                     .name = "data",
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
-            .result = {Const, builder->typeSignedInteger(32)},
+            .result = {Constness::Const, builder->typeSignedInteger(32)},
             .ns = "regexp",
             .doc = R"(
 Matches the regular expression against *data*. If it matches, returns an
@@ -60,8 +60,9 @@ public:
                     .name = "data",
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
-            .result = {Const, builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Const),
-                                                  builder->qualifiedType(builder->typeBytes(), NonConst)})},
+            .result = {Constness::Const,
+                       builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
+                                           builder->qualifiedType(builder->typeBytes(), Constness::Mutable)})},
             .ns = "regexp",
             .doc = R"(
 Searches the regular expression in *data* and returns the matching part.
@@ -92,7 +93,8 @@ public:
                     .name = "data",
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
-            .result = {NonConst, builder->typeVector(builder->qualifiedType(builder->typeBytes(), NonConst))},
+            .result = {Constness::Mutable,
+                       builder->typeVector(builder->qualifiedType(builder->typeBytes(), Constness::Mutable))},
             .ns = "regexp",
             .doc = R"(
 Matches the regular expression against *data*. If it matches, returns a vector
@@ -119,7 +121,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeRegExp()},
             .member = "token_matcher",
-            .result = {Const, builder->typeName("hilti::MatchState")},
+            .result = {Constness::Const, builder->typeName("hilti::MatchState")},
             .ns = "regexp",
             .doc = R"(
 Initializes state for matching regular expression incrementally against chunks
@@ -151,8 +153,9 @@ public:
                     .type = {parameter::Kind::In, builder->typeBool()},
                     .default_ = builder->expressionCtor(builder->ctorBool(false)),
                 },
-            .result = {Const, builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Const),
-                                                  builder->qualifiedType(builder->typeStreamView(), NonConst)})},
+            .result = {Constness::Const,
+                       builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
+                                           builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
             .ns = "regexp_match_state",
             .doc = R"(
 Feeds a chunk of data into the token match state, continuing matching where it
@@ -188,8 +191,9 @@ public:
                     .type = {parameter::Kind::In, builder->typeBool()},
                     .default_ = builder->expressionCtor(builder->ctorBool(false)),
                 },
-            .result = {Const, builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Const),
-                                                  builder->qualifiedType(builder->typeStreamView(), NonConst)})},
+            .result = {Constness::Const,
+                       builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
+                                           builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
             .ns = "regexp_match_state",
             .doc = R"(
 Feeds a chunk of data into the token match state, continuing matching where it

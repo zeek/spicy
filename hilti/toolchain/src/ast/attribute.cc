@@ -12,8 +12,6 @@
 
 using namespace hilti;
 
-Attribute::~Attribute() = default;
-
 Result<ExpressionPtr> Attribute::valueAsExpression() const {
     if ( ! hasValue() )
         return result::Error(hilti::util::fmt("attribute '%s' requires an expression", _tag));
@@ -71,8 +69,6 @@ Result<bool> Attribute::coerceValueTo(Builder* builder, const QualifiedTypePtr& 
 }
 
 std::string Attribute::_dump() const { return ""; }
-
-AttributeSet::~AttributeSet() = default;
 
 std::string AttributeSet::_dump() const { return ""; }
 

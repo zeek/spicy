@@ -17,8 +17,8 @@
 
 using namespace hilti;
 
-void Scope::insert(const ID& id, DeclarationPtr&& d) { _items[id].insert(std::move(d)); }
-void Scope::insert(DeclarationPtr&& d) { _items[d->id()].insert(d); }
+void Scope::insert(const ID& id, DeclarationPtr d) { _items[id].insert(std::move(d)); }
+void Scope::insert(const DeclarationPtr& d) { _items[d->id()].insert(d); }
 
 void Scope::insertNotFound(const ID& id) { _items[std::string(id)] = {nullptr}; }
 

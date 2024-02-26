@@ -44,8 +44,6 @@ constexpr inline auto from_string(const std::string_view& s) {
 /** Base class for function nodes. */
 class Function : public Node {
 public:
-    ~Function() override;
-
     const auto& id() const { return _id; }
     auto type() const { return child<QualifiedType>(0); }
     auto ftype() const { return child<QualifiedType>(0)->type()->as<type::Function>(); }
@@ -55,7 +53,7 @@ public:
     auto isStatic() const { return attributes()->find("&static") != nullptr; }
 
     void setBody(ASTContext* ctx, const StatementPtr& b) { setChild(ctx, 1, b); }
-    void setID(const ID& id) { _id = id; }
+    void setID(ID id) { _id = std::move(id); }
     void setResultType(ASTContext* ctx, const QualifiedTypePtr& t) { ftype()->setResultType(ctx, t); }
 
     node::Properties properties() const override {

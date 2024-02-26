@@ -9,8 +9,6 @@
 using namespace spicy;
 using namespace spicy::detail;
 
-spicy::type::unit::item::switch_::Case::~Case() {}
-
 bool spicy::type::unit::item::Switch::hasNoFields() const {
     for ( const auto& c : cases() ) {
         for ( const auto& f : c->items() ) {

@@ -17,7 +17,7 @@ class UnitHook : public Declaration {
 public:
     auto hook() const { return child<declaration::Hook>(0); }
 
-    std::string displayName() const final { return "unit hook"; }
+    std::string_view displayName() const final { return "unit hook"; }
 
     static auto create(ASTContext* ctx, const ID& id, const declaration::HookPtr& hook, Meta meta = {}) {
         auto h = std::shared_ptr<UnitHook>(new UnitHook(ctx, {hook}, id, std::move(meta)));

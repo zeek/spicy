@@ -28,7 +28,7 @@ public:
 
     /** Returns an operator corresponding to a call to the member function that the declaration corresponds to, if any.
      */
-    const auto& operator_() const { return _operator; }
+    auto operator_() const { return _operator; }
 
     QualifiedTypePtr type() const {
         if ( const auto& func = inlineFunction() )
@@ -62,7 +62,7 @@ public:
 
     auto linkedTypeIndex() const { return _linked_type_index; }
 
-    void setAttributes(ASTContext* ctx, const AttributeSetPtr& attrs) { setChild(ctx, 1, attrs); }
+    void setAttributes(ASTContext* ctx, AttributeSetPtr attrs) { setChild(ctx, 1, std::move(attrs)); }
     void setOperator(const Operator* op) { _operator = op; }
     void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
     void setLinkedTypeIndex(ast::TypeIndex idx) {
@@ -70,7 +70,7 @@ public:
         _linked_type_index = idx;
     }
 
-    std::string displayName() const final { return "struct field"; }
+    std::string_view displayName() const final { return "struct field"; }
 
     node::Properties properties() const final;
 

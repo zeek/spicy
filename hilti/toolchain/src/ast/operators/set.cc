@@ -83,7 +83,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "set::iterator",
             .doc = "Returns true if two sets iterators refer to the same location.",
         };
@@ -105,7 +105,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "set::iterator",
             .doc = "Returns true if two sets iterators refer to different locations.",
         };
@@ -128,7 +128,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "set",
             .doc = "Returns the number of elements a set contains.",
         };
@@ -145,7 +145,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "set",
             .doc = "Compares two sets element-wise.",
         };
@@ -167,7 +167,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "set",
             .doc = "Compares two sets element-wise.",
         };
@@ -189,7 +189,7 @@ public:
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeAny()},
             .op1 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "set",
             .doc = "Returns true if an element is part of the set.",
         };
@@ -206,7 +206,7 @@ public:
             .kind = Kind::Add,
             .op0 = {parameter::Kind::InOut, builder->typeSet(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeAny(), "element"},
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "set",
             .doc = "Adds an element to the set.",
         };
@@ -230,7 +230,7 @@ public:
             .kind = Kind::Delete,
             .op0 = {parameter::Kind::InOut, builder->typeSet(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeAny(), "element"},
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "set",
             .doc = "Removes an element from the set.",
         };
@@ -254,7 +254,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeSet(type::Wildcard())},
             .member = "clear",
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "set",
             .doc = R"(
 Removes all elements from the set.

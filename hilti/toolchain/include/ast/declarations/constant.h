@@ -26,7 +26,7 @@ public:
             return value()->type();
     }
 
-    std::string displayName() const final { return "constant"; }
+    std::string_view displayName() const final { return "constant"; }
 
     void setValue(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 1, std::move(e)); }
 

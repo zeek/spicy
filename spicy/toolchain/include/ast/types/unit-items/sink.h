@@ -25,14 +25,14 @@ public:
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
 
-    std::string displayName() const final { return "unit sink"; }
+    std::string_view displayName() const final { return "unit sink"; }
 
     static auto create(ASTContext* ctx, ID id, AttributeSetPtr attrs, const Meta& meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         return std::shared_ptr<Sink>(
-            new Sink(ctx, {attrs, QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::NonConst)},
+            new Sink(ctx, {attrs, QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::Mutable)},
                      std::move(id), meta));
     }
 

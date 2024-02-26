@@ -15,14 +15,9 @@
 using namespace spicy;
 using namespace spicy::type;
 
-static NodePtr itemByNameBackend(const NodePtr& i, const ID& id) {
-    if ( auto x = i->tryAs<unit::item::Field>(); x && x->id() == id )
-        return i;
-
-    if ( auto x = i->tryAs<unit::item::Variable>(); x && x->id() == id )
-        return i;
-
-    if ( auto x = i->tryAs<unit::item::Sink>(); x && x->id() == id )
+static NodePtr itemByNameBackend(const std::shared_ptr<spicy::type::unit::Item>& i, const ID& id) {
+    if ( i->id() == id &&
+         (i->isA<unit::item::Field>() || i->isA<unit::item::Variable>() || i->isA<unit::item::Sink>()) )
         return i;
 
     if ( auto x = i->tryAs<unit::item::Switch>() ) {
@@ -128,7 +123,7 @@ void Unit::_assignItemIndices() {
 }
 
 void Unit::_setSelf(ASTContext* ctx) {
-    auto qtype = QualifiedType::createExternal(ctx, as<UnqualifiedType>(), hilti::Constness::NonConst);
+    auto qtype = QualifiedType::createExternal(ctx, as<UnqualifiedType>(), hilti::Constness::Mutable);
     auto self = hilti::expression::Keyword::create(ctx, hilti::expression::keyword::Kind::Self, qtype);
 
     auto decl = hilti::declaration::Expression::create(ctx, ID("self"), self, {}, meta());

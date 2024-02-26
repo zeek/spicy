@@ -7,7 +7,7 @@
 
 #include <hilti/compiler/printer.h>
 
-namespace hilti { // namespace printer
+namespace hilti {
 
 /** Represents an AST node's documentation string. */
 class DocString {
@@ -57,7 +57,7 @@ public:
 
 private:
     // Removes any comment prefix from a line.
-    std::string _normalize(std::string line) const;
+    std::string _normalize(const std::string& line) const;
 
     std::vector<std::string> _summary;
     std::vector<std::string> _text;

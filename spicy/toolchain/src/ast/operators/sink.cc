@@ -20,7 +20,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {hilti::parameter::Kind::In, builder.typeSink()},
-            .result = {hilti::Const, builder.typeUnsignedInteger(64)},
+            .result = {hilti::Constness::Const, builder.typeUnsignedInteger(64)},
             .ns = "sink",
             .doc = R"(
 Returns the number of bytes written into the sink so far. If the sink has
@@ -41,7 +41,7 @@ public:
             .kind = Kind::Size,
             .op0 = {hilti::parameter::Kind::In,
                     builder.typeStrongReference(builder.qualifiedType(builder.typeSink(), hilti::Constness::Const))},
-            .result = {hilti::Const, builder_->typeUnsignedInteger(64)},
+            .result = {hilti::Constness::Const, builder_->typeUnsignedInteger(64)},
             .ns = "sink",
             .doc = R"(
 Returns the number of bytes written into the referenced sink so far. If the sink has
@@ -63,7 +63,7 @@ public:
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "close",
             .param0 = {},
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Closes a sink by disconnecting all parsing units. Afterwards the sink's state
@@ -95,7 +95,7 @@ public:
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
                                                        hilti::Constness::Const))},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Connects a parsing unit to a sink. All subsequent write operations to the sink will pass their
@@ -123,7 +123,7 @@ public:
                     .name = "mt",
                     .type = {hilti::parameter::Kind::In, builder.typeString()},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Connects parsing units to a sink for all parsers that support a given MIME
@@ -151,7 +151,7 @@ public:
                     .name = "mt",
                     .type = {hilti::parameter::Kind::In, builder.typeBytes()},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Connects parsing units to a sink for all parsers that support a given MIME
@@ -182,7 +182,7 @@ public:
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
                                                        hilti::Constness::Const))},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Connects a filter unit to the sink that will transform its input transparently
@@ -221,7 +221,7 @@ public:
                     .name = "len",
                     .type = {hilti::parameter::Kind::In, builder.typeUnsignedInteger(64)},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Reports a gap in the input stream. *seq* is the sequence number of the first
@@ -243,7 +243,7 @@ public:
             .self = {hilti::parameter::Kind::In, builder.typeSink()},
             .member = "sequence_number",
             .param0 = {},
-            .result = {hilti::Const, builder.typeUnsignedInteger(64)},
+            .result = {hilti::Constness::Const, builder.typeUnsignedInteger(64)},
             .ns = "sink",
             .doc = R"(
 Returns the current sequence number of the sink's input stream, which is one
@@ -269,7 +269,7 @@ public:
                     .name = "enable",
                     .type = {hilti::parameter::Kind::In, builder.typeBool()},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Enables or disables auto-trimming. If enabled (which is the default) sink input
@@ -296,7 +296,7 @@ public:
                     .name = "seq",
                     .type = {hilti::parameter::Kind::In, builder.typeUnsignedInteger(64)},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Sets the sink's initial sequence number. All sequence numbers given to other
@@ -323,7 +323,7 @@ public:
                     .name = "policy",
                     .type = {hilti::parameter::Kind::In, builder.typeName("spicy::ReassemblerPolicy")},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Sets a sink's reassembly policy for ambiguous input. As long as data hasn't
@@ -352,7 +352,7 @@ public:
                     .name = "seq",
                     .type = {hilti::parameter::Kind::In, builder.typeUnsignedInteger(64)},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Skips ahead in the input stream. *seq* is the sequence number where to continue
@@ -382,7 +382,7 @@ public:
                     .name = "seq",
                     .type = {hilti::parameter::Kind::In, builder.typeUnsignedInteger(64)},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Deletes all data that's still buffered internally up to *seq*. If processing the
@@ -426,7 +426,7 @@ public:
                     .type = {hilti::parameter::Kind::In, builder.typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
             .doc = R"(
 Passes data on to all connected parsing units. Multiple *write* calls act like

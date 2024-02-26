@@ -16,7 +16,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeAddress()},
             .op1 = {parameter::Kind::In, builder->typeAddress()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "address",
             .doc = "Compares two address values.",
         };
@@ -33,7 +33,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeAddress()},
             .op1 = {parameter::Kind::In, builder->typeAddress()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "address",
             .doc = "Compares two address values.",
         };
@@ -50,7 +50,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeAddress()},
             .member = "family",
-            .result = {Const, builder->typeName("hilti::AddressFamily")},
+            .result = {Constness::Const, builder->typeName("hilti::AddressFamily")},
             .ns = "address",
             .doc = R"(
 Returns the protocol family of the address, which can be IPv4 or IPv6.

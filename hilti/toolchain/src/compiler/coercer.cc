@@ -432,7 +432,7 @@ struct VisitorCtor : visitor::PreOrder {
                     return;
             }
 
-            result = builder->ctorBitfield(bits, builder->qualifiedType(dtype, Const), n->meta());
+            result = builder->ctorBitfield(bits, builder->qualifiedType(dtype, Constness::Const), n->meta());
             return;
         }
     }
@@ -721,7 +721,7 @@ static Result<QualifiedTypePtr> _coerceType(Builder* builder, const QualifiedTyp
 
             // All types converts into a corresponding optional.
             if ( auto x = coerceType(builder, src, opt->dereferencedType(), style | CoercionStyle::Assignment) )
-                return builder->qualifiedType(builder->typeOptional(*x, src->meta()), Constness::NonConst);
+                return builder->qualifiedType(builder->typeOptional(*x, src->meta()), Constness::Mutable);
         }
 
         if ( auto opt = dst->type()->tryAs<type::Result>() ) {
@@ -730,13 +730,13 @@ static Result<QualifiedTypePtr> _coerceType(Builder* builder, const QualifiedTyp
 
             // All types converts into a corresponding result.
             if ( auto x = coerceType(builder, src, opt->dereferencedType(), style) )
-                return builder->qualifiedType(builder->typeResult(*x, src->meta()), Constness::NonConst);
+                return builder->qualifiedType(builder->typeResult(*x, src->meta()), Constness::Mutable);
         }
 
         if ( auto x = dst->type()->tryAs<type::ValueReference>(); x && ! src->type()->isReferenceType() ) {
             // All types converts into a corresponding value_ref.
             if ( auto y = coerceType(builder, src, x->dereferencedType(), style) )
-                return builder->qualifiedType(builder->typeValueReference(dst, src->meta()), Constness::NonConst);
+                return builder->qualifiedType(builder->typeValueReference(dst, src->meta()), Constness::Mutable);
         }
     }
 

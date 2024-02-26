@@ -263,7 +263,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -287,7 +287,7 @@ public:
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -311,7 +311,7 @@ public:
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -335,7 +335,7 @@ public:
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -359,7 +359,7 @@ public:
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -551,7 +551,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -768,7 +768,7 @@ public:
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
                     builder->typeType(builder->qualifiedType(builder->typeReal(), Constness::Const))},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "unsigned_integer",
             .doc = "Converts the value into a real, accepting any loss of information.",
         };
@@ -812,7 +812,7 @@ public:
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
                     builder->typeType(builder->qualifiedType(builder->typeInterval(), Constness::Const))},
-            .result = {Const, builder->typeInterval()},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
         };
@@ -830,7 +830,7 @@ public:
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
                     builder->typeType(builder->qualifiedType(builder->typeTime(), Constness::Const))},
-            .result = {Const, builder->typeTime()},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
         };
@@ -848,7 +848,7 @@ public:
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
                     builder->typeType(builder->qualifiedType(builder->typeBool(), Constness::Const))},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Converts the value to a boolean by comparing against zero",
         };
@@ -865,7 +865,7 @@ public:
             .kind = Kind::Call,
             .member = "uint8",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(8)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(8)},
             .ns = "unsigned_integer",
             .doc = "Creates a 8-bit unsigned integer value.",
         };
@@ -881,7 +881,7 @@ public:
             .kind = Kind::Call,
             .member = "uint16",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(16)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(16)},
             .ns = "unsigned_integer",
             .doc = "Creates a 16-bit unsigned integer value.",
         };
@@ -897,7 +897,7 @@ public:
             .kind = Kind::Call,
             .member = "uint32",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(32)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(32)},
             .ns = "unsigned_integer",
             .doc = "Creates a 32-bit unsigned integer value.",
         };
@@ -913,7 +913,7 @@ public:
             .kind = Kind::Call,
             .member = "uint64",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "unsigned_integer",
             .doc = "Creates a 64-bit unsigned integer value.",
         };
@@ -929,7 +929,7 @@ public:
             .kind = Kind::Call,
             .member = "uint8",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(8)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(8)},
             .ns = "unsigned_integer",
             .doc = "Creates a 8-bit unsigned integer value.",
         };
@@ -945,7 +945,7 @@ public:
             .kind = Kind::Call,
             .member = "uint16",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(16)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(16)},
             .ns = "unsigned_integer",
             .doc = "Creates a 16-bit unsigned integer value.",
         };
@@ -961,7 +961,7 @@ public:
             .kind = Kind::Call,
             .member = "uint32",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(32)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(32)},
             .ns = "unsigned_integer",
             .doc = "Creates a 32-bit unsigned integer value.",
         };
@@ -977,7 +977,7 @@ public:
             .kind = Kind::Call,
             .member = "uint64",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "unsigned_integer",
             .doc = "Creates a 64-bit unsigned integer value.",
         };

@@ -94,7 +94,7 @@ void SpicyDriver::usage() {
            "called "
            "decline_input().\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
-           "  -g | --disable-optimizations     Disable HILTI-side optimizations of the generated code.\n"
+           "  -g | --disable-optimizations    Disable HILTI-side optimizations of the generated code.\n"
            "  -i | --increment <i>            Feed data incrementally in chunks of size n.\n"
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
            "  -l | --list-parsers             List available parsers and exit.\n"

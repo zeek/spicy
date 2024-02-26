@@ -160,7 +160,7 @@ struct Resolver : visitor::MutatingPostOrder {
         if ( ! t )
             return nullptr;
 
-        auto ntype = builder()->qualifiedType(t, Constness::NonConst);
+        auto ntype = builder()->qualifiedType(t, Constness::Mutable);
 
         if ( old_type && type::same(old_type, ntype) )
             return nullptr;
@@ -260,7 +260,7 @@ struct Resolver : visitor::MutatingPostOrder {
         auto src = builder()->expressionCtor(builder()->ctorTuple(std::move(exprs)));
         auto dst = type::OperandList::fromParameters(context(), std::move(params));
 
-        auto coerced = coerceExpression(builder(), src, builder()->qualifiedType(dst, Const),
+        auto coerced = coerceExpression(builder(), src, builder()->qualifiedType(dst, Constness::Const),
                                         CoercionStyle::TryAllForFunctionCall);
         if ( ! coerced )
             return result::Error("coercion failed");
@@ -525,7 +525,7 @@ struct Resolver : visitor::MutatingPostOrder {
         if ( ! n->type()->isResolved() ) {
             if ( auto ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
-                n->setType(context(), builder()->qualifiedType(builder()->typeList(ntype), Constness::NonConst));
+                n->setType(context(), builder()->qualifiedType(builder()->typeList(ntype), Constness::Mutable));
             }
         }
 
@@ -589,7 +589,7 @@ struct Resolver : visitor::MutatingPostOrder {
                 value = builder()->qualifiedType(builder()->typeUnknown(), Constness::Const);
             }
 
-            auto ntype = builder()->qualifiedType(builder()->typeMap(key, value, n->meta()), Constness::NonConst);
+            auto ntype = builder()->qualifiedType(builder()->typeMap(key, value, n->meta()), Constness::Mutable);
             if ( ! type::same(ntype, n->type()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), ntype);
@@ -624,7 +624,7 @@ struct Resolver : visitor::MutatingPostOrder {
         if ( ! n->type()->isResolved() && n->value() && n->value()->isResolved() ) {
             recordChange(n, n->value()->type(), "type");
             n->setType(context(),
-                       builder()->qualifiedType(builder()->typeOptional(n->value()->type()), Constness::NonConst));
+                       builder()->qualifiedType(builder()->typeOptional(n->value()->type()), Constness::Mutable));
         }
     }
 
@@ -643,7 +643,7 @@ struct Resolver : visitor::MutatingPostOrder {
         if ( ! n->type()->isResolved() ) {
             if ( auto ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
-                n->setType(context(), builder()->qualifiedType(builder()->typeSet(ntype), Constness::NonConst));
+                n->setType(context(), builder()->qualifiedType(builder()->typeSet(ntype), Constness::Mutable));
             }
         }
 
@@ -667,7 +667,7 @@ struct Resolver : visitor::MutatingPostOrder {
 
             auto ntype = builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(),
                                                                         std::move(fields), n->meta()),
-                                                  Constness::NonConst);
+                                                  Constness::Mutable);
             recordChange(n, ntype, "type");
             n->setType(context(), ntype);
         }
@@ -697,7 +697,7 @@ struct Resolver : visitor::MutatingPostOrder {
         if ( ! n->type()->isResolved() ) {
             if ( auto ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
-                n->setType(context(), builder()->qualifiedType(builder()->typeVector(ntype), Constness::NonConst));
+                n->setType(context(), builder()->qualifiedType(builder()->typeVector(ntype), Constness::Mutable));
             }
         }
 
@@ -1130,7 +1130,7 @@ struct Resolver : visitor::MutatingPostOrder {
 
     void operator()(expression::ListComprehension* n) final {
         if ( ! n->type()->isResolved() && n->output()->isResolved() ) {
-            auto ntype = builder()->qualifiedType(builder()->typeList(n->output()->type()), Constness::NonConst);
+            auto ntype = builder()->qualifiedType(builder()->typeList(n->output()->type()), Constness::Mutable);
             recordChange(n, ntype);
             n->setType(context(), ntype);
         }
@@ -1555,7 +1555,7 @@ struct Resolver : visitor::MutatingPostOrder {
 
                     if ( replace ) {
                         auto rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
-                        replaceNode(qtype.get(), builder()->qualifiedType(rt, Constness::NonConst, Side::LHS));
+                        replaceNode(qtype.get(), builder()->qualifiedType(rt, Constness::Mutable, Side::LHS));
                     }
                 }
             }

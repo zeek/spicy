@@ -103,30 +103,32 @@ struct Unification {
     /** Returns true if unification string has been set. */
     operator bool() const { return _serialization.has_value(); }
 
-    /**
-     * Returns true if two unifications are equivalent. Will always return
-     * false if any of the is set to never-match, or not set at all.
-     */
-    bool operator==(const Unification& other) const {
-        if ( ! (_serialization.has_value() && other._serialization.has_value()) )
-            return false;
-
-        if ( _serialization->empty() || other._serialization->empty() )
-            return false;
-
-        return *_serialization == *other._serialization;
-    }
-
-    bool operator!=(const Unification& other) const { return ! (*this == other); }
-
 private:
+    friend bool operator==(const Unification& u1, const Unification&);
+    friend bool operator!=(const Unification& u1, const Unification&);
     std::optional<std::string> _serialization; // set but empty means never-match
 };
+
+/**
+ * Returns true if two unifications are equivalent. Will always return
+ * false if any of the is set to never-match, or not set at all.
+ */
+inline bool operator==(const Unification& u1, const Unification& u2) {
+    if ( ! (u1._serialization.has_value() && u2._serialization.has_value()) )
+        return false;
+
+    if ( u1._serialization->empty() || u2._serialization->empty() )
+        return false;
+
+    return *u1._serialization == *u2._serialization;
+}
+
+inline bool operator!=(const Unification& u1, const Unification& u2) { return ! (u1 == u2); }
+
 } // namespace type
 
 
 namespace type {
-
 /**
  * Follows any `type::Name` reference chains to the actual, eventual type.
  *
@@ -140,26 +142,11 @@ namespace type {
  */
 extern UnqualifiedTypePtr follow(const UnqualifiedTypePtr& t);
 
-/**
- * Follows any `type::Name` reference chains to the actual, eventual type.
- *
- * Note that you will rarely need to call this function manually because
- * `QualifiedType::type()` follows type chains automatically by default. Doing
- * it that way is always preferred to calling `follow()` manually.
- *
- * @returns The eventual type found at the end of the chain. If there's not
- * `type::Name` encountered,  that's `t` itself. If a `type::Name` is
- * encountered that has not been resolved yet, returns that `type::Name` itself.
- */
-extern UnqualifiedType* follow(UnqualifiedType* t);
-
 } // namespace type
 
 /** * Base class for classes implementing unqualified types. */
 class UnqualifiedType : public Node {
 public:
-    ~UnqualifiedType() override;
-
     /**
      * Returns the index the AST context associates with the type. This may
      * become set during AST resolving. If not set yet, returns `None`.
@@ -313,7 +300,6 @@ public:
 protected:
     friend class ASTContext;
     friend UnqualifiedTypePtr hilti::type::follow(const UnqualifiedTypePtr& t);
-    friend UnqualifiedType* hilti::type::follow(UnqualifiedType* t);
 
     UnqualifiedType(ASTContext* ctx, type::Unification&& u, Meta meta)
         : Node::Node(ctx, std::move(meta)), _context(ctx), _unification(std::move(u)) {}
@@ -354,7 +340,7 @@ private:
 enum class Side { LHS, RHS };
 
 /** Selects constant or non-constant semantics for an expression. */
-enum Constness { Const, NonConst };
+enum class Constness { Const, Mutable };
 
 /** AST node presenting a type along with associated constness and RHS/LHS semantics. */
 class QualifiedType : public Node {
@@ -367,7 +353,7 @@ public:
     UnqualifiedTypePtr type(bool follow = true) const { return follow ? type::follow(_type()) : _type(); }
 
     /** Returns true if the qualified type is constant. */
-    bool isConstant() const { return _constness == Const; }
+    bool isConstant() const { return _constness == Constness::Const; }
 
     /** Returns the type's constness. */
     auto constness() const { return _constness; }
@@ -465,7 +451,7 @@ public:
 
     /** Factory method creating a copy of the type with "sideness" changed to LHS. */
     auto recreateAsLhs(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::NonConst, Side::LHS);
+        return QualifiedType::create(ctx, _type(), Constness::Mutable, Side::LHS);
     }
 
     /** Factory method creating a copy of the type with constness changed to constant. */
@@ -475,7 +461,7 @@ public:
 
     /** Factory method creating a copy of the type with constness changed to non-constant. */
     auto recreateAsNonConst(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::NonConst, Side::RHS);
+        return QualifiedType::create(ctx, _type(), Constness::Mutable, Side::RHS);
     }
 
 protected:

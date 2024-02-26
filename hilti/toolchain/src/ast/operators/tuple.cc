@@ -21,7 +21,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "tuple",
             .doc = "Compares two tuples element-wise.",
         };
@@ -43,7 +43,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "tuple",
             .doc = "Compares two tuples element-wise.",
         };
@@ -74,16 +74,16 @@ public:
     QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         auto ctor = operands[1]->tryAs<expression::Ctor>();
         if ( ! ctor )
-            return builder->qualifiedType(builder->typeUnknown(), Const);
+            return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
         auto i = ctor->ctor()->tryAs<ctor::UnsignedInteger>();
         if ( ! i )
-            return builder->qualifiedType(builder->typeUnknown(), Const);
+            return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
         const auto& elements = operands[0]->type()->type()->as<type::Tuple>()->elements();
 
         if ( static_cast<uint64_t>(elements.size()) <= i->value() )
-            return builder->qualifiedType(builder->typeUnknown(), Const);
+            return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
         return elements[i->value()]->type()->recreateAsLhs(builder->context());
     }
@@ -122,11 +122,11 @@ public:
         auto id = operands[1]->as<expression::Member>()->id();
         auto tt = operands[0]->type()->type()->tryAs<type::Tuple>();
         if ( ! tt )
-            return builder->qualifiedType(builder->typeUnknown(), Const);
+            return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
         auto elem = tt->elementByID(id);
         if ( ! elem )
-            return builder->qualifiedType(builder->typeUnknown(), Const);
+            return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
         return elem->second->type()->recreateAsLhs(builder->context());
     }

@@ -1365,6 +1365,8 @@ public:
 
     /** Returns an safe iterator pointint to the beginning of the view. */
     const SafeConstIterator& begin() const { return _begin; }
+
+    /** Same as `begin()`, just for compatibility with std types. */
     const SafeConstIterator& cbegin() const { return _begin; }
 
     /** Returns a safe iterator representing the end of the instance. */
@@ -1373,6 +1375,7 @@ public:
         return _end ? *_end : _begin.chain()->end();
     }
 
+    /** Same as `end()`, just for compatibility with std types. */
     SafeConstIterator cend() const { return end(); }
 
     /** State for block-wise iteration of a stream instance. */

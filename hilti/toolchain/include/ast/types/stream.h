@@ -23,7 +23,7 @@ public:
     bool isMutable() const final { return true; }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        auto etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::NonConst, meta);
+        auto etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::Mutable, meta);
         return std::shared_ptr<Iterator>(new Iterator(ctx, {etype}, meta));
     }
 
@@ -47,7 +47,7 @@ public:
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
         return std::shared_ptr<View>(
-            new View(ctx, {QualifiedType::create(ctx, Iterator::create(ctx, meta), Constness::NonConst)}, meta));
+            new View(ctx, {QualifiedType::create(ctx, Iterator::create(ctx, meta), Constness::Mutable)}, meta));
     }
 
 protected:
@@ -74,7 +74,7 @@ public:
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
         return std::shared_ptr<Stream>(
-            new Stream(ctx, {QualifiedType::create(ctx, stream::View::create(ctx, meta), Constness::NonConst)}, meta));
+            new Stream(ctx, {QualifiedType::create(ctx, stream::View::create(ctx, meta), Constness::Mutable)}, meta));
     }
 
 protected:

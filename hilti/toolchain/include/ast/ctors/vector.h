@@ -28,14 +28,14 @@ public:
     }
 
     static auto create(ASTContext* ctx, const QualifiedTypePtr& etype, Expressions exprs, const Meta& meta = {}) {
-        auto stype = QualifiedType::create(ctx, type::Vector::create(ctx, etype, meta), Constness::NonConst, meta);
+        auto stype = QualifiedType::create(ctx, type::Vector::create(ctx, etype, meta), Constness::Mutable, meta);
         return std::shared_ptr<Vector>(new Vector(ctx, node::flatten(stype, std::move(exprs)), meta));
     }
 
     static auto create(ASTContext* ctx, Expressions exprs, const Meta& meta = {}) {
         // bool is just an arbitrary place-holder type for empty values.
         auto etype = exprs.empty() ?
-                         QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::NonConst, meta) :
+                         QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Mutable, meta) :
                          QualifiedType::createAuto(ctx, meta);
         return create(ctx, etype, std::move(exprs), meta);
     }

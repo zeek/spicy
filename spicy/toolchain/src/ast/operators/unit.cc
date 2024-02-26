@@ -65,19 +65,19 @@ QualifiedTypePtr itemType(hilti::Builder* builder, const Expressions& operands) 
              operands[1]->as<hilti::expression::Member>()->id()) )
         return item->itemType();
     else
-        return builder->qualifiedType(builder->typeUnknown(), hilti::Const);
+        return builder->qualifiedType(builder->typeUnknown(), hilti::Constness::Const);
 }
 
 QualifiedTypePtr contextResult(hilti::Builder* builder, const Expressions& operands) {
     if ( operands.empty() )
-        return builder->qualifiedType(builder->typeDocOnly("<context>&"), hilti::Const);
+        return builder->qualifiedType(builder->typeDocOnly("<context>&"), hilti::Constness::Const);
 
     if ( const auto& ctype = operands[0]->type()->type()->as<type::Unit>()->contextType() )
         return builder->qualifiedType(builder->typeStrongReference(
-                                          builder->qualifiedType(ctype, hilti::Constness::NonConst)),
+                                          builder->qualifiedType(ctype, hilti::Constness::Mutable)),
                                       hilti::Constness::Const);
 
-    return builder->qualifiedType(builder->typeVoid(), hilti::Const);
+    return builder->qualifiedType(builder->typeVoid(), hilti::Constness::Const);
 }
 
 
@@ -89,7 +89,7 @@ public:
             .kind = Kind::Unset,
             .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "unit"},
             .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "unit",
             .doc = "Clears an optional field.",
         };
@@ -203,7 +203,7 @@ public:
             .kind = Kind::HasMember,
             .op0 = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
-            .result = {hilti::Const, builder.typeBool()},
+            .result = {hilti::Constness::Const, builder.typeBool()},
             .result_doc = "<field type>",
             .ns = "unit",
             .doc = R"(
@@ -226,7 +226,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "offset",
-            .result = {hilti::Const, builder.typeUnsignedInteger(64)},
+            .result = {hilti::Constness::Const, builder.typeUnsignedInteger(64)},
             .ns = "unit",
             .doc = R"(
 Returns the offset of the current location in the input stream relative to the
@@ -248,7 +248,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "position",
-            .result = {hilti::Const, builder.typeStreamIterator()},
+            .result = {hilti::Constness::Const, builder.typeStreamIterator()},
             .ns = "unit",
             .doc = R"(
 Returns an iterator to the current position in the unit's input stream. If
@@ -270,7 +270,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "input",
-            .result = {hilti::Const, builder.typeStreamIterator()},
+            .result = {hilti::Constness::Const, builder.typeStreamIterator()},
             .ns = "unit",
             .doc = R"(
 Returns an iterator referring to the input location where the current unit has
@@ -294,7 +294,7 @@ public:
             .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "set_input",
             .param0 = {.name = "i", .type = {hilti::parameter::Kind::In, builder.typeStreamIterator()}},
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 Moves the current parsing position to *i*. The iterator *i* must be into the
@@ -328,8 +328,8 @@ public:
                     .type = {hilti::parameter::Kind::In, builder.typeStreamIterator()},
                     .optional = true,
                 },
-            .result = {hilti::Const, builder.typeOptional(
-                                         builder.qualifiedType(builder.typeStreamIterator(), hilti::Constness::Const))},
+            .result = {hilti::Constness::Const, builder.typeOptional(builder.qualifiedType(builder.typeStreamIterator(),
+                                                                                           hilti::Constness::Const))},
             .ns = "unit",
             .doc = R"(
 Searches a *needle* pattern inside the input region defined by where the unit
@@ -364,7 +364,7 @@ public:
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
                                                        hilti::Constness::Const))},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 Connects a separate filter unit to transform the unit's input transparently
@@ -394,7 +394,7 @@ public:
                     .name = "data",
                     .type = {hilti::parameter::Kind::In, builder.typeBytes()},
                 },
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 If the unit is connected as a filter to another one, this method forwards
@@ -416,7 +416,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "forward_eod",
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 If the unit is connected as a filter to another one, this method signals that
@@ -438,7 +438,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "backtrack",
-            .result = {hilti::Const, builder.typeVoid()},
+            .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 Aborts parsing at the current position and returns back to the most recent

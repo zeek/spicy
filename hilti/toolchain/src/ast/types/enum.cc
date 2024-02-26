@@ -17,7 +17,7 @@ void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
                                 [](const auto& l1, const auto& l2) { return l1->value() < l2->value(); });
     auto next_value = (max != labels.end() ? (*max)->value() + 1 : 0);
 
-    auto enum_type = QualifiedType::createExternal(ctx, as<type::Enum>(), Constness::NonConst);
+    auto enum_type = QualifiedType::createExternal(ctx, as<type::Enum>(), Constness::Mutable);
 
     for ( auto&& l : labels ) {
         if ( util::tolower(l->id()) == "undef" )

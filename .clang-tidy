@@ -56,9 +56,9 @@ Checks: '
   -readability-container-size-empty,
   -readability-convert-member-functions-to-static,
   -readability-else-after-return,
-  -readability-function-cognitive-complexity,
-  -readability-function-size,
+  -readability-function-cognitive-complexity
   -readability-identifier-length,
+  -readability-identifier-naming
   -readability-implicit-bool-conversion,
   -readability-magic-numbers,
   -readability-make-member-function-const,
@@ -66,7 +66,6 @@ Checks: '
   -readability-qualified-auto,
   -readability-simplify-boolean-expr,
   -readability-use-anyofallof,
-  -readability-identifier-naming
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'

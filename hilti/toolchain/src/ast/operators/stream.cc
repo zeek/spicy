@@ -21,7 +21,7 @@ public:
         return {
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "stream::iterator",
             .doc = "Returns the character the iterator is pointing to.",
         };
@@ -37,7 +37,7 @@ public:
         return {
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
-            .result = {NonConst, builder->typeStreamIterator()},
+            .result = {Constness::Mutable, builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by one byte, returning the previous position.",
         };
@@ -53,7 +53,7 @@ public:
         return {
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
-            .result = {NonConst, builder->typeStreamIterator()},
+            .result = {Constness::Mutable, builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by one byte, returning the new position.",
         };
@@ -70,7 +70,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -89,7 +89,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -108,7 +108,7 @@ public:
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -127,7 +127,7 @@ public:
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -146,7 +146,7 @@ public:
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -165,7 +165,7 @@ public:
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -184,7 +184,7 @@ public:
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Const, builder->typeSignedInteger(64)},
+            .result = {Constness::Const, builder->typeSignedInteger(64)},
             .ns = "stream::iterator",
             .doc =
                 "Returns the number of stream between the two iterators. The result will be negative if the second "
@@ -206,7 +206,7 @@ public:
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Const, builder->typeStreamIterator()},
+            .result = {Constness::Const, builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by the given number of stream.",
         };
@@ -223,7 +223,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Const, builder->typeStreamIterator()},
+            .result = {Constness::Const, builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by the given number of stream.",
         };
@@ -240,7 +240,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamIterator()},
             .member = "offset",
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "stream::iterator",
             .doc = R"(
 Returns the offset of the byte that the iterator refers to relative to the
@@ -260,7 +260,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamIterator()},
             .member = "is_frozen",
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::iterator",
             .doc = R"(
 Returns whether the stream value that the iterator refers to has been frozen.
@@ -282,7 +282,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "stream::view",
             .doc = "Returns the number of stream the view contains.",
         };
@@ -299,7 +299,7 @@ public:
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side view contains the left-hand-side bytes as a subsequence.",
         };
@@ -316,7 +316,7 @@ public:
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side bytes contains the left-hand-side view as a subsequence.",
         };
@@ -333,7 +333,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares the views lexicographically.",
         };
@@ -350,7 +350,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares a stream view and a bytes instance lexicographically.",
         };
@@ -367,7 +367,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares two views lexicographically.",
         };
@@ -384,7 +384,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares a stream view and a bytes instance lexicographically.",
         };
@@ -401,7 +401,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "offset",
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "stream::view",
             .doc = R"(
 Returns the offset of the view's starting position within the associated stream value.
@@ -425,7 +425,7 @@ public:
                     .name = "i",
                     .type = {parameter::Kind::In, builder->typeStreamIterator()},
                 },
-            .result = {Const, builder->typeStreamView()},
+            .result = {Constness::Const, builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Advances the view's starting position to a given iterator *i*, returning the new
@@ -446,7 +446,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "advance_to_next_data",
-            .result = {Const, builder->typeStreamView()},
+            .result = {Constness::Const, builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Advances the view's starting position to the next non-gap position. This always
@@ -471,7 +471,7 @@ public:
                     .name = "i",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeStreamView()},
+            .result = {Constness::Const, builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view that keeps the current start but cuts off the end *i*
@@ -497,7 +497,7 @@ public:
                     .name = "i",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeStreamView()},
+            .result = {Constness::Const, builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Advances the view's starting position by *i* stream, returning the new view.
@@ -521,8 +521,9 @@ public:
                     .name = "needle",
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
-            .result = {Const, builder->typeTuple({builder->qualifiedType(builder->typeBool(), Const),
-                                                  builder->qualifiedType(builder->typeStreamIterator(), NonConst)})},
+            .result = {Constness::Const,
+                       builder->typeTuple({builder->qualifiedType(builder->typeBool(), Constness::Const),
+                                           builder->qualifiedType(builder->typeStreamIterator(), Constness::Mutable)})},
             .ns = "stream::view",
             .doc = R"(
 Searches *needle* inside the view's content. Returns a tuple of a boolean and an
@@ -553,7 +554,7 @@ public:
                     .name = "i",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeStreamIterator()},
+            .result = {Constness::Const, builder->typeStreamIterator()},
             .ns = "stream::view",
             .doc = R"(
 Returns an iterator representing the offset *i* inside the view.
@@ -577,7 +578,7 @@ public:
                     .name = "b",
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream::view",
             .doc = R"(
 Returns true if the view starts with *b*.
@@ -606,7 +607,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeStreamIterator()},
                 },
-            .result = {Const, builder->typeStreamView()},
+            .result = {Constness::Const, builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view of the subsequence from *begin* up to (but not including)
@@ -631,7 +632,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeStreamIterator()},
                 },
-            .result = {Const, builder->typeStreamView()},
+            .result = {Constness::Const, builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view of the subsequence from the beginning of the stream up to
@@ -661,7 +662,7 @@ public:
                     .name = "end",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeStreamView()},
+            .result = {Constness::Const, builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view of the subsequence from offset *begin* to (but not including)
@@ -686,7 +687,7 @@ public:
                 {
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
-            .result = {NonConst, builder->typeStream()},
+            .result = {Constness::Mutable, builder->typeStream()},
             .ns = "stream",
             .doc = "Creates a stream instance pre-initialized with the given data.",
         };
@@ -702,7 +703,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeStream()},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "stream",
             .doc = "Returns the number of stream the value contains.",
         };
@@ -719,7 +720,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStream()},
             .op1 = {parameter::Kind::In, builder->typeStream()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream",
             .doc = "Compares two stream values lexicographically.",
         };
@@ -736,7 +737,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeStream()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Const, builder->typeStream()},
+            .result = {Constness::Const, builder->typeStream()},
             .ns = "stream",
             .doc = "Concatenates another stream's view to the target stream.",
         };
@@ -753,7 +754,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeStream()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Const, builder->typeStream()},
+            .result = {Constness::Const, builder->typeStream()},
             .ns = "stream",
             .doc = "Concatenates data to the stream.",
         };
@@ -770,7 +771,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeStream()},
             .member = "freeze",
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "stream",
             .doc = R"(
 Freezes the stream value. Once frozen, one cannot append any more data to a
@@ -791,7 +792,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStream()},
             .member = "unfreeze",
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "stream",
             .doc = R"(
 Unfreezes the stream value. A unfrozen stream value can be further modified. If
@@ -812,7 +813,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStream()},
             .member = "is_frozen",
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "stream",
             .doc = R"(
 Returns true if the stream value has been frozen.
@@ -836,7 +837,7 @@ public:
                     .name = "i",
                     .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
                 },
-            .result = {Const, builder->typeStreamIterator()},
+            .result = {Constness::Const, builder->typeStreamIterator()},
             .ns = "stream",
             .doc = R"(
 Returns an iterator representing the offset *i* inside the stream value.
@@ -860,7 +861,7 @@ public:
                     .name = "i",
                     .type = {parameter::Kind::In, builder->typeStreamIterator()},
                 },
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "stream",
             .doc = R"(
 Trims the stream value by removing all data from its beginning up to (but not

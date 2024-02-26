@@ -72,14 +72,14 @@ public:
 
     static auto create(ASTContext* ctx, const QualifiedTypePtr& key, const QualifiedTypePtr& value,
                        map::Elements elements, const Meta& meta = {}) {
-        auto mtype = QualifiedType::create(ctx, type::Map::create(ctx, key, value, meta), Constness::NonConst, meta);
+        auto mtype = QualifiedType::create(ctx, type::Map::create(ctx, key, value, meta), Constness::Mutable, meta);
         return std::shared_ptr<Map>(new Map(ctx, node::flatten(mtype, std::move(elements)), meta));
     }
 
     static auto create(ASTContext* ctx, map::Elements elements, const Meta& meta = {}) {
         // bool is just an arbitrary place-holder type for empty values.
         auto mtype = elements.empty() ?
-                         QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::NonConst, meta) :
+                         QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Mutable, meta) :
                          QualifiedType::createAuto(ctx, meta);
         return std::shared_ptr<Map>(new Map(ctx, node::flatten(mtype, std::move(elements)), meta));
     }

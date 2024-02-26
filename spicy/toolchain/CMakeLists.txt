@@ -25,7 +25,6 @@ set(SOURCES_COMPILER
     src/ast/operators/unit.cc
     src/ast/operators/sink.cc
     src/ast/types/unit.cc
-    src/ast/types/unit-item.cc
     src/ast/types/unit-items/field.cc
     src/ast/types/unit-items/switch.cc
     src/ast/visitor-dispatcher.cc

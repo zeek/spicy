@@ -27,7 +27,7 @@ public:
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return true; }
 
-    std::string displayName() const final { return "unit property"; }
+    std::string_view displayName() const final { return "unit property"; }
 
     static auto create(ASTContext* ctx, ID id, AttributeSetPtr attrs, bool inherited = false, const Meta& meta = {}) {
         if ( ! attrs )

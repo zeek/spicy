@@ -19,7 +19,7 @@ public:
         return {
             .kind = Kind::SignNeg,
             .op0 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Inverts the sign of the real.",
         };
@@ -36,7 +36,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Returns the difference between the two values.",
         };
@@ -53,7 +53,7 @@ public:
             .kind = Kind::DifferenceAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Subtracts the second value from the first, assigning the new value.",
         };
@@ -71,7 +71,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Divides the first value by the second.",
         };
@@ -87,7 +87,7 @@ public:
             .kind = Kind::DivisionAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Divides the first value by the second, assigning the new value.",
         };
@@ -105,7 +105,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
         };
@@ -122,7 +122,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
         };
@@ -139,7 +139,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
         };
@@ -156,7 +156,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
         };
@@ -173,7 +173,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
         };
@@ -190,7 +190,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Computes the modulus of the first real divided by the second.",
         };
@@ -208,7 +208,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Multiplies the first real by the second.",
         };
@@ -225,7 +225,7 @@ public:
             .kind = Kind::MultipleAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Multiplies the first value by the second, assigning the new value.",
         };
@@ -243,7 +243,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Computes the first real raised to the power of the second.",
         };
@@ -261,7 +261,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Returns the sum of the reals.",
         };
@@ -277,7 +277,7 @@ public:
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeReal()},
+            .result = {Constness::Const, builder->typeReal()},
             .ns = "real",
             .doc = "Adds the first real to the second, assigning the new value.",
         };
@@ -295,7 +295,7 @@ public:
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
         };
@@ -312,7 +312,8 @@ public:
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeUnsignedInteger(type::Wildcard()), Const))},
+                    builder->typeType(
+                        builder->qualifiedType(builder->typeUnsignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "uint<*>",
             .ns = "real",
             .doc = "Converts the value to an unsigned integer type, accepting any loss of information.",
@@ -335,7 +336,8 @@ public:
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeSignedInteger(type::Wildcard()), Const))},
+                    builder->typeType(
+                        builder->qualifiedType(builder->typeSignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "int<*>",
             .ns = "real",
             .doc = "Converts the value to a signed integer type, accepting any loss of information.",
@@ -357,8 +359,9 @@ public:
         return {
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
-            .op1 = {parameter::Kind::In, builder->typeType(builder->qualifiedType(builder->typeTime(), Const))},
-            .result = {Const, builder->typeTime()},
+            .op1 = {parameter::Kind::In,
+                    builder->typeType(builder->qualifiedType(builder->typeTime(), Constness::Const))},
+            .result = {Constness::Const, builder->typeTime()},
             .ns = "real",
             .doc = "Interprets the value as number of seconds since the UNIX epoch.",
         };
@@ -374,8 +377,9 @@ public:
         return {
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
-            .op1 = {parameter::Kind::In, builder->typeType(builder->qualifiedType(builder->typeInterval(), Const))},
-            .result = {Const, builder->typeInterval()},
+            .op1 = {parameter::Kind::In,
+                    builder->typeType(builder->qualifiedType(builder->typeInterval(), Constness::Const))},
+            .result = {Constness::Const, builder->typeInterval()},
             .ns = "real",
             .doc = "Interprets the value as number of seconds.",
         };

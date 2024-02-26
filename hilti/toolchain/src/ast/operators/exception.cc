@@ -45,7 +45,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeException(type::Wildcard())},
             .member = "description",
-            .result = {Const, builder->typeString()},
+            .result = {Constness::Const, builder->typeString()},
             .ns = "exception",
             .doc = R"(
 Returns the textual message associated with an exception object.

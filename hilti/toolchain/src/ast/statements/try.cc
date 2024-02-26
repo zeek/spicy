@@ -4,6 +4,4 @@
 
 using namespace hilti;
 
-statement::try_::Catch::~Catch() = default;
-
 std::string statement::try_::Catch::_dump() const { return ""; }

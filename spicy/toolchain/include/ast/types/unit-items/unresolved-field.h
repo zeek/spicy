@@ -51,7 +51,7 @@ public:
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return false; }
 
-    std::string displayName() const final { return "unresolved unit field"; }
+    std::string_view displayName() const final { return "unresolved unit field"; }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"engine", to_string(_engine)}, {"index", _index}};

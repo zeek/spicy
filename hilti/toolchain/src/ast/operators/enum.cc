@@ -20,7 +20,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
         };
@@ -42,7 +42,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
         };
@@ -64,7 +64,8 @@ public:
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeSignedInteger(type::Wildcard()), Const))},
+                    builder->typeType(
+                        builder->qualifiedType(builder->typeSignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "int",
             .ns = "enum_",
             .doc =
@@ -87,7 +88,8 @@ public:
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeUnsignedInteger(type::Wildcard()), Const))},
+                    builder->typeType(
+                        builder->qualifiedType(builder->typeUnsignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "uint",
             .ns = "enum_",
             .doc =
@@ -169,7 +171,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .member = "has_label",
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "enum_",
             .doc = R"(
 Returns *true* if the value of *op1* corresponds to a known enum label (other

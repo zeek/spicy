@@ -40,12 +40,12 @@
     the current size, the new slots are filled with default values. If *n*
     is smaller than the current size, the excessive elements are removed.
 
-.. spicy:method:: vector::sub vector sub False <vector> (begin: uint<64>, end: uint<64>)
+.. spicy:method:: vector::sub vector sub False vector (begin: uint<64>, end: uint<64>)
 
     Extracts a subsequence of vector elements spanning from index *begin*
     to (but not including) index *end*.
 
-.. spicy:method:: vector::sub vector sub False <vector> (end: uint<64>)
+.. spicy:method:: vector::sub vector sub False vector (end: uint<64>)
 
     Extracts a subsequence of vector elements spanning from index *begin*
     to (but not including) index *end*.
@@ -72,11 +72,11 @@
 
     Returns the number of elements a vector contains.
 
-.. spicy:operator:: vector::Sum <vector t:vector <sp> op:+ <sp> t:vector
+.. spicy:operator:: vector::Sum vector t:vector <sp> op:+ <sp> t:vector
 
     Returns the concatenation of two vectors.
 
-.. spicy:operator:: vector::SumAssign <vector t:vector <sp> op:+= <sp> t:vector
+.. spicy:operator:: vector::SumAssign vector t:vector <sp> op:+= <sp> t:vector
 
     Concatenates another vector to the vector.
 

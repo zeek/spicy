@@ -28,7 +28,7 @@ public:
         addChildren(ctx, std::move(args));
     }
 
-    std::string displayName() const final { return "global variable"; }
+    std::string_view displayName() const final { return "global variable"; }
 
     static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, Expressions args,
                        ExpressionPtr init = nullptr, declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {

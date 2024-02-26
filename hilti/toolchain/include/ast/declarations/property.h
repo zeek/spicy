@@ -17,7 +17,7 @@ class Property : public Declaration {
 public:
     auto expression() const { return childTryAs<::hilti::Expression>(0); }
 
-    std::string displayName() const final { return "property"; }
+    std::string_view displayName() const final { return "property"; }
 
     static auto create(ASTContext* ctx, ID id, Meta meta = {}) {
         return std::shared_ptr<Property>(new Property(ctx, {}, std::move(id), std::move(meta)));

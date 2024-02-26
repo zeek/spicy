@@ -80,14 +80,14 @@ public:
                        const Meta& meta = {}) {
         return std::shared_ptr<Map>(
             new Map(ctx,
-                    {QualifiedType::create(ctx, map::Iterator::create(ctx, ktype, vtype, meta), Constness::NonConst)},
+                    {QualifiedType::create(ctx, map::Iterator::create(ctx, ktype, vtype, meta), Constness::Mutable)},
                     meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
         return std::shared_ptr<Map>(
             new Map(ctx, Wildcard(),
-                    {QualifiedType::create(ctx, map::Iterator::create(ctx, Wildcard(), m), Constness::NonConst)}, m));
+                    {QualifiedType::create(ctx, map::Iterator::create(ctx, Wildcard(), m), Constness::Mutable)}, m));
     }
 
 protected:

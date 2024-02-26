@@ -2,14 +2,10 @@
 
 #pragma once
 
-#include <cstddef>
 #include <map>
-#include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include <hilti/ast/forward.h>
@@ -33,7 +29,7 @@ public:
      *
      * @param d declaration to insert
      */
-    void insert(DeclarationPtr&& d);
+    void insert(const DeclarationPtr& d);
 
     /**
      * Inserts a declaration into it's scope under a given ID.
@@ -41,7 +37,7 @@ public:
      * @param id ID to insert the declaration under, which does not need to match the declaration's own ID
      * @param d declaration to insert
      */
-    void insert(const ID& id, DeclarationPtr&& d);
+    void insert(const ID& id, DeclarationPtr d);
 
     /**
      * Inserts a place-holder into the scope that let's lookup fail here if it

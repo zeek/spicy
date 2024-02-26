@@ -32,7 +32,7 @@ public:
         addChildren(ctx, std::move(args));
     }
 
-    std::string displayName() const final { return "local variable"; }
+    std::string_view displayName() const final { return "local variable"; }
 
     static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, Expressions args,
                        ExpressionPtr init = nullptr, Meta meta = {}) {

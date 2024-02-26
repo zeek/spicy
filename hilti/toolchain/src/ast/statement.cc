@@ -5,6 +5,4 @@
 
 using namespace hilti;
 
-Statement::~Statement() = default;
-
 std::string Statement::_dump() const { return ""; }

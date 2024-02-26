@@ -20,7 +20,7 @@ public:
                     .name = "msg",
                     .type = {parameter::Kind::In, builder->typeString()},
                 },
-            .result = {Const, builder->typeError()},
+            .result = {Constness::Const, builder->typeError()},
             .ns = "error",
             .doc = "Creates an error with the given message.",
         };
@@ -37,7 +37,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeError()},
             .member = "description",
-            .result = {Const, builder->typeString()},
+            .result = {Constness::Const, builder->typeString()},
             .ns = "error",
             .doc = "Retrieves the textual description associated with the error.",
         };

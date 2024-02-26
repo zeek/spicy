@@ -151,9 +151,8 @@ struct Visitor : visitor::PostOrder {
         if ( ! n->typeID() )
             return;
 
-        for ( auto&& d : n->as<type::Enum>()->labelDeclarations() ) {
-            n->parent(2)->getOrCreateScope()->insert(std::move(d));
-        }
+        for ( const auto& d : n->as<type::Enum>()->labelDeclarations() )
+            n->parent(2)->getOrCreateScope()->insert(d);
     }
 
     void operator()(type::Struct* n) final {

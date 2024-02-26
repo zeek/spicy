@@ -5,6 +5,4 @@
 
 using namespace hilti;
 
-Function::~Function() = default;
-
 std::string Function::_dump() const { return ""; }

@@ -18,7 +18,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typePort()},
             .op1 = {parameter::Kind::In, builder->typePort()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "port",
             .doc = "Compares two port values.",
         };
@@ -35,7 +35,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typePort()},
             .op1 = {parameter::Kind::In, builder->typePort()},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "port",
             .doc = "Compares two port values.",
         };
@@ -53,7 +53,7 @@ public:
             .member = "port",
             .param0 = {.name = "port", .type = {parameter::Kind::In, builder->typeUnsignedInteger(16)}},
             .param1 = {.name = "protocol", .type = {parameter::Kind::In, builder->typeName("hilti::Protocol")}},
-            .result = {Const, builder->typePort()},
+            .result = {Constness::Const, builder->typePort()},
             .ns = "port",
             .doc = "Creates a port instance.",
         };
@@ -69,7 +69,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typePort()},
             .member = "protocol",
-            .result = {Const, builder->typeName("hilti::Protocol")},
+            .result = {Constness::Const, builder->typeName("hilti::Protocol")},
             .ns = "port",
             .doc = R"(
 Returns the protocol the port is using (such as UDP or TCP).

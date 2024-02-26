@@ -84,7 +84,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to the same location.",
         };
@@ -106,7 +106,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to different locations.",
         };
@@ -129,7 +129,7 @@ public:
         return {
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Const, builder->typeUnsignedInteger(64)},
+            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
             .ns = "map",
             .doc = "Returns the number of elements a map contains.",
         };
@@ -146,7 +146,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
         };
@@ -168,7 +168,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
         };
@@ -190,7 +190,7 @@ public:
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeAny()},
             .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "map",
             .doc = "Returns true if an element is part of the map.",
         };
@@ -214,7 +214,7 @@ public:
             .kind = Kind::Delete,
             .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeAny()},
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "map",
             .doc = "Removes an element from the map.",
         };
@@ -301,7 +301,7 @@ public:
             .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeAny()},
             .op2 = {parameter::Kind::In, builder->typeAny()},
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "map",
             .doc = "Updates the map value for a given key. If the key does not exist a new element is inserted.",
         };
@@ -362,7 +362,7 @@ public:
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
             .member = "clear",
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "map",
             .doc = R"(
 Removes all elements from the map.

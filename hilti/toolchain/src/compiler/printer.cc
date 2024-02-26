@@ -116,8 +116,8 @@ struct Printer : visitor::PreOrder {
 
         printFunctionType(*n->ftype(), n->id());
 
-        if ( ! n->attributes()->empty() )
-            _out << ' ' << std::make_pair(n->attributes()->attributes(), " ");
+        if ( auto attrs = n->attributes()->attributes(); ! attrs.empty() )
+            _out << ' ' << std::make_pair(attrs, " ");
 
         if ( n->body() )
             _out << ' ' << n->body();
@@ -325,8 +325,8 @@ struct Printer : visitor::PreOrder {
         else
             _out << n->type() << ' ' << n->id();
 
-        if ( ! n->attributes()->empty() )
-            _out << ' ' << n->attributes();
+        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
+            _out << ' ' << attrs;
 
         if ( auto f = n->inlineFunction(); f && f->body() ) {
             const auto& block = f->body()->tryAs<statement::Block>();
@@ -354,7 +354,7 @@ struct Printer : visitor::PreOrder {
         if ( n->default_() )
             _out << " = " << n->default_();
 
-        if ( const auto attrs = n->attributes(); ! attrs->empty() )
+        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
             _out << ' ' << attrs;
     }
 
@@ -399,8 +399,8 @@ struct Printer : visitor::PreOrder {
         _out.setExpandSubsequentType(true);
         _out << n->type();
 
-        if ( ! n->attributes()->empty() )
-            _out << ' ' << n->attributes();
+        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
+            _out << ' ' << attrs;
 
         _out << ';';
         _out.endLine();
@@ -755,8 +755,8 @@ struct Printer : visitor::PreOrder {
         else
             _out << fmt("%d..%d", n->lower(), n->upper());
 
-        if ( ! n->attributes()->empty() )
-            _out << ' ' << n->attributes();
+        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
+            _out << ' ' << attrs;
 
         _out << ";" << _out.newline();
     }
@@ -815,7 +815,7 @@ struct Printer : visitor::PreOrder {
 
         _out.setExpandSubsequentType(false);
 
-        if ( auto t = n->baseType() ) {
+        if ( auto t = n->baseType(); t && ! t->isA<type::Unknown>() ) {
             _out << "[exception :";
 
             if ( auto id = t->typeID() )

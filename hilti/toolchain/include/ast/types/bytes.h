@@ -44,8 +44,7 @@ public:
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
         return std::shared_ptr<Bytes>(
-            new Bytes(ctx, {QualifiedType::create(ctx, bytes::Iterator::create(ctx, meta), Constness::NonConst)},
-                      meta));
+            new Bytes(ctx, {QualifiedType::create(ctx, bytes::Iterator::create(ctx, meta), Constness::Mutable)}, meta));
     }
 
     std::string_view typeClass() const final { return "bytes"; }

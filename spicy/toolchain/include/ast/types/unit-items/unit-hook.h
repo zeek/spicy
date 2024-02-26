@@ -26,7 +26,7 @@ public:
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
 
-    std::string displayName() const final { return "unit hook"; }
+    std::string_view displayName() const final { return "unit hook"; }
 
     static auto create(ASTContext* ctx, const ID& id, spicy::declaration::HookPtr hook, const Meta& meta = {}) {
         auto h = std::shared_ptr<UnitHook>(new UnitHook(ctx, {std::move(hook)}, id, meta));

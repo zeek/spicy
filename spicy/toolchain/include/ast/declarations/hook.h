@@ -76,7 +76,7 @@ public:
     }
     void setResult(ASTContext* ctx, const QualifiedTypePtr& t) { function()->setResultType(ctx, t); }
 
-    std::string displayName() const override { return "Spicy hook"; }
+    std::string_view displayName() const override { return "Spicy hook"; }
     node::Properties properties() const final;
 
     static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, const StatementPtr& body,

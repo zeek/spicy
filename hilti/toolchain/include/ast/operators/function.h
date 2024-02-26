@@ -19,8 +19,7 @@ namespace function {
 
 class Call final : public Operator {
 public:
-    Call(std::weak_ptr<declaration::Function> f) : Operator(f.lock()->meta(), false), _fdecl(std::move(f)) {}
-    ~Call() final;
+    Call(const std::shared_ptr<declaration::Function>& f) : Operator(f->meta(), false), _fdecl(f) {}
 
     operator_::Signature signature(Builder* builder) const final;
 

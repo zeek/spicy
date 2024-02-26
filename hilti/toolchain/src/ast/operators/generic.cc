@@ -62,7 +62,7 @@ public:
         return {
             .kind = Kind::Pack,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .result = {NonConst, builder->typeBytes()},
+            .result = {Constness::Mutable, builder->typeBytes()},
             .ns = "generic",
             .doc = "Packs a value into a binary representation.",
         };
@@ -136,15 +136,16 @@ public:
     QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         const auto args = operands[1]->type()->type()->as<type::Tuple>()->elements();
         if ( args.empty() )
-            return builder->qualifiedType(builder->typeError(), Const);
+            return builder->qualifiedType(builder->typeError(), Constness::Const);
 
         auto t = builder->typeTuple({operands[0]->type()->type()->as<type::Type_>()->typeValue(), args[0]->type()},
                                     operands[0]->meta());
 
         if ( operands[2]->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value() )
-            return builder->qualifiedType(t, Const);
+            return builder->qualifiedType(t, Constness::Const);
         else
-            return builder->qualifiedType(builder->typeResult(builder->qualifiedType(t, Const)), Const);
+            return builder->qualifiedType(builder->typeResult(builder->qualifiedType(t, Constness::Const)),
+                                          Constness::Const);
     }
 
     void validate(expression::ResolvedOperator* n) const final {
@@ -234,7 +235,7 @@ public:
         if ( auto iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
-            return builder->qualifiedType(builder->typeError(), Const);
+            return builder->qualifiedType(builder->typeError(), Constness::Const);
     }
 
     void validate(expression::ResolvedOperator* n) const final {
@@ -262,7 +263,7 @@ public:
         if ( auto iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
-            return builder->qualifiedType(builder->typeError(), Const);
+            return builder->qualifiedType(builder->typeError(), Constness::Const);
     }
 
     void validate(expression::ResolvedOperator* n) const final {
@@ -296,7 +297,7 @@ If `x` is an expression, an instance of the expression's type will be allocated 
         if ( auto tv = operands[0]->type()->type()->tryAs<type::Type_>() )
             t = tv->typeValue();
 
-        return builder->qualifiedType(builder->typeStrongReference(t, t->meta()), NonConst);
+        return builder->qualifiedType(builder->typeStrongReference(t, t->meta()), Constness::Mutable);
     }
 
     void validate(expression::ResolvedOperator* n) const final {

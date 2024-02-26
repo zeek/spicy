@@ -54,7 +54,7 @@ static hilti::QualifiedTypePtr iteratorForType(hilti::Builder* builder, hilti::Q
         return iter;
     else {
         hilti::logger().error(hilti::util::fmt("type '%s' is not iterable", *t), m.location());
-        return builder->qualifiedType(builder->typeError(), hilti::Const);
+        return builder->qualifiedType(builder->typeError(), hilti::Constness::Const);
         }
 }
 
@@ -63,7 +63,7 @@ static hilti::QualifiedTypePtr viewForType(hilti::Builder* builder, hilti::Quali
         return v;
     else {
         hilti::logger().error(hilti::util::fmt("type '%s' is not viewable", *t), m.location());
-        return builder->qualifiedType(builder->typeError(), hilti::Const);
+        return builder->qualifiedType(builder->typeError(), hilti::Constness::Const);
         }
 }
 
@@ -626,7 +626,7 @@ type          : base_type                        { $$ = std::move($1); }
               | scoped_id                        { $$ = builder->typeName(std::move($1), __loc__); }
               ;
 
-qtype         : type                             { $$ = builder->qualifiedType(std::move($1), Constness::NonConst, __loc__); }
+qtype         : type                             { $$ = builder->qualifiedType(std::move($1), Constness::Mutable, __loc__); }
               | CONST type                       { $$ = builder->qualifiedType(std::move($2), Constness::Const, __loc__); }
               | AUTO                             { $$ = builder->qualifiedType(builder->typeAuto(__loc__), Constness::Const, __loc__); }
               ;
@@ -812,7 +812,7 @@ expr_e        : BEGIN_ '(' expr ')'              { $$ = builder->expressionUnres
               | NEW qtype                        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionType(std::move($2)), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
               | NEW qtype '(' opt_exprs ')'      { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionType(std::move($2)), builder->expressionCtor(builder->ctorTuple(std::move($4), __loc__))}, __loc__); }
               | TYPEINFO '(' expr ')'            { $$ = builder->expressionTypeInfo(std::move($3), __loc__); }
-              | TYPEINFO '(' base_type ')'       { $$ = builder->expressionTypeInfo(builder->expressionType(builder->qualifiedType(std::move($3), Constness::NonConst)), __loc__); }
+              | TYPEINFO '(' base_type ')'       { $$ = builder->expressionTypeInfo(builder->expressionType(builder->qualifiedType(std::move($3), Constness::Mutable)), __loc__); }
               | expr_f                           { $$ = std::move($1); }
 
 expr_f        : ctor                             { $$ = builder->expressionCtor(std::move($1), __loc__); }

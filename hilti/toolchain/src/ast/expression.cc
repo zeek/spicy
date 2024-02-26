@@ -10,8 +10,6 @@
 
 using namespace hilti;
 
-Expression::~Expression() = default;
-
 std::string Expression::_dump() const {
     return util::fmt("%s %s", (type()->isConstant() ? " (const)" : " (non-const)"),
                      (isResolved() ? " (resolved)" : " (not resolved)"));

@@ -10,7 +10,7 @@
 
 namespace hilti::expression {
 
-/** AST node for a assignment expression. */
+/** AST node for an assignment expression. */
 class Assign : public Expression {
 public:
     auto target() const { return child<Expression>(0); }

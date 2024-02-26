@@ -9,8 +9,6 @@
 using namespace hilti;
 using namespace hilti::detail;
 
-UnqualifiedType::~UnqualifiedType() {}
-
 std::shared_ptr<declaration::Type> UnqualifiedType::typeDeclaration() const {
     if ( ! _declaration_index )
         return nullptr;
@@ -108,26 +106,17 @@ UnqualifiedTypePtr type::follow(const UnqualifiedTypePtr& t) {
     return t;
 }
 
-UnqualifiedType* type::follow(UnqualifiedType* t) {
-    if ( auto n = t->tryAs<type::Name>() ) {
-        if ( auto r = n->resolvedType() )
-            return r.get();
-    }
-
-    return t;
-}
-
 QualifiedTypePtr QualifiedType::createExternal(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_,
                                                const Meta& m) {
     return std::shared_ptr<QualifiedType>(new QualifiedType(ctx, {}, t, const_, Side::RHS, m));
 }
 
 QualifiedTypePtr QualifiedType::createAuto(ASTContext* ctx, const Meta& m) {
-    return QualifiedTypePtr(new QualifiedType(ctx, {type::Auto::create(ctx, m)}, NonConst, Side::RHS, m));
+    return QualifiedTypePtr(new QualifiedType(ctx, {type::Auto::create(ctx, m)}, Constness::Mutable, Side::RHS, m));
 }
 
 QualifiedTypePtr QualifiedType::createAuto(ASTContext* ctx, Side side, const Meta& m) {
-    return QualifiedTypePtr(new QualifiedType(ctx, {type::Auto::create(ctx, m)}, NonConst, side, m));
+    return QualifiedTypePtr(new QualifiedType(ctx, {type::Auto::create(ctx, m)}, Constness::Mutable, side, m));
 }
 
 UnqualifiedTypePtr QualifiedType::_type() const {

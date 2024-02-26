@@ -81,7 +81,7 @@ public:
     void setScopePath(const ID& scope) { _scope_path = scope; }
     void setUID(declaration::module::UID uid) { _uid = std::move(uid); }
 
-    std::string displayName() const final { return "module"; }
+    std::string_view displayName() const final { return "module"; }
 
     node::Properties properties() const override {
         auto p = node::Properties{{"id", _uid.id},

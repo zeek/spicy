@@ -88,7 +88,7 @@ struct Resolver : visitor::MutatingPostOrder {
             QualifiedTypePtr result = nullptr;
 
             void operator()(hilti::type::RegExp* n) final {
-                result = builder->qualifiedType(builder->typeBytes(), hilti::Constness::NonConst);
+                result = builder->qualifiedType(builder->typeBytes(), hilti::Constness::Mutable);
             }
         };
 
@@ -109,7 +109,7 @@ struct Resolver : visitor::MutatingPostOrder {
         }
 
         if ( is_container )
-            return builder()->qualifiedType(builder()->typeVector(nt, meta), hilti::Constness::NonConst);
+            return builder()->qualifiedType(builder()->typeVector(nt, meta), hilti::Constness::Mutable);
         else
             return nt;
     }
@@ -576,7 +576,7 @@ struct Resolver : visitor::MutatingPostOrder {
                     n->meta().location());
 
                 n->setSkip(true);
-                n->setType(context(), builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::NonConst));
+                n->setType(context(), builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Mutable));
             }
         }
 
@@ -588,7 +588,7 @@ struct Resolver : visitor::MutatingPostOrder {
             }
 
             if ( auto t = resolved->first->template tryAs<hilti::declaration::Type>() ) {
-                QualifiedTypePtr tt = builder()->qualifiedType(builder()->typeName(id), hilti::Constness::NonConst);
+                QualifiedTypePtr tt = builder()->qualifiedType(builder()->typeName(id), hilti::Constness::Mutable);
 
                 // If a unit comes with a &convert attribute, we wrap it into a
                 // subitem so that we have our recursive machinery available

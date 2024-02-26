@@ -2,6 +2,7 @@
 
 module spicy;
 
+# Ignore this module for code generation, we just need the declarations.
 %skip-implementation;
 
 # Note: Retain the formatting here, doc/scripts/autogen-spicy-lib is picking up on that.

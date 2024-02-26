@@ -18,7 +18,7 @@ public:
     auto expression() const { return child<hilti::Expression>(0); }
     auto attributes() const { return child<AttributeSet>(1); }
 
-    std::string displayName() const final { return "expression"; }
+    std::string_view displayName() const final { return "expression"; }
 
     static auto create(ASTContext* ctx, ID id, const ExpressionPtr& expr, AttributeSetPtr attrs,
                        declaration::Linkage linkage, Meta meta = {}) {

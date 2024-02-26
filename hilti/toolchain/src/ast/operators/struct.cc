@@ -57,12 +57,12 @@ namespace struct_ {
 QualifiedTypePtr _itemType(Builder* builder, const Expressions& operands) {
     auto stype = operands[0]->type()->type()->tryAs<type::Struct>();
     if ( ! stype )
-        return builder->qualifiedType(builder->typeUnknown(), Const);
+        return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
     if ( auto field = stype->field(operands[1]->as<expression::Member>()->id()) )
         return field->type();
     else
-        return builder->qualifiedType(builder->typeUnknown(), Const);
+        return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 }
 
 void _checkName(expression::ResolvedOperator* op, bool check_optional = false) {
@@ -98,7 +98,7 @@ public:
             .kind = Kind::Unset,
             .op0 = {parameter::Kind::InOut, builder->typeStruct(type::Wildcard()), "<struct>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
-            .result = {Const, builder->typeVoid()},
+            .result = {Constness::Const, builder->typeVoid()},
             .ns = "struct",
             .doc = R"(
 Clears an optional field.
@@ -204,7 +204,7 @@ public:
             .kind = Kind::HasMember,
             .op0 = {parameter::Kind::In, builder->typeStruct(type::Wildcard()), "<struct>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "struct",
             .doc = "Returns true if the struct's field has a value assigned (not counting any ``&default``).",
         };

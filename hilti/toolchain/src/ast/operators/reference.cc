@@ -38,7 +38,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if both operands reference the same instance.",
         };
@@ -60,7 +60,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if the two operands reference different instances.",
         };
@@ -106,7 +106,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "weak_reference",
             .doc = "Returns true if both operands reference the same instance.",
         };
@@ -128,7 +128,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "weak_reference",
             .doc = "Returns true if the two operands reference different instances.",
         };
@@ -174,7 +174,7 @@ public:
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "value_reference",
             .doc = "Returns true if the values of both operands are equal.",
         };
@@ -196,7 +196,7 @@ public:
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
-            .result = {Const, builder->typeBool()},
+            .result = {Constness::Const, builder->typeBool()},
             .ns = "value_reference",
             .doc = "Returns true if the values of both operands are not equal.",
         };

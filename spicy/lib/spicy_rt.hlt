@@ -2,6 +2,7 @@
 
 module spicy_rt {
 
+# Ignore this module for code generation, we just need the declarations.
 %skip-implementation;
 
 import hilti;

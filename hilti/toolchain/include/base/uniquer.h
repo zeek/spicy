@@ -40,9 +40,6 @@ public:
 
     /** Clears a previously returned name for reuse. */
     void remove(const ID& id) { this->Cache<ID, bool>::remove(id); }
-
-    /** Clears all previously returned names for reuse. */
-    void clear() { Cache<ID, bool>::clear(); }
 };
 
 } // namespace hilti::util

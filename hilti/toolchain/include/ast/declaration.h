@@ -59,7 +59,7 @@ public:
      * AST processing. The ID is guaranteed to be stable only after AST
      * processing has finished. Returns an empty ID if not yet set.
      */
-    auto fullyQualifiedID() const { return _fqid; }
+    const auto& fullyQualifiedID() const { return _fqid; }
 
     /**
      * Returns the canonical ID associated with the declaration once it has
@@ -109,7 +109,7 @@ public:
      * declaration refers to (e.g., "local variable"). This can be used in
      * messages to the user.
      */
-    virtual std::string displayName() const = 0;
+    virtual std::string_view displayName() const = 0;
 
     /** Implements the node interface. */
     node::Properties properties() const override {

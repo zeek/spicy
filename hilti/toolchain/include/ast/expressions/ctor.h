@@ -19,7 +19,6 @@ public:
     QualifiedTypePtr type() const final { return ctor()->type(); }
 
     static auto create(ASTContext* ctx, const CtorPtr& ctor, const Meta& meta = {}) {
-        assert(ctor->isA<hilti::Ctor>());
         return std::shared_ptr<Ctor>(new Ctor(ctx, {ctor}, meta));
     }
 
