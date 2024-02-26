@@ -14,8 +14,9 @@
     namespace ns {                                                                                                     \
     class cls : public hilti::expression::ResolvedOperator {                                                           \
     public:                                                                                                            \
-        static std::shared_ptr<cls> create(ASTContext* ctx, const hilti::Operator* op, const QualifiedTypePtr& result, \
-                                           const Expressions& operands, const hilti::Meta& meta) {                     \
+        static std::shared_ptr<cls> create(hilti::ASTContext* ctx, const hilti::Operator* op,                          \
+                                           const hilti::QualifiedTypePtr& result, const hilti::Expressions& operands,  \
+                                           const hilti::Meta& meta) {                                                  \
             return std::shared_ptr<cls>(new cls(ctx, op, result, operands, meta));                                     \
         }                                                                                                              \
                                                                                                                        \

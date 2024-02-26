@@ -42,8 +42,6 @@ Result<ModulePtr> parseSource(Builder* builder, std::istream& in, const std::str
  */
 class ASTRoot : public Node {
 public:
-    ~ASTRoot() override;
-
     static auto create(ASTContext* ctx) { return std::shared_ptr<ASTRoot>(new ASTRoot(ctx)); }
 
 protected:
@@ -132,6 +130,9 @@ public:
      * @param context compiler context to use for logging and error reporting
      */
     ASTContext(Context* context);
+
+    /** Destructor. */
+    ~ASTContext();
 
     /** Returns the AST's root node. This always exists. */
     auto root() const { return _root; }

@@ -53,7 +53,7 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         if ( auto ctor = foldConstant<Ctor>(builder, callArgument(op, 0)) ) {
             auto x = cb(*ctor);
             x->setMeta(op->meta());
-            return std::move(x);
+            return x;
         }
         else
             return nullptr;

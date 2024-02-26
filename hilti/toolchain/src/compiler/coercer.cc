@@ -827,7 +827,7 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
                 continue;
         }
 
-        bool needs_mutable;
+        bool needs_mutable = false;
         QualifiedTypePtr oat = op->type();
 
         switch ( op->kind() ) {

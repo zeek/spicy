@@ -6,6 +6,7 @@
 #include <cinttypes>
 #include <map>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <set>
 #include <string>
@@ -285,7 +286,7 @@ public:
      * @return child casted to type `T`, or null if there's no child node at that index
      */
     template<typename T>
-    std::shared_ptr<T> child(int i) const {
+    std::shared_ptr<T> child(unsigned int i) const {
         if ( i >= _children.size() )
             return nullptr;
 
@@ -293,7 +294,7 @@ public:
     }
 
     template<typename T>
-    std::shared_ptr<T> childTryAs(int i) const {
+    std::shared_ptr<T> childTryAs(unsigned int i) const {
         if ( i >= _children.size() )
             return nullptr;
 
@@ -307,7 +308,7 @@ public:
      * @param i index of the child, with zero being the first
      * @return child at given index, or null if there's no child at that index
      **/
-    NodePtr child(int i) const {
+    NodePtr child(unsigned int i) const {
         if ( i >= _children.size() )
             return nullptr;
 
@@ -686,6 +687,15 @@ public:
     /** Clears any error message associated with the node. */
     void clearErrors() { _errors.clear(); }
 
+    /** Removes all children. */
+    void clearChildren();
+
+    /**
+     * Recursively clears all child nodes and then deletes them from this node.
+     * This helps to break reference cycles.
+     */
+
+    void destroyChildren();
     /**
      * Returns any instance properties associated with the node. These are used
      * (only) for debug logging. Derived classes should override this to add
@@ -753,16 +763,6 @@ protected:
         // functions.
     }
 
-    /** Removes all children. */
-    void clearChildren() {
-        for ( auto& c : _children ) {
-            if ( c )
-                c->_clearParent();
-        }
-
-        _children.clear();
-    }
-
     /**
      * Returns the C++-level class name for the node's type. This is for
      * internal use only. It's the virtual backend to `typename_()`, which is
@@ -804,8 +804,18 @@ private:
 
         if ( end > begin )
             return *end;
-        else
+        else {
+            // Some versions of GCC diagnose a maybe uninitialized variable
+            // here. Since we just return an unset optional, this should not be
+            // possible. (pragmas copied from intrusive-ptr.h, where there's a
+            // similar issue.)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             return {};
+#pragma GCC diagnostic pop
+        }
     }
 
     // Checks casts for common mistakes.

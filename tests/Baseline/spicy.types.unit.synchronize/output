@@ -239,19 +239,19 @@ Error: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose]   - state: type=test::E input="" stream=0xXXXXXXXX offsets=5/0/5/5 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Unit: test_E_A -> switch_lha_2
 [spicy-verbose]     - state: type=test::E_A input="" stream=0xXXXXXXXX offsets=5/5/5/5 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
-[spicy-verbose]     - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 8)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 7)}: switch_2_case_2
+[spicy-verbose]     - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 7)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 8)}: switch_2_case_2
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]       resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]       resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
-[spicy-verbose]       - state: type=test::E_A input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
-[spicy-verbose]       - state: type=test::E_A input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
+[spicy-verbose]       - state: type=test::E_A input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
+[spicy-verbose]       - state: type=test::E_A input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
 [spicy-verbose]       - parsing production: Sequence: switch_2_case_1 -> Resolved_10
-[spicy-verbose]         - state: type=test::E_A input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
+[spicy-verbose]         - state: type=test::E_A input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
 [spicy-verbose]         - parsing production: Unit: test_E_X_2 -> x_5
-[spicy-verbose]           - state: type=test::E_X input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
+[spicy-verbose]           - state: type=test::E_X input="123" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
 [spicy-verbose]           - parsing production: Ctor: x_6 -> /123/ (regexp)
 [spicy-verbose]             - consuming look-ahead token
 [spicy-verbose]             - trimming input
@@ -289,19 +289,19 @@ Done: [$a=[$x=[$x=b"123"], $y=(not set)]]
 [spicy-verbose]   - state: type=test::E input="" stream=0xXXXXXXXX offsets=5/0/5/5 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Unit: test_E_A -> switch_lha_2
 [spicy-verbose]     - state: type=test::E_A input="" stream=0xXXXXXXXX offsets=5/5/5/5 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
-[spicy-verbose]     - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 8)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 7)}: switch_2_case_2
+[spicy-verbose]     - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 7)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 8)}: switch_2_case_2
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]       resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]       resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
-[spicy-verbose]       - state: type=test::E_A input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
-[spicy-verbose]       - state: type=test::E_A input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
+[spicy-verbose]       - state: type=test::E_A input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
+[spicy-verbose]       - state: type=test::E_A input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
 [spicy-verbose]       - parsing production: Sequence: switch_2_case_2 -> Resolved_11
-[spicy-verbose]         - state: type=test::E_A input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
+[spicy-verbose]         - state: type=test::E_A input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
 [spicy-verbose]         - parsing production: Unit: test_E_Y_2 -> y_2
-[spicy-verbose]           - state: type=test::E_Y input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
+[spicy-verbose]           - state: type=test::E_Y input="abc" stream=0xXXXXXXXX offsets=5/5/5/8 chunks=3 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
 [spicy-verbose]           - parsing production: Ctor: y_3 -> /abc/ (regexp)
 [spicy-verbose]             - consuming look-ahead token
 [spicy-verbose]             - trimming input
@@ -335,19 +335,19 @@ Done: [$a=[$x=(not set), $y=[$y=b"abc"]]]
 [spicy-verbose]     resuming after insufficient input, now have 5 for stream 0xXXXXXXXX
 [spicy-verbose]     failed to parse, will try to synchronize at 'a'
 [spicy-verbose]     - state: type=test::E input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
-[spicy-verbose]     - state: type=test::E input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=yes
+[spicy-verbose]     - state: type=test::E input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=yes
 [spicy-verbose]     successfully synchronized
 Synced: [$a=(not set)]
 Confirmed: [$a=(not set)]
-[spicy-verbose]     - state: type=test::E input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
+[spicy-verbose]     - state: type=test::E input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
 [spicy-verbose]     - parsing production: Unit: test_E_A -> switch_lha_2
-[spicy-verbose]       - state: type=test::E_A input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
-[spicy-verbose]       - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 8)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 7)}: switch_2_case_2
-[spicy-verbose]         - state: type=test::E_A input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
+[spicy-verbose]       - state: type=test::E_A input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
+[spicy-verbose]       - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 7)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 8)}: switch_2_case_2
+[spicy-verbose]         - state: type=test::E_A input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
 [spicy-verbose]         - parsing production: Sequence: switch_2_case_2 -> Resolved_11
-[spicy-verbose]           - state: type=test::E_A input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
+[spicy-verbose]           - state: type=test::E_A input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
 [spicy-verbose]           - parsing production: Unit: test_E_Y_2 -> y_2
-[spicy-verbose]             - state: type=test::E_Y input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="abc" recovering=no
+[spicy-verbose]             - state: type=test::E_Y input="abcEN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="abc" recovering=no
 [spicy-verbose]             - parsing production: Ctor: y_3 -> /abc/ (regexp)
 [spicy-verbose]               - consuming look-ahead token
 [spicy-verbose]               - trimming input
@@ -377,19 +377,19 @@ Done: [$a=[$x=(not set), $y=[$y=b"abc"]]]
 [spicy-verbose]     resuming after insufficient input, now have 5 for stream 0xXXXXXXXX
 [spicy-verbose]     failed to parse, will try to synchronize at 'a'
 [spicy-verbose]     - state: type=test::E input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
-[spicy-verbose]     - state: type=test::E input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=yes
+[spicy-verbose]     - state: type=test::E input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=yes
 [spicy-verbose]     successfully synchronized
 Synced: [$a=(not set)]
 Confirmed: [$a=(not set)]
-[spicy-verbose]     - state: type=test::E input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
+[spicy-verbose]     - state: type=test::E input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
 [spicy-verbose]     - parsing production: Unit: test_E_A -> switch_lha_2
-[spicy-verbose]       - state: type=test::E_A input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
-[spicy-verbose]       - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 8)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 7)}: switch_2_case_2
-[spicy-verbose]         - state: type=test::E_A input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
+[spicy-verbose]       - state: type=test::E_A input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
+[spicy-verbose]       - parsing production: LookAhead: switch_2_lha_2 -> {Ctor: x_5 -> /123/ (regexp) (id 7)}: switch_2_case_1 | {Ctor: y_2 -> /abc/ (regexp) (id 8)}: switch_2_case_2
+[spicy-verbose]         - state: type=test::E_A input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
 [spicy-verbose]         - parsing production: Sequence: switch_2_case_1 -> Resolved_10
-[spicy-verbose]           - state: type=test::E_A input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
+[spicy-verbose]           - state: type=test::E_A input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
 [spicy-verbose]           - parsing production: Unit: test_E_X_2 -> x_5
-[spicy-verbose]             - state: type=test::E_X input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=8 lah_token="123" recovering=no
+[spicy-verbose]             - state: type=test::E_X input="123EN" stream=0xXXXXXXXX offsets=0/0/0/5 chunks=5 frozen=no mode=default trim=yes lah=7 lah_token="123" recovering=no
 [spicy-verbose]             - parsing production: Ctor: x_6 -> /123/ (regexp)
 [spicy-verbose]               - consuming look-ahead token
 [spicy-verbose]               - trimming input

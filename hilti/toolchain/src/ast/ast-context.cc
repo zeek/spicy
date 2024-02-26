@@ -34,8 +34,6 @@ inline const DebugStream Compiler("compiler");
 inline const DebugStream Resolver("resolver");
 } // namespace hilti::logging::debug
 
-ASTRoot::~ASTRoot() = default;
-
 std::string ASTRoot::_dump() const { return ""; }
 
 ASTContext::ASTContext(Context* context) : _context(context) {
@@ -44,6 +42,8 @@ ASTContext::ASTContext(Context* context) : _context(context) {
     _declarations_by_index.resize(1); // index 0 is reserved for null
     _types_by_index.resize(1);        // index 0 is reserved for null
 }
+
+ASTContext::~ASTContext() { _root->destroyChildren(); }
 
 Result<declaration::module::UID> ASTContext::parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
                                                          std::optional<hilti::rt::filesystem::path> process_extension) {
@@ -174,17 +174,17 @@ ast::DeclarationIndex ASTContext::register_(const DeclarationPtr& decl) {
     if ( auto t = decl->tryAs<declaration::Type>() )
         t->type()->type()->setDeclarationIndex(index);
 
-#ifndef NDEBUG
-    std::string canon_id;
+    if ( logger().isEnabled(logging::debug::Resolver) ) {
+        std::string canon_id;
 
-    if ( decl->canonicalID() )
-        canon_id = decl->canonicalID().str() + std::string(" ");
-    else
-        canon_id = std::string("<no-canon-id> ");
+        if ( decl->canonicalID() )
+            canon_id = decl->canonicalID().str() + std::string(" ");
+        else
+            canon_id = std::string("<no-canon-id> ");
 
-    HILTI_DEBUG(logging::debug::Resolver, fmt("-> [%s] %s %s| %s (%s)", index, decl->typename_(), canon_id,
-                                              decl->print(), decl->location().dump(true)));
-#endif
+        HILTI_DEBUG(logging::debug::Resolver, fmt("-> [%s] %s %s| %s (%s)", index, decl->typename_(), canon_id,
+                                                  decl->print(), decl->location().dump(true)));
+    }
 
     return index;
 }
@@ -203,17 +203,17 @@ void ASTContext::replace(const Declaration* old, const DeclarationPtr& new_) {
         replace(o->type()->type().get(), n->type()->type());
     }
 
-#ifndef NDEBUG
-    std::string canon_id;
+    if ( logger().isEnabled(logging::debug::Resolver) ) {
+        std::string canon_id;
 
-    if ( new_->canonicalID() )
-        canon_id = new_->canonicalID().str() + std::string(" ");
-    else
-        canon_id = std::string("<no-canon-id> ");
+        if ( new_->canonicalID() )
+            canon_id = new_->canonicalID().str() + std::string(" ");
+        else
+            canon_id = std::string("<no-canon-id> ");
 
-    HILTI_DEBUG(logging::debug::Resolver, fmt("-> update: [%s] %s %s| %s (%s)", index, new_->typename_(), canon_id,
-                                              new_->print(), new_->location().dump(true)));
-#endif
+        HILTI_DEBUG(logging::debug::Resolver, fmt("-> update: [%s] %s %s| %s (%s)", index, new_->typename_(), canon_id,
+                                                  new_->print(), new_->location().dump(true)));
+    }
 }
 
 DeclarationPtr ASTContext::lookup(ast::DeclarationIndex index) {
@@ -233,17 +233,17 @@ ast::TypeIndex ASTContext::register_(const UnqualifiedTypePtr& type) {
     type->setTypeIndex(index);
     _types_by_index.emplace_back(type);
 
-#ifndef NDEBUG
-    std::string type_id;
+    if ( logger().isEnabled(logging::debug::Resolver) ) {
+        std::string type_id;
 
-    if ( type->typeID() )
-        type_id = type->typeID().str() + std::string(" ");
-    else
-        type_id = std::string("<no-type-id> ");
+        if ( type->typeID() )
+            type_id = type->typeID().str() + std::string(" ");
+        else
+            type_id = std::string("<no-type-id> ");
 
-    HILTI_DEBUG(logging::debug::Resolver, fmt("-> [%s] %s %s| %s (%s)", index, type->typename_(), type_id,
-                                              type->print(), type->location().dump(true)));
-#endif
+        HILTI_DEBUG(logging::debug::Resolver, fmt("-> [%s] %s %s| %s (%s)", index, type->typename_(), type_id,
+                                                  type->print(), type->location().dump(true)));
+    }
 
     return index;
 }
@@ -256,17 +256,17 @@ void ASTContext::replace(const UnqualifiedType* old, const UnqualifiedTypePtr& n
     new_->setTypeIndex(index);
     _types_by_index[index.value()] = new_;
 
-#ifndef NDEBUG
-    std::string type_id;
+    if ( logger().isEnabled(logging::debug::Resolver) ) {
+        std::string type_id;
 
-    if ( new_->typeID() )
-        type_id = new_->typeID().str() + std::string(" ");
-    else
-        type_id = std::string("<no-type-id> ");
+        if ( new_->typeID() )
+            type_id = new_->typeID().str() + std::string(" ");
+        else
+            type_id = std::string("<no-type-id> ");
 
-    HILTI_DEBUG(logging::debug::Resolver, fmt("-> update: [%s] %s %s| %s (%s)", index, new_->typename_(), type_id,
-                                              new_->print(), new_->location().dump(true)));
-#endif
+        HILTI_DEBUG(logging::debug::Resolver, fmt("-> update: [%s] %s %s| %s (%s)", index, new_->typename_(), type_id,
+                                                  new_->print(), new_->location().dump(true)));
+    }
 }
 
 UnqualifiedTypePtr ASTContext::lookup(ast::TypeIndex index) {
@@ -531,10 +531,8 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
 
     optimizer::optimize(builder, _root);
 
-#ifndef NDEBUG
     // Make sure we didn't leave anything odd during optimization.
     _checkAST(true);
-#endif
 
     return Nothing();
 }
@@ -593,14 +591,14 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
     HILTI_DEBUG(stream, "# State tables:");
     logger().debugPushIndent(stream);
 
-    for ( auto idx = 1; idx < _declarations_by_index.size(); idx++ ) {
+    for ( auto idx = 1U; idx < _declarations_by_index.size(); idx++ ) {
         auto n = _declarations_by_index[idx];
         auto id = n->canonicalID() ? n->canonicalID() : ID("<no-canon-id>");
         HILTI_DEBUG(stream,
                     fmt("[%s] %s [%s] (%s)", ast::DeclarationIndex(idx), id, n->typename_(), n->location().dump(true)));
     }
 
-    for ( auto idx = 1; idx < _types_by_index.size(); idx++ ) {
+    for ( auto idx = 1U; idx < _types_by_index.size(); idx++ ) {
         auto n = _types_by_index[idx];
         auto id = n->typeID() ? n->typeID() : ID("<no-type-id>");
         HILTI_DEBUG(stream,

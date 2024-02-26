@@ -9,4 +9,3 @@ hilti::Result<hilti::ExpressionPtr> builder::parseExpression(Builder* builder, c
                                                              const hilti::Meta& meta) {
     return detail::parser::parseExpression(builder, expr, meta);
 }
-

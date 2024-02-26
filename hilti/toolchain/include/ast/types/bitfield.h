@@ -51,8 +51,9 @@ public:
     void setAttributes(ASTContext* ctx, const AttributeSetPtr& attrs) { setChild(ctx, 1, attrs); }
     void setCtorValue(ASTContext* ctx, const ExpressionPtr& e) { setChild(ctx, 2, e); }
 
-    static auto create(ASTContext* ctx, const ID& id, int lower, int upper, int field_width, AttributeSetPtr attrs = {},
-                       const ExpressionPtr& ctor_value = nullptr, const Meta& meta = Meta()) {
+    static auto create(ASTContext* ctx, const ID& id, unsigned int lower, unsigned int upper, unsigned int field_width,
+                       AttributeSetPtr attrs = {}, const ExpressionPtr& ctor_value = nullptr,
+                       const Meta& meta = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -64,8 +65,8 @@ public:
                          field_width, meta));
     }
 
-    static auto create(ASTContext* ctx, const ID& id, int lower, int upper, int field_width, AttributeSetPtr attrs = {},
-                       const Meta& meta = Meta()) {
+    static auto create(ASTContext* ctx, const ID& id, unsigned int lower, unsigned int upper, unsigned int field_width,
+                       AttributeSetPtr attrs = {}, const Meta& meta = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -75,7 +76,8 @@ public:
 protected:
     friend class type::Bitfield;
 
-    BitRange(ASTContext* ctx, Nodes children, ID id, int lower, int upper, int field_width, Meta meta = {})
+    BitRange(ASTContext* ctx, Nodes children, ID id, unsigned int lower, unsigned int upper, unsigned int field_width,
+             Meta meta = {})
         : Declaration(ctx, std::move(children), std::move(id), declaration::Linkage::Private, std::move(meta)),
           _lower(lower),
           _upper(upper),
@@ -84,9 +86,9 @@ protected:
     HILTI_NODE(hilti, BitRange);
 
 private:
-    int _lower = 0;
-    int _upper = 0;
-    int _field_width = 0;
+    unsigned int _lower = 0;
+    unsigned int _upper = 0;
+    unsigned int _field_width = 0;
 };
 
 using BitRangePtr = std::shared_ptr<BitRange>;
@@ -97,7 +99,7 @@ using BitRanges = std::vector<BitRangePtr>;
 /** AST node for a `bitfield` type. */
 class Bitfield : public UnqualifiedType, public node::WithUniqueID {
 public:
-    int width() const { return _width; }
+    auto width() const { return _width; }
     auto attributes() const { return child<AttributeSet>(0); }
 
     auto bits(bool include_hidden = false) const {
@@ -108,7 +110,7 @@ public:
     }
 
     bitfield::BitRangePtr bits(const ID& id) const;
-    std::optional<int> bitsIndex(const ID& id) const;
+    std::optional<unsigned int> bitsIndex(const ID& id) const;
 
     /**
      * If at least one of the bits comes with a pre-defined value, this builds
@@ -133,7 +135,7 @@ public:
         return UnqualifiedType::properties() + node::WithUniqueID::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, int width, type::bitfield::BitRanges bits, AttributeSetPtr attrs,
+    static auto create(ASTContext* ctx, unsigned int width, type::bitfield::BitRanges bits, AttributeSetPtr attrs,
                        const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
@@ -147,7 +149,7 @@ public:
     }
 
 protected:
-    Bitfield(ASTContext* ctx, Nodes children, int width, Meta meta)
+    Bitfield(ASTContext* ctx, Nodes children, unsigned int width, Meta meta)
         : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)), WithUniqueID("bitfield"), _width(width) {}
 
     Bitfield(ASTContext* ctx, Wildcard _, const Meta& meta)
@@ -156,7 +158,7 @@ protected:
     HILTI_NODE(hilti, Bitfield)
 
 private:
-    int _width = 0;
+    unsigned int _width = 0;
 };
 
 

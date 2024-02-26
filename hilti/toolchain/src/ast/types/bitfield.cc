@@ -18,8 +18,9 @@ type::bitfield::BitRangePtr type::Bitfield::bits(const ID& id) const {
     return {};
 }
 
-std::optional<int> type::Bitfield::bitsIndex(const ID& id) const {
-    auto i = 0;
+std::optional<unsigned int> type::Bitfield::bitsIndex(const ID& id) const {
+    auto i = 0U;
+    ;
     for ( const auto& b : bits(true) ) {
         if ( id == b->id() )
             return i;

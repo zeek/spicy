@@ -36,6 +36,8 @@ struct Options;
  */
 class Builder : public builder::NodeFactory {
 public:
+    virtual ~Builder() = default;
+
     /** Constructs a builder that will use a given context. */
     Builder(ASTContext* ctx) : NodeFactory(ctx) { _static_state.block = statement::Block::create(ctx, {}, {}); }
 

@@ -7,6 +7,8 @@
 
 #include <hilti/ast/operators/common.h>
 
+#include <spicy/ast/forward.h>
+
 namespace spicy::operator_ {
 
 HILTI_NODE_OPERATOR(spicy, sink, SizeValue)

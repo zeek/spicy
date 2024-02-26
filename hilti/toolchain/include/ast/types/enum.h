@@ -90,7 +90,7 @@ public:
     bool isNameType() const final { return true; }
 
     static auto create(ASTContext* ctx, enum_::Labels labels, Meta meta = {}) {
-        auto t = std::shared_ptr<Enum>(new Enum(ctx, {}, std::move(meta)));
+        auto t = std::shared_ptr<Enum>(new Enum(ctx, Nodes(), std::move(meta)));
         t->_setLabels(ctx, std::move(labels));
         return t;
     }

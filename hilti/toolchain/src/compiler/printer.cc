@@ -234,7 +234,7 @@ struct Printer : visitor::PreOrder {
         // C99 snprintf instead.
         constexpr size_t size = 256;
         char buf[size];
-        assert(std::snprintf(buf, size, "%a", n->value()) >= 0);
+        std::snprintf(buf, size, "%a", n->value());
         _out << buf;
     }
 

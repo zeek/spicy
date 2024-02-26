@@ -463,8 +463,11 @@ struct Resolver : visitor::MutatingPostOrder {
                         auto operands = u->operands();
                         // Try to swap the operators for commutative operators.
                         if ( operator_::isCommutative(c->kind()) && operands.size() == 2 ) {
-                            if ( auto r = try_candidate(c, node::Range<Expression>({operands[1], operands[0]}), style,
-                                                        u->meta(), "candidate matches with operands swapped") ) {
+                            Nodes new_operands = {operands[1], operands[0]};
+                            if ( auto r = try_candidate(c,
+                                                        hilti::node::Range<Expression>(new_operands.begin(),
+                                                                                       new_operands.end()),
+                                                        style, u->meta(), "candidate matches with operands swapped") ) {
                                 if ( c->signature().priority == operator_::Priority::Normal )
                                     kinds_resolved->insert(c->kind());
 
@@ -724,7 +727,7 @@ struct Resolver : visitor::MutatingPostOrder {
                 if ( auto tid = n->type()->type()->typeID() )
                     setFqID(n, tid + n->id());
             }
-            else if ( auto f = n->parent<Function>() )
+            else if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
             else if ( auto m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
@@ -740,7 +743,7 @@ struct Resolver : visitor::MutatingPostOrder {
         if ( ! n->fullyQualifiedID() ) {
             if ( n->id() == ID("self") || n->id() == ID("__dd") )
                 setFqID(n, n->id()); // local scope
-            else if ( auto f = n->parent<Function>() )
+            else if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
             else if ( auto m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
@@ -1011,7 +1014,7 @@ struct Resolver : visitor::MutatingPostOrder {
 
     void operator()(declaration::Property* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto f = n->parent<Function>() )
+            if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
             else if ( auto m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
@@ -1020,7 +1023,7 @@ struct Resolver : visitor::MutatingPostOrder {
 
     void operator()(declaration::Type* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto f = n->parent<Function>() )
+            if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
             else if ( auto m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope

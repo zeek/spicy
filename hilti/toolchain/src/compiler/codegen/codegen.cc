@@ -723,7 +723,7 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     std::vector<cxx::Expression> x;
     x.reserve(args.size());
 
-    int i = 0;
+    unsigned int i = 0;
     for ( const auto& p : params ) {
         ExpressionPtr arg = (i < args.size() ? args[i] : p->default_());
         x.emplace_back(compile(arg, p->kind() == parameter::Kind::InOut));

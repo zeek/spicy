@@ -99,7 +99,7 @@ std::string Node::print() const {
 }
 
 void Node::replaceChild(ASTContext* ctx, const Node* old, NodePtr new_) {
-    for ( auto i = 0; i < _children.size(); i++ ) {
+    for ( auto i = 0U; i < _children.size(); i++ ) {
         if ( _children[i].get() == old ) {
             setChild(ctx, i, std::move(new_));
             return;
@@ -114,6 +114,24 @@ void Node::replaceChildren(ASTContext* ctx, Nodes children) {
 
     for ( auto&& c : children )
         addChild(ctx, std::move(c));
+}
+
+void Node::clearChildren() {
+    for ( auto& c : _children ) {
+        if ( c )
+            c->_clearParent();
+    }
+
+    _children.clear();
+}
+
+void Node::destroyChildren() {
+    for ( auto n : visitor::RangePostOrder(this->as<Node>(), "") ) {
+        if ( auto scope = n->scope() )
+            scope->clear();
+
+        n->clearChildren();
+    }
 }
 
 NodePtr Node::_newChild(ASTContext* ctx, NodePtr child) {

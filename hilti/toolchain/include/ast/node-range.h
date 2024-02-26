@@ -33,8 +33,6 @@ public:
     using iterator_category = BaseIterator::iterator_category;
 
     explicit RangeIterator(BaseIterator i) : _iter(i) {}
-    explicit RangeIterator(typename std::vector<std::shared_ptr<T>>::const_iterator i)
-        : _iter(reinterpret_cast<BaseIterator&>(i)) {}
     RangeIterator(const RangeIterator& other) = default;
     RangeIterator(RangeIterator&& other) noexcept = default;
     RangeIterator() {}

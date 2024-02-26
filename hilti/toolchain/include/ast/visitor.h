@@ -173,7 +173,7 @@ public:
     using base_t = Visitor<order, Dispatcher>;
     using iterator_t = Iterator<order>;
 
-    static const Order Order = order;
+    static const Order Order_ = order;
 
     Visitor() = default;
     virtual ~Visitor() = default;
@@ -327,7 +327,7 @@ using RangePostOrder = visitor::Range<visitor::Order::Post>;
 /** Return a range that iterates over AST, returning each node successively. */
 template<typename Visitor, typename NodePtr>
 auto range(Visitor&& visitor, NodePtr root, std::string_view limit_to_tag = {}) {
-    return visitor::Range<std::remove_reference<Visitor>::type::Order>(root, limit_to_tag);
+    return visitor::Range<std::remove_reference<Visitor>::type::Order_>(root, limit_to_tag);
 }
 
 /** Walks the AST recursively and calls dispatch for each node. */
