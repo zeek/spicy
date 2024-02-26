@@ -1948,18 +1948,18 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
     auto [id_ext_overload1, id_ext_overload2, id_ext_overload3, id_ext_context_new] = parseMethodIDs(*t);
 
     hilti::declaration::Parameters params =
-        {builder()->parameter("data",
+        {builder()->parameter("__data",
                               builder()->typeValueReference(
                                   builder()->qualifiedType(builder()->typeStream(), hilti::Constness::NonConst)),
                               hilti::parameter::Kind::InOut),
-         builder()->parameter("cur",
+         builder()->parameter("__cur",
                               builder()->typeOptional(
                                   builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst)),
                               builder()->optional(
                                   builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst))),
-         builder()->parameter("context", builder()->typeOptional(
-                                             builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
-                                                                      hilti::Constness::NonConst)))};
+         builder()->parameter("__context", builder()->typeOptional(
+                                               builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
+                                                                        hilti::Constness::NonConst)))};
 
     auto attr_ext_overload =
         builder()->attributeSet({builder()->attribute("&needed-by-feature", builder()->stringLiteral("is_filter")),
@@ -1975,45 +1975,45 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
     auto f_ext_overload2_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst);
     auto f_ext_overload2 = builder()->function(
         id_ext_overload2, f_ext_overload2_result,
-        {builder()->parameter("unit",
+        {builder()->parameter("__unit",
                               builder()->typeValueReference(builder()->qualifiedType(builder()->typeName(t->typeID()),
                                                                                      hilti::Constness::NonConst)),
                               hilti::parameter::Kind::InOut),
-         builder()->parameter("data",
+         builder()->parameter("__data",
                               builder()->typeValueReference(
                                   builder()->qualifiedType(builder()->typeStream(), hilti::Constness::NonConst)),
                               hilti::parameter::Kind::InOut),
-         builder()->parameter("cur",
+         builder()->parameter("__cur",
                               builder()->typeOptional(
                                   builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst)),
                               builder()->optional(
                                   builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst))),
-         builder()->parameter("context", builder()->typeOptional(
-                                             builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
-                                                                      hilti::Constness::NonConst)))},
+         builder()->parameter("__context", builder()->typeOptional(
+                                               builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
+                                                                        hilti::Constness::NonConst)))},
         hilti::type::function::Flavor::Method, hilti::declaration::Linkage::Struct,
         hilti::function::CallingConvention::Extern, attr_ext_overload, t->meta());
 
     auto f_ext_overload3_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst);
     auto f_ext_overload3 = builder()->function(
         id_ext_overload3, f_ext_overload3_result,
-        {builder()->parameter("gunit",
+        {builder()->parameter("__gunit",
                               builder()->typeValueReference(
                                   builder()->qualifiedType(builder()->typeName("spicy_rt::ParsedUnit"),
                                                            hilti::Constness::NonConst)),
                               hilti::parameter::Kind::InOut),
-         builder()->parameter("data",
+         builder()->parameter("__data",
                               builder()->typeValueReference(
                                   builder()->qualifiedType(builder()->typeStream(), hilti::Constness::NonConst)),
                               hilti::parameter::Kind::InOut),
-         builder()->parameter("cur",
+         builder()->parameter("__cur",
                               builder()->typeOptional(
                                   builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst)),
                               builder()->optional(
                                   builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst))),
-         builder()->parameter("context", builder()->typeOptional(
-                                             builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
-                                                                      hilti::Constness::NonConst)))},
+         builder()->parameter("__context", builder()->typeOptional(
+                                               builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
+                                                                        hilti::Constness::NonConst)))},
         hilti::type::function::Flavor::Method, hilti::declaration::Linkage::Struct,
         hilti::function::CallingConvention::Extern, attr_ext_overload, t->meta());
 
@@ -2061,12 +2061,12 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
             if ( ! context )
                 return;
 
-            auto arg_ctx = builder()->id("context");
-            auto create_ctx = builder()->memberCall(builder()->id("unit"), "context_new");
+            auto arg_ctx = builder()->id("__context");
+            auto create_ctx = builder()->memberCall(builder()->id("__unit"), "context_new");
             auto ctx = builder()->ternary(arg_ctx, builder()->deref(arg_ctx), create_ctx);
 
             builder()->addCall("spicy_rt::setContext",
-                               {builder()->member(builder()->id("unit"), "__context"), ctx,
+                               {builder()->member(builder()->id("__unit"), "__context"), ctx,
                                 builder()->typeinfo(builder()->qualifiedType(context, hilti::Constness::Const))});
         };
 
@@ -2082,7 +2082,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
             // Create parse1() body.
             pushBuilder();
             builder()->setLocation(grammar.root()->location());
-            builder()->addLocal("unit",
+            builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
                                                         hilti::node::transform(t->parameters(),
@@ -2090,28 +2090,29 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
                                                                                    return p->default_();
                                                                                }))));
             builder()
-                ->addLocal("ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst),
-                           builder()->ternary(builder()->id("cur"), builder()->deref(builder()->id("cur")),
-                                              builder()->cast(builder()->deref(builder()->id("data")),
+                ->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst),
+                           builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),
+                                              builder()->cast(builder()->deref(builder()->id("__data")),
                                                               builder()->qualifiedType(builder()->typeStreamView(),
                                                                                        hilti::Constness::NonConst))));
-            builder()->addLocal("lahead", lookAheadType(), builder()->integer(look_ahead::None));
-            builder()->addLocal("lahead_end",
+            builder()->addLocal("__lahead", lookAheadType(), builder()->integer(look_ahead::None));
+            builder()->addLocal("__lahead_end",
                                 builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::NonConst));
-            builder()->addLocal("error", builder()->optional(
-                                             builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
-                                                                      hilti::Constness::Const)));
+            builder()->addLocal("__error",
+                                builder()->optional(
+                                    builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
+                                                             hilti::Constness::Const)));
 
             init_context();
 
-            auto pstate = ParserState(builder(), t, grammar, builder()->id("data"), builder()->id("cur"));
-            pstate.self = builder()->id("unit");
-            pstate.begin = builder()->begin(builder()->id("ncur"));
-            pstate.cur = builder()->id("ncur");
+            auto pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+            pstate.self = builder()->id("__unit");
+            pstate.begin = builder()->begin(builder()->id("__ncur"));
+            pstate.cur = builder()->id("__ncur");
             pstate.trim = builder()->bool_(true);
-            pstate.lahead = builder()->id("lahead");
-            pstate.lahead_end = builder()->id("lahead_end");
-            pstate.error = builder()->id("error");
+            pstate.lahead = builder()->id("__lahead");
+            pstate.lahead_end = builder()->id("__lahead_end");
+            pstate.error = builder()->id("__error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
             visitor.parseProduction(*grammar.root(), true);
@@ -2133,7 +2134,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
             // Create parse3() body.
             pushBuilder();
             builder()->setLocation(grammar.root()->location());
-            builder()->addLocal("unit",
+            builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
                                                         hilti::node::transform(t->parameters(),
@@ -2141,31 +2142,32 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
                                                                                    return p->default_();
                                                                                }))));
 
-            builder()->addCall(ID("spicy_rt::initializeParsedUnit"), {builder()->id("gunit"), builder()->id("unit"),
+            builder()->addCall(ID("spicy_rt::initializeParsedUnit"), {builder()->id("__gunit"), builder()->id("__unit"),
                                                                       builder()->typeinfo(builder()->id(t->typeID()))});
             builder()
-                ->addLocal("ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst),
-                           builder()->ternary(builder()->id("cur"), builder()->deref(builder()->id("cur")),
-                                              builder()->cast(builder()->deref(builder()->id("data")),
+                ->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst),
+                           builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),
+                                              builder()->cast(builder()->deref(builder()->id("__data")),
                                                               builder()->qualifiedType(builder()->typeStreamView(),
                                                                                        hilti::Constness::NonConst))));
-            builder()->addLocal("lahead", lookAheadType(), builder()->integer(look_ahead::None));
-            builder()->addLocal("lahead_end",
+            builder()->addLocal("__lahead", lookAheadType(), builder()->integer(look_ahead::None));
+            builder()->addLocal("__lahead_end",
                                 builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::NonConst));
-            builder()->addLocal("error", builder()->optional(
-                                             builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
-                                                                      hilti::Constness::Const)));
+            builder()->addLocal("__error",
+                                builder()->optional(
+                                    builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
+                                                             hilti::Constness::Const)));
 
             init_context();
 
-            pstate = ParserState(builder(), t, grammar, builder()->id("data"), builder()->id("cur"));
-            pstate.self = builder()->id("unit");
-            pstate.begin = builder()->begin(builder()->id("ncur"));
-            pstate.cur = builder()->id("ncur");
+            pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+            pstate.self = builder()->id("__unit");
+            pstate.begin = builder()->begin(builder()->id("__ncur"));
+            pstate.cur = builder()->id("__ncur");
             pstate.trim = builder()->bool_(true);
-            pstate.lahead = builder()->id("lahead");
-            pstate.lahead_end = builder()->id("lahead_end");
-            pstate.error = builder()->id("error");
+            pstate.lahead = builder()->id("__lahead");
+            pstate.lahead_end = builder()->id("__lahead_end");
+            pstate.error = builder()->id("__error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
             visitor.parseProduction(*grammar.root(), true);
@@ -2189,28 +2191,28 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, const type::UnitPtr
         // Create parse2() body.
         pushBuilder();
         builder()->setLocation(grammar.root()->location());
-        builder()->addLocal("ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst),
-                            builder()->ternary(builder()->id("cur"), builder()->deref(builder()->id("cur")),
-                                               builder()->cast(builder()->deref(builder()->id("data")),
+        builder()->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::NonConst),
+                            builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),
+                                               builder()->cast(builder()->deref(builder()->id("__data")),
                                                                builder()->qualifiedType(builder()->typeStreamView(),
                                                                                         hilti::Constness::NonConst))));
-        builder()->addLocal("lahead", lookAheadType(), builder()->integer(look_ahead::None));
-        builder()->addLocal("lahead_end",
+        builder()->addLocal("__lahead", lookAheadType(), builder()->integer(look_ahead::None));
+        builder()->addLocal("__lahead_end",
                             builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::NonConst));
-        builder()->addLocal("error", builder()->optional(
-                                         builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
-                                                                  hilti::Constness::Const)));
+        builder()->addLocal("__error", builder()->optional(
+                                           builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
+                                                                    hilti::Constness::Const)));
 
         init_context();
 
-        auto pstate = ParserState(builder(), t, grammar, builder()->id("data"), builder()->id("cur"));
-        pstate.self = builder()->id("unit");
-        pstate.begin = builder()->begin(builder()->id("ncur"));
-        pstate.cur = builder()->id("ncur");
+        auto pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+        pstate.self = builder()->id("__unit");
+        pstate.begin = builder()->begin(builder()->id("__ncur"));
+        pstate.cur = builder()->id("__ncur");
         pstate.trim = builder()->bool_(true);
-        pstate.lahead = builder()->id("lahead");
-        pstate.lahead_end = builder()->id("lahead_end");
-        pstate.error = builder()->id("error");
+        pstate.lahead = builder()->id("__lahead");
+        pstate.lahead_end = builder()->id("__lahead_end");
+        pstate.error = builder()->id("__error");
         pushState(pstate);
         visitor.pushDestination(pstate.self);
         visitor.parseProduction(*grammar.root(), true);
