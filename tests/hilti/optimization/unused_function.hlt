@@ -18,7 +18,7 @@ function bool private_unused1() { return private_unused(); }
 function bool private_used() { return False; }
 global x = private_used();
 
-# Public unused functions should get optimized out.
+# Public unused functions should not get optimized out.
 public function bool public_unused() { return False; }
 
 # Extern functions should not get optimized out, regardless whether they are public or not.

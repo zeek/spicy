@@ -1,3 +1,42 @@
+1.10.0-dev.156 | 2024-02-27 17:44:22 +0100
+
+  * GH-1624: Enable optimizations when running `spicy-build`. (Benjamin Bannier, Corelight)
+
+    We previously would emit single C++ source files from `spicy-build`.
+    This made it impossible to enable optimizations since we could not know
+    whether individual code was used. Since optional features are by default
+    enabled and only disabled through an optimizer pass this meant that
+    `spicy-build` emitted code which performed a lot of work not done
+    usually.
+
+    This patch reworks `spicy-build` to use `spicyc`'s `-x` instead which
+    has a global view and can run optimizations, and emits all source files
+    into a prefix.
+
+    Closes #1624.
+    Closes #1625.
+    Closes #1622.
+
+  * Fix some shellcheck warnings in `spicy-build`. (Benjamin Bannier, Corelight)
+
+  * Fix handling of `spicyc -x` when passed a filename. (Benjamin Bannier, Corelight)
+
+    For the `-x` flag users can pass either the name of a directory or a
+    file. If passed a filename the file name is incorporated into the
+    identifier generated namespace identifier of e.g., the form
+    `__hlt_FILENAME` in the emitted C++ files. Previously when passing a
+    directory we would still emit a `_` separator, but since there was no
+    filename nothing after it so we generated namespace identifiers like
+    `__hlt_`.
+
+    With this patch we now only emit the separator if passed a filename.
+
+  * Do not optimize out public functions. (Benjamin Bannier, Corelight)
+
+    Optimizing out public functions breaks the assumption we have elsewhere
+    that something marked `public` is part of the public API and would not
+    get optimized out. This is e.g., the behavior we have for units.
+
 1.10.0-dev.151 | 2024-02-26 12:16:17 +0100
 
   * Fix stray Python escape sequence. (Benjamin Bannier, Corelight)

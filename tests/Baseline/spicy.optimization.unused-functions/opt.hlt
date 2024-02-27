@@ -60,6 +60,9 @@ const bool __feat%foo@@F%supports_filters = False;
 const bool __feat%foo@@F%supports_sinks = False;
 const bool __feat%foo@@F%synchronization = False;
 
+public function void f2() {
+}
+
 init function void __register_foo_A() {
 }
 

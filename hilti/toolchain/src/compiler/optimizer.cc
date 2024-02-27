@@ -2,7 +2,6 @@
 
 #include "hilti/compiler/optimizer.h"
 
-#include <algorithm>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -12,6 +11,7 @@
 
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/default.h>
+#include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/visitor.h>
@@ -274,7 +274,10 @@ struct FunctionVisitor : OptimizerVisitor, visitor::PreOrder<bool, FunctionVisit
                 // If the function declaration is marked `&always-emit` mark it as referenced.
                 bool is_always_emit = AttributeSet::find(fn.attributes(), "&always-emit").has_value();
 
-                if ( is_always_emit )
+                // If the function is public mark is as referenced.
+                bool is_public = x.linkage() == declaration::Linkage::Public;
+
+                if ( is_always_emit || is_public )
                     function.referenced = true;
 
                 // For implementation of methods check whether the method
