@@ -285,10 +285,11 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 _driver_options.output_cxx_prefix = optarg;
                 _driver_options.execute_code = false;
                 _driver_options.include_linker = true;
-                _compiler_options.cxx_namespace_extern =
-                    hilti::util::fmt("hlt_%s", hilti::rt::filesystem::path(optarg).stem().string());
-                _compiler_options.cxx_namespace_intern =
-                    hilti::util::fmt("__hlt_%s", hilti::rt::filesystem::path(optarg).stem().string());
+
+                if ( auto s = hilti::rt::filesystem::path(optarg).stem().string(); ! s.empty() ) {
+                    _compiler_options.cxx_namespace_extern = hilti::util::fmt("hlt_%s", s);
+                    _compiler_options.cxx_namespace_intern = hilti::util::fmt("__hlt_%s", s);
+                }
 
                 ++num_output_types;
                 break;
