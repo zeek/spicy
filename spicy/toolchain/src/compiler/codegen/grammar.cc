@@ -123,7 +123,11 @@ void Grammar::_simplify() {
         changed = false;
         auto closure = _computeClosure(root());
 
-        for ( const auto& p : hilti::util::setDifference(hilti::util::mapValues(_prods), closure) ) {
+        production::Set values;
+        for ( const auto& i : _prods )
+            values.insert(i.second);
+
+        for ( const auto& p : hilti::util::setDifference(values, closure) ) {
             _prods.erase(p->symbol());
             _nterms.erase(std::remove(_nterms.begin(), _nterms.end(), p->symbol()), _nterms.end());
             changed = true;
@@ -131,8 +135,8 @@ void Grammar::_simplify() {
     }
 }
 
-std::set<Production*> Grammar::_computeClosure(Production* p) {
-    std::function<void(std::set<Production*>&, Production*)> closure = [&](auto& c, const auto& p) -> void {
+production::Set Grammar::_computeClosure(Production* p) {
+    std::function<void(production::Set&, Production*)> closure = [&](auto& c, const auto& p) -> void {
         if ( auto r = p->template tryAs<production::Deferred>() ) {
             assert(r->resolved());
             closure(c, r->resolved());
@@ -152,7 +156,7 @@ std::set<Production*> Grammar::_computeClosure(Production* p) {
                 closure(c, rhs);
     };
 
-    std::set<Production*> c;
+    production::Set c;
     closure(c, p->as<Production>());
     return c;
 }
@@ -340,8 +344,7 @@ hilti::Result<hilti::Nothing> Grammar::_check() {
     return hilti::Nothing();
 }
 
-hilti::Result<std::set<Production*>> Grammar::lookAheadsForProduction(const Production* p,
-                                                                      const Production* parent) const {
+hilti::Result<production::Set> Grammar::lookAheadsForProduction(const Production* p, const Production* parent) const {
     if ( auto x = p->tryAs<production::Deferred>() )
         p = resolved(x);
 
@@ -355,7 +358,7 @@ hilti::Result<std::set<Production*>> Grammar::lookAheadsForProduction(const Prod
             laheads = hilti::util::setUnion(laheads, {term});
     }
 
-    std::set<Production*> result;
+    production::Set result;
 
     for ( const auto& s : laheads ) {
         auto p = _prods.find(s);

@@ -62,7 +62,7 @@ public:
      * Sets the look-aheads for the two alternatives. This function is called
      * from a `Grammar` when the production is added to it.
      */
-    void setLookAheads(std::pair<std::set<Production*>, std::set<Production*>>&& lahs) { _lahs = std::move(lahs); }
+    void setLookAheads(std::pair<production::Set, production::Set>&& lahs) { _lahs = std::move(lahs); }
 
     SPICY_PRODUCTION
 
@@ -71,7 +71,7 @@ private:
 
     look_ahead::Default _default;
 
-    std::pair<std::set<Production*>, std::set<Production*>> _lahs;
+    std::pair<production::Set, production::Set> _lahs;
 };
 
 } // namespace spicy::detail::codegen::production

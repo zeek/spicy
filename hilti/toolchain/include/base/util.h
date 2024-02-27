@@ -87,8 +87,8 @@ using hilti::rt::transform; // NOLINT(misc-unused-using-decls)
 
 /** Applies a function to each element of a set, returning a vector with the results. */
 template<typename X, typename F>
-auto transformToVector(const std::set<X>& x, F f) {
-    using Y = typename std::invoke_result_t<F, X&>;
+auto transformToVector(const X& x, F f) {
+    using Y = typename std::invoke_result_t<F, typename X::value_type&>;
     std::vector<Y> y;
     y.reserve(x.size());
     for ( const auto& i : x )
@@ -457,50 +457,6 @@ std::vector<std::pair<A, B>> zip2(const std::vector<A>& lhs, const std::vector<B
           iter.first != lhs.end() and iter.second != rhs.end(); ++iter.first, ++iter.second )
         result.emplace_back(*iter.first, *iter.second);
     return result;
-}
-
-/** Returns the keys of a map as a set. */
-template<typename A, typename B>
-std::set<A> mapKeys(const std::map<A, B>& m) {
-    std::set<A> l;
-
-    for ( const auto& i : m )
-        l.insert(i.first);
-
-    return l;
-}
-
-/** Returns the values of a map as a set. */
-template<typename A, typename B>
-std::set<B> mapValues(const std::map<A, B>& m) {
-    std::set<B> l;
-
-    for ( const auto& i : m )
-        l.insert(i.second);
-
-    return l;
-}
-
-/** Returns the keys of a map as a set. */
-template<typename A, typename B>
-std::set<A> mapKeys(const std::unordered_map<A, B>& m) {
-    std::set<A> l;
-
-    for ( const auto& i : m )
-        l.insert(i.first);
-
-    return l;
-}
-
-/** Returns the values of a map as a set. */
-template<typename A, typename B>
-std::set<B> mapValues(const std::unordered_map<A, B>& m) {
-    std::set<B> l;
-
-    for ( const auto& i : m )
-        l.insert(i.second);
-
-    return l;
 }
 
 /** Returns the difference of two sets. This is a convenience wrapper around std::setDifference. */

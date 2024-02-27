@@ -6,7 +6,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 
-static std::string _fmtAlt(const codegen::Production* alt, const std::set<codegen::Production*>& lahs) {
+static std::string _fmtAlt(const codegen::Production* alt, const spicy::detail::codegen::production::Set& lahs) {
     auto fmt = [&](const auto& lah) {
         auto str = hilti::util::trim(to_string(*lah));
 

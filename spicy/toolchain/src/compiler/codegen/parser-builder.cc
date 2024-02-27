@@ -956,7 +956,7 @@ struct ProductionVisitor : public production::Visitor {
         getLookAhead(productions, lp.symbol(), lp.location());
     }
 
-    void getLookAhead(const std::set<Production*>& tokens, const std::string& symbol, const Location& location,
+    void getLookAhead(const production::Set& tokens, const std::string& symbol, const Location& location,
                       LiteralMode mode = LiteralMode::Try) {
         assert(mode != LiteralMode::Default);
 

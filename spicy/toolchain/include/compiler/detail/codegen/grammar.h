@@ -103,8 +103,7 @@ public:
      * non-terminal led to the set being ambiguous. Note that the set may
      * contain terminals that are not literals.
      */
-    hilti::Result<std::set<Production*>> lookAheadsForProduction(const Production* p,
-                                                                 const Production* parent = {}) const;
+    hilti::Result<production::Set> lookAheadsForProduction(const Production* p, const Production* parent = {}) const;
 
     /** Returns true if the grammar needs look-ahead for parsing.
      *
@@ -124,7 +123,7 @@ private:
     void _simplify();
     hilti::Result<hilti::Nothing> _computeTables();
     hilti::Result<hilti::Nothing> _check();
-    std::set<Production*> _computeClosure(Production* p);
+    production::Set _computeClosure(Production* p);
     bool _add(std::map<std::string, std::set<std::string>>* tbl, Production* dst, const std::set<std::string>& src,
               bool changed);
     bool _isNullable(const Production* p) const;

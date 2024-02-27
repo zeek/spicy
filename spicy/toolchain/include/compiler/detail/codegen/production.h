@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -295,6 +296,13 @@ private:
 };
 
 namespace production {
+
+struct CompareProductions {
+    bool operator()(const Production* s1, const Production* s2) const { return s1->symbol() < s2->symbol(); };
+};
+
+using Set = std::set<Production*, CompareProductions>;
+
 /**
  * Returns if inside a list of production list, at least one is nullable.
  * Also returns true if the list of lists is empty to begin with.
