@@ -21,6 +21,13 @@ std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> hilti::scope::detail::loo
     if ( resolved.size() == 1 ) {
         auto& r = resolved.front();
         auto& d = r.node;
+
+        if ( ! d ) {
+            // Explicit stop-lookup-here marker.
+            auto err = result::Error(util::fmt("unknown ID '%s'", id));
+            return std::make_pair(true, std::move(err));
+        }
+
         if ( d->isA<declaration::Module>() || d->isA<declaration::ImportedModule>() ) {
             auto err = result::Error(util::fmt("cannot use module '%s' as an ID", id));
             return std::make_pair(true, std::move(err));
