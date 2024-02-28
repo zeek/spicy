@@ -14,6 +14,8 @@
 #include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/validator.h>
 
+#include "ast/type.h"
+
 using namespace spicy;
 using hilti::util::fmt;
 
@@ -800,7 +802,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             for ( const auto& i : c->items() ) {
                 if ( auto f = i->tryAs<spicy::type::unit::item::Field>() ) {
                     for ( const auto& x : seen_fields ) {
-                        if ( f->id() == x->id() && (! hilti::type::same(f->itemType(), x->itemType())) ) {
+                        if ( f->id() == x->id() &&
+                             (! hilti::type::sameExceptForConstness(f->itemType(), x->itemType())) ) {
                             error(fmt("field '%s' defined multiple times with different types", f->id()), n);
                             break;
                         }
