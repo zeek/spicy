@@ -1,0 +1,25 @@
+# @TEST-EXEC: spicyc -p %INPUT >/dev/null
+#
+# @TEST-DOC: Check than when an imported module uses a named type in &convert, it is resolved inside the imported module's scope.
+
+module LDAP;
+
+import ASN1;
+
+public type Message = unit {
+  : ASN1::ASN1Message() {
+      $$.type_;
+    }
+};
+
+@TEST-START-FILE asn1.spicy
+module ASN1;
+
+type ASN1Type = enum { Boolean = 1 };
+
+public type ASN1Message = unit() {
+  : bitfield(8) {
+    type_: 0..4 &convert=ASN1Type($$);
+  };
+};
+@TEST-END-FILE

@@ -113,7 +113,7 @@
 [debug/ast-final]           - statement::Block [parent @f:XXX] (coercion.hlt:20:27-22:1) [@s:XXX]
 [debug/ast-final]             - statement::Return [parent @s:XXX] (coercion.hlt:21:5-21:13) [@s:XXX]
 [debug/ast-final]               - expression::Coerced [parent @s:XXX] (coercion.hlt:21:12-21:12)  (non-const)  (resolved) [@e:XXX]
-[debug/ast-final]                 - expression::Name <id="C" resolved-declaration="D1" resolved-unified="stream"> [parent @e:XXX] (coercion.hlt:21:12-21:12)  (non-const)  (resolved) [@e:XXX]
+[debug/ast-final]                 - expression::Name <fqid="" id="C" resolved-declaration="D1" resolved-unified="stream"> [parent @e:XXX] (coercion.hlt:21:12-21:12)  (non-const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - QualifiedType <const="false" side="rhs"> [parent @e:XXX] (coercion.hlt:20:10-20:21) [@q:XXX]
 [debug/ast-final]                   - type::stream::View <declaration="-" type="-" unified="view::stream" wildcard="false"> [parent @q:XXX] (coercion.hlt:20:15-20:20) (resolved) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (coercion.hlt:20:15-20:20) [@q:XXX]

@@ -54,7 +54,9 @@ void expression::Name::setResolvedDeclarationIndex(ASTContext* ctx, ast::Declara
 }
 
 node::Properties expression::Name::properties() const {
-    auto p = node::Properties{{"id", _id}, {"resolved-declaration", to_string(_resolved_declaration_index)}};
+    auto p = node::Properties{{"id", _id},
+                              {"fqid", _fqid},
+                              {"resolved-declaration", to_string(_resolved_declaration_index)}};
 
     if ( auto t = type() )
         p["resolved-unified"] = t->type()->unification().str();

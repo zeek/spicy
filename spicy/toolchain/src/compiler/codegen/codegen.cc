@@ -380,20 +380,18 @@ struct VisitorPass3 : public visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::expression::Name* n) final {
-        // Re-resolve IDs (except function calls) during subsequent HILTI pass.
-        if ( ! n->parent()->isA<hilti::operator_::function::Call>() ) {
-            recordChange(n, "reverted to unresolved");
-            n->clearResolvedDeclarationIndex(context());
+        if ( auto d = n->resolvedDeclaration() ) {
+            // We need to re-resolve IDs (except function calls) during
+            // subsequent HILTI pass, so we clear out the current resolution.
+            // Because these IDs may now reside in a different context than
+            // originally, we record their fully qualified name for subsequent
+            // resolutions.
+            if ( ! n->parent()->isA<hilti::operator_::function::Call>() ) {
+                recordChange(n, "reverted to unresolved");
+                n->setFullyQualifiedID(d->fullyQualifiedID());
+                n->clearResolvedDeclarationIndex(context());
+            }
         }
-    }
-
-    void operator()(hilti::expression::ResolvedOperator* n) final {
-        // Re-resolve operators.
-        Expressions operands = n->operands();
-        replaceNode(n,
-                    hilti::expression::UnresolvedOperator::create(context(), n->operator_().kind(), operands,
-                                                                  n->meta()),
-                    "reverted to unresolved");
     }
 };
 

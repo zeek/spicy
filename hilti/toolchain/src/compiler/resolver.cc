@@ -1184,7 +1184,13 @@ struct Resolver : visitor::MutatingPostOrder {
 
     void operator()(expression::Name* n) final {
         if ( ! n->resolvedDeclarationIndex() ) {
-            auto resolved = scope::lookupID<Declaration>(n->id(), n, "declaration");
+            // If the expression has received a fully qualified ID, we look
+            // that up, otherwise the original ID.
+            auto id = n->fullyQualifiedID();
+            if ( ! id )
+                id = n->id();
+
+            auto resolved = scope::lookupID<Declaration>(id, n, "declaration");
             if ( resolved ) {
                 auto index = context()->register_(resolved->first);
                 n->setResolvedDeclarationIndex(context(), index);
