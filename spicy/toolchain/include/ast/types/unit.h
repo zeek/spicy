@@ -60,6 +60,22 @@ public:
     unit::item::Properties propertyItems(const std::string& name) const;
 
     /**
+     * Helper to resolve IDs referencing a bit range inside an anonymous
+     * bitfield.
+     *
+     * If there are multiple matches, the first one found is returned.
+     *
+     * @param id name of the bit range to find inside any of the unit's
+     * anonymous bitfields
+
+     * @return if successful, a pair of the anonymous field holding the
+     * bitfield, and the bitrange within it named *id*; if not successful, a
+     * pair of null pointers
+     */
+    std::pair<unit::item::FieldPtr, std::shared_ptr<hilti::type::bitfield::BitRange>> findRangeInAnonymousBitField(
+        const ID& id) const;
+
+    /**
      * Returns true if the unit has been declared as publically/externally
      * accessible.
      */

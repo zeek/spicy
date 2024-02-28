@@ -1,6 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/expressions/type.h>
+#include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/reference.h>
 
 #include <spicy/ast/types/unit-items/property.h>
@@ -86,6 +87,36 @@ unit::ItemPtr Unit::itemByName(const ID& id) const {
     }
 
     return {};
+}
+
+static std::pair<unit::item::FieldPtr, std::shared_ptr<hilti::type::bitfield::BitRange>> findRangeInAnonymousBitField(
+    const hilti::node::Set<type::unit::Item>& items, const ID& id) {
+    for ( const auto& item : items ) {
+        if ( auto field = item->tryAs<type::unit::item::Field>() ) {
+            if ( ! field->isAnonymous() )
+                continue;
+
+            auto t = field->itemType()->type()->tryAs<hilti::type::Bitfield>();
+            if ( ! t )
+                continue;
+
+            if ( auto bits = t->bits(id) )
+                return std::make_pair(field, bits);
+        }
+        else if ( auto field = item->tryAs<type::unit::item::Switch>() ) {
+            for ( const auto& c : field->cases() ) {
+                if ( auto result = findRangeInAnonymousBitField(c->items(), id); result.first )
+                    return result;
+            }
+        }
+    }
+
+    return {};
+}
+
+std::pair<unit::item::FieldPtr, std::shared_ptr<hilti::type::bitfield::BitRange>> Unit::findRangeInAnonymousBitField(
+    const ID& id) const {
+    return ::findRangeInAnonymousBitField(items(), id);
 }
 
 namespace {

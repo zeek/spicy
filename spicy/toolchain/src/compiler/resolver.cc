@@ -114,31 +114,6 @@ struct Resolver : visitor::MutatingPostOrder {
             return nt;
     }
 
-    // Helper returning the field name containing a given item of an anonymous bitfield.
-    ID findBitsFieldID(const hilti::node::Set<type::unit::Item>& items, const ID& id) const {
-        for ( const auto& item : items ) {
-            if ( auto field = item->tryAs<type::unit::item::Field>() ) {
-                if ( ! field->isAnonymous() )
-                    continue;
-
-                auto t = field->itemType()->type()->tryAs<hilti::type::Bitfield>();
-                if ( ! t )
-                    continue;
-
-                if ( auto bits = t->bits(id) )
-                    return field->id();
-            }
-            else if ( auto field = item->tryAs<type::unit::item::Switch>() ) {
-                for ( const auto& c : field->cases() ) {
-                    if ( auto id_ = findBitsFieldID(c->items(), id) )
-                        return id_;
-                }
-            }
-        }
-
-        return {};
-    }
-
     void operator()(hilti::Attribute* n) final {
         if ( n->tag() == "&size" || n->tag() == "&max-size" ) {
             if ( ! n->hasValue() )
@@ -381,11 +356,11 @@ struct Resolver : visitor::MutatingPostOrder {
             // See if we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
-            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
+            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
                 auto has_member = hilti::operator_::registry().byName("unit::HasMember");
                 assert(has_member);
                 auto has_field =
-                    has_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field_id)}, n->meta());
+                    has_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())}, n->meta());
                 replaceNode(n, *has_field);
             }
         }
@@ -399,12 +374,13 @@ struct Resolver : visitor::MutatingPostOrder {
             // See if we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
-            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
+            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
                 auto unit_member = hilti::operator_::registry().byName("unit::MemberConst");
                 auto bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(unit_member && bitfield_member);
                 auto access_field =
-                    unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field_id)}, n->meta());
+                    unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())},
+                                             n->meta());
                 auto access_bits =
                     bitfield_member->instantiate(builder(), {std::move(*access_field), n->op1()}, n->meta());
                 replaceNode(n, *access_bits);
@@ -420,12 +396,13 @@ struct Resolver : visitor::MutatingPostOrder {
             // See if we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
-            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
+            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
                 auto unit_member = hilti::operator_::registry().byName("unit::MemberNonConst");
                 auto bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(unit_member && bitfield_member);
                 auto access_field =
-                    unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field_id)}, n->meta());
+                    unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())},
+                                             n->meta());
                 auto access_bits =
                     bitfield_member->instantiate(builder(), {std::move(*access_field), n->op1()}, n->meta());
                 replaceNode(n, *access_bits);
@@ -441,13 +418,13 @@ struct Resolver : visitor::MutatingPostOrder {
             // See if we we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently to refer to the
             // member through the field's internal name.
-            if ( auto field_id = findBitsFieldID(unit->items(), id) ) {
+            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
                 auto try_member = hilti::operator_::registry().byName("unit::TryMember");
                 auto bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(try_member && bitfield_member);
 
                 auto try_field =
-                    try_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field_id)}, n->meta());
+                    try_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())}, n->meta());
                 auto access_bits =
                     bitfield_member->instantiate(builder(), {std::move(*try_field), n->op1()}, n->meta());
                 replaceNode(n, *access_bits);

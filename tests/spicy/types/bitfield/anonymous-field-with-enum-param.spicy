@@ -1,0 +1,29 @@
+# @TEST-EXEC:  printf '\001' | spicy-driver %INPUT >output
+# @TEST-EXEC:  btest-diff output
+#
+# @TEST-DOC: Somewhat complex use case of anonymous bitfield that stresses the resolver.
+
+module Test;
+
+public type ASN1Type = enum {
+  Boolean = 1,
+};
+
+type ASN1Tag = unit {
+ : bitfield(8) {
+    type_: 0..4 &convert=ASN1Type($$);
+  };
+};
+
+type ASN1String = unit(tag: ASN1Tag) {
+  on %init {
+    switch ( tag.type_ ) {
+      case ASN1Type::Boolean: { print "Boolean!"; }
+    }
+  }
+};
+
+public type Foo = unit {
+  x: ASN1Tag;
+  y: ASN1String(self.x);
+};

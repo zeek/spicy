@@ -61,11 +61,15 @@ void checkName(hilti::expression::ResolvedOperator* op) {
 
 
 QualifiedTypePtr itemType(hilti::Builder* builder, const Expressions& operands) {
-    if ( auto item = operands[0]->type()->type()->as<type::Unit>()->itemByName(
-             operands[1]->as<hilti::expression::Member>()->id()) )
+    auto unit = operands[0]->type()->type()->as<type::Unit>();
+    auto id = operands[1]->as<hilti::expression::Member>()->id();
+
+    if ( auto item = unit->itemByName(id) )
         return item->itemType();
+    else if ( auto bitrange = unit->findRangeInAnonymousBitField(id).second )
+        return bitrange->itemType();
     else
-        return builder->qualifiedType(builder->typeUnknown(), hilti::Constness::Const);
+        return builder->qualifiedType(builder->typeAuto(), hilti::Constness::Const);
 }
 
 QualifiedTypePtr contextResult(hilti::Builder* builder, const Expressions& operands) {
