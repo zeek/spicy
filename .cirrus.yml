@@ -339,8 +339,6 @@ docker_centos_stream_8_task:
     type: application/gzip
 
 docker_debian10_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
   container:
     dockerfile: docker/Dockerfile.debian-10
     cpu: 4
