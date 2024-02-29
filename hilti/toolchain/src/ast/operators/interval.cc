@@ -14,7 +14,7 @@ namespace interval {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -31,7 +31,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal)
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -48,7 +48,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal)
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -65,7 +65,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum);
 class Difference : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -82,7 +82,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Difference);
 class Greater : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -99,7 +99,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Greater);
 class GreaterEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -116,7 +116,7 @@ HILTI_OPERATOR_IMPLEMENTATION(GreaterEqual);
 class Lower : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -133,7 +133,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Lower);
 class LowerEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeInterval()},
@@ -150,7 +150,7 @@ HILTI_OPERATOR_IMPLEMENTATION(LowerEqual);
 class MultipleUnsignedInteger : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Multiple,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
@@ -167,7 +167,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MultipleUnsignedInteger);
 class MultipleReal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Multiple,
             .op0 = {parameter::Kind::In, builder->typeInterval()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
@@ -184,7 +184,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MultipleReal);
 class CtorSignedIntegerNs : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "interval_ns",
             .param0 =
@@ -204,7 +204,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorSignedIntegerNs);
 class CtorSignedIntegerSecs : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "interval",
             .param0 =
@@ -224,7 +224,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorSignedIntegerSecs);
 class CtorUnsignedIntegerNs : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "interval_ns",
             .param0 =
@@ -244,7 +244,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorUnsignedIntegerNs);
 class CtorUnsignedIntegerSecs : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "interval",
             .param0 =
@@ -264,7 +264,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorUnsignedIntegerSecs);
 class CtorRealSecs : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "interval",
             .param0 =
@@ -284,7 +284,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorRealSecs);
 class Seconds : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeInterval()},
             .member = "seconds",
@@ -303,7 +303,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Seconds);
 class Nanoseconds : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeInterval()},
             .member = "nanoseconds",

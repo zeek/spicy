@@ -16,7 +16,7 @@ namespace enum_ {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
@@ -38,7 +38,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
@@ -60,7 +60,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class CastToSignedInteger : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -84,7 +84,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToSignedInteger);
 class CastToUnsignedInteger : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -109,7 +109,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToUnsignedInteger);
 class CtorSigned : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .self = {parameter::Kind::In, builder->ctorType(builder->typeEnum(type::Wildcard()))},
             .param0 =
@@ -137,7 +137,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorSigned);
 class CtorUnsigned : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .self = {parameter::Kind::In, builder->ctorType(builder->typeEnum(type::Wildcard()))},
             .param0 =
@@ -167,7 +167,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorUnsigned);
 class HasLabel : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
             .member = "has_label",

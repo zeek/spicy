@@ -18,7 +18,7 @@ namespace iterator {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .result = {Constness::Const, builder->typeUnsignedInteger(8)},
@@ -33,7 +33,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class IncrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
             .result = {Constness::Mutable, builder->typeBytesIterator()},
@@ -48,7 +48,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
 class IncrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
             .result = {Constness::Mutable, builder->typeBytesIterator()},
@@ -63,7 +63,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
@@ -82,7 +82,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
@@ -100,7 +100,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Lower : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
@@ -118,7 +118,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Lower);
 class LowerEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
@@ -136,7 +136,7 @@ HILTI_OPERATOR_IMPLEMENTATION(LowerEqual);
 class Greater : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
@@ -154,7 +154,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Greater);
 class GreaterEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
@@ -172,7 +172,7 @@ HILTI_OPERATOR_IMPLEMENTATION(GreaterEqual);
 class Difference : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
@@ -193,7 +193,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Difference);
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
@@ -209,7 +209,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum)
 class SumAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
@@ -227,7 +227,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssign)
 class Size : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -242,7 +242,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Size);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -258,7 +258,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -274,7 +274,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Greater : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -290,7 +290,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Greater);
 class GreaterEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -306,7 +306,7 @@ HILTI_OPERATOR_IMPLEMENTATION(GreaterEqual);
 class In : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -322,7 +322,7 @@ HILTI_OPERATOR_IMPLEMENTATION(In);
 class Lower : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -338,7 +338,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Lower);
 class LowerEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -354,7 +354,7 @@ HILTI_OPERATOR_IMPLEMENTATION(LowerEqual);
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -370,7 +370,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum);
 class SumAssignBytes : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -386,7 +386,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssignBytes);
 class SumAssignStreamView : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
@@ -402,7 +402,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssignStreamView);
 class SumAssignUInt8 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(8)},
@@ -418,20 +418,20 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssignUInt8);
 class Find : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {.kind = Kind::MemberCall,
-                .self = {parameter::Kind::In, builder->typeBytes()},
-                .member = "find",
-                .param0 =
-                    {
-                        .name = "needle",
-                        .type = {parameter::Kind::In, builder->typeBytes()},
-                    },
-                .result = {Constness::Const,
-                           builder->typeTuple(
-                               {builder->qualifiedType(builder->typeBool(), Constness::Const),
-                                builder->qualifiedType(builder->typeBytesIterator(), Constness::Const)})},
-                .ns = "bytes",
-                .doc = R"(
+        return Signature{.kind = Kind::MemberCall,
+                         .self = {parameter::Kind::In, builder->typeBytes()},
+                         .member = "find",
+                         .param0 =
+                             {
+                                 .name = "needle",
+                                 .type = {parameter::Kind::In, builder->typeBytes()},
+                             },
+                         .result = {Constness::Const,
+                                    builder->typeTuple(
+                                        {builder->qualifiedType(builder->typeBool(), Constness::Const),
+                                         builder->qualifiedType(builder->typeBytesIterator(), Constness::Const)})},
+                         .ns = "bytes",
+                         .doc = R"(
 Searches *needle* in the value's content. Returns a tuple of a boolean and an
 iterator. If *needle* was found, the boolean will be true and the iterator will
 point to its first occurrence. If *needle* was not found, the boolean will be
@@ -449,7 +449,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Find);
 class LowerCase : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "lower",
@@ -483,7 +483,7 @@ HILTI_OPERATOR_IMPLEMENTATION(LowerCase);
 class UpperCase : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "upper",
@@ -517,7 +517,7 @@ HILTI_OPERATOR_IMPLEMENTATION(UpperCase);
 class At : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "at",
@@ -541,7 +541,7 @@ HILTI_OPERATOR_IMPLEMENTATION(At);
 class Split : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "split",
@@ -571,7 +571,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Split);
 class Split1 : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "split1",
@@ -602,7 +602,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Split1);
 class StartsWith : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "starts_with",
@@ -626,7 +626,7 @@ HILTI_OPERATOR_IMPLEMENTATION(StartsWith);
 class Strip : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "strip",
@@ -660,7 +660,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Strip);
 class SubIterators : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "sub",
@@ -689,7 +689,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SubIterators);
 class SubIterator : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "sub",
@@ -713,7 +713,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SubIterator);
 class SubOffsets : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "sub",
@@ -742,7 +742,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SubOffsets);
 class Join : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "join",
@@ -769,7 +769,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Join);
 class ToIntAscii : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "to_int",
@@ -797,7 +797,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ToIntAscii);
 class ToUIntAscii : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "to_uint",
@@ -825,7 +825,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ToUIntAscii);
 class ToIntBinary : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "to_int",
@@ -851,7 +851,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ToIntBinary);
 class ToUIntBinary : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "to_uint",
@@ -877,7 +877,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ToUIntBinary);
 class ToTimeAscii : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "to_time",
@@ -905,7 +905,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ToTimeAscii);
 class ToTimeBinary : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "to_time",
@@ -932,7 +932,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ToTimeBinary);
 class Decode : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "decode",
@@ -967,7 +967,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Decode);
 class Match : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeBytes()},
             .member = "match",

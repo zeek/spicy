@@ -27,7 +27,7 @@ operator_::Signature hilti::struct_::MemberCall::signature(Builder* builder) con
     auto params = type::OperandList::fromParameters(builder->context(), ftype->parameters());
     auto result = ftype->result();
 
-    return {
+    return Signature{
         .kind = Kind::MemberCall,
         .self = {parameter::Kind::InOut, nullptr, "", stype},
         .op1 = {parameter::Kind::In, builder->typeMember(ID(fdecl->id()))},
@@ -94,7 +94,7 @@ void _checkName(expression::ResolvedOperator* op, bool check_optional = false) {
 class Unset : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unset,
             .op0 = {parameter::Kind::InOut, builder->typeStruct(type::Wildcard()), "<struct>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
@@ -115,7 +115,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unset);
 class MemberNonConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Member,
             .op0 = {parameter::Kind::InOut, builder->typeStruct(type::Wildcard()), "<struct>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
@@ -142,7 +142,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MemberNonConst);
 class MemberConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Member,
             .priority = Priority::Low, // prefer the non-const version
             .op0 = {parameter::Kind::In, builder->typeStruct(type::Wildcard()), "<struct>"},
@@ -170,7 +170,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MemberConst);
 class TryMember : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::TryMember,
             .op0 = {parameter::Kind::InOut, builder->typeStruct(type::Wildcard()), "<struct>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
@@ -200,7 +200,7 @@ HILTI_OPERATOR_IMPLEMENTATION(TryMember);
 class HasMember : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::HasMember,
             .op0 = {parameter::Kind::In, builder->typeStruct(type::Wildcard()), "<struct>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},

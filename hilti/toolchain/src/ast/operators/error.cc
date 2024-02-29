@@ -12,7 +12,7 @@ namespace error {
 class Ctor : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "error",
             .param0 =
@@ -33,7 +33,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Ctor);
 class Description : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeError()},
             .member = "description",

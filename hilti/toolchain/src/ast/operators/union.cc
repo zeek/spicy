@@ -33,7 +33,7 @@ void checkName(expression::ResolvedOperator* op) {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
@@ -55,7 +55,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
@@ -77,7 +77,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class MemberConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Member,
             .priority = Priority::Low, // prefer the non-const version
             .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard()), "<union>"},
@@ -105,7 +105,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MemberConst);
 class MemberNonConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Member,
             .op0 = {parameter::Kind::InOut, builder->typeUnion(type::Wildcard()), "<union>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
@@ -131,7 +131,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MemberNonConst);
 class HasMember : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::HasMember,
             .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard()), "<union>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},

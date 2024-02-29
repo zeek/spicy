@@ -17,7 +17,7 @@ public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
 
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {hilti::parameter::Kind::In, builder.typeSink()},
             .result = {hilti::Constness::Const, builder.typeUnsignedInteger(64)},
@@ -37,7 +37,7 @@ class SizeReference : public hilti::Operator {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {hilti::parameter::Kind::In,
                     builder.typeStrongReference(builder.qualifiedType(builder.typeSink(), hilti::Constness::Const))},
@@ -58,7 +58,7 @@ class Close : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "close",
@@ -83,7 +83,7 @@ class Connect : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "connect",
@@ -114,7 +114,7 @@ class ConnectMIMETypeString : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "connect_mime_type",
@@ -142,7 +142,7 @@ class ConnectMIMETypeBytes : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "connect_mime_type",
@@ -170,7 +170,7 @@ class ConnectFilter : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "connect_filter",
@@ -207,7 +207,7 @@ class Gap : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "gap",
@@ -238,7 +238,7 @@ class SequenceNumber : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeSink()},
             .member = "sequence_number",
@@ -260,7 +260,7 @@ class SetAutoTrim : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "set_auto_trim",
@@ -287,7 +287,7 @@ class SetInitialSequenceNumber : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "set_initial_sequence_number",
@@ -314,7 +314,7 @@ class SetPolicy : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "set_policy",
@@ -343,7 +343,7 @@ class Skip : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "skip",
@@ -373,7 +373,7 @@ class Trim : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "trim",
@@ -405,7 +405,7 @@ class Write : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeSink()},
             .member = "write",

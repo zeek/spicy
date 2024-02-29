@@ -13,7 +13,7 @@ namespace network {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeNetwork()},
             .op1 = {parameter::Kind::In, builder->typeNetwork()},
@@ -30,7 +30,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal)
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeNetwork()},
             .op1 = {parameter::Kind::In, builder->typeNetwork()},
@@ -47,7 +47,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal)
 class In : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeAddress()},
             .op1 = {parameter::Kind::In, builder->typeNetwork()},
@@ -64,7 +64,7 @@ HILTI_OPERATOR_IMPLEMENTATION(In)
 class Family : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeNetwork()},
             .member = "family",
@@ -83,7 +83,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Family);
 class Prefix : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeNetwork()},
             .member = "prefix",
@@ -102,7 +102,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Prefix);
 class Length : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeNetwork()},
             .member = "length",

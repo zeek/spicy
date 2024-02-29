@@ -16,7 +16,7 @@ namespace real {
 class SignNeg : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SignNeg,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .result = {Constness::Const, builder->typeReal()},
@@ -31,7 +31,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SignNeg);
 class Difference : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Difference,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -49,7 +49,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Difference);
 class DifferenceAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::DifferenceAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
@@ -66,7 +66,7 @@ HILTI_OPERATOR_IMPLEMENTATION(DifferenceAssign);
 class Division : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Division,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -83,7 +83,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Division);
 class DivisionAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::DivisionAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
@@ -100,7 +100,7 @@ HILTI_OPERATOR_IMPLEMENTATION(DivisionAssign);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -117,7 +117,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Greater : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Greater,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -134,7 +134,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Greater);
 class GreaterEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::GreaterEqual,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -151,7 +151,7 @@ HILTI_OPERATOR_IMPLEMENTATION(GreaterEqual);
 class Lower : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Lower,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -168,7 +168,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Lower);
 class LowerEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::LowerEqual,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -185,7 +185,7 @@ HILTI_OPERATOR_IMPLEMENTATION(LowerEqual);
 class Modulo : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Modulo,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -203,7 +203,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Modulo);
 class Multiple : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Multiple,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -221,7 +221,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Multiple);
 class MultipleAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MultipleAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
@@ -238,7 +238,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MultipleAssign);
 class Power : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Power,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -256,7 +256,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Power);
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -273,7 +273,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum);
 class SumAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In, builder->typeReal()},
@@ -290,7 +290,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssign);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .priority = Priority::Low, // avoid ambiguities with integer::Equal
             .op0 = {parameter::Kind::In, builder->typeReal()},
@@ -308,7 +308,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class CastToUnsignedInteger : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In,
@@ -332,7 +332,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToUnsignedInteger);
 class CastToSignedInteger : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In,
@@ -356,7 +356,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToSignedInteger);
 class CastToTime : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In,
@@ -374,7 +374,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToTime);
 class CastToInterval : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeReal()},
             .op1 = {parameter::Kind::In,

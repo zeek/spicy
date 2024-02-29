@@ -14,7 +14,7 @@ namespace port {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typePort()},
             .op1 = {parameter::Kind::In, builder->typePort()},
@@ -31,7 +31,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal)
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typePort()},
             .op1 = {parameter::Kind::In, builder->typePort()},
@@ -48,7 +48,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal)
 class Ctor : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "port",
             .param0 = {.name = "port", .type = {parameter::Kind::In, builder->typeUnsignedInteger(16)}},
@@ -65,7 +65,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Ctor)
 class Protocol : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typePort()},
             .member = "protocol",

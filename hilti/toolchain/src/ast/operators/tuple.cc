@@ -17,7 +17,7 @@ namespace tuple {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
@@ -39,7 +39,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
@@ -61,7 +61,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Index : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Index,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
@@ -108,7 +108,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Index);
 class Member : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Member,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<id>"},
@@ -154,7 +154,7 @@ public:
     // The operator gets instantiated only through the normalizer, but the
     // signature is used for documentation.
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::CustomAssign,
             .op0 = {parameter::Kind::InOut, builder->typeMember(type::Wildcard()), "(x,...,y)"},
             .op1 = {parameter::Kind::InOut, builder->typeTuple(type::Wildcard())},

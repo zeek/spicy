@@ -30,7 +30,7 @@ CastedCoercion::~CastedCoercion() {}
 HILTI_OPERATOR_IMPLEMENTATION(CastedCoercion);
 
 operator_::Signature CastedCoercion::signature(Builder* builder) const {
-    return {
+    return Signature{
         .kind = Kind::Cast,
         .op0 = {parameter::Kind::In, builder->typeAny(), "<dynamic - no doc>"},
         .op1 = {parameter::Kind::In, builder->typeAny(), "<dynamic - no doc>"},
@@ -59,7 +59,7 @@ namespace generic {
 class Pack : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Pack,
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .result = {Constness::Mutable, builder->typeBytes()},
@@ -122,7 +122,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Pack);
 class Unpack : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unpack,
             .op0 = {parameter::Kind::In, builder->typeType(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
@@ -222,7 +222,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unpack);
 class Begin : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Begin,
             .op0 = {parameter::Kind::In, builder->typeAny(), "<container>"},
             .result_doc = "<iterator>",
@@ -250,7 +250,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Begin);
 class End : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::End,
             .op0 = {parameter::Kind::In, builder->typeAny(), "<container>"},
             .result_doc = "<iterator>",
@@ -278,7 +278,7 @@ HILTI_OPERATOR_IMPLEMENTATION(End);
 class New : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::New,
             .op0 = {parameter::Kind::In, builder->typeAny(), "<any>"},
             .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},

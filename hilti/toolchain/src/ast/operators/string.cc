@@ -11,7 +11,7 @@ namespace string {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
@@ -28,7 +28,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
@@ -45,7 +45,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Size : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -61,7 +61,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Size);
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
@@ -78,7 +78,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum);
 class SumAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::In, builder->typeString()},
             .op1 = {parameter::Kind::In, builder->typeString()},
@@ -95,12 +95,12 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssign);
 class Modulo : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {.kind = Kind::Modulo,
-                .op0 = {parameter::Kind::In, builder->typeString()},
-                .op1 = {parameter::Kind::In, builder->typeAny()},
-                .result = {Constness::Const, builder->typeString()},
-                .ns = "string",
-                .doc = "Renders a printf-style format string."};
+        return Signature{.kind = Kind::Modulo,
+                         .op0 = {parameter::Kind::In, builder->typeString()},
+                         .op1 = {parameter::Kind::In, builder->typeAny()},
+                         .result = {Constness::Const, builder->typeString()},
+                         .ns = "string",
+                         .doc = "Renders a printf-style format string."};
     }
 
     HILTI_OPERATOR(hilti, string::Modulo)
@@ -110,15 +110,16 @@ HILTI_OPERATOR_IMPLEMENTATION(Modulo);
 class Encode : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {.kind = Kind::MemberCall,
-                .self = {parameter::Kind::In, builder->typeString()},
-                .member = "encode",
-                .param0 = {.name = "charset",
-                           .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
-                           .default_ = builder->expressionName("hilti::Charset::UTF8")},
-                .result = {Constness::Const, builder->typeBytes()},
-                .ns = "string",
-                .doc = "Converts the string into a binary representation encoded with the given character set."};
+        return Signature{.kind = Kind::MemberCall,
+                         .self = {parameter::Kind::In, builder->typeString()},
+                         .member = "encode",
+                         .param0 = {.name = "charset",
+                                    .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
+                                    .default_ = builder->expressionName("hilti::Charset::UTF8")},
+                         .result = {Constness::Const, builder->typeBytes()},
+                         .ns = "string",
+                         .doc =
+                             "Converts the string into a binary representation encoded with the given character set."};
     };
 
     HILTI_OPERATOR(hilti, string::Encode);

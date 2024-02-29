@@ -36,12 +36,12 @@ void _checkName(expression::ResolvedOperator* op) {
 class Member : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {.kind = Kind::Member,
-                .op0 = {parameter::Kind::In, builder->typeBitfield(type::Wildcard()), "<bitfield>"},
-                .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<name>"},
-                .result_doc = "<field type>",
-                .ns = "bitfield",
-                .doc = R"(
+        return Signature{.kind = Kind::Member,
+                         .op0 = {parameter::Kind::In, builder->typeBitfield(type::Wildcard()), "<bitfield>"},
+                         .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<name>"},
+                         .result_doc = "<field type>",
+                         .ns = "bitfield",
+                         .doc = R"(
 Retrieves the value of a bitfield's attribute. This is the value of the
 corresponding bits inside the underlying integer value, shifted to the very
 right.
@@ -61,7 +61,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Member);
 class HasMember : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::HasMember,
             .op0 = {parameter::Kind::In, builder->typeBitfield(type::Wildcard()), "<bitfield>"},
             .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<name>"},

@@ -14,7 +14,7 @@ namespace strong_reference {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
             .result_doc = "<dereferenced type>",
@@ -34,7 +34,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
@@ -56,7 +56,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal)
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
@@ -82,7 +82,7 @@ namespace weak_reference {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
             .result_doc = "<dereferenced type>",
@@ -102,7 +102,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
@@ -124,7 +124,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal)
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
@@ -150,7 +150,7 @@ namespace value_reference {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
             .result_doc = "<dereferenced type>",
@@ -170,7 +170,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
@@ -192,7 +192,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal)
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},

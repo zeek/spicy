@@ -40,7 +40,7 @@ inline UnqualifiedTypePtr widestTypeUnsigned(Builder* builder, const Expressions
 class DecrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::DecrPostfix,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
@@ -61,7 +61,7 @@ HILTI_OPERATOR_IMPLEMENTATION(DecrPostfix);
 class DecrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::DecrPrefix,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
@@ -82,7 +82,7 @@ HILTI_OPERATOR_IMPLEMENTATION(DecrPrefix);
 class IncrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
@@ -103,7 +103,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
 class IncrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
@@ -124,7 +124,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
 class SignNeg : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SignNeg,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
@@ -147,7 +147,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SignNeg);
 class Difference : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -175,7 +175,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Difference);
 class DifferenceAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::DifferenceAssign,
             .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -203,7 +203,7 @@ HILTI_OPERATOR_IMPLEMENTATION(DifferenceAssign);
 class Division : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Division,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -231,7 +231,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Division);
 class DivisionAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::DivisionAssign,
             .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -259,7 +259,7 @@ HILTI_OPERATOR_IMPLEMENTATION(DivisionAssign);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -283,7 +283,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Greater : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -307,7 +307,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Greater);
 class GreaterEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -331,7 +331,7 @@ HILTI_OPERATOR_IMPLEMENTATION(GreaterEqual);
 class Lower : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -355,7 +355,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Lower);
 class LowerEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -379,7 +379,7 @@ HILTI_OPERATOR_IMPLEMENTATION(LowerEqual);
 class Modulo : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Modulo,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -407,7 +407,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Modulo);
 class Multiple : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Multiple,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -435,7 +435,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Multiple);
 class MultipleAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MultipleAssign,
             .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -463,7 +463,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MultipleAssign);
 class Power : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Power,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -491,7 +491,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Power);
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -519,7 +519,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum);
 class SumAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -547,7 +547,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssign);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -570,7 +570,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Negate : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Negate,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
@@ -590,7 +590,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Negate);
 class BitAnd : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::BitAnd,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -617,7 +617,7 @@ HILTI_OPERATOR_IMPLEMENTATION(BitAnd);
 class BitOr : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::BitOr,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -644,7 +644,7 @@ HILTI_OPERATOR_IMPLEMENTATION(BitOr);
 class BitXor : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::BitXor,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -672,7 +672,7 @@ HILTI_OPERATOR_IMPLEMENTATION(BitXor);
 class ShiftLeft : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::ShiftLeft,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -694,7 +694,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ShiftLeft);
 class ShiftRight : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::ShiftRight,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
@@ -715,7 +715,7 @@ HILTI_OPERATOR_IMPLEMENTATION(ShiftRight);
 class CastToUnsigned : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -739,7 +739,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToUnsigned);
 class CastToSigned : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -763,7 +763,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToSigned);
 class CastToReal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -782,7 +782,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToReal);
 class CastToEnum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -807,7 +807,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToEnum);
 class CastToInterval : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -825,7 +825,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToInterval);
 class CastToTime : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -843,7 +843,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToTime);
 class CastToBool : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Cast,
             .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
             .op1 = {parameter::Kind::In,
@@ -861,7 +861,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CastToBool);
 class CtorSigned8 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint8",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
@@ -877,7 +877,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorSigned8);
 class CtorSigned16 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint16",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
@@ -893,7 +893,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorSigned16);
 class CtorSigned32 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint32",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
@@ -909,7 +909,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorSigned32);
 class CtorSigned64 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint64",
             .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
@@ -925,7 +925,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorSigned64);
 class CtorUnsigned8 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint8",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
@@ -941,7 +941,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorUnsigned8);
 class CtorUnsigned16 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint16",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
@@ -957,7 +957,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorUnsigned16);
 class CtorUnsigned32 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint32",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
@@ -973,7 +973,7 @@ HILTI_OPERATOR_IMPLEMENTATION(CtorUnsigned32);
 class CtorUnsigned64 : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "uint64",
             .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},

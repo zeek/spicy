@@ -13,7 +13,7 @@ namespace bool_ {
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeBool()},
             .op1 = {parameter::Kind::In, builder->typeBool()},
@@ -30,7 +30,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal)
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeBool()},
             .op1 = {parameter::Kind::In, builder->typeBool()},
@@ -47,7 +47,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal)
 class BitAnd : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::BitAnd,
             .op0 = {parameter::Kind::In, builder->typeBool()},
             .op1 = {parameter::Kind::In, builder->typeBool()},
@@ -64,7 +64,7 @@ HILTI_OPERATOR_IMPLEMENTATION(BitAnd);
 class BitOr : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::BitOr,
             .op0 = {parameter::Kind::In, builder->typeBool()},
             .op1 = {parameter::Kind::In, builder->typeBool()},
@@ -81,7 +81,7 @@ HILTI_OPERATOR_IMPLEMENTATION(BitOr);
 class BitXor : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::BitXor,
             .op0 = {parameter::Kind::In, builder->typeBool()},
             .op1 = {parameter::Kind::In, builder->typeBool()},

@@ -12,7 +12,7 @@ namespace result {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeResult(type::Wildcard())},
             .result_doc = "<dereferenced type>",
@@ -34,14 +34,14 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class Error : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {.kind = Kind::MemberCall,
-                .self = {parameter::Kind::In, builder->typeResult(type::Wildcard())},
-                .member = "error",
-                .result = {Constness::Const, builder->typeError()},
-                .ns = "result",
-                .doc =
-                    "Retrieves the error stored inside the result instance. Will throw a ``NoError`` "
-                    "exception if the result is not in an error state."};
+        return Signature{.kind = Kind::MemberCall,
+                         .self = {parameter::Kind::In, builder->typeResult(type::Wildcard())},
+                         .member = "error",
+                         .result = {Constness::Const, builder->typeError()},
+                         .ns = "result",
+                         .doc =
+                             "Retrieves the error stored inside the result instance. Will throw a ``NoError`` "
+                             "exception if the result is not in an error state."};
     }
 
     HILTI_OPERATOR(hilti, result::Error);

@@ -23,7 +23,7 @@ hilti::operator_::Signature spicy::unit::MemberCall::signature(hilti::Builder* b
     auto params = hilti::type::OperandList::fromParameters(builder->context(), ftype->parameters());
     auto result = ftype->result();
 
-    return {
+    return Signature{
         .kind = Kind::MemberCall,
         .self = {hilti::parameter::Kind::InOut, nullptr, "", stype},
         .op1 = {hilti::parameter::Kind::In, builder->typeMember(ID(field->id()))},
@@ -89,7 +89,7 @@ class Unset : public hilti::Operator {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::Unset,
             .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "unit"},
             .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
@@ -109,7 +109,7 @@ class MemberNonConst : public hilti::Operator {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::Member,
             .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
@@ -142,7 +142,7 @@ class MemberConst : public hilti::Operator {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::Member,
             .priority = Priority::Low, // prefer the non-const version
             .op0 = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
@@ -172,7 +172,7 @@ class TryMember : public hilti::Operator {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::TryMember,
             .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
@@ -203,7 +203,7 @@ class HasMember : public hilti::Operator {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::HasMember,
             .op0 = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
@@ -226,7 +226,7 @@ class Offset : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "offset",
@@ -248,7 +248,7 @@ class Position : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "position",
@@ -270,7 +270,7 @@ class Input : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "input",
@@ -293,7 +293,7 @@ class SetInput : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "set_input",
@@ -315,7 +315,7 @@ class Find : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "find",
@@ -356,7 +356,7 @@ class ConnectFilter : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "connect_filter",
@@ -389,7 +389,7 @@ class Forward : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "forward",
@@ -416,7 +416,7 @@ class ForwardEod : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "forward_eod",
@@ -438,7 +438,7 @@ class Backtrack : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "backtrack",
@@ -459,7 +459,7 @@ class ContextConst : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .priority = Priority::Low, // prefer the non-const version
             .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
@@ -484,7 +484,7 @@ class ContextNonConst : public hilti::BuiltInMemberCall {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
             .member = "context",

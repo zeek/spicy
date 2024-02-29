@@ -11,7 +11,7 @@ namespace optional {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeOptional(type::Wildcard())},
             .result_doc = "<dereferenced type>",

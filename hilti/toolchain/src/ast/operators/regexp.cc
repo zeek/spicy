@@ -20,7 +20,7 @@ namespace regexp {
 class Match : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeRegExp()},
             .member = "match",
@@ -51,7 +51,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Match);
 class Find : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeRegExp()},
             .member = "find",
@@ -84,7 +84,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Find);
 class MatchGroups : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeRegExp()},
             .member = "match_groups",
@@ -117,7 +117,7 @@ HILTI_OPERATOR_IMPLEMENTATION(MatchGroups);
 class TokenMatcher : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeRegExp()},
             .member = "token_matcher",
@@ -138,7 +138,7 @@ HILTI_OPERATOR_IMPLEMENTATION(TokenMatcher);
 class AdvanceBytes : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeName("hilti::MatchState")},
             .member = "advance",
@@ -176,7 +176,7 @@ HILTI_OPERATOR_IMPLEMENTATION(AdvanceBytes);
 class AdvanceView : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeName("hilti::MatchState")},
             .member = "advance",

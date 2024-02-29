@@ -17,7 +17,7 @@ operator_::Signature hilti::function::Call::signature(Builder* builder) const {
     auto ftype = builder->typeFunction(type::Wildcard());
     ftype->setFunctionNameForPrinting(fdecl->id());
 
-    return {
+    return Signature{
         .kind = Kind::Call,
         .op0 = {parameter::Kind::In, std::move(ftype)}, // will be found through scope lookup, not by name matching
         .op1 = {parameter::Kind::In, params},

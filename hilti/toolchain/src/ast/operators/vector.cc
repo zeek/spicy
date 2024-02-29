@@ -17,7 +17,7 @@ namespace iterator {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
             .result_doc = "<dereferenced type>",
@@ -37,7 +37,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class IncrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::InOut, builder->typeVectorIterator(type::Wildcard())},
             .result_doc = "iterator<vector<*>>",
@@ -57,7 +57,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
 class IncrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::InOut, builder->typeVectorIterator(type::Wildcard())},
             .result_doc = "iterator<vector<*>>",
@@ -77,7 +77,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
@@ -100,7 +100,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
@@ -124,7 +124,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Size : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -140,7 +140,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Size);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
@@ -162,7 +162,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
@@ -184,7 +184,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class IndexConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Index,
             .priority = Priority::Low,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
@@ -206,7 +206,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IndexConst);
 class IndexNonConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Index,
             .op0 = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
@@ -227,7 +227,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IndexNonConst);
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
@@ -253,7 +253,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum)
 class SumAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
@@ -280,7 +280,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssign)
 class Assign : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "assign",
@@ -311,7 +311,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Assign);
 class PushBack : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
             .member = "push_back",
@@ -335,7 +335,7 @@ HILTI_OPERATOR_IMPLEMENTATION(PushBack);
 class PopBack : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
             .member = "pop_back",
@@ -354,7 +354,7 @@ HILTI_OPERATOR_IMPLEMENTATION(PopBack);
 class Front : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "front",
@@ -378,7 +378,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Front);
 class Back : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "back",
@@ -402,7 +402,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Back);
 class Reserve : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "reserve",
@@ -428,7 +428,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Reserve);
 class Resize : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "resize",
@@ -454,7 +454,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Resize);
 class At : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "at",
@@ -482,7 +482,7 @@ HILTI_OPERATOR_IMPLEMENTATION(At);
 class SubRange : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "sub",
@@ -516,7 +516,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SubRange);
 class SubEnd : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
             .member = "sub",

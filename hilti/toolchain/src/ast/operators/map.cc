@@ -20,7 +20,7 @@ namespace iterator {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
             .result_doc = "<dereferenced type>",
@@ -40,7 +40,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class IncrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::InOut, builder->typeMapIterator(type::Wildcard())},
             .result_doc = "iterator<map<*>>",
@@ -60,7 +60,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
 class IncrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::InOut, builder->typeMapIterator(type::Wildcard())},
             .result_doc = "iterator<map<*>>",
@@ -80,7 +80,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
@@ -102,7 +102,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
@@ -126,7 +126,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Size : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -142,7 +142,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Size);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
@@ -164,7 +164,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
@@ -186,7 +186,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class In : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeAny()},
             .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
@@ -210,7 +210,7 @@ HILTI_OPERATOR_IMPLEMENTATION(In);
 class Delete : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Delete,
             .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeAny()},
@@ -234,7 +234,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Delete)
 class IndexConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Index,
             .priority = Priority::Low,
             .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
@@ -266,7 +266,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IndexConst);
 class IndexNonConst : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Index,
             .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeAny()},
@@ -296,7 +296,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IndexNonConst);
 class IndexAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IndexAssign,
             .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeAny()},
@@ -323,7 +323,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IndexAssign);
 class Get : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
             .member = "get",
@@ -358,7 +358,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Get);
 class Clear : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
             .member = "clear",

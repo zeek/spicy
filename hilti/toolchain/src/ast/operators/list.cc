@@ -17,7 +17,7 @@ namespace iterator {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
             .result_doc = "<dereferenced type>",
@@ -38,7 +38,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class IncrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::InOut, builder->typeListIterator(type::Wildcard())},
             .result_doc = "iterator<list<*>>",
@@ -59,7 +59,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
 class IncrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::InOut, builder->typeListIterator(type::Wildcard())},
             .result_doc = "iterator<list<*>>",
@@ -79,7 +79,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
@@ -101,7 +101,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
@@ -124,7 +124,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Size : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -140,7 +140,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Size);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
@@ -162,7 +162,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
             .op1 = {parameter::Kind::In, builder->typeList(type::Wildcard())},

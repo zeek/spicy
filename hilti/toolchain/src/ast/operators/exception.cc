@@ -14,7 +14,7 @@ namespace exception {
 class Ctor : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .self = {parameter::Kind::In, builder->ctorType(builder->typeException(type::Wildcard()))},
             .param0 =
@@ -41,7 +41,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Ctor);
 class Description : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeException(type::Wildcard())},
             .member = "description",

@@ -18,7 +18,7 @@ namespace iterator {
 class Deref : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -34,7 +34,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Deref);
 class IncrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPostfix,
             .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
             .result = {Constness::Mutable, builder->typeStreamIterator()},
@@ -50,7 +50,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
 class IncrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::IncrPrefix,
             .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
             .result = {Constness::Mutable, builder->typeStreamIterator()},
@@ -66,7 +66,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
@@ -85,7 +85,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Equal);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
@@ -104,7 +104,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class Lower : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Lower,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
@@ -123,7 +123,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Lower);
 class LowerEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::LowerEqual,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
@@ -142,7 +142,7 @@ HILTI_OPERATOR_IMPLEMENTATION(LowerEqual);
 class Greater : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Greater,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
@@ -161,7 +161,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Greater);
 class GreaterEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::GreaterEqual,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
@@ -180,7 +180,7 @@ HILTI_OPERATOR_IMPLEMENTATION(GreaterEqual);
 class Difference : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Difference,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
@@ -202,7 +202,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Difference);
 class Sum : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Sum,
             .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
@@ -219,7 +219,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Sum)
 class SumAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
             .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
@@ -236,7 +236,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssign)
 class Offset : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamIterator()},
             .member = "offset",
@@ -256,7 +256,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Offset);
 class IsFrozen : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamIterator()},
             .member = "is_frozen",
@@ -279,7 +279,7 @@ namespace view {
 class Size : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -295,7 +295,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Size);
 class InBytes : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -312,7 +312,7 @@ HILTI_OPERATOR_IMPLEMENTATION(InBytes);
 class InView : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::In,
             .op0 = {parameter::Kind::In, builder->typeBytes()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
@@ -329,7 +329,7 @@ HILTI_OPERATOR_IMPLEMENTATION(InView);
 class EqualView : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
@@ -346,7 +346,7 @@ HILTI_OPERATOR_IMPLEMENTATION(EqualView);
 class EqualBytes : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Equal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -363,7 +363,7 @@ HILTI_OPERATOR_IMPLEMENTATION(EqualBytes);
 class UnequalView : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
@@ -380,7 +380,7 @@ HILTI_OPERATOR_IMPLEMENTATION(UnequalView);
 class UnequalBytes : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStreamView()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -397,7 +397,7 @@ HILTI_OPERATOR_IMPLEMENTATION(UnequalBytes);
 class Offset : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "offset",
@@ -416,7 +416,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Offset);
 class AdvanceBy : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "advance",
@@ -442,7 +442,7 @@ HILTI_OPERATOR_IMPLEMENTATION(AdvanceBy);
 class AdvanceToNextData : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "advance_to_next_data",
@@ -462,7 +462,7 @@ HILTI_OPERATOR_IMPLEMENTATION(AdvanceToNextData);
 class Limit : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "limit",
@@ -488,7 +488,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Limit);
 class AdvanceTo : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "advance",
@@ -512,7 +512,7 @@ HILTI_OPERATOR_IMPLEMENTATION(AdvanceTo);
 class Find : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "find",
@@ -545,7 +545,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Find);
 class At : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "at",
@@ -569,7 +569,7 @@ HILTI_OPERATOR_IMPLEMENTATION(At);
 class StartsWith : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "starts_with",
@@ -593,7 +593,7 @@ HILTI_OPERATOR_IMPLEMENTATION(StartsWith);
 class SubIterators : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "sub",
@@ -623,7 +623,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SubIterators);
 class SubIterator : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "sub",
@@ -648,7 +648,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SubIterator);
 class SubOffsets : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStreamView()},
             .member = "sub",
@@ -680,7 +680,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SubOffsets);
 class Ctor : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Call,
             .member = "stream",
             .param0 =
@@ -700,7 +700,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Ctor);
 class Size : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Size,
             .op0 = {parameter::Kind::In, builder->typeStream()},
             .result = {Constness::Const, builder->typeUnsignedInteger(64)},
@@ -716,7 +716,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Size);
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::Unequal,
             .op0 = {parameter::Kind::In, builder->typeStream()},
             .op1 = {parameter::Kind::In, builder->typeStream()},
@@ -733,7 +733,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unequal);
 class SumAssignView : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeStream()},
             .op1 = {parameter::Kind::In, builder->typeStreamView()},
@@ -750,7 +750,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssignView);
 class SumAssignBytes : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::SumAssign,
             .op0 = {parameter::Kind::InOut, builder->typeStream()},
             .op1 = {parameter::Kind::In, builder->typeBytes()},
@@ -767,7 +767,7 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssignBytes);
 class Freeze : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeStream()},
             .member = "freeze",
@@ -788,7 +788,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Freeze);
 class Unfreeze : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStream()},
             .member = "unfreeze",
@@ -809,7 +809,7 @@ HILTI_OPERATOR_IMPLEMENTATION(Unfreeze);
 class IsFrozen : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStream()},
             .member = "is_frozen",
@@ -828,7 +828,7 @@ HILTI_OPERATOR_IMPLEMENTATION(IsFrozen);
 class At : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::In, builder->typeStream()},
             .member = "at",
@@ -852,7 +852,7 @@ HILTI_OPERATOR_IMPLEMENTATION(At);
 class Trim : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
-        return {
+        return Signature{
             .kind = Kind::MemberCall,
             .self = {parameter::Kind::InOut, builder->typeStream()},
             .member = "trim",
