@@ -217,7 +217,7 @@ void ASTContext::replace(const Declaration* old, const DeclarationPtr& new_) {
 }
 
 DeclarationPtr ASTContext::lookup(ast::DeclarationIndex index) {
-    if ( ! index )
+    if ( ! index || index.value() >= _declarations_by_index.size() )
         return nullptr;
 
     return _declarations_by_index.at(index.value());
@@ -270,7 +270,7 @@ void ASTContext::replace(const UnqualifiedType* old, const UnqualifiedTypePtr& n
 }
 
 UnqualifiedTypePtr ASTContext::lookup(ast::TypeIndex index) {
-    if ( ! index )
+    if ( ! index || index.value() >= _types_by_index.size() )
         return nullptr;
 
     return _types_by_index.at(index.value());

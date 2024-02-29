@@ -18,6 +18,24 @@
 [debug/compiler]   processing ASTs, round 1
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
+[debug/resolver] -> [T10] type::Bool <no-type-id> | bool (foo.hlt:6:20-6:23)
+[debug/resolver] [foo.hlt:9:20-9:23] type::Name "Foo1" -> set resolved type to T10
+[debug/resolver] -> [T11] type::Vector <no-type-id> | vector<bytes> (hilti.hlt:16:24-16:36)
+[debug/resolver] [hilti.hlt:20:12-20:19] type::Name "Captures" -> set resolved type to T11
+[debug/resolver] -> [T12] type::Library <no-type-id> | __library_type("::hilti::rt::Profiler") (hilti.hlt:17:24-17:60)
+[debug/resolver] [hilti.hlt:35:25-35:32] type::Name "Profiler" -> set resolved type to T12
+[debug/resolver] [hilti.hlt:36:44-36:51] type::Name "Profiler" -> set resolved type to T12
+[debug/resolver] -> [T13] type::Exception <no-type-id> | exception (hilti.hlt:39:25-39:33)
+[debug/resolver] [hilti.hlt:42:44-42:52] type::Name "Exception" -> set resolved type to T13
+[debug/resolver] [hilti.hlt:46:41-46:49] type::Name "Exception" -> set resolved type to T13
+[debug/resolver] [hilti.hlt:49:47-49:55] type::Name "Exception" -> set resolved type to T13
+[debug/resolver] [hilti.hlt:52:40-52:48] type::Name "Exception" -> set resolved type to T13
+[debug/resolver] -> [T14] type::Exception <no-type-id> | [exception :Exception (hilti.hlt:42:31-42:53)
+[debug/resolver] [hilti.hlt:55:38-55:52] type::Name "SystemException" -> set resolved type to T14
+[debug/resolver] -> [T15] type::Exception <no-type-id> | [exception :Exception (hilti.hlt:49:34-49:56)
+[debug/resolver] [hilti.hlt:56:38-56:55] type::Name "RecoverableFailure" -> set resolved type to T15
+[debug/resolver] [hilti.hlt:59:39-59:53] type::Name "SystemException" -> set resolved type to T14
+[debug/resolver] [hilti.hlt:60:39-60:56] type::Name "RecoverableFailure" -> set resolved type to T15
 [debug/resolver] [foo.hlt:4:1-4:11] declaration::ImportedModule "import Bar;" -> set declaration's canonical ID to Foo::Bar
 [debug/resolver] [foo.hlt:4:1-4:11] declaration::ImportedModule "import Bar;" -> set declaration's fully qualified ID to Foo::Bar
 [debug/compiler]     parsing file "./bar.hlt" as HILTI code
@@ -30,8 +48,6 @@
 [debug/resolver] [foo.hlt:7:1-7:29] declaration::Type "public type Foo2 = Bar::Bar1;" -> set declaration's fully qualified ID to Foo::Foo2
 [debug/resolver] -> [D2] declaration::Type Foo::Foo2 | public type Foo2 = Bar::Bar1; (foo.hlt:7:1-7:29)
 [debug/resolver] [foo.hlt:7:20-7:28] type::Name "Bar::Bar1" -> set type's declaration to D2
-[debug/resolver] -> [T10] type::Bool Foo::Foo1 | bool (foo.hlt:6:20-6:23)
-[debug/resolver] [foo.hlt:9:20-9:23] type::Name "Foo1" -> set resolved type to T10
 [debug/resolver] [foo.hlt:9:20-9:27] declaration::Parameter "bool foo" -> set declaration's canonical ID to Foo::foo
 [debug/resolver] [foo.hlt:9:20-9:27] declaration::Parameter "bool foo" -> set declaration's fully qualified ID to foo
 [debug/resolver] [foo.hlt:9:30-9:42] declaration::Parameter "Bar::Bar1 bar" -> set declaration's canonical ID to Foo::bar
@@ -123,8 +139,6 @@
 [debug/resolver] [hilti.hlt:17:24-17:60] type::Library "hilti::Profiler" -> set type's declaration to D13
 [debug/resolver] [hilti.hlt:19:26-21:1] declaration::Expression "self" -> set declaration's canonical ID to hilti::self
 [debug/resolver] [hilti.hlt:19:26-21:1] declaration::Expression "self" -> set declaration's fully qualified ID to self
-[debug/resolver] -> [T11] type::Vector hilti::Captures | vector<bytes> (hilti.hlt:16:24-16:36)
-[debug/resolver] [hilti.hlt:20:12-20:19] type::Name "Captures" -> set resolved type to T11
 [debug/resolver] [hilti.hlt:20:30-20:40] declaration::Parameter "stream data" -> set declaration's canonical ID to hilti::data
 [debug/resolver] [hilti.hlt:20:30-20:40] declaration::Parameter "stream data" -> set declaration's fully qualified ID to data
 [debug/resolver] [hilti.hlt:20:5-20:42] declaration::Field "method Captures captures(stream data);" -> set declaration's canonical ID to hilti::captures
@@ -194,15 +208,12 @@
 [debug/resolver] [hilti.hlt:33:1-33:87] declaration::Function "declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype;" -> set declaration's canonical ID to hilti::abort
 [debug/resolver] [hilti.hlt:33:1-33:87] declaration::Function "declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype;" -> set declaration's fully qualified ID to hilti::abort
 [debug/resolver] [hilti.hlt:33:1-33:87] declaration::Function "declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype;" -> creating function call operator
-[debug/resolver] -> [T12] type::Library hilti::Profiler | hilti::Profiler (hilti.hlt:17:24-17:60)
-[debug/resolver] [hilti.hlt:35:25-35:32] type::Name "Profiler" -> set resolved type to T12
 [debug/resolver] [hilti.hlt:35:50-35:60] declaration::Parameter "string name" -> set declaration's canonical ID to hilti::name
 [debug/resolver] [hilti.hlt:35:50-35:60] declaration::Parameter "string name" -> set declaration's fully qualified ID to name
 [debug/resolver] [hilti.hlt:35:63-35:99] Attribute "&cxxname="hilti::rt::profiler::start"" -> Attribute "&cxxname="::hilti::rt::profiler::start""
 [debug/resolver] [hilti.hlt:35:1-35:116] declaration::Function "declare public function optional<Profiler> profiler_start(string name) &cxxname="::hilti::rt::profiler::start" &have_prototype;" -> set declaration's canonical ID to hilti::profiler_start
 [debug/resolver] [hilti.hlt:35:1-35:116] declaration::Function "declare public function optional<Profiler> profiler_start(string name) &cxxname="::hilti::rt::profiler::start" &have_prototype;" -> set declaration's fully qualified ID to hilti::profiler_start
 [debug/resolver] [hilti.hlt:35:1-35:116] declaration::Function "declare public function optional<Profiler> profiler_start(string name) &cxxname="::hilti::rt::profiler::start" &have_prototype;" -> creating function call operator
-[debug/resolver] [hilti.hlt:36:44-36:51] type::Name "Profiler" -> set resolved type to T12
 [debug/resolver] [hilti.hlt:36:35-36:54] declaration::Parameter "optional<Profiler> p" -> set declaration's canonical ID to hilti::p
 [debug/resolver] [hilti.hlt:36:35-36:54] declaration::Parameter "optional<Profiler> p" -> set declaration's fully qualified ID to p
 [debug/resolver] [hilti.hlt:36:57-36:92] Attribute "&cxxname="hilti::rt::profiler::stop"" -> Attribute "&cxxname="::hilti::rt::profiler::stop""
@@ -214,55 +225,44 @@
 [debug/resolver] [hilti.hlt:39:1-39:66] declaration::Type "public type Exception = exception &cxxname="::hilti::rt::Exception";" -> set declaration's fully qualified ID to hilti::Exception
 [debug/resolver] -> [D15] declaration::Type hilti::Exception | public type Exception = exception &cxxname="::hilti::rt::Exception"; (hilti.hlt:39:1-39:66)
 [debug/resolver] [hilti.hlt:39:25-39:33] type::Exception "hilti::Exception" -> set type's declaration to D15
-[debug/resolver] -> [T13] type::Exception hilti::Exception | hilti::Exception (hilti.hlt:39:25-39:33)
-[debug/resolver] [hilti.hlt:42:44-42:52] type::Name "Exception" -> set resolved type to T13
 [debug/resolver] [hilti.hlt:42:55-42:79] Attribute "&cxxname="std::exception"" -> Attribute "&cxxname="::std::exception""
 [debug/resolver] [hilti.hlt:42:1-42:80] declaration::Type "public type SystemException = [exception :Exception &cxxname="::std::exception";" -> set declaration's canonical ID to hilti::SystemException
 [debug/resolver] [hilti.hlt:42:1-42:80] declaration::Type "public type SystemException = [exception :Exception &cxxname="::std::exception";" -> set declaration's fully qualified ID to hilti::SystemException
 [debug/resolver] -> [D16] declaration::Type hilti::SystemException | public type SystemException = [exception :Exception &cxxname="::std::exception"; (hilti.hlt:42:1-42:80)
 [debug/resolver] [hilti.hlt:42:31-42:53] type::Exception "hilti::SystemException" -> set type's declaration to D16
-[debug/resolver] [hilti.hlt:46:41-46:49] type::Name "Exception" -> set resolved type to T13
 [debug/resolver] [hilti.hlt:46:52-46:85] Attribute "&cxxname="hilti::rt::RuntimeError"" -> Attribute "&cxxname="::hilti::rt::RuntimeError""
 [debug/resolver] [hilti.hlt:46:1-46:86] declaration::Type "public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError";" -> set declaration's canonical ID to hilti::RuntimeError
 [debug/resolver] [hilti.hlt:46:1-46:86] declaration::Type "public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError";" -> set declaration's fully qualified ID to hilti::RuntimeError
 [debug/resolver] -> [D17] declaration::Type hilti::RuntimeError | public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; (hilti.hlt:46:1-46:86)
 [debug/resolver] [hilti.hlt:46:28-46:50] type::Exception "hilti::RuntimeError" -> set type's declaration to D17
-[debug/resolver] [hilti.hlt:49:47-49:55] type::Name "Exception" -> set resolved type to T13
 [debug/resolver] [hilti.hlt:49:58-49:97] Attribute "&cxxname="hilti::rt::RecoverableFailure"" -> Attribute "&cxxname="::hilti::rt::RecoverableFailure""
 [debug/resolver] [hilti.hlt:49:1-49:98] declaration::Type "public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure";" -> set declaration's canonical ID to hilti::RecoverableFailure
 [debug/resolver] [hilti.hlt:49:1-49:98] declaration::Type "public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure";" -> set declaration's fully qualified ID to hilti::RecoverableFailure
 [debug/resolver] -> [D18] declaration::Type hilti::RecoverableFailure | public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; (hilti.hlt:49:1-49:98)
 [debug/resolver] [hilti.hlt:49:34-49:56] type::Exception "hilti::RecoverableFailure" -> set type's declaration to D18
-[debug/resolver] [hilti.hlt:52:40-52:48] type::Name "Exception" -> set resolved type to T13
 [debug/resolver] [hilti.hlt:52:51-52:83] Attribute "&cxxname="hilti::rt::MissingData"" -> Attribute "&cxxname="::hilti::rt::MissingData""
 [debug/resolver] [hilti.hlt:52:1-52:84] declaration::Type "public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData";" -> set declaration's canonical ID to hilti::MissingData
 [debug/resolver] [hilti.hlt:52:1-52:84] declaration::Type "public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData";" -> set declaration's fully qualified ID to hilti::MissingData
 [debug/resolver] -> [D19] declaration::Type hilti::MissingData | public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; (hilti.hlt:52:1-52:84)
 [debug/resolver] [hilti.hlt:52:27-52:49] type::Exception "hilti::MissingData" -> set type's declaration to D19
-[debug/resolver] -> [T14] type::Exception hilti::SystemException | hilti::SystemException (hilti.hlt:42:31-42:53)
-[debug/resolver] [hilti.hlt:55:38-55:52] type::Name "SystemException" -> set resolved type to T14
 [debug/resolver] [hilti.hlt:55:38-55:58] declaration::Parameter "hilti::SystemException excpt" -> set declaration's canonical ID to hilti::excpt
 [debug/resolver] [hilti.hlt:55:38-55:58] declaration::Parameter "hilti::SystemException excpt" -> set declaration's fully qualified ID to excpt
 [debug/resolver] [hilti.hlt:55:61-55:97] Attribute "&cxxname="hilti::rt::exception::what"" -> Attribute "&cxxname="::hilti::rt::exception::what""
 [debug/resolver] [hilti.hlt:55:1-55:114] declaration::Function "declare public function string exception_what(hilti::SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype;" -> set declaration's canonical ID to hilti::exception_what
 [debug/resolver] [hilti.hlt:55:1-55:114] declaration::Function "declare public function string exception_what(hilti::SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype;" -> set declaration's fully qualified ID to hilti::exception_what
 [debug/resolver] [hilti.hlt:55:1-55:114] declaration::Function "declare public function string exception_what(hilti::SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype;" -> creating function call operator
-[debug/resolver] -> [T15] type::Exception hilti::RecoverableFailure | hilti::RecoverableFailure (hilti.hlt:49:34-49:56)
-[debug/resolver] [hilti.hlt:56:38-56:55] type::Name "RecoverableFailure" -> set resolved type to T15
 [debug/resolver] [hilti.hlt:56:38-56:61] declaration::Parameter "hilti::RecoverableFailure excpt" -> set declaration's canonical ID to hilti::excpt_2
 [debug/resolver] [hilti.hlt:56:38-56:61] declaration::Parameter "hilti::RecoverableFailure excpt" -> set declaration's fully qualified ID to excpt
 [debug/resolver] [hilti.hlt:56:64-56:100] Attribute "&cxxname="hilti::rt::exception::what"" -> Attribute "&cxxname="::hilti::rt::exception::what""
 [debug/resolver] [hilti.hlt:56:1-56:117] declaration::Function "declare public function string exception_what(hilti::RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype;" -> set declaration's canonical ID to hilti::exception_what_2
 [debug/resolver] [hilti.hlt:56:1-56:117] declaration::Function "declare public function string exception_what(hilti::RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype;" -> set declaration's fully qualified ID to hilti::exception_what
 [debug/resolver] [hilti.hlt:56:1-56:117] declaration::Function "declare public function string exception_what(hilti::RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype;" -> creating function call operator
-[debug/resolver] [hilti.hlt:59:39-59:53] type::Name "SystemException" -> set resolved type to T14
 [debug/resolver] [hilti.hlt:59:39-59:59] declaration::Parameter "hilti::SystemException excpt" -> set declaration's canonical ID to hilti::excpt_3
 [debug/resolver] [hilti.hlt:59:39-59:59] declaration::Parameter "hilti::SystemException excpt" -> set declaration's fully qualified ID to excpt
 [debug/resolver] [hilti.hlt:59:62-59:99] Attribute "&cxxname="hilti::rt::exception::where"" -> Attribute "&cxxname="::hilti::rt::exception::where""
 [debug/resolver] [hilti.hlt:59:1-59:116] declaration::Function "declare public function string exception_where(hilti::SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype;" -> set declaration's canonical ID to hilti::exception_where
 [debug/resolver] [hilti.hlt:59:1-59:116] declaration::Function "declare public function string exception_where(hilti::SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype;" -> set declaration's fully qualified ID to hilti::exception_where
 [debug/resolver] [hilti.hlt:59:1-59:116] declaration::Function "declare public function string exception_where(hilti::SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype;" -> creating function call operator
-[debug/resolver] [hilti.hlt:60:39-60:56] type::Name "RecoverableFailure" -> set resolved type to T15
 [debug/resolver] [hilti.hlt:60:39-60:62] declaration::Parameter "hilti::RecoverableFailure excpt" -> set declaration's canonical ID to hilti::excpt_4
 [debug/resolver] [hilti.hlt:60:39-60:62] declaration::Parameter "hilti::RecoverableFailure excpt" -> set declaration's fully qualified ID to excpt
 [debug/resolver] [hilti.hlt:60:65-60:102] Attribute "&cxxname="hilti::rt::exception::where"" -> Attribute "&cxxname="::hilti::rt::exception::where""
@@ -303,6 +303,9 @@
 [debug/resolver] -> [T16] type::String Bar::Bar1 | string (bar.hlt:6:20-6:25)
 [debug/resolver] [foo.hlt:7:20-7:28] type::Name "Bar::Bar1" -> set resolved type to T16
 [debug/resolver] [foo.hlt:9:30-9:38] type::Name "Bar::Bar1" -> set resolved type to T16
+[debug/resolver] [bar.hlt:7:20-7:28] type::Name "Foo::Foo1" -> set resolved type to T10
+[debug/resolver] [bar.hlt:9:20-9:23] type::Name "Bar1" -> set resolved type to T16
+[debug/resolver] [bar.hlt:9:30-9:38] type::Name "Foo::Foo1" -> set resolved type to T10
 [debug/resolver] [foo.hlt:9:1-9:44] declaration::Function "declare function string foo(bool foo, string bar);" -> creating function call operator
 [debug/resolver] [hilti.hlt:8:24-8:42] declaration::Constant "const hilti::BitOrder LSB0 = hilti::BitOrder::LSB0;" -> set declaration's fully qualified ID to hilti::BitOrder::LSB0
 [debug/resolver] [hilti.hlt:8:24-8:42] declaration::Constant "const hilti::BitOrder MSB0 = hilti::BitOrder::MSB0;" -> set declaration's fully qualified ID to hilti::BitOrder::MSB0
@@ -335,9 +338,6 @@
 [debug/resolver] [hilti.hlt:15:35-15:66] declaration::Constant "const hilti::DecodeErrorStrategy Undef = hilti::DecodeErrorStrategy::Undef;" -> set declaration's fully qualified ID to hilti::DecodeErrorStrategy::Undef
 [debug/resolver] [hilti.hlt:20:5-20:42] declaration::Field "method Captures captures(stream data);" -> set declaration's fully qualified ID to hilti::MatchState::captures
 [debug/resolver] [hilti.hlt:20:5-20:42] declaration::Field "method Captures captures(stream data);" -> creating member call operator
-[debug/resolver] [bar.hlt:7:20-7:28] type::Name "Foo::Foo1" -> set resolved type to T10
-[debug/resolver] [bar.hlt:9:20-9:23] type::Name "Bar1" -> set resolved type to T16
-[debug/resolver] [bar.hlt:9:30-9:38] type::Name "Foo::Foo1" -> set resolved type to T10
 [debug/resolver] [bar.hlt:9:1-9:44] declaration::Function "declare function string bar(string bar, bool foo);" -> creating function call operator
 [debug/compiler]       -> modified
 [debug/compiler]   processing ASTs, round 3

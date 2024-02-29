@@ -49,8 +49,50 @@ inline const hilti::logging::DebugStream Operator("operator");
 
 namespace {
 
-struct Resolver : visitor::MutatingPostOrder {
-    explicit Resolver(Builder* builder, const NodePtr& root)
+// Pass 1 resolves named types first so that the on-heap conversion can take
+// place before anything else.
+struct VisitorPass1 : visitor::MutatingPostOrder {
+    explicit VisitorPass1(Builder* builder) : visitor::MutatingPostOrder(builder, logging::debug::Resolver) {}
+
+    void operator()(type::Name* n) final {
+        if ( ! n->resolvedTypeIndex() ) {
+            if ( auto resolved = scope::lookupID<declaration::Type>(n->id(), n, "type") ) {
+                auto index = context()->register_(resolved->first->type()->type());
+                n->setResolvedTypeIndex(index);
+                recordChange(n, util::fmt("set resolved type to %s", index));
+            }
+            else {
+                n->addError(resolved.error(), node::ErrorPriority::High);
+                return;
+            }
+        }
+
+        if ( n->resolvedTypeIndex() ) {
+            if ( auto resolved = n->resolvedType(); resolved->isOnHeap() ) {
+                if ( auto qtype = n->parent()->tryAs<QualifiedType>() ) {
+                    auto replace = false;
+
+                    if ( n->parent(2)->tryAs<Declaration>() )
+                        replace = true;
+
+                    if ( n->parent(2)->isA<declaration::LocalVariable>() &&
+                         ! n->parent(3)->isA<statement::Declaration>() )
+                        replace = false;
+
+                    if ( replace ) {
+                        auto rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
+                        replaceNode(qtype.get(), builder()->qualifiedType(rt, Constness::Mutable, Side::LHS),
+                                    "&on-heap replacement");
+                    }
+                }
+            }
+        }
+    }
+};
+
+// Pass 2 is the main pass implementing most of the resolver's functionality.
+struct VisitorPass2 : visitor::MutatingPostOrder {
+    explicit VisitorPass2(Builder* builder, const NodePtr& root)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), root(root) {}
 
     const NodePtr& root;
@@ -1536,48 +1578,14 @@ struct Resolver : visitor::MutatingPostOrder {
             }
         }
     }
-
-    void operator()(type::Name* n) final {
-        if ( ! n->resolvedTypeIndex() ) {
-            if ( auto resolved = scope::lookupID<declaration::Type>(n->id(), n, "type") ) {
-                auto index = context()->register_(resolved->first->type()->type());
-                n->setResolvedTypeIndex(index);
-                recordChange(n, util::fmt("set resolved type to %s", index));
-            }
-            else {
-                n->addError(resolved.error(), node::ErrorPriority::High);
-                return;
-            }
-        }
-
-        if ( n->resolvedTypeIndex() ) {
-            if ( auto resolved = n->resolvedType(); resolved->isOnHeap() ) {
-                if ( auto qtype = n->parent()->tryAs<QualifiedType>() ) {
-                    auto replace = false;
-
-                    if ( n->parent(2)->tryAs<Declaration>() )
-                        replace = true;
-
-                    if ( n->parent(2)->isA<declaration::LocalVariable>() &&
-                         ! n->parent(3)->isA<statement::Declaration>() )
-                        replace = false;
-
-                    if ( replace ) {
-                        auto rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
-                        replaceNode(qtype.get(), builder()->qualifiedType(rt, Constness::Mutable, Side::LHS));
-                    }
-                }
-            }
-        }
-    }
 };
 
-// Visitor to resolve any auto parameters that we inferred during the main resolver pass.
-struct VisitorApplyAutoParameters : visitor::MutatingPostOrder {
-    VisitorApplyAutoParameters(Builder* builder, const ::Resolver& v)
+// Pass 3 resolves any auto parameters that we inferred during the previous resolver pass.
+struct VisitorPass3 : visitor::MutatingPostOrder {
+    VisitorPass3(Builder* builder, const ::VisitorPass2& v)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), resolver(v) {}
 
-    const ::Resolver& resolver;
+    const ::VisitorPass2& resolver;
 
     void operator()(declaration::Parameter* n) final {
         if ( ! n->type()->type()->isA<type::Auto>() )
@@ -1620,11 +1628,14 @@ struct VisitorApplyAutoParameters : visitor::MutatingPostOrder {
 bool detail::resolver::resolve(Builder* builder, const NodePtr& root) {
     util::timing::Collector _("hilti/compiler/ast/resolver");
 
-    auto v1 = Resolver(builder, root);
+    auto v1 = VisitorPass1(builder);
     hilti::visitor::visit(v1, root);
 
-    auto v2 = VisitorApplyAutoParameters(builder, v1);
+    auto v2 = VisitorPass2(builder, root);
     hilti::visitor::visit(v2, root);
 
-    return v1.isModified() || v2.isModified();
+    auto v3 = VisitorPass3(builder, v2);
+    hilti::visitor::visit(v3, root);
+
+    return v1.isModified() || v2.isModified() || v3.isModified();
 }

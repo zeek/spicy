@@ -61,8 +61,8 @@ enum class FieldType {
     ParseType, // type that the field is being parsed at
 };
 
-struct Resolver : visitor::MutatingPostOrder {
-    Resolver(Builder* builder, const NodePtr& root)
+struct VisitorPass2 : visitor::MutatingPostOrder {
+    VisitorPass2(Builder* builder, const NodePtr& root)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), root(root) {}
 
     const NodePtr& root;
@@ -634,6 +634,6 @@ bool detail::resolver::resolve(Builder* builder, const NodePtr& root) {
 
     bool hilti_modified = (*hilti::plugin::registry().hiltiPlugin().ast_resolve)(builder, root);
 
-    return visitor::visit(Resolver(builder, root), root, ".spicy",
+    return visitor::visit(VisitorPass2(builder, root), root, ".spicy",
                           [&](const auto& v) { return v.isModified() || hilti_modified; });
 }
