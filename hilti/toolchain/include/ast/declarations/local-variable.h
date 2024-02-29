@@ -22,10 +22,7 @@ public:
     auto typeArguments() const { return children<hilti::Expression>(2, {}); }
 
     void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t->recreateAsLhs(ctx)); }
-    void setInit(ASTContext* ctx, ExpressionPtr init) {
-        setChild(ctx, 0, init->type()->recreateAsLhs(ctx));
-        setChild(ctx, 1, std::move(init));
-    }
+    void setInit(ASTContext* ctx, ExpressionPtr init) { setChild(ctx, 1, std::move(init)); }
 
     void setTypeArguments(ASTContext* ctx, Expressions args) {
         removeChildren(2, {});
