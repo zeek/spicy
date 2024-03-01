@@ -12,10 +12,12 @@
 #include <hilti/ast/builder/expression.h>
 #include <hilti/ast/ctors/default.h>
 #include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/detail/visitor.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/id.h>
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
@@ -23,6 +25,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/while.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/enum.h>
@@ -897,6 +900,41 @@ struct ConstantFoldingVisitor : OptimizerVisitor, visitor::PreOrder<bool, Consta
         };
 
         return false;
+    }
+
+    bool operator()(const statement::While& x, position_t p) {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+            case Stage::PRUNE_DECLS: return false;
+            case Stage::PRUNE_USES: {
+                const auto& cond = x.condition();
+                if ( ! cond )
+                    return false;
+
+                const auto val = tryAsBoolLiteral(*cond);
+                if ( ! val )
+                    return false;
+
+                // If the `while` condition is true we never run the `else` block.
+                if ( *val && x.else_() ) {
+                    // Remove child for `else`.
+                    p.node.as<statement::While>().children()[3] = node::none;
+                    return true;
+                }
+                // If the `while` condition is false we never enter the loop, and
+                // run either the `else` block if it is present or nothing.
+                else if ( ! *val ) {
+                    if ( const auto& else_ = x.else_() )
+                        replaceNode(p, else_->_clone());
+                    else
+                        removeNode(p);
+
+                    return true;
+                }
+
+                return false;
+            }
+        }
     }
 };
 

@@ -29,5 +29,17 @@ False;
 True;
 1;
 1;
+{
+    True;
+}
+
+while ( True ) {
+}
+
+
+while ( True ) {
+    True;
+}
+
 
 }
