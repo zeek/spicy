@@ -52,4 +52,21 @@ f && f;
 t ? 1: 0;
 f ? 0: 1;
 
+# While loops over constants.
+while (False) {}
+
+while (False) {
+    False;
+} else {
+    True;
+}
+
+while (True) {}
+
+while (True) {
+    True;
+} else {
+    False;
+}
+
 }
