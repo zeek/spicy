@@ -37,12 +37,12 @@ public:
     }
 
 protected:
-    While(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {
+    While(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, NodeTags, std::move(children), std::move(meta)) {
         if ( child(0) && ! child(0)->isA<declaration::LocalVariable>() )
             logger().internalError("initialization for 'while' must be a local declaration");
     }
 
-    HILTI_NODE(hilti, While)
+    HILTI_NODE_1(statement::While, Statement, final);
 };
 
 } // namespace hilti::statement

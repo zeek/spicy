@@ -26,10 +26,11 @@ public:
     }
 
 protected:
-    IntegerBase(ASTContext* ctx, type::Unification u, Nodes children, unsigned int width, const Meta& m = Meta())
-        : UnqualifiedType(ctx, std::move(u), std::move(children), m), _width(width) {}
-    IntegerBase(ASTContext* ctx, Wildcard _, type::Unification u, const Meta& m = Meta())
-        : UnqualifiedType(ctx, Wildcard(), std::move(u), m) {}
+    IntegerBase(ASTContext* ctx, node::Tags node_tags, type::Unification u, Nodes children, unsigned int width,
+                const Meta& m = Meta())
+        : UnqualifiedType(ctx, node_tags, std::move(u), std::move(children), m), _width(width) {}
+    IntegerBase(ASTContext* ctx, node::Tags node_tags, Wildcard _, type::Unification u, const Meta& m = Meta())
+        : UnqualifiedType(ctx, node_tags, Wildcard(), std::move(u), m) {}
 
 private:
     unsigned int _width = 0;
@@ -50,10 +51,11 @@ public:
 
 protected:
     SignedInteger(ASTContext* ctx, const Nodes& children, unsigned int width, const Meta& m = Meta())
-        : IntegerBase(ctx, {util::fmt("int%" PRIu64, width)}, children, width, m) {}
-    SignedInteger(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) : IntegerBase(ctx, Wildcard(), {"int<*>"}, m) {}
+        : IntegerBase(ctx, NodeTags, {util::fmt("int%" PRIu64, width)}, children, width, m) {}
+    SignedInteger(ASTContext* ctx, Wildcard _, const Meta& m = Meta())
+        : IntegerBase(ctx, NodeTags, Wildcard(), {"int<*>"}, m) {}
 
-    HILTI_NODE(hilti, SignedInteger)
+    HILTI_NODE_1(type::SignedInteger, UnqualifiedType, final);
 };
 
 /** AST node for an unsigned integer type. */
@@ -69,11 +71,11 @@ public:
 
 protected:
     UnsignedInteger(ASTContext* ctx, const Nodes& children, unsigned int width, const Meta& m = Meta())
-        : IntegerBase(ctx, {util::fmt("uint%" PRIu64, width)}, children, width, m) {}
+        : IntegerBase(ctx, NodeTags, {util::fmt("uint%" PRIu64, width)}, children, width, m) {}
     UnsignedInteger(ASTContext* ctx, Wildcard _, const Meta& m = Meta())
-        : IntegerBase(ctx, Wildcard(), {"uint<*>"}, m) {}
+        : IntegerBase(ctx, NodeTags, Wildcard(), {"uint<*>"}, m) {}
 
-    HILTI_NODE(hilti, UnsignedInteger);
+    HILTI_NODE_1(type::UnsignedInteger, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

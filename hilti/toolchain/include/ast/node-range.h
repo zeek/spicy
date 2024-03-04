@@ -77,8 +77,12 @@ private:
         if ( ! *_iter )
             return nullptr;
 
+#ifndef NDEBUG
         auto t = std::dynamic_pointer_cast<T>(*_iter);
         assert(t);
+#else
+        auto t = std::static_pointer_cast<T>(*_iter);
+#endif
         return t;
     }
 

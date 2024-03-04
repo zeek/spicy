@@ -58,7 +58,7 @@ public:
 protected:
     friend class statement::Switch;
 
-    Case(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, std::move(children), std::move(meta)) {
+    Case(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, NodeTags, std::move(children), std::move(meta)) {
         _end_exprs = static_cast<int>(Node::children().size());
     }
 
@@ -78,7 +78,7 @@ protected:
 
     std::string _dump() const final;
 
-    HILTI_NODE(hilti, Case);
+    HILTI_NODE_0(statement::switch_::Case, final);
 
 private:
     int _end_exprs;
@@ -129,12 +129,13 @@ public:
     }
 
 protected:
-    Switch(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {
+    Switch(ASTContext* ctx, Nodes children, Meta meta)
+        : Statement(ctx, NodeTags, std::move(children), std::move(meta)) {
         if ( ! child(0)->isA<declaration::LocalVariable>() )
             logger().internalError("initialization for 'switch' must be a local declaration");
     }
 
-    HILTI_NODE(hilti, Switch)
+    HILTI_NODE_1(statement::Switch, Statement, final);
 
 private:
     bool _preprocessed = false;

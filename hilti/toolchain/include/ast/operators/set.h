@@ -9,17 +9,17 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, set::iterator, Deref)
-HILTI_NODE_OPERATOR(hilti, set::iterator, IncrPostfix)
-HILTI_NODE_OPERATOR(hilti, set::iterator, IncrPrefix)
-HILTI_NODE_OPERATOR(hilti, set::iterator, Equal)
-HILTI_NODE_OPERATOR(hilti, set::iterator, Unequal)
-HILTI_NODE_OPERATOR(hilti, set, Size)
-HILTI_NODE_OPERATOR(hilti, set, Equal)
-HILTI_NODE_OPERATOR(hilti, set, Unequal)
-HILTI_NODE_OPERATOR(hilti, set, In)
-HILTI_NODE_OPERATOR(hilti, set, Add)
-HILTI_NODE_OPERATOR(hilti, set, Delete)
-HILTI_NODE_OPERATOR(hilti, set, Clear)
+HILTI_NODE_OPERATOR(set::iterator, Deref)
+HILTI_NODE_OPERATOR(set::iterator, IncrPostfix)
+HILTI_NODE_OPERATOR(set::iterator, IncrPrefix)
+HILTI_NODE_OPERATOR(set::iterator, Equal)
+HILTI_NODE_OPERATOR(set::iterator, Unequal)
+HILTI_NODE_OPERATOR(set, Size)
+HILTI_NODE_OPERATOR(set, Equal)
+HILTI_NODE_OPERATOR(set, Unequal)
+HILTI_NODE_OPERATOR(set, In)
+HILTI_NODE_OPERATOR(set, Add)
+HILTI_NODE_OPERATOR(set, Delete)
+HILTI_NODE_OPERATOR(set, Clear)
 
 } // namespace hilti::operator_

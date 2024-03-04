@@ -62,9 +62,9 @@ public:
 
 protected:
     Assert(ASTContext* ctx, Nodes children, bool expect_exception, Meta meta)
-        : Statement(ctx, std::move(children), std::move(meta)), _expect_exception(expect_exception) {}
+        : Statement(ctx, NodeTags, std::move(children), std::move(meta)), _expect_exception(expect_exception) {}
 
-    HILTI_NODE(hilti, Assert)
+    HILTI_NODE_1(statement::Assert, Statement, final);
 
 private:
     bool _expect_exception;

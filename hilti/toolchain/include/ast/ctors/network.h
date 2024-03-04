@@ -32,9 +32,9 @@ public:
 
 protected:
     Network(ASTContext* ctx, Nodes children, hilti::rt::Network v, Meta meta)
-        : Ctor(ctx, std::move(children), std::move(meta)), _value(v) {}
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)), _value(v) {}
 
-    HILTI_NODE(hilti, Network)
+    HILTI_NODE_1(ctor::Network, Ctor, final);
 
 private:
     hilti::rt::Network _value;

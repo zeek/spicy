@@ -136,8 +136,9 @@ public:
 protected:
     friend class ASTContext;
 
-    Declaration(ASTContext* ctx, Nodes children, ID id, declaration::Linkage linkage, Meta meta = {})
-        : Node(ctx, std::move(children), std::move(meta)), _id(std::move(id)), _linkage(linkage) {}
+    Declaration(ASTContext* ctx, node::Tags node_tags, Nodes children, ID id, declaration::Linkage linkage,
+                Meta meta = {})
+        : Node(ctx, node_tags, std::move(children), std::move(meta)), _id(std::move(id)), _linkage(linkage) {}
 
     // For the AST context to set the declaration index.
     void setDeclarationIndex(ast::DeclarationIndex index) {
@@ -147,7 +148,7 @@ protected:
 
     std::string _dump() const override;
 
-    HILTI_NODE_BASE(hilti, Declaration);
+    HILTI_NODE_0(Declaration, override);
 
 private:
     ID _id;

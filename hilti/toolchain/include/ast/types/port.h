@@ -22,9 +22,9 @@ public:
     }
 
 protected:
-    Port(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"port"}, std::move(meta)) {}
+    Port(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"port"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Port)
+    HILTI_NODE_1(type::Port, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

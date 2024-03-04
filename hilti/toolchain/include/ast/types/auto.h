@@ -19,10 +19,10 @@ public:
     bool isResolved(node::CycleDetector* cd) const final { return false; }
 
 protected:
-    Auto(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {}, meta) {}
+    Auto(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {}, meta) {}
 
 
-    HILTI_NODE(hilti, Auto);
+    HILTI_NODE_1(type::Auto, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

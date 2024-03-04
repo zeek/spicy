@@ -9,8 +9,8 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, address, Equal)
-HILTI_NODE_OPERATOR(hilti, address, Unequal)
-HILTI_NODE_OPERATOR(hilti, address, Family)
+HILTI_NODE_OPERATOR(address, Equal)
+HILTI_NODE_OPERATOR(address, Unequal)
+HILTI_NODE_OPERATOR(address, Family)
 
 } // namespace hilti::operator_

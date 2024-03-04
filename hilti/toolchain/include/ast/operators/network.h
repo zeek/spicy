@@ -9,11 +9,11 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, network, Equal)
-HILTI_NODE_OPERATOR(hilti, network, Unequal)
-HILTI_NODE_OPERATOR(hilti, network, In)
-HILTI_NODE_OPERATOR(hilti, network, Family)
-HILTI_NODE_OPERATOR(hilti, network, Prefix)
-HILTI_NODE_OPERATOR(hilti, network, Length)
+HILTI_NODE_OPERATOR(network, Equal)
+HILTI_NODE_OPERATOR(network, Unequal)
+HILTI_NODE_OPERATOR(network, In)
+HILTI_NODE_OPERATOR(network, Family)
+HILTI_NODE_OPERATOR(network, Prefix)
+HILTI_NODE_OPERATOR(network, Length)
 
 } // namespace hilti::operator_

@@ -57,9 +57,9 @@ public:
     }
 
 protected:
-    Unit(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    Unit(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Unit)
+    SPICY_NODE_1(ctor::Unit, Ctor, final);
 };
 
 

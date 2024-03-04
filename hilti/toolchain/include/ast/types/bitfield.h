@@ -78,12 +78,13 @@ protected:
 
     BitRange(ASTContext* ctx, Nodes children, ID id, unsigned int lower, unsigned int upper, unsigned int field_width,
              Meta meta = {})
-        : Declaration(ctx, std::move(children), std::move(id), declaration::Linkage::Private, std::move(meta)),
+        : Declaration(ctx, NodeTags, std::move(children), std::move(id), declaration::Linkage::Private,
+                      std::move(meta)),
           _lower(lower),
           _upper(upper),
           _field_width(field_width) {}
 
-    HILTI_NODE(hilti, BitRange);
+    HILTI_NODE_1(type::bitfield::BitRange, Declaration, final);
 
 private:
     unsigned int _lower = 0;
@@ -150,12 +151,14 @@ public:
 
 protected:
     Bitfield(ASTContext* ctx, Nodes children, unsigned int width, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)), WithUniqueID("bitfield"), _width(width) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)),
+          WithUniqueID("bitfield"),
+          _width(width) {}
 
     Bitfield(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, Wildcard(), {"bitfield(*)"}, meta), WithUniqueID("bitfield") {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"bitfield(*)"}, meta), WithUniqueID("bitfield") {}
 
-    HILTI_NODE(hilti, Bitfield)
+    HILTI_NODE_1(type::Bitfield, UnqualifiedType, final);
 
 private:
     unsigned int _width = 0;

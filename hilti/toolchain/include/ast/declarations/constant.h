@@ -47,11 +47,11 @@ public:
 
 protected:
     Constant(ASTContext* ctx, Nodes children, ID id, declaration::Linkage linkage, Meta meta)
-        : Declaration(ctx, std::move(children), std::move(id), linkage, std::move(meta)) {
+        : Declaration(ctx, NodeTags, std::move(children), std::move(id), linkage, std::move(meta)) {
         assert(! child(0) || child(0)->as<QualifiedType>()->isConstant());
     }
 
-    HILTI_NODE(hilti, Constant)
+    HILTI_NODE_1(declaration::Constant, Declaration, final);
 };
 
 } // namespace hilti::declaration

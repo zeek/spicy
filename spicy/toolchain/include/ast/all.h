@@ -6,6 +6,7 @@
 #include <spicy/ast/declarations/all.h>
 #include <spicy/ast/engine.h>
 #include <spicy/ast/forward.h>
+#include <spicy/ast/node-tag.h>
 #include <spicy/ast/operators/all.h>
 #include <spicy/ast/statements/all.h>
 #include <spicy/ast/types/all.h>

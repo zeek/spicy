@@ -199,10 +199,8 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( auto f = decl->tryAs<declaration::Field>(); f && f->type()->type()->isA<type::Function>() ) {
             // If we're referring to, but not calling, a method,
             // or static method, bind to the externally visible name for the type.
-            if ( ! n->parent() || ! n->parent()->isA<struct_::MemberCall>() ) {
-                result = {cxx::ID(cg->options().cxx_namespace_extern, fqid), Side::LHS};
-                return;
-            }
+            result = {cxx::ID(cg->options().cxx_namespace_extern, fqid), Side::LHS};
+            return;
         }
 
         if ( auto p = decl->tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {

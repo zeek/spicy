@@ -1550,6 +1550,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(type::bitfield::BitRange* n) final {
+        if ( ! n->fullyQualifiedID() )
+            setFqID(n, n->id()); // local scope
+
         if ( ! type::isResolved(n->itemType()) ) {
             auto t = n->ddType();
 

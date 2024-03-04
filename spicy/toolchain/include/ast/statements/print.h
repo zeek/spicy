@@ -22,9 +22,10 @@ public:
     }
 
 protected:
-    Print(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
+    Print(ASTContext* ctx, Nodes children, Meta meta)
+        : Statement(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(spicy, Print)
+    SPICY_NODE_1(statement::Print, Statement, final);
 };
 
 } // namespace spicy::statement

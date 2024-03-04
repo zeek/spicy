@@ -116,13 +116,13 @@ public:
 
 protected:
     Module(ASTContext* ctx, Nodes children, declaration::module::UID uid, ID scope, Meta meta = {})
-        : Declaration(ctx, std::move(children), uid.id, declaration::Linkage::Public, std::move(meta)),
+        : Declaration(ctx, NodeTags, std::move(children), uid.id, declaration::Linkage::Public, std::move(meta)),
           _uid(std::move(uid)),
           _scope_path(std::move(scope)) {}
 
     std::string _dump() const override;
 
-    HILTI_NODE(hilti, Module);
+    HILTI_NODE_1(declaration::Module, Declaration, final);
 
 private:
     declaration::module::UID _uid;

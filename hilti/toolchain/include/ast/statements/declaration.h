@@ -20,9 +20,10 @@ public:
     }
 
 protected:
-    Declaration(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
+    Declaration(ASTContext* ctx, Nodes children, Meta meta)
+        : Statement(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Declaration)
+    HILTI_NODE_1(statement::Declaration, Statement, final);
 };
 
 } // namespace hilti::statement

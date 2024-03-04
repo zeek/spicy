@@ -38,9 +38,9 @@ public:
 
 protected:
     Sink(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
-        : unit::Item(ctx, std::move(children), std::move(id), meta) {}
+        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), meta) {}
 
-    HILTI_NODE(spicy, Sink)
+    SPICY_NODE_2(type::unit::item::Sink, type::unit::Item, Declaration, final);
 };
 
 } // namespace spicy::type::unit::item

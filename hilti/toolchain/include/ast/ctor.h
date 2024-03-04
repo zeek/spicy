@@ -19,11 +19,12 @@ public:
     virtual QualifiedTypePtr type() const = 0;
 
 protected:
-    Ctor(ASTContext* ctx, Nodes children, Meta meta) : Node::Node(ctx, std::move(children), std::move(meta)) {}
+    Ctor(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)
+        : Node::Node(ctx, node_tags, std::move(children), std::move(meta)) {}
 
     std::string _dump() const override;
 
-    HILTI_NODE_BASE(hilti, Ctor);
+    HILTI_NODE_0(Ctor, override);
 };
 
 } // namespace hilti

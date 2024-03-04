@@ -35,11 +35,11 @@ public:
 
 protected:
     StrongReference(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     StrongReference(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"strong_ref(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"strong_ref(*)"}, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, StrongReference)
+    HILTI_NODE_1(type::StrongReference, UnqualifiedType, final);
 };
 
 /** AST node for a `weak_ref<T>` type. */
@@ -64,13 +64,13 @@ public:
 
 protected:
     WeakReference(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     WeakReference(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"weak_ref(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"weak_ref(*)"}, std::move(children), std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
 
-    HILTI_NODE(hilti, WeakReference)
+    HILTI_NODE_1(type::WeakReference, UnqualifiedType, final);
 };
 
 /** AST node for a `value_ref<T>` type. */
@@ -95,13 +95,13 @@ public:
 
 protected:
     ValueReference(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     ValueReference(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"value_ref(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"value_ref(*)"}, std::move(children), std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
 
-    HILTI_NODE(hilti, ValueReference)
+    HILTI_NODE_1(type::ValueReference, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

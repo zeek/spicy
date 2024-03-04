@@ -10,6 +10,6 @@
 // NOLINTNEXTLINE(modernize-concat-nested-namespaces)
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, optional, Deref)
+HILTI_NODE_OPERATOR(optional, Deref)
 
 }

@@ -97,11 +97,11 @@ public:
 
 protected:
     Attribute(ASTContext* ctx, Nodes children, std::string tag, Meta m = Meta())
-        : Node(ctx, std::move(children), std::move(m)), _tag(std::move(tag)) {}
+        : Node(ctx, NodeTags, std::move(children), std::move(m)), _tag(std::move(tag)) {}
 
     std::string _dump() const override;
 
-    HILTI_NODE(hilti, Attribute);
+    HILTI_NODE_0(Attribute, final);
 
 private:
     std::string _tag;
@@ -156,18 +156,18 @@ protected:
      * @param m meta data to associate with the node
      */
     explicit AttributeSet(ASTContext* ctx, Nodes children, Meta m = Meta())
-        : Node(ctx, std::move(children), std::move(m)) {}
+        : Node(ctx, NodeTags, std::move(children), std::move(m)) {}
 
     /**
      * Constructs an empty set.
      *
      * @param m meta data to associate with the node
      */
-    AttributeSet(ASTContext* ctx, Meta m = Meta()) : Node(ctx, {}, std::move(m)) {}
+    AttributeSet(ASTContext* ctx, Meta m = Meta()) : Node(ctx, {node::tag::AttributeSet}, {}, std::move(m)) {}
 
     std::string _dump() const override;
 
-    HILTI_NODE(hilti, AttributeSet);
+    HILTI_NODE_0(AttributeSet, final);
 };
 
 } // namespace hilti

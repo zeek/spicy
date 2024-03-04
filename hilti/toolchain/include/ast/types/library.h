@@ -37,10 +37,10 @@ public:
 
 private:
     Library(ASTContext* ctx, std::string cxx_name, Meta meta)
-        : UnqualifiedType(ctx, {util::fmt("library(%s)", cxx_name)}, std::move(meta)),
+        : UnqualifiedType(ctx, NodeTags, {util::fmt("library(%s)", cxx_name)}, std::move(meta)),
           _cxx_name(_normalize(std::move(cxx_name))) {}
 
-    HILTI_NODE(hilti, Library)
+    HILTI_NODE_1(type::Library, UnqualifiedType, final);
 
     std::string _normalize(std::string name) {
         if ( util::startsWith(name, "::") )

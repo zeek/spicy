@@ -83,7 +83,6 @@ set(SOURCES
     src/ast/types/struct.cc
     src/ast/types/tuple.cc
     src/ast/types/union.cc
-    src/ast/visitor-dispatcher.cc
     src/base/code-formatter.cc
     src/base/logger.cc
     src/base/preprocessor.cc

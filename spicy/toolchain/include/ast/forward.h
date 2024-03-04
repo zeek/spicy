@@ -7,6 +7,8 @@
 
 #include <hilti/ast/forward.h>
 
+#include <spicy/ast/node-tag.h>
+
 namespace hilti::node {}
 
 namespace hilti {

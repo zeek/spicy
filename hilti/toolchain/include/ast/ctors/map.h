@@ -30,11 +30,12 @@ public:
     }
 
 protected:
-    Element(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, std::move(children), std::move(meta)) {}
+    Element(ASTContext* ctx, Nodes children, Meta meta = {})
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
     std::string _dump() const final;
 
-    HILTI_NODE(hilti, Element);
+    HILTI_NODE_0(ctor::map::Element, final);
 };
 
 using ElementPtr = std::shared_ptr<Element>;
@@ -85,9 +86,9 @@ public:
     }
 
 protected:
-    Map(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    Map(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Map)
+    HILTI_NODE_1(ctor::Map, Ctor, final);
 };
 
 } // namespace hilti::ctor

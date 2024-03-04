@@ -106,11 +106,12 @@ public:
 
 protected:
     Field(ASTContext* ctx, Nodes children, ID id, std::optional<::hilti::function::CallingConvention> cc, Meta meta)
-        : Declaration(ctx, std::move(children), std::move(id), declaration::Linkage::Struct, std::move(meta)) {}
+        : Declaration(ctx, NodeTags, std::move(children), std::move(id), declaration::Linkage::Struct,
+                      std::move(meta)) {}
 
     std::string _dump() const override;
 
-    HILTI_NODE(hilti, Field);
+    HILTI_NODE_1(declaration::Field, Declaration, final);
 
 private:
     std::optional<::hilti::function::CallingConvention> _cc;

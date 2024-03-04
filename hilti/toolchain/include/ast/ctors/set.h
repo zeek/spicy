@@ -41,9 +41,9 @@ public:
     }
 
 protected:
-    Set(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    Set(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Set)
+    HILTI_NODE_1(ctor::Set, Ctor, final);
 };
 
 } // namespace hilti::ctor

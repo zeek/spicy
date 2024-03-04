@@ -29,9 +29,10 @@ public:
     }
 
 protected:
-    StrongReference(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    StrongReference(ASTContext* ctx, Nodes children, Meta meta)
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, StrongReference)
+    HILTI_NODE_1(ctor::StrongReference, Ctor, final);
 };
 
 /** AST node for a `weak_ref<T>` constructor value (which can only be null). */
@@ -49,9 +50,10 @@ public:
     }
 
 protected:
-    WeakReference(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    WeakReference(ASTContext* ctx, Nodes children, Meta meta)
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, WeakReference)
+    HILTI_NODE_1(ctor::WeakReference, Ctor, final);
 };
 
 /** AST node for a `value_ref<T>` constructor value. */
@@ -70,9 +72,10 @@ public:
     }
 
 protected:
-    ValueReference(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    ValueReference(ASTContext* ctx, Nodes children, Meta meta)
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, ValueReference)
+    HILTI_NODE_1(ctor::ValueReference, Ctor, final);
 };
 
 } // namespace hilti::ctor

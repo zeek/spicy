@@ -26,9 +26,9 @@ public:
     }
 
 protected:
-    Tuple(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    Tuple(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Tuple)
+    HILTI_NODE_1(ctor::Tuple, Ctor, final);
 
 private:
     static QualifiedTypePtr _inferType(ASTContext* ctx, const Expressions& exprs, const Meta& meta) {

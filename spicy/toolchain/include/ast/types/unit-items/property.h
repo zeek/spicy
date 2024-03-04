@@ -50,9 +50,9 @@ public:
 
 protected:
     Property(ASTContext* ctx, Nodes children, ID id, bool inherited, const Meta& meta)
-        : unit::Item(ctx, std::move(children), std::move(id), meta), _inherited(inherited) {}
+        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), meta), _inherited(inherited) {}
 
-    HILTI_NODE(spicy, Property)
+    SPICY_NODE_2(type::unit::item::Property, type::unit::Item, Declaration, final);
 
 private:
     bool _inherited;

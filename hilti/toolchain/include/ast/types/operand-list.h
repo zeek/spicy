@@ -57,13 +57,13 @@ public:
 protected:
     Operand(ASTContext* ctx, Nodes children, ID id, parameter::Kind kind, bool optional, std::string doc,
             Meta meta = {})
-        : Node(ctx, std::move(children), std::move(meta)),
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)),
           _id(std::move(id)),
           _kind(kind),
           _optional(optional),
           _doc(std::move(doc)) {}
 
-    HILTI_NODE(hilti, Operand);
+    HILTI_NODE_0(type::operand_list::Operand, final);
 
 private:
     static QualifiedTypePtr _makeOperandType(ASTContext* ctx, parameter::Kind _kind, const UnqualifiedTypePtr& type);
@@ -123,11 +123,11 @@ public:
 
 protected:
     OperandList(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     OperandList(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, Wildcard(), {"operand-list(*)"}, meta) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"operand-list(*)"}, meta) {}
 
-    HILTI_NODE(hilti, OperandList)
+    HILTI_NODE_1(type::OperandList, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

@@ -22,9 +22,9 @@ public:
     }
 
 protected:
-    RegExp(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"regexp"}, std::move(meta)) {}
+    RegExp(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"regexp"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, RegExp)
+    HILTI_NODE_1(type::RegExp, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

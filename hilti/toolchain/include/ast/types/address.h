@@ -22,9 +22,9 @@ public:
     bool isSortable() const final { return true; }
 
 protected:
-    Address(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {"address"}, meta) {}
+    Address(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {"address"}, meta) {}
 
-    HILTI_NODE(hilti, Address);
+    HILTI_NODE_1(type::Address, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

@@ -33,12 +33,12 @@ public:
 
 protected:
     Optional(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Optional(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"optional(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"optional(*)"}, std::move(children), std::move(meta)) {}
 
 
-    HILTI_NODE(hilti, Optional)
+    HILTI_NODE_1(type::Optional, UnqualifiedType, final);
 };
 
 

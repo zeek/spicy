@@ -41,9 +41,9 @@ public:
 
 protected:
     ListComprehension(ASTContext* ctx, Nodes children, Meta meta)
-        : Expression(ctx, std::move(children), std::move(meta)) {}
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, ListComprehension)
+    HILTI_NODE_1(expression::ListComprehension, Expression, final);
 };
 
 } // namespace hilti::expression

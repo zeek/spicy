@@ -31,14 +31,14 @@ public:
 
 protected:
     Member(ASTContext* ctx, ID id, Meta meta)
-        : UnqualifiedType(ctx, {util::fmt("member(%s)", id)}, std::move(meta)), _id(std::move(id)) {
+        : UnqualifiedType(ctx, NodeTags, {util::fmt("member(%s)", id)}, std::move(meta)), _id(std::move(id)) {
         assert(_id);
     }
 
     Member(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, Wildcard(), {"member(*)"}, meta), _id("<wildcard>") {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"member(*)"}, meta), _id("<wildcard>") {}
 
-    HILTI_NODE(hilti, Member)
+    HILTI_NODE_1(type::Member, UnqualifiedType, final);
 
 private:
     ID _id;

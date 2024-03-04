@@ -22,9 +22,9 @@ public:
     }
 
 protected:
-    Time(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"time"}, std::move(meta)) {}
+    Time(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"time"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Time)
+    HILTI_NODE_1(type::Time, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

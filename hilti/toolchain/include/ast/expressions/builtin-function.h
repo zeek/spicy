@@ -53,12 +53,12 @@ public:
 protected:
     BuiltInFunction(ASTContext* ctx, Nodes children, std::string name, std::string cxxname, int num_parameters,
                     Meta meta)
-        : Expression(ctx, std::move(children), std::move(meta)),
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)),
           _name(std::move(name)),
           _cxxname(std::move(cxxname)),
           _num_parameters(num_parameters) {}
 
-    HILTI_NODE(hilti, BuiltInFunction)
+    HILTI_NODE_1(expression::BuiltInFunction, Expression, final);
 
 private:
     std::string _name;

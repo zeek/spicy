@@ -9,7 +9,7 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, result, Deref)
-HILTI_NODE_OPERATOR(hilti, result, Error)
+HILTI_NODE_OPERATOR(result, Deref)
+HILTI_NODE_OPERATOR(result, Error)
 
 } // namespace hilti::operator_

@@ -68,13 +68,13 @@ public:
 protected:
     ImportedModule(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, const std::string& parse_extension,
                    ID search_scope, std::vector<hilti::rt::filesystem::path> search_dirs, Meta meta)
-        : Declaration(ctx, {}, std::move(id), Linkage::Private, std::move(meta)),
+        : Declaration(ctx, NodeTags, {}, std::move(id), Linkage::Private, std::move(meta)),
           _path(std::move(path)),
           _parse_extension(parse_extension),
           _scope(std::move(search_scope)),
           _dirs(std::move(search_dirs)) {}
 
-    HILTI_NODE(hilti, ImportedModule)
+    HILTI_NODE_1(declaration::ImportedModule, Declaration, final);
 
 private:
     hilti::rt::filesystem::path _path;

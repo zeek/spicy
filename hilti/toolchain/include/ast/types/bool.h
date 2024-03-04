@@ -20,9 +20,9 @@ public:
     bool isSortable() const final { return true; }
 
 protected:
-    Bool(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {"bool"}, meta) {}
+    Bool(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {"bool"}, meta) {}
 
-    HILTI_NODE(hilti, Bool)
+    HILTI_NODE_1(type::Bool, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

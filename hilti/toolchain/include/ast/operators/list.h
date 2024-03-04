@@ -9,13 +9,13 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, list::iterator, Deref)
-HILTI_NODE_OPERATOR(hilti, list::iterator, IncrPostfix)
-HILTI_NODE_OPERATOR(hilti, list::iterator, IncrPrefix)
-HILTI_NODE_OPERATOR(hilti, list::iterator, Equal)
-HILTI_NODE_OPERATOR(hilti, list::iterator, Unequal)
-HILTI_NODE_OPERATOR(hilti, list, Size)
-HILTI_NODE_OPERATOR(hilti, list, Equal)
-HILTI_NODE_OPERATOR(hilti, list, Unequal)
+HILTI_NODE_OPERATOR(list::iterator, Deref)
+HILTI_NODE_OPERATOR(list::iterator, IncrPostfix)
+HILTI_NODE_OPERATOR(list::iterator, IncrPrefix)
+HILTI_NODE_OPERATOR(list::iterator, Equal)
+HILTI_NODE_OPERATOR(list::iterator, Unequal)
+HILTI_NODE_OPERATOR(list, Size)
+HILTI_NODE_OPERATOR(list, Equal)
+HILTI_NODE_OPERATOR(list, Unequal)
 
 } // namespace hilti::operator_

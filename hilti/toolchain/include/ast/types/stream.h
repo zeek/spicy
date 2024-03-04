@@ -29,9 +29,9 @@ public:
 
 protected:
     Iterator(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {"iterator(stream)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {"iterator(stream)"}, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Iterator)
+    HILTI_NODE_1(type::stream::Iterator, UnqualifiedType, final);
 };
 
 /** AST node for a stream view type. */
@@ -52,9 +52,9 @@ public:
 
 protected:
     View(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {"view::stream"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {"view::stream"}, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, View)
+    HILTI_NODE_1(type::stream::View, UnqualifiedType, final);
 };
 
 } // namespace stream
@@ -79,11 +79,11 @@ public:
 
 protected:
     Stream(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {"stream"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {"stream"}, std::move(children), std::move(meta)) {}
 
     void newlyQualified(const QualifiedType* qtype) const final { elementType()->setConst(qtype->constness()); }
 
-    HILTI_NODE(hilti, Stream)
+    HILTI_NODE_1(type::Stream, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

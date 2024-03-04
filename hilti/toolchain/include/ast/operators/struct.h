@@ -10,12 +10,12 @@
 namespace hilti {
 
 namespace operator_ {
-HILTI_NODE_OPERATOR(hilti, struct_, HasMember)
-HILTI_NODE_OPERATOR(hilti, struct_, MemberCall);
-HILTI_NODE_OPERATOR(hilti, struct_, MemberConst)
-HILTI_NODE_OPERATOR(hilti, struct_, MemberNonConst)
-HILTI_NODE_OPERATOR(hilti, struct_, TryMember)
-HILTI_NODE_OPERATOR(hilti, struct_, Unset)
+HILTI_NODE_OPERATOR(struct_, HasMember)
+HILTI_NODE_OPERATOR(struct_, MemberCall);
+HILTI_NODE_OPERATOR(struct_, MemberConst)
+HILTI_NODE_OPERATOR(struct_, MemberNonConst)
+HILTI_NODE_OPERATOR(struct_, TryMember)
+HILTI_NODE_OPERATOR(struct_, Unset)
 } // namespace operator_
 
 namespace struct_ {

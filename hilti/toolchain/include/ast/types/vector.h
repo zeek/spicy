@@ -35,12 +35,12 @@ public:
 
 protected:
     Iterator(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Iterator(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"iterator(vector(*))"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"iterator(vector(*))"}, std::move(children), std::move(meta)) {}
 
 
-    HILTI_NODE(hilti, Iterator)
+    HILTI_NODE_1(type::vector::Iterator, UnqualifiedType, final);
 };
 
 } // namespace vector
@@ -72,14 +72,14 @@ public:
 
 protected:
     Vector(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Vector(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"vector(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"vector(*)"}, std::move(children), std::move(meta)) {}
 
 
     void newlyQualified(const QualifiedType* qtype) const final { elementType()->setConst(qtype->constness()); }
 
-    HILTI_NODE(hilti, Vector)
+    HILTI_NODE_1(type::Vector, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

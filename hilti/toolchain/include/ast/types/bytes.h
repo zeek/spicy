@@ -29,9 +29,9 @@ public:
 
 protected:
     Iterator(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {"iterator(bytes)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {"iterator(bytes)"}, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Iterator)
+    HILTI_NODE_1(type::bytes::Iterator, UnqualifiedType, final);
 };
 
 } // namespace bytes
@@ -55,11 +55,11 @@ public:
 
 protected:
     Bytes(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {"bytes"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {"bytes"}, std::move(children), std::move(meta)) {}
 
     void newlyQualified(const QualifiedType* qtype) const final { elementType()->setConst(qtype->constness()); }
 
-    HILTI_NODE(hilti, Bytes)
+    HILTI_NODE_1(type::Bytes, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

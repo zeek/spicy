@@ -9,10 +9,10 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, tuple, Equal)
-HILTI_NODE_OPERATOR(hilti, tuple, Unequal)
-HILTI_NODE_OPERATOR(hilti, tuple, Index)
-HILTI_NODE_OPERATOR(hilti, tuple, Member)
-HILTI_NODE_OPERATOR(hilti, tuple, CustomAssign)
+HILTI_NODE_OPERATOR(tuple, Equal)
+HILTI_NODE_OPERATOR(tuple, Unequal)
+HILTI_NODE_OPERATOR(tuple, Index)
+HILTI_NODE_OPERATOR(tuple, Member)
+HILTI_NODE_OPERATOR(tuple, CustomAssign)
 
 } // namespace hilti::operator_

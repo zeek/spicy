@@ -301,14 +301,15 @@ protected:
     friend class ASTContext;
     friend UnqualifiedTypePtr hilti::type::follow(const UnqualifiedTypePtr& t);
 
-    UnqualifiedType(ASTContext* ctx, type::Unification&& u, Meta meta)
-        : Node::Node(ctx, std::move(meta)), _context(ctx), _unification(std::move(u)) {}
-    UnqualifiedType(ASTContext* ctx, type::Unification&& u, Nodes children, Meta meta)
-        : Node::Node(ctx, std::move(children), std::move(meta)), _context(ctx), _unification(std::move(u)) {}
-    UnqualifiedType(ASTContext* ctx, type::Wildcard _, type::Unification&& u, const Meta& meta)
-        : Node::Node(ctx, {}, meta), _context(ctx), _unification(std::move(u)), _is_wildcard(true) {}
-    UnqualifiedType(ASTContext* ctx, type::Wildcard _, type::Unification&& u, Nodes children, Meta meta)
-        : Node::Node(ctx, std::move(children), std::move(meta)),
+    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Unification&& u, Meta meta)
+        : Node::Node(ctx, node_tags, std::move(meta)), _context(ctx), _unification(std::move(u)) {}
+    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Unification&& u, Nodes children, Meta meta)
+        : Node::Node(ctx, node_tags, std::move(children), std::move(meta)), _context(ctx), _unification(std::move(u)) {}
+    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard _, type::Unification&& u, const Meta& meta)
+        : Node::Node(ctx, node_tags, {}, meta), _context(ctx), _unification(std::move(u)), _is_wildcard(true) {}
+    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard _, type::Unification&& u, Nodes children,
+                    Meta meta)
+        : Node::Node(ctx, node_tags, std::move(children), std::move(meta)),
           _context(ctx),
           _unification(std::move(u)),
           _is_wildcard(true) {}
@@ -325,7 +326,7 @@ protected:
     /** Implements `Node` interface. */
     std::string _dump() const override;
 
-    HILTI_NODE_BASE(hilti, Type);
+    HILTI_NODE_0(UnqualifiedType, override);
 
 private:
     ASTContext* _context;
@@ -468,11 +469,14 @@ protected:
     friend class ASTContext;
 
     QualifiedType(ASTContext* ctx, Nodes children, Constness constness, Side side, Meta meta)
-        : Node(ctx, std::move(children), std::move(meta)), _context(ctx), _constness(constness), _side(side) {}
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)),
+          _context(ctx),
+          _constness(constness),
+          _side(side) {}
 
     QualifiedType(ASTContext* ctx, Nodes children, const UnqualifiedTypePtr& t, Constness constness, Side side,
                   Meta meta)
-        : Node(ctx, std::move(children), std::move(meta)),
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)),
           _context(ctx),
           _external(ctx->register_(t)),
           _constness(constness),
@@ -481,7 +485,7 @@ protected:
     /** Implements `Node` interface. */
     std::string _dump() const final;
 
-    HILTI_NODE(hilti, QualifiedType);
+    HILTI_NODE_0(QualifiedType, final);
 
 private:
     // Internal version of _type() that doesn't follow name references.

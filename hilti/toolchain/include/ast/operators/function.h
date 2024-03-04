@@ -12,7 +12,7 @@
 namespace hilti {
 
 namespace operator_ {
-HILTI_NODE_OPERATOR(hilti, function, Call); // AST node for instantiated call operator
+HILTI_NODE_OPERATOR(function, Call); // AST node for instantiated call operator
 }
 
 namespace function {

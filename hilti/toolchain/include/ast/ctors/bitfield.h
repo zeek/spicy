@@ -42,9 +42,9 @@ protected:
     friend class type::Bitfield;
 
     BitRange(ASTContext* ctx, Nodes children, ID id, const Meta& meta = Meta())
-        : Node(ctx, std::move(children), meta), _id(std::move(id)) {}
+        : Node(ctx, NodeTags, std::move(children), meta), _id(std::move(id)) {}
 
-    HILTI_NODE(hilti, BitRange);
+    HILTI_NODE_0(ctor::bitfield::BitRange, final);
 
 private:
     ID _id;
@@ -82,9 +82,9 @@ public:
     }
 
 protected:
-    Bitfield(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    Bitfield(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Bitfield)
+    HILTI_NODE_1(ctor::Bitfield, Ctor, final);
 };
 
 } // namespace hilti::ctor

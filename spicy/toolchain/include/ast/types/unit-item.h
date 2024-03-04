@@ -9,6 +9,7 @@
 #include <hilti/ast/declaration.h>
 
 #include <spicy/ast/forward.h>
+#include <spicy/ast/node.h>
 
 namespace spicy::type::unit {
 
@@ -22,10 +23,10 @@ public:
     virtual bool isResolved(hilti::node::CycleDetector* cd = nullptr) const = 0;
 
 protected:
-    Item(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
-        : hilti::Declaration(ctx, std::move(children), std::move(id), {}, meta) {}
+    Item(ASTContext* ctx, node::Tags node_tags, Nodes children, ID id, const Meta& meta)
+        : hilti::Declaration(ctx, node_tags, std::move(children), std::move(id), {}, meta) {}
 
-    HILTI_NODE_BASE(hilti, Item);
+    SPICY_NODE_1(type::unit::Item, Declaration, override);
 };
 
 } // namespace spicy::type::unit

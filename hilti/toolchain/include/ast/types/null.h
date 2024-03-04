@@ -19,9 +19,9 @@ public:
     }
 
 protected:
-    Null(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"null"}, std::move(meta)) {}
+    Null(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"null"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Null)
+    HILTI_NODE_1(type::Null, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

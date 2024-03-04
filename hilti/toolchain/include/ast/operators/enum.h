@@ -9,12 +9,12 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, enum_, Equal)
-HILTI_NODE_OPERATOR(hilti, enum_, Unequal)
-HILTI_NODE_OPERATOR(hilti, enum_, CastToSignedInteger)
-HILTI_NODE_OPERATOR(hilti, enum_, CastToUnsignedInteger)
-HILTI_NODE_OPERATOR(hilti, enum_, CtorSigned)
-HILTI_NODE_OPERATOR(hilti, enum_, CtorUnsigned)
-HILTI_NODE_OPERATOR(hilti, enum_, HasLabel)
+HILTI_NODE_OPERATOR(enum_, Equal)
+HILTI_NODE_OPERATOR(enum_, Unequal)
+HILTI_NODE_OPERATOR(enum_, CastToSignedInteger)
+HILTI_NODE_OPERATOR(enum_, CastToUnsignedInteger)
+HILTI_NODE_OPERATOR(enum_, CtorSigned)
+HILTI_NODE_OPERATOR(enum_, CtorUnsigned)
+HILTI_NODE_OPERATOR(enum_, HasLabel)
 
 } // namespace hilti::operator_

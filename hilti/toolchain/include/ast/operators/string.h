@@ -9,12 +9,12 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, string, Equal)
-HILTI_NODE_OPERATOR(hilti, string, Unequal)
-HILTI_NODE_OPERATOR(hilti, string, Size)
-HILTI_NODE_OPERATOR(hilti, string, Sum)
-HILTI_NODE_OPERATOR(hilti, string, SumAssign)
-HILTI_NODE_OPERATOR(hilti, string, Modulo)
-HILTI_NODE_OPERATOR(hilti, string, Encode)
+HILTI_NODE_OPERATOR(string, Equal)
+HILTI_NODE_OPERATOR(string, Unequal)
+HILTI_NODE_OPERATOR(string, Size)
+HILTI_NODE_OPERATOR(string, Sum)
+HILTI_NODE_OPERATOR(string, SumAssign)
+HILTI_NODE_OPERATOR(string, Modulo)
+HILTI_NODE_OPERATOR(string, Encode)
 
 } // namespace hilti::operator_

@@ -87,11 +87,12 @@ public:
 
 protected:
     Union(ASTContext* ctx, const Nodes& children, int64_t anon_union, const Meta& meta)
-        : UnqualifiedType(ctx, {}, children, meta), _anon_union(anon_union) {}
+        : UnqualifiedType(ctx, NodeTags, {}, children, meta), _anon_union(anon_union) {}
 
-    Union(ASTContext* ctx, Wildcard _, const Meta& meta) : UnqualifiedType(ctx, Wildcard(), {"union(*)"}, meta) {}
+    Union(ASTContext* ctx, Wildcard _, const Meta& meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"union(*)"}, meta) {}
 
-    HILTI_NODE(hilti, Union)
+    HILTI_NODE_1(type::Union, UnqualifiedType, final);
 
 private:
     int64_t _anon_union = -1;

@@ -45,10 +45,12 @@ public:
         return Expression::properties() + p;
     }
 
+    HILTI_NODE_1(expression::ResolvedOperator, Expression, override);
+
 protected:
-    ResolvedOperator(ASTContext* ctx, const Operator* op, const QualifiedTypePtr& result, const Expressions& operands,
-                     Meta meta)
-        : Expression(ctx, node::flatten(result, operands), std::move(meta)), _operator(op) {}
+    ResolvedOperator(ASTContext* ctx, node::Tags node_tags, const Operator* op, const QualifiedTypePtr& result,
+                     const Expressions& operands, Meta meta)
+        : Expression(ctx, node_tags, node::flatten(result, operands), std::move(meta)), _operator(op) {}
 
 private:
     const Operator* _operator = nullptr;

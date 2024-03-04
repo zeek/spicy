@@ -45,12 +45,12 @@ protected:
     friend class type::Enum;
 
     Label(ASTContext* ctx, Nodes children, ID id, int value, Meta meta = {})
-        : Node(ctx, std::move(children), std::move(meta)), _id(std::move(id)), _value(value) {}
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)), _id(std::move(id)), _value(value) {}
 
     void setValue(int value) { _value = value; }
     void setEnumType(ASTContext* ctx, const QualifiedTypePtr& type) { setChild(ctx, 0, type); }
 
-    HILTI_NODE(hilti, Label)
+    HILTI_NODE_0(type::enum_::Label, final);
 
 private:
     ID _id;
@@ -100,10 +100,12 @@ public:
     }
 
 protected:
-    Enum(ASTContext* ctx, Nodes children, Meta meta) : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
-    Enum(ASTContext* ctx, Wildcard _, const Meta& meta) : UnqualifiedType(ctx, Wildcard(), {"enum(*)"}, meta) {}
+    Enum(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
+    Enum(ASTContext* ctx, Wildcard _, const Meta& meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"enum(*)"}, meta) {}
 
-    HILTI_NODE(hilti, Enum)
+    HILTI_NODE_1(type::Enum, UnqualifiedType, final);
 
 private:
     void _setLabels(ASTContext* ctx, enum_::Labels labels);

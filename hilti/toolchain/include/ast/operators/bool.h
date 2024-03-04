@@ -9,10 +9,10 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, bool_, Equal)
-HILTI_NODE_OPERATOR(hilti, bool_, Unequal)
-HILTI_NODE_OPERATOR(hilti, bool_, BitAnd)
-HILTI_NODE_OPERATOR(hilti, bool_, BitOr)
-HILTI_NODE_OPERATOR(hilti, bool_, BitXor)
+HILTI_NODE_OPERATOR(bool_, Equal)
+HILTI_NODE_OPERATOR(bool_, Unequal)
+HILTI_NODE_OPERATOR(bool_, BitAnd)
+HILTI_NODE_OPERATOR(bool_, BitOr)
+HILTI_NODE_OPERATOR(bool_, BitXor)
 
 } // namespace hilti::operator_

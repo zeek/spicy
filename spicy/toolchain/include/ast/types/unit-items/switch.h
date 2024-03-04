@@ -65,9 +65,9 @@ public:
 
 protected:
     Case(ASTContext* ctx, Nodes children, bool look_ahead, Meta meta)
-        : Node::Node(ctx, std::move(children), std::move(meta)), _look_ahead(look_ahead) {}
+        : Node::Node(ctx, NodeTags, std::move(children), std::move(meta)), _look_ahead(look_ahead) {}
 
-    HILTI_NODE(spicy, Case);
+    SPICY_NODE_0(type::unit::item::switch_::Case, final);
 
 private:
     bool _look_ahead = false;
@@ -132,9 +132,9 @@ public:
 
 protected:
     Switch(ASTContext* ctx, Nodes children, Engine engine, const Meta& meta)
-        : unit::Item(ctx, std::move(children), ID(), meta), _engine(engine) {}
+        : unit::Item(ctx, NodeTags, std::move(children), ID(), meta), _engine(engine) {}
 
-    HILTI_NODE(spicy, Switch)
+    SPICY_NODE_2(type::unit::item::Switch, type::unit::Item, Declaration, final);
 
 private:
     Engine _engine;

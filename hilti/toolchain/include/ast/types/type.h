@@ -31,12 +31,12 @@ public:
 
 protected:
     Type_(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Type_(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"type(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"type(*)"}, std::move(children), std::move(meta)) {}
 
 
-    HILTI_NODE(hilti, Type_)
+    HILTI_NODE_1(type::Type_, UnqualifiedType, final);
 };
 
 } // namespace hilti::type
