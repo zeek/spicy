@@ -1,3 +1,23 @@
+1.10.0 | 2024-03-04 16:33:50 +0100
+
+  * Release 1.10.0.
+
+  * Bump freebsd13 CI job to freebsd-13.3. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 31866cae8ecd5df2dcd07c0657a6792857157f16)
+
+1.10.0-dev.150 | 2024-02-26 12:17:07 +0100
+
+  * Fix stray Python escape sequence. (Benjamin Bannier, Corelight)
+
+    At least on my platform with python-3.12.2 the previous code produced a
+    warning
+
+        ../scripts/autogen-type-erased:137: SyntaxWarning: invalid escape sequence '\{'
+          i = re.search("(.*) *with *default *(\{.*)$", s)
+
+    (cherry picked from commit 09bc76d9dd815567fcd767b707462eff5d9ffe9f)
+
 1.10.0-dev.149 | 2024-02-22 09:48:01 +0100
 
   * GH-1585: Put closing of unit sinks behind feature guard. (Benjamin Bannier, Corelight)
