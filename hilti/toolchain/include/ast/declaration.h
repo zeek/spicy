@@ -2,24 +2,19 @@
 
 #pragma once
 
-#include <optional>
 #include <string>
 #include <utility>
 
+#include <hilti/ast/ast-context.h>
+#include <hilti/ast/forward.h>
 #include <hilti/ast/id.h>
 #include <hilti/ast/node.h>
-#include <hilti/base/type_erase.h>
 
 namespace hilti {
 
-namespace trait {
-/** Trait for classes implementing the `Declaration` interface. */
-class isDeclaration : public isNode {};
-} // namespace trait
-
 namespace declaration {
 
-/** Linkage defining visibility/accessability of a declaration. */
+/** Linkage defining visibility/accessibility of a declaration. */
 enum class Linkage {
     Init,    /// executes automatically at startup, not otherwise accessible
     PreInit, /// executes automatically at load time, even before the runtime library is fully set up
@@ -29,14 +24,14 @@ enum class Linkage {
 };
 
 namespace detail {
-constexpr util::enum_::Value<Linkage> linkages[] = {
+constexpr util::enum_::Value<Linkage> Linkages[] = {
     {Linkage::Struct, "struct"}, {Linkage::Public, "public"},   {Linkage::Private, "private"},
     {Linkage::Init, "init"},     {Linkage::PreInit, "preinit"},
 };
 } // namespace detail
 
 /** Returns the HILTI string representation corresponding to a linkage. */
-constexpr auto to_string(Linkage f) { return util::enum_::to_string(f, detail::linkages); }
+constexpr auto to_string(Linkage f) { return util::enum_::to_string(f, detail::Linkages); }
 
 namespace linkage {
 /**
@@ -44,59 +39,123 @@ namespace linkage {
  *
  * @exception `std::out_of_range` if the string does not map to a linkage
  */
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Linkage>(s, detail::linkages); }
+constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Linkage>(s, detail::Linkages); }
 } // namespace linkage
-
-namespace detail {
-#include <hilti/autogen/__declaration.h>
-}
 } // namespace declaration
 
-class Declaration : public declaration::detail::Declaration {
+/** Base class for implementing declaration nodes. */
+class Declaration : public Node, public node::WithDocString {
 public:
-    using declaration::detail::Declaration::Declaration;
-};
+    ~Declaration() override;
 
-/** Creates an AST node representing a `Declaration`. */
-inline Node to_node(Declaration t) { return Node(std::move(t)); }
+    /** Returns the declaration's ID. */
+    const auto& id() const { return _id; }
 
-/** Renders a declaration as HILTI source code. */
-inline std::ostream& operator<<(std::ostream& out, Declaration d) { return out << to_node(std::move(d)); }
+    /** Returns the declaration's linkage. */
+    auto linkage() const { return _linkage; }
 
-inline bool operator==(const Declaration& x, const Declaration& y) {
-    if ( &x == &y )
-        return true;
+    /**
+     * Returns the declaration's fully qualified ID once it has been set during
+     * AST processing. The ID is guaranteed to be stable only after AST
+     * processing has finished. Returns an empty ID if not yet set.
+     */
+    const auto& fullyQualifiedID() const { return _fqid; }
 
-    assert(x.isEqual(y) == y.isEqual(x)); // Expected to be symmetric.
-    return x.isEqual(y);
-}
+    /**
+     * Returns the canonical ID associated with the declaration once it has
+     * been set during AST processing. Canonical IDs are guaranteed to be
+     * globally unique within one instance of an AST context. However, the ID
+     * is guaranteed to be unique and stable only once AST processing has
+     * finished. Returns an empty ID if not yet set.
+     */
+    const auto& canonicalID() const { return _canonical_id; }
 
-inline bool operator!=(const Declaration& d1, const Declaration& d2) { return ! (d1 == d2); }
+    /**
+     * Returns the index the AST context associates with the declaration. This
+     * may become set during AST resolving. If not set yet, returns `None`.
+     */
+    auto declarationIndex() const { return _declaration_index; }
 
-namespace declaration {
-/** Constructs an AST node from any class implementing the `Declaration` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isDeclaration, T>>* = nullptr>
-inline Node to_node(T t) {
-    return Node(Declaration(std::move(t)));
-}
-} // namespace declaration
+    /**
+     * Sets the declaration's ID. This clears fully-qualified and canonical IDs
+     * as they likely need to be recomputed now.
+     */
+    void setID(const ID& id) {
+        _id = id;
+        _fqid = {}, _canonical_id = {};
+    }
 
-/**
- * Base class for classes implementing the `Declaration` interface. This class
- * provides implementations for some interface methods shared that are shared
- * by all declarations.
- */
-class DeclarationBase : public NodeBase, public node::WithDocString, public hilti::trait::isDeclaration {
-public:
-    using NodeBase::NodeBase;
+    /** Sets the declaration's linkage. */
+    void setLinkage(declaration::Linkage linkage) { _linkage = linkage; }
 
-    /** Implements the `Declaration` interface. */
-    const ID& canonicalID() const { return _id; }
-    /** Implements the `Declaration` interface. */
-    void setCanonicalID(ID id) { _id = std::move(id); }
+    /**
+     * Sets the declaration's fully qualified ID. Should be used only by the ID
+     * assigner during AST processing.
+     *
+     * @param id fully qualified ID
+     */
+    void setFullyQualifiedID(ID id) { _fqid = std::move(id); }
+
+    /**
+     * Associates a canonical ID with the declaration. Should be used only by
+     * the ID assigner during AST processing.
+     *
+     * @param id canonical ID, which must be globally unique for this declaration
+     */
+    void setCanonicalID(ID id) { _canonical_id = std::move(id); }
+
+    /**
+     * Returns a user-friendly descriptive name for the type of object the
+     * declaration refers to (e.g., "local variable"). This can be used in
+     * messages to the user.
+     */
+    virtual std::string_view displayName() const = 0;
+
+    /** Implements the node interface. */
+    node::Properties properties() const override {
+        auto p = node::Properties{{"id", _id},
+                                  {"linkage", declaration::to_string(_linkage)},
+                                  {"declaration", to_string(_declaration_index)},
+                                  {"fqid", _fqid},
+                                  {"canonical-id", _canonical_id}};
+
+        return Node::properties() + p;
+    }
+
+    Declaration(const Declaration& other) : Node(other), node::WithDocString(other) {
+        _id = other._id;
+        _linkage = other._linkage;
+        // Do not copy computed state, we'll want to recompute that eventually.
+    }
+
+    Declaration(Declaration&& other) = default;
+
+    Declaration& operator=(const Declaration& other) = delete;
+    Declaration& operator=(Declaration&& other) = delete;
+
+protected:
+    friend class ASTContext;
+
+    Declaration(ASTContext* ctx, Nodes children, ID id, declaration::Linkage linkage, Meta meta = {})
+        : Node(ctx, std::move(children), std::move(meta)), _id(std::move(id)), _linkage(linkage) {}
+
+    // For the AST context to set the declaration index.
+    void setDeclarationIndex(ast::DeclarationIndex index) {
+        assert(index);
+        _declaration_index = index;
+    }
+
+    std::string _dump() const override;
+
+    HILTI_NODE_BASE(hilti, Declaration);
 
 private:
     ID _id;
+    declaration::Linkage _linkage;
+
+    ast::DeclarationIndex _declaration_index; // index registered by the context
+    ID _fqid;                                 // computed during AST processing
+    ID _canonical_id;                         // computed during AST processing
 };
 
 } // namespace hilti

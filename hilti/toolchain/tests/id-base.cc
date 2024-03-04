@@ -10,10 +10,10 @@
 
 using namespace hilti;
 
-std::string normalize_id(std::string id) { return id; }
+std::string normalizeID(std::string id) { return id; }
 
-class ID : public detail::IDBase<ID, normalize_id> {
-    using Base = detail::IDBase<ID, normalize_id>;
+class ID : public detail::IDBase<ID, normalizeID> {
+    using Base = detail::IDBase<ID, normalizeID>;
     using Base::IDBase;
 };
 

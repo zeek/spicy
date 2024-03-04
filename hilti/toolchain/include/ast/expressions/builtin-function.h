@@ -1,19 +1,38 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#pragma once
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/expression.h>
-#include <hilti/ast/node.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/function.h>
 
 namespace hilti::expression {
 
 /** AST node representing a builtin function call. */
-class BuiltinFunction : public NodeBase, public trait::isExpression {
+class BuiltInFunction : public Expression {
 public:
+    auto arguments() const { return children<Expression>(_num_parameters + 1, {}); }
+    auto parameters() const { return children<declaration::Parameter>(1, _num_parameters); }
+    const auto& cxxname() const { return _cxxname; }
+    const auto& name() const { return _name; }
+
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+
+    node::Properties properties() const final {
+        auto p = node::Properties{{"name", _name}, {"cxxname", _cxxname}};
+        return Expression::properties() + p;
+    }
+
+    void setArguments(ASTContext* ctx, const Expressions& args) {
+        removeChildren(_num_parameters + 1, {});
+        addChildren(ctx, args);
+    }
+
     /** Construct a builtin function call node.
      *
      * @param name the name of the function on the HILTI side
@@ -23,43 +42,23 @@ public:
      * @param arguments arguments to the function call
      * @param m meta information for the function call
      */
-    BuiltinFunction(std::string name, std::string cxxname, hilti::Type type,
-                    const std::vector<declaration::Parameter>& parameters, std::vector<Expression> arguments,
-                    Meta m = Meta())
-        : NodeBase(nodes(std::move(type), parameters, std::move(arguments)), std::move(m)),
+    static auto create(ASTContext* ctx, const std::string& name, const std::string& cxxname,
+                       const QualifiedTypePtr& type, const type::function::Parameters& parameters,
+                       const Expressions& arguments, const Meta& meta = {}) {
+        return std::shared_ptr<BuiltInFunction>(new BuiltInFunction(ctx, node::flatten(type, parameters, arguments),
+                                                                    name, cxxname, static_cast<int>(parameters.size()),
+                                                                    meta));
+    }
+
+protected:
+    BuiltInFunction(ASTContext* ctx, Nodes children, std::string name, std::string cxxname, int num_parameters,
+                    Meta meta)
+        : Expression(ctx, std::move(children), std::move(meta)),
           _name(std::move(name)),
           _cxxname(std::move(cxxname)),
-          _num_parameters(static_cast<int>(parameters.size())) {}
+          _num_parameters(num_parameters) {}
 
-    auto arguments() const { return children<Expression>(_num_parameters + 1, -1); }
-    auto parameters() const { return children<declaration::Parameter>(1, _num_parameters); }
-    const auto& cxxname() const { return _cxxname; }
-    const auto& name() const { return _name; }
-
-    void setArguments(std::vector<hilti::Expression> args) {
-        children().clear();
-
-        for ( auto& a : args )
-            children().emplace_back(std::move(a));
-    }
-
-    friend bool operator==(const BuiltinFunction& lhs, const BuiltinFunction& rhs) {
-        return lhs._cxxname == rhs._cxxname && lhs.type() == rhs.type() && lhs.parameters() == rhs.parameters() &&
-               lhs.arguments() == rhs.arguments();
-    }
-
-    /** Implements `Expression` interface. */
-    const Type& type() const { return child<hilti::Type>(0); };
-    /** Implements `Expression` interface. */
-    bool isConstant() const { return false; }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
-    /** Implements `Expression` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Expression` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Expression` interface. */
-    auto properties() const { return node::Properties{{"name", _name}}; }
+    HILTI_NODE(hilti, BuiltInFunction)
 
 private:
     std::string _name;

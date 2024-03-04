@@ -22,7 +22,7 @@ static const unsigned int AddSeparatorBefore = (1U << 4U); // Force adding a sep
 } // namespace flags
 
 
-std::string cxx::normalize_id(std::string id) {
+std::string cxx::normalizeID(std::string id) {
     static const std::set<std::string> reserved = {
         "NULL",
         "_Alignas",
@@ -587,7 +587,7 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {
         f << '{' << indent() << eol();
 
     if ( ! braces && ! compact_block )
-        f << indent() << eol();
+        f << indent();
 
     if ( ! x._stmts.empty() || ! x._tmps.empty() ) {
         for ( const auto& t : x._tmps )

@@ -2,86 +2,92 @@
 
 #pragma once
 
-#include <algorithm>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
-#include <hilti/ast/builder/type.h>
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
-#include <hilti/ast/types/auto.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/map.h>
 
 namespace hilti::ctor {
 
 namespace map {
-/** AST node for a map element constructor. */
-class Element : public NodeBase {
+
+/** Base class for map field nodes. */
+class Element final : public Node {
 public:
-    Element(Expression k, Expression v, Meta m = Meta()) : NodeBase(nodes(std::move(k), std::move(v)), std::move(m)) {}
-    Element(Meta m = Meta()) : NodeBase(nodes(node::none, node::none), std::move(m)) {}
+    ~Element() final;
 
-    const auto& key() const { return child<Expression>(0); }
-    const auto& value() const { return child<Expression>(1); }
+    auto key() const { return child<Expression>(0); }
+    auto value() const { return child<Expression>(1); }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, const ExpressionPtr& key, const ExpressionPtr& value, Meta meta = {}) {
+        return std::shared_ptr<Element>(new Element(ctx, {key, value}, std::move(meta)));
+    }
 
-    bool operator==(const Element& other) const { return key() == other.key() && value() == other.value(); }
+protected:
+    Element(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, std::move(children), std::move(meta)) {}
+
+    std::string _dump() const final;
+
+    HILTI_NODE(hilti, Element);
 };
 
-inline Node to_node(Element f) { return Node(std::move(f)); }
+using ElementPtr = std::shared_ptr<Element>;
+using Elements = std::vector<ElementPtr>;
+
 } // namespace map
 
-/** AST node for a map constructor. */
-class Map : public NodeBase, public hilti::trait::isCtor {
+/** AST node for a `map` ctor. */
+class Map : public Ctor {
 public:
-    Map(const std::vector<map::Element>& e, const Meta& m = Meta())
-        : NodeBase(nodes(e.size() ? Type(type::auto_) : Type(type::Bool()), e), m) {}
-    Map(const Type& key, const Type& value, const std::vector<map::Element>& e, const Meta& m = Meta())
-        : NodeBase(nodes(type::Map(key, value, m), e), m) {}
+    auto value() const { return children<map::Element>(1, {}); }
 
-    const auto& keyType() const {
-        if ( auto t = children()[0].tryAs<type::Map>() )
-            return t->keyType();
+    auto keyType() const {
+        if ( auto mtype = type()->type()->tryAs<type::Map>() )
+            return mtype->keyType();
         else
-            return children()[0].as<Type>();
+            return type(); // auto
     }
 
-    const auto& valueType() const {
-        if ( auto t = children()[0].tryAs<type::Map>() )
-            return t->valueType();
+    auto valueType() const {
+        if ( auto mtype = type()->type()->tryAs<type::Map>() )
+            return mtype->valueType();
         else
-            return children()[0].as<Type>();
+            return type(); // auto
     }
 
-    auto value() const { return children<map::Element>(1, -1); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    void setElementType(const Type& k, const Type& v) { children()[0] = type::Map(k, v, meta()); }
+    void setType(ASTContext* ctx, const QualifiedTypePtr& type) { setChild(ctx, 0, type); }
 
-    void setValue(const std::vector<map::Element>& elems) {
-        children().erase(children().begin() + 1, children().end());
-        for ( auto&& e : elems )
-            children().emplace_back(e);
+    void setValue(ASTContext* ctx, map::Elements exprs) {
+        removeChildren(1, {});
+        addChildren(ctx, std::move(exprs));
     }
 
-    bool operator==(const Map& other) const {
-        return keyType() == other.keyType() && valueType() == other.valueType() && value() == other.value();
+    static auto create(ASTContext* ctx, const QualifiedTypePtr& key, const QualifiedTypePtr& value,
+                       map::Elements elements, const Meta& meta = {}) {
+        auto mtype = QualifiedType::create(ctx, type::Map::create(ctx, key, value, meta), Constness::Mutable, meta);
+        return std::shared_ptr<Map>(new Map(ctx, node::flatten(mtype, std::move(elements)), meta));
     }
 
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return children()[0].as<Type>(); }
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, map::Elements elements, const Meta& meta = {}) {
+        // bool is just an arbitrary place-holder type for empty values.
+        auto mtype = elements.empty() ?
+                         QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Mutable, meta) :
+                         QualifiedType::createAuto(ctx, meta);
+        return std::shared_ptr<Map>(new Map(ctx, node::flatten(mtype, std::move(elements)), meta));
+    }
+
+protected:
+    Map(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+
+    HILTI_NODE(hilti, Map)
 };
 
 } // namespace hilti::ctor

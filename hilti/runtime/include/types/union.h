@@ -69,9 +69,9 @@ public:
     Union& operator=(Union&&) noexcept = default;
 
     template<typename F>
-    Union(const F& t) : value(t){};
+    Union(const F& t) : value(t) {}
     template<typename F>
-    Union(const F&& t) : value(t){};
+    Union(const F&& t) : value(t) {}
     template<typename F>
     Union& operator=(const F& t) {
         value = t;

@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
@@ -15,40 +17,43 @@ namespace spicy::detail::codegen::production {
  * Production that decides between alternatives based on which value out of a
  * set of options a given expression matches; plus an optional default if none matches.
  */
-class Switch : public ProductionBase, public spicy::trait::isNonTerminal {
+class Switch : public Production {
 public:
-    using Cases = std::vector<std::pair<std::vector<Expression>, Production>>;
+    using Cases = std::vector<std::pair<std::vector<ExpressionPtr>, std::unique_ptr<Production>>>;
 
-    Switch(const std::string& symbol, Expression expr, Cases cases, std::optional<Production> default_,
-           AttributeSet attributes, const Location& l = location::None)
-        : ProductionBase(symbol, l),
+    Switch(ASTContext* /* ctx */, const std::string& symbol, ExpressionPtr expr, Cases cases,
+           std::unique_ptr<Production> default_, AttributeSetPtr attributes, const Location& l = location::None)
+        : Production(symbol, l),
           _expression(std::move(expr)),
           _cases(std::move(cases)),
           _default(std::move(default_)),
           _attributes(std::move(attributes)) {}
 
-    const Expression& expression() const { return _expression; }
-    const Cases& cases() const { return _cases; }
-    const std::optional<Production>& default_() const { return _default; }
-    const AttributeSet& attributes() const { return _attributes; }
+    const auto& cases() const { return _cases; }
+    const auto* default_() const { return _default.get(); }
+    const auto& attributes() const { return _attributes; }
 
-    // Production API
-    std::vector<std::vector<Production>> rhss() const;
-    std::optional<spicy::Type> type() const { return {}; }
-    bool nullable() const { return production::nullable(rhss()); }
-    bool eodOk() const {
-        // Always false. If one of the branches is ok with no data, it will
-        // indicate so itself.
+    bool isAtomic() const final { return false; };
+    bool isEodOk() const final {
+        // Always false. If one of the branches is ok with no data, it will indicate so itself.
         return false;
     }
-    bool atomic() const { return false; }
-    std::string render() const;
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return production::isNullable(rhss()); };
+    bool isTerminal() const final { return false; };
+
+    ExpressionPtr expression() const final { return _expression; }
+    std::vector<std::vector<Production*>> rhss() const final;
+
+    std::string dump() const final;
+
+    SPICY_PRODUCTION
 
 private:
-    Expression _expression;
+    ExpressionPtr _expression;
     Cases _cases;
-    std::optional<Production> _default;
-    AttributeSet _attributes;
+    std::unique_ptr<Production> _default;
+    AttributeSetPtr _attributes;
 };
 
 } // namespace spicy::detail::codegen::production

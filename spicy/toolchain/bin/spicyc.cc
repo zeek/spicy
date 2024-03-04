@@ -5,8 +5,9 @@
 #include <hilti/compiler/init.h>
 #include <hilti/hilti.h>
 
+#include <spicy/autogen/config.h>
+#include <spicy/compiler/driver.h>
 #include <spicy/compiler/init.h>
-#include <spicy/spicy.h>
 
 class Spicyc : public spicy::Driver {
 public:

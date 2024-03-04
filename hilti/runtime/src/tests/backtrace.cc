@@ -26,10 +26,14 @@ TEST_CASE("backtrace") {
 // Helper function to create a backtrace with one more frame as the caller.
 //
 // NOTE: Some compilers remove this function even if `noinline` is given via
-// e.g., constant folding, so we try to completely disable optimization via
-// `optnone`. We still keep `noinline` since `optnone` is not understood by all
-// compilers.
+// e.g., constant folding, so we try to completely disable optimization.
+#if defined(__clang__)
 auto __attribute__((noinline, optnone)) make_backtrace() { return Backtrace(); }
+#elif defined(__GNUC__)
+auto __attribute__((noinline, optimize(0))) make_backtrace() { return Backtrace(); }
+#else
+#error "unsupported compiler"
+#endif
 
 TEST_CASE("comparison") {
     const auto bt1 = Backtrace();      // Backtrace to this call site.

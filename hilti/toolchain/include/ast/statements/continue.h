@@ -2,25 +2,25 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
-#include <hilti/ast/expression.h>
+#include <hilti/ast/forward.h>
 #include <hilti/ast/statement.h>
 
 namespace hilti::statement {
 
-/** AST node for a ``continue`` statement. */
-class Continue : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a `continue` statement. */
+class Continue : public Statement {
 public:
-    Continue(Meta m = Meta()) : NodeBase({}, std::move(m)) {}
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Continue>(new Continue(ctx, {}, std::move(meta)));
+    }
 
-    bool operator==(const Continue& /* other */) const { return true; }
+protected:
+    Continue(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Continue)
 };
 
 } // namespace hilti::statement

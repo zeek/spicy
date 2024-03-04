@@ -9,6 +9,5 @@
 
 .*3rdparty/
 hilti/src/rt/types/regexp.cc # Too many warnings due to usage of jrx C API.
+spicy/toolchain/tests/grammar.cc # odd identifier naming
 tests/
-build/hilti/src/autogen/operators-implementations.cc # Very slow to compile & analyze.
-build/spicy/src/autogen/operators-implementations.cc # Very slow to compile & analyze.

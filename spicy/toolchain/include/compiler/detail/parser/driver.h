@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+#include <vector>
 #ifdef yylex
 #undef yylex
 // Work-around for bison messing up the function name by adding the local namespace.
@@ -12,13 +14,15 @@
 
 #include <iostream>
 #include <string>
-#include <utility>
-#include <vector>
 
-#include <hilti/ast/all.h>
+#include <hilti/ast/builder/builder.h>
+#include <hilti/ast/doc-string.h>
+#include <hilti/base/logger.h>
 #include <hilti/base/preprocessor.h>
+#include <hilti/base/result.h>
 
 #include <spicy/ast/all.h>
+#include <spicy/ast/forward.h>
 #include <spicy/autogen/config.h>
 
 #undef YY_DECL
@@ -29,6 +33,7 @@
                                         spicy::detail::parser::Driver* driver)
 
 #ifndef __FLEX_LEXER_H
+// NOLINTNEXTLINE
 #define yyFlexLexer SpicyFlexLexer
 #include <FlexLexer.h>
 
@@ -43,6 +48,27 @@ inline const hilti::logging::DebugStream Parser("parser");
 
 namespace detail::parser {
 
+/**
+ * Parses a Spicy source file into an AST.
+ *
+ * @param in stream to read from
+ * @param filename path associated with the input
+ *
+ * Returns: The parsed AST, or a corresponding error if parsing failed.
+ */
+extern hilti::Result<ModulePtr> parseSource(Builder* builder, std::istream& in, const std::string& filename);
+
+/**
+ * Parses a single Spicy expression into a corresponding AST.
+ *
+ * @param expr expression to parse.
+ * @param m optional meta information to associate with expression
+ *
+ * Returns: The parsed expression, or a corresponding error if parsing failed.
+ */
+extern hilti::Result<ExpressionPtr> parseExpression(Builder* builder, const std::string& expr,
+                                                    const Meta& meta = Meta());
+
 class Parser;
 class Scanner;
 
@@ -51,11 +77,13 @@ class Driver {
 public:
     Driver() : _preprocessor(spicy::configuration().preprocessor_constants) {}
 
-    hilti::Result<hilti::Node> parse(std::istream& in, const std::string& filename);
-    hilti::Result<hilti::Node> parseExpression(const std::string& expression, const Meta& m = Meta());
+    hilti::Result<ModulePtr> parse(Builder* builder, std::istream& in, const std::string& filename);
+    hilti::Result<ExpressionPtr> parseExpression(Builder* builder, const std::string& expression,
+                                                 const Meta& m = Meta());
 
     Scanner* scanner() const { return _scanner; }
     Parser* parser() const { return _parser; }
+    Builder* builder() const { return _builder; }
 
     // Methods for the parser.
 
@@ -72,22 +100,23 @@ public:
     void disableHookIDMode();
     void enableNewKeywordMode();
     void disableNewKeywordMode();
-    void setDestinationModule(Module m) { _module = std::move(m); }
-    void setDestinationExpression(Expression e) { _expression = std::move(e); }
+    void setDestinationModule(const ModulePtr& m) { _module = m; }
+    void setDestinationExpression(const ExpressionPtr& e) { _expression = e; }
     int nextToken();
     void processPreprocessorLine(const std::string_view& directive, const std::string_view& expression, const Meta& m);
 
     void docSummary(const std::string& s);
     void docText(const std::string& s);
     void docField(const std::string& s);
-    const DocString& docGet() const;
-    DocString&& docGetAndClear();
+    const hilti::DocString& docGet() const;
+    hilti::DocString&& docGetAndClear();
     void docClear();
 
 private:
-    DocString _doc;
-    Module _module;
-    Expression _expression;
+    Builder* _builder = nullptr;
+    hilti::DocString _doc;
+    ModulePtr _module;
+    ExpressionPtr _expression;
     std::string _filename;
     int _line{};
     Parser* _parser = nullptr;

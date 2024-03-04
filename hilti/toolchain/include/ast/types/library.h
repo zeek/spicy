@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include <hilti/ast/type.h>
 
@@ -15,27 +17,38 @@ namespace hilti::type {
  * making it accessible in the `hilti::*` namespace. HILTI assumes the
  * library type to be mutable.
  */
-class Library : public TypeBase, trait::isAllocable, trait::isMutable {
+class Library : public UnqualifiedType {
 public:
-    Library(std::string cxx_name, Meta m = Meta());
-
     const std::string& cxxName() const { return _cxx_name; }
-    bool operator==(const Library& other) const { return _cxx_name == other._cxx_name; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const {
-        if ( other.cxxID() == _cxx_name )
-            return true;
+    std::string_view typeClass() const final { return "library"; }
 
-        return node::isEqual(this, other);
+    bool isAllocable() const final { return true; }
+    bool isMutable() const final { return true; }
+
+    node::Properties properties() const final {
+        auto p = node::Properties{{"cxx_name", _cxx_name}};
+        return UnqualifiedType::properties() + p;
     }
 
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"cxx_name", _cxx_name}}; }
+    static auto create(ASTContext* ctx, const std::string& cxx_name, Meta meta = {}) {
+        return std::shared_ptr<Library>(new Library(ctx, cxx_name, std::move(meta)));
+    }
 
 private:
+    Library(ASTContext* ctx, std::string cxx_name, Meta meta)
+        : UnqualifiedType(ctx, {util::fmt("library(%s)", cxx_name)}, std::move(meta)),
+          _cxx_name(_normalize(std::move(cxx_name))) {}
+
+    HILTI_NODE(hilti, Library)
+
+    std::string _normalize(std::string name) {
+        if ( util::startsWith(name, "::") )
+            return name;
+        else
+            return std::string("::") + name;
+    }
+
     std::string _cxx_name;
 };
 

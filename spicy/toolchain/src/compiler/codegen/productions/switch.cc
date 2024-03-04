@@ -6,19 +6,19 @@
 using namespace spicy;
 using namespace spicy::detail;
 
-std::vector<std::vector<codegen::Production>> codegen::production::Switch::rhss() const {
-    std::vector<std::vector<Production>> rhss;
+std::vector<std::vector<codegen::Production*>> codegen::production::Switch::rhss() const {
+    std::vector<std::vector<Production*>> rhss;
 
     for ( const auto& c : _cases )
-        rhss.push_back({c.second});
+        rhss.push_back({c.second.get()});
 
     if ( _default )
-        rhss.push_back({*_default});
+        rhss.push_back({_default.get()});
 
     return rhss;
 }
 
-std::string codegen::production::Switch::render() const {
+std::string codegen::production::Switch::dump() const {
     std::string r;
 
     for ( const auto& c : _cases ) {
@@ -31,7 +31,7 @@ std::string codegen::production::Switch::render() const {
         if ( r.size() )
             r += " | ";
 
-        r += hilti::util::fmt("[%s] -> %s", hilti::util::join(exprs, ","), c.second.symbol());
+        r += hilti::util::fmt("[%s] -> %s", hilti::util::join(exprs, ","), c.second->symbol());
     }
 
     if ( _default ) {

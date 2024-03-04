@@ -261,8 +261,20 @@ void printUncaught(const Exception& e);
 /** Utility function printing out an uncaught exception to an output stream. */
 void printUncaught(const Exception& e, std::ostream& out);
 
-/** Returns the message associated with an exception. This supports any C++-side exception, not just ours. */
+/**
+ * Returns the message associated with an exception. The returned message does
+ * not include the location.
+ */
+inline std::string what(const Exception& e) { return e.description(); }
+
+/**
+ * Returns the message associated with an exception. This is a fallback for
+ * standard exceptions that aren't ours.
+ */
 inline std::string what(const std::exception& e) { return e.what(); }
+
+/** Returns the location associated with an exception. */
+inline std::string where(const Exception& e) { return e.location(); }
 
 } // namespace exception
 

@@ -1,17 +1,23 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include "hilti/compiler/plugin.h"
-
 #include <hilti/autogen/config.h>
+#include <hilti/base/timing.h>
+#include <hilti/compiler/coercer.h>
 #include <hilti/compiler/context.h>
-#include <hilti/compiler/detail/visitors.h>
+#include <hilti/compiler/detail/parser/driver.h>
+#include <hilti/compiler/detail/resolver.h>
+#include <hilti/compiler/detail/scope-builder.h>
+#include <hilti/compiler/plugin.h>
+#include <hilti/compiler/type-unifier.h>
+#include <hilti/compiler/validator.h>
 
 using namespace hilti;
 using namespace hilti::detail;
 
 PluginRegistry::PluginRegistry() = default; // Needed here to allow PluginRegistry to be forward declared.
 
-Result<std::reference_wrapper<const Plugin>> PluginRegistry::pluginForExtension(hilti::rt::filesystem::path ext) const {
+Result<std::reference_wrapper<const Plugin>> PluginRegistry::pluginForExtension(
+    const hilti::rt::filesystem::path& ext) const {
     auto p = std::find_if(_plugins.begin(), _plugins.end(), [&](auto& p) { return p.extension == ext; });
     if ( p != _plugins.end() )
         return {*p};
@@ -44,47 +50,51 @@ void PluginRegistry::register_(const Plugin& p) {
 }
 
 // Always-on default plugin with HILTI functionality.
-Plugin hilti::detail::create_hilti_plugin() {
+Plugin hilti::detail::createHiltiPlugin() {
     return Plugin{
         .component = "HILTI",
         .order = 10,
         .extension = ".hlt",
         .cxx_includes = {"hilti/rt/libhilti.h"},
 
-        .library_paths =
-            [](const std::shared_ptr<hilti::Context>& ctx) { return hilti::configuration().hilti_library_paths; },
+        .library_paths = [](hilti::Context* ctx) { return hilti::configuration().hilti_library_paths; },
 
-        .parse = [](std::istream& in, const hilti::rt::filesystem::path& path) { return parseSource(in, path); },
+        .unify_type = type_unifier::detail::unifyType,
 
-        .coerce_ctor = [](Ctor c, const Type& dst,
-                          bitmask<CoercionStyle> style) { return detail::coerceCtor(std::move(c), dst, style); },
+        .parse = [](Builder* builder, std::istream& in,
+                    const hilti::rt::filesystem::path& path) { return parser::parseSource(builder, in, path); },
 
-        .coerce_type = [](Type t, const Type& dst,
-                          bitmask<CoercionStyle> style) { return detail::coerceType(std::move(t), dst, style); },
+        .coerce_ctor = [](Builder* builder, const CtorPtr& c, const QualifiedTypePtr& dst,
+                          bitmask<CoercionStyle> style) { return coercer::detail::coerceCtor(builder, c, dst, style); },
+
+        .coerce_type = [](Builder* builder, const QualifiedTypePtr& t, const QualifiedTypePtr& dst,
+                          bitmask<CoercionStyle> style) { return coercer::detail::coerceType(builder, t, dst, style); },
+
+        .ast_init =
+            [](Builder* builder, const ASTRootPtr& root) {
+                util::timing::Collector _("hilti/compiler/ast/init");
+
+                if ( builder->options().import_standard_modules )
+                    builder->context()->importModule(builder, "hilti", {}, ".hlt", {}, {});
+            },
 
         .ast_build_scopes =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
-                ast::buildScopes(ctx, m, u);
+            [](Builder* builder, const ASTRootPtr& root) {
+                scope_builder::build(builder, root);
                 return false;
             },
 
-        .ast_normalize = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
-                            Unit* u) { return ast::normalize(m, u); },
-
-        .ast_coerce = [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) { return ast::coerce(m, u); },
-
-        .ast_resolve = [](const std::shared_ptr<hilti::Context>& ctx, Node* m,
-                          Unit* u) { return ast::resolve(ctx, m, u); },
+        .ast_resolve = [](Builder* builder, const NodePtr& root) { return resolver::resolve(builder, root); },
 
         .ast_validate_pre =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
-                ast::validate_pre(m);
+            [](Builder* builder, const ASTRootPtr& m) {
+                validator::detail::validatePre(builder, m);
                 return false;
             },
 
         .ast_validate_post =
-            [](const std::shared_ptr<hilti::Context>& ctx, Node* m, Unit* u) {
-                ast::validate_post(m);
+            [](Builder* builder, const ASTRootPtr& root) {
+                validator::detail::validatePost(builder, root);
                 return false;
             },
 

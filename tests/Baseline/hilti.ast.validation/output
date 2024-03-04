@@ -2,7 +2,7 @@
 [error] <...>/validation.hlt:11:8-11:14: integer type's width must be one of 8<...>/64, but is 65
 [error] <...>/validation.hlt:12:8-12:13: integer type's width must be one of 8<...>/64, but is 0
 [error] <...>/validation.hlt:14:1-14:14: type 'void' cannot be used for variable declaration
-[error] <...>/validation.hlt:16:1-16:11: type 'Foo::U' cannot be used for variable declaration
+[error] <...>/validation.hlt:16:1-16:11: type 'U' cannot be used for variable declaration
 [error] <...>/validation.hlt:19:5-19:11: function must return a value
 [error] <...>/validation.hlt:23:5-23:14: cannot coerce expression '42' of type 'uint<64>' to type 'void'
 [error] <...>/validation.hlt:23:5-23:14: void function cannot return a value

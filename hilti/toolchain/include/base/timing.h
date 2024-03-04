@@ -62,7 +62,7 @@ inline void summary(std::ostream& out) { detail::Manager::summary(out); }
 /** Maintains measurements of execution time and frequency for one code area. */
 class Ledger {
 public:
-    Ledger(std::string name) : _name(std::move(name)), _manager(detail::Manager::singleton()) {
+    Ledger(std::string name) : _manager(detail::Manager::singleton()), _name(std::move(name)) {
         _manager->register_(this);
     }
     ~Ledger() { _manager->unregister(this); }
@@ -117,14 +117,13 @@ protected:
         _level = -1;
     }
 
+private:
+    std::shared_ptr<detail::Manager> _manager;
+    Time _time_started;
     Duration _time_used = Duration(0);
     uint64_t _num_completed = 0;
     int64_t _level = 0;
     std::string _name;
-
-private:
-    std::shared_ptr<detail::Manager> _manager;
-    Time _time_started;
 };
 
 /** Measure a code block's execution during its life-time. */
@@ -147,7 +146,7 @@ public:
     Collector& operator=(const Collector&) = delete;
     Collector& operator=(Collector&&) noexcept = delete;
 
-protected:
+private:
     Ledger* _ledger;
 };
 

@@ -15,7 +15,7 @@
 
     Returns true if the stream value has been frozen.
 
-.. spicy:method:: stream::trim stream trim False void (inout i: iterator<stream>)
+.. spicy:method:: stream::trim stream trim False void (i: iterator<stream>)
 
     Trims the stream value by removing all data from its beginning up to
     (but not including) the position *i*. The iterator *i* will remain
@@ -40,7 +40,7 @@
 
 .. spicy:operator:: stream::Call stream stream(bytes)
 
-    Creates a stream instance preinitialized with the given data.
+    Creates a stream instance pre-initialized with the given data.
 
 .. spicy:operator:: stream::End <iterator> end(<container>)
 

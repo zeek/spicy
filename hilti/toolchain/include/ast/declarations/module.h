@@ -2,53 +2,133 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
+#include <vector>
+
+#include <hilti/rt/util.h>
 
 #include <hilti/ast/declaration.h>
-#include <hilti/ast/expression.h>
-#include <hilti/ast/id.h>
-#include <hilti/ast/meta.h>
-#include <hilti/ast/module.h>
-#include <hilti/ast/node-ref.h>
+#include <hilti/ast/declarations/module-uid.h>
+#include <hilti/ast/declarations/property.h>
+#include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
-#include <hilti/base/result.h>
-#include <hilti/base/type_erase.h>
+#include <hilti/ast/statements/block.h>
 
 namespace hilti::declaration {
 
-/** AST node for an AST's top-level module declaration. */
-class Module : public DeclarationBase {
+/** AST node for a module declaration. */
+class Module : public Declaration {
 public:
-    /**
-     * Constructor.
-     *
-     * @param root reference to root node of module's AST; must be a ``Module`` node.
-     */
-    Module(NodeRef root, Meta m = Meta()) : DeclarationBase(std::move(m)), _root(std::move(root)) {
-        assert(_root && _root->isA<hilti::Module>());
+    const auto& uid() const { return _uid; }
+    const auto& id() const { return _uid.unique; }
+    const auto& scopeID() const { return _uid.id; }
+    const auto& scopePath() const { return _scope_path; }
+    auto statements() const { return child<statement::Block>(0); }
+    auto declarations() const { return childrenOfType<Declaration>(); }
+    const auto& dependencies() const { return _dependencies; }
+
+    bool isEmpty() const {
+        // We always have a block as children.
+        return children().size() <= 1 && statements()->statements().empty();
     }
 
-    const Node& root() const { return *_root; }
+    /** Retrieves the module's `%skip-implementation` flag. */
+    bool skipImplementation() const { return _skip_implementation; }
 
-    bool operator==(const Module& other) const { return id() == other.id(); }
+    /** Sets the module's `%skip-implementation` flag. */
+    void setSkipImplementation(bool skip_implementation) { _skip_implementation = skip_implementation; }
 
-    /** Implements `Declaration` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Declaration` interface. */
-    ID id() const { return _root->as<hilti::Module>().id(); }
-    /** Implements `Declaration` interface. */
-    Linkage linkage() const { return Linkage::Public; }
-    /** Implements `Declaration` interface. */
-    std::string displayName() const { return "module"; };
-    /** Implements `Declaration` interface. */
-    auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
+    /**
+     * Removes any content from the module. The result is an empty module just
+     * as if it had just been created. (The ID remains in place.)
+     */
+    void clear();
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"id", id()}}; }
+    /**
+     * Returns a module's property declaration of a given name. If there's no
+     * property declaration of that name, return an error. If there's more than
+     * one of that name, it's undefined which one is returned.
+     *
+     * @param id name of the property to return
+     */
+    PropertyPtr moduleProperty(const ID& id) const;
+
+    /**
+     * Returns all of module's property declarations of a given name. If
+     * there's no property declaration of that ID, return an empty container.
+     *
+     * @param id name of the property to return; leave unset for returning all
+     */
+    hilti::node::Set<declaration::Property> moduleProperties(const ID& id) const;
+
+    /**
+     * Adds a declaration to the module. It will be appended to the current
+     * list of declarations.
+     */
+    void add(ASTContext* ctx, DeclarationPtr d) { addChild(ctx, std::move(d)); }
+
+    /**
+     * Adds a top-level statement to the module. It will be appended to the
+     * end of the current list of statements and execute at module initialize
+     * time.
+     */
+    void add(ASTContext* ctx, StatementPtr s) { child<statement::Block>(0)->add(ctx, std::move(s)); }
+
+    void addDependency(declaration::module::UID uid) { _dependencies.emplace_back(std::move(uid)); }
+    void setScopePath(const ID& scope) { _scope_path = scope; }
+    void setUID(declaration::module::UID uid) { _uid = std::move(uid); }
+
+    std::string_view displayName() const final { return "module"; }
+
+    node::Properties properties() const override {
+        auto p = node::Properties{{"id", _uid.id},
+                                  {"path", _uid.path.native()},
+                                  {"ext", _uid.process_extension.native()},
+                                  {"scope", _scope_path},
+                                  {"dependencies", util::join(_dependencies, ", ")},
+                                  {"skip-implementation", _skip_implementation}};
+        return hilti::Declaration::properties() + p;
+    }
+
+    std::string_view branchTag() const final { return _uid.process_extension.native(); }
+
+    static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
+                       Statements stmts, const Meta& meta = {}) {
+        Nodes nodes = {statement::Block::create(ctx, std::move(stmts), meta)};
+        for ( auto d : decls )
+            nodes.push_back(std::move(d));
+
+        return std::shared_ptr<Module>(new Module(ctx, std::move(nodes), uid, scope, meta));
+    }
+
+    static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope = {},
+                       const Meta& meta = {}) {
+        return create(ctx, uid, scope, {}, {}, meta);
+    }
+
+    static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
+                       const Meta& meta = {}) {
+        return create(ctx, uid, scope, decls, {}, meta);
+    }
+
+protected:
+    Module(ASTContext* ctx, Nodes children, declaration::module::UID uid, ID scope, Meta meta = {})
+        : Declaration(ctx, std::move(children), uid.id, declaration::Linkage::Public, std::move(meta)),
+          _uid(std::move(uid)),
+          _scope_path(std::move(scope)) {}
+
+    std::string _dump() const override;
+
+    HILTI_NODE(hilti, Module);
 
 private:
-    NodeRef _root;
+    declaration::module::UID _uid;
+    ID _scope_path;
+    std::vector<declaration::module::UID> _dependencies;
+    bool _skip_implementation = true;
 };
 
 } // namespace hilti::declaration

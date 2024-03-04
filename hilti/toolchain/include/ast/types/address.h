@@ -2,25 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a address type. */
-class Address : public TypeBase, trait::isAllocable, trait::isSortable {
+/** AST node for an `addr` type. */
+class Address : public UnqualifiedType {
 public:
-    Address(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    static auto create(ASTContext* ctx, const Meta& m = Meta()) {
+        return std::shared_ptr<Address>(new Address(ctx, m));
+    }
 
-    bool operator==(const Address& /* other */) const { return true; }
+    std::string_view typeClass() const final { return "address"; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
+
+protected:
+    Address(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {"address"}, meta) {}
+
+    HILTI_NODE(hilti, Address);
 };
 
 } // namespace hilti::type

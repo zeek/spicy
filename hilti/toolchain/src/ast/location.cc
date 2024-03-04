@@ -9,7 +9,10 @@ const Location location::None;
 
 Location::operator bool() const { return _file != location::None._file; }
 
-std::string Location::render(bool no_path) const {
+std::string Location::dump(bool no_path) const {
+    if ( ! *this )
+        return "<no location>";
+
     std::string lines;
 
     if ( _from_line >= 0 ) {

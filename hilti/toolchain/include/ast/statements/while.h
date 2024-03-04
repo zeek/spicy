@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/declarations/local-variable.h>
@@ -11,49 +12,37 @@
 
 namespace hilti::statement {
 
-/** AST node for a "while" statement. */
-class While : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a `while` statement. */
+class While : public Statement {
 public:
-    While(const hilti::Declaration& init, std::optional<hilti::Expression> cond, Statement body,
-          std::optional<Statement> else_ = {}, Meta m = Meta())
-        : NodeBase(nodes(init, std::move(cond), std::move(body), std::move(else_)), std::move(m)) {
-        if ( ! init.isA<declaration::LocalVariable>() )
+    auto init() const { return child<declaration::LocalVariable>(0); }
+    auto condition() const { return child<::hilti::Expression>(1); }
+    auto body() const { return child<hilti::Statement>(2); }
+    auto else_() const { return child<Statement>(3); }
+
+    void setCondition(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 1, c); }
+    void removeElse(ASTContext* ctx) { setChild(ctx, 3, nullptr); }
+
+    static auto create(ASTContext* ctx, const DeclarationPtr& init, const ExpressionPtr& cond, const StatementPtr& body,
+                       const StatementPtr& else_ = nullptr, const Meta& meta = {}) {
+        return std::shared_ptr<While>(new While(ctx, {init, cond, body, else_}, meta));
+    }
+
+    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const StatementPtr& body, const Meta& meta = {}) {
+        return create(ctx, nullptr, cond, body, nullptr, meta);
+    }
+    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const StatementPtr& body,
+                       const StatementPtr& else_ = nullptr, const Meta& meta = {}) {
+        return create(ctx, nullptr, cond, body, else_, meta);
+    }
+
+protected:
+    While(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {
+        if ( child(0) && ! child(0)->isA<declaration::LocalVariable>() )
             logger().internalError("initialization for 'while' must be a local declaration");
     }
 
-    While(hilti::Expression cond, Statement body, Meta m = Meta())
-        : NodeBase(nodes(node::none, std::move(cond), std::move(body), node::none), std::move(m)) {}
-
-    While(hilti::Expression cond, Statement body, std::optional<Statement> else_, Meta m = Meta())
-        : NodeBase(nodes(node::none, std::move(cond), std::move(body), std::move(else_)), std::move(m)) {}
-
-    auto init() const { return children()[0].tryAs<hilti::declaration::LocalVariable>(); }
-    auto initRef() const {
-        return children()[0].isA<hilti::declaration::LocalVariable>() ? NodeRef(children()[0]) : NodeRef();
-    }
-    auto condition() const { return children()[1].tryAs<hilti::Expression>(); }
-    const auto& body() const { return child<hilti::Statement>(2); }
-    auto else_() const { return children()[3].tryAs<Statement>(); }
-
-    void setCondition(const hilti::Expression& c) { children()[1] = c; }
-    void setInit(const hilti::Expression& c) { children()[0] = c; }
-
-    bool operator==(const While& other) const {
-        return init() == other.init() && condition() == other.condition() && body() == other.body() &&
-               else_() == other.else_();
-    }
-
-    /** Internal method for use by builder API only. */
-    auto& _bodyNode() { return children()[2]; }
-
-    /** Internal method for use by builder API only. */
-    auto& _elseNode() { return children()[3]; }
-
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, While)
 };
 
 } // namespace hilti::statement

@@ -24,8 +24,8 @@ Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std
 Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id)
     : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true) {}
 
-void Unit::setModule(const hilti::Module& m, const hilti::Unit& hilti_unit) {
-    _module_id = hilti_unit.uniqueID();
+void Unit::setModule(const hilti::declaration::Module& m) {
+    _module_id = cxx::ID(m.uid().unique);
     _module_path = m.meta().location().file();
 }
 
@@ -92,7 +92,7 @@ void Unit::add(const declaration::Type& t, const Meta& m) {
         _namespaces.insert(t.id.namespace_());
 }
 
-std::optional<declaration::Type> Unit::lookupType(const ID& id) const {
+std::optional<declaration::Type> Unit::lookup(const ID& id) const {
     if ( auto t = _types.find(id); t != _types.end() )
         return t->second;
 

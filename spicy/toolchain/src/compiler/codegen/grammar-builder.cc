@@ -4,7 +4,7 @@
 #include <hilti/ast/declarations/type.h>
 #include <hilti/base/cache.h>
 
-#include <spicy/ast/detail/visitor.h>
+#include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
@@ -18,303 +18,334 @@ using hilti::util::fmt;
 
 namespace {
 
-struct Visitor : public hilti::visitor::PreOrder<Production, Visitor> {
-    Visitor(CodeGen* cg, codegen::GrammarBuilder* gb, Grammar* g) : cg(cg), gb(gb), grammar(g) {}
-    CodeGen* cg;
-    codegen::GrammarBuilder* gb;
-    Grammar* grammar;
-
-    using CurrentField = std::pair<const spicy::type::unit::item::Field&, NodeRef>;
-    std::vector<CurrentField> fields;
-    hilti::util::Cache<std::string, Production> cache;
+struct ProductionFactory {
+    ProductionFactory(CodeGen* cg, codegen::GrammarBuilder* gb, Grammar* g) : cg(cg), grammar(g) {}
 
     const auto& currentField() { return fields.back(); }
-    void pushField(const CurrentField& f) { fields.emplace_back(f); }
+    void pushField(spicy::type::unit::item::FieldPtr f) { fields.emplace_back(std::move(f)); }
     void popField() { fields.pop_back(); }
     bool haveField() { return ! fields.empty(); }
 
-    std::optional<Production> productionForItem(const NodeRef& item) {
+    std::unique_ptr<Production> createProduction(const NodePtr& node);
+
+    std::vector<spicy::type::unit::item::FieldPtr> fields;
+    hilti::util::Cache<ID, Production*> cache;
+    CodeGen* cg;
+    Grammar* grammar;
+};
+
+struct Visitor : public visitor::PreOrder {
+    Visitor(ProductionFactory* pf) : pf(pf) {}
+
+    ProductionFactory* pf;
+
+    std::unique_ptr<Production> result;
+
+    auto context() const { return pf->cg->context(); }
+
+    std::unique_ptr<Production> productionForItem(const NodePtr& item) {
         auto field = item->tryAs<spicy::type::unit::item::Field>();
         if ( field )
-            pushField({*field, NodeRef(item)});
+            pf->pushField(field);
 
-        auto p = dispatch(item);
+        auto p = pf->createProduction(item);
 
         if ( field )
-            popField();
+            pf->popField();
 
         return p;
     }
 
-    Production productionForCtor(const Ctor& c, const ID& id) {
-        return production::Ctor(cg->uniquer()->get(id), c, c.meta().location());
+    std::unique_ptr<Production> productionForCtor(const CtorPtr& c, const ID& id) {
+        return std::make_unique<production::Ctor>(context(), pf->cg->uniquer()->get(id), c, c->meta().location());
     }
 
-    Production productionForType(const Type& t, const ID& id) {
-        if ( auto prod = dispatch(t) )
-            return std::move(*prod);
-
-        // Fallback: Just a plain type.
-        return production::Variable(cg->uniquer()->get(id), t, t.meta().location());
+    std::unique_ptr<Production> productionForType(const QualifiedTypePtr& t, const ID& id) {
+        if ( auto prod = pf->createProduction(t->type()) )
+            return prod;
+        else
+            // Fallback: Just a plain type.
+            return std::make_unique<production::Variable>(context(), pf->cg->uniquer()->get(id), t,
+                                                          t->meta().location());
     }
 
-    Production productionForLoop(Production sub, position_t p) {
-        const auto& loc = p.node.location();
-        const auto& field = currentField().first;
-        auto id = cg->uniquer()->get(field.id());
-        auto eod = AttributeSet::find(field.attributes(), "&eod");
-        auto count = AttributeSet::find(field.attributes(), "&count");
-        auto size = AttributeSet::find(field.attributes(), "&size");
-        auto parse_at = AttributeSet::find(field.attributes(), "&parse-at");
-        auto parse_from = AttributeSet::find(field.attributes(), "&parse-from");
-        auto until = AttributeSet::find(field.attributes(), "&until");
-        auto until_including = AttributeSet::find(field.attributes(), "&until-including");
-        auto while_ = AttributeSet::find(field.attributes(), "&while");
-        auto repeat = field.repeatCount();
+    std::unique_ptr<Production> productionForLoop(std::unique_ptr<Production> sub, const NodePtr& n) {
+        const auto& loc = n->location();
+        const auto& field = pf->currentField();
+        auto id = pf->cg->uniquer()->get(field->id());
+        auto eod = field->attributes()->find("&eod");
+        auto count = field->attributes()->find("&count");
+        auto size = field->attributes()->find("&size");
+        auto parse_at = field->attributes()->find("&parse-at");
+        auto parse_from = field->attributes()->find("&parse-from");
+        auto until = field->attributes()->find("&until");
+        auto until_including = field->attributes()->find("&until-including");
+        auto while_ = field->attributes()->find("&while");
+        auto repeat = field->repeatCount();
 
-        auto m = sub.meta();
+        auto m = sub->meta();
 
         if ( ! m.field() )
-            m.setField(NodeRef(currentField().second), false);
+            m.setField(field, false);
 
-        m.setContainer(NodeRef(currentField().second));
-        sub.setMeta(std::move(m));
+        m.setContainer(field);
+        sub->setMeta(std::move(m));
 
-        if ( repeat && ! repeat->type().isA<type::Null>() )
-            return production::Counter(id, *repeat, sub, loc);
+        if ( repeat && ! repeat->type()->type()->isA<hilti::type::Null>() )
+            return std::make_unique<production::Counter>(context(), id, repeat, std::move(sub), loc);
 
         if ( count )
-            return production::Counter(id, *count->valueAsExpression(), sub, loc);
+            return std::make_unique<production::Counter>(context(), id, *count->valueAsExpression(), std::move(sub),
+                                                         loc);
 
         if ( size )
             // When parsing, our view will be limited to the specified input
             // size, so just iterate until EOD.
-            return production::ForEach(id, sub, true, loc);
+            return std::make_unique<production::ForEach>(context(), id, std::move(sub), true, loc);
 
         if ( parse_at || parse_from )
             // Custom input, just iterate until EOD.
-            return production::ForEach(id, sub, true, loc);
+            return std::make_unique<production::ForEach>(context(), id, std::move(sub), true, loc);
 
         if ( while_ || until || until_including || eod )
             // The container parsing will evaluate the corresponding stop
             // condition as necessary.
-            return production::ForEach(id, sub, true, loc);
+            return std::make_unique<production::ForEach>(context(), id, std::move(sub), true, loc);
 
         // Nothing specified, use look-ahead to figure out when to stop
         // parsing.
-        auto c = production::While(id, std::move(sub), loc);
-        c.preprocessLookAhead(grammar);
-        auto me = c.meta();
-        me.setField(NodeRef(currentField().second), false);
-        c.setMeta(std::move(me));
+        auto c = std::make_unique<production::While>(id, std::move(sub), loc);
+        c->preprocessLookAhead(pf->cg->context(), pf->grammar);
+        auto me = c->meta();
+        me.setField(field, false);
+        c->setMeta(std::move(me));
         return std::move(c);
     }
 
-    Production operator()(const spicy::type::unit::item::Field& n, position_t p) {
-        if ( n.isSkip() ) {
+    void operator()(spicy::type::unit::item::Field* n) final {
+        if ( n->isSkip() ) {
             // For field types that support it, create a dedicated skip production.
-            std::optional<Production> skip;
+            std::unique_ptr<Production> skip;
 
-            if ( const auto& ctor = n.ctor() ) {
-                auto prod = productionForCtor(*ctor, n.id());
-                auto m = prod.meta();
-                m.setField(NodeRef(currentField().second), true);
-                prod.setMeta(std::move(m));
-                skip = production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), prod, n.meta().location());
+            if ( const auto& ctor = n->ctor() ) {
+                auto prod = productionForCtor(ctor, n->id());
+                auto m = prod->meta();
+                m.setField(pf->currentField(), true);
+                prod->setMeta(std::move(m));
+                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()),
+                                                          n->as<type::unit::item::Field>(), std::move(prod),
+                                                          n->meta().location());
             }
 
-            else if ( n.item() ) {
+            else if ( n->item() ) {
                 // Skipping not supported
             }
 
-            else if ( n.size() )
-                skip = production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), {}, n.meta().location());
+            else if ( n->size(context()) )
+                skip =
+                    std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()),
+                                                       n->as<type::unit::item::Field>(), nullptr, n->meta().location());
 
-            else if ( n.parseType().isA<type::Bytes>() ) {
+            else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
                 // Bytes with fixed size already handled above.
-                auto eod_attr = AttributeSet::find(n.attributes(), "&eod");
-                auto until_attr = AttributeSet::find(n.attributes(), "&until");
-                auto until_including_attr = AttributeSet::find(n.attributes(), "&until-including");
+                auto eod_attr = n->attributes()->find("&eod");
+                auto until_attr = n->attributes()->find("&until");
+                auto until_including_attr = n->attributes()->find("&until-including");
 
                 if ( eod_attr || until_attr || until_including_attr )
-                    skip = production::Skip(cg->uniquer()->get(n.id()), NodeRef(p.node), {}, n.meta().location());
+                    skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()),
+                                                              n->as<type::unit::item::Field>(), nullptr,
+                                                              n->meta().location());
             }
 
-            if ( n.repeatCount() )
+            if ( n->repeatCount() )
                 skip.reset();
 
-            auto convert_attr = AttributeSet::find(n.attributes(), "&convert");
-            auto requires_attr = AttributeSet::find(n.attributes(), "&requires");
+            auto convert_attr = n->attributes()->find("&convert");
+            auto requires_attr = n->attributes()->find("&requires");
             if ( convert_attr || requires_attr )
                 skip.reset();
 
-            if ( skip )
-                return std::move(*skip);
+            if ( skip ) {
+                result = std::move(skip);
+                return;
+            }
         }
 
-        Production prod;
+        std::unique_ptr<Production> prod;
 
-        if ( const auto& c = n.ctor() ) {
-            prod = productionForCtor(*c, n.id());
+        if ( auto c = n->ctor() ) {
+            prod = productionForCtor(c, n->id());
 
-            if ( n.isContainer() )
-                prod = productionForLoop(prod, p);
+            if ( n->isContainer() )
+                prod = productionForLoop(std::move(prod), n->as<Node>());
         }
-        else if ( n.item() ) {
-            auto sub = productionForItem(p.node.as<spicy::type::unit::item::Field>().itemRef());
+        else if ( n->item() ) {
+            auto sub = productionForItem(n->as<spicy::type::unit::item::Field>()->item());
             auto m = sub->meta();
 
-            if ( n.isContainer() )
-                prod = productionForLoop(std::move(*sub), p);
+            if ( n->isContainer() )
+                prod = productionForLoop(std::move(sub), n->as<Node>());
             else {
-                if ( sub->meta().field() ) {
-                    auto field = sub->meta().fieldRef();
-                    const_cast<type::unit::item::Field&>(field->as<type::unit::item::Field>()).setForwarding(true);
-                }
+                if ( sub->meta().field() )
+                    sub->meta().field()->setForwarding(true);
 
-                prod = production::Enclosure(cg->uniquer()->get(n.id()), *sub);
+                prod =
+                    std::make_unique<production::Enclosure>(context(), pf->cg->uniquer()->get(n->id()), std::move(sub));
             }
         }
         else
-            prod = productionForType(n.parseType(), n.id());
+            prod = productionForType(n->parseType(), n->id());
 
-        auto m = prod.meta();
-        m.setField(NodeRef(currentField().second), true);
-        prod.setMeta(std::move(m));
+        auto m = prod->meta();
+        m.setField(pf->currentField(), true);
+        prod->setMeta(std::move(m));
 
-        return prod;
+        result = std::move(prod);
     }
 
-    Production operator()(const spicy::type::unit::item::Switch& n, position_t p) {
-        auto productionForCase = [this](const spicy::type::unit::item::switch_::Case& c, const std::string& label) {
-            std::vector<Production> prods;
+    void operator()(spicy::type::unit::item::Switch* n) final {
+        auto productionForCase = [this](const std::shared_ptr<spicy::type::unit::item::switch_::Case>& c,
+                                        const std::string& label) {
+            std::vector<std::unique_ptr<Production>> prods;
 
-            for ( const auto& n : c.itemRefs() ) {
-                if ( auto prod = productionForItem(NodeRef(n)) )
-                    prods.push_back(*prod);
+            for ( const auto& n : c->items() ) {
+                if ( auto prod = productionForItem(NodePtr(n)) )
+                    prods.push_back(std::move(prod));
             }
 
-            return production::Sequence(label, std::move(prods), c.meta().location());
+            return std::make_unique<production::Sequence>(context(), label, std::move(prods), c->meta().location());
         };
 
-        auto switch_sym = cg->uniquer()->get("switch");
+        auto switch_sym = pf->cg->uniquer()->get("switch");
 
-        if ( n.expression() ) {
+        if ( n->expression() ) {
             // Switch based on value of expression.
             production::Switch::Cases cases;
-            std::optional<Production> default_;
+            std::unique_ptr<Production> default_;
             int i = 0;
 
-            for ( const auto& c : p.node.as<spicy::type::unit::item::Switch>().cases() ) {
-                if ( c.isDefault() )
+            for ( const auto& c : n->as<spicy::type::unit::item::Switch>()->cases() ) {
+                if ( c->isDefault() )
                     default_ = productionForCase(c, fmt("%s_default", switch_sym));
                 else {
                     auto prod = productionForCase(c, fmt("%s_case_%d", switch_sym, ++i));
-                    cases.emplace_back(c.expressions().copy(), std::move(prod));
+                    cases.emplace_back(c->expressions(), std::move(prod));
                 }
             }
 
-            AttributeSet attributes;
-            if ( auto a = n.attributes() )
-                attributes = *a;
-
-            return production::Switch(switch_sym, *n.expression(), std::move(cases), std::move(default_),
-                                      std::move(attributes), n.meta().location());
+            result = std::make_unique<production::Switch>(context(), switch_sym, n->expression(), std::move(cases),
+                                                          std::move(default_), n->attributes(), n->meta().location());
+            return;
         }
 
         else {
             // Switch by look-ahead.
-            std::optional<Production> prev;
+            std::unique_ptr<Production> prev;
 
             int i = 0;
             auto d = production::look_ahead::Default::None;
 
-            for ( const auto& c : p.node.as<spicy::type::unit::item::Switch>().cases() ) {
-                Production prod;
+            for ( const auto& c : n->as<spicy::type::unit::item::Switch>()->cases() ) {
+                std::unique_ptr<Production> prod;
 
-                if ( c.isDefault() )
+                if ( c->isDefault() )
                     prod = productionForCase(c, fmt("%s_default", switch_sym));
                 else
                     prod = productionForCase(c, fmt("%s_case_%d", switch_sym, ++i));
 
                 if ( ! prev ) {
-                    prev = prod;
+                    prev = std::move(prod);
 
-                    if ( c.isDefault() )
+                    if ( c->isDefault() )
                         d = production::look_ahead::Default::First;
 
                     continue;
                 }
 
-                if ( c.isDefault() )
+                if ( c->isDefault() )
                     d = production::look_ahead::Default::Second;
 
                 auto lah_sym = fmt("%s_lha_%d", switch_sym, i);
-                auto lah = production::LookAhead(lah_sym, std::move(*prev), std::move(prod), d, c.meta().location());
+                auto lah = std::make_unique<production::LookAhead>(context(), lah_sym, std::move(prev), std::move(prod),
+                                                                   d, c->meta().location());
                 prev = std::move(lah);
             }
 
-            return *prev;
+            result = std::move(prev);
+            return;
         }
     }
 
-    Production operator()(const hilti::declaration::Type& t) { return *dispatch(t.type()); }
+    void operator()(hilti::declaration::Type* n) final { result = pf->createProduction(n->type()); }
 
-    Production operator()(const type::Unit& n, position_t p) {
-        auto prod = cache.getOrCreate(
-            *n.id(), []() { return production::Unresolved(); },
-            [&](auto& unresolved) {
-                auto id = cg->uniquer()->get(*n.id());
+    void operator()(type::Unit* n) final {
+        // Note: We can't use the cache's getOrCreate() here because of the
+        // unique_ptr storage semantics.
+        auto id = n->canonicalID();
+        assert(id);
 
-                std::vector<Production> items;
+        if ( auto p = pf->cache.get(id) ) {
+            auto r = dynamic_cast<production::Deferred*>(*p);
+            assert(r);
+            result = std::make_unique<production::Reference>(context(), r);
+            return;
+        }
 
-                for ( const auto& n : p.node.as<type::Unit>().childRefsOfType<spicy::type::unit::Item>() ) {
-                    if ( auto p = productionForItem(NodeRef(n)) )
-                        items.push_back(*p);
-                }
+        // Prime the cache for any self-recursive unit productions.
+        auto unresolved = std::make_unique<production::Deferred>(context(), n->location());
+        pf->cache.put(id, unresolved.get());
 
-                hilti::node::Range<Expression> args;
+        // Now compute the actual production.
+        auto pid = pf->cg->uniquer()->get(id);
 
-                if ( haveField() )
-                    args = currentField().first.arguments();
+        std::vector<std::unique_ptr<Production>> items;
 
-                auto unit = production::Unit(id, n, args.copy(), std::move(items), n.meta().location());
-                grammar->resolve(&unresolved.template as<production::Unresolved>(), std::move(unit));
-                return unresolved;
-            });
+        for ( const auto& n : n->as<type::Unit>()->childrenOfType<spicy::type::unit::Item>() ) {
+            if ( auto p = productionForItem(NodePtr(n)) )
+                items.push_back(std::move(p));
+        }
 
-        // Give this production its own meta instance. Due to the caching it
-        // would normally have a shared one.
-        // TODO(robin): Rename _setMetaInstance(), or give it clearMeta() or such.
-        prod._setMetaInstance(std::make_shared<production::Meta>());
-        return prod;
+        Expressions args;
+
+        if ( pf->haveField() )
+            args = pf->currentField()->arguments();
+
+        auto unit = std::make_unique<production::Unit>(context(), pid, n->as<type::Unit>(), args, std::move(items),
+                                                       n->meta().location());
+
+        // This takes ownership of the unit production, storing it inside the grammar.
+        pf->grammar->resolve(dynamic_cast<production::Deferred*>(unresolved.get()), std::move(unit));
+
+        result = std::move(unresolved);
     }
 
-    Production operator()(const type::ValueReference& n, position_t /* p */) {
-        // Forward to referenced type, which will usually be a unit.
-        auto x = dispatch(n.dereferencedType());
-        assert(x);
-        return *x;
-    }
-
-    Production operator()(const type::Vector& n, position_t p) {
-        auto sub = productionForType(n.elementType(), ID(fmt("%s", n.elementType())));
-        return productionForLoop(std::move(sub), p);
+    void operator()(hilti::type::Vector* n) final {
+        auto sub = productionForType(n->elementType(), ID(fmt("%s", n->elementType())));
+        result = productionForLoop(std::move(sub), n->as<Node>());
     }
 };
 
+std::unique_ptr<Production> ProductionFactory::createProduction(const NodePtr& node) {
+    return visitor::dispatch(Visitor(this), node,
+                             [](auto& v) -> std::unique_ptr<Production> { return std::move(v.result); });
+}
+
 } // anonymous namespace
 
-Result<Nothing> GrammarBuilder::run(const type::Unit& unit, Node* node, CodeGen* cg) {
-    assert(unit.id());
-    const auto& id = *unit.id();
-    Grammar g(id, node->location());
-    auto v = Visitor(cg, this, &g);
+hilti::Result<hilti::Nothing> GrammarBuilder::run(const std::shared_ptr<type::Unit>& unit) {
+    assert(unit->canonicalID());
+    auto id = unit->canonicalID();
+    if ( _grammars.find(id) != _grammars.end() )
+        return hilti::Nothing();
 
-    auto root = v.dispatch(node);
+    Grammar g(id.str(), unit->location());
+    auto pf = ProductionFactory(cg(), this, &g);
+    auto root = pf.createProduction(unit);
     assert(root);
 
-    g.setRoot(*root);
+    if ( auto rc = g.setRoot(std::move(root)); ! rc )
+        return rc.error();
 
     auto r = g.finalize();
 
@@ -327,13 +358,15 @@ Result<Nothing> GrammarBuilder::run(const type::Unit& unit, Node* node, CodeGen*
         return r.error();
 
     _grammars[id] = std::move(g);
-    return Nothing();
+    return hilti::Nothing();
 }
 
 const Grammar& GrammarBuilder::grammar(const type::Unit& unit) {
-    if ( _grammars.find(*unit.id()) == _grammars.end() )
-        hilti::logger().internalError(fmt("grammar for unit %s accessed before it's been computed", *unit.id()),
+    assert(unit.canonicalID());
+    auto id = unit.canonicalID();
+    if ( _grammars.find(id) == _grammars.end() )
+        hilti::logger().internalError(fmt("grammar for unit %s accessed before it's been computed", id),
                                       unit.meta().location());
 
-    return _grammars[*unit.id()];
+    return _grammars[id];
 }

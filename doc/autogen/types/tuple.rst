@@ -1,8 +1,8 @@
 .. rubric:: Operators
 
-.. spicy:operator:: tuple::CustomAssign <tuple> t:(x,~...,~y) = t:<tuple>
+.. spicy:operator:: tuple::CustomAssign <tuple> t:(x,...,y) = t:tuple
 
-    Assigns element-wise to the left-hand-side tuple
+    Assigns element-wise to the left-hand-side tuple.
 
 .. spicy:operator:: tuple::Equal bool t:tuple <sp> op:== <sp> t:tuple
 

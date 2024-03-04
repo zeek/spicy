@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/declarations/local-variable.h>
@@ -11,46 +12,33 @@
 
 namespace hilti::statement {
 
-/** AST node for a "if" statement. */
-class If : public NodeBase, public hilti::trait::isStatement {
+/** AST node for a `if` statement. */
+class If : public Statement {
 public:
-    If(const hilti::Declaration& init, std::optional<hilti::Expression> cond, Statement true_,
-       std::optional<Statement> false_, Meta m = Meta())
-        : NodeBase(nodes(init, std::move(cond), std::move(true_), std::move(false_)), std::move(m)) {
-        if ( ! init.isA<declaration::LocalVariable>() )
+    auto init() const { return child<hilti::declaration::LocalVariable>(0); }
+    auto condition() const { return child<::hilti::Expression>(1); }
+    auto true_() const { return child<hilti::Statement>(2); }
+    auto false_() const { return child<Statement>(3); }
+
+    void setCondition(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 1, c); }
+
+    static auto create(ASTContext* ctx, const DeclarationPtr& init, const ExpressionPtr& cond,
+                       const StatementPtr& true_, const StatementPtr& false_, Meta meta = {}) {
+        return std::shared_ptr<If>(new If(ctx, {init, cond, true_, false_}, std::move(meta)));
+    }
+
+    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const StatementPtr& true_,
+                       const StatementPtr& false_, Meta meta = {}) {
+        return std::shared_ptr<If>(new If(ctx, {nullptr, cond, true_, false_}, std::move(meta)));
+    }
+
+protected:
+    If(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {
+        if ( child(0) && ! child(0)->isA<declaration::LocalVariable>() )
             logger().internalError("initialization for 'if' must be a local declaration");
     }
 
-    If(hilti::Expression cond, Statement true_, std::optional<Statement> false_, Meta m = Meta())
-        : NodeBase(nodes(node::none, std::move(cond), std::move(true_), std::move(false_)), std::move(m)) {}
-
-    auto init() const { return children()[0].tryAs<hilti::declaration::LocalVariable>(); }
-    auto initRef() const {
-        return children()[0].isA<hilti::declaration::LocalVariable>() ? NodeRef(children()[0]) : NodeRef();
-    }
-    auto condition() const { return children()[1].tryAs<hilti::Expression>(); }
-    const auto& true_() const { return child<hilti::Statement>(2); }
-    auto false_() const { return children()[3].tryAs<Statement>(); }
-
-    void setCondition(const hilti::Expression& e) { children()[1] = e; }
-    void removeFalse() { children()[3] = node::none; }
-
-    bool operator==(const If& other) const {
-        return init() == other.init() && condition() == other.condition() && true_() == other.true_() &&
-               false_() == other.false_();
-    }
-
-    /** Internal method for use by builder API only. */
-    auto& _trueNode() { return children()[2]; }
-
-    /** Internal method for use by builder API only. */
-    auto& _falseNode() { return children()[3]; }
-
-    /** Implements the `Statement` interface. */
-    auto isEqual(const Statement& other) const { return node::isEqual(this, other); }
-
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, If)
 };
 
 } // namespace hilti::statement

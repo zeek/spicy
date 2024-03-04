@@ -2,25 +2,27 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a bool type. */
-class Bool : public TypeBase, trait::isAllocable, trait::isSortable {
+/** AST node for a `bool` type. */
+class Bool : public UnqualifiedType {
 public:
-    Bool(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    static auto create(ASTContext* ctx, const Meta& meta = {}) { return std::shared_ptr<Bool>(new Bool(ctx, meta)); }
 
-    bool operator==(const Bool& /* other */) const { return true; }
+    std::string_view typeClass() const final { return "bool"; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
+
+protected:
+    Bool(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {"bool"}, meta) {}
+
+    HILTI_NODE(hilti, Bool)
 };
 
 } // namespace hilti::type

@@ -106,7 +106,7 @@ void SpicyDump::usage() {
            "\n";
 }
 
-/** TODO: Can we factor out common option handling to the Spicy driver? */
+/** TODO(robin): Can we factor out common option handling to the Spicy driver? */
 void SpicyDump::parseOptions(int argc, char** argv) {
     hilti::driver::Options driver_options;
     hilti::Options hilti_compiler_options;

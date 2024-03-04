@@ -15,5 +15,5 @@
 [error] <...>/coercion-fail.hlt:33:1-33:45: cannot coerce expression '9223372036854775808' of type 'uint<64>' to type 'int<64>'
 [error] <...>/coercion-fail.hlt:39:1-39:45: cannot coerce expression '9007199254740993' of type 'uint<64>' to type 'real'
 [error] <...>/coercion-fail.hlt:40:1-40:46: cannot coerce expression '-9007199254740993' of type 'int<64>' to type 'real'
-[error] <...>/coercion-fail.hlt:44:1-44:18: cannot coerce expression 'Foo::i' of type 'int<32>' to type 'bool'
+[error] <...>/coercion-fail.hlt:44:1-44:18: cannot coerce expression 'i' of type 'int<32>' to type 'bool'
 [error] hiltic: aborting after errors

@@ -2,67 +2,29 @@
 
 #pragma once
 
-#include <hilti/ast/builder/type.h>
+#include <memory>
+#include <string>
+
 #include <hilti/ast/operators/common.h>
-#include <hilti/ast/types/integer.h>
-#include <hilti/ast/types/interval.h>
-#include <hilti/ast/types/real.h>
 
 namespace hilti::operator_ {
 
-STANDARD_OPERATOR_2(interval, Equal, type::Bool(), type::Interval(), type::Interval(), "Compares two interval values.")
-STANDARD_OPERATOR_2(interval, Unequal, type::Bool(), type::Interval(), type::Interval(),
-                    "Compares two interval values.")
-STANDARD_OPERATOR_2(interval, Sum, type::Interval(), type::Interval(), type::Interval(),
-                    "Returns the sum of the intervals.");
-STANDARD_OPERATOR_2(interval, Difference, type::Interval(), type::Interval(), type::Interval(),
-                    "Returns the difference of the intervals.");
-STANDARD_OPERATOR_2(interval, Greater, type::Bool(), type::Interval(), type::Interval(), "Compares the intervals.");
-STANDARD_OPERATOR_2(interval, GreaterEqual, type::Bool(), type::Interval(), type::Interval(),
-                    "Compares the intervals.");
-STANDARD_OPERATOR_2(interval, Lower, type::Bool(), type::Interval(), type::Interval(), "Compares the intervals.");
-STANDARD_OPERATOR_2(interval, LowerEqual, type::Bool(), type::Interval(), type::Interval(), "Compares the intervals.");
-STANDARD_OPERATOR_2x(interval, MultipleUnsignedInteger, Multiple, type::Interval(), type::Interval(),
-                     type::UnsignedInteger(64), "Multiples the interval with the given factor.");
-STANDARD_OPERATOR_2x(interval, MultipleReal, Multiple, type::Interval(), type::Interval(), type::Real(),
-                     "Multiplies the interval with the given factor.");
-
-STANDARD_KEYWORD_CTOR(interval, CtorSignedIntegerNs, "interval_ns", type::Interval(),
-                      type::SignedInteger(type::Wildcard()),
-                      "Creates an interval interpreting the argument as number of nanoseconds.");
-STANDARD_KEYWORD_CTOR(interval, CtorSignedIntegerSecs, "interval", type::Interval(),
-                      type::SignedInteger(type::Wildcard()),
-                      "Creates an interval interpreting the argument as number of seconds.");
-STANDARD_KEYWORD_CTOR(interval, CtorUnsignedIntegerNs, "interval_ns", type::Interval(),
-                      type::UnsignedInteger(type::Wildcard()),
-                      "Creates an interval interpreting the argument as number of nanoseconds.");
-STANDARD_KEYWORD_CTOR(interval, CtorUnsignedIntegerSecs, "interval", type::Interval(),
-                      type::UnsignedInteger(type::Wildcard()),
-                      "Creates an interval interpreting the argument as number of seconds.");
-STANDARD_KEYWORD_CTOR(interval, CtorRealSecs, "interval", type::Interval(), type::Real(),
-                      "Creates an interval interpreting the argument as number of seconds.");
-
-BEGIN_METHOD(interval, Seconds)
-    const auto& signature() const {
-        static auto _signature =
-            Signature{.self = type::Interval(), .result = type::Real(), .id = "seconds", .args = {}, .doc = R"(
-Returns the interval as a real value representing seconds.
-)"};
-        return _signature;
-    }
-END_METHOD
-
-BEGIN_METHOD(interval, Nanoseconds)
-    const auto& signature() const {
-        static auto _signature = Signature{.self = type::Interval(),
-                                           .result = type::SignedInteger(64),
-                                           .id = "nanoseconds",
-                                           .args = {},
-                                           .doc = R"(
-Returns the interval as an integer value representing nanoseconds.
-)"};
-        return _signature;
-    }
-END_METHOD
+HILTI_NODE_OPERATOR(hilti, interval, Equal)
+HILTI_NODE_OPERATOR(hilti, interval, Unequal)
+HILTI_NODE_OPERATOR(hilti, interval, Sum)
+HILTI_NODE_OPERATOR(hilti, interval, Difference)
+HILTI_NODE_OPERATOR(hilti, interval, Greater)
+HILTI_NODE_OPERATOR(hilti, interval, GreaterEqual)
+HILTI_NODE_OPERATOR(hilti, interval, Lower)
+HILTI_NODE_OPERATOR(hilti, interval, LowerEqual)
+HILTI_NODE_OPERATOR(hilti, interval, MultipleUnsignedInteger)
+HILTI_NODE_OPERATOR(hilti, interval, MultipleReal)
+HILTI_NODE_OPERATOR(hilti, interval, CtorSignedIntegerNs)
+HILTI_NODE_OPERATOR(hilti, interval, CtorSignedIntegerSecs)
+HILTI_NODE_OPERATOR(hilti, interval, CtorUnsignedIntegerNs)
+HILTI_NODE_OPERATOR(hilti, interval, CtorUnsignedIntegerSecs)
+HILTI_NODE_OPERATOR(hilti, interval, CtorRealSecs)
+HILTI_NODE_OPERATOR(hilti, interval, Seconds)
+HILTI_NODE_OPERATOR(hilti, interval, Nanoseconds)
 
 } // namespace hilti::operator_

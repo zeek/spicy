@@ -33,7 +33,7 @@ static hilti::Meta toMeta(hilti::detail::parser::location l) {
     return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column, l.end.column));
 }
 
-static std::string expandEscapes(Driver* driver, std::string s, hilti::detail::parser::location l) {
+static std::string expandEscapes(detail::parser::Driver* driver, std::string s, hilti::detail::parser::location l) {
     try {
         return hilti::util::expandEscapes(s);
     } catch ( const hilti::rt::Exception& ) {
@@ -202,10 +202,10 @@ Null                  return token::CNULL;
 False                 yylval->build(false); return token::CBOOL;
 True                  yylval->build(true); return token::CBOOL;
 
-{digits}|0x{hexs}     yylval->build(hilti::util::chars_to_uint64(yytext, 0, range_error_int)); return token::CUINTEGER;
+{digits}|0x{hexs}     yylval->build(hilti::util::charsToUInt64(yytext, 0, range_error_int)); return token::CUINTEGER;
 '.'                   yylval->build(static_cast<uint64_t>(*(yytext + 1))); return token::CUINTEGER;
 
-{decfloat}|{hexfloat} yylval->build(hilti::util::chars_to_double(yytext, range_error_real)); return token::CUREAL;
+{decfloat}|{hexfloat} yylval->build(hilti::util::charsToDouble(yytext, range_error_real)); return token::CUREAL;
 {string}              yylval->build(expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc)); return token::CSTRING;
 b{string}             yylval->build(expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc)); return token::CBYTES;
 {digits}\/(tcp|udp)   yylval->build(std::string(yytext)); return token::CPORT;
@@ -215,7 +215,7 @@ b{string}             yylval->build(expandEscapes(driver, std::string(yytext, 2,
 {id}                  yylval->build(std::string(yytext)); return token::IDENT;
 {attribute}           yylval->build(std::string(yytext)); return token::ATTRIBUTE;
 {property}            yylval->build(std::string(yytext)); return token::PROPERTY;
-{id}(::{id}){1,}      yylval->build(std::string(yytext)); return token::SCOPED_IDENT;
+{id}?(::{id}){1,}      yylval->build(std::string(yytext)); return token::SCOPED_IDENT;
 {id}(::~finally)      yylval->build(std::string(yytext)); return token::SCOPED_FINALIZE;
 
 [][!$?.,=:;<>(){}/|*/&^%!+~-] return (token_type) yytext[0];

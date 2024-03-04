@@ -2,39 +2,46 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
-#include <vector>
 
-#include <hilti/ast/id.h>
-#include <hilti/ast/node-ref.h>
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
 /** AST node for a type representing a member of another type. */
-class Member : public TypeBase, trait::isParameterized {
+class Member : public UnqualifiedType {
 public:
-    Member(Wildcard /*unused*/, Meta m = Meta()) : TypeBase({ID("<wildcard>")}, std::move(m)), _wildcard(true) {}
-    Member(::hilti::ID id, Meta m = Meta()) : TypeBase({std::move(id)}, std::move(m)) {}
+    const auto& id() const { return _id; }
 
-    const auto& id() const { return child<::hilti::ID>(0); }
+    std::string_view typeClass() const final { return "member"; }
 
-    bool operator==(const Member& other) const { return id() == other.id(); }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"id", _id}};
+        return UnqualifiedType::properties() + p;
+    }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Type` interface. */
-    auto typeParameters() const { return std::vector<Node>{id()}; }
-    /** Implements the `Type` interface. */
-    auto isWildcard() const { return _wildcard; }
+    static auto create(ASTContext* ctx, const ID& id, Meta meta = {}) {
+        return std::shared_ptr<Member>(new Member(ctx, id, std::move(meta)));
+    }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+        return std::shared_ptr<Member>(new Member(ctx, Wildcard(), m));
+    }
+
+protected:
+    Member(ASTContext* ctx, ID id, Meta meta)
+        : UnqualifiedType(ctx, {util::fmt("member(%s)", id)}, std::move(meta)), _id(std::move(id)) {
+        assert(_id);
+    }
+
+    Member(ASTContext* ctx, Wildcard _, const Meta& meta)
+        : UnqualifiedType(ctx, Wildcard(), {"member(*)"}, meta), _id("<wildcard>") {}
+
+    HILTI_NODE(hilti, Member)
 
 private:
-    bool _wildcard = false;
+    ID _id;
 };
 
 } // namespace hilti::type

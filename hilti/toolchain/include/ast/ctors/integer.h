@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
@@ -10,56 +11,68 @@
 namespace hilti::ctor {
 
 namespace detail {
-
-// CHECK: IntegerBase = isCtor
 /** Base class for AST nodes for both signed and unsigned integer constructors. */
-template<typename T, typename S>
-class IntegerBase : public NodeBase, public hilti::trait::isCtor {
+template<typename Value>
+class IntegerBase : public Ctor {
 public:
-    IntegerBase(T v, int w, const Meta& m = Meta()) : NodeBase(nodes(S(w, m)), m), _value(v), _width(w) {}
-
-    auto value() const { return _value; }
+    const auto& value() const { return _value; }
     auto width() const { return _width; }
 
-    /** Implements `Ctor` interface. */
-    bool isConstant() const { return true; }
-    /** Implements `Ctor` interface. */
-    auto isLhs() const { return false; }
-    /** Implements `Ctor` interface. */
-    auto isTemporary() const { return true; }
-    /** Implements `Ctor` interface. */
-    const auto& type() const { return child<Type>(0); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"value", _value}, {"width", _width}}; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{"value", _value}, {"width", _width}};
+        return Ctor::properties() + p;
+    }
+
+protected:
+    IntegerBase(ASTContext* ctx, Nodes children, Value v, unsigned int width, Meta meta)
+        : Ctor(ctx, std::move(children), std::move(meta)), _value(v), _width(width) {}
 
 private:
-    T _value;
-    int _width;
+    Value _value;
+    unsigned int _width;
 };
 
 } // namespace detail
 
 /** AST node for a signed integer constructor. */
-class SignedInteger : public detail::IntegerBase<int64_t, type::SignedInteger> {
+class SignedInteger : public detail::IntegerBase<int64_t> {
 public:
-    using detail::IntegerBase<int64_t, type::SignedInteger>::IntegerBase;
+    static auto create(ASTContext* ctx, int64_t value, unsigned int width, const Meta& meta = {}) {
+        return CtorPtr(new SignedInteger(ctx,
+                                         {QualifiedType::create(ctx, type::SignedInteger::create(ctx, width, meta),
+                                                                Constness::Const)},
+                                         value, width, meta));
+    }
 
-    bool operator==(const SignedInteger& other) const { return value() == other.value() && width() == other.width(); }
+protected:
+    SignedInteger(ASTContext* ctx, Nodes children, int64_t value, unsigned int width, Meta meta)
+        : IntegerBase(ctx, std::move(children), value, width, std::move(meta)) {}
 
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+    HILTI_NODE(hilti, SignedInteger)
 };
 
 /** AST node for a unsigned integer constructor. */
-class UnsignedInteger : public detail::IntegerBase<uint64_t, type::UnsignedInteger> {
+class UnsignedInteger : public detail::IntegerBase<uint64_t> {
 public:
-    using detail::IntegerBase<uint64_t, type::UnsignedInteger>::IntegerBase;
+    static auto create(ASTContext* ctx, uint64_t value, unsigned int width, const Meta& meta = {}) {
+        return CtorPtr(new UnsignedInteger(ctx,
+                                           {QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, width, meta),
+                                                                  Constness::Const)},
+                                           value, width, meta));
+    }
 
-    bool operator==(const UnsignedInteger& other) const { return value() == other.value() && width() == other.width(); }
+    static auto create(ASTContext* ctx, uint64_t value, unsigned int width, const UnqualifiedTypePtr& t,
+                       const Meta& meta = {}) {
+        return CtorPtr(new UnsignedInteger(ctx, {QualifiedType::create(ctx, t, Constness::Const)}, value, width, meta));
+    }
 
-    /** Implements `Ctor` interface. */
-    auto isEqual(const Ctor& other) const { return node::isEqual(this, other); }
+protected:
+    UnsignedInteger(ASTContext* ctx, Nodes children, uint64_t value, unsigned int width, Meta meta)
+        : IntegerBase(ctx, std::move(children), value, width, std::move(meta)) {}
+
+    HILTI_NODE(hilti, UnsignedInteger)
 };
 
 } // namespace hilti::ctor

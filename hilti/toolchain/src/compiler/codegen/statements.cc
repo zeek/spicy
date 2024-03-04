@@ -1,8 +1,10 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/ctors/string.h>
 #include <hilti/ast/declarations/local-variable.h>
-#include <hilti/ast/detail/visitor.h>
+#include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/statements/all.h>
+#include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
@@ -12,59 +14,66 @@ using util::fmt;
 
 using namespace hilti::detail;
 
-inline auto traceStatement(CodeGen* cg, cxx::Block* b, const Statement& s, bool skip_location = false) {
-    if ( s.isA<statement::Block>() )
+inline auto traceStatement(CodeGen* cg, cxx::Block* b, const StatementPtr& s, bool skip_location = false) {
+    if ( s->isA<statement::Block>() )
         return;
 
-    if ( cg->options().track_location && s.meta().location() && ! skip_location )
-        b->addStatement(fmt("  __location__(\"%s\")", s.meta().location()));
+    if ( cg->options().track_location && s->meta().location() && ! skip_location )
+        b->addStatement(fmt("  __location__(\"%s\")", s->meta().location()));
 
-    if ( cg->options().debug_trace )
-        b->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", s.meta().location(),
-                            util::escapeUTF8(fmt("%s", s), true)));
+    if ( cg->options().debug_trace ) {
+        std::string location;
+
+        if ( s->meta().location() )
+            location = fmt("%s: ", s->meta().location().dump(true));
+
+        b->addStatement(
+            fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", location, util::escapeUTF8(fmt("%s", *s), true)));
+    }
 }
 
 namespace {
 
-struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
+struct Visitor : hilti::visitor::PreOrder {
     Visitor(CodeGen* cg, cxx::Block* b) : cg(cg), block(b) {}
-    CodeGen* cg;
 
-    int level = 0;
+    CodeGen* cg;
     cxx::Block* block;
 
-    void operator()(const statement::Assert& n) {
+    int level = 0;
+
+    void operator()(statement::Assert* n) final {
         std::string throw_;
 
-        if ( n.message() )
+        if ( n->message() )
             throw_ = fmt("throw ::hilti::rt::AssertionFailure(hilti::rt::to_string_for_print(%s), \"%s\")",
-                         cg->compile(*n.message()), n.meta().location());
+                         cg->compile(n->message()), n->meta().location());
         else {
-            auto msg = std::string(to_node(n.expression()));
+            auto msg = std::string(*n->expression());
             throw_ = fmt(R"(throw ::hilti::rt::AssertionFailure("failed expression '%s'", "%s"))",
-                         util::escapeUTF8(msg, true), n.meta().location());
+                         util::escapeUTF8(msg, true), n->meta().location());
         }
 
-        if ( ! n.expectsException() ) {
+        if ( ! n->expectException() ) {
             cxx::Block stmt;
 
             if ( cg->options().debug_flow )
-                stmt.addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: assertion error"))", n.meta().location()));
+                stmt.addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: assertion error"))", n->meta().location()));
 
             stmt.addStatement(throw_);
-            block->addIf(fmt("! (%s)", cg->compile(n.expression())), cxx::Block(std::move(stmt)));
+            block->addIf(fmt("! (%s)", cg->compile(n->expression())), cxx::Block(std::move(stmt)));
         }
         else {
-            if ( n.exception() )
+            if ( n->exception() )
                 logger().internalError("not support currently for testing for specific exception in assertion", n);
 
             cxx::Block try_body;
             try_body.addTmp(cxx::declaration::Local{"_", "::hilti::rt::exception::DisableAbortOnExceptions"});
-            try_body.addStatement(fmt("%s", cg->compile(n.expression())));
+            try_body.addStatement(fmt("%s", cg->compile(n->expression())));
 
             if ( cg->options().debug_flow )
                 try_body.addStatement(
-                    fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: assertion error"))", n.meta().location()));
+                    fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: assertion error"))", n->meta().location()));
 
             try_body.addStatement(throw_);
 
@@ -81,41 +90,41 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         }
     }
 
-    void operator()(const statement::Block& n) {
+    void operator()(statement::Block* n) final {
         if ( level == 0 ) {
             ++level;
 
             std::optional<Location> prev_location;
 
-            for ( const auto& s : n.statements() ) {
-                traceStatement(cg, block, s, prev_location && s.meta().location() == prev_location);
+            for ( const auto& s : n->statements() ) {
+                traceStatement(cg, block, s, prev_location && s->meta().location() == prev_location);
 
                 dispatch(s);
-                prev_location = s.meta().location();
+                prev_location = s->meta().location();
             }
 
             --level;
         }
 
         else
-            block->addBlock(cg->compile(n));
+            block->addBlock(cg->compile(n->as<statement::Block>()));
     }
 
-    void operator()(const statement::Break& n, position_t p) { block->addStatement("break"); }
+    void operator()(statement::Break* n) final { block->addStatement("break"); }
 
-    void operator()(const statement::Continue& n, position_t p) { block->addStatement("continue"); }
+    void operator()(statement::Continue* n) final { block->addStatement("continue"); }
 
-    void operator()(const statement::Comment& n) {
-        auto sep_before = (n.separator() == statement::comment::Separator::Before ||
-                           n.separator() == statement::comment::Separator::BeforeAndAfter);
-        auto sep_after = (n.separator() == statement::comment::Separator::After ||
-                          n.separator() == statement::comment::Separator::BeforeAndAfter);
+    void operator()(statement::Comment* n) final {
+        auto sep_before = (n->separator() == statement::comment::Separator::Before ||
+                           n->separator() == statement::comment::Separator::BeforeAndAfter);
+        auto sep_after = (n->separator() == statement::comment::Separator::After ||
+                          n->separator() == statement::comment::Separator::BeforeAndAfter);
 
-        block->addComment(n.comment(), sep_before, sep_after);
+        block->addComment(n->comment(), sep_before, sep_after);
     }
 
-    void operator()(const statement::Declaration& n) {
-        auto d = n.declaration().tryAs<declaration::LocalVariable>();
+    void operator()(statement::Declaration* n) final {
+        auto d = n->declaration()->tryAs<declaration::LocalVariable>();
 
         if ( ! d )
             logger().internalError("statements can only declare local variables");
@@ -124,10 +133,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         std::optional<cxx::Expression> init;
 
         if ( auto i = d->init() )
-            init = cg->compile(*i);
+            init = cg->compile(i);
 
         else {
-            if ( auto s = d->type().tryAs<type::Struct>() )
+            if ( auto s = d->type()->type()->tryAs<type::Struct>() )
                 args = cg->compileCallArguments(d->typeArguments(), s->parameters());
 
             init = cg->typeDefaultValue(d->type());
@@ -139,18 +148,18 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         block->addLocal(l);
     }
 
-    void operator()(const statement::Expression& n) { block->addStatement(cg->compile(n.expression())); }
+    void operator()(statement::Expression* n) final { block->addStatement(cg->compile(n->expression())); }
 
-    void operator()(const statement::If& n) {
+    void operator()(statement::If* n) final {
         std::string init;
         std::string cond;
 
-        if ( auto x = n.init() ) {
+        if ( auto x = n->init() ) {
             auto& l = *x;
             std::optional<cxx::Expression> cxx_init;
 
             if ( auto i = l.init() )
-                cxx_init = cg->compile(*i);
+                cxx_init = cg->compile(i);
             else
                 cxx_init = cg->typeDefaultValue(l.init()->type());
 
@@ -160,8 +169,8 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
                 init += fmt(" = %s", *cxx_init);
         }
 
-        if ( n.condition() )
-            cond = cg->compile(*n.condition());
+        if ( n->condition() )
+            cond = cg->compile(n->condition());
 
         std::string head;
 
@@ -172,18 +181,18 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         else
             head = cond;
 
-        if ( ! n.false_() )
-            block->addIf(head, cg->compile(n.true_()));
+        if ( ! n->false_() )
+            block->addIf(head, cg->compile(n->true_()));
         else
-            block->addIf(head, cg->compile(n.true_()), cg->compile(*n.false_()));
+            block->addIf(head, cg->compile(n->true_()), cg->compile(n->false_()));
     }
 
-    void operator()(const statement::For& n) {
-        auto id = cxx::ID(n.local().id());
-        auto seq = cg->compile(n.sequence());
-        auto body = cg->compile(n.body());
+    void operator()(statement::For* n) final {
+        auto id = cxx::ID(n->local()->id());
+        auto seq = cg->compile(n->sequence());
+        auto body = cg->compile(n->body());
 
-        if ( ! n.sequence().isTemporary() )
+        if ( n->sequence()->type()->side() == Side::LHS )
             block->addForRange(true, id, fmt("%s", seq), body);
         else {
             cxx::Block b;
@@ -194,22 +203,22 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         }
     }
 
-    void operator()(const statement::Return& n, position_t p) {
+    void operator()(statement::Return* n) final {
         if ( cg->options().debug_flow )
-            block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: return"))", n.meta().location()));
+            block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: return"))", n->meta().location()));
 
-        if ( auto e = n.expression() )
-            block->addStatement(fmt("return %s", cg->compile(*e)));
+        if ( auto e = n->expression() )
+            block->addStatement(fmt("return %s", cg->compile(e)));
         else
             block->addStatement("return");
     }
 
-    void operator()(const statement::SetLocation& n, position_t p) {
-        const auto& location = n.expression()->as<expression::Ctor>().ctor().as<ctor::String>().value();
+    void operator()(statement::SetLocation* n) final {
+        const auto& location = n->expression()->as<expression::Ctor>()->ctor()->as<ctor::String>()->value();
         block->addStatement(fmt("__location__(\"%s\")", location));
     }
 
-    void operator()(const statement::Switch& n, position_t p) {
+    void operator()(statement::Switch* n) final {
         // TODO(robin): We generate if-else chain here. We could optimize the case
         // where all expressions are integers and go with a "real" switch in
         // that case.
@@ -217,26 +226,26 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
         std::string cxx_type;
         std::string cxx_init;
 
-        const auto& cond = n.condition();
-        cxx_type = cg->compile(cond.type(), codegen::TypeUsage::Storage);
-        cxx_id = cxx::ID(cond.id());
-        cxx_init = cg->compile(*cond.init());
+        const auto& cond = n->condition();
+        cxx_type = cg->compile(cond->type(), codegen::TypeUsage::Storage);
+        cxx_id = cxx::ID(cond->id());
+        cxx_init = cg->compile(cond->init());
 
         bool first = true;
-        for ( const auto& c : n.cases() ) {
-            if ( c.isDefault() )
+        for ( const auto& c : n->cases() ) {
+            if ( c->isDefault() )
                 continue; // will handle below
 
             std::string cond;
 
-            auto exprs = c.preprocessedExpressions();
+            auto exprs = c->preprocessedExpressions();
 
             if ( exprs.size() == 1 )
                 cond = cg->compile(*exprs.begin());
             else
                 cond = util::join(node::transform(exprs, [&](auto& e) { return cg->compile(e); }), " || ");
 
-            auto body = cg->compile(c.body());
+            auto body = cg->compile(c->body());
 
             if ( first ) {
                 block->addIf(fmt("%s %s = %s", cxx_type, cxx_id, cxx_init), cond, body);
@@ -248,12 +257,12 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
         cxx::Block default_;
 
-        if ( auto d = n.default_() )
+        if ( auto d = n->default_() )
             default_ = cg->compile(d->body());
         else
             default_.addStatement(
                 fmt("throw hilti::rt::UnhandledSwitchCase(hilti::rt::to_string_for_print(%s), \"%s\")",
-                    (first ? cxx_init : cxx_id), n.meta().location()));
+                    (first ? cxx_init : cxx_id), n->meta().location()));
 
         if ( first )
             block->addBlock(std::move(default_));
@@ -261,74 +270,74 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             block->addElse(std::move(default_));
     }
 
-    void operator()(const statement::Throw& n, position_t p) {
+    void operator()(statement::Throw* n) final {
         if ( cg->options().debug_flow ) {
-            if ( auto e = n.expression() )
-                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw %s"))", n.meta().location(), *e));
+            if ( auto e = n->expression() )
+                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw %s"))", n->meta().location(), *e));
             else
-                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw"))", n.meta().location()));
+                block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: throw"))", n->meta().location()));
         }
 
-        if ( auto e = n.expression() )
-            block->addStatement(fmt("throw %s", cg->compile(*e)));
+        if ( auto e = n->expression() )
+            block->addStatement(fmt("throw %s", cg->compile(e)));
         else
             block->addStatement("throw");
     }
 
-    void operator()(const statement::Try& n, position_t p) {
+    void operator()(statement::Try* n) final {
         std::vector<std::pair<cxx::declaration::Argument, cxx::Block>> catches;
 
-        for ( const auto& c : n.catches() ) {
+        for ( const auto& c : n->catches() ) {
             cxx::declaration::Argument arg;
 
-            if ( auto par = c.parameter() ) {
+            if ( auto par = c->parameter() ) {
                 auto t = cg->compile(par->type(), codegen::TypeUsage::InParameter);
                 arg = {cxx::ID(par->id()), std::move(t)};
             }
             else
                 arg = {"", cxx::Type("...")};
 
-            catches.emplace_back(std::move(arg), cg->compile(c.body()));
+            catches.emplace_back(std::move(arg), cg->compile(c->body()));
         }
 
-        block->addTry(cg->compile(n.body()), std::move(catches));
+        block->addTry(cg->compile(n->body()), std::move(catches));
     }
 
-    void operator()(const statement::While& n) {
-        std::optional<declaration::LocalVariable> init;
+    void operator()(statement::While* n) final {
+        std::shared_ptr<declaration::LocalVariable> init;
         std::optional<cxx::Expression> cxx_init;
 
-        if ( n.init() )
-            init = n.init();
+        if ( n->init() )
+            init = n->init();
 
         if ( init ) {
             if ( auto i = init->init() )
-                cxx_init = cg->compile(*i);
+                cxx_init = cg->compile(i);
             else
                 cxx_init = cg->typeDefaultValue(init->type());
         }
 
-        if ( n.else_() ) {
+        if ( n->else_() ) {
             // We generate different code if we have an "else" clause.
             cxx::Block inner_wrapper;
 
-            if ( ! n.condition() )
+            if ( ! n->condition() )
                 inner_wrapper.addStatement(fmt("%s = %s", init->id(), *cxx_init));
 
-            auto else_ = cg->compile(*n.else_());
+            auto else_ = cg->compile(n->else_());
             else_.addStatement("break");
 
-            if ( n.condition() )
-                inner_wrapper.addIf(fmt("! (%s)", cg->compile(*n.condition())), else_);
+            if ( n->condition() )
+                inner_wrapper.addIf(fmt("! (%s)", cg->compile(n->condition())), else_);
             else
                 inner_wrapper.addIf(fmt("! %s", init->id()), else_);
 
-            inner_wrapper.appendFromBlock(cg->compile(n.body()));
+            inner_wrapper.appendFromBlock(cg->compile(n->body()));
 
             cxx::Block outer_wrapper;
 
             if ( init ) {
-                if ( n.condition() )
+                if ( n->condition() )
                     outer_wrapper.addLocal(
                         {cxx::ID(init->id()), cg->compile(init->type(), codegen::TypeUsage::Storage), {}, cxx_init});
                 else
@@ -356,10 +365,10 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             sinit = (cxx_init_lhs + cxx_init_rhs);
         }
 
-        if ( n.condition() )
-            cond = cg->compile(*n.condition());
+        if ( n->condition() )
+            cond = cg->compile(n->condition());
 
-        auto body = cg->compile(n.body());
+        auto body = cg->compile(n->body());
 
         if ( sinit.empty() )
             block->addWhile(cond, body);
@@ -373,9 +382,9 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
             block->addFor(sinit, cond, "", body);
     }
 
-    void operator()(const statement::Yield& n) {
+    void operator()(statement::Yield* n) final {
         if ( cg->options().debug_flow )
-            block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: yield"))", n.meta().location()));
+            block->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: yield"))", n->meta().location()));
 
         block->addStatement("::hilti::rt::detail::yield()");
     }
@@ -383,7 +392,7 @@ struct Visitor : hilti::visitor::PreOrder<void, Visitor> {
 
 } // anonymous namespace
 
-cxx::Block CodeGen::compile(const hilti::Statement& s, cxx::Block* b) {
+cxx::Block CodeGen::compile(const StatementPtr& s, cxx::Block* b) {
     if ( b ) {
         pushCxxBlock(b);
         traceStatement(this, b, s);

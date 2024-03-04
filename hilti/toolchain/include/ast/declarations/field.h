@@ -1,111 +1,124 @@
-
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/id.h>
+#include <hilti/ast/operator-registry.h>
+#include <hilti/ast/operators/struct.h>
 #include <hilti/ast/types/auto.h>
-#include <hilti/ast/types/unknown.h>
 
 namespace hilti::declaration {
 
-/** AST node for a struct/union field. */
-class Field : public DeclarationBase {
+/** AST node for a struct/union field declaration. */
+class Field : public Declaration {
 public:
-    Field() : DeclarationBase({ID("<no id>"), type::unknown, node::none, node::none}, Meta()) {}
-    Field(ID id, hilti::Type t, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : DeclarationBase(nodes(std::move(id), std::move(t), std::move(attrs), node::none), std::move(m)) {}
-    Field(ID id, ::hilti::function::CallingConvention cc, type::Function ft, std::optional<AttributeSet> attrs = {},
-          Meta m = Meta())
-        : DeclarationBase(nodes(std::move(id), std::move(ft), std::move(attrs), node::none), std::move(m)), _cc(cc) {}
-    Field(ID id, const hilti::Function& inline_func, std::optional<AttributeSet> attrs = {}, Meta m = Meta())
-        : DeclarationBase(nodes(std::move(id), node::none, std::move(attrs), inline_func), std::move(m)),
-          _cc(inline_func.callingConvention()) {}
-
-    const auto& id() const { return child<ID>(0); }
-
     auto callingConvention() const { return _cc; }
-    auto inlineFunction() const { return children()[3].tryAs<hilti::Function>(); }
-    auto attributes() const { return children()[2].tryAs<AttributeSet>(); }
-    bool isResolved(type::ResolvedState* rstate) const {
-        if ( children()[1].isA<type::Function>() )
-            return true;
+    auto attributes() const { return child<AttributeSet>(1); }
+    auto inlineFunction() const { return child<hilti::Function>(2); }
 
-        if ( auto func = inlineFunction() )
-            return type::detail::isResolved(func->type(), rstate);
-        else
-            return type::detail::isResolved(child<hilti::Type>(1), rstate);
-    }
+    /** Returns an operator corresponding to a call to the member function that the declaration corresponds to, if any.
+     */
+    auto operator_() const { return _operator; }
 
-    const hilti::Type& type() const {
+    QualifiedTypePtr type() const {
         if ( const auto& func = inlineFunction() )
             return func->type();
         else
-            return child<hilti::Type>(1);
+            return child<QualifiedType>(0);
     }
 
-    NodeRef typeRef() {
-        if ( inlineFunction() )
-            return children()[3].as<hilti::Function>().typeRef();
-        else
-            return NodeRef(children()[1]);
-    }
-
-    hilti::optional_ref<const hilti::Expression> default_() const {
-        if ( auto a = AttributeSet::find(attributes(), "&default") ) {
-            if ( auto x = a->valueAsExpression() )
-                return x->get();
-            else
-                return {};
-        }
-
-        return {};
-    }
-
-    auto isAnonymous() const { return AttributeSet::find(attributes(), "&anonymous").has_value(); }
-    auto isInternal() const { return AttributeSet::find(attributes(), "&internal").has_value(); }
-    auto isOptional() const { return AttributeSet::find(attributes(), "&optional").has_value(); }
-    auto isStatic() const { return AttributeSet::find(attributes(), "&static").has_value(); }
-    auto isNoEmit() const { return AttributeSet::find(attributes(), "&no-emit").has_value(); }
-
-    /** Internal method for use by builder API only. */
-    auto& _typeNode() {
+    bool isResolved(node::CycleDetector* cd = nullptr) const {
         if ( auto func = inlineFunction() )
-            return const_cast<::hilti::Function&>(*func)._typeNode();
+            return func->type()->isResolved(cd);
+
+        if ( auto type = child<QualifiedType>(0); type->type()->isA<type::Function>() )
+            return true;
         else
-            return children()[1];
+            return type->isResolved(cd);
     }
 
-    void setAttributes(const AttributeSet& attrs) { children()[2] = attrs; }
-
-    bool operator==(const Field& other) const {
-        return id() == other.id() && type() == other.type() && attributes() == other.attributes() && _cc == other._cc;
+    ExpressionPtr default_() const {
+        if ( auto a = attributes()->find("&default") )
+            return *a->valueAsExpression();
+        else
+            return {};
     }
 
-    /** Implements the `Declaration` interface. */
-    declaration::Linkage linkage() const { return declaration::Linkage::Struct; }
+    auto isAnonymous() const { return attributes()->find("&anonymous") != nullptr; }
+    auto isInternal() const { return attributes()->find("&internal") != nullptr; }
+    auto isOptional() const { return attributes()->find("&optional") != nullptr; }
+    auto isStatic() const { return attributes()->find("&static") != nullptr; }
+    auto isNoEmit() const { return attributes()->find("&no-emit") != nullptr; }
 
-    /** Implements the `Declaration` interface. */
-    bool isConstant() const { return false; }
+    auto linkedTypeIndex() const { return _linked_type_index; }
 
-    /** Implements the `Declaration` interface. */
-    std::string displayName() const { return "struct field"; }
+    void setAttributes(ASTContext* ctx, AttributeSetPtr attrs) { setChild(ctx, 1, std::move(attrs)); }
+    void setOperator(const Operator* op) { _operator = op; }
+    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setLinkedTypeIndex(ast::TypeIndex idx) {
+        assert(idx);
+        _linked_type_index = idx;
+    }
 
-    /** Implements the `Declaration` interface. */
-    auto isEqual(const Declaration& other) const { return node::isEqual(this, other); }
+    std::string_view displayName() const final { return "struct field"; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{{"cc", to_string(_cc)}}; }
+    node::Properties properties() const final;
+
+    static auto create(ASTContext* ctx, ID id, QualifiedTypePtr type, AttributeSetPtr attrs, Meta meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        if ( attrs->has("&static") )
+            // make it assignable
+            type = type->recreateAsLhs(ctx);
+
+        return std::shared_ptr<Field>(
+            new Field(ctx, {std::move(type), attrs, nullptr}, std::move(id), {}, std::move(meta)));
+    }
+
+    static auto create(ASTContext* ctx, ID id, ::hilti::function::CallingConvention cc, const type::FunctionPtr& ftype,
+                       AttributeSetPtr attrs, Meta meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        return std::shared_ptr<Field>(new Field(ctx,
+                                                {QualifiedType::create(ctx, ftype, Constness::Const), attrs, nullptr},
+                                                std::move(id), cc, std::move(meta)));
+    }
+
+    static auto create(ASTContext* ctx, const ID& id, const FunctionPtr& inline_func, AttributeSetPtr attrs,
+                       Meta meta = {}) {
+        if ( ! attrs )
+            attrs = AttributeSet::create(ctx);
+
+        return std::shared_ptr<Field>(new Field(ctx, {nullptr, attrs, inline_func}, id, {}, std::move(meta)));
+    }
+
+protected:
+    Field(ASTContext* ctx, Nodes children, ID id, std::optional<::hilti::function::CallingConvention> cc, Meta meta)
+        : Declaration(ctx, std::move(children), std::move(id), declaration::Linkage::Struct, std::move(meta)) {}
+
+    std::string _dump() const override;
+
+    HILTI_NODE(hilti, Field);
 
 private:
-    ::hilti::function::CallingConvention _cc = ::hilti::function::CallingConvention::Standard;
-}; // namespace struct_
+    std::optional<::hilti::function::CallingConvention> _cc;
+    const Operator* _operator = nullptr;
+    ast::TypeIndex _linked_type_index;
+};
+
+using FieldPtr = std::shared_ptr<Field>;
+using FieldList = std::vector<FieldPtr>;
 
 } // namespace hilti::declaration

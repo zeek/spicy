@@ -1042,6 +1042,7 @@ public:
     auto iterate(const Value& v) const {
         std::vector<std::pair<const tuple::Element&, Value>> values;
 
+        values.reserve(_elements.size());
         for ( const auto& f : _elements )
             values.emplace_back(f, Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v));
 

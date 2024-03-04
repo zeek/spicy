@@ -1,3 +1,25 @@
+1.10.0-dev.160 | 2024-03-04 10:07:25 +0100
+
+  * New AST architecture. (Robin Sommer)
+
+    This is a large revamp of compiler internals, cleaning up and speeding
+    up lots of the AST pipeline. From a user perspective, nothing changes,
+    except that the new compiler is a tiny bit more strict: turns out that
+    in rare cases the old compiler ended up accepting some ill-formed
+    Spicy code that is now (rightfully) rejected. Specifically, two
+    instances of this are known where existing Spicy code may need
+    tweaking now:
+
+    - Identifiers from the (internal) `hilti::` namespace are no longer
+      accessible. Usually you can just scope them with `spicy::` instead,
+      and it'll work.
+
+    - The old compiler didn't always enforce constness as it should have.
+      In particular, function parameters could end up being mutable even
+      when they weren't declared as `inout`. Now `inout` is required for
+      supporting any mutable operations on a parameter, so make sure to
+      add it where needed.
+
 1.10.0-dev.158 | 2024-03-01 18:10:49 +0100
 
   * Simplify `while` loops over constant conditions. (Benjamin Bannier, Corelight)

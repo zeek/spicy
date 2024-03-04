@@ -331,7 +331,7 @@ message(
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
     "\nUse gold linker:       ${GOLD_FOUND}"
-    "\nUse sanitizers:        ${HILTI_HAVE_SANITIZER}"
+    "\nUse sanitizers:        ${USE_SANITIZERS}"
     "\nUse backtrace:         ${HILTI_HAVE_BACKTRACE}"
     "\n"
     "\nWarnings are errors:   ${USE_WERROR}"

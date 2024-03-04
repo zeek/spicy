@@ -2,37 +2,35 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
 
 namespace hilti::expression {
 
 /** AST node for a logical "not" expression. */
-class LogicalNot : public NodeBase, public trait::isExpression {
+class LogicalNot : public Expression {
 public:
-    LogicalNot(Expression e, const Meta& m = Meta()) : NodeBase(nodes(std::move(e), type::Bool(m)), m) {}
+    auto expression() const { return child<Expression>(0); }
 
-    const auto& expression() const { return child<Expression>(0); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
 
-    void setExpression(const Expression& op) { children()[0] = op; }
+    void setExpression(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 0, std::move(e)); }
 
-    bool operator==(const LogicalNot& other) const { return expression() == other.expression(); }
+    static auto create(ASTContext* ctx, const ExpressionPtr& expression, const Meta& meta = {}) {
+        return std::shared_ptr<LogicalNot>(
+            new LogicalNot(ctx,
+                           {expression, QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)},
+                           meta));
+    }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return false; }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return true; }
-    /** Implements `Expression` interface. */
-    const auto& type() const { return child<Type>(1); }
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return expression().isConstant(); }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+protected:
+    LogicalNot(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, LogicalNot)
 };
 
 } // namespace hilti::expression

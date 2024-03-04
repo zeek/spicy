@@ -15,4 +15,4 @@ print n1;
 print n2;
 print n3;
 
-assert n1.family() == hilti::AddressFamily::IPv6;
+assert n1.family() == spicy::AddressFamily::IPv6;

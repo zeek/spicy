@@ -28,6 +28,9 @@ public:
     /** Constructor that leaves location unset. */
     Meta(Comments comments = {}) : _comments(std::move(comments)) {}
 
+    Meta(const Meta&) = default;
+    Meta(Meta&&) = default;
+
     const Comments& comments() const { return _comments; }
     const Location& location() const {
         static Location null;
@@ -42,6 +45,9 @@ public:
      * instance.
      */
     explicit operator bool() const { return _location || _comments.size(); }
+
+    Meta& operator=(const Meta&) = default;
+    Meta& operator=(Meta&&) = default;
 
 private:
     static std::unordered_set<Location> _cache;

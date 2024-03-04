@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
@@ -15,19 +17,26 @@ namespace spicy::detail::codegen::production {
  * by just looking at the available bytes. If we start parsing, we assume it
  * will match (and if not, generate a parse error).
  */
-class Variable : public ProductionBase, public spicy::trait::isTerminal {
+class Variable : public Production {
 public:
-    Variable(const std::string& symbol, spicy::Type type, const Location& l = location::None)
-        : ProductionBase(symbol, l), _type(std::move(type)) {}
+    Variable(ASTContext* /* ctx */, const std::string& symbol, QualifiedTypePtr type,
+             const Location& l = location::None)
+        : Production(symbol, l), _type(std::move(type)) {}
 
-    spicy::Type type() const { return _type; }
-    bool nullable() const { return false; }
-    bool eodOk() const { return nullable(); }
-    bool atomic() const { return true; }
-    std::string render() const { return hilti::util::fmt("%s", _type); }
+    bool isAtomic() const final { return true; };
+    bool isEodOk() const final { return false; };
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return false; };
+    bool isTerminal() const final { return true; };
+
+    QualifiedTypePtr type() const final { return _type; };
+
+    std::string dump() const final { return hilti::util::fmt("%s", *_type); }
+
+    SPICY_PRODUCTION
 
 private:
-    spicy::Type _type;
+    QualifiedTypePtr _type;
 };
 
 } // namespace spicy::detail::codegen::production

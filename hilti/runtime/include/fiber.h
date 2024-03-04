@@ -346,7 +346,7 @@ public:
     const Result& get() const {
         assert(static_cast<bool>(_result));
 
-        if constexpr ( std::is_same<Result, void>::value )
+        if constexpr ( std::is_same_v<Result, void> )
             return {};
         else {
             try {

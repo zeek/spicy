@@ -1,0 +1,25 @@
+# @TEST-EXEC: spicyc -p %INPUT >/dev/null
+#
+# @TEST-DOC: Check that constness doesn't matter for type check in switch cases of the same name.
+
+module ASN1;
+
+public type ASN1Type = enum {
+  OctetString = 4,
+  ObjectIdentifier = 6,
+};
+
+type ASN1ObjectIdentifier = unit {
+  var oidstring: string;
+};
+
+type ASN1OctetString = unit {
+  value: bytes &size=1;
+};
+
+public type ASN1Body = unit(t: ASN1Type, recursive: bool) {
+  switch ( t ) {
+    ASN1Type::OctetString -> str_value: ASN1OctetString &convert=$$.value.decode();
+    ASN1Type::ObjectIdentifier -> str_value: ASN1ObjectIdentifier &convert=$$.oidstring;
+  };
+};

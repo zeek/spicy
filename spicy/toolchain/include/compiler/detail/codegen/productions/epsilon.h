@@ -2,23 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
 /** Empty epsilon production. */
-class Epsilon : public ProductionBase, spicy::trait::isTerminal {
+class Epsilon : public Production {
 public:
-    Epsilon(Location l = location::None) : ProductionBase("<epsilon>", std::move(l)) {}
+    Epsilon(ASTContext* /* ctx */, Location l = location::None) : Production("<epsilon>", std::move(l)) {}
 
-    bool nullable() const { return true; }
-    bool eodOk() const { return nullable(); }
-    bool atomic() const { return true; }
-    std::optional<spicy::Type> type() const { return {}; }
-    std::string render() const { return "()"; }
+    bool isAtomic() const final { return true; };
+    bool isEodOk() const final { return isNullable(); };
+    bool isLiteral() const final { return false; };
+    bool isNullable() const final { return true; };
+    bool isTerminal() const final { return true; };
+
+    std::string dump() const final { return "()"; }
+
+    SPICY_PRODUCTION
 };
 
 } // namespace spicy::detail::codegen::production

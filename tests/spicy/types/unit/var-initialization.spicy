@@ -1,6 +1,8 @@
 # @TEST-DOC: Validates that unit var initialization can create temporaries. Regression test for #1446.
+# @TEST-DOC: Update: Seems this usage should be rejected actually, cannot pass a constant parameter into an `inout`. Updating test to reflect this.
 #
-# @TEST-EXEC: spicyc -dgj %INPUT
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
 module foo;
 
 type A = unit {};

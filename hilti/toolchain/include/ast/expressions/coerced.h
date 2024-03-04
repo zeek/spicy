@@ -2,35 +2,30 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 
 namespace hilti::expression {
 
 /** AST node for an expression that's being coerced from one type to another. */
-class Coerced : public NodeBase, public trait::isExpression {
+class Coerced : public Expression {
 public:
-    Coerced(Expression e, Type t, Meta m = Meta())
-        : NodeBase({std::move(e), type::nonConstant(std::move(t))}, std::move(m)) {}
+    auto expression() const { return child<Expression>(0); }
 
-    const auto& expression() const { return child<Expression>(0); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
 
-    bool operator==(const Coerced& other) const { return expression() == other.expression() && type() == other.type(); }
+    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const QualifiedTypePtr& target,
+                       const Meta& meta = {}) {
+        return std::shared_ptr<Coerced>(new Coerced(ctx, {expr, target}, meta));
+    }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return expression().isLhs(); }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return true; }
-    /** Implements `Expression` interface. */
-    const Type& type() const { return child<Type>(1); }
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return expression().isConstant(); }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+protected:
+    Coerced(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Coerced)
 };
 
 } // namespace hilti::expression

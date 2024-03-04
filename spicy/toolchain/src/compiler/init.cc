@@ -1,10 +1,9 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include "compiler/init.h"
-
 #include <hilti/compiler/plugin.h>
 
-#include <spicy/compiler/plugin.h>
+#include <spicy/compiler/detail/plugin.h>
+#include <spicy/compiler/init.h>
 
 void spicy::init() {
     static bool initialized = false;
@@ -12,7 +11,7 @@ void spicy::init() {
     if ( initialized )
         return;
 
-    hilti::plugin::registry().register_(detail::create_spicy_plugin());
+    hilti::plugin::registry().register_(detail::createSpicyPlugin());
 
     initialized = true;
 }

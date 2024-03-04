@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/ast/type.h>
 
@@ -11,24 +13,25 @@ namespace hilti::type {
 
 /**
  * AST node for a type that's only used for documentation purposes. This type
- * allows to carry a textual description of the a type over into
- * auto-generated documentation. If it's used anywhere else, it'll cause
- * trouble.
+ * allows to carry a textual description of a type over into auto-generated
+ * documentation. If it's used anywhere else, it'll cause trouble.
  */
-class DocOnly : public TypeBase {
+class DocOnly : public UnqualifiedType {
 public:
-    DocOnly(std::string desc, Meta m = Meta()) : TypeBase(std::move(m)), _description(std::move(desc)) {}
-
     auto description() const { return _description; }
 
-    bool operator==(const DocOnly& /* other */) const { return false; }
+    static auto create(ASTContext* ctx, const std::string& description, const Meta& meta = {}) {
+        // Note: We allow (i.e., must support) `ctx` being null.
+        return std::shared_ptr<DocOnly>(new DocOnly(ctx, description, meta));
+    }
 
-    // Type interface.
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    std::string_view typeClass() const final { return "doc-only"; }
+
+protected:
+    DocOnly(ASTContext* ctx, std::string description, Meta meta)
+        : UnqualifiedType(ctx, {"doc-only"}, std::move(meta)), _description(std::move(description)) {}
+
+    HILTI_NODE(hilti, DocOnly)
 
 private:
     std::string _description;

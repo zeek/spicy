@@ -2,25 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a string type. */
-class String : public TypeBase, trait::isAllocable, trait::isSortable {
+/** AST node for a `string` type. */
+class String : public UnqualifiedType {
 public:
-    String(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    std::string_view typeClass() const final { return "string"; }
 
-    bool operator==(const String& /* other */) const { return true; }
+    bool isAllocable() const final { return true; }
+    bool isSortable() const final { return true; }
 
-    /** Implements the `Type` interface. */
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<String>(new String(ctx, std::move(meta)));
+    }
+
+protected:
+    String(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"string"}, std::move(meta)) {}
+
+    HILTI_NODE(hilti, String)
 };
 
 } // namespace hilti::type

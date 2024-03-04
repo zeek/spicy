@@ -2,264 +2,27 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 #include <variant>
 #include <vector>
 
-#include <hilti/ast/expression.h>
-#include <hilti/ast/types/doc-only.h>
-#include <hilti/ast/types/type.h>
+#include <hilti/ast/forward.h>
+#include <hilti/ast/node.h>
+#include <hilti/ast/types/operand-list.h>
 #include <hilti/base/logger.h>
-#include <hilti/base/type_erase.h>
-#include <hilti/base/util.h>
-#include <hilti/base/visitor-types.h>
 
 namespace hilti {
 
-namespace visitor {}
-
 namespace expression {
-namespace resolved_operator::detail {
 class ResolvedOperator;
-} // namespace resolved_operator::detail
-
-using ResolvedOperator = resolved_operator::detail::ResolvedOperator;
-
-} // namespace expression
-
-namespace trait {
-/** Trait for classes implementing the `Operator` interface. */
-class isOperator : public isNode {};
-} // namespace trait
-
-namespace expression {
-class UnresolvedOperator;
-} // namespace expression
+}
 
 namespace operator_ {
-
-using position_t = visitor::Position<Node&>;
-using const_position_t = visitor::Position<const Node&>;
-
-using OperandType = std::variant<Type, std::function<std::optional<Type>(const hilti::node::Range<Expression>&,
-                                                                         const hilti::node::Range<Expression>&)>>;
-
-inline std::optional<Type> type(const OperandType& t, const hilti::node::Range<Expression>& orig_ops,
-                                const hilti::node::Range<Expression>& resolved_ops) {
-    if ( const auto& f = std::get_if<std::function<std::optional<Type>(const hilti::node::Range<Expression>&,
-                                                                       const hilti::node::Range<Expression>&)>>(&t) )
-        return (*f)(orig_ops, resolved_ops);
-
-    return std::get<Type>(t);
-}
-
-inline std::optional<Type> type(const OperandType& t, const hilti::node::Range<Expression>& orig_ops,
-                                const std::vector<Expression>& resolved_ops) {
-    auto resolved_ops_as_nodes = hilti::nodes(resolved_ops);
-    return type(t, orig_ops, hilti::node::Range<Expression>(resolved_ops_as_nodes));
-}
-
-inline std::optional<Type> type(const OperandType& t, const std::vector<Expression>& orig_ops,
-                                const std::vector<Expression>& resolved_ops) {
-    auto orig_ops_as_nodes = hilti::nodes(orig_ops);
-    return type(t, hilti::node::Range<Expression>(orig_ops_as_nodes), resolved_ops);
-}
-
-inline auto operandType(unsigned int op, const char* doc = "<no-doc>") {
-    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
-               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
-        if ( resolved_ops.empty() )
-            return type::DocOnly(doc);
-
-        if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("operandType(): index %d out of range, only %" PRIu64 " ops available", op,
-                                             resolved_ops.size()));
-
-        return resolved_ops[op].type();
-    };
-}
-
-inline auto elementType(unsigned int op, const char* doc = "<type of element>", bool infer_const = true) {
-    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
-               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
-        if ( resolved_ops.empty() )
-            return type::DocOnly(doc);
-
-        if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("elementType(): index %d out of range, only %" PRIu64 " ops available", op,
-                                             resolved_ops.size()));
-
-        if ( type::isIterable(resolved_ops[op].type()) ) {
-            auto t = resolved_ops[op].type().elementType();
-            return (infer_const && resolved_ops[op].isConstant()) ? type::constant(t) : std::move(t);
-        }
-
-        return {};
-    };
-}
-
-inline auto constantElementType(unsigned int op, const char* doc = "<type of element>") {
-    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
-               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
-        if ( resolved_ops.empty() )
-            return type::DocOnly(doc);
-
-        if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("elementType(): index %d out of range, only %" PRIu64 " ops available", op,
-                                             resolved_ops.size()));
-
-        if ( type::isIterable(resolved_ops[op].type()) )
-            return type::constant(resolved_ops[op].type().elementType());
-
-        return {};
-    };
-}
-
-inline auto iteratorType(unsigned int op, bool const_, const char* doc = "<iterator>") {
-    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
-               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
-        if ( resolved_ops.empty() )
-            return type::DocOnly(doc);
-
-        if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("iteratorType(): index %d out of range, only %" PRIu64 " ops available",
-                                             op, resolved_ops.size()));
-
-        if ( type::isIterable(resolved_ops[op].type()) )
-            return resolved_ops[op].type().iteratorType(const_);
-
-        return {};
-    };
-}
-
-inline auto dereferencedType(unsigned int op, const char* doc = "<dereferenced type>", bool infer_const = true) {
-    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
-               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
-        if ( resolved_ops.empty() )
-            return type::DocOnly(doc);
-
-        if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("dereferencedType(): index %d out of range, only %" PRIu64
-                                             " ops available",
-                                             op, resolved_ops.size()));
-
-        if ( type::isDereferenceable(resolved_ops[op].type()) ) {
-            auto t = resolved_ops[op].type().dereferencedType();
-
-            if ( ! infer_const )
-                return std::move(t);
-
-            return resolved_ops[op].isConstant() ? type::constant(t) : type::nonConstant(t);
-        }
-
-        return {};
-    };
-}
-
-inline auto sameTypeAs(unsigned int op, const char* doc = "<no-doc>") {
-    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
-               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
-        if ( resolved_ops.empty() )
-            return type::DocOnly(doc);
-
-        if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("sameTypeAs(): index %d out of range, only %" PRIu64 " ops available", op,
-                                             resolved_ops.size()));
-
-        return resolved_ops[op].type();
-    };
-}
-
-inline auto typedType(unsigned int op, const char* doc = "<type>") {
-    return [=](const hilti::node::Range<Expression>& /* orig_ops */,
-               const hilti::node::Range<Expression>& resolved_ops) -> std::optional<Type> {
-        if ( resolved_ops.empty() )
-            return type::DocOnly(doc);
-
-        if ( op >= resolved_ops.size() )
-            logger().internalError(util::fmt("typedType(): index %d out of range, only %" PRIu64 " ops available", op,
-                                             resolved_ops.size()));
-
-        return resolved_ops[op].type().as<type::Type_>().typeValue();
-    };
-}
-
-/** Describes an operand that an operator accepts. */
-struct Operand {
-    Operand(Operand&&) = default;
-    Operand(const Operand&) = default;
-
-    Operand& operator=(Operand&&) = default;
-    Operand& operator=(const Operand&) = default;
-
-    Operand(std::optional<ID> _id = {}, OperandType _type = {}, bool _optional = false,
-            std::optional<Expression> _default = {}, std::optional<std::string> _doc = {})
-        : id(std::move(_id)),
-          type(std::move(_type)),
-          optional(_optional),
-          default_(std::move(_default)),
-          doc(std::move(_doc)) {}
-
-    std::optional<ID> id;                    /**< ID for the operand; used only for documentation purposes. */
-    OperandType type;                        /**< operand's type */
-    bool optional = false;                   /**< true if operand can be skipped; `default_` will be used instead */
-    std::optional<Expression> default_ = {}; /**< default valuer if operator is skipped */
-    std::optional<std::string> doc;          /**< alternative rendering for the auto-generated documentation */
-
-    bool operator==(const Operand& other) const {
-        if ( this == &other )
-            return true;
-
-        if ( ! (std::holds_alternative<Type>(type) && std::holds_alternative<Type>(other.type)) )
-            return false;
-
-        return std::get<Type>(type) == std::get<Type>(other.type) && id == other.id && optional == other.optional &&
-               default_ == other.default_;
-    }
-};
-
-inline std::ostream& operator<<(std::ostream& out, const Operand& op) {
-    if ( auto t = std::get_if<Type>(&op.type) )
-        out << *t;
-    else
-        out << "<inferred type>";
-
-    if ( op.id )
-        out << ' ' << *op.id;
-
-    if ( op.default_ )
-        out << " = " << *op.default_;
-    else if ( op.optional )
-        out << " (optional)";
-
-    return out;
-}
-
-using ResultType = OperandType;
-
-/** Operator priority during resolving relative to others of the same kind. */
-enum Priority { Low, Normal };
-
-/**
- * Describes the signature of an operator method.
- *
- * @todo For operands, we only use the type information so far. Instead of
- * using `type::Tuple` to describe the 3rd parameter to a MethodCall
- * operator, we should create a new `type::ArgumentList` that takes a list
- * of `Operand` instances.
- */
-struct Signature {
-    Type self; /**< type the method operates on */
-    bool const_ = true;
-    bool lhs = false;                  /**< true if operator's result can be assigned to */
-    Priority priority = Priority::Low; /**< operator priority */
-    ResultType result;         /**< result of the method; skipped if using `{BEGIN/END}_METHOD_CUSTOM_RESULT}` */
-    ID id;                     /**< name of the method */
-    std::vector<Operand> args; /**< operands the method receives */
-    std::string doc;           /**< documentation string for the autogenerated reference manual */
-};
+class Registry;
 
 /** Enumeration of all types of operators that HILTI supports. */
 enum class Kind {
@@ -369,11 +132,11 @@ inline auto isCommutative(Kind k) {
         case Kind::Unset: return false;
     };
 
-    util::cannot_be_reached();
+    util::cannotBeReached();
 }
 
 namespace detail {
-constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},           {Kind::Begin, "begin"},
+constexpr util::enum_::Value<Kind> Kinds[] = {{Kind::Add, "add"},           {Kind::Begin, "begin"},
                                               {Kind::BitAnd, "&"},          {Kind::BitOr, "|"},
                                               {Kind::BitXor, "^"},          {Kind::Call, "call"},
                                               {Kind::Cast, "cast"},         {Kind::CustomAssign, "="},
@@ -398,6 +161,15 @@ constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},           {Kin
                                               {Kind::Size, "size"},         {Kind::TryMember, ".?"},
                                               {Kind::Unequal, "!="},        {Kind::Unknown, "<unknown>"},
                                               {Kind::Unpack, "unpack"},     {Kind::Unset, "unset"}};
+
+
+/** Render an operator with its operand expressions. */
+extern std::string print(Kind kind, const Expressions& operands);
+
+
+/** Render an operator with its operand types. */
+extern std::string printSignature(Kind kind, const Expressions& operands, const Meta& meta);
+
 } // namespace detail
 
 /**
@@ -405,23 +177,260 @@ constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Add, "add"},           {Kin
  * meant just for display purposes, and does not correspond directly to the
  * HILTI code representation (because they may differ based on context).
  */
-constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::kinds); }
+constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::Kinds); }
+
+/** Operator priority during resolving relative to others of the same kind. */
+enum class Priority { Low, Normal };
+
+using Operand = type::operand_list::Operand;
+using Operands = type::operand_list::Operands;
+
+/** Helper for defining operator signatures. */
+struct Signature {
+    /** Defines an operator argument. */
+    struct QType {
+        parameter::Kind kind = parameter::Kind::Unknown; /**< defines passing-style */
+        UnqualifiedTypePtr type = nullptr;               /**< type of the argument */
+        std::string doc;                                 /**< documentation string  */
+        std::optional<std::weak_ptr<UnqualifiedType>>
+            external_type; /**< alternative way to specify type through an existing one */
+
+        auto getType() const {
+            if ( external_type )
+                return external_type->lock();
+            else
+                return type;
+        }
+
+        operator bool() const { return kind != parameter::Kind::Unknown && getType(); }
+    };
+
+    struct QResult {
+        Constness constness = Constness::Const; /**< constness of the result */
+        UnqualifiedTypePtr type = nullptr;      /**< type of the argument */
+        std::string doc;                        /**< documentation string  */
+
+        operator bool() const { return type != nullptr; }
+    };
+
+    /** Defines an operator parameter for constructor calls. */
+    struct QParam {
+        std::string name;                 /**< ID of parameter */
+        QType type;                       /**< type of parameter */
+        ExpressionPtr default_ = nullptr; /**< optional default value if parameter is not given */
+        bool optional = false;            /**< true if parameter is optional */
+
+        operator bool() const { return type; }
+    };
+
+    operator_::Kind kind;
+    operator_::Priority priority = operator_::Priority::Normal;
+
+    QType self;
+    QType op0;
+    QType op1;
+    QType op2;
+
+    std::optional<std::string> member;
+    QParam param0;
+    QParam param1;
+    QParam param2;
+    QParam param3;
+    QParam param4;
+
+    QResult result;         /**< result of the method; if not set, `result()` will be called dynamically */
+    std::string result_doc; /**< documentation string for the result */
+
+    std::string ns;        /**< namespace where to document this operator */
+    std::string doc;       /**< documentation string describing the operator */
+    bool skip_doc = false; /**< if true, do not include this operator into any documentation */
+};
 
 namespace detail {
-class Operator;
 
-#include <hilti/autogen/__operator.h>
-
+/** Internal representation of an operator signature after it has been processed. */
+struct ProcessedSignature {
+    operator_::Kind kind = operator_::Kind::Unknown;
+    QualifiedTypePtr result; /**< result of the method; if null, `result()` will be called dynamically */
+    OperandListPtr operands; /**< null for operators to be instantiated only manually */
+    operator_::Priority priority;
+    std::string doc;        /**< documentation string */
+    std::string result_doc; /**< explicitly set documentation string for result type */
+    std::string namespace_; /**< namespace where to document this operator */
+    bool skip_doc;          /**< if true, do not include this operator into any documentation */
+};
 } // namespace detail
+
 } // namespace operator_
 
-using Operator = operator_::detail::Operator;
+/**
+ * Class representing available HILTI operators.
+ *
+ * Operators aren't AST nodes themselves, but they define an operator that's
+ * available for instantiation as an AST expression node. Given an operator,
+ * one can instantiate a corresponding AST node by passing the concrete
+ * operands to the `instantiate()` method.
+ */
+class Operator {
+public:
+    template<typename T>
+    using Result = ::hilti::Result<T>;
 
-inline bool operator==(const Operator& x, const Operator& y) {
-    if ( &x == &y )
-        return true;
+    /**
+     * Constructor.
+     *
+     * @param meta meta data associated with the operator
+     * @param builtin true if the operator is predefined statically by the compiler; false if it's generated from user
+     * code (like functions and methods)
+     */
+    Operator(Meta meta = Meta(), bool builtin = true) : _meta(std::move(meta)), _builtin(builtin) {}
 
-    return x.typename_() == y.typename_();
-}
+    /** Destructor. */
+    virtual ~Operator() {}
+
+    Operator(const Operator& other) = delete;
+    Operator(Operator&& other) = delete;
+
+    Operator& operator=(const Operator& other) = delete;
+    Operator& operator=(Operator&& other) = delete;
+
+    /** Returns true if `init()` has run and returned success. */
+    auto isInitialized() const { return _signature.has_value(); }
+
+    /**
+     * Returns true if operator's signature has operands defined. If that's not
+     * the case, the operator can be instantiated only manually, not through
+     * the resolver.
+     **/
+    auto hasOperands() const { return _signature->operands; }
+
+    /** Returns the operator's signature. */
+    const auto& signature() const {
+        assert(_signature);
+        return *_signature;
+    }
+
+    /** Returns the operator's kind. */
+    auto kind() const { return signature().kind; }
+
+    /**
+     * Returns if the operator is predefined statically by the compiler, rather
+     * than created through user code (like functions or methods).
+     */
+    auto isBuiltIn() const { return _builtin; }
+
+    /** Returns the operator's operands. */
+    auto operands() const { return signature().operands->operands(); }
+
+    /** Returns the operator's first operand. */
+    auto op0() const { return operands()[0]; }
+
+    /** Returns the operator's second operand. */
+    auto op1() const { return operands()[1]; }
+
+    /** Returns the operator's third operand. */
+    auto op2() const { return operands()[2]; }
+
+    /** Returns the operator's meta information. */
+    auto meta() const { return _meta; }
+
+    /** Returns the operator's documentation string. */
+    auto doc() const { return signature().doc; }
+
+    /**
+     * Returns the C++-level name of the operator's class. Should be used only
+     * for debugging purposes.
+     */
+    auto typename_() const { return _typename(); }
+
+    /**
+     * Returns the operator's result type, given specific operand expressions.
+     * Must be implemented by operators if the signature does not define a
+     * static result type.
+     */
+    virtual QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const;
+
+    /**
+     * Refines the operator's signature based on the given operands. This can
+     * be used to change the signature to more specific types given concreate
+     * operands. To not change anything, return an mepty optional
+     */
+    virtual std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const {
+        return {};
+    }
+
+    /**
+     * Performs semantics validation of an instantiated operator. To record any
+     * errors, add them to the given AST node.
+     */
+    virtual void validate(expression::ResolvedOperator* n) const {};
+
+    /** Instantiates the operator as an AST node, given specific operand expressions. */
+    virtual Result<ResolvedOperatorPtr> instantiate(Builder* builder, Expressions operands, const Meta& meta) const = 0;
+
+    /**
+     * Returns a readable name describing the operator. Must be provided by
+     * derived classes.
+     */
+    virtual std::string name() const = 0;
+
+    /** Prints the operator in a human-readable format. */
+    virtual std::string print() const;
+
+    /** Dumps out the operator's operands in their AST node representation. */
+    virtual std::string dump() const;
+
+protected:
+    friend class operator_::Registry;
+
+    /** Initializes the operator. To be called only from the registry. */
+    bool init(Builder* builder, const NodePtr& scope_root = nullptr);
+
+    /**
+     * Returns the operator's signature. Must be overridden by derived
+     * classes.
+     */
+    virtual operator_::Signature signature(Builder* builder) const = 0;
+
+    /** Backend for `typename_()`. Must be overridden by derived classes. */
+    virtual std::string _typename() const { return util::typename_(*this); }
+
+    /**
+     * Helper to create an signature operand matching a given type.
+     *
+     * @param kind kind of the operand specifying passing style
+     * @param t type of the operand
+     */
+    static std::shared_ptr<operator_::Operand> operandForType(Builder* builder, parameter::Kind kind,
+                                                              const UnqualifiedTypePtr& t, std::string doc = "");
+
+    /**
+     * Helper to create an signature operand matching the type of a given expression.
+     *
+     * @param kind kind of the operand specifying passing style
+     * @param e expression whose type to use
+     */
+    static std::shared_ptr<operator_::Operand> operandForExpression(Builder* builder, parameter::Kind kind,
+                                                                    const Expressions& e, size_t i) {
+        return operandForType(builder, kind, e[i]->type()->type(), "");
+    }
+
+private:
+    Meta _meta;
+    bool _builtin;
+    std::optional<operator_::detail::ProcessedSignature> _signature;
+};
+
+/**
+ * Base class for operators representing built-in method calls on a type. The
+ * base class exists so that `print()` can be customized for these.
+ */
+class BuiltInMemberCall : public Operator {
+public:
+    ~BuiltInMemberCall() override {}
+
+    /** Customized version of `print()`. */
+    std::string print() const final;
+};
 
 } // namespace hilti

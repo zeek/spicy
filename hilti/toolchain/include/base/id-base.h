@@ -13,18 +13,18 @@
 namespace hilti::detail {
 
 using normalizer_func = std::string (*)(std::string);
-inline std::string identity_normalizer(std::string s) { return s; }
+inline std::string identityNormalizer(std::string s) { return s; }
 
 /**
  * Base class for representing scoped language IDs. It provides a number of
- * standard accesasorsd and manipulators to support operations on/with
+ * standard accessors and manipulators to support operations on/with
  * namespaces. This class assumes that namespaces are separated with `::`.
  *
  * @tparam Derived name of the class deriving from this one (CRTP).
  * @tparam N a function that may preprocess/normalize all ID components before storing them
  *
  */
-template<class Derived, normalizer_func N = identity_normalizer>
+template<class Derived, normalizer_func N = identityNormalizer>
 class IDBase {
 public:
     IDBase() = default;
@@ -58,6 +58,12 @@ public:
     /** Returns the number of namespace components (incl. the local ID0. */
     auto length() const { return util::split(_id, "::").size(); }
 
+    bool isAbsolute() const { return util::startsWith(_id, "::"); }
+
+    auto split() const {
+        return util::transform(util::split(_id, "::"), [](const auto& id) { return Derived(id); });
+    }
+
     /**
      * Returns a new ID containing just single component of the path's of the
      * ID. Indices are zero-based and, if negative, counted from the end
@@ -69,7 +75,7 @@ public:
         auto x = util::split(_id, "::");
 
         if ( i < 0 )
-            i = x.size() + i;
+            i = static_cast<int>(x.size()) + i;
 
         return Derived(i >= 0 && static_cast<size_t>(i) < x.size() ? x[i] : "", AlreadyNormalized());
     }
@@ -115,6 +121,13 @@ public:
             return Derived(root + _id, AlreadyNormalized());
 
         return Derived(_id.substr(root._id.size() + 2), AlreadyNormalized());
+    }
+
+    Derived makeAbsolute() const {
+        if ( isAbsolute() )
+            return Derived(_id);
+        else
+            return Derived("::" + _id);
     }
 
     /** Concantenates two IDs, separating them with `::`. */

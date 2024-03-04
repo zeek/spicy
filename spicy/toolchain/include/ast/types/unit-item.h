@@ -2,61 +2,30 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include <hilti/ast/attribute.h>
-#include <hilti/ast/expression.h>
-#include <hilti/ast/id.h>
-#include <hilti/ast/type.h>
+#include <hilti/ast/declaration.h>
 
-#include <spicy/ast/hook.h>
+#include <spicy/ast/forward.h>
 
-namespace spicy {
+namespace spicy::type::unit {
 
-namespace trait {
-/** Trait for classes implementing the `Item` interface. */
-class isUnitItem : public hilti::trait::isNode {};
-} // namespace trait
+/** Base class for all unit items. */
+class Item : public hilti::Declaration {
+public:
+    /** Returns the type of the parsed unit item. */
+    virtual QualifiedTypePtr itemType() const = 0;
 
-namespace type::unit {
-namespace detail {
+    /** Returns true if the item's type has been resolved. */
+    virtual bool isResolved(hilti::node::CycleDetector* cd = nullptr) const = 0;
 
-#include <spicy/autogen/__unit-item.h>
+protected:
+    Item(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
+        : hilti::Declaration(ctx, std::move(children), std::move(id), {}, meta) {}
 
-/** Creates an AST node representing a `Item`. */
-inline Node to_node(Item i) { return Node(std::move(i)); }
+    HILTI_NODE_BASE(hilti, Item);
+};
 
-/** Renders a unit item as Spicy source code. */
-inline std::ostream& operator<<(std::ostream& out, Item d) { return out << to_node(std::move(d)); }
-
-} // namespace detail
-
-using Item = detail::Item;
-
-namespace item {
-/** Constructs an AST node from any class implementing the `Item` interface. */
-template<typename T, typename std::enable_if_t<std::is_base_of<trait::isUnitItem, T>::value>* = nullptr>
-inline Node to_node(T t) {
-    return Node(Item(std::move(t)));
-}
-
-} // namespace item
-} // namespace type::unit
-} // namespace spicy
-
-namespace spicy::type::unit::detail {
-inline bool operator==(const Item& x, const Item& y) {
-    if ( &x == &y )
-        return true;
-
-    assert(x.isEqual(y) == y.isEqual(x)); // Expected to be symmetric.
-    return x.isEqual(y);
-}
-} // namespace spicy::type::unit::detail
-
-inline bool operator!=(const spicy::type::unit::Item& d1, const spicy::type::unit::Item& d2) { return ! (d1 == d2); }
-
-inline bool operator!=(const std::vector<spicy::type::unit::Item>& t1, const std::vector<spicy::type::unit::Item>& t2) {
-    return ! (t1 == t2);
-}
+} // namespace spicy::type::unit

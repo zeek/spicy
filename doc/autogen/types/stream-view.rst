@@ -1,16 +1,16 @@
 .. rubric:: View Methods
 
-.. spicy:method:: stream::view::advance view<stream> advance False view<stream> (i: uint<64>)
-
-    Advances the view's starting position by *i* stream, returning the new
-    view.
-
-.. spicy:method:: stream::view::advance view<stream> advance False view<stream> (inout i: iterator<stream>)
+.. spicy:method:: stream::view::advance view<stream> advance False view<stream> (i: iterator<stream>)
 
     Advances the view's starting position to a given iterator *i*,
     returning the new view. The iterator must be referring to the same
     stream values as the view, and it must be equal or ahead of the view's
     starting position.
+
+.. spicy:method:: stream::view::advance view<stream> advance False view<stream> (i: uint<64>)
+
+    Advances the view's starting position by *i* stream, returning the new
+    view.
 
 .. spicy:method:: stream::view::advance_to_next_data view<stream> advance_to_next_data False view<stream> ()
 
@@ -49,18 +49,18 @@
 
     Returns true if the view starts with *b*.
 
+.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (begin: iterator<stream>, end: iterator<stream>)
+
+    Returns a new view of the subsequence from *begin* up to (but not
+    including) *end*.
+
 .. spicy:method:: stream::view::sub view<stream> sub False view<stream> (begin: uint<64>, end: uint<64>)
 
     Returns a new view of the subsequence from offset *begin* to (but not
     including) offset *end*. The offsets are relative to the beginning of
     the view.
 
-.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (inout begin: iterator<stream>, inout end: iterator<stream>)
-
-    Returns a new view of the subsequence from *begin* up to (but not
-    including) *end*.
-
-.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (inout end: iterator<stream>)
+.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (end: iterator<stream>)
 
     Returns a new view of the subsequence from the beginning of the stream
     up to (but not including) *end*.

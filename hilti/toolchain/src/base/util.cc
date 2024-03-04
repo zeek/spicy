@@ -29,9 +29,9 @@
 using namespace hilti;
 using namespace hilti::util;
 
-void detail::__internal_error(const std::string& s) { logger().internalError(s); }
+void util::detail::internalError(const std::string& s) { logger().internalError(s); }
 
-void util::cannot_be_reached() { hilti::logger().internalError("code is executing that should not be reachable"); }
+void util::cannotBeReached() { hilti::logger().internalError("code is executing that should not be reachable"); }
 
 std::vector<std::string> util::split(std::string s, const std::string& delim) {
     std::vector<std::string> l;
@@ -178,7 +178,7 @@ hilti::rt::filesystem::path util::currentExecutable() {
     return normalizePath(exe);
 }
 
-void util::abort_with_backtrace() {
+void util::abortWithBacktrace() {
     std::cerr << "\n--- Aborting" << '\n';
     auto bt = hilti::rt::Backtrace().backtrace();
     for ( const auto& f : *bt )
@@ -200,8 +200,11 @@ std::string util::toIdentifier(const std::string& s, bool ensure_non_keyword) {
 
     std::string normalized = s;
 
+    // Note: Only normalize characters here that can't be part of a user-side
+    // ID.
     normalized = replace(normalized, "::", "_");
     normalized = replace(normalized, ":", "_");
+    normalized = replace(normalized, "<", "_");
     normalized = replace(normalized, ">", "_");
     normalized = replace(normalized, ",", "_");
     normalized = replace(normalized, ".", "_");
@@ -209,10 +212,7 @@ std::string util::toIdentifier(const std::string& s, bool ensure_non_keyword) {
     normalized = replace(normalized, "-", "_");
     normalized = replace(normalized, "'", "_");
     normalized = replace(normalized, "\"", "_");
-    normalized = replace(normalized, "__", "_");
-
-    while ( ::util::endsWith(normalized, "_") )
-        normalized = normalized.substr(0, normalized.size() - 1);
+    normalized = replace(normalized, "%", "_");
 
     std::string ns;
 
@@ -227,14 +227,15 @@ std::string util::toIdentifier(const std::string& s, bool ensure_non_keyword) {
         ns += hex[c % 0x0f];
     }
 
-    ns = replace(ns, "__", "_");
 
     if ( isdigit(ns[0]) )
         ns = "_" + ns;
 
-    if ( ensure_non_keyword )
+    if ( ensure_non_keyword && ! util::endsWith(ns, "_") )
         ns += "_";
 
+    normalized = replace(normalized, ":", "_");
+    normalized = replace(normalized, "%", "_");
     return ns;
 }
 

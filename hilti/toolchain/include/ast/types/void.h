@@ -2,35 +2,29 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
 
 namespace hilti::type {
 
-/** AST node for a void type. */
-class Void : public TypeBase {
+/** AST node for a `void` type. */
+class Void : public UnqualifiedType {
 public:
-    bool operator==(const Void& /* other */) const { return true; }
+    std::string_view typeClass() const final { return "void"; }
 
-    // Type interface.
-    auto isEqual(const Type& other) const { return node::isEqual(this, other); }
-    /** Implements the `Type` interface. */
-    auto _isResolved(ResolvedState* rstate) const { return true; }
+    bool isAllocable() const final { return false; }
+    bool isSortable() const final { return true; }
 
-    /** Implements the `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    static auto create(ASTContext* ctx, Meta meta = {}) {
+        return std::shared_ptr<Void>(new Void(ctx, std::move(meta)));
+    }
 
-    /**
-     * Wrapper around constructor so that we can make it private. Don't use
-     * this, use the singleton `type::void_` instead.
-     */
-    static Void create(Meta m = Meta()) { return Void(std::move(m)); }
+protected:
+    Void(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"void"}, std::move(meta)) {}
 
-private:
-    Void(Meta m = Meta()) : TypeBase(std::move(m)) {}
+    HILTI_NODE(hilti, Void)
 };
 
-/** Singleton. */
-static const Type void_ = Void::create(Location("<singleton>"));
 } // namespace hilti::type

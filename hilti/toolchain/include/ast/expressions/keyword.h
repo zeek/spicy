@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include <ostream>
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 #include <hilti/ast/types/auto.h>
-#include <hilti/ast/types/unknown.h>
-#include <hilti/base/util.h>
 
 namespace hilti::expression {
 
@@ -24,53 +23,52 @@ enum class Kind {
 };
 
 namespace detail {
-constexpr util::enum_::Value<Kind> kinds[] = {{Kind::Self, "self"},
+constexpr util::enum_::Value<Kind> Kinds[] = {{Kind::Self, "self"},
                                               {Kind::DollarDollar, "$$"},
                                               {Kind::Captures, "$@"},
                                               {Kind::Scope, "$scope"}};
 } // namespace detail
 
 namespace kind {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Kind>(s, detail::kinds); }
+constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Kind>(s, detail::Kinds); }
 } // namespace kind
 
-constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::kinds); }
+constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::Kinds); }
 
 } // namespace keyword
 
 /** AST node for an expression representing a reserved keyword. */
-class Keyword : public NodeBase, public hilti::trait::isExpression {
+class Keyword : public Expression {
 public:
-    Keyword(keyword::Kind kind, Meta m = Meta()) : NodeBase(nodes(type::auto_), std::move(m)), _kind(kind) {}
-    Keyword(keyword::Kind kind, Type t, Meta m = Meta()) : NodeBase(nodes(std::move(t)), std::move(m)), _kind(kind) {}
-
     keyword::Kind kind() const { return _kind; }
+    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
 
-    bool operator==(const Keyword& other) const { return _kind == other._kind && type() == other.type(); }
+    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
 
-    void setType(const Type& t) { children()[0] = t; }
+    node::Properties properties() const final {
+        auto p = node::Properties{{{"kind", to_string(_kind)}}};
+        return Expression::properties() + p;
+    }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return true; }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return false; }
-    /** Implements `Expression` interface. */
-    const Type& type() const { return children()[0].as<Type>(); }
+    static auto create(ASTContext* ctx, keyword::Kind kind, const QualifiedTypePtr& type, const Meta& meta = {}) {
+        return std::shared_ptr<Keyword>(new Keyword(ctx, {type}, kind, meta));
+    }
 
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return false; }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
-
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{{"kind", to_string(_kind)}}; }
+    static auto create(ASTContext* ctx, keyword::Kind kind, const Meta& meta = {}) {
+        return create(ctx, kind, QualifiedType::createAuto(ctx, meta), meta);
+    }
 
     /** Helper to create `$$` a declaration of a given type. */
-    static Declaration createDollarDollarDeclaration(Type t) {
-        Expression kw = hilti::expression::Keyword(hilti::expression::keyword::Kind::DollarDollar,
-                                                   hilti::type::pruneWalk(std::move(t)));
-        return hilti::declaration::Expression("__dd", std::move(kw), hilti::declaration::Linkage::Private);
+    static auto createDollarDollarDeclaration(ASTContext* ctx, const QualifiedTypePtr& type) {
+        auto kw = create(ctx, keyword::Kind::DollarDollar, type);
+        return declaration::Expression::create(ctx, "__dd", kw, hilti::declaration::Linkage::Private);
     }
+
+protected:
+    Keyword(ASTContext* ctx, Nodes children, keyword::Kind kind, Meta meta)
+        : Expression(ctx, std::move(children), std::move(meta)), _kind(kind) {}
+
+    HILTI_NODE(hilti, Keyword)
 
 private:
     keyword::Kind _kind;

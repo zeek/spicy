@@ -230,17 +230,17 @@ Null                  return token::CNULL;
 {address4}            yylval->build(std::string(yytext)); return token::CADDRESS;
 {address6}            yylval->build(std::string(yytext, 1, strlen(yytext) - 2)); return token::CADDRESS;
 
-{digits}|0x{hexs}     yylval->build(hilti::util::chars_to_uint64(yytext, 0, range_error_int)); return token::CUINTEGER;
+{digits}|0x{hexs}     yylval->build(hilti::util::charsToUInt64(yytext, 0, range_error_int)); return token::CUINTEGER;
 {string}              yylval->build(expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc)); return token::CSTRING;
 b{string}             yylval->build(expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc)); return token::CBYTES;
 '.'                   yylval->build(static_cast<uint64_t>(*(yytext +1))); return token::CUINTEGER;
 
-{decfloat}|{hexfloat} yylval->build(hilti::util::chars_to_double(yytext, range_error_real)); return token::CUREAL;
+{decfloat}|{hexfloat} yylval->build(hilti::util::charsToDouble(yytext, range_error_real)); return token::CUREAL;
 
 {id}                   yylval->build(std::string(yytext)); return token::IDENT;
-{id}(::{id}){1,}(::{property})?       yylval->build(std::string(yytext)); return token::SCOPED_IDENT;
+{id}?(::{id}){1,}(::{property})?       yylval->build(std::string(yytext)); return token::SCOPED_IDENT;
 {id}(::{property})?    yylval->build(std::string(yytext)); return token::SCOPED_IDENT;
-\$[1-9][0-9]*          yylval->build(hilti::util::chars_to_uint64(yytext + 1, 10, range_error_int)); return token::DOLLAR_NUMBER;
+\$[1-9][0-9]*          yylval->build(hilti::util::charsToUInt64(yytext + 1, 10, range_error_int)); return token::DOLLAR_NUMBER;
 \${id}                 yylval->build(std::string(yytext + 1)); return token::DOLLAR_IDENT;
 
 [][!$?.,=:;<>(){}/|*/&^%!+~-] return (token_type) yytext[0];

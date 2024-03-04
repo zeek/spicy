@@ -24,7 +24,7 @@ public:
      */
     ID get(ID name, bool normalize = true) {
         if ( normalize )
-            name = util::toIdentifier(name);
+            name = ID(util::toIdentifier(name));
 
         auto x = name;
         int i = 1;
@@ -34,7 +34,7 @@ public:
                 return x;
             }
 
-            x = util::fmt("%s_%d", name, ++i);
+            x = ID(util::fmt("%s_%d", name, ++i));
         }
     }
 

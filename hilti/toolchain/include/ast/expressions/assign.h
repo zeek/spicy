@@ -2,39 +2,32 @@
 
 #pragma once
 
+#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/type.h>
 
 namespace hilti::expression {
 
-/** AST node for an assign expression. */
-class Assign : public NodeBase, public trait::isExpression {
+/** AST node for an assignment expression. */
+class Assign : public Expression {
 public:
-    Assign(Expression target, Expression src, Meta m = Meta())
-        : NodeBase({std::move(target), std::move(src)}, std::move(m)) {}
+    auto target() const { return child<Expression>(0); }
+    auto source() const { return child<Expression>(1); }
 
-    const auto& source() const { return child<Expression>(1); }
-    const auto& target() const { return child<Expression>(0); }
+    QualifiedTypePtr type() const final { return target()->type(); }
 
-    void setSource(const hilti::Expression& c) { children()[1] = c; }
-    void setTarget(const hilti::Expression& c) { children()[0] = c; }
+    void setSource(ASTContext* ctx, const ExpressionPtr& src) { setChild(ctx, 1, src); }
 
-    bool operator==(const Assign& other) const { return target() == other.target() && source() == other.source(); }
+    static auto create(ASTContext* ctx, const ExpressionPtr& target, const ExpressionPtr& src, const Meta& meta = {}) {
+        return std::shared_ptr<Assign>(new Assign(ctx, {target, src}, meta));
+    }
 
-    /** Implements `Expression` interface. */
-    bool isLhs() const { return target().isLhs(); }
-    /** Implements `Expression` interface. */
-    bool isTemporary() const { return isLhs(); }
-    /** Implements `Expression` interface. */
-    const auto& type() const { return target().type(); }
-    /** Implements `Expression` interface. */
-    auto isConstant() const { return false; }
-    /** Implements `Expression` interface. */
-    auto isEqual(const Expression& other) const { return node::isEqual(this, other); }
+protected:
+    Assign(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
 
-    /** Implements `Node` interface. */
-    auto properties() const { return node::Properties{}; }
+    HILTI_NODE(hilti, Assign)
 };
 
 } // namespace hilti::expression

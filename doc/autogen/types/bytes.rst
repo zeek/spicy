@@ -5,7 +5,7 @@
     Returns an iterator representing the offset *i* inside the bytes
     value.
 
-.. spicy:method:: bytes::decode bytes decode False string (charset: enum = hilti::Charset::UTF8, errors: enum = hilti::DecodeErrorStrategy::REPLACE)
+.. spicy:method:: bytes::decode bytes decode False string ([ charset: spicy::Charset = hilti::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = hilti::DecodeErrorStrategy::REPLACE ])
 
     Interprets the ``bytes`` as representing an binary string encoded with
     the given character set, and converts it into a UTF8 string. If data
@@ -23,13 +23,13 @@
     yes/no result, you should use the ``in`` operator instead of this
     method, as it's more efficient.
 
-.. spicy:method:: bytes::join bytes join False bytes (inout parts: vector)
+.. spicy:method:: bytes::join bytes join False bytes (parts: vector)
 
     Returns the concatenation of all elements in the *parts* list rendered
     as printable strings. The portions will be separated by the bytes
     value to which this method is invoked as a member.
 
-.. spicy:method:: bytes::lower bytes lower False bytes (charset: enum = hilti::Charset::UTF8, errors: enum = hilti::DecodeErrorStrategy::REPLACE)
+.. spicy:method:: bytes::lower bytes lower False bytes ([ charset: spicy::Charset = hilti::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = hilti::DecodeErrorStrategy::REPLACE ])
 
     Returns a lower-case version of the bytes value, assuming it is
     encoded in character set *charset*. If data is encountered that
@@ -71,16 +71,16 @@
     If *side* is given, it indicates which side of the value should be
     stripped; ``Side::Both`` is the default if not given.
 
+.. spicy:method:: bytes::sub bytes sub False bytes (begin: iterator<bytes>, end: iterator<bytes>)
+
+    Returns the subsequence from *begin* to (but not including) *end*.
+
 .. spicy:method:: bytes::sub bytes sub False bytes (begin: uint<64>, end: uint<64>)
 
     Returns the subsequence from offset *begin* to (but not including)
     offset *end*.
 
-.. spicy:method:: bytes::sub bytes sub False bytes (inout begin: iterator<bytes>, inout end: iterator<bytes>)
-
-    Returns the subsequence from *begin* to (but not including) *end*.
-
-.. spicy:method:: bytes::sub bytes sub False bytes (inout end: iterator<bytes>)
+.. spicy:method:: bytes::sub bytes sub False bytes (end: iterator<bytes>)
 
     Returns the subsequence from the value's beginning to (but not
     including) *end*.
@@ -91,7 +91,7 @@
     converts that into a signed integer, using a base of *base*. *base*
     must be between 2 and 36. If *base* is not given, the default is 10.
 
-.. spicy:method:: bytes::to_int bytes to_int False int<64> (byte_order: enum)
+.. spicy:method:: bytes::to_int bytes to_int False int<64> (byte_order: spicy::ByteOrder)
 
     Interprets the ``bytes`` as representing an binary number encoded with
     the given byte order, and converts it into signed integer.
@@ -103,7 +103,7 @@
     time value using a base of *base*. If *base* is not given, the default
     is 10.
 
-.. spicy:method:: bytes::to_time bytes to_time False time (byte_order: enum)
+.. spicy:method:: bytes::to_time bytes to_time False time (byte_order: spicy::ByteOrder)
 
     Interprets the ``bytes`` as representing as number of seconds since
     the epoch in the form of an binary number encoded with the given byte
@@ -115,12 +115,12 @@
     converts that into an unsigned integer, using a base of *base*. *base*
     must be between 2 and 36. If *base* is not given, the default is 10.
 
-.. spicy:method:: bytes::to_uint bytes to_uint False uint<64> (byte_order: enum)
+.. spicy:method:: bytes::to_uint bytes to_uint False uint<64> (byte_order: spicy::ByteOrder)
 
     Interprets the ``bytes`` as representing an binary number encoded with
     the given byte order, and converts it into an unsigned integer.
 
-.. spicy:method:: bytes::upper bytes upper False bytes (charset: enum = hilti::Charset::UTF8, errors: enum = hilti::DecodeErrorStrategy::REPLACE)
+.. spicy:method:: bytes::upper bytes upper False bytes ([ charset: spicy::Charset = hilti::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = hilti::DecodeErrorStrategy::REPLACE ])
 
     Returns an upper-case version of the bytes value, assuming it is
     encoded in character set *charset*. If data is encountered that
