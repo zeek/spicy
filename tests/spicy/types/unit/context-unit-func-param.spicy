@@ -1,0 +1,18 @@
+# @TEST-EXEC: spicyc -p %INPUT
+#
+# @TEST-DOC: Regression test for https://github.com/corelight/zeek-spicy-openvpn/issues/11; we used to have a constness bug here
+
+module zeek_spicy_openvpn;
+
+type Context = tuple<initialized: bool>;
+
+public type OpenVPNRecords = unit {
+	%context = Context;
+};
+
+function initialize_connection(inout ctx: zeek_spicy_openvpn::Context) {
+}
+
+on zeek_spicy_openvpn::OpenVPNRecords::%init {
+    initialize_connection(self.context());
+}
