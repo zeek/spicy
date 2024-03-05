@@ -391,11 +391,9 @@ inline std::string escapeBytesForCxx(std::string_view s) { return escapeBytes(s,
  * identifier.
  *
  * @param s string to convert.
- * @param ensure_non_keyword if true, the returned ID will be expanded to make
- * sure it won't accidentally match a compiler keyword.
  * @return valid C identifier
  */
-extern std::string toIdentifier(const std::string& s, bool ensure_non_keyword = false);
+extern std::string toIdentifier(std::string s);
 
 /** Returns the current time in seconds since the epoch. */
 extern double currentTime();
