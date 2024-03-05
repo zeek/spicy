@@ -18,7 +18,7 @@
   <tr>
     <td>Build status</td>
     <td>
-      <a href="https://cirrus-ci.com/github/zeek/spicy/release/1.9"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg?branch=release/1.9" alt="Build status release"></a>
+      <a href="https://cirrus-ci.com/github/zeek/spicy/release/1.10"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg?branch=release/1.10" alt="Build status release"></a>
     </td>
     <td>
       <a href="https://cirrus-ci.com/github/zeek/spicy/main"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status development"></a>

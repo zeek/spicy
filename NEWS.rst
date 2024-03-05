@@ -2,7 +2,7 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.10 (in progress)
+Version 1.11 (in progress)
 ==========================
 
 .. rubric:: New Functionality
@@ -12,6 +12,137 @@ Version 1.10 (in progress)
 .. rubric:: Bug fixes
 
 .. rubric:: Documentation
+
+Version 1.10
+============
+
+.. rubric:: New Functionality
+
+.. rubric:: Changed Functionality
+
+- Numerous improvements to improve throughput of generated parsers.
+
+  For this release we have revisited the code typically generated for parsers
+  and the runtime libraries they use with the goal of improving throughput of
+  parsers at runtime. Coarsely summarized this work was centered around
+
+  - reduction of allocations during parsing
+  - reduction of data copies during parsing
+  - use of dedicated, hand-check implementations for automatically generated
+    code to avoid overhead from safety checks in the runtime libraries
+
+  With these changes we see throughput improvements of some parsers in the
+  range of 20-30%. This work consisted of numerous incremental changes, see
+  ``CHANGES`` for the full list of changes.
+
+- GH-1667: Always advance input before attempting resynchronization.
+
+  When we enter resynchronization after hitting a parse error we
+  previously would have left the input alone, even though we know it fails
+  to parse. We then relied fully on resynchronization to advance the
+  input.
+
+  With this patch we always forcibly advance the input to the next non-gap
+  position. This has no effect for synchronization on literals, but allows
+  it to happen earlier for regular expressions.
+
+- GH-1659: Lift requirement that ``bytes`` forwarded from filter be mutable.
+
+- GH-1489: Deprecate &bit-order on bit ranges.
+
+  This had no effect and allowing it may be confusing to users. Deprecate it
+  with the idea of eventual removal.
+
+- Extend location printing to include single-line ranges.
+
+  For a location of, e.g., "line 1, column 5 to 10", we now print
+  ``1:5-1:10``, whereas we used to print it as only ``1:5``, hence dropping
+  information.
+
+- GH-1500: Add ``+=`` operator for ``string``.
+
+  This allows appending to a ``string`` without having to allocate a new
+  string. This might perform better most of the time.
+
+- GH-1640: Implement skipping for any field with known size.
+
+  This patch adds ``skip`` support for fields with ``&size`` attribute or of
+  builtin type with known size. If a unit has a known size and it is
+  specified in a ``&size`` attribute this also allows to skip over unit
+  fields.
+
+.. rubric:: Bug fixes
+
+- GH-1605: Allow for unresolved types for set ``in`` operator.
+
+- GH-1617: Fix handling of ``%synchronize-*`` attributes for units in lists.
+
+  We previously would not detect ``%synchronize-at`` or ``%synchronize-from``
+  attributes if the unit was not directly in a field, i.e., we mishandled
+  the common case of synchronizing on a unit in a list.
+
+  We now handle these attributes, regardless of how the unit appears.
+
+- GH-1585: Put closing of unit sinks behind feature guard.
+
+  This code gets emitted, regardless of whether a sink was actually
+  connected or not. Put it behind a feature guard so it does not enable
+  the feature on its own.
+
+- GH-1652: Fix filters consuming too much data.
+
+  We would previously assume that a filter would consume all available
+  data. This only holds if the filter is attached to a top-level unit, but
+  in general not if some sub-unit uses a filter. With this patch we
+  explicitly compute how much data is consumed.
+
+- GH-1668: Fix incorrect data consumption for ``&max-size``.
+
+  We would previously handle ``&size`` and ``&max-size`` almost identical
+  with the only difference that ``&max-size`` sets up a slightly larger view
+  to accommodate a sentinel. In particular, we also used identical code to
+  set up the position where parsing should resume after such a field.
+
+  This was incorrect as it is in general impossible to tell where parsing
+  continues after a field with ``&max-size`` since it does not signify a fixed
+  view like ``&size``. We now compute the next position for a ``&max-size``
+  field by inspecting the limited view to detect how much data was extracted.
+
+- GH-1522: Drop overzealous validator.
+
+  A validator was intended to reject a pattern of incorrect parsing of vectors,
+  but instead ending up rejecting all vector parsing if the vector elements
+  itself produced vectors. We dropped this validation.
+
+- GH-1632: Fix regex processing using ``{n,m}`` repeat syntax being off by one
+
+- GH-1648: Provide meaningful unit ``__begin`` value when parsing starts.
+
+  We previously would not provide ``__begin`` when starting the initial
+  parse. This meant that e.g., ``offset()`` was not usable if nothing ever
+  got parsed.
+
+  We now provide a meaningful value.
+
+- Fix skipping of literal fields with condition.
+
+- GH-1645: Fix ``&size`` check.
+
+  The current parsing offset could legitimately end up just beyond the
+  ``&size`` amount.
+
+- GH-1634: Fix infinite loop in regular expression parsing.
+
+.. rubric:: Documentation
+
+- Update documentation of ``offset()``.
+
+- Fix docs namespace for symbols from ``filter`` module.
+
+  We previously would document these symbols to be in ``spicy`` even though
+  they are in ``filter``.
+
+- Add bitfield examples.
 
 Version 1.9
 ===========
