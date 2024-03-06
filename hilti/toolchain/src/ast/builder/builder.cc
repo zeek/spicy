@@ -108,19 +108,29 @@ void Builder::setLocation(const Location& l) {
     block()->_add(context(), statementSetLocation(stringLiteral(l.dump())));
 }
 
-std::optional<ExpressionPtr> Builder::startProfiler(std::string_view name) {
+ExpressionPtr Builder::startProfiler(std::string_view name, ExpressionPtr size) {
     if ( ! context()->driver()->options().enable_profiling )
         return {};
 
     // Note the name of the temp must not clash what HILTI's code generator
     // picks for profiler that it instantiates itself. We do not currently keep
     // those namespace separate.
-    return addTmp("prof", call("hilti::profiler_start", {stringLiteral(name)}));
+    ExpressionPtr profiler;
+
+    if ( size )
+        profiler = call("hilti::profiler_start", {stringLiteral(name), std::move(size)});
+    else
+        profiler = call("hilti::profiler_start", {stringLiteral(name)});
+
+    return addTmp("prof", profiler);
 }
 
-void Builder::stopProfiler(ExpressionPtr profiler) {
+void Builder::stopProfiler(ExpressionPtr profiler, ExpressionPtr size) {
     if ( ! context()->driver()->options().enable_profiling )
         return;
 
-    addCall("hilti::profiler_stop", {std::move(profiler)});
+    if ( size )
+        addCall("hilti::profiler_stop", {std::move(profiler), std::move(size)});
+    else
+        addCall("hilti::profiler_stop", {std::move(profiler)});
 }

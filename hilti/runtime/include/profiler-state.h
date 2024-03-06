@@ -17,18 +17,33 @@ namespace hilti::rt::profiler {
  *  statistics.
  */
 struct Measurement {
-    uint64_t count = 0; /**< Number of measurements taken. */
-    uint64_t time = 0;  /**< Measured time in system-specific high resolution clock. */
+    uint64_t count = 0;                  /**< Number of measurements taken. */
+    uint64_t time = 0;                   /**< Measured time in system-specific high resolution clock. */
+    std::optional<uint64_t> volume = {}; /**< Measured absolute volume in bytes, if applicable */
 
     Measurement& operator+=(const Measurement& m) {
         time += m.time;
+
+        if ( m.volume ) {
+            if ( volume )
+                *volume += *m.volume;
+            else
+                volume = *m.volume;
+        }
+
         // Don't modify count.
+
         return *this;
     }
 
     Measurement& operator-=(const Measurement& m) {
         time -= m.time;
+
+        if ( volume && m.volume )
+            *volume -= *m.volume;
+
         // Don't modify count.
+
         return *this;
     }
 

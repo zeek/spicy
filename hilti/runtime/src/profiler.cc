@@ -30,12 +30,13 @@ inline uint64_t _getClock() {
 
 void Profiler::_register() const { ++detail::globalState()->profilers[_name].instances; }
 
-profiler::Measurement Profiler::snapshot() {
+profiler::Measurement Profiler::snapshot(std::optional<uint64_t> volume) {
     if ( ! detail::globalState()->profiling_enabled )
         return Measurement();
 
     Measurement m;
     m.time = _getClock();
+    m.volume = volume;
     return m;
 }
 
@@ -88,13 +89,13 @@ std::optional<Measurement> profiler::get(const std::string& name) {
 }
 
 void profiler::report() {
-    static const auto fmt_header = "#%-49s %10s %10s %10s %10s\n";
-    static const auto fmt_data = "%-50s %10" PRIu64 " %10" PRIu64 " %10.2f %10.2f \n";
+    static const auto fmt_header = "#%-49s %10s %10s %10s %10s %15s\n";
+    static const auto fmt_data = "%-50s %10" PRIu64 " %10" PRIu64 " %10.2f %10.2f %15s\n";
 
     const auto& profilers = rt::detail::globalState()->profilers;
 
     std::cerr << "#\n# Profiling results\n#\n";
-    std::cerr << fmt(fmt_header, "name", "count", "time", "avg-%", "total-%");
+    std::cerr << fmt(fmt_header, "name", "count", "time", "avg-%", "total-%", "volume");
 
     std::set<std::string> names;
     for ( const auto& [name, _] : profilers )
@@ -109,6 +110,11 @@ void profiler::report() {
             continue;
 
         auto percent = static_cast<double>(p.time) * 100.0 / total_time;
-        std::cerr << fmt(fmt_data, name, p.count, p.time, percent / static_cast<double>(p.count), percent);
+
+        std::string volume = "-";
+        if ( p.volume )
+            volume = fmt("%" PRIu64, *p.volume);
+
+        std::cerr << fmt(fmt_data, name, p.count, p.time, percent / static_cast<double>(p.count), percent, volume);
     }
 }

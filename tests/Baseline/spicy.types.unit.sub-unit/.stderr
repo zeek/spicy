@@ -4,24 +4,24 @@
 [debug/ast-stats]   - # AST rounds 4
 [debug/ast-stats]   - # context declarations: 57
 [debug/ast-stats]   - # context types: 41
-[debug/ast-stats]   - # nodes: 2601
+[debug/ast-stats]   - # nodes: 2633
 [debug/ast-stats]   - # nodes > 1%:
 [debug/ast-stats]     - Attribute: 160
-[debug/ast-stats]     - AttributeSet: 269
+[debug/ast-stats]     - AttributeSet: 271
 [debug/ast-stats]     - Function: 54
-[debug/ast-stats]     - QualifiedType: 727
+[debug/ast-stats]     - QualifiedType: 737
 [debug/ast-stats]     - ctor::Enum: 70
 [debug/ast-stats]     - ctor::String: 108
 [debug/ast-stats]     - declaration::Constant: 70
 [debug/ast-stats]     - declaration::Field: 27
 [debug/ast-stats]     - declaration::Function: 52
-[debug/ast-stats]     - declaration::Parameter: 125
+[debug/ast-stats]     - declaration::Parameter: 127
 [debug/ast-stats]     - declaration::Type: 49
-[debug/ast-stats]     - expression::Ctor: 182
+[debug/ast-stats]     - expression::Ctor: 184
 [debug/ast-stats]     - type::Function: 71
 [debug/ast-stats]     - type::Name: 40
 [debug/ast-stats]     - type::String: 138
-[debug/ast-stats]     - type::UnsignedInteger: 79
+[debug/ast-stats]     - type::UnsignedInteger: 83
 [debug/ast-stats]     - type::Void: 38
 [debug/ast-stats]     - type::enum_::Label: 70
 [debug/ast-stats] # [HILTI] AST statistics:
@@ -29,16 +29,16 @@
 [debug/ast-stats]   - # AST rounds 6
 [debug/ast-stats]   - # context declarations: 184
 [debug/ast-stats]   - # context types: 47
-[debug/ast-stats]   - # nodes: 15059
+[debug/ast-stats]   - # nodes: 15091
 [debug/ast-stats]   - # nodes > 1%:
 [debug/ast-stats]     - Attribute: 298
-[debug/ast-stats]     - AttributeSet: 621
-[debug/ast-stats]     - QualifiedType: 4660
+[debug/ast-stats]     - AttributeSet: 623
+[debug/ast-stats]     - QualifiedType: 4670
 [debug/ast-stats]     - ctor::String: 313
 [debug/ast-stats]     - ctor::Tuple: 186
 [debug/ast-stats]     - declaration::Field: 155
-[debug/ast-stats]     - declaration::Parameter: 341
-[debug/ast-stats]     - expression::Ctor: 698
+[debug/ast-stats]     - declaration::Parameter: 343
+[debug/ast-stats]     - expression::Ctor: 700
 [debug/ast-stats]     - expression::Member: 186
 [debug/ast-stats]     - expression::Name: 723
 [debug/ast-stats]     - operator_::value_reference::Deref: 153
@@ -46,10 +46,10 @@
 [debug/ast-stats]     - type::Function: 163
 [debug/ast-stats]     - type::Member: 186
 [debug/ast-stats]     - type::Name: 327
-[debug/ast-stats]     - type::Optional: 303
+[debug/ast-stats]     - type::Optional: 307
 [debug/ast-stats]     - type::String: 491
 [debug/ast-stats]     - type::Tuple: 231
-[debug/ast-stats]     - type::UnsignedInteger: 837
+[debug/ast-stats]     - type::UnsignedInteger: 841
 [debug/ast-stats]     - type::Void: 177
 [debug/ast-stats]     - type::stream::Iterator: 622
 [debug/ast-stats]     - type::stream::View: 316

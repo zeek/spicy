@@ -1,12 +1,20 @@
 # @TEST-DOC: Validates that if a gap is encountered during recovery we can still resynchronize.
 #
-# @TEST-EXEC: spicyc -dj -o sync.hlto sync.spicy
+# @TEST-EXEC: spicyc -Zdj -o sync.hlto sync.spicy
 
 # @TEST-EXEC: HILTI_DEBUG=spicy-verbose spicy-driver -p sync::X1 -F gap_between_matches sync.hlto >gap_between_matches.log 2>&1
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff gap_between_matches.log
 
 # @TEST-EXEC: HILTI_DEBUG=spicy-verbose spicy-driver -p sync::X2 -F gap_while_matching sync.hlto >gap_while_matching.log 2>&1
 # @TEST-EXEC: TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff gap_while_matching.log
+
+# @TEST-EXEC: spicy-driver -Z -p sync::X1 -F gap_between_matches sync.hlto >prof.x1.raw 2>&1
+# @TEST-EXEC: cat prof.x1.raw | grep -E '^(#name|spicy/unit)' | awk '{ print $1, $2, $6; next }' | sort >prof.x1.log
+# @TEST-EXEC: btest-diff prof.x1.log
+
+# @TEST-EXEC: spicy-driver -Z -p sync::X2 -F gap_while_matching sync.hlto >prof.x2.raw 2>&1
+# @TEST-EXEC: cat prof.x2.raw | grep -E '^(#name|spicy/unit)' | awk '{ print $1, $2, $6; next }' | sort >prof.x2.log
+# @TEST-EXEC: btest-diff prof.x2.log
 
 # @TEST-START-FILE sync.spicy
 module sync;
@@ -35,8 +43,8 @@ public type X2 = unit {
 @data id1 1
 A
 @gap id1 1024
-@data id1 2
-BC
+@data id1 3
+XBC
 @end-flow id1
 # @TEST-END-FILE
 
