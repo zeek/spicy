@@ -315,17 +315,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(hilti::expression::Assign* n) final {
-        // Rewrite assignments involving unit fields to use the non-const member operator.
-        if ( auto member_const = n->children().front()->tryAs<operator_::unit::MemberConst>() ) {
-            auto unit_member = hilti::operator_::registry().byName("unit::MemberNonConst");
-            assert(unit_member);
-            auto new_lhs = unit_member->instantiate(builder(), member_const->operands(), member_const->meta());
-            auto new_assign = builder()->expressionAssign(*new_lhs, n->source(), n->meta());
-            replaceNode(n, new_assign);
-        }
-    }
-
     void operator()(hilti::expression::Name* n) final {
         // Allow `$$` as an alias for `self` in unit convert attributes for symmetry with field convert attributes.
         if ( n->id() == ID("__dd") ) {

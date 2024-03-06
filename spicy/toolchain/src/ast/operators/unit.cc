@@ -127,12 +127,7 @@ triggers an exception.
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
-    void validate(hilti::expression::ResolvedOperator* n) const final {
-        checkName(n);
-
-        if ( n->op0()->isConstant() )
-            n->addError("cannot assign to field of constant unit instance");
-    }
+    void validate(hilti::expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(spicy, unit::MemberNonConst)
 };
@@ -158,11 +153,10 @@ triggers an exception.
     }
 
     QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return itemType(builder, operands)->recreateAsLhs(builder->context());
+        return itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
     void validate(hilti::expression::ResolvedOperator* n) const final { checkName(n); }
-
 
     HILTI_OPERATOR(spicy, unit::MemberConst)
 };
