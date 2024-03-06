@@ -158,7 +158,7 @@ triggers an exception.
     }
 
     QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return _itemType(builder, operands);
+        return _itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
     void validate(expression::ResolvedOperator* n) const final { _checkName(n); }

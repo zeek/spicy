@@ -1123,15 +1123,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             replaceNode(n, index_assign);
         }
 
-        // Rewrite assignments involving struct elements to use the non-const member operator.
-        if ( auto member_const = n->target()->tryAs<operator_::struct_::MemberConst>() ) {
-            auto op = operator_::registry().byName("struct::MemberNonConst");
-            assert(op);
-            auto new_lhs = op->instantiate(builder(), member_const->operands(), member_const->meta());
-            auto new_assign = builder()->expressionAssign(*new_lhs, n->source(), n->meta());
-            replaceNode(n, new_assign);
-        }
-
         // Rewrite assignments involving tuple ctors on the LHS to use the
         // tuple's custom by-element assign operator. We need this to get
         // constness right.
