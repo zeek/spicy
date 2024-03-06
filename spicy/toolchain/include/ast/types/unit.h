@@ -33,8 +33,8 @@ public:
         return child<hilti::declaration::Expression>(0);
     }
 
-    /** Returns the type set through ``%context`, if available. */
-    UnqualifiedTypePtr contextType() const;
+    /** Returns the type set through ``%context`, if available and resolved already. */
+    UnqualifiedTypePtr contextType() const { return child<UnqualifiedType>(2); }
 
     /**
      * Returns the item of a given name if it exists. This descends
@@ -100,6 +100,7 @@ public:
     }
 
     void setAttributes(ASTContext* ctx, const AttributeSetPtr& attrs) { setChild(ctx, 1, attrs); }
+    void setContextType(ASTContext* ctx, const UnqualifiedTypePtr& type) { setChild(ctx, 2, type); }
     void setGrammar(std::shared_ptr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
     void setPublic(bool p) { _public = p; }
 
@@ -125,15 +126,16 @@ public:
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        auto t = std::shared_ptr<Unit>(new Unit(ctx, node::flatten(nullptr, attrs, params, std::move(items)), meta));
+        auto t = std::shared_ptr<Unit>(
+            new Unit(ctx, node::flatten(nullptr, attrs, nullptr, params, std::move(items)), meta));
+
         t->_setSelf(ctx);
         return t;
     }
 
     static auto create(ASTContext* ctx, hilti::type::Wildcard _, const Meta& meta = {}) {
-        auto t =
-            std::shared_ptr<Unit>(new Unit(ctx, hilti::type::Wildcard(), {nullptr, AttributeSet::create(ctx)}, meta));
-        return t;
+        return std::shared_ptr<Unit>(
+            new Unit(ctx, hilti::type::Wildcard(), {nullptr, AttributeSet::create(ctx), nullptr}, meta));
     }
 
 protected:

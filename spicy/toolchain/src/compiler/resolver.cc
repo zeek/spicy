@@ -440,8 +440,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(type::Unit* n) final {
-        if ( ! n->typeID() )
-            return;
+        if ( ! n->contextType() ) {
+            if ( auto ctx = n->propertyItem("%context") ) {
+                if ( auto expr = ctx->expression(); expr && expr->isResolved() ) {
+                    if ( auto ty = expr->type()->type()->tryAs<hilti::type::Type_>() ) {
+                        recordChange(n, "set unit's context type");
+                        n->setContextType(context(), ty->typeValue()->type());
+                    }
+                }
+            }
+        }
 
         if ( n->inheritScope() ) {
             recordChange(n, "set no-inherit");

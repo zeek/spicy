@@ -33,14 +33,6 @@ static NodePtr itemByNameBackend(const std::shared_ptr<spicy::type::unit::Item>&
     return {};
 }
 
-UnqualifiedTypePtr Unit::contextType() const {
-    if ( auto context = propertyItem("%context") )
-        if ( auto ty = context->expression()->type()->type()->tryAs<hilti::type::Type_>() )
-            return ty->typeValue()->type();
-
-    return {};
-}
-
 unit::item::PropertyPtr Unit::propertyItem(const std::string& name) const {
     for ( const auto& i : items<unit::item::Property>() ) {
         if ( i->id() == name )
@@ -70,6 +62,9 @@ bool Unit::isResolved(node::CycleDetector* cd) const {
         return false;
 
     for ( const auto& c : children() ) {
+        if ( ! c )
+            continue;
+
         if ( auto i = c->template tryAs<unit::Item>(); i && ! i->isResolved(cd) )
             return false;
 
