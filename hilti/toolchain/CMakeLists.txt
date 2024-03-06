@@ -109,6 +109,7 @@ set(SOURCES
     src/compiler/cxx/formatter.cc
     src/compiler/cxx/linker.cc
     src/compiler/cxx/unit.cc
+    src/compiler/cfg.cc
     src/compiler/driver.cc
     src/compiler/init.cc
     src/compiler/jit.cc
