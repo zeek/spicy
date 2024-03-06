@@ -89,6 +89,7 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     }
 
+    (*self).__error = __error;
     return __result;
 }
 
@@ -175,6 +176,7 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     }
 
+    (*self).__error = __error;
     return __result;
 }
 
@@ -202,6 +204,7 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     }
 
+    (*self).__error = __error;
     return __result;
 }
 

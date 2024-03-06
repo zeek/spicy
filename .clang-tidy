@@ -55,7 +55,7 @@ Checks: '
 
   portability-*,
 
-  readability-*,
+  -readability-*,
   -readability-braces-around-statements,
   -readability-container-size-empty,
   -readability-convert-member-functions-to-static,

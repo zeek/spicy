@@ -2,7 +2,7 @@
 
 #include "hilti/compiler/detail/optimizer.h"
 
-#include <numeric>
+#include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -16,6 +16,7 @@
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/module.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
@@ -23,6 +24,7 @@
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/ternary.h>
+#include <hilti/ast/function.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
@@ -36,6 +38,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
+#include <hilti/compiler/detail/cfg.h>
 
 namespace hilti {
 
@@ -89,7 +92,7 @@ public:
     virtual bool prune_uses(Node*) { return false; }
     virtual bool prune_decls(Node*) { return false; }
 
-    void operator()(declaration::Module* n) final { _current_module = n; }
+    void operator()(declaration::Module* n) override { _current_module = n; }
 };
 
 struct FunctionVisitor : OptimizerVisitor {
@@ -1557,6 +1560,121 @@ struct MemberVisitor : OptimizerVisitor {
     }
 };
 
+struct FunctionBodyVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+
+    bool prune_uses(Node* node) override {
+        visitor::visit(*this, node);
+        return isModified();
+    }
+
+    bool remove_node(detail::cfg::CFG& cfg, const CXXGraph::Node<detail::cfg::CFG::N>* n, const std::string& msg = {}) {
+        auto* data = n->getData();
+        assert(data);
+
+        Node* dead = nullptr;
+
+        if ( data->isA<Statement>() && data->hasParent() )
+            dead = data;
+
+        else if ( data->isA<Expression>() ) {
+            auto* p = data->parent();
+
+            while ( p && ! p->isA<Statement>() )
+                p = p->parent();
+
+            if ( p && p->hasParent() )
+                dead = p;
+        }
+
+        if ( dead ) {
+            // Edit AST.
+            removeNode(dead, msg);
+
+            // Make equivalent edit to control flow graph.
+            auto out = detail::cfg::outEdges(cfg.g, n);
+            auto in = detail::cfg::inEdges(cfg.g, n);
+
+            // Create new edges between incoming and outgoing nodes.
+            for ( auto&& i : in ) {
+                auto&& [from, _] = i->getNodePair();
+                for ( auto&& o : out ) {
+                    auto&& [_, to] = o->getNodePair();
+
+                    auto e = std::make_shared<CXXGraph::DirectedEdge<detail::cfg::CFG::N>>(cfg.g.getEdgeSet().size(),
+                                                                                           from, to);
+                    cfg.g.addEdge(std::move(e));
+                }
+            }
+
+            // Remove existing edges to node.
+            for ( auto&& s : {in, out} )
+                for ( auto&& e : s )
+                    cfg.g.removeEdge(e->getId());
+
+            cfg.g.removeNode(n->getUserId());
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void visit_node(Node* n) {
+        while ( true ) {
+            bool modified = false;
+
+            // FIXME(bbannier): In principal we should be able to reuse the
+            // flow through optimizations, but this currently fails due to
+            // edits not correctly changing the flow.
+            auto cfg = detail::cfg::CFG(n);
+            cfg.populate_reachable_expressions();
+
+            // FIXME(bbannier): Make this a proper debug stream.
+            if ( rt::getenv("HILTI_DEBUG_DUMP_CFG") == "1" ) {
+                // Fallback scope identifier is just a hash of the body.
+                std::string scope = std::to_string(std::hash<std::string>{}(n->print()));
+
+                if ( auto* fn = n->parent()->tryAs<Function>() )
+                    scope = util::fmt("Function %s", fn->id());
+                else if ( auto* mod = n->parent()->tryAs<declaration::Module>() )
+                    scope = util::fmt("Module %s", mod->id());
+
+                std::cerr << "# " << scope << '\n' << cfg.dot() << '\n';
+            }
+
+            for ( auto&& x : cfg.unreachable_statements() )
+                modified |= remove_node(cfg, x, "statement result unused");
+
+            if ( modified )
+                break;
+
+            auto unreachable_nodes = cfg.unreachable_nodes();
+            if ( unreachable_nodes.empty() )
+                break;
+
+            // Remove unreachable control flow branches.
+            for ( auto&& n : unreachable_nodes )
+                modified |= remove_node(cfg, n.get(), "unreachable code");
+
+            if ( ! modified )
+                break;
+        }
+    }
+
+    void operator()(declaration::Function* f) override {
+        if ( auto&& body = f->function()->body() )
+            visit_node(body);
+    }
+
+    void operator()(declaration::Module* m) override {
+        OptimizerVisitor::operator()(m);
+
+        if ( auto&& body = m->statements() )
+            visit_node(body);
+    }
+};
+
 void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1575,28 +1693,37 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         v.transform(root);
     }
 
-    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder)> creators =
-        {{"constant_folding",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"functions",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"members",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"types", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer);
-          }}};
+    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder)> creators = {
+        {"constant_folding",
+         [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+             return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer);
+         }},
+        {"functions",
+         [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+             return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer);
+         }},
+        {"members",
+         [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+             return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer);
+         }},
+        {"types",
+         [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+             return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer);
+         }},
+        {"cfg",
+         [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+             return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer);
+         }},
+    };
 
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {
         passes = std::set<std::string>();
         for ( const auto& [pass, _] : creators )
-            passes->insert(pass);
+            if ( pass != "cfg" )
+                passes->insert(pass);
+
+        passes->insert("cfg");
     }
 
     size_t round = 0;

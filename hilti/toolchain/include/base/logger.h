@@ -125,7 +125,7 @@ public:
     void error(const std::string& msg, const Location& l = location::None);
     void error(const std::string& msg, const std::vector<std::string>& context, const Location& l = location::None);
     void fatalError(const std::string& msg, const Location& l = location::None) __attribute__((noreturn));
-    void internalError(const std::string& msg, const Location& l = location::None) __attribute__((noreturn));
+    [[noreturn]] void internalError(const std::string& msg, const Location& l = location::None);
 
     void info(const std::string& msg, const Node* n) { info(msg, n->location()); }
     void warning(const std::string& msg, const Node* n) { warning(msg, n->location()); }
