@@ -196,7 +196,7 @@ public:
     }
 
     QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return operands[0]->type()->type()->as<type::Vector>()->elementType();
+        return operands[0]->type()->type()->as<type::Vector>()->elementType()->recreateAsConst(builder->context());
     }
 
     HILTI_OPERATOR(hilti, vector::IndexConst)
