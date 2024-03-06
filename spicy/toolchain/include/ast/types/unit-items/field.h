@@ -137,7 +137,7 @@ public:
 protected:
     Field(ASTContext* ctx, Nodes children, size_t args_start, size_t args_end, size_t sinks_start, size_t sinks_end,
           size_t hooks_start, size_t hooks_end, const ID& id, Engine engine, bool skip, const Meta& meta)
-        : unit::Item(ctx, std::move(children), (id ? id : _uniquer.get("_anon")), meta),
+        : unit::Item(ctx, std::move(children), (id ? id : _uniquer.get("_anon", false)), meta),
           _is_anonymous(! id),
           _is_skip(skip),
           _engine(engine),

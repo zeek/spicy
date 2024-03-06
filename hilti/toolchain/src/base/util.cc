@@ -192,51 +192,51 @@ double util::currentTime() {
     return static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec) / 1e6;
 }
 
-std::string util::toIdentifier(const std::string& s, bool ensure_non_keyword) {
-    static char const* const hex = "0123456789abcdef";
-
+std::string util::toIdentifier(std::string s) {
     if ( s.empty() )
         return s;
 
-    std::string normalized = s;
+    if ( ! isdigit(s[0]) && std::all_of(s.begin(), s.end(), [](auto c) { return std::isalnum(c) || c == '_'; }) )
+        // Fast-path: no special-characters, no leading digits.
+        return s;
 
-    // Note: Only normalize characters here that can't be part of a user-side
-    // ID.
-    normalized = replace(normalized, "::", "_");
-    normalized = replace(normalized, ":", "_");
-    normalized = replace(normalized, "<", "_");
-    normalized = replace(normalized, ">", "_");
-    normalized = replace(normalized, ",", "_");
-    normalized = replace(normalized, ".", "_");
-    normalized = replace(normalized, " ", "_");
-    normalized = replace(normalized, "-", "_");
-    normalized = replace(normalized, "'", "_");
-    normalized = replace(normalized, "\"", "_");
-    normalized = replace(normalized, "%", "_");
+    char buffer[s.size() * 3 + 1]; // max possible size of modified string
+    char* p = buffer;
 
-    std::string ns;
+    if ( isdigit(s[0]) )
+        // do not start with a digit
+        *p++ = '_';
 
-    for ( auto c : normalized ) {
-        if ( isalnum(c) || c == '_' ) {
-            ns += c;
-            continue;
+    for ( auto c : s ) {
+        switch ( c ) {
+            case ':':
+            case '<':
+            case '>':
+            case ',':
+            case '.':
+            case ' ':
+            case '-':
+            case '\'':
+            case '"':
+            case '%': *p++ = '_'; break;
+
+            default: {
+                if ( std::isalnum(c) || c == '_' )
+                    *p++ = c;
+                else {
+                    static char const* const hex = "0123456789abcdef";
+                    *p++ = 'x';
+                    *p++ = hex[c >> 4U];
+                    *p++ = hex[c % 0x0f];
+                }
+
+                break;
+            }
         }
-
-        ns += "x";
-        ns += hex[c >> 4U];
-        ns += hex[c % 0x0f];
     }
 
-
-    if ( isdigit(ns[0]) )
-        ns = "_" + ns;
-
-    if ( ensure_non_keyword && ! util::endsWith(ns, "_") )
-        ns += "_";
-
-    normalized = replace(normalized, ":", "_");
-    normalized = replace(normalized, "%", "_");
-    return ns;
+    assert(p < buffer + sizeof(buffer));
+    return std::string(buffer, p - buffer);
 }
 
 std::string util::prefixParts(const std::string& in, const std::string& prefix, const std::string& include_tag) {

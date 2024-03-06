@@ -65,7 +65,7 @@ struct Visitor : public visitor::PreOrder {
             return prod;
         else
             // Fallback: Just a plain type.
-            return std::make_unique<production::Variable>(context(), pf->cg->uniquer()->get(id), t,
+            return std::make_unique<production::Variable>(context(), pf->cg->uniquer()->get(id, false), t,
                                                           t->meta().location());
     }
 

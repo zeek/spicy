@@ -1,3 +1,92 @@
+1.11.0-dev.27 | 2024-03-06 17:06:09 +0100
+
+  * Speed up `util::toIdentifier`. (Robin Sommer)
+
+    Turns out this is called a lot. This changes baselines due to slight
+    differences in generated IDs (changes are good because they better avoid
+    potential conflicts).
+
+    This also removes the option to ensure non-keyword IDs: I don't
+    think we need that because we check for that when we generate C++
+    code.
+
+  * GH-1675: Extend runtime profiling to measure parser input volume. (Robin Sommer, Corelight)
+
+    With `--enable-profiling` the output for Spicy units/fields now
+    includes a new `volume` column, like this:
+
+    ```
+    #name                                                   count       time      avg-%    total-%          volume
+    [...]
+    spicy/unit/test::A                                          1     285500      43.96      43.96               8
+    spicy/unit/test::A/__gap__                                  4       3167       0.12       0.49               0
+    spicy/unit/test::A/__synchronize__                          1      35500       5.47       5.47               4
+    spicy/unit/test::A::a                                       1      74833      11.52      11.52               -
+    spicy/unit/test::A::b                                       1      15333       2.36       2.36               1
+    spicy/unit/test::A::c                                       1      19125       2.94       2.94               1
+    spicy/unit/test::A::d                                       1       7583       1.17       1.17               1
+    spicy/unit/test::A::e                                       1       8042       1.24       1.24               1
+    ```
+
+    Three different things here:
+
+    - The `volume` column for `spicy/unit/TYPE` and
+      `spicy/unit/TYPE::FIELD` augments the already existing timing
+      measurement and reports the total, aggregate number of bytes that
+      this unit/field got to parse over the course of the processing.
+
+    - For units going into synchronization mode, there are now additional
+      rows `spicy/unit/TYPE/__synchronize__` that report both CPU time and
+      volume spent in synchronization while processing that unit.
+
+    - For units encountering input gaps during synchronization, there are
+      now additional rows 'spicy/unit/TYPE/__gap__` that report total
+      aggregate gap size encountered while processing the unit.
+
+    All the volume measurements are taken as differences of two offsets
+    inside the input stream. For normal unit/field parsing, we subtract
+    the final offset after parsing an instance from the initial offset
+    where its parsing started.[1] For synchronization, it's the offset
+    where synchronization stopped successfully minus where it started.[2]
+    For gaps, it's the offset where we continued after the gap minus where
+    the gap started.[3] All these differences are then added up for each
+    row over the course of total input stream processing.
+
+    Note that volume isn't counted if parsing for some reason never
+    reaches the point where the end measurement would be taken (e.g., a
+    parser error prevents it from being reached; in the output above
+    that's the case for `spicy/unit/test::A::a`).
+
+    Closes #1675.
+
+    [1] This *includes any ranges that the unit spent in synchronization
+    mode trying to recover from parse errors.
+
+    [2] This does *not* include any gaps encountered because they don't
+    affect stream offsets.
+
+    [3] Little glitch: these values can currently by off by one due to some
+    internal ambiguity.
+
+  * Move inferring of a unit's context type into the resolver. (Robin Sommer)
+
+    No functional change here, just cleanup: this is where the logic
+    belongs.
+
+  * Infer constness of `<unit>.context()` from that of `<unit>`. (Robin Sommer)
+
+    Closes https://github.com/corelight/zeek-spicy-openvpn/issues/11.
+
+  * Ensure constness of result for const map/vector index operator. (Robin Sommer)
+
+    Not sure this actually changes anything, but it ensures they are correct.
+
+  * Simplify constness check for struct field assignments. (Robin Sommer)
+
+    Same treatment as for unit fields.
+
+  * Bump 3rdparty/filesystem from `2fc4b46` to `42ea4fc` (dependabot[bot])
+
 1.11.0-dev.15 | 2024-03-05 10:43:27 +0100
 
   * Bump 3rdparty/filesystem from `2fc4b46` to `42ea4fc` (dependabot[bot])
