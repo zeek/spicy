@@ -72,16 +72,16 @@ QualifiedTypePtr itemType(hilti::Builder* builder, const Expressions& operands) 
         return builder->qualifiedType(builder->typeAuto(), hilti::Constness::Const);
 }
 
-QualifiedTypePtr contextResult(hilti::Builder* builder, const Expressions& operands) {
+QualifiedTypePtr contextResult(hilti::Builder* builder, const Expressions& operands, hilti::Constness constness) {
     if ( operands.empty() )
-        return builder->qualifiedType(builder->typeDocOnly("<context>&"), hilti::Constness::Const);
+        return builder->qualifiedType(builder->typeDocOnly("<context>&"), constness);
 
     if ( const auto& ctype = operands[0]->type()->type()->as<type::Unit>()->contextType() )
         return builder->qualifiedType(builder->typeStrongReference(
                                           builder->qualifiedType(ctype, hilti::Constness::Mutable)),
-                                      hilti::Constness::Const);
+                                      constness);
 
-    return builder->qualifiedType(builder->typeVoid(), hilti::Constness::Const);
+    return builder->qualifiedType(builder->typeVoid(), constness);
 }
 
 
@@ -127,12 +127,7 @@ triggers an exception.
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
-    void validate(hilti::expression::ResolvedOperator* n) const final {
-        checkName(n);
-
-        if ( n->op0()->isConstant() )
-            n->addError("cannot assign to field of constant unit instance");
-    }
+    void validate(hilti::expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(spicy, unit::MemberNonConst)
 };
@@ -158,11 +153,10 @@ triggers an exception.
     }
 
     QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return itemType(builder, operands)->recreateAsLhs(builder->context());
+        return itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
     void validate(hilti::expression::ResolvedOperator* n) const final { checkName(n); }
-
 
     HILTI_OPERATOR(spicy, unit::MemberConst)
 };
@@ -473,7 +467,7 @@ Returns a reference to the ``%context`` instance associated with the unit.
     }
 
     QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return contextResult(builder, operands);
+        return contextResult(builder, operands, hilti::Constness::Const);
     }
 
     HILTI_OPERATOR(spicy, unit::ContextConst);
@@ -497,7 +491,7 @@ Returns a reference to the ``%context`` instance associated with the unit.
     }
 
     QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return contextResult(builder, operands);
+        return contextResult(builder, operands, hilti::Constness::Mutable);
     }
 
     HILTI_OPERATOR(spicy, unit::ContextNonConst);

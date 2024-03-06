@@ -255,7 +255,7 @@ public:
     }
 
     QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return operands[0]->type()->type()->as<type::Map>()->valueType();
+        return operands[0]->type()->type()->as<type::Map>()->valueType()->recreateAsConst(builder->context());
     }
 
 

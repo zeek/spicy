@@ -362,8 +362,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     ////// Expressions
 
     void operator()(expression::Assign* n) final {
-        if ( n->target()->type()->side() != Side::LHS )
-            error(fmt("cannot assign to expression: %s", *n), n);
+        if ( n->target()->type()->constness() == Constness::Const )
+            error(fmt("cannot assign to constant expression: %s", *n), n);
+
+        else if ( n->target()->type()->side() != Side::LHS )
+            error(fmt("cannot assign to RHS expression: %s", *n), n);
 
         if ( ! n->hasErrors() ) { // no need for more checks if coercer has already flagged it
             if ( ! type::sameExceptForConstness(n->source()->type(), n->target()->type()) )
@@ -575,9 +578,6 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
         }
     }
-
-    // void operator()(type::Unknown* n) final { error("type could not be determined", n, node::ErrorPriority::Low);
-    // }
 
     void operator()(type::Enum* n) final {
         std::unordered_set<int> seen;
