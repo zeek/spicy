@@ -1,0 +1,29 @@
+# @TEST-EXEC: hiltic -p -o /dev/null -D cfg-initial %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo {
+
+function void fn1() {
+    1;
+    return;
+    2;
+}
+
+function bool fn2() {
+    local auto x = True;
+    return x;
+    2;
+}
+
+function bool fn3() {
+    if (True)
+        return True;
+    return False;
+}
+
+function uint<64> fn4() {
+    local x = 1;
+    return x;
+}
+
+}

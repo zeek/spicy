@@ -109,9 +109,6 @@
 [debug/ast-declarations]             - Parameter "excpt" (hilti::excpt_4)
 [debug/ast-declarations] # [HILTI]
 [debug/ast-declarations]   - Module "Foo" (Foo)
-[debug/ast-declarations]                 - Expression "self" (Foo::self_2)
-[debug/ast-declarations]                 - Field "foo" (Foo::foo)
-[debug/ast-declarations]                 - Field "bar" (Foo::bar)
 [debug/ast-declarations]     - Type "S" (Foo::S)
 [debug/ast-declarations]           - Expression "self" (Foo::self)
 [debug/ast-declarations]           - Field "test" (Foo::test)

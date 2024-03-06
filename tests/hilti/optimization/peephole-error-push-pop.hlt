@@ -14,9 +14,9 @@ type Foo = struct {
 # We expect the full body of this function to be removed:
 #
 # - error push/pop removed
+# - now unused `__error` removed
 #
 # CHECK: function void Foo::test() {
-# CHECK: local int<64> __error;
 # CHECK-NEXT: }
 function void Foo::test() {
     local int<64> __error;

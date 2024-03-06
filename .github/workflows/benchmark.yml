@@ -44,6 +44,8 @@ jobs:
           key: ${{ github.job }}
 
       - name: Build benchmarks
+        env:
+          HILTI_OPTIMIZER_ENABLE_CFG: 1
         run: |
           cmake -G Ninja -DCODSPEED_MODE=instrumentation -DCMAKE_BUILD_TYPE=RelWithDebInfo -Bbuild /spicy
           ninja -C build spicy-rt-parsing-benchmark hilti-rt-benchmark

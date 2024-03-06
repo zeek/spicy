@@ -3,10 +3,12 @@
 #include "hilti/compiler/detail/optimizer.h"
 
 #include <algorithm>
+#include <memory>
 #include <numeric>
 #include <optional>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <utility>
 
 #include <hilti/rt/util.h>
@@ -16,7 +18,11 @@
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
+#include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/module.h>
+#include <hilti/ast/declarations/parameter.h>
+#include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/grouping.h>
 #include <hilti/ast/expressions/logical-and.h>
@@ -25,10 +31,13 @@
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/ternary.h>
+#include <hilti/ast/function.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/operators/reference.h>
 #include <hilti/ast/scope-lookup.h>
+#include <hilti/ast/statement.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/while.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
@@ -39,10 +48,14 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
+#include <hilti/compiler/detail/cfg.h>
 
 namespace hilti {
 
 namespace logging::debug {
+inline const DebugStream CfgInitial("cfg-initial");
+inline const DebugStream CfgFinal("cfg-final");
+
 inline const DebugStream Optimizer("optimizer");
 inline const DebugStream OptimizerCollect("optimizer-collect");
 } // namespace logging::debug
@@ -90,6 +103,30 @@ struct CollectUsesPass : public hilti::visitor::PreOrder {
     void operator()(expression::ResolvedOperator* node) override { result[&node->operator_()].push_back(node); }
 };
 
+// Helper function to output control flow graphs for statements.
+static std::string dataflowDot(const hilti::Statement& stmt) {
+    auto cfg = detail::cfg::CFG(&stmt);
+    return cfg.dot();
+}
+
+// Helper class to print CFGs to a debug stream.
+class PrintCfgVisitor : public visitor::PreOrder {
+    logging::DebugStream _stream;
+
+public:
+    PrintCfgVisitor(logging::DebugStream stream) : _stream(std::move(stream)) {}
+
+    void operator()(declaration::Function* f) override {
+        if ( auto* body = f->function()->body() )
+            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(*body)));
+    }
+
+    void operator()(declaration::Module* m) override {
+        if ( auto* body = m->statements() )
+            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(*body)));
+    }
+};
+
 class OptimizerVisitor : public visitor::MutatingPreOrder {
 public:
     using visitor::MutatingPreOrder::MutatingPreOrder;
@@ -108,7 +145,7 @@ public:
     virtual bool prune_uses(Node*) { return false; }
     virtual bool prune_decls(Node*) { return false; }
 
-    void operator()(declaration::Module* n) final { _current_module = n; }
+    void operator()(declaration::Module* n) override { _current_module = n; }
 
     const OperatorUses::mapped_type* uses(const Operator* x) const {
         if ( ! _op_uses->contains(x) )
@@ -1884,8 +1921,200 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 };
 
+struct FunctionBodyVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+
+    std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG& cfg) const;
+
+    std::vector<Node*> unreachableStatements(const detail::cfg::CFG& cfg) const;
+
+    bool prune_uses(Node* node) override {
+        visitor::visit(*this, node);
+        return isModified();
+    }
+
+    // Remove a given AST node from both the AST and the CFG.
+    bool remove(detail::cfg::CFG& cfg, Node* data, const std::string& msg = {}) {
+        assert(data);
+
+        Node* node = nullptr;
+
+        if ( data->isA<Statement>() && data->hasParent() )
+            node = data;
+
+        else if ( data->isA<Expression>() ) {
+            auto* p = data->parent();
+
+            while ( p && ! p->isA<Statement>() )
+                p = p->parent();
+
+            if ( p && p->hasParent() )
+                node = p;
+        }
+
+        if ( node ) {
+            // Edit AST.
+            removeNode(node, msg);
+
+            // Make equivalent edit to control flow graph.
+            cfg.removeNode(node);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void visit_node(Node* n) {
+        while ( true ) {
+            bool modified = false;
+
+            // TODO(bbannier): In principal we should be able to reuse the
+            // flow through optimizations, but this currently fails due to
+            // edits not correctly changing the flow.
+            auto cfg = detail::cfg::CFG(n);
+
+            for ( auto* x : unreachableStatements(cfg) )
+                modified |= remove(cfg, x, "statement result unused");
+
+            if ( modified )
+                break;
+
+            auto unreachable_nodes = unreachableNodes(cfg);
+
+            // Remove unreachable control flow branches.
+            // NOLINTNEXTLINE(bugprone-nondeterministic-pointer-iteration-order)
+            for ( auto* n : unreachable_nodes )
+                modified |= remove(cfg, n, "unreachable code");
+
+            if ( ! modified )
+                break;
+        }
+    }
+
+    void operator()(declaration::Function* f) override {
+        if ( auto* body = f->function()->body() )
+            visit_node(body);
+    }
+
+    void operator()(declaration::Module* m) override {
+        OptimizerVisitor::operator()(m);
+
+        if ( auto* body = m->statements() )
+            visit_node(body);
+    }
+};
+
+std::vector<Node*> FunctionBodyVisitor::unreachableStatements(const detail::cfg::CFG& cfg) const {
+    // This can only be called after dataflow information has been populated.
+    const auto& dataflow = cfg.dataflow();
+    assert(! dataflow.empty());
+
+    std::map<detail::cfg::GraphNode, uint64_t> uses;
+
+    // Loop over all nodes.
+    for ( const auto& [n, transfer] : dataflow ) {
+        // Check whether we want to declare any of the statements used. We currently do this for
+        // - `inout` parameters since their result is can be seen after the function has ended,
+        // - globals since they could be used elsewhere without us being able to see it,
+        // - `self` expression since they live on beyond the current block.
+        if ( n->isA<detail::cfg::End>() ) {
+            assert(dataflow.contains(n));
+            // If we saw an operation an `inout` parameter at the end of the flow, mark the parameter as used.
+            // For each incoming statement ...
+            for ( const auto& [decl, stmts] : transfer.in ) {
+                // If the statement generated an update to the value ...
+                bool mark_used = false;
+
+                if ( decl->isA<declaration::GlobalVariable>() )
+                    mark_used = true;
+
+                else if ( auto* p = decl->tryAs<declaration::Parameter>();
+                          p && (p->kind() == parameter::Kind::InOut || p->type()->type()->isAliasingType()) )
+                    mark_used = true;
+
+                else if ( const auto* expr = decl->tryAs<declaration::Expression>() ) {
+                    if ( auto* keyword = expr->expression()->tryAs<expression::Keyword>();
+                         keyword && keyword->kind() == expression::keyword::Kind::Self )
+                        mark_used = true;
+                }
+
+                if ( mark_used ) {
+                    for ( const auto& stmt : stmts )
+                        ++uses[stmt];
+                }
+            }
+        }
+
+        if ( ! n->isA<detail::cfg::MetaNode>() )
+            (void)uses[n]; // Record statement if not already known.
+
+        // For each update to a declaration generated by a node ...
+        for ( const auto& [decl, stmt] : transfer.gen ) {
+            // Search for nodes using the statement.
+            for ( const auto& [n_, t] : dataflow ) {
+                // Skip the original node.
+                if ( n_ == n )
+                    continue;
+
+                // If the original node was a declaration and we wrote an update mark the declaration as used.
+                if ( t.write.contains(decl) ) {
+                    auto* decl_stmt = decl->parent();
+                    assert(decl_stmt);
+                    if ( const auto* node = cfg.graph().getNode(decl_stmt->identity()) )
+                        ++uses[*node];
+                }
+
+                // Else filter by nodes reading the decl.
+                if ( ! t.read.contains(decl) )
+                    continue;
+
+                // If an update is read and in the `in` set of a node it is used.
+
+                // Need to introduce an extra binding since captured structured
+                // bindings are only available with C++20.
+                const auto& stmt_ = stmt;
+                auto it = std::ranges::find_if(t.in, [&](const auto& in) {
+                    const auto& [decl, stmts] = in;
+                    return stmts.count(stmt_);
+                });
+                if ( it != t.in.end() )
+                    ++uses[n];
+            }
+        }
+    }
+
+    std::vector<Node*> result;
+    for ( const auto& [n, uses] : uses ) {
+        if ( uses > 0 )
+            continue;
+
+        if ( dataflow.at(n).keep )
+            continue;
+
+        result.push_back(n.value());
+    }
+
+    return result;
+}
+
+std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cfg::CFG& cfg) const {
+    std::unordered_set<Node*> result;
+    for ( const auto& [id, n] : cfg.graph().nodes() ) {
+        if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg.graph().neighborsUpstream(id).empty() )
+            result.insert(n.value());
+    }
+
+    return result;
+}
+
 void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
+
+    if ( logger().isEnabled(logging::debug::CfgInitial) ) {
+        auto v = PrintCfgVisitor(logging::debug::CfgInitial);
+        visitor::visit(v, root);
+    }
 
     const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");
     const auto& passes_ =
@@ -1905,66 +2134,121 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     CollectUsesPass collect_uses{};
     const auto& op_uses = collect_uses.collect(root);
 
-    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder, const OperatorUses* op_uses)>
-        creators = {
-            {"constant_folding",
-             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                 return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-             }},
-            {"functions",
-             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                 return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-             }},
-            {"members",
-             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                 return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-             }},
-            {"types",
-             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                 return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-             }},
-            {"remove_unused_params",
-             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                 return std::make_unique<FunctionParamVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-             }},
-        };
+    using PassCreator = std::unique_ptr<OptimizerVisitor> (*)(Builder* builder, const OperatorUses* op_uses);
+    using Phase = size_t;
+
+    const std::map<std::string, std::pair<PassCreator, Phase>> creators = {
+        // Passes which mainly edit out code generation artifacts run in the first phase.
+        {"constant_folding",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+          },
+          1}},
+        {"functions",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+          },
+          1}},
+        {"members",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+          },
+          1}},
+        {"types",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+          },
+          1}},
+
+        // Passes which more closely inspect the generated code or which are more general run in the second phase.
+        {"remove_unused_params",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<FunctionParamVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+          },
+          2}},
+        {"cfg",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer);
+          },
+          2}},
+    };
+
+    // TODO(bbannier): Control-flow based optimizations are not ready for
+    // prime-time yet and behind a feature guard.
+    bool has_cfg = rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG") == "1";
 
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {
         passes = std::set<std::string>();
         for ( const auto& [pass, _] : creators )
-            passes->insert(pass);
+            if ( pass != "cfg" )
+                passes->insert(pass);
+
+        if ( has_cfg )
+            passes->insert("cfg");
     }
 
+    Phase max_phase{};
+    for ( const auto& [_, x] : creators )
+        max_phase = std::max(x.second, max_phase);
+
     size_t round = 0;
+
+    // Run the phases in order in a loop until we reach a fixpoint.
     while ( true ) {
         bool modified = false;
 
-        // NOTE: We do not use `util::transform` here to guarantee a consistent order of the visitors.
-        std::vector<std::unique_ptr<OptimizerVisitor>> vs;
-        vs.reserve(passes->size());
-        for ( const auto& pass : *passes )
-            if ( creators.contains(pass) )
-                vs.push_back(creators.at(pass)(builder, &op_uses));
+        // Run the phases in order.
+        for ( Phase phase = 0; phase <= max_phase; ++phase ) {
+            // Run all passes in a phase until we reach a fixpoint for the phase.
+            while ( true ) {
+                modified = false;
 
-        for ( auto& v : vs ) {
-            HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("processing AST, round=%d", round));
-            v->collect(root);
-            modified = v->prune_uses(root) || modified;
-            modified = v->prune_decls(root) || modified;
-        };
+                // Filter out passes to run in this phase.
+                // NOTE: We do not use `util::transform` here to guarantee a consistent order of the visitors.
+                std::vector<std::unique_ptr<OptimizerVisitor>> vs;
+                vs.reserve(passes->size());
+                for ( const auto& pass : *passes ) {
+                    if ( creators.contains(pass) ) {
+                        auto&& [create, phase_] = creators.at(pass);
+
+                        if ( phase_ != phase )
+                            continue;
+
+                        vs.push_back(create(builder, &op_uses));
+                    }
+                }
+
+                for ( auto& v : vs ) {
+                    HILTI_DEBUG(logging::debug::OptimizerCollect,
+                                util::fmt("processing AST, round=%d, phase = %d", round, phase));
+                    v->collect(root);
+                    modified = v->prune_uses(root) || modified;
+                    modified = v->prune_decls(root) || modified;
+                };
+
+                if ( ! modified )
+                    break;
+
+                ++round;
+            }
+
+            // Clean up simplified code with peephole optimizer.
+            while ( true ) {
+                auto v = PeepholeOptimizer(builder, hilti::logging::debug::Optimizer);
+                visitor::visit(v, root);
+                if ( ! v.isModified() )
+                    break;
+            }
+        }
 
         if ( ! modified )
             break;
-
-        ++round;
     }
 
-    while ( true ) {
-        auto v = PeepholeOptimizer(builder, hilti::logging::debug::Optimizer);
+    if ( logger().isEnabled(logging::debug::CfgFinal) ) {
+        auto v = PrintCfgVisitor(logging::debug::CfgFinal);
         visitor::visit(v, root);
-        if ( ! v.isModified() )
-            break;
     }
 
     // Clear cached information which might become outdated due to edits.

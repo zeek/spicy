@@ -1,0 +1,38 @@
+# @TEST-EXEC: hiltic -p -o /dev/null -D cfg-initial %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo {
+
+type E = exception;
+
+function void fn1() {
+    try {
+        1;
+    } catch {
+        2;
+    }
+}
+
+function void fn2() {
+    try {
+        1;
+    } catch (E e) {
+        2;
+    } catch (E e) {
+        3;
+    }
+}
+
+function void fn3() {
+    try {
+        1;
+        throw E("");
+        11;
+        # FIXME(bbannier): above node seems to flow into a mix node, check where that is coming from.
+    } catch (E e) {
+        2;
+    } catch (E e) {
+        3;
+    }
+}
+}

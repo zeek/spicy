@@ -230,7 +230,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     {
         hilti::debugIndent("spicy");
-        local iterator<stream> __begin = begin(__cur);
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
@@ -257,7 +256,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     {
         hilti::debugIndent("spicy");
-        local iterator<stream> __begin = begin(__cur);
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
