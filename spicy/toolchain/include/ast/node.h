@@ -14,7 +14,8 @@
     __HILTI_NODE_0(spicy, CLASS, override_)                                                                            \
                                                                                                                        \
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
-        if ( auto sv = dynamic_cast<spicy::visitor::Dispatcher*>(&v) ) {                                               \
+        if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
+            auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
             (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
             (*sv)(this);                                                                                               \
         }                                                                                                              \
@@ -28,7 +29,8 @@
     __HILTI_NODE_1(spicy, CLASS, BASE, override_)                                                                      \
                                                                                                                        \
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
-        if ( auto sv = dynamic_cast<spicy::visitor::Dispatcher*>(&v) ) {                                               \
+        if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
+            auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
             (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
             (*sv)(static_cast<BASE*>(this));                                                                           \
             (*sv)(this);                                                                                               \
@@ -45,7 +47,8 @@
                                                                                                                        \
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
         using namespace hilti;                                                                                         \
-        if ( auto sv = dynamic_cast<spicy::visitor::Dispatcher*>(&v) ) {                                               \
+        if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
+            auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
             (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
             (*sv)(static_cast<BASE1*>(this));                                                                          \
             (*sv)(static_cast<BASE2*>(this));                                                                          \

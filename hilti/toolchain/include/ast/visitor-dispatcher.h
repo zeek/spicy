@@ -8,6 +8,27 @@ namespace hilti::visitor {
 
 class Dispatcher {
 public:
+    /** Numerical tag identifying a type of dispatcher. */
+    using Tag = unsigned int;
+
+    /** Tag for the HILTI dispatcher. */
+    static constexpr unsigned int HILTI = 1;
+
+    /**
+     * Constructor.
+     *
+     * @param tag tag identifying the type of dispatcher; derived classes can
+     * pick a value of their choice
+     */
+    Dispatcher(Tag tag = HILTI) : _tag(tag) {}
+
+    /**
+     * Returns a tag identifying the dispatcher. By default, this returns
+     * `dispatcher::HILTI`. A derived class can have it return a different tag
+     * of its choice by passing the desired value into the constructor.
+     */
+    unsigned int dispatcherTag() const { return _tag; }
+
     virtual void operator()(hilti::ASTRoot*) {}
     virtual void operator()(hilti::Attribute*) {}
     virtual void operator()(hilti::AttributeSet*) {}
@@ -511,6 +532,9 @@ public:
     virtual void operator()(hilti::type::stream::View*) {}
     virtual void operator()(hilti::type::tuple::Element*) {}
     virtual void operator()(hilti::type::vector::Iterator*) {}
+
+private:
+    const Tag _tag = HILTI;
 };
 
 } // namespace hilti::visitor

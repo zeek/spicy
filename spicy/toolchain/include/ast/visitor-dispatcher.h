@@ -10,6 +10,11 @@ namespace spicy::visitor {
 
 class Dispatcher : public hilti::visitor::Dispatcher {
 public:
+    /** Tag for the Spicy dispatcher. */
+    static constexpr unsigned int Spicy = 100;
+
+    Dispatcher() : hilti::visitor::Dispatcher(Spicy) {}
+
     using hilti::visitor::Dispatcher::operator();
 
     virtual void operator()(spicy::operator_::unit::MemberCall*) {}

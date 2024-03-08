@@ -32,9 +32,9 @@ public:
     }
 
     // Accelerated accessors for the first three operands, returning raw pointers.
-    const Expression* op0() const { return dynamic_cast<Expression*>(children()[1].get()); }
-    const Expression* op1() const { return dynamic_cast<Expression*>(children()[2].get()); }
-    const Expression* op2() const { return dynamic_cast<Expression*>(children()[3].get()); }
+    const Expression* op0() const { return static_cast<Expression*>(children()[1].get()); }
+    const Expression* op1() const { return static_cast<Expression*>(children()[2].get()); }
+    const Expression* op2() const { return static_cast<Expression*>(children()[3].get()); }
 
     /** Implements interface for use with `OverloadRegistry`. */
     hilti::node::Range<Expression> operands() const { return children<Expression>(1, {}); }
