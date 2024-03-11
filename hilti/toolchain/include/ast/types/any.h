@@ -12,7 +12,7 @@ namespace hilti::type {
 /** AST node for an `any` type. */
 class Any : public UnqualifiedType {
 public:
-    static auto create(ASTContext* ctx, Meta m = Meta()) { return std::shared_ptr<Any>(new Any(ctx, std::move(m))); }
+    static auto create(ASTContext* ctx, Meta m = Meta()) { return ctx->make<Any>(ctx, std::move(m)); }
 
     std::string_view typeClass() const final { return "any"; }
 

@@ -17,9 +17,7 @@ public:
     bool isAllocable() const final { return true; }
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<RegExp>(new RegExp(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<RegExp>(ctx, std::move(meta)); }
 
 protected:
     RegExp(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"regexp"}, std::move(meta)) {}

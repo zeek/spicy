@@ -86,8 +86,6 @@ class Parameter;
 class Property;
 class Type;
 
-using ParameterPtr = std::shared_ptr<Parameter>;
-
 } // namespace declaration
 
 namespace expression {
@@ -710,7 +708,6 @@ class Iterator;
 
 namespace function {
 using Parameter = declaration::Parameter;
-using ParameterPtr = declaration::ParameterPtr;
 } // namespace function
 
 namespace tuple {
@@ -727,29 +724,12 @@ class Operand;
 
 } // namespace type
 
-using ASTRootPtr = std::shared_ptr<ASTRoot>;
-using AttributePtr = std::shared_ptr<Attribute>;
-using AttributeSetPtr = std::shared_ptr<AttributeSet>;
-using CtorPtr = std::shared_ptr<Ctor>;
-using DeclarationPtr = std::shared_ptr<Declaration>;
-using ExpressionPtr = std::shared_ptr<Expression>;
-using FunctionPtr = std::shared_ptr<Function>;
-using ModulePtr = std::shared_ptr<declaration::Module>;
-using NodePtr = std::shared_ptr<Node>;
-using StatementPtr = std::shared_ptr<Statement>;
-using UnqualifiedTypePtr = std::shared_ptr<UnqualifiedType>;
-using QualifiedTypePtr = std::shared_ptr<QualifiedType>;
-using ResolvedOperatorPtr = std::shared_ptr<expression::ResolvedOperator>;
-using UnresolvedOperatorPtr = std::shared_ptr<expression::UnresolvedOperator>;
-using OperandListPtr = std::shared_ptr<type::OperandList>;
-using OperandPtr = std::shared_ptr<type::operand_list::Operand>;
-
-using Attributes = std::vector<AttributePtr>;
-using Declarations = std::vector<DeclarationPtr>;
-using Expressions = std::vector<ExpressionPtr>;
-using Statements = std::vector<StatementPtr>;
-using QualifiedTypes = std::vector<QualifiedTypePtr>;
-using UnqualifiedTypes = std::vector<UnqualifiedTypePtr>;
+using Attributes = std::vector<Attribute*>;
+using Declarations = std::vector<Declaration*>;
+using Expressions = std::vector<Expression*>;
+using Statements = std::vector<Statement*>;
+using QualifiedTypes = std::vector<QualifiedType*>;
+using UnqualifiedTypes = std::vector<UnqualifiedType*>;
 
 class Builder;
 using BuilderPtr = std::shared_ptr<Builder>;

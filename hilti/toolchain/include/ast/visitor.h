@@ -20,10 +20,10 @@ enum class Order { Pre, Post };
 template<Order order>
 class Iterator {
 public:
-    using value_type = NodePtr;
+    using value_type = Node*;
 
     Iterator() { _path.reserve(20); }
-    Iterator(const NodePtr& root, bool include_empty, std::string_view limit_to_tag)
+    Iterator(Node* root, bool include_empty, std::string_view limit_to_tag)
         : _include_empty(include_empty), _limit_to_tag(limit_to_tag) {
         _path.reserve(20);
         if ( root )
@@ -42,7 +42,7 @@ public:
         return *this;
     }
 
-    NodePtr operator*() const { return _current(); }
+    Node* operator*() const { return _current(); }
 
     Iterator& operator=(const Iterator& other) = default;
     Iterator& operator=(Iterator&& other) noexcept = default;
@@ -51,16 +51,16 @@ public:
 
 private:
     struct Location {
-        NodePtr node;
+        Node* node = nullptr;
         int child = -2;
 
-        Location(NodePtr n, int c) : node(std::move(n)), child(c) {}
+        Location(Node* n, int c) : node(n), child(c) {}
         auto operator==(const Location& other) const {
             return std::pair(node, child) == std::pair(other.node, other.child);
         }
     };
 
-    NodePtr _current() const {
+    Node* _current() const {
         if ( _path.empty() )
             throw std::runtime_error("invalid reference of visitor's iterator");
 
@@ -146,7 +146,7 @@ class Range {
 public:
     using iterator_t = Iterator<order>;
     using value_type = typename Iterator<order>::value_type;
-    Range(NodePtr root, std::string_view limit_to_tag) : _root(std::move(root)), _limit_to_tag(limit_to_tag) {}
+    Range(Node* root, std::string_view limit_to_tag) : _root(root), _limit_to_tag(limit_to_tag) {}
 
     auto begin(bool include_empty = false) {
         if constexpr ( order == Order::Pre )
@@ -158,7 +158,7 @@ public:
     auto end() { return iterator_t(); }
 
 private:
-    NodePtr _root;
+    Node* _root = nullptr;
     std::string_view _limit_to_tag;
 };
 
@@ -177,9 +177,6 @@ public:
 
     Visitor() = default;
     virtual ~Visitor() = default;
-
-    /** Execute matching dispatch methods for a single node.  */
-    void dispatch(const NodePtr& n) { return dispatch(n.get()); }
 
     virtual void dispatch(Node* n) {
         if ( n )
@@ -225,7 +222,7 @@ public:
      * @param new_ new node to replace it with
      * @param msg optional, additional debug message to add to log message
      */
-    void replaceNode(const Node* old, const NodePtr& new_, const std::string& msg = "");
+    void replaceNode(Node* old, Node* new_, const std::string& msg = "");
 
     /**
      * Records that an AST change has been performed.
@@ -242,7 +239,7 @@ public:
      * @param changed node reflecting the change; it'll be rendered into the debug message, but not otherwise used
      * @param msg message being added to debug log message
      */
-    void recordChange(const Node* old, const NodePtr& changed, const std::string& msg = "");
+    void recordChange(const Node* old, Node* changed, const std::string& msg = "");
 
     /**
      * Records that an AST change has been performed.
@@ -325,14 +322,14 @@ using MutatingPostOrder = visitor::MutatingVisitor<visitor::Order::Post, visitor
 using RangePostOrder = visitor::Range<visitor::Order::Post>;
 
 /** Return a range that iterates over AST, returning each node successively. */
-template<typename Visitor, typename NodePtr>
-auto range(Visitor&& visitor, NodePtr root, std::string_view limit_to_tag = {}) {
+template<typename Visitor, typename Node>
+auto range(Visitor&& visitor, Node* root, std::string_view limit_to_tag = {}) {
     return visitor::Range<std::remove_reference<Visitor>::type::Order_>(root, limit_to_tag);
 }
 
 /** Walks the AST recursively and calls dispatch for each node. */
-template<typename Visitor, typename NodePtr>
-auto visit(Visitor&& visitor, NodePtr root, std::string_view limit_to_tag = {}) {
+template<typename Visitor, typename Node>
+auto visit(Visitor&& visitor, Node* root, std::string_view limit_to_tag = {}) {
     for ( auto i : range(visitor, root, limit_to_tag) )
         visitor.dispatch(i);
 
@@ -340,8 +337,8 @@ auto visit(Visitor&& visitor, NodePtr root, std::string_view limit_to_tag = {}) 
 }
 
 /** Walks the AST recursively and calls dispatch for each node, then runs callback and returns its result. */
-template<typename Visitor, typename NodePtr, typename ResultFunc>
-auto visit(Visitor&& visitor, NodePtr root, std::string_view limit_to_tag, ResultFunc result) {
+template<typename Visitor, typename Node, typename ResultFunc>
+auto visit(Visitor&& visitor, Node* root, std::string_view limit_to_tag, ResultFunc result) {
     for ( auto i : range(visitor, root, limit_to_tag) )
         visitor.dispatch(i);
 
@@ -350,13 +347,13 @@ auto visit(Visitor&& visitor, NodePtr root, std::string_view limit_to_tag, Resul
 
 /** Dispatches a visitor for a single node. */
 template<typename Visitor>
-void dispatch(Visitor&& visitor, const NodePtr& n) {
+void dispatch(Visitor&& visitor, Node* n) {
     n->dispatch(visitor);
 }
 
 /** Dispatches a visitor for a single node, then runs a callback and returns its result. */
 template<typename Visitor, typename ResultFunc>
-auto dispatch(Visitor&& visitor, const NodePtr& node, ResultFunc result) {
+auto dispatch(Visitor&& visitor, Node* node, ResultFunc result) {
     node->dispatch(visitor);
     return result(visitor);
 }

@@ -9,7 +9,7 @@ using namespace hilti;
 
 type::bitfield::BitRange::~BitRange() = default;
 
-type::bitfield::BitRangePtr type::Bitfield::bits(const ID& id) const {
+type::bitfield::BitRange* type::Bitfield::bits(const ID& id) const {
     for ( const auto& b : bits(true) ) {
         if ( id == b->id() )
             return b;
@@ -31,7 +31,7 @@ std::optional<unsigned int> type::Bitfield::bitsIndex(const ID& id) const {
     return {};
 }
 
-CtorPtr type::Bitfield::ctorValue(ASTContext* ctx) {
+Ctor* type::Bitfield::ctorValue(ASTContext* ctx) {
     ctor::bitfield::BitRanges values;
 
     for ( const auto& b : bits() ) {

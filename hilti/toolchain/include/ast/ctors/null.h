@@ -13,11 +13,11 @@ namespace hilti::ctor {
 /** AST node for a `Null` ctor. */
 class Null : public Ctor {
 public:
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        return std::shared_ptr<Null>(
-            new Null(ctx, {QualifiedType::create(ctx, type::Null::create(ctx, meta), Constness::Const)}, meta));
+        return ctx->make<Null>(ctx, {QualifiedType::create(ctx, type::Null::create(ctx, meta), Constness::Const)},
+                               meta);
     }
 
 protected:

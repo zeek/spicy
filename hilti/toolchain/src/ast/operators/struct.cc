@@ -13,48 +13,41 @@
 using namespace hilti;
 using namespace hilti::operator_;
 
-hilti::struct_::MemberCall::MemberCall(const std::shared_ptr<declaration::Field>& fdecl)
-    : Operator(fdecl->meta(), false), _fdecl(fdecl) {}
+hilti::struct_::MemberCall::MemberCall(declaration::Field* fdecl) : Operator(fdecl->meta(), false), _fdecl(fdecl) {}
 
 hilti::struct_::MemberCall::~MemberCall() {}
 
 operator_::Signature hilti::struct_::MemberCall::signature(Builder* builder) const {
-    auto fdecl = _fdecl.lock();
-    assert(fdecl);
-
-    auto ftype = fdecl->type()->type()->as<type::Function>();
-    auto stype = fdecl->parent(1)->as<type::Struct>();
+    auto ftype = _fdecl->type()->type()->as<type::Function>();
+    auto stype = _fdecl->parent(1)->as<type::Struct>();
     auto params = type::OperandList::fromParameters(builder->context(), ftype->parameters());
     auto result = ftype->result();
 
     return Signature{
         .kind = Kind::MemberCall,
         .self = {parameter::Kind::InOut, nullptr, "", stype},
-        .op1 = {parameter::Kind::In, builder->typeMember(ID(fdecl->id()))},
+        .op1 = {parameter::Kind::In, builder->typeMember(ID(_fdecl->id()))},
         .op2 = {parameter::Kind::In, params},
         .result = {result->constness(), result->type()},
         .skip_doc = true,
     };
 }
 
-Result<ResolvedOperatorPtr> hilti::struct_::MemberCall::instantiate(Builder* builder, Expressions operands,
-                                                                    const Meta& meta) const {
-    auto fdecl = _fdecl.lock();
-    assert(fdecl);
-
+Result<expression::ResolvedOperator*> hilti::struct_::MemberCall::instantiate(Builder* builder, Expressions operands,
+                                                                              Meta meta) const {
     auto callee = operands[0];
     auto member = operands[1];
     auto args = operands[2];
-    auto result = fdecl->type()->type()->as<type::Function>()->result();
+    auto result = _fdecl->type()->type()->as<type::Function>()->result();
 
-    return {operator_::struct_::MemberCall::create(builder->context(), this, result,
-                                                   {std::move(callee), std::move(member), std::move(args)}, meta)};
+    return {operator_::struct_::MemberCall::create(builder->context(), this, result, {callee, member, args},
+                                                   std::move(meta))};
 }
 
 namespace {
 namespace struct_ {
 
-QualifiedTypePtr _itemType(Builder* builder, const Expressions& operands) {
+QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
     auto stype = operands[0]->type()->type()->tryAs<type::Struct>();
     if ( ! stype )
         return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
@@ -129,7 +122,7 @@ triggers an exception.
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return _itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
@@ -157,7 +150,7 @@ triggers an exception.
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return _itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
@@ -187,7 +180,7 @@ exception differently).
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return _itemType(builder, operands);
     }
 

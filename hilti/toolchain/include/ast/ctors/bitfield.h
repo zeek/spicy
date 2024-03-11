@@ -34,15 +34,15 @@ public:
         return Node::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const ID& id, const ExpressionPtr& expr, const Meta& meta = Meta()) {
-        return std::shared_ptr<BitRange>(new BitRange(ctx, {expr}, id, meta));
+    static auto create(ASTContext* ctx, const ID& id, Expression* expr, Meta meta = Meta()) {
+        return ctx->make<BitRange>(ctx, {expr}, id, std::move(meta));
     }
 
 protected:
     friend class type::Bitfield;
 
-    BitRange(ASTContext* ctx, Nodes children, ID id, const Meta& meta = Meta())
-        : Node(ctx, NodeTags, std::move(children), meta), _id(std::move(id)) {}
+    BitRange(ASTContext* ctx, Nodes children, ID id, Meta meta = Meta())
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)), _id(std::move(id)) {}
 
     HILTI_NODE_0(ctor::bitfield::BitRange, final);
 
@@ -50,8 +50,7 @@ private:
     ID _id;
 };
 
-using BitRangePtr = std::shared_ptr<BitRange>;
-using BitRanges = std::vector<BitRangePtr>;
+using BitRanges = std::vector<BitRange*>;
 
 } // namespace bitfield
 
@@ -65,7 +64,7 @@ public:
     auto btype() const { return type()->type()->as<type::Bitfield>(); }
 
     /** Returns a field initialized by the constructor by its ID. */
-    bitfield::BitRangePtr bits(const ID& id) const {
+    bitfield::BitRange* bits(const ID& id) const {
         for ( const auto& b : bits() ) {
             if ( b->id() == id )
                 return b;
@@ -74,11 +73,11 @@ public:
         return {};
     }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    static auto create(ASTContext* ctx, const ctor::bitfield::BitRanges& bits, QualifiedTypePtr type,
+    static auto create(ASTContext* ctx, const ctor::bitfield::BitRanges& bits, QualifiedType* type,
                        const Meta& m = Meta()) {
-        return std::shared_ptr<Bitfield>(new Bitfield(ctx, node::flatten(std::move(type), bits), m));
+        return ctx->make<Bitfield>(ctx, node::flatten(type, bits), m);
     }
 
 protected:

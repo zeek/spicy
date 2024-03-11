@@ -20,8 +20,8 @@ bool spicy::type::unit::item::Switch::hasNoFields() const {
     return true;
 }
 
-spicy::type::unit::item::switch_::CasePtr spicy::type::unit::item::Switch::case_(
-    const type::unit::item::FieldPtr& field) const {
+spicy::type::unit::item::switch_::Case* spicy::type::unit::item::Switch::case_(
+    const type::unit::item::Field* field) const {
     for ( const auto& c : cases() ) {
         for ( const auto& i : c->items() ) {
             if ( i == field )

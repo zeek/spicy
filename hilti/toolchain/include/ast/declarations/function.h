@@ -9,10 +9,10 @@
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/type.h>
+#include <hilti/ast/function.h>
 #include <hilti/ast/node-range.h>
 #include <hilti/ast/operator-registry.h>
 #include <hilti/ast/operator.h>
-#include <hilti/ast/types/struct.h>
 #include <hilti/ast/types/type.h>
 
 namespace hilti::declaration {
@@ -40,10 +40,12 @@ public:
     auto linkedPrototypeIndex() const { return _linked_prototype_index; }
 
     void setOperator(const Operator* op) { _operator = op; }
+
     void setLinkedDeclarationIndex(ast::DeclarationIndex index) {
         assert(index);
         _linked_declaration_index = index;
     }
+
     void setLinkedPrototypeIndex(ast::DeclarationIndex index) {
         assert(index);
         _linked_prototype_index = index;
@@ -53,9 +55,9 @@ public:
 
     node::Properties properties() const final;
 
-    static std::shared_ptr<Function> create(ASTContext* ctx, const FunctionPtr& function,
-                                            declaration::Linkage linkage = Linkage::Private, const Meta& meta = {}) {
-        return std::shared_ptr<Function>(new Function(ctx, {function}, function->id(), linkage, meta));
+    static Function* create(ASTContext* ctx, hilti::Function* function, declaration::Linkage linkage = Linkage::Private,
+                            Meta meta = {}) {
+        return ctx->make<Function>(ctx, {function}, function->id(), linkage, std::move(meta));
     }
 
 protected:

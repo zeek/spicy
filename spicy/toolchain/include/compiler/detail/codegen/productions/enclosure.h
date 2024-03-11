@@ -32,7 +32,7 @@ public:
     bool isTerminal() const final { return false; };
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_child.get()}}; };
-    QualifiedTypePtr type() const final { return _child->type(); };
+    QualifiedType* type() const final { return _child->type(); };
 
     std::string dump() const override { return _child->symbol(); }
 

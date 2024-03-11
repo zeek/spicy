@@ -18,7 +18,7 @@ public:
     auto expressions() const { return children<hilti::Expression>(0, {}); }
 
     static auto create(ASTContext* ctx, Expressions expressions, Meta meta = {}) {
-        return std::shared_ptr<Print>(new Print(ctx, std::move(expressions), std::move(meta)));
+        return ctx->make<Print>(ctx, std::move(expressions), std::move(meta));
     }
 
 protected:

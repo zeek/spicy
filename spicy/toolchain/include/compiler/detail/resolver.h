@@ -7,6 +7,6 @@
 namespace spicy::detail::resolver {
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-bool resolve(Builder* builder, const NodePtr& root);
+bool resolve(Builder* builder, Node* root);
 
 } // namespace spicy::detail::resolver

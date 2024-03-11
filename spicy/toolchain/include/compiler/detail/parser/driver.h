@@ -56,7 +56,8 @@ namespace detail::parser {
  *
  * Returns: The parsed AST, or a corresponding error if parsing failed.
  */
-extern hilti::Result<ModulePtr> parseSource(Builder* builder, std::istream& in, const std::string& filename);
+extern hilti::Result<hilti::declaration::Module*> parseSource(Builder* builder, std::istream& in,
+                                                              const std::string& filename);
 
 /**
  * Parses a single Spicy expression into a corresponding AST.
@@ -66,8 +67,7 @@ extern hilti::Result<ModulePtr> parseSource(Builder* builder, std::istream& in, 
  *
  * Returns: The parsed expression, or a corresponding error if parsing failed.
  */
-extern hilti::Result<ExpressionPtr> parseExpression(Builder* builder, const std::string& expr,
-                                                    const Meta& meta = Meta());
+extern hilti::Result<Expression*> parseExpression(Builder* builder, const std::string& expr, const Meta& meta = Meta());
 
 class Parser;
 class Scanner;
@@ -77,9 +77,8 @@ class Driver {
 public:
     Driver() : _preprocessor(spicy::configuration().preprocessor_constants) {}
 
-    hilti::Result<ModulePtr> parse(Builder* builder, std::istream& in, const std::string& filename);
-    hilti::Result<ExpressionPtr> parseExpression(Builder* builder, const std::string& expression,
-                                                 const Meta& m = Meta());
+    hilti::Result<hilti::declaration::Module*> parse(Builder* builder, std::istream& in, const std::string& filename);
+    hilti::Result<Expression*> parseExpression(Builder* builder, const std::string& expression, const Meta& m = Meta());
 
     Scanner* scanner() const { return _scanner; }
     Parser* parser() const { return _parser; }
@@ -100,8 +99,8 @@ public:
     void disableHookIDMode();
     void enableNewKeywordMode();
     void disableNewKeywordMode();
-    void setDestinationModule(const ModulePtr& m) { _module = m; }
-    void setDestinationExpression(const ExpressionPtr& e) { _expression = e; }
+    void setDestinationModule(hilti::declaration::Module* m) { _module = m; }
+    void setDestinationExpression(Expression* e) { _expression = e; }
     int nextToken();
     void processPreprocessorLine(const std::string_view& directive, const std::string_view& expression, const Meta& m);
 
@@ -115,8 +114,8 @@ public:
 private:
     Builder* _builder = nullptr;
     hilti::DocString _doc;
-    ModulePtr _module;
-    ExpressionPtr _expression;
+    hilti::declaration::Module* _module = nullptr;
+    Expression* _expression = nullptr;
     std::string _filename;
     int _line{};
     Parser* _parser = nullptr;

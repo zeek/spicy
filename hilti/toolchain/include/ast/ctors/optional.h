@@ -16,38 +16,36 @@ namespace hilti::ctor {
 /** AST node for a `optional` ctor. */
 class Optional : public Ctor {
 public:
-    ExpressionPtr value() const { return child<Expression>(1); }
-    QualifiedTypePtr dereferencedType() const { return type()->type()->as<type::Optional>()->dereferencedType(); }
+    Expression* value() const { return child<Expression>(1); }
+    QualifiedType* dereferencedType() const { return type()->type()->as<type::Optional>()->dereferencedType(); }
 
-    QualifiedTypePtr type() const final {
-        if ( auto e = child(0) )
-            return child<QualifiedType>(0);
+    QualifiedType* type() const final {
+        if ( auto e = child<QualifiedType>(0) )
+            return e;
         else
             return child<Expression>(1)->type();
     }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     /** Constructs a set value. */
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
-        return std::shared_ptr<Optional>(
-            new Optional(ctx,
-                         {
-                             QualifiedType::create(ctx, type::Auto::create(ctx), Constness::Const),
-                             expr,
-                         },
-                         meta));
+    static auto create(ASTContext* ctx, Expression* expr, const Meta& meta = {}) {
+        return ctx->make<Optional>(ctx,
+                                   {
+                                       QualifiedType::create(ctx, type::Auto::create(ctx), Constness::Const),
+                                       expr,
+                                   },
+                                   meta);
     }
 
     /** Constructs an unset value of type `t`. */
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, const Meta& meta = {}) {
-        return std::shared_ptr<Optional>(
-            new Optional(ctx,
-                         {
-                             QualifiedType::create(ctx, type::Optional::create(ctx, type), Constness::Const),
-                             nullptr,
-                         },
-                         meta));
+    static auto create(ASTContext* ctx, QualifiedType* type, const Meta& meta = {}) {
+        return ctx->make<Optional>(ctx,
+                                   {
+                                       QualifiedType::create(ctx, type::Optional::create(ctx, type), Constness::Const),
+                                       nullptr,
+                                   },
+                                   meta);
     }
 
 protected:

@@ -17,9 +17,7 @@ public:
     bool isAllocable() const final { return true; }
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Network>(new Network(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Network>(ctx, std::move(meta)); }
 
 protected:
     Network(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"network"}, std::move(meta)) {}

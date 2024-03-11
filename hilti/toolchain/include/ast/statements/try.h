@@ -22,12 +22,12 @@ public:
     auto parameter() const { return child<declaration::Parameter>(0); }
     auto body() const { return child<hilti::Statement>(1); }
 
-    static auto create(ASTContext* ctx, const DeclarationPtr& param, const StatementPtr& body, Meta meta = {}) {
-        return std::shared_ptr<Catch>(new Catch(ctx, {param, body}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Declaration* param, Statement* body, Meta meta = {}) {
+        return ctx->make<Catch>(ctx, {param, body}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const StatementPtr& body, Meta meta = {}) {
-        return std::shared_ptr<Catch>(new Catch(ctx, {nullptr, body}, std::move(meta)));
+    static auto create(ASTContext* ctx, Statement* body, Meta meta = {}) {
+        return ctx->make<Catch>(ctx, {nullptr, body}, std::move(meta));
     }
 
 protected:
@@ -41,8 +41,7 @@ protected:
     HILTI_NODE_0(statement::try_::Catch, final);
 };
 
-using CatchPtr = std::shared_ptr<Catch>;
-using Catches = std::vector<CatchPtr>;
+using Catches = std::vector<Catch*>;
 
 } // namespace try_
 
@@ -52,10 +51,10 @@ public:
     auto body() const { return child<hilti::Statement>(0); }
     auto catches() const { return children<try_::Catch>(1, {}); }
 
-    void addCatch(ASTContext* ctx, const try_::CatchPtr& c) { addChild(ctx, c); }
+    void addCatch(ASTContext* ctx, try_::Catch* c) { addChild(ctx, c); }
 
-    static auto create(ASTContext* ctx, StatementPtr body, const try_::Catches& catches, Meta meta = {}) {
-        return std::shared_ptr<Try>(new Try(ctx, node::flatten(std::move(body), catches), std::move(meta)));
+    static auto create(ASTContext* ctx, Statement* body, const try_::Catches& catches, Meta meta = {}) {
+        return ctx->make<Try>(ctx, node::flatten(body, catches), std::move(meta));
     }
 
 protected:

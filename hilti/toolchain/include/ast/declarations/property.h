@@ -20,11 +20,11 @@ public:
     std::string_view displayName() const final { return "property"; }
 
     static auto create(ASTContext* ctx, ID id, Meta meta = {}) {
-        return std::shared_ptr<Property>(new Property(ctx, {}, std::move(id), std::move(meta)));
+        return ctx->make<Property>(ctx, {}, std::move(id), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, const ExpressionPtr& expr, Meta meta = {}) {
-        return std::shared_ptr<Property>(new Property(ctx, {expr}, std::move(id), std::move(meta)));
+    static auto create(ASTContext* ctx, ID id, hilti::Expression* expr, Meta meta = {}) {
+        return ctx->make<Property>(ctx, {expr}, std::move(id), std::move(meta));
     }
 
 protected:
@@ -34,7 +34,6 @@ protected:
     HILTI_NODE_1(declaration::Property, Declaration, final);
 };
 
-using PropertyPtr = std::shared_ptr<Property>;
 using Properties = std::vector<Property>;
 
 } // namespace hilti::declaration

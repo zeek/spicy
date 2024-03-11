@@ -19,7 +19,7 @@ public:
     bool isBuiltIn() const { return _builtin; }
 
     // resolves recursively
-    UnqualifiedTypePtr resolvedType() const {
+    UnqualifiedType* resolvedType() const {
         if ( ! _resolved_type_index )
             return nullptr;
 
@@ -31,7 +31,7 @@ public:
     }
 
     // resolves recursively
-    std::shared_ptr<declaration::Type> resolvedDeclaration() {
+    declaration::Type* resolvedDeclaration() {
         if ( _resolved_type_index )
             return resolvedType()->typeDeclaration();
         else
@@ -53,8 +53,8 @@ public:
         return UnqualifiedType::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const ID& id, const Meta& meta = {}) {
-        return std::shared_ptr<Name>(new Name(ctx, id, false, meta));
+    static auto create(ASTContext* ctx, const ID& id, Meta meta = {}) {
+        return ctx->make<Name>(ctx, id, false, std::move(meta));
     }
 
 protected:

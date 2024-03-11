@@ -23,17 +23,17 @@ using util::fmt;
 namespace {
 
 struct VisitorDeclaration : hilti::visitor::PreOrder {
-    VisitorDeclaration(CodeGen* cg, const QualifiedTypePtr& type, util::Cache<cxx::ID, cxx::declaration::Type>* cache)
+    VisitorDeclaration(CodeGen* cg, QualifiedType* type, util::Cache<cxx::ID, cxx::declaration::Type>* cache)
         : cg(cg), type(type), cache(cache) {}
 
     CodeGen* cg;
-    const QualifiedTypePtr& type;
+    QualifiedType* type = nullptr;
     util::Cache<cxx::ID, cxx::declaration::Type>* cache;
     std::list<cxx::declaration::Type> dependencies;
 
     std::optional<cxx::declaration::Type> result;
 
-    void addDependency(const QualifiedTypePtr& t) {
+    void addDependency(QualifiedType* t) {
         for ( auto&& t : cg->typeDependencies(t) )
             dependencies.push_back(std::move(t));
     }
@@ -333,8 +333,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
         // We declare the full enum type as part of the forward declarations block, that makes sure it's always fully
         // available. This is e.g., needed so we can set default values for vectors of enums.
         auto id = cxx::ID(scope, sid);
-        auto labels = util::transform(n->labels(),
-                                      [](auto l) { return std::make_pair(cxx::ID(l.get()->id()), l.get()->value()); });
+        auto labels = util::transform(n->labels(), [](auto l) { return std::make_pair(cxx::ID(l->id()), l->value()); });
         auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
         auto decl = cxx::declaration::Type{id, t, {}, true, false, true};
         dependencies.push_back(decl);
@@ -376,12 +375,11 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
 };
 
 struct VisitorStorage : hilti::visitor::PreOrder {
-    VisitorStorage(CodeGen* cg, const QualifiedTypePtr& type, util::Cache<cxx::ID, CxxTypes>* cache,
-                   codegen::TypeUsage usage)
+    VisitorStorage(CodeGen* cg, QualifiedType* type, util::Cache<cxx::ID, CxxTypes>* cache, codegen::TypeUsage usage)
         : cg(cg), type(type), cache(cache), usage(usage) {}
 
     CodeGen* cg;
-    const QualifiedTypePtr& type;
+    QualifiedType* type = nullptr;
     util::Cache<cxx::ID, CxxTypes>* cache;
     codegen::TypeUsage usage;
 
@@ -426,10 +424,10 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         auto id = cxx::ID(scope, sid);
 
         // Add tailored to_string() function.
-        auto cases = util::transform(n->uniqueLabels(), [&](const auto& l) {
+        auto cases = util::transform(n->uniqueLabels(), [&](auto l) {
             auto b = cxx::Block();
-            b.addReturn(fmt("\"%s::%s\"", tid.local(), l.get()->id()));
-            return std::make_pair(cxx::Expression(cxx::ID(id, l.get()->id())), std::move(b));
+            b.addReturn(fmt("\"%s::%s\"", tid.local(), l->id()));
+            return std::make_pair(cxx::Expression(cxx::ID(id, l->id())), std::move(b));
         });
 
         auto default_ = cxx::Block();
@@ -843,10 +841,10 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder {
 
 // Visitor creaating dynamic type information instances for types that do not provide predefined static ones.
 struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
-    VisitorTypeInfoDynamic(CodeGen* cg, const QualifiedTypePtr& type) : cg(cg), type(type) {}
+    VisitorTypeInfoDynamic(CodeGen* cg, QualifiedType* type) : cg(cg), type(type) {}
 
     CodeGen* cg;
-    const QualifiedTypePtr& type;
+    QualifiedType* type = nullptr;
 
     std::optional<cxx::Expression> result;
 
@@ -883,8 +881,6 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
     void operator()(type::Map* n) final {
         auto ktype = cg->compile(n->keyType(), codegen::TypeUsage::Storage);
         auto vtype = cg->compile(n->elementType(), codegen::TypeUsage::Storage);
-        auto deref_type =
-            cg->builder()->qualifiedType(cg->builder()->typeTuple({n->keyType(), n->elementType()}), Constness::Const);
         result = fmt("::hilti::rt::type_info::Map(%s, %s, ::hilti::rt::type_info::Map::accessor<%s, %s>())",
                      cg->typeInfo(n->keyType()), cg->typeInfo(n->elementType()),
                      cg->compile(n->keyType(), codegen::TypeUsage::Storage),
@@ -926,7 +922,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
         std::vector<std::string> fields;
 
         for ( const auto& f : n->fields() ) {
-            if ( auto ft = f->type()->type()->tryAs<type::Function>() )
+            if ( f->type()->type()->isA<type::Function>() )
                 continue;
 
             if ( f->isStatic() || f->isNoEmit() )
@@ -1030,7 +1026,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
 } // anonymous namespace
 
-cxx::Type CodeGen::compile(const QualifiedTypePtr& t, codegen::TypeUsage usage) {
+cxx::Type CodeGen::compile(QualifiedType* t, codegen::TypeUsage usage) {
     auto v = VisitorStorage(this, t, &_cache_types_storage, usage);
     auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; });
     if ( ! x ) {
@@ -1120,7 +1116,7 @@ cxx::Type CodeGen::compile(const QualifiedTypePtr& t, codegen::TypeUsage usage) 
     }
 }
 
-std::optional<cxx::Expression> CodeGen::typeDefaultValue(const hilti::QualifiedTypePtr& t) {
+std::optional<cxx::Expression> CodeGen::typeDefaultValue(hilti::QualifiedType* t) {
     auto v = VisitorStorage(this, t, &_cache_types_storage, codegen::TypeUsage::None);
     auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; });
     if ( ! x ) {
@@ -1131,13 +1127,13 @@ std::optional<cxx::Expression> CodeGen::typeDefaultValue(const hilti::QualifiedT
     return std::move(x->default_);
 }
 
-std::list<cxx::declaration::Type> CodeGen::typeDependencies(const QualifiedTypePtr& t) {
+std::list<cxx::declaration::Type> CodeGen::typeDependencies(QualifiedType* t) {
     VisitorDeclaration v(this, t, &_cache_types_declarations);
     v.dispatch(t->type());
     return v.dependencies;
 };
 
-std::optional<cxx::declaration::Type> CodeGen::typeDeclaration(const QualifiedTypePtr& t) {
+std::optional<cxx::declaration::Type> CodeGen::typeDeclaration(QualifiedType* t) {
     if ( t->type()->cxxID() )
         return {};
 
@@ -1145,7 +1141,7 @@ std::optional<cxx::declaration::Type> CodeGen::typeDeclaration(const QualifiedTy
     return hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; });
 };
 
-const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const QualifiedTypePtr& t) {
+const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
     std::stringstream display;
 
     if ( t->type()->typeID() )
@@ -1203,7 +1199,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(const QualifiedTypePtr& t) {
         });
 }
 
-cxx::Expression CodeGen::_makeLhs(cxx::Expression expr, const QualifiedTypePtr& type) {
+cxx::Expression CodeGen::_makeLhs(cxx::Expression expr, QualifiedType* type) {
     if ( expr.isLhs() )
         return expr;
 
@@ -1222,6 +1218,6 @@ cxx::Expression CodeGen::_makeLhs(cxx::Expression expr, const QualifiedTypePtr& 
     return result;
 }
 
-cxx::Expression CodeGen::typeInfo(const QualifiedTypePtr& t) { return _getOrCreateTypeInfo(t).reference; };
+cxx::Expression CodeGen::typeInfo(QualifiedType* t) { return _getOrCreateTypeInfo(t).reference; };
 
-void CodeGen::addTypeInfoDefinition(const QualifiedTypePtr& t) { _getOrCreateTypeInfo(t); }
+void CodeGen::addTypeInfoDefinition(QualifiedType* t) { _getOrCreateTypeInfo(t); }

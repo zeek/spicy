@@ -26,16 +26,16 @@ using hilti::util::fmt;
 namespace {
 
 struct FieldBuilder : public visitor::PreOrder {
-    FieldBuilder(CodeGen* cg, spicy::type::UnitPtr unit) : cg(cg), unit(std::move(unit)) {}
+    FieldBuilder(CodeGen* cg, spicy::type::Unit* unit) : cg(cg), unit(unit) {}
 
     auto context() { return cg->context(); }
     auto builder() { return cg->builder(); }
 
     CodeGen* cg;
-    const spicy::type::UnitPtr unit;
+    const spicy::type::Unit* unit = nullptr;
     Declarations fields;
 
-    void addField(hilti::declaration::FieldPtr f) { fields.emplace_back(std::move(f)); }
+    void addField(hilti::declaration::Field* f) { fields.emplace_back(f); }
 
     void operator()(spicy::type::unit::item::Field* f) final {
         // Create struct field.
@@ -55,7 +55,7 @@ struct FieldBuilder : public visitor::PreOrder {
             attrs->add(context(), builder()->attribute("&no-emit"));
 
         auto nf = builder()->declarationField(f->id(), f->itemType(), attrs, f->meta());
-        addField(std::move(nf));
+        addField(nf);
 
         // Add hooks.
         auto add_hook_declaration = [&](const auto& f, bool foreach) {
@@ -111,7 +111,7 @@ struct FieldBuilder : public visitor::PreOrder {
     }
 
     void operator()(spicy::type::unit::item::Variable* f) final {
-        AttributeSetPtr attrs = builder()->attributeSet();
+        AttributeSet* attrs = builder()->attributeSet();
         auto ftype = f->itemType();
 
         // Create struct field.
@@ -122,20 +122,20 @@ struct FieldBuilder : public visitor::PreOrder {
             attrs->add(context(), builder()->attribute("&optional"));
 
         auto nf = builder()->declarationField(f->id(), ftype, attrs, f->meta());
-        addField(std::move(nf));
+        addField(nf);
     }
 
     void operator()(spicy::type::unit::item::Sink* s) final {
         auto type = builder()->typeName("spicy_rt::Sink", s->meta());
         auto attrs = builder()->attributeSet(
-            {builder()->attribute("&default", builder()->new_(std::move(type))), builder()->attribute("&internal"),
+            {builder()->attribute("&default", builder()->new_(type)), builder()->attribute("&internal"),
              builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_sinks"))});
 
         auto nf =
             builder()->declarationField(s->id(),
                                         builder()->qualifiedType(builder()->typeSink(), hilti::Constness::Mutable),
                                         attrs, s->meta());
-        addField(std::move(nf));
+        addField(nf);
     }
 
     void operator()(spicy::type::unit::item::UnitHook* h) final {
@@ -149,25 +149,26 @@ struct FieldBuilder : public visitor::PreOrder {
 
 } // anonymous namespace
 
-UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_only) {
+UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     auto v = FieldBuilder(this, unit);
 
     for ( const auto& i : unit->items() )
         v.dispatch(i);
 
-    auto add_hook = [&](std::string id, hilti::declaration::Parameters params, const AttributeSetPtr& attributes = {}) {
+    auto add_hook = [&](std::string id, hilti::declaration::Parameters params, AttributeSet* attributes = {}) {
         if ( auto hook_decl =
                  compileHook(*unit, ID(std::move(id)), {}, false, false, std::move(params), {}, {}, unit->meta()) ) {
             auto nf = builder()->declarationField(hook_decl->id().local(), hook_decl->function()->type(), attributes,
                                                   unit->meta());
-            v.addField(std::move(nf));
+            v.addField(nf);
         }
     };
 
     if ( options().getAuxOption<bool>("spicy.track_offsets", false) ) {
         auto u64 = builder()->qualifiedType(builder()->typeUnsignedInteger(64), hilti::Constness::Const);
         auto opt_u64 = builder()->qualifiedType(builder()->typeOptional(u64), hilti::Constness::Const);
-        auto v_elem = builder()->qualifiedType(builder()->typeTuple({u64, opt_u64}), hilti::Constness::Const);
+        auto v_elem =
+            builder()->qualifiedType(builder()->typeTuple(QualifiedTypes{u64, opt_u64}), hilti::Constness::Const);
         auto opt_v_elem = builder()->qualifiedType(builder()->typeOptional(v_elem), hilti::Constness::Const);
         auto vec = builder()->qualifiedType(builder()->typeVector(opt_v_elem), hilti::Constness::Const);
 
@@ -182,7 +183,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
         auto f =
             builder()->declarationField(ID("__context"), builder()->qualifiedType(ftype, hilti::Constness::Mutable),
                                         attrs, unit->meta());
-        v.addField(std::move(f));
+        v.addField(f);
     }
 
     add_hook("0x25_init", {});
@@ -230,8 +231,8 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                     builder()->qualifiedType(builder()->typeOptional(iter), hilti::Constness::Mutable),
                                     builder()->attributeSet(
                                         {builder()->attribute("&internal"), attr_uses_random_access}));
-    v.addField(std::move(f1));
-    v.addField(std::move(f2));
+    v.addField(f1);
+    v.addField(f2);
 
     // Fields related to offset functionality.
     auto attr_uses_offset = builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_offset"));
@@ -240,7 +241,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                     builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                              hilti::Constness::Mutable),
                                     builder()->attributeSet({builder()->attribute("&internal"), attr_uses_offset}));
-    v.addField(std::move(f3));
+    v.addField(f3);
 
     {
         auto attrs = builder()->attributeSet(
@@ -261,7 +262,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                                                            hilti::Constness::Const),
                                                   attrs);
 
-        v.addField(std::move(parser));
+        v.addField(parser);
     }
 
     {
@@ -279,7 +280,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                                 builder()->qualifiedType(builder()->typeName("spicy_rt::SinkState"),
                                                                          hilti::Constness::Mutable),
                                                 attrs);
-        v.addField(std::move(sink));
+        v.addField(sink);
     }
 
     {
@@ -295,7 +296,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                        {builder()->attribute("&internal"),
                                         builder()->attribute("&needed-by-feature",
                                                              builder()->stringLiteral("supports_filters"))}));
-        v.addField(std::move(filters));
+        v.addField(filters);
     }
 
     if ( unit->isFilter() ) {
@@ -311,7 +312,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
                                        {builder()->attribute("&internal"),
                                         builder()->attribute("&needed-by-feature",
                                                              builder()->stringLiteral("is_filter"))}));
-        v.addField(std::move(forward));
+        v.addField(forward);
     }
 
     auto ft = _pb.parseMethodFunctionType({}, unit->meta());
@@ -329,18 +330,18 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
         auto function =
             builder()->function(ID("__convert"), ftype, body->block(), hilti::function::CallingConvention::Standard);
         auto convert_ = builder()->declarationField(ID("__convert"), function, {});
-        v.addField(std::move(convert_));
+        v.addField(convert_);
     }
 
     assert(unit->typeID());
     auto s = builder()->typeStruct(unit->parameters(), std::move(v.fields));
-    _pb.addParserMethods(s.get(), unit, declare_only);
+    _pb.addParserMethods(s, unit, declare_only);
 
     if ( ! declare_only ) {
         auto description = unit->propertyItem("%description");
         auto mime_types =
             hilti::node::transform(unit->propertyItems("%mime-type"), [](const auto& p) { return p->expression(); });
-        auto ports = hilti::node::transform(unit->propertyItems("%port"), [this](auto p) -> ExpressionPtr {
+        auto ports = hilti::node::transform(unit->propertyItems("%port"), [this](auto p) -> Expression* {
             auto dir = ID("spicy_rt::Direction::Both");
 
             if ( const auto& attrs = p->attributes() ) {
@@ -357,8 +358,8 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
             return builder()->tuple({p->expression(), builder()->expressionName(dir)});
         });
 
-        ExpressionPtr parse1 = builder()->null();
-        ExpressionPtr parse3 = builder()->null();
+        Expression* parse1 = builder()->null();
+        Expression* parse3 = builder()->null();
 
         // Only create `parse1` and `parse3` if the unit can be default constructed.
         const auto& parameters = unit->parameters();
@@ -367,7 +368,7 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
             parse3 = _pb.parseMethodExternalOverload3(*unit);
         }
 
-        ExpressionPtr context_new = builder()->null();
+        Expression* context_new = builder()->null();
 
         if ( unit->contextType() )
             context_new = _pb.contextNewFunction(*unit);
@@ -422,10 +423,9 @@ UnqualifiedTypePtr CodeGen::compileUnit(const type::UnitPtr& unit, bool declare_
 
         auto register_unit =
             builder()->function(ID(fmt("__register_%s_%s", hiltiModule()->uid(), unit->typeID().local())),
-                                builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const), {},
-                                std::move(block), hilti::type::function::Flavor::Standard,
-                                hilti::declaration::Linkage::Init);
-        addDeclaration(std::move(register_unit));
+                                builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const), {}, block,
+                                hilti::type::function::Flavor::Standard, hilti::declaration::Linkage::Init);
+        addDeclaration(register_unit);
     }
 
     return s;

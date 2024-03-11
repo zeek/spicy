@@ -9,6 +9,6 @@
 namespace spicy::detail::scope_builder {
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void build(Builder* builder, const ASTRootPtr& root);
+void build(Builder* builder, hilti::ASTRoot* root);
 
 } // namespace spicy::detail::scope_builder

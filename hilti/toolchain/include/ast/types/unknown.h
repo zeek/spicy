@@ -14,9 +14,7 @@ class Unknown : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "unknown"; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Unknown>(new Unknown(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Unknown>(ctx, std::move(meta)); }
 
 protected:
     Unknown(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {type::NeverMatch()}, std::move(meta)) {}

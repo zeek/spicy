@@ -20,7 +20,6 @@ namespace unit {
  * field constructor).
  */
 using Field = hilti::ctor::struct_::Field;
-using FieldPtr = hilti::ctor::struct_::FieldPtr;
 using Fields = hilti::ctor::struct_::Fields;
 } // namespace unit
 
@@ -34,7 +33,7 @@ public:
     auto utype() const { return child<type::Unit>(0); }
 
     /** Returns a field initialized by the constructor through its ID. */
-    unit::FieldPtr field(const ID& id) const {
+    unit::Field* field(const ID& id) const {
         for ( const auto& f : fields() ) {
             if ( f->id() == id )
                 return f;
@@ -43,17 +42,17 @@ public:
         return {};
     }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    void setType(ASTContext* ctx, QualifiedTypePtr t) { setChild(ctx, 0, std::move(t)); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    static auto create(ASTContext* ctx, ctor::unit::Fields fields, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, ctor::unit::Fields fields, Meta meta = {}) {
         auto auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
-        return std::shared_ptr<Unit>(new Unit(ctx, node::flatten(std::move(auto_), std::move(fields)), meta));
+        return ctx->make<Unit>(ctx, node::flatten(auto_, std::move(fields)), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ctor::unit::Fields fields, QualifiedTypePtr t, const Meta& meta = {}) {
-        return std::shared_ptr<Unit>(new Unit(ctx, node::flatten(std::move(t), std::move(fields)), meta));
+    static auto create(ASTContext* ctx, ctor::unit::Fields fields, QualifiedType* t, Meta meta = {}) {
+        return ctx->make<Unit>(ctx, node::flatten(t, std::move(fields)), std::move(meta));
     }
 
 protected:

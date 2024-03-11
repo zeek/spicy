@@ -48,7 +48,7 @@ public:
     auto unitTypeIndex() { return _unit_type_index; }
     auto unitFieldIndex() { return _unit_field_index; }
 
-    ExpressionPtr priority() const {
+    hilti::Expression* priority() const {
         if ( auto attr = attributes()->find("priority") )
             return *attr->valueAsExpression();
         else
@@ -68,20 +68,20 @@ public:
         _unit_field_index = index;
     }
 
-    void setDDType(ASTContext* ctx, const QualifiedTypePtr& t) {
+    void setDDType(ASTContext* ctx, QualifiedType* t) {
         setChild(ctx, 1, hilti::expression::Keyword::createDollarDollarDeclaration(ctx, t));
     }
 
     void setParameters(ASTContext* ctx, const hilti::declaration::Parameters& params) {
         ftype()->setParameters(ctx, params);
     }
-    void setResult(ASTContext* ctx, const QualifiedTypePtr& t) { function()->setResultType(ctx, t); }
+    void setResult(ASTContext* ctx, QualifiedType* t) { function()->setResultType(ctx, t); }
 
     std::string_view displayName() const override { return "Spicy hook"; }
     node::Properties properties() const final;
 
-    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, const StatementPtr& body,
-                       Engine engine, AttributeSetPtr attrs, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, Statement* body,
+                       Engine engine, AttributeSet* attrs, const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -91,7 +91,7 @@ public:
                                                    parameters, hilti::type::function::Flavor::Hook, m);
         auto func = hilti::Function::create(ctx, hilti::ID(), ftype, body, hilti::function::CallingConvention::Standard,
                                             attrs, m);
-        return std::shared_ptr<Hook>(new Hook(ctx, {func, nullptr}, engine, m));
+        return ctx->make<Hook>(ctx, {func, nullptr}, engine, m);
     }
 
 protected:
@@ -108,8 +108,7 @@ private:
     hilti::ast::DeclarationIndex _unit_field_index;
 };
 
-using HookPtr = std::shared_ptr<Hook>;
-using Hooks = std::vector<HookPtr>;
+using Hooks = std::vector<Hook*>;
 
 } // namespace declaration
 } // namespace spicy

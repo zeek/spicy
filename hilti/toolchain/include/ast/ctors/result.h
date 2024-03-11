@@ -16,9 +16,9 @@ namespace hilti::ctor {
 /** AST node for a `optional` ctor. */
 class Result : public Ctor {
 public:
-    QualifiedTypePtr dereferencedType() const { return type()->type()->as<type::Result>()->dereferencedType(); }
+    QualifiedType* dereferencedType() const { return type()->type()->as<type::Result>()->dereferencedType(); }
 
-    ExpressionPtr value() const {
+    Expression* value() const {
         const auto& e = child<Expression>(1);
 
         if ( ! e->type()->type()->isA<type::Error>() )
@@ -27,7 +27,7 @@ public:
             return {};
     }
 
-    ExpressionPtr error() const {
+    Expression* error() const {
         const auto& e = child<Expression>(1);
 
         if ( e->type()->type()->isA<type::Error>() )
@@ -36,22 +36,22 @@ public:
             return {};
     }
 
-    QualifiedTypePtr type() const final {
-        if ( auto e = child(0) )
-            return child<QualifiedType>(0);
+    QualifiedType* type() const final {
+        if ( auto e = child<QualifiedType>(0) )
+            return e;
         else
             return child<Expression>(1)->type();
     }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
-        return std::shared_ptr<Result>(new Result(ctx,
-                                                  {
-                                                      nullptr,
-                                                      expr,
-                                                  },
-                                                  meta));
+    static auto create(ASTContext* ctx, Expression* expr, const Meta& meta = {}) {
+        return ctx->make<Result>(ctx,
+                                 {
+                                     nullptr,
+                                     expr,
+                                 },
+                                 meta);
     }
 
 protected:

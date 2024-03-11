@@ -16,7 +16,7 @@ class Default : public Ctor {
 public:
     auto typeArguments() const { return children<Expression>(1, {}); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     void setTypeArguments(ASTContext* ctx, Expressions exprs) {
         removeChildren(1, {});
@@ -24,20 +24,19 @@ public:
     }
 
     /** Constructs a default value of a given type. */
-    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& type, const Meta& meta = {}) {
-        return std::shared_ptr<Default>(
-            new Default(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta)}, meta));
+    static auto create(ASTContext* ctx, UnqualifiedType* type, const Meta& meta = {}) {
+        return ctx->make<Default>(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta)}, meta);
     }
 
     /**
      * Constructs a default value of a given type, passing specified arguments to
      * types with parameters.
      */
-    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& type, Expressions type_args, const Meta& meta = {}) {
-        return CtorPtr(
-            new Default(ctx,
-                        node::flatten(QualifiedType::create(ctx, type, Constness::Const, meta), std::move(type_args)),
-                        meta));
+    static auto create(ASTContext* ctx, UnqualifiedType* type, Expressions type_args, const Meta& meta = {}) {
+        return ctx->make<Default>(ctx,
+                                  node::flatten(QualifiedType::create(ctx, type, Constness::Const, meta),
+                                                std::move(type_args)),
+                                  meta);
     }
 
 protected:

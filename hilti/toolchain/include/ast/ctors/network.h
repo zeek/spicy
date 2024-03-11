@@ -17,7 +17,7 @@ class Network : public Ctor {
 public:
     const auto& value() const { return _value; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", to_string(_value)}};
@@ -25,9 +25,8 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::rt::Network v, const Meta& meta = {}) {
-        return std::shared_ptr<Network>(
-            new Network(ctx, {QualifiedType::create(ctx, type::Network::create(ctx, meta), Constness::Const)}, v,
-                        meta));
+        return ctx->make<Network>(ctx, {QualifiedType::create(ctx, type::Network::create(ctx, meta), Constness::Const)},
+                                  v, meta);
     }
 
 protected:

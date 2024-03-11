@@ -30,8 +30,8 @@ public:
     ~CastedCoercion() final;
 
     operator_::Signature signature(Builder* builder) const final;
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final;
-    Result<ResolvedOperatorPtr> instantiate(Builder* builder, Expressions operands, const Meta& meta) const final;
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final;
+    Result<expression::ResolvedOperator*> instantiate(Builder* builder, Expressions operands, Meta meta) const final;
 
     std::string name() const final { return "generic::CastedCoercion"; }
 };

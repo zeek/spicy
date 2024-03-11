@@ -12,7 +12,7 @@
 
 using nlohmann::json;
 
-static std::string formatType(const hilti::UnqualifiedTypePtr& t) {
+static std::string formatType(const hilti::UnqualifiedType* t) {
     if ( auto d = t->tryAs<hilti::type::DocOnly>() )
         return d->description();
 

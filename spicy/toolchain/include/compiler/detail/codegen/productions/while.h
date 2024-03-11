@@ -23,9 +23,9 @@ public:
     /**
      * Constructor for a while-loop using an expression as the condition for termination.
      */
-    While(ASTContext* /* ctx */, const std::string& symbol, ExpressionPtr e, std::unique_ptr<Production> body,
+    While(ASTContext* /* ctx */, const std::string& symbol, Expression* e, std::unique_ptr<Production> body,
           const Location& l = location::None)
-        : Production(symbol, l), _body(std::move(body)), _expression(std::move(e)) {}
+        : Production(symbol, l), _body(std::move(body)), _expression(e) {}
 
     /**
      * Constructor for a while-loop using look-ahead as the condition for
@@ -70,7 +70,7 @@ public:
     }
 
     /** Returns the loop expression if passed into the corresponding constructor. */
-    ExpressionPtr expression() const final { return _expression; }
+    Expression* expression() const final { return _expression; }
 
     std::string dump() const final;
 
@@ -78,7 +78,7 @@ public:
 
 private:
     std::unique_ptr<Production> _body;
-    ExpressionPtr _expression;
+    Expression* _expression = nullptr;
     std::unique_ptr<Production> _body_for_grammar;
 };
 

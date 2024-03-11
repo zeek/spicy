@@ -54,9 +54,9 @@ public:
     auto isTypeParameter() const { return _is_type_param; }
     auto isResolved(node::CycleDetector* cd = nullptr) const { return type()->isResolved(cd); }
 
-    void setDefault(ASTContext* ctx, const ExpressionPtr& e) { setChild(ctx, 1, e); }
+    void setDefault(ASTContext* ctx, hilti::Expression* e) { setChild(ctx, 1, e); }
     void setIsTypeParameter() { _is_type_param = true; }
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     std::string_view displayName() const final { return "parameter"; }
 
@@ -65,23 +65,22 @@ public:
         return Declaration::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, ID id, const UnqualifiedTypePtr& type, parameter::Kind kind,
-                       const hilti::ExpressionPtr& default_, AttributeSetPtr attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,
+                       AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Parameter>(new Parameter(ctx, {_qtype(ctx, type, kind), default_, attrs}, std::move(id),
-                                                        kind, false, std::move(meta)));
+        return ctx->make<Parameter>(ctx, {_qtype(ctx, type, kind), default_, attrs}, std::move(id), kind, false,
+                                    std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, const UnqualifiedTypePtr& type, parameter::Kind kind,
-                       const hilti::ExpressionPtr& default_, bool is_type_param, AttributeSetPtr attrs,
-                       Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,
+                       bool is_type_param, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return DeclarationPtr(new Parameter(ctx, {_qtype(ctx, type, kind), default_, attrs}, std::move(id), kind,
-                                            is_type_param, std::move(meta)));
+        return ctx->make<Parameter>(ctx, {_qtype(ctx, type, kind), default_, attrs}, std::move(id), kind, is_type_param,
+                                    std::move(meta));
     }
 
 protected:
@@ -95,7 +94,7 @@ protected:
     HILTI_NODE_1(declaration::Parameter, Declaration, final);
 
 private:
-    static QualifiedTypePtr _qtype(ASTContext* ctx, const UnqualifiedTypePtr& t, parameter::Kind kind) {
+    static QualifiedType* _qtype(ASTContext* ctx, UnqualifiedType* t, parameter::Kind kind) {
         switch ( kind ) {
             case parameter::Kind::Copy: return QualifiedType::create(ctx, t, Constness::Mutable, Side::LHS, t->meta());
             case parameter::Kind::In: return QualifiedType::create(ctx, t, Constness::Const, Side::RHS, t->meta());
@@ -109,15 +108,14 @@ private:
     bool _is_type_param = false;
 };
 
-using ParameterPtr = std::shared_ptr<declaration::Parameter>;
-using Parameters = std::vector<ParameterPtr>;
+using Parameters = std::vector<Parameter*>;
 
 } // namespace hilti::declaration
 
 namespace hilti::declaration {
 
 /** Returns true if two parameters are different only by name of their ID. */
-inline bool areEquivalent(const ParameterPtr& p1, const ParameterPtr& p2) {
+inline bool areEquivalent(Parameter* p1, Parameter* p2) {
     if ( p1->kind() != p2->kind() )
         return false;
 

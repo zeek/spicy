@@ -30,5 +30,5 @@ void Struct::_setSelf(ASTContext* ctx) {
 
     auto decl = declaration::Expression::create(ctx, ID("self"), self, {}, meta());
 
-    setChild(ctx, 0, std::move(decl));
+    setChild(ctx, 0, decl);
 }

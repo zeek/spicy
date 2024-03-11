@@ -38,7 +38,7 @@ public:
 
     static auto create(ASTContext* ctx, std::string comment, comment::Separator separator = comment::Separator::Before,
                        Meta meta = {}) {
-        return std::shared_ptr<Comment>(new Comment(ctx, {}, std::move(comment), separator, std::move(meta)));
+        return ctx->make<Comment>(ctx, {}, std::move(comment), separator, std::move(meta));
     }
 
 protected:

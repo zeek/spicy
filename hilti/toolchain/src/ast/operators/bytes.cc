@@ -428,8 +428,9 @@ public:
                              },
                          .result = {Constness::Const,
                                     builder->typeTuple(
-                                        {builder->qualifiedType(builder->typeBool(), Constness::Const),
-                                         builder->qualifiedType(builder->typeBytesIterator(), Constness::Const)})},
+                                        QualifiedTypes{builder->qualifiedType(builder->typeBool(), Constness::Const),
+                                                       builder->qualifiedType(builder->typeBytesIterator(),
+                                                                              Constness::Const)})},
                          .ns = "bytes",
                          .doc = R"(
 Searches *needle* in the value's content. Returns a tuple of a boolean and an
@@ -582,8 +583,9 @@ public:
                     .optional = true,
                 },
             .result = {Constness::Const,
-                       builder->typeTuple({builder->qualifiedType(builder->typeBytes(), Constness::Const),
-                                           builder->qualifiedType(builder->typeBytes(), Constness::Const)})},
+                       builder->typeTuple(
+                           QualifiedTypes{builder->qualifiedType(builder->typeBytes(), Constness::Const),
+                                          builder->qualifiedType(builder->typeBytes(), Constness::Const)})},
             .ns = "bytes",
             .doc = R"(
 Splits the bytes value at the first occurrence of *sep* and returns the two parts

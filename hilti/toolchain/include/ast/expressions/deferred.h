@@ -21,21 +21,20 @@ public:
     auto expression() const { return child<Expression>(0); }
     bool catchException() const { return _catch_exception; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(1); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"catch_exception", _catch_exception}};
         return Expression::properties() + p;
     }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 1, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 1, t); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, bool catch_exception, const Meta& meta = {}) {
-        return std::shared_ptr<Deferred>(
-            new Deferred(ctx, {expr, QualifiedType::createAuto(ctx, meta)}, catch_exception, meta));
+    static auto create(ASTContext* ctx, Expression* expr, bool catch_exception, const Meta& meta = {}) {
+        return ctx->make<Deferred>(ctx, {expr, QualifiedType::createAuto(ctx, meta)}, catch_exception, meta);
     }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Expression* expr, const Meta& meta = {}) {
         return create(ctx, expr, false, meta);
     }
 

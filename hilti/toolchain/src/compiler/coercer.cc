@@ -33,14 +33,14 @@ inline const DebugStream Coercer("coercer");
 namespace {
 
 struct VisitorCtor : visitor::PreOrder {
-    VisitorCtor(Builder* builder, QualifiedTypePtr dst, bitmask<CoercionStyle> style)
-        : builder(builder), dst(std::move(dst)), style(style) {}
+    VisitorCtor(Builder* builder, QualifiedType* dst, bitmask<CoercionStyle> style)
+        : builder(builder), dst(dst), style(style) {}
 
     Builder* builder;
-    QualifiedTypePtr dst;
+    QualifiedType* dst = nullptr;
     bitmask<CoercionStyle> style;
 
-    CtorPtr result = nullptr;
+    Ctor* result = nullptr;
 
     void operator()(ctor::Enum* n) final {
         if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
@@ -192,7 +192,7 @@ struct VisitorCtor : visitor::PreOrder {
     void operator()(ctor::SignedInteger* n) final {
         if ( auto t = dst->type()->tryAs<type::SignedInteger>() ) {
             if ( t->width() == 64 ) {
-                result = n->as<Ctor>();
+                result = n;
                 return;
             }
 
@@ -223,7 +223,7 @@ struct VisitorCtor : visitor::PreOrder {
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::Real>() ) {
+        if ( dst->type()->isA<type::Real>() ) {
             if ( static_cast<int64_t>(static_cast<double>(n->value())) == n->value() ) {
                 result = builder->ctorReal(static_cast<double>(n->value()));
                 return;
@@ -260,7 +260,7 @@ struct VisitorCtor : visitor::PreOrder {
     void operator()(ctor::UnsignedInteger* n) final {
         if ( auto t = dst->type()->tryAs<type::UnsignedInteger>() ) {
             if ( t->width() == 64 ) {
-                result = n->as<Ctor>();
+                result = n;
                 return;
             }
 
@@ -296,7 +296,7 @@ struct VisitorCtor : visitor::PreOrder {
             return;
         }
 
-        if ( auto t = dst->type()->tryAs<type::Real>() ) {
+        if ( dst->type()->isA<type::Real>() ) {
             if ( static_cast<uint64_t>(static_cast<double>(n->value())) == n->value() ) {
                 result = builder->ctorReal(static_cast<double>(n->value()));
                 return;
@@ -439,15 +439,15 @@ struct VisitorCtor : visitor::PreOrder {
 };
 
 struct VisitorType : visitor::PreOrder {
-    explicit VisitorType(Builder* builder, QualifiedTypePtr src, QualifiedTypePtr dst, bitmask<CoercionStyle> style)
-        : builder(builder), src(std::move(src)), dst(std::move(dst)), style(style) {}
+    explicit VisitorType(Builder* builder, QualifiedType* src, QualifiedType* dst, bitmask<CoercionStyle> style)
+        : builder(builder), src(src), dst(dst), style(style) {}
 
     Builder* builder;
-    QualifiedTypePtr src;
-    QualifiedTypePtr dst;
+    QualifiedType* src = nullptr;
+    QualifiedType* dst = nullptr;
     bitmask<CoercionStyle> style;
 
-    QualifiedTypePtr result = nullptr;
+    QualifiedType* result = nullptr;
 
     void operator()(type::Enum* n) final {
         if ( auto t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
@@ -460,11 +460,11 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Null* n) final {
-        if ( auto t = dst->type()->tryAs<type::Optional>() )
+        if ( dst->type()->isA<type::Optional>() )
             result = dst;
-        else if ( auto t = dst->type()->tryAs<type::StrongReference>() )
+        else if ( dst->type()->isA<type::StrongReference>() )
             result = dst;
-        else if ( auto t = dst->type()->tryAs<type::WeakReference>() )
+        else if ( dst->type()->isA<type::WeakReference>() )
             result = dst;
     }
 
@@ -474,7 +474,7 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Error* n) final {
-        if ( auto t = dst->type()->tryAs<type::Result>() )
+        if ( dst->type()->isA<type::Result>() )
             result = dst;
     }
 
@@ -548,7 +548,7 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Stream* n) final {
-        if ( auto t = dst->type()->tryAs<type::stream::View>() )
+        if ( dst->type()->isA<type::stream::View>() )
             result = dst;
     }
 
@@ -665,10 +665,9 @@ struct VisitorType : visitor::PreOrder {
 } // anonymous namespace
 
 // Public version going through all plugins.
-Result<CtorPtr> hilti::coerceCtor(Builder* builder, CtorPtr c, const QualifiedTypePtr& dst,
-                                  bitmask<CoercionStyle> style) {
+Result<Ctor*> hilti::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst, bitmask<CoercionStyle> style) {
     if ( type::same(c->type(), dst) )
-        return std::move(c);
+        return c;
 
     for ( const auto& p : plugin::registry().plugins() ) {
         if ( ! (p.coerce_ctor) )
@@ -681,8 +680,8 @@ Result<CtorPtr> hilti::coerceCtor(Builder* builder, CtorPtr c, const QualifiedTy
     return result::Error("could not coerce type for constructor");
 }
 
-static Result<QualifiedTypePtr> _coerceType(Builder* builder, const QualifiedTypePtr& src_,
-                                            const QualifiedTypePtr& dst_, bitmask<CoercionStyle> style) {
+static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_, QualifiedType* dst_,
+                                          bitmask<CoercionStyle> style) {
     // TODO(robin): Not sure if this should/must replicate all the type coercion
     // login in coerceExpression(). If so, we should factor that out.
     // Update: I believe the answer is yes ... Added a few more cases, but this will
@@ -752,8 +751,8 @@ static Result<QualifiedTypePtr> _coerceType(Builder* builder, const QualifiedTyp
 }
 
 // Public version going through all plugins.
-Result<QualifiedTypePtr> hilti::coerceType(Builder* builder, const QualifiedTypePtr& src, const QualifiedTypePtr& dst,
-                                           bitmask<CoercionStyle> style) {
+Result<QualifiedType*> hilti::coerceType(Builder* builder, QualifiedType* src, QualifiedType* dst,
+                                         bitmask<CoercionStyle> style) {
     return _coerceType(builder, src, dst, style);
 }
 
@@ -828,7 +827,7 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
         }
 
         bool needs_mutable = false;
-        QualifiedTypePtr oat = op->type();
+        QualifiedType* oat = op->type();
 
         switch ( op->kind() ) {
             case parameter::Kind::In:
@@ -889,7 +888,7 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
 
 // If an expression is a reference, dereference it; otherwise return the
 // expression itself.
-ExpressionPtr skipReferenceValue(Builder* builder, const ExpressionPtr& op) {
+Expression* skipReferenceValue(Builder* builder, Expression* op) {
     static auto value_reference_deref = operator_::get("value_reference::Deref");
     static auto strong_reference_deref = operator_::get("strong_reference::Deref");
     static auto weak_reference_deref = operator_::get("weak_reference::Deref");
@@ -907,8 +906,8 @@ ExpressionPtr skipReferenceValue(Builder* builder, const ExpressionPtr& op) {
         logger().internalError("unknown reference type");
 }
 
-static CoercedExpression _coerceExpression(Builder* builder, const ExpressionPtr& e, const QualifiedTypePtr& src_,
-                                           const QualifiedTypePtr& dst_, bitmask<CoercionStyle> style, bool lhs) {
+static CoercedExpression _coerceExpression(Builder* builder, Expression* e, QualifiedType* src_, QualifiedType* dst_,
+                                           bitmask<CoercionStyle> style, bool lhs) {
     const auto& no_change = e;
     CoercedExpression _result;
     int _line = 0;
@@ -1090,20 +1089,19 @@ exit:
 }
 
 // Public version going through all plugins.
-CoercedExpression hilti::coerceExpression(Builder* builder, const ExpressionPtr& e, const QualifiedTypePtr& src,
-                                          const QualifiedTypePtr& dst, bitmask<CoercionStyle> style, bool lhs) {
+CoercedExpression hilti::coerceExpression(Builder* builder, Expression* e, QualifiedType* src, QualifiedType* dst,
+                                          bitmask<CoercionStyle> style, bool lhs) {
     return _coerceExpression(builder, e, src, dst, style, lhs);
 }
 
 // Public version going through all plugins.
-CoercedExpression hilti::coerceExpression(Builder* builder, const ExpressionPtr& e, const QualifiedTypePtr& dst,
+CoercedExpression hilti::coerceExpression(Builder* builder, Expression* e, QualifiedType* dst,
                                           bitmask<CoercionStyle> style, bool lhs) {
     return coerceExpression(builder, e, e->type(), dst, style, lhs);
 }
 
 // Plugin-specific version just kicking off the local visitor.
-CtorPtr hilti::coercer::detail::coerceCtor(Builder* builder, const CtorPtr& c, const QualifiedTypePtr& dst,
-                                           bitmask<CoercionStyle> style) {
+Ctor* hilti::coercer::detail::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst, bitmask<CoercionStyle> style) {
     util::timing::Collector _("hilti/compiler/ast/coercer");
 
     if ( ! (c->type()->isResolved() && dst->isResolved()) )
@@ -1115,8 +1113,8 @@ CtorPtr hilti::coercer::detail::coerceCtor(Builder* builder, const CtorPtr& c, c
 }
 
 // Plugin-specific version just kicking off the local visitor.
-QualifiedTypePtr coercer::detail::coerceType(Builder* builder, const QualifiedTypePtr& t, const QualifiedTypePtr& dst,
-                                             bitmask<CoercionStyle> style) {
+QualifiedType* coercer::detail::coerceType(Builder* builder, QualifiedType* t, QualifiedType* dst,
+                                           bitmask<CoercionStyle> style) {
     util::timing::Collector _("hilti/compiler/ast/coercer");
 
     if ( ! (t->isResolved() && dst->isResolved()) )

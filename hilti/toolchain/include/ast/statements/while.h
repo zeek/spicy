@@ -20,20 +20,20 @@ public:
     auto body() const { return child<hilti::Statement>(2); }
     auto else_() const { return child<Statement>(3); }
 
-    void setCondition(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 1, c); }
+    void setCondition(ASTContext* ctx, hilti::Expression* c) { setChild(ctx, 1, c); }
     void removeElse(ASTContext* ctx) { setChild(ctx, 3, nullptr); }
 
-    static auto create(ASTContext* ctx, const DeclarationPtr& init, const ExpressionPtr& cond, const StatementPtr& body,
-                       const StatementPtr& else_ = nullptr, const Meta& meta = {}) {
-        return std::shared_ptr<While>(new While(ctx, {init, cond, body, else_}, meta));
+    static auto create(ASTContext* ctx, hilti::Declaration* init, hilti::Expression* cond, Statement* body,
+                       Statement* else_ = nullptr, Meta meta = {}) {
+        return ctx->make<While>(ctx, {init, cond, body, else_}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const StatementPtr& body, const Meta& meta = {}) {
-        return create(ctx, nullptr, cond, body, nullptr, meta);
+    static auto create(ASTContext* ctx, hilti::Expression* cond, Statement* body, Meta meta = {}) {
+        return create(ctx, nullptr, cond, body, nullptr, std::move(meta));
     }
-    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const StatementPtr& body,
-                       const StatementPtr& else_ = nullptr, const Meta& meta = {}) {
-        return create(ctx, nullptr, cond, body, else_, meta);
+    static auto create(ASTContext* ctx, hilti::Expression* cond, Statement* body, Statement* else_ = nullptr,
+                       Meta meta = {}) {
+        return create(ctx, nullptr, cond, body, else_, std::move(meta));
     }
 
 protected:

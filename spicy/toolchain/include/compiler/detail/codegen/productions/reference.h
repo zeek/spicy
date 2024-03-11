@@ -36,8 +36,8 @@ public:
     bool isTerminal() const final { return _production->isTerminal(); };
 
     std::vector<std::vector<Production*>> rhss() const final { return _production->rhss(); }
-    ExpressionPtr expression() const final { return _production->expression(); }
-    QualifiedTypePtr type() const final { return _production->type(); }
+    Expression* expression() const final { return _production->expression(); }
+    QualifiedType* type() const final { return _production->type(); }
     int64_t tokenID() const final { return _production->tokenID(); };
 
     std::string dump() const final { return hilti::util::fmt("ref(%s)", _production->dump()); }

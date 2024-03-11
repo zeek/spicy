@@ -17,9 +17,7 @@ public:
     bool isAllocable() const final { return true; }
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Time>(new Time(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Time>(ctx, std::move(meta)); }
 
 protected:
     Time(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"time"}, std::move(meta)) {}

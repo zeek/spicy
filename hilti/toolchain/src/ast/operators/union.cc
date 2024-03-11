@@ -16,7 +16,7 @@ using namespace hilti::operator_;
 namespace {
 namespace union_ {
 
-QualifiedTypePtr itemType(Builder* builder, const Expressions& operands) {
+QualifiedType* itemType(Builder* builder, const Expressions& operands) {
     if ( auto field =
              operands[0]->type()->type()->as<type::Union>()->field(operands[1]->as<expression::Member>()->id()) )
         return field->type();
@@ -92,7 +92,7 @@ this triggers an exception.
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return itemType(builder, operands);
     }
 
@@ -118,7 +118,7 @@ this triggers an exception unless the value is only being assigned to.
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 

@@ -23,34 +23,32 @@ public:
     auto attributes() const { return child<AttributeSet>(1); }
     auto inherited() const { return _inherited; }
 
-    QualifiedTypePtr itemType() const final { return child<QualifiedType>(2); }
+    QualifiedType* itemType() const final { return child<QualifiedType>(2); }
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return true; }
 
     std::string_view displayName() const final { return "unit property"; }
 
-    static auto create(ASTContext* ctx, ID id, AttributeSetPtr attrs, bool inherited = false, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, ID id, AttributeSet* attrs, bool inherited = false, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Property>(new Property(ctx,
-                                                      node::flatten(nullptr, attrs, hilti::type::Void::create(ctx)),
-                                                      std::move(id), false, meta));
+        return ctx->make<Property>(ctx, node::flatten(nullptr, attrs, hilti::type::Void::create(ctx)), std::move(id),
+                                   false, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, ExpressionPtr expr, AttributeSetPtr attrs, bool inherited = false,
-                       const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, ID id, Expression* expr, AttributeSet* attrs, bool inherited = false,
+                       Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Property>(
-            new Property(ctx, node::flatten(std::move(expr), attrs, hilti::type::Void::create(ctx)), std::move(id),
-                         inherited, meta));
+        return ctx->make<Property>(ctx, node::flatten(expr, attrs, hilti::type::Void::create(ctx)), std::move(id),
+                                   inherited, std::move(meta));
     }
 
 protected:
-    Property(ASTContext* ctx, Nodes children, ID id, bool inherited, const Meta& meta)
-        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), meta), _inherited(inherited) {}
+    Property(ASTContext* ctx, Nodes children, ID id, bool inherited, Meta meta)
+        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), std::move(meta)), _inherited(inherited) {}
 
     SPICY_NODE_2(type::unit::item::Property, type::unit::Item, Declaration, final);
 

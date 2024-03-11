@@ -17,7 +17,7 @@ public:
     const auto& value() const { return _value; }
     auto isLiteral() const { return _is_literal; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", _value}, {"is_literal", _is_literal}};
@@ -25,8 +25,8 @@ public:
     }
 
     static auto create(ASTContext* ctx, std::string value, bool is_literal, const Meta& meta = {}) {
-        return CtorPtr(new String(ctx, {QualifiedType::create(ctx, type::String::create(ctx, meta), Constness::Const)},
-                                  std::move(value), is_literal, meta));
+        return ctx->make<String>(ctx, {QualifiedType::create(ctx, type::String::create(ctx, meta), Constness::Const)},
+                                 std::move(value), is_literal, meta);
     }
 
 protected:

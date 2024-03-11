@@ -15,10 +15,10 @@ class Grouping : public Expression {
 public:
     auto expression() const { return child<Expression>(0); }
 
-    QualifiedTypePtr type() const final { return expression()->type(); }
+    QualifiedType* type() const final { return expression()->type(); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
-        return std::shared_ptr<Grouping>(new Grouping(ctx, {expr}, meta));
+    static auto create(ASTContext* ctx, Expression* expr, Meta meta = {}) {
+        return ctx->make<Grouping>(ctx, {expr}, std::move(meta));
     }
 
 protected:

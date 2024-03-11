@@ -55,21 +55,21 @@ public:
      */
     auto container() const { return _container; }
 
-    void setField(const type::unit::item::FieldPtr& n, bool is_field_production) {
+    void setField(type::unit::item::Field* n, bool is_field_production) {
         assert(n);
         _is_field_production = is_field_production;
         _field = n;
     }
 
-    void setContainer(const type::unit::item::FieldPtr& n) {
+    void setContainer(type::unit::item::Field* n) {
         assert(n);
         _container = n;
     }
 
 private:
     bool _is_field_production = false;
-    type::unit::item::FieldPtr _field;
-    type::unit::item::FieldPtr _container;
+    type::unit::item::Field* _field = nullptr;
+    type::unit::item::Field* _container = nullptr;
 };
 
 } // namespace production
@@ -118,19 +118,19 @@ public:
      * will be called when a value has been parsed for the terminal. It must
      * return a value to use instead of the parsed value.
      */
-    void setFilter(ExpressionPtr filter) { _filter = std::move(filter); }
+    void setFilter(Expression* filter) { _filter = filter; }
 
     /**
      * Sets the production meta data. The meta data is filled as
      * grammar and parser are being built.
      */
-    void setMeta(production::Meta m) { *_meta = std::move(m); }
+    void setMeta(production::Meta m) { *_meta = m; }
 
     /**
      * For terminals, associates a sink with it. Any parsed data will be
      * forwarded to the sink.
      */
-    void setSink(ExpressionPtr sink) { _sink = std::move(sink); }
+    void setSink(Expression* sink) { _sink = sink; }
 
     /** Renames the production. */
     void setSymbol(std::string s) { _symbol = std::move(s); }
@@ -174,10 +174,10 @@ public:
     /**
      * For literals, returns the expression associated with it.
      */
-    virtual ExpressionPtr expression() const { return nullptr; }
+    virtual Expression* expression() const { return nullptr; }
 
     /** Returns any type associated with this production. */
-    virtual QualifiedTypePtr type() const { return nullptr; };
+    virtual QualifiedType* type() const { return nullptr; };
 
     /**
      * Returns a ID for this literal that's guaranteed to be globally unique
@@ -290,8 +290,8 @@ protected:
 private:
     std::string _symbol;
     Location _location;
-    ExpressionPtr _filter;
-    ExpressionPtr _sink;
+    Expression* _filter = nullptr;
+    Expression* _sink = nullptr;
     std::shared_ptr<production::Meta> _meta;
 };
 

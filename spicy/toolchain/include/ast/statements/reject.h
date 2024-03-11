@@ -14,9 +14,7 @@ namespace spicy::statement {
 /** AST node for a `break` statement. */
 class Reject : public Statement {
 public:
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Reject>(new Reject(ctx, {}, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Reject>(ctx, {}, std::move(meta)); }
 
 protected:
     Reject(ASTContext* ctx, Nodes children, Meta meta)

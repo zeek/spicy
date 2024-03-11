@@ -8,7 +8,7 @@ using namespace hilti;
 visitor::MutatingVisitorBase::MutatingVisitorBase(ASTContext* ctx, logging::DebugStream dbg)
     : _context(ctx), _dbg(std::move(dbg)) {}
 
-void visitor::MutatingVisitorBase::replaceNode(const Node* old, const NodePtr& new_, const std::string& msg) {
+void visitor::MutatingVisitorBase::replaceNode(Node* old, Node* new_, const std::string& msg) {
     auto location = util::fmt("[%s] ", old->location().dump(true));
     std::string msg_;
 
@@ -29,7 +29,7 @@ void visitor::MutatingVisitorBase::replaceNode(const Node* old, const NodePtr& n
     _modified = true;
 }
 
-void visitor::MutatingVisitorBase::recordChange(const Node* old, const NodePtr& changed, const std::string& msg) {
+void visitor::MutatingVisitorBase::recordChange(const Node* old, Node* changed, const std::string& msg) {
     auto location = util::fmt("[%s] ", old->location().dump(true));
     std::string msg_;
 

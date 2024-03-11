@@ -24,20 +24,20 @@ public:
      */
     bool isNoSub() const { return attributes()->find("&nosub") != nullptr; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", util::join(_value, " | ")}};
         return Ctor::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, std::vector<std::string> v, AttributeSetPtr attrs, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, std::vector<std::string> v, AttributeSet* attrs, const Meta& meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return CtorPtr(
-            new RegExp(ctx, {QualifiedType::create(ctx, type::RegExp::create(ctx, meta), Constness::Const), attrs},
-                       std::move(v), meta));
+        return ctx->make<RegExp>(ctx,
+                                 {QualifiedType::create(ctx, type::RegExp::create(ctx, meta), Constness::Const), attrs},
+                                 std::move(v), meta);
     }
 
 protected:

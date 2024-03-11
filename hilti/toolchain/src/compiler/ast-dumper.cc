@@ -10,7 +10,7 @@
 using namespace hilti;
 using util::fmt;
 
-static void dump(const NodePtr& n, std::ostream* out, std::optional<logging::DebugStream> dbg, bool include_scopes) {
+static void dump(Node* n, std::ostream* out, std::optional<logging::DebugStream> dbg, bool include_scopes) {
     util::timing::Collector _("hilti/dumper");
 
     auto nodes = visitor::range(visitor::PreOrder(), n, {});
@@ -56,10 +56,10 @@ static void dump(const NodePtr& n, std::ostream* out, std::optional<logging::Deb
         logger().debugSetIndent(*dbg, 0);
 }
 
-void detail::ast_dumper::dump(std::ostream& out, const NodePtr& node, bool include_scopes) {
+void detail::ast_dumper::dump(std::ostream& out, Node* node, bool include_scopes) {
     ::dump(node, &out, {}, include_scopes);
 }
 
-void detail::ast_dumper::dump(logging::DebugStream stream, const NodePtr& node, bool include_scopes) {
+void detail::ast_dumper::dump(logging::DebugStream stream, Node* node, bool include_scopes) {
     ::dump(node, nullptr, stream, include_scopes);
 }

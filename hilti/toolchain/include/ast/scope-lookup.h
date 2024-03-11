@@ -17,7 +17,7 @@
 namespace hilti::scope {
 namespace detail {
 /** Internal backend to `hilti::lookupID()`. */
-std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> lookupID(const ID& id, const Node* n);
+std::pair<bool, Result<std::pair<Declaration*, ID>>> lookupID(const ID& id, const Node* n);
 } // namespace detail
 
 /**
@@ -32,7 +32,7 @@ std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> lookupID(const ID& id, co
  * @return node if resolved, or an appropriate error if not
  */
 template<typename D>
-Result<std::pair<std::shared_ptr<D>, ID>> lookupID(ID id, Node* n, const std::string_view& what) {
+Result<std::pair<D*, ID>> lookupID(ID id, Node* n, const std::string_view& what) {
     if ( id.empty() )
         logger().internalError("lookupID() called with empty ID");
 

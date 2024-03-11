@@ -41,17 +41,17 @@ constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::Kind
 class Keyword : public Expression {
 public:
     keyword::Kind kind() const { return _kind; }
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{{"kind", to_string(_kind)}}};
         return Expression::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, keyword::Kind kind, const QualifiedTypePtr& type, const Meta& meta = {}) {
-        return std::shared_ptr<Keyword>(new Keyword(ctx, {type}, kind, meta));
+    static auto create(ASTContext* ctx, keyword::Kind kind, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<Keyword>(ctx, {type}, kind, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, keyword::Kind kind, const Meta& meta = {}) {
@@ -59,9 +59,9 @@ public:
     }
 
     /** Helper to create `$$` a declaration of a given type. */
-    static auto createDollarDollarDeclaration(ASTContext* ctx, const QualifiedTypePtr& type) {
+    static auto createDollarDollarDeclaration(ASTContext* ctx, QualifiedType* type) {
         auto kw = create(ctx, keyword::Kind::DollarDollar, type);
-        return declaration::Expression::create(ctx, "__dd", kw, hilti::declaration::Linkage::Private);
+        return declaration::Expression::create(ctx, ID("__dd"), kw, hilti::declaration::Linkage::Private);
     }
 
 protected:

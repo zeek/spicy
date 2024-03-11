@@ -16,13 +16,13 @@ class Tuple : public Ctor {
 public:
     auto value() const { return children<Expression>(1, {}); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    void setType(ASTContext* ctx, QualifiedTypePtr t) { setChild(ctx, 0, std::move(t)); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    static auto create(ASTContext* ctx, const Expressions& exprs, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, const Expressions& exprs, Meta meta = {}) {
         auto type = _inferType(ctx, exprs, meta);
-        return std::shared_ptr<Tuple>(new Tuple(ctx, node::flatten(type, exprs), meta));
+        return ctx->make<Tuple>(ctx, node::flatten(type, exprs), std::move(meta));
     }
 
 protected:
@@ -31,7 +31,7 @@ protected:
     HILTI_NODE_1(ctor::Tuple, Ctor, final);
 
 private:
-    static QualifiedTypePtr _inferType(ASTContext* ctx, const Expressions& exprs, const Meta& meta) {
+    static QualifiedType* _inferType(ASTContext* ctx, const Expressions& exprs, const Meta& meta) {
         for ( const auto& e : exprs ) {
             if ( ! e->isResolved() )
                 return QualifiedType::createAuto(ctx, meta);

@@ -9,7 +9,7 @@
 using namespace spicy;
 using namespace hilti::operator_;
 
-spicy::unit::MemberCall::MemberCall(const type::unit::item::FieldPtr& field)
+spicy::unit::MemberCall::MemberCall(type::unit::item::Field* field)
     : hilti::Operator(field->meta(), false), _field(field) {}
 
 spicy::unit::MemberCall::~MemberCall() {}
@@ -32,9 +32,9 @@ hilti::operator_::Signature spicy::unit::MemberCall::signature(hilti::Builder* b
     };
 }
 
-hilti::Result<hilti::ResolvedOperatorPtr> spicy::unit::MemberCall::instantiate(hilti::Builder* builder,
-                                                                               Expressions operands,
-                                                                               const Meta& meta) const {
+hilti::Result<hilti::expression::ResolvedOperator*> spicy::unit::MemberCall::instantiate(hilti::Builder* builder,
+                                                                                         Expressions operands,
+                                                                                         Meta meta) const {
     auto field = MemberCall::field();
     assert(field);
 
@@ -43,8 +43,8 @@ hilti::Result<hilti::ResolvedOperatorPtr> spicy::unit::MemberCall::instantiate(h
     auto args = operands[2];
     auto result = field->itemType()->type()->as<hilti::type::Function>()->result();
 
-    return {operator_::unit::MemberCall::create(builder->context(), this, result,
-                                                {std::move(callee), std::move(member), std::move(args)}, meta)};
+    return {
+        operator_::unit::MemberCall::create(builder->context(), this, result, {callee, member, args}, std::move(meta))};
 }
 
 namespace {
@@ -60,7 +60,7 @@ void checkName(hilti::expression::ResolvedOperator* op) {
 }
 
 
-QualifiedTypePtr itemType(hilti::Builder* builder, const Expressions& operands) {
+QualifiedType* itemType(hilti::Builder* builder, const Expressions& operands) {
     auto unit = operands[0]->type()->type()->as<type::Unit>();
     auto id = operands[1]->as<hilti::expression::Member>()->id();
 
@@ -72,7 +72,7 @@ QualifiedTypePtr itemType(hilti::Builder* builder, const Expressions& operands) 
         return builder->qualifiedType(builder->typeAuto(), hilti::Constness::Const);
 }
 
-QualifiedTypePtr contextResult(hilti::Builder* builder, const Expressions& operands, hilti::Constness constness) {
+QualifiedType* contextResult(hilti::Builder* builder, const Expressions& operands, hilti::Constness constness) {
     if ( operands.empty() )
         return builder->qualifiedType(builder->typeDocOnly("<context>&"), constness);
 
@@ -123,7 +123,7 @@ triggers an exception.
         };
     }
 
-    QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
@@ -152,7 +152,7 @@ triggers an exception.
         };
     }
 
-    QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
@@ -183,7 +183,7 @@ exception differently).
         };
     }
 
-    QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
@@ -466,7 +466,7 @@ Returns a reference to the ``%context`` instance associated with the unit.
         };
     }
 
-    QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return contextResult(builder, operands, hilti::Constness::Const);
     }
 
@@ -490,7 +490,7 @@ Returns a reference to the ``%context`` instance associated with the unit.
         };
     }
 
-    QualifiedTypePtr result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return contextResult(builder, operands, hilti::Constness::Mutable);
     }
 

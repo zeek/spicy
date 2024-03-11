@@ -14,13 +14,12 @@ namespace hilti::ctor {
 class Union : public Ctor {
 public:
     /** Returns the value to initialize the unit with. */
-    ExpressionPtr value() const { return child<Expression>(1); }
+    Expression* value() const { return child<Expression>(1); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, const ExpressionPtr& value,
-                       const Meta& meta = {}) {
-        return std::shared_ptr<Union>(new Union(ctx, {type, value}, meta));
+    static auto create(ASTContext* ctx, QualifiedType* type, Expression* value, Meta meta = {}) {
+        return ctx->make<Union>(ctx, {type, value}, std::move(meta));
     }
 
 protected:

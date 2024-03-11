@@ -32,15 +32,15 @@ public:
     }
 
     // Accelerated accessors for the first three operands, returning raw pointers.
-    const Expression* op0() const { return static_cast<Expression*>(children()[1].get()); }
-    const Expression* op1() const { return static_cast<Expression*>(children()[2].get()); }
-    const Expression* op2() const { return static_cast<Expression*>(children()[3].get()); }
+    Expression* op0() const { return static_cast<Expression*>(children()[1]); }
+    Expression* op1() const { return static_cast<Expression*>(children()[2]); }
+    Expression* op2() const { return static_cast<Expression*>(children()[3]); }
 
     /** Implements interface for use with `OverloadRegistry`. */
     hilti::node::Range<Expression> operands() const { return children<Expression>(1, {}); }
 
     // Dummy implementations as the node will be rejected in validation anyway.
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     std::string printSignature() const { return operator_::detail::printSignature(kind(), operands(), Meta()); }
 
@@ -50,15 +50,15 @@ public:
     }
 
     static auto create(ASTContext* ctx, operator_::Kind kind, Expressions operands, const Meta& meta = {}) {
-        return ExpressionPtr(
-            new UnresolvedOperator(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), std::move(operands)), kind,
-                                   meta));
+        return ctx->make<UnresolvedOperator>(ctx,
+                                             node::flatten(QualifiedType::createAuto(ctx, meta), std::move(operands)),
+                                             kind, meta);
     }
 
     static auto create(ASTContext* ctx, operator_::Kind kind, hilti::node::Range<Expression> operands,
                        const Meta& meta = {}) {
-        return ExpressionPtr(
-            new UnresolvedOperator(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), operands), kind, meta));
+        return ctx->make<UnresolvedOperator>(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), operands), kind,
+                                             meta);
     }
 
 protected:

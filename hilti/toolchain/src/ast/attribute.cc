@@ -12,7 +12,7 @@
 
 using namespace hilti;
 
-Result<ExpressionPtr> Attribute::valueAsExpression() const {
+Result<Expression*> Attribute::valueAsExpression() const {
     if ( ! hasValue() )
         return result::Error(hilti::util::fmt("attribute '%s' requires an expression", _tag));
 
@@ -48,7 +48,7 @@ Result<int64_t> Attribute::valueAsInteger() const {
     return result::Error(hilti::util::fmt("value for attribute '%s' must be an integer", _tag));
 }
 
-Result<bool> Attribute::coerceValueTo(Builder* builder, const QualifiedTypePtr& dst) {
+Result<bool> Attribute::coerceValueTo(Builder* builder, QualifiedType* dst) {
     if ( ! dst->isResolved() )
         return result::Error("cannot coerce attribute value to unresolved type");
 
@@ -61,7 +61,7 @@ Result<bool> Attribute::coerceValueTo(Builder* builder, const QualifiedTypePtr& 
         if ( ! ne.nexpr )
             return false;
 
-        setChild(builder->context(), 0, std::move(ne.nexpr));
+        setChild(builder->context(), 0, ne.nexpr);
         return true;
     }
     else
@@ -72,7 +72,7 @@ std::string Attribute::_dump() const { return ""; }
 
 std::string AttributeSet::_dump() const { return ""; }
 
-AttributePtr AttributeSet::find(std::string_view tag) const {
+Attribute* AttributeSet::find(std::string_view tag) const {
     for ( const auto& a : attributes() )
         if ( a->tag() == tag )
             return a;

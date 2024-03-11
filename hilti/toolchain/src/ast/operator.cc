@@ -78,7 +78,7 @@ std::string _printOperator(operator_::Kind kind, const Expressions& operands, bo
     if ( ! print_signature )
         return _printOperator(kind, util::transform(operands, [](const auto& x) { return x->print(); }), meta);
 
-    auto render_one = [](const QualifiedTypePtr& t) {
+    auto render_one = [](QualifiedType* t) {
         if ( t->type()->template isA<type::Member>() )
             return t->print();
         else
@@ -124,7 +124,7 @@ std::string _printOperator(operator_::Kind kind, const Expressions& operands, bo
 }
 
 std::string _printOperator(operator_::Kind kind, const Operands& operands, const Meta& meta) {
-    auto render_one = [](const OperandPtr& t) {
+    auto render_one = [](Operand* t) {
         if ( t->type()->type()->template isA<type::Member>() )
             return t->print();
         else if ( auto ft = t->type()->type()->tryAs<type::Function>(); ft && ft->functionNameForPrinting() )
@@ -184,7 +184,7 @@ public:
             return;
 
         if ( auto resolved =
-                 scope::lookupID<declaration::Type>(t->id(), builder->context()->root().get(), "built-in type") ) {
+                 scope::lookupID<declaration::Type>(t->id(), builder->context()->root(), "built-in type") ) {
             auto index = builder->context()->register_(resolved->first->type()->type());
             t->setResolvedTypeIndex(index);
         }
@@ -196,8 +196,8 @@ public:
         if ( e->resolvedDeclarationIndex() )
             return;
 
-        if ( auto resolved = scope::lookupID<declaration::Constant>(e->id(), builder->context()->root().get(),
-                                                                    "built-in constant") ) {
+        if ( auto resolved =
+                 scope::lookupID<declaration::Constant>(e->id(), builder->context()->root(), "built-in constant") ) {
             auto index = builder->context()->register_(resolved->first);
             e->setResolvedDeclarationIndex(builder->context(), index);
         }
@@ -206,7 +206,7 @@ public:
     }
 };
 
-bool Operator::init(Builder* builder, const NodePtr& scope_root) {
+bool Operator::init(Builder* builder, Node* scope_root) {
     auto sig = signature(builder);
     assert(sig.skip_doc || ! sig.ns.empty());
 
@@ -307,7 +307,7 @@ bool Operator::init(Builder* builder, const NodePtr& scope_root) {
     return true;
 }
 
-QualifiedTypePtr Operator::result(Builder* builder, const Expressions& operands, const Meta& meta) const {
+QualifiedType* Operator::result(Builder* builder, const Expressions& operands, const Meta& meta) const {
     assert(_signature);
     if ( _signature->result )
         return _signature->result;
@@ -331,8 +331,7 @@ std::string Operator::dump() const {
     return x;
 }
 
-std::shared_ptr<Operand> Operator::operandForType(Builder* builder, parameter::Kind kind, const UnqualifiedTypePtr& t,
-                                                  std::string doc) {
+Operand* Operator::operandForType(Builder* builder, parameter::Kind kind, UnqualifiedType* t, std::string doc) {
     return builder->typeOperandListOperand(kind, t, false, std::move(doc), t->meta());
 }
 

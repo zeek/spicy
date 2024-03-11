@@ -21,7 +21,7 @@ public:
     const auto& cxxname() const { return _cxxname; }
     const auto& name() const { return _name; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"name", _name}, {"cxxname", _cxxname}};
@@ -42,12 +42,10 @@ public:
      * @param arguments arguments to the function call
      * @param m meta information for the function call
      */
-    static auto create(ASTContext* ctx, const std::string& name, const std::string& cxxname,
-                       const QualifiedTypePtr& type, const type::function::Parameters& parameters,
-                       const Expressions& arguments, const Meta& meta = {}) {
-        return std::shared_ptr<BuiltInFunction>(new BuiltInFunction(ctx, node::flatten(type, parameters, arguments),
-                                                                    name, cxxname, static_cast<int>(parameters.size()),
-                                                                    meta));
+    static auto create(ASTContext* ctx, const std::string& name, const std::string& cxxname, QualifiedType* type,
+                       const type::function::Parameters& parameters, const Expressions& arguments, Meta meta = {}) {
+        return ctx->make<BuiltInFunction>(ctx, node::flatten(type, parameters, arguments), name, cxxname,
+                                          static_cast<int>(parameters.size()), std::move(meta));
     }
 
 protected:

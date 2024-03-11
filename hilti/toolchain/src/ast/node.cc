@@ -23,17 +23,12 @@ std::string node::to_string(const Tags& ti) {
     return util::join(util::transform(ti, [](auto i) { return std::to_string(i); }), ",");
 }
 
-Node::~Node() {
-    for ( auto& c : _children ) {
-        if ( c )
-            c->_clearParent();
-    }
-}
+Node::~Node() {}
 
 std::string Node::dump() const {
     std::stringstream s;
     s << '\n';
-    ast_dumper::dump(s, const_cast<Node*>(this)->as<Node>());
+    ast_dumper::dump(s, const_cast<Node*>(this));
     return s.str();
 }
 
@@ -92,20 +87,18 @@ std::string Node::renderSelf(bool include_location) const {
     return s;
 }
 
-void Node::print(std::ostream& out, bool compact) const {
-    printer::print(out, const_cast<Node*>(this)->shared_from_this(), compact);
-}
+void Node::print(std::ostream& out, bool compact) const { printer::print(out, const_cast<Node*>(this), compact); }
 
 std::string Node::print() const {
     std::stringstream out;
-    printer::print(out, const_cast<Node*>(this)->shared_from_this(), true);
+    printer::print(out, const_cast<Node*>(this), true);
     return out.str();
 }
 
-void Node::replaceChild(ASTContext* ctx, const Node* old, NodePtr new_) {
+void Node::replaceChild(ASTContext* ctx, Node* old, Node* new_) {
     for ( auto i = 0U; i < _children.size(); i++ ) {
-        if ( _children[i].get() == old ) {
-            setChild(ctx, i, std::move(new_));
+        if ( _children[i] == old ) {
+            setChild(ctx, i, new_);
             return;
         }
     }
@@ -113,11 +106,11 @@ void Node::replaceChild(ASTContext* ctx, const Node* old, NodePtr new_) {
     logger().internalError("child not found");
 }
 
-void Node::replaceChildren(ASTContext* ctx, Nodes children) {
+void Node::replaceChildren(ASTContext* ctx, const Nodes& children) {
     clearChildren();
 
     for ( auto&& c : children )
-        addChild(ctx, std::move(c));
+        addChild(ctx, c);
 }
 
 void Node::clearChildren() {
@@ -129,16 +122,7 @@ void Node::clearChildren() {
     _children.clear();
 }
 
-void Node::destroyChildren() {
-    for ( auto n : visitor::RangePostOrder(this->as<Node>(), "") ) {
-        if ( auto scope = n->scope() )
-            scope->clear();
-
-        n->clearChildren();
-    }
-}
-
-NodePtr Node::_newChild(ASTContext* ctx, NodePtr child) {
+Node* Node::_newChild(ASTContext* ctx, Node* child) {
     if ( child->_parent )
         return node::deepcopy(ctx, child);
     else
@@ -150,7 +134,7 @@ void Node::_checkCastBackend() const {
         logger().internalError("as/tryAs/isA used on a QualifiedType; probably meant to use its type() instead");
 }
 
-NodePtr node::detail::deepcopy(ASTContext* ctx, const NodePtr& n, bool force) {
+Node* node::detail::deepcopy(ASTContext* ctx, Node* n, bool force) {
     if ( ! n )
         return nullptr;
 
@@ -166,7 +150,7 @@ NodePtr node::detail::deepcopy(ASTContext* ctx, const NodePtr& n, bool force) {
 }
 
 // Helper looking up an ID inside a node's direct scope, applying visibility rules.
-static std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> _lookupID(const ID& id, const Node* n) {
+static std::pair<bool, Result<std::pair<Declaration*, ID>>> _lookupID(const ID& id, const Node* n) {
     assert(n->scope());
     auto resolved = n->scope()->lookupAll(id);
 
@@ -213,7 +197,7 @@ static std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> _lookupID(const ID
     return std::make_pair(true, std::move(x));
 }
 
-Result<std::pair<DeclarationPtr, ID>> Node::lookupID(const ID& id, const std::string_view& what) const {
+Result<std::pair<Declaration*, ID>> Node::lookupID(const ID& id, const std::string_view& what) const {
     for ( const auto* n = this; n; n = n->parent() ) {
         if ( ! n->scope() )
             continue;

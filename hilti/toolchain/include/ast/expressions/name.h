@@ -24,7 +24,7 @@ public:
     const auto& fullyQualifiedID() const { return _fqid; }
 
     /** If the resolver has resolved the name to a declaration, returns it. */
-    DeclarationPtr resolvedDeclaration() {
+    Declaration* resolvedDeclaration() {
         if ( ! _resolved_declaration_index )
             return nullptr;
 
@@ -40,7 +40,7 @@ public:
      * declaration. If it has been resolved to a type, the type will bewrapped
      * into `type::Type()`.
      */
-    QualifiedTypePtr type() const final;
+    QualifiedType* type() const final;
 
     /**
      * Sets the declaration that the name has been resolved to. This then lets
@@ -73,7 +73,7 @@ public:
     node::Properties properties() const final;
 
     static auto create(ASTContext* ctx, const hilti::ID& id, const Meta& meta = {}) {
-        return std::shared_ptr<Name>(new Name(ctx, {QualifiedType::createAuto(ctx, meta)}, id, meta));
+        return ctx->make<Name>(ctx, {QualifiedType::createAuto(ctx, meta)}, id, meta);
     }
 
 protected:

@@ -18,19 +18,18 @@ public:
     auto value() const { return child<Expression>(1); }
     auto location() const { return childTryAs<Expression>(2); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     /** Constructs a exception value of a given type. */
-    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& type, const ExpressionPtr& value,
-                       const Meta& meta = {}) {
-        return std::shared_ptr<Exception>(
-            new Exception(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta), value, nullptr}, meta));
+    static auto create(ASTContext* ctx, UnqualifiedType* type, Expression* value, const Meta& meta = {}) {
+        return ctx->make<Exception>(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta), value, nullptr},
+                                    meta);
     }
 
-    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& type, const ExpressionPtr& value,
-                       const ExpressionPtr& location, const Meta& meta = {}) {
-        return std::shared_ptr<Exception>(
-            new Exception(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta), value, location}, meta));
+    static auto create(ASTContext* ctx, UnqualifiedType* type, Expression* value, Expression* location,
+                       const Meta& meta = {}) {
+        return ctx->make<Exception>(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta), value, location},
+                                    meta);
     }
 
 protected:

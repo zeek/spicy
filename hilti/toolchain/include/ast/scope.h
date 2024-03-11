@@ -29,7 +29,7 @@ public:
      *
      * @param d declaration to insert
      */
-    void insert(const DeclarationPtr& d);
+    void insert(Declaration* d);
 
     /**
      * Inserts a declaration into it's scope under a given ID.
@@ -37,7 +37,7 @@ public:
      * @param id ID to insert the declaration under, which does not need to match the declaration's own ID
      * @param d declaration to insert
      */
-    void insert(const ID& id, DeclarationPtr d);
+    void insert(const ID& id, Declaration* d);
 
     /**
      * Inserts a place-holder into the scope that let's lookup fail here if it
@@ -52,9 +52,9 @@ public:
 
     /** Result type for the lookup methods. */
     struct Referee {
-        DeclarationPtr node;   /**< node that ID maps to */
-        std::string qualified; /**< qualified ID with full path used to find it */
-        bool external{};       /**< true if found in a different (imported) module  */
+        Declaration* node = nullptr; /**< node that ID maps to */
+        std::string qualified;       /**< qualified ID with full path used to find it */
+        bool external{};             /**< true if found in a different (imported) module  */
     };
 
     /** Returns all mappings for an ID. */
@@ -90,7 +90,7 @@ public:
     Scope& operator=(Scope&& other) = delete;
 
 private:
-    using ItemMap = std::map<std::string, std::unordered_set<DeclarationPtr>>;
+    using ItemMap = std::map<std::string, std::unordered_set<Declaration*>>;
 
     std::vector<Referee> _findID(const ID& id, bool external = false) const;
     std::vector<Referee> _findID(const Scope* scope, const ID& id, bool external = false) const;

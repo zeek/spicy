@@ -16,10 +16,10 @@ class Ctor : public Expression {
 public:
     auto ctor() const { return child<hilti::Ctor>(0); }
 
-    QualifiedTypePtr type() const final { return ctor()->type(); }
+    QualifiedType* type() const final { return ctor()->type(); }
 
-    static auto create(ASTContext* ctx, const CtorPtr& ctor, const Meta& meta = {}) {
-        return std::shared_ptr<Ctor>(new Ctor(ctx, {ctor}, meta));
+    static auto create(ASTContext* ctx, hilti::Ctor* ctor, Meta meta = {}) {
+        return ctx->make<Ctor>(ctx, {ctor}, std::move(meta));
     }
 
 protected:

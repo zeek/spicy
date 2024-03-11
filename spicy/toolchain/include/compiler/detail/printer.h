@@ -16,6 +16,6 @@ namespace spicy::detail::printer {
  * where we don't, in which case the caller should fall back on HILTI-side node
  * printing.
  */
-bool print(hilti::printer::Stream& stream, const NodePtr& root);
+bool print(hilti::printer::Stream& stream, Node* root);
 
 } // namespace spicy::detail::printer

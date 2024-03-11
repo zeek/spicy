@@ -14,7 +14,7 @@ const Options& Builder::options() const {
     return context()->driver()->options();
 }
 
-ExpressionPtr Builder::addTmp(const std::string& prefix, const QualifiedTypePtr& t, const Expressions& args) {
+Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, const Expressions& args) {
     int n = 0;
 
     if ( auto i = _tmps().find(prefix); i != _tmps().end() )
@@ -32,7 +32,7 @@ ExpressionPtr Builder::addTmp(const std::string& prefix, const QualifiedTypePtr&
     return id(tmp);
 }
 
-ExpressionPtr Builder::addTmp(const std::string& prefix, const ExpressionPtr& init) {
+Expression* Builder::addTmp(const std::string& prefix, Expression* init) {
     int n = 0;
 
     if ( auto i = _tmps().find(prefix); i != _tmps().end() )
@@ -50,7 +50,7 @@ ExpressionPtr Builder::addTmp(const std::string& prefix, const ExpressionPtr& in
     return id(tmp);
 }
 
-ExpressionPtr Builder::addTmp(const std::string& prefix, const QualifiedTypePtr& t, const ExpressionPtr& init) {
+Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, Expression* init) {
     int n = 0;
 
     if ( auto i = _tmps().find(prefix); i != _tmps().end() )
@@ -72,17 +72,17 @@ void Builder::addDebugMsg(std::string_view stream, std::string_view fmt, Express
     if ( ! context()->driver()->options().debug )
         return;
 
-    ExpressionPtr call_;
+    Expression* call_ = nullptr;
 
     if ( args.empty() )
         call_ = call("hilti::debug", {stringLiteral(stream), stringLiteral(fmt)});
     else if ( args.size() == 1 ) {
-        auto msg = modulo(stringLiteral(fmt), std::move(args.front()));
-        call_ = call("hilti::debug", {stringLiteral(stream), std::move(msg)});
+        auto msg = modulo(stringLiteral(fmt), args.front());
+        call_ = call("hilti::debug", {stringLiteral(stream), msg});
     }
     else {
         auto msg = modulo(stringLiteral(fmt), tuple(args));
-        call_ = call("hilti::debug", {stringLiteral(stream), std::move(msg)});
+        call_ = call("hilti::debug", {stringLiteral(stream), msg});
     }
 
     block()->_add(context(), statementExpression(call_, call_->meta()));
@@ -108,29 +108,29 @@ void Builder::setLocation(const Location& l) {
     block()->_add(context(), statementSetLocation(stringLiteral(l.dump())));
 }
 
-ExpressionPtr Builder::startProfiler(std::string_view name, ExpressionPtr size) {
+Expression* Builder::startProfiler(std::string_view name, Expression* size) {
     if ( ! context()->driver()->options().enable_profiling )
         return {};
 
     // Note the name of the temp must not clash what HILTI's code generator
     // picks for profiler that it instantiates itself. We do not currently keep
     // those namespace separate.
-    ExpressionPtr profiler;
+    Expression* profiler = nullptr;
 
     if ( size )
-        profiler = call("hilti::profiler_start", {stringLiteral(name), std::move(size)});
+        profiler = call("hilti::profiler_start", {stringLiteral(name), size});
     else
         profiler = call("hilti::profiler_start", {stringLiteral(name)});
 
     return addTmp("prof", profiler);
 }
 
-void Builder::stopProfiler(ExpressionPtr profiler, ExpressionPtr size) {
+void Builder::stopProfiler(Expression* profiler, Expression* size) {
     if ( ! context()->driver()->options().enable_profiling )
         return;
 
     if ( size )
-        addCall("hilti::profiler_stop", {std::move(profiler), std::move(size)});
+        addCall("hilti::profiler_stop", {profiler, size});
     else
-        addCall("hilti::profiler_stop", {std::move(profiler)});
+        addCall("hilti::profiler_stop", {profiler});
 }

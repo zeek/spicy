@@ -20,16 +20,16 @@ using hilti::util::fmt;
 namespace {
 
 struct TypeParser {
-    TypeParser(ParserBuilder* pb_, const production::Meta& meta_, ExpressionPtr dst_, bool is_try_)
-        : pb(pb_), meta(meta_), dst(std::move(dst_)), is_try(is_try_) {}
+    TypeParser(ParserBuilder* pb_, const production::Meta& meta_, Expression* dst_, bool is_try_)
+        : pb(pb_), meta(meta_), dst(dst_), is_try(is_try_) {}
 
     ParserBuilder* pb;
     const production::Meta& meta;
     Production* production = nullptr;
-    ExpressionPtr dst;
+    Expression* dst = nullptr;
     bool is_try;
 
-    ExpressionPtr buildParser(const UnqualifiedTypePtr& t);
+    Expression* buildParser(UnqualifiedType* t);
 
     auto state() { return pb->state(); }
     auto builder() { return pb->builder(); }
@@ -41,7 +41,7 @@ struct TypeParser {
     }
     auto popBuilder() { return pb->popBuilder(); }
 
-    ExpressionPtr destination(const UnqualifiedTypePtr& t) {
+    Expression* destination(UnqualifiedType* t) {
         if ( dst )
             return dst;
 
@@ -51,8 +51,8 @@ struct TypeParser {
         return builder()->addTmp("x", t);
     }
 
-    ExpressionPtr performUnpack(const ExpressionPtr& target, const UnqualifiedTypePtr& t, unsigned int len,
-                                const Expressions& unpack_args, const Meta& m, bool is_try) {
+    Expression* performUnpack(Expression* target, UnqualifiedType* t, unsigned int len, const Expressions& unpack_args,
+                              const Meta& m, bool is_try) {
         auto qt = builder()->qualifiedType(t, hilti::Constness::Mutable);
 
         if ( ! is_try ) {
@@ -84,16 +84,16 @@ struct TypeParser {
         }
     }
 
-    ExpressionPtr fieldByteOrder() {
-        ExpressionPtr byte_order;
+    Expression* fieldByteOrder() {
+        Expression* byte_order = nullptr;
 
         if ( const auto& a = meta.field()->attributes()->find("&byte-order") )
             byte_order = *a->valueAsExpression();
 
-        else if ( const auto& a = state().unit.get()->attributes()->find("&byte-order") )
+        else if ( const auto& a = state().unit->attributes()->find("&byte-order") )
             byte_order = *a->valueAsExpression();
 
-        else if ( const auto& p = state().unit.get()->propertyItem("%byte-order") )
+        else if ( const auto& p = state().unit->propertyItem("%byte-order") )
             byte_order = p->expression();
 
         if ( byte_order )
@@ -107,7 +107,7 @@ struct Visitor : public visitor::PreOrder {
     Visitor(TypeParser* tp) : tp(tp) {}
 
     TypeParser* tp;
-    ExpressionPtr result = nullptr;
+    Expression* result = nullptr;
 
     auto pb() { return tp->pb; }
     auto state() { return pb()->state(); }
@@ -127,27 +127,27 @@ struct Visitor : public visitor::PreOrder {
         assert(! (v4 && v6));
 
         if ( v4 )
-            result = tp->performUnpack(tp->destination(n->as<hilti::type::Address>()), builder()->typeAddress(), 4,
+            result = tp->performUnpack(tp->destination(n), builder()->typeAddress(), 4,
                                        {state().cur, builder()->id("hilti::AddressFamily::IPv4"), tp->fieldByteOrder()},
                                        n->meta(), tp->is_try);
 
         else
-            result = tp->performUnpack(tp->destination(n->as<hilti::type::Address>()), builder()->typeAddress(), 16,
+            result = tp->performUnpack(tp->destination(n), builder()->typeAddress(), 16,
                                        {state().cur, builder()->id("hilti::AddressFamily::IPv6"), tp->fieldByteOrder()},
                                        n->meta(), tp->is_try);
     }
 
     void operator()(hilti::type::Bitfield* n) final {
-        ExpressionPtr bitorder = builder()->id("hilti::BitOrder::LSB0");
+        Expression* bitorder = builder()->id("hilti::BitOrder::LSB0");
 
         if ( auto attrs = n->attributes() ) {
             if ( auto a = attrs->find("&bit-order") )
                 bitorder = *a->valueAsExpression();
         }
 
-        auto target = tp->destination(n->as<hilti::type::Bitfield>());
-        tp->performUnpack(target, n->as<hilti::type::Bitfield>(), n->width() / 8,
-                          {state().cur, tp->fieldByteOrder(), bitorder}, n->meta(), tp->is_try);
+        auto target = tp->destination(n);
+        tp->performUnpack(target, n, n->width() / 8, {state().cur, tp->fieldByteOrder(), bitorder}, n->meta(),
+                          tp->is_try);
 
         if ( pb()->options().debug ) {
             auto have_value = builder()->addIf(builder()->hasMember(target, "__value__"));
@@ -173,19 +173,17 @@ struct Visitor : public visitor::PreOrder {
         auto type = tp->meta.field()->attributes()->find("&type");
         assert(type);
         result =
-            tp->performUnpack(tp->destination(n->as<hilti::type::Real>()), builder()->typeReal(), 4,
+            tp->performUnpack(tp->destination(n), builder()->typeReal(), 4,
                               {state().cur, *type->valueAsExpression(), tp->fieldByteOrder()}, n->meta(), tp->is_try);
     }
 
     void operator()(hilti::type::SignedInteger* n) final {
-        result = tp->performUnpack(tp->destination(n->as<hilti::type::SignedInteger>()),
-                                   builder()->typeSignedInteger(n->width()), n->width() / 8,
+        result = tp->performUnpack(tp->destination(n), builder()->typeSignedInteger(n->width()), n->width() / 8,
                                    {state().cur, tp->fieldByteOrder()}, n->meta(), tp->is_try);
     }
 
     void operator()(hilti::type::UnsignedInteger* n) final {
-        result = tp->performUnpack(tp->destination(n->as<hilti::type::UnsignedInteger>()),
-                                   builder()->typeUnsignedInteger(n->width()), n->width() / 8,
+        result = tp->performUnpack(tp->destination(n), builder()->typeUnsignedInteger(n->width()), n->width() / 8,
                                    {state().cur, tp->fieldByteOrder()}, n->meta(), tp->is_try);
     }
 
@@ -214,7 +212,7 @@ struct Visitor : public visitor::PreOrder {
                 to_eod = true;
         }
 
-        auto target = tp->destination(n->as<hilti::type::Bytes>());
+        auto target = tp->destination(n);
 
         if ( to_eod || parse_attr ) {
             if ( tp->meta.field() && chunked_attr && ! tp->meta.container() )
@@ -260,7 +258,7 @@ struct Visitor : public visitor::PreOrder {
         }
 
         if ( until_attr || until_including_attr ) {
-            ExpressionPtr until_expr;
+            Expression* until_expr = nullptr;
             if ( until_attr )
                 until_expr =
                     builder()->coerceTo(*until_attr->valueAsExpression(),
@@ -282,7 +280,7 @@ struct Visitor : public visitor::PreOrder {
                 // Helper to add a new chunk of data to the field's value,
                 // behaving slightly different depending on whether we have
                 // &chunked or not.
-                auto add_match_data = [&](const ExpressionPtr& target, const ExpressionPtr& match) {
+                auto add_match_data = [&](Expression* target, Expression* match) {
                     if ( chunked_attr ) {
                         builder()->addAssign(target, match);
 
@@ -310,7 +308,7 @@ struct Visitor : public visitor::PreOrder {
                                                                     hilti::Constness::Mutable));
                 builder()->addAssign(builder()->tuple({found, it}), find);
 
-                ExpressionPtr match = builder()->memberCall(state().cur, "sub", {it});
+                Expression* match = builder()->memberCall(state().cur, "sub", {it});
 
                 auto non_empty_match = builder()->addIf(builder()->size(match));
                 pushBuilder(non_empty_match, [&]() { add_match_data(target, match); });
@@ -336,14 +334,13 @@ struct Visitor : public visitor::PreOrder {
     }
 };
 
-ExpressionPtr TypeParser::buildParser(const UnqualifiedTypePtr& t) {
+Expression* TypeParser::buildParser(UnqualifiedType* t) {
     return hilti::visitor::dispatch(Visitor(this), t, [](const auto& v) { return v.result; });
 }
 
 } // namespace
 
-ExpressionPtr ParserBuilder::_parseType(const UnqualifiedTypePtr& t, const production::Meta& meta,
-                                        const ExpressionPtr& dst, bool is_try) {
+Expression* ParserBuilder::_parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, bool is_try) {
     assert(! is_try || (t->isA<hilti::type::SignedInteger>() || t->isA<hilti::type::UnsignedInteger>() ||
                         t->isA<hilti::type::Bitfield>()));
 
@@ -354,13 +351,11 @@ ExpressionPtr ParserBuilder::_parseType(const UnqualifiedTypePtr& t, const produ
         fmt("codegen: type parser did not return expression for '%s' (%s)", *t, t->typename_()));
 }
 
-ExpressionPtr ParserBuilder::parseType(const UnqualifiedTypePtr& t, const production::Meta& meta,
-                                       const ExpressionPtr& dst) {
+Expression* ParserBuilder::parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst) {
     return _parseType(t, meta, dst, /*is_try =*/false);
 }
 
-ExpressionPtr ParserBuilder::parseTypeTry(const UnqualifiedTypePtr& t, const production::Meta& meta,
-                                          const ExpressionPtr& dst) {
+Expression* ParserBuilder::parseTypeTry(UnqualifiedType* t, const production::Meta& meta, Expression* dst) {
     assert(t->isA<hilti::type::SignedInteger>() || t->isA<hilti::type::UnsignedInteger>() ||
            t->isA<hilti::type::Bitfield>());
 

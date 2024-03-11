@@ -14,9 +14,7 @@ class Null : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "null"; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Null>(new Null(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Null>(ctx, std::move(meta)); }
 
 protected:
     Null(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"null"}, std::move(meta)) {}

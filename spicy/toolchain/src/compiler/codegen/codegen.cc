@@ -47,7 +47,7 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         : visitor::MutatingPostOrder(cg->builder(), logging::debug::CodeGen), cg(cg), module(module) {}
 
     CodeGen* cg;
-    hilti::declaration::Module* module;
+    hilti::declaration::Module* module = nullptr;
     ID module_id = ID("<no module>");
 
     void operator()(hilti::declaration::Type* n) final {
@@ -72,7 +72,7 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
 
         n->setType(context(), qstruct);
         n->addAttribute(context(), builder()->attribute("&on-heap"));
-        cg->recordTypeMapping(u.get(), struct_);
+        cg->recordTypeMapping(u, struct_);
 
         recordChange(n, "replaced unit type with struct");
     }
@@ -91,10 +91,10 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         : visitor::MutatingPostOrder(cg->builder(), logging::debug::CodeGen), cg(cg), module(module) {}
 
     CodeGen* cg;
-    hilti::declaration::Module* module;
+    hilti::declaration::Module* module = nullptr;
     ID module_id = ID("<no module>");
 
-    ExpressionPtr argument(const ExpressionPtr& args, unsigned int i, std::optional<ExpressionPtr> def = {}) {
+    Expression* argument(Expression* args, unsigned int i, std::optional<Expression*> def = {}) {
         auto ctor = args->as<hilti::expression::Ctor>()->ctor();
 
         if ( auto x = ctor->tryAs<hilti::ctor::Coerced>() )
@@ -122,7 +122,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
             cg->compileHook(*unit_type->as<type::Unit>(), n->hook()->id(), {}, hook->isForEach(), hook->isDebug(),
                             hook->ftype()->parameters(), hook->body(), hook->priority(), n->meta());
 
-        replaceNode(n, std::move(func));
+        replaceNode(n, func);
     }
 
     void operator()(operator_::unit::Unset* n) final {
@@ -182,7 +182,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         auto direction = argument(n->op2(), 1, builder()->id("spicy::Direction::Forward"));
         auto i = argument(n->op2(), 2, builder()->null());
         auto x = builder()->call("spicy_rt::unit_find", {begin, end, i, needle, direction});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::unit::ContextConst* n) final {
@@ -197,7 +197,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
 
     void operator()(operator_::unit::Backtrack* n) final {
         auto x = builder()->call("spicy_rt::backtrack", {});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(spicy::ctor::Unit* n) final {
@@ -208,94 +208,94 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
 
     void operator()(operator_::unit::ConnectFilter* n) final {
         auto x = builder()->call("spicy_rt::filter_connect", {n->op0(), argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::unit::Forward* n) final {
         auto x = builder()->call("spicy_rt::filter_forward", {n->op0(), argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::unit::ForwardEod* n) final {
         auto x = builder()->call("spicy_rt::filter_forward_eod", {n->op0()});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::Close* n) final {
         auto x = builder()->memberCall(n->op0(), "close");
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::Connect* n) final {
         auto x = builder()->memberCall(n->op0(), "connect", {argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::ConnectMIMETypeBytes* n) final {
         auto x = builder()->memberCall(n->op0(), "connect_mime_type", {argument(n->op2(), 0), builder()->scope()});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::ConnectMIMETypeString* n) final {
         auto x = builder()->memberCall(n->op0(), "connect_mime_type", {argument(n->op2(), 0), builder()->scope()});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::ConnectFilter* n) final {
         auto x = builder()->memberCall(n->op0(), "connect_filter", {argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::Gap* n) final {
         auto x = builder()->memberCall(n->op0(), "gap", {argument(n->op2(), 0), argument(n->op2(), 1)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::SequenceNumber* n) final {
         auto x = builder()->memberCall(n->op0(), "sequence_number");
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::SetAutoTrim* n) final {
         auto x = builder()->memberCall(n->op0(), "set_auto_trim", {argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::SetInitialSequenceNumber* n) final {
         auto x = builder()->memberCall(n->op0(), "set_initial_sequence_number", {argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::SetPolicy* n) final {
         auto x = builder()->memberCall(n->op0(), "set_policy", {argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::SizeValue* n) final {
         auto x = builder()->memberCall(n->op0(), "size");
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::SizeReference* n) final {
         auto x = builder()->memberCall(n->op0(), "size");
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::Skip* n) final {
         auto x = builder()->memberCall(n->op0(), "skip", {argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::Trim* n) final {
         auto x = builder()->memberCall(n->op0(), "trim", {argument(n->op2(), 0)});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::Write* n) final {
         auto x = builder()->memberCall(n->op0(), "write",
                                        {argument(n->op2(), 0), argument(n->op2(), 1, builder()->null()),
                                         argument(n->op2(), 2, builder()->null())});
-        replaceNode(n, std::move(x));
+        replaceNode(n, x);
     }
 
     void operator()(statement::Print* n) final {
@@ -370,7 +370,7 @@ struct VisitorPass3 : public visitor::MutatingPostOrder {
         : visitor::MutatingPostOrder(cg->builder(), logging::debug::CodeGen), cg(cg), module(module) {}
 
     CodeGen* cg;
-    hilti::declaration::Module* module;
+    hilti::declaration::Module* module = nullptr;
 
     void operator()(hilti::ctor::Coerced* n) final {
         // Replace coercions with their final result, so that HILTI will not
@@ -397,24 +397,24 @@ struct VisitorPass3 : public visitor::MutatingPostOrder {
 
 } // anonymous namespace
 
-bool CodeGen::_compileModule(const ModulePtr& module, int pass) {
+bool CodeGen::_compileModule(hilti::declaration::Module* module, int pass) {
     switch ( pass ) {
         case 1: {
-            auto v1 = VisitorPass1(this, module.get());
+            auto v1 = VisitorPass1(this, module);
             visitor::visit(v1, module, ".spicy");
-            _updateDeclarations(&v1, module.get());
+            _updateDeclarations(&v1, module);
             return v1.isModified();
         }
 
         case 2: {
             bool is_modified = false;
 
-            auto v2 = VisitorPass2(this, module.get());
+            auto v2 = VisitorPass2(this, module);
             while ( true ) {
                 v2.clearModified();
 
                 visitor::visit(v2, module, ".spicy");
-                _updateDeclarations(&v2, module.get());
+                _updateDeclarations(&v2, module);
 
                 if ( v2.isModified() )
                     is_modified = true;
@@ -427,9 +427,9 @@ bool CodeGen::_compileModule(const ModulePtr& module, int pass) {
             module->add(context(), builder()->import("hilti"));
             module->add(context(), builder()->import("spicy_rt"));
 
-            auto v3 = VisitorPass3(this, module.get());
+            auto v3 = VisitorPass3(this, module);
             visitor::visit(v3, module, ".spicy");
-            _updateDeclarations(&v3, module.get());
+            _updateDeclarations(&v3, module);
 
             if ( driver()->lookupUnit(module->uid()) ) {
                 driver()->updateProcessExtension(module->uid(), ".hlt");
@@ -461,7 +461,7 @@ void CodeGen::_updateDeclarations(visitor::MutatingPostOrder* v, hilti::declarat
     v->recordChange("new declarations added");
 }
 
-bool CodeGen::compileAST(const ASTRootPtr& root) {
+bool CodeGen::compileAST(hilti::ASTRoot* root) {
     hilti::util::timing::Collector _("spicy/compiler/codegen");
 
     // Find all the Spicy modules and transform them one by one. We do this in
@@ -476,12 +476,12 @@ bool CodeGen::compileAST(const ASTRootPtr& root) {
 
         void operator()(hilti::declaration::Module* n) final {
             if ( n->uid().process_extension == ".spicy" ) {
-                auto module = n->as<hilti::declaration::Module>();
+                auto module = n;
                 HILTI_DEBUG(logging::debug::CodeGen,
                             fmt("[pass %d] processing module '%s'", pass, module->canonicalID()));
                 hilti::logging::DebugPushIndent _(logging::debug::CodeGen);
 
-                cg->_hilti_module = module.get();
+                cg->_hilti_module = module;
                 modified = modified | cg->_compileModule(module, pass);
                 cg->_hilti_module = nullptr;
             }
@@ -499,15 +499,14 @@ bool CodeGen::compileAST(const ASTRootPtr& root) {
     return modified;
 }
 
-std::shared_ptr<hilti::declaration::Function> CodeGen::compileHook(
-    const type::Unit& unit, const ID& id, std::shared_ptr<type::unit::item::Field> field, bool foreach, bool debug,
-    hilti::type::function::Parameters params, const StatementPtr& body, const ExpressionPtr& priority,
-    const hilti::Meta& meta) {
+hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
+                                                   bool foreach, bool debug, hilti::type::function::Parameters params,
+                                                   Statement* body, Expression* priority, const hilti::Meta& meta) {
     if ( debug && ! options().debug )
         return {};
 
     bool is_container = false;
-    QualifiedTypePtr original_field_type;
+    QualifiedType* original_field_type = nullptr;
 
     if ( field ) {
         if ( ! field->parseType()->type()->isA<hilti::type::Void>() && ! field->isSkip() )
@@ -545,7 +544,7 @@ std::shared_ptr<hilti::declaration::Function> CodeGen::compileHook(
     }
 
     std::string hid;
-    QualifiedTypePtr result;
+    QualifiedType* result = nullptr;
 
     if ( id.local().str() == "0x25_print" ) {
         // Special-case: We simply translate this into HITLI's __str__ hook.
@@ -563,7 +562,7 @@ std::shared_ptr<hilti::declaration::Function> CodeGen::compileHook(
 
     auto ft = builder()->typeFunction(result, params, hilti::type::function::Flavor::Hook, meta);
 
-    AttributeSetPtr attrs = builder()->attributeSet();
+    AttributeSet* attrs = builder()->attributeSet();
 
     if ( priority )
         attrs->add(context(), builder()->attribute("&priority", priority));

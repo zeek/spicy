@@ -18,7 +18,7 @@ class Union : public UnqualifiedType {
 public:
     auto fields() const { return childrenOfType<declaration::Field>(); }
 
-    declaration::FieldPtr field(const ID& id) const {
+    declaration::Field* field(const ID& id) const {
         for ( const auto& f : fields() ) {
             if ( f->id() == id )
                 return f;
@@ -52,9 +52,9 @@ public:
         return childrenOfType<type::function::Parameter>();
     }
 
-    void addField(ASTContext* ctx, DeclarationPtr f) {
+    void addField(ASTContext* ctx, Declaration* f) {
         assert(f->isA<declaration::Field>());
-        addChild(ctx, std::move(f));
+        addChild(ctx, f);
     }
 
     std::string_view typeClass() const final { return "union"; }
@@ -64,33 +64,32 @@ public:
     bool isNameType() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final;
 
-    static auto create(ASTContext* ctx, const declaration::Parameters& params, Declarations fields,
-                       const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, const declaration::Parameters& params, Declarations fields, Meta meta = {}) {
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        return std::shared_ptr<Union>(new Union(ctx, node::flatten(params, std::move(fields)), -1, meta));
+        return ctx->make<Union>(ctx, node::flatten(params, std::move(fields)), -1, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const Declarations& fields, const Meta& meta = {}) {
-        return create(ctx, declaration::Parameters{}, fields, meta);
+    static auto create(ASTContext* ctx, const Declarations& fields, Meta meta = {}) {
+        return create(ctx, declaration::Parameters{}, fields, std::move(meta));
     }
 
     union AnonymousUnion {};
-    static auto create(ASTContext* ctx, AnonymousUnion _, Declarations fields, const Meta& meta = {}) {
-        return std::shared_ptr<Union>(new Union(ctx, std::move(fields), ++anon_union_counter, meta));
+    static auto create(ASTContext* ctx, AnonymousUnion _, Declarations fields, Meta meta = {}) {
+        return ctx->make<Union>(ctx, std::move(fields), ++anon_union_counter, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& meta = {}) {
-        return std::shared_ptr<Union>(new Union(ctx, Wildcard(), meta));
+    static auto create(ASTContext* ctx, Wildcard _, Meta meta = {}) {
+        return ctx->make<Union>(ctx, Wildcard(), std::move(meta));
     }
 
 protected:
-    Union(ASTContext* ctx, const Nodes& children, int64_t anon_union, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, {}, children, meta), _anon_union(anon_union) {}
+    Union(ASTContext* ctx, const Nodes& children, int64_t anon_union, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, {}, children, std::move(meta)), _anon_union(anon_union) {}
 
-    Union(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"union(*)"}, meta) {}
+    Union(ASTContext* ctx, Wildcard _, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"union(*)"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::Union, UnqualifiedType, final);
 

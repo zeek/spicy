@@ -16,7 +16,7 @@ namespace hilti::detail::ast_dumper {
  * @param include_scopes if true, include a dump of each node's identifier
  *        scope
  */
-void dump(std::ostream& out, const NodePtr& node, bool include_scopes = false);
+void dump(std::ostream& out, Node* node, bool include_scopes = false);
 
 /**
  * Log a debug representation of an AST node to a debug stream. The output
@@ -27,6 +27,6 @@ void dump(std::ostream& out, const NodePtr& node, bool include_scopes = false);
  * @param include_scopes if true, include a dump of each node's identifier
  *        scope
  */
-void dump(logging::DebugStream stream, const NodePtr& node, bool include_scopes = false);
+void dump(logging::DebugStream stream, Node* node, bool include_scopes = false);
 
 } // namespace hilti::detail::ast_dumper

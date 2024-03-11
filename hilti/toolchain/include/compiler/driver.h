@@ -433,7 +433,7 @@ protected:
      * been initially set up for processing by a plugin. This hook will run
      * before the AST has been processed any further by that plugin.
      */
-    virtual void hookNewASTPreCompilation(const Plugin& plugin, const std::shared_ptr<ASTRoot>& root) {}
+    virtual void hookNewASTPreCompilation(const Plugin& plugin, ASTRoot* root) {}
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST been
@@ -450,13 +450,13 @@ protected:
      * @param root the AST that has been processed
      * @return true if the AST has been modified and needs to be reprocessed
      */
-    virtual bool hookNewASTPostCompilation(const Plugin& plugin, const std::shared_ptr<ASTRoot>& root) { return false; }
+    virtual bool hookNewASTPostCompilation(const Plugin& plugin, ASTRoot* root) { return false; }
 
     /**
      * Hook for derived classes to execute custom code when the AST has been
      * fully processed and transformed to its final state.
      */
-    virtual Result<Nothing> hookCompilationFinished(const std::shared_ptr<ASTRoot>& root) { return Nothing(); }
+    virtual Result<Nothing> hookCompilationFinished(ASTRoot* root) { return Nothing(); }
 
     /**
      * Hook for derived classes to execute custom code when the HILTI runtime

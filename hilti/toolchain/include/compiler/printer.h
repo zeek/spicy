@@ -21,13 +21,13 @@ class Stream;
  * Prints an AST as HILTI source code. This consults any installed plugin
  * `print_ast` hooks.
  */
-void print(std::ostream& out, const NodePtr& root, bool compact = false);
+void print(std::ostream& out, Node* root, bool compact = false);
 
 /**
  * Prints an AST as HILTI source code. This consults any installed plugin
  * `print_ast` hooks.
  */
-void print(Stream& stream, const NodePtr& root); // NOLINT
+void print(Stream& stream, Node* root); // NOLINT
 
 namespace detail {
 
@@ -100,7 +100,7 @@ public:
     void popScope() { state().scopes.pop_back(); }
 
     template<typename T, IF_DERIVED_FROM(T, Node)>
-    Stream& operator<<(const std::shared_ptr<T>& t) {
+    Stream& operator<<(T* t) {
         _flush_pending();
         ::hilti::printer::print(*this, t);
         return *this;
@@ -134,7 +134,7 @@ public:
     }
 
     template<typename T>
-    Stream& operator<<(std::pair<std::shared_ptr<T>, const char*> p) {
+    Stream& operator<<(std::pair<T*, const char*> p) {
         bool first = true;
         for ( auto& i : p.first ) {
             _flush_pending();

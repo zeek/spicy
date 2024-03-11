@@ -23,7 +23,7 @@ class Struct : public UnqualifiedType {
 public:
     auto fields() const { return childrenOfType<declaration::Field>(); }
 
-    declaration::FieldPtr field(const ID& id) const {
+    declaration::Field* field(const ID& id) const {
         for ( const auto& f : fields() ) {
             if ( f->id() == id )
                 return f;
@@ -53,9 +53,9 @@ public:
         return childrenOfType<type::function::Parameter>();
     }
 
-    void addField(ASTContext* ctx, DeclarationPtr f) {
+    void addField(ASTContext* ctx, Declaration* f) {
         assert(f->isA<declaration::Field>());
-        addChild(ctx, std::move(f));
+        addChild(ctx, f);
     }
 
     std::string_view typeClass() const final { return "struct"; }
@@ -65,36 +65,35 @@ public:
     bool isNameType() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final;
 
-    static auto create(ASTContext* ctx, const declaration::Parameters& params, Declarations fields,
-                       const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, const declaration::Parameters& params, Declarations fields, Meta meta = {}) {
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        auto t = std::shared_ptr<Struct>(new Struct(ctx, node::flatten(NodePtr(), params, std::move(fields)), meta));
+        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, params, std::move(fields)), std::move(meta));
         t->_setSelf(ctx);
         return t;
     }
 
-    static auto create(ASTContext* ctx, const Declarations& fields, const Meta& meta = {}) {
-        auto t = create(ctx, declaration::Parameters{}, fields, meta);
+    static auto create(ASTContext* ctx, const Declarations& fields, Meta meta = {}) {
+        auto t = create(ctx, declaration::Parameters{}, fields, std::move(meta));
         t->_setSelf(ctx);
         return t;
     }
 
     struct AnonymousStruct {};
-    static auto create(ASTContext* ctx, AnonymousStruct _, Declarations fields, const Meta& meta = {}) {
-        auto t = std::shared_ptr<Struct>(new Struct(ctx, node::flatten(nullptr, std::move(fields)), meta));
+    static auto create(ASTContext* ctx, AnonymousStruct _, Declarations fields, Meta meta = {}) {
+        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, std::move(fields)), std::move(meta));
         t->_setSelf(ctx);
         return t;
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& meta = {}) {
-        return std::shared_ptr<Struct>(new Struct(ctx, Wildcard(), {nullptr}, meta));
+    static auto create(ASTContext* ctx, Wildcard _, Meta meta = {}) {
+        return ctx->make<Struct>(ctx, Wildcard(), {nullptr}, std::move(meta));
     }
 
 protected:
-    Struct(ASTContext* ctx, const Nodes& children, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, {}, children, meta) {}
+    Struct(ASTContext* ctx, const Nodes& children, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, {}, children, std::move(meta)) {}
 
     Struct(ASTContext* ctx, Wildcard _, const Nodes& children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"struct(*)"}, children, std::move(meta)) {}
@@ -104,7 +103,5 @@ protected:
 private:
     void _setSelf(ASTContext* ctx);
 };
-
-using StructPtr = std::shared_ptr<Struct>;
 
 } // namespace hilti::type

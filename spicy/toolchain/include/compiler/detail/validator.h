@@ -7,9 +7,9 @@
 namespace spicy::detail::validator {
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void validatePre(Builder* builder, const ASTRootPtr& root);
+void validatePre(Builder* builder, hilti::ASTRoot* root);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-void validatePost(Builder* builder, const ASTRootPtr& root);
+void validatePost(Builder* builder, hilti::ASTRoot* root);
 
 } // namespace spicy::detail::validator

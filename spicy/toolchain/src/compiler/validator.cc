@@ -21,19 +21,19 @@ using hilti::util::fmt;
 
 namespace {
 
-bool isEnumType(const QualifiedTypePtr& t, const char* expected_id) {
+bool isEnumType(QualifiedType* t, const char* expected_id) {
     return t->type()->typeID() && t->type()->typeID() == ID(expected_id);
 }
 
 // Helper to validate that a type supports parsing from literals.
-bool supportsLiterals(const QualifiedTypePtr& t) {
+bool supportsLiterals(QualifiedType* t) {
     return t->type()->isA<hilti::type::Bytes>() || t->type()->isA<hilti::type::RegExp>() ||
            t->type()->isA<hilti::type::SignedInteger>() || t->type()->isA<hilti::type::UnsignedInteger>() ||
            t->type()->isA<hilti::type::Bitfield>();
 }
 
 // Helper to validate that a type is parseable.
-hilti::Result<hilti::Nothing> isParseableType(const QualifiedTypePtr& pt, const type::unit::item::Field* f) {
+hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, const type::unit::item::Field* f) {
     if ( pt->type()->isA<hilti::type::Bitfield>() )
         return hilti::Nothing();
 
@@ -100,7 +100,7 @@ hilti::Result<hilti::Nothing> isParseableType(const QualifiedTypePtr& pt, const 
         auto type = f->attributes()->find("&type");
 
         if ( type ) {
-            if ( const auto& t = type->valueAsExpression()->get()->type(); ! isEnumType(t, "spicy::RealType") )
+            if ( const auto& t = (*type->valueAsExpression())->type(); ! isEnumType(t, "spicy::RealType") )
                 return hilti::result::Error("&type attribute must be a spicy::RealType");
         }
         else
@@ -138,7 +138,7 @@ hilti::Result<hilti::Nothing> isParseableType(const QualifiedTypePtr& pt, const 
     // A vector can be parsed either through a sub-item, or through a type.
 
     if ( auto item = f->item() ) {
-        if ( auto item_field = item->tryAs<spicy::type::unit::item::Field>() ) {
+        if ( item->isA<spicy::type::unit::item::Field>() ) {
             // Nothing to check here right now.
         }
 
@@ -155,7 +155,7 @@ hilti::Result<hilti::Nothing> isParseableType(const QualifiedTypePtr& pt, const 
     return hilti::result::Error(fmt("not a parseable type (%s)", *pt));
 }
 
-ExpressionPtr methodArgument(const hilti::expression::ResolvedOperator& o, size_t i) {
+Expression* methodArgument(const hilti::expression::ResolvedOperator& o, size_t i) {
     auto ops = o.op2();
 
     // If the argument list was the result of a coercion unpack its result.
@@ -451,9 +451,9 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(hilti::Attribute* n) final {
         auto builder = Builder(VisitorMixIn::builder());
 
-        auto get_attr_field = [](hilti::Attribute* a) -> spicy::type::unit::item::FieldPtr {
+        auto get_attr_field = [](hilti::Attribute* a) -> spicy::type::unit::item::Field* {
             try {
-                // Expected parent is AttributeSetPtr whose expected parent is Field.
+                // Expected parent is AttributeSet* whose expected parent is Field.
                 const auto& n = a->parent(2);
                 return n->tryAs<spicy::type::unit::item::Field>();
             } catch ( std::out_of_range& ) {
@@ -472,7 +472,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             error("&byte-order requires an expression", n);
 
         else if ( n->tag() == "&default" ) {
-            if ( auto f = get_attr_field(n) ) {
+            if ( get_attr_field(n) ) {
                 if ( ! n->hasValue() )
                     error("&default requires an argument", n);
                 else {
@@ -535,7 +535,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             error("&transient is no longer available, use an anonymous field instead to achieve the same effect", n);
 
         else if ( n->tag() == "&parse-from" ) {
-            if ( auto f = get_attr_field(n) ) {
+            if ( get_attr_field(n) ) {
                 if ( ! n->hasValue() )
                     error("&parse-from must provide an expression", n);
                 else if ( auto e = n->valueAsExpression();
@@ -546,7 +546,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->tag() == "&parse-at" ) {
-            if ( auto f = get_attr_field(n) ) {
+            if ( get_attr_field(n) ) {
                 if ( ! n->hasValue() )
                     error("&parse-at must provide an expression", n);
                 else if ( auto e = n->valueAsExpression();
@@ -577,11 +577,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
                 for ( const auto& b : t->bits() ) {
                     if ( u.itemByName(b->id()) )
-                        error(fmt("bitfield item '%s' shadows unit field", b->id()), item.get());
+                        error(fmt("bitfield item '%s' shadows unit field", b->id()), item);
 
                     if ( seen_bits->find(b->id()) != seen_bits->end() )
-                        error(fmt("bitfield item name '%s' appears in multiple anonymous bitfields", b->id()),
-                              item.get());
+                        error(fmt("bitfield item name '%s' appears in multiple anonymous bitfields", b->id()), item);
 
                     seen_bits->insert(b->id());
                 }
@@ -769,7 +768,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         int defaults = 0;
         std::vector<std::string> seen_exprs;
-        std::vector<spicy::type::unit::item::FieldPtr> seen_fields;
+        std::vector<spicy::type::unit::item::Field*> seen_fields;
 
         for ( const auto& c : n->cases() ) {
             if ( c->items().empty() )
@@ -809,7 +808,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                         }
                     }
 
-                    if ( auto x = f->attributes()->find("&synchronize") )
+                    if ( f->attributes()->find("&synchronize") )
                         error(fmt("unit switch branches cannot be &synchronize"), n);
 
                     seen_fields.emplace_back(f);
@@ -849,14 +848,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::declaration::UnitHook* n) final {
         if ( auto t = builder()->context()->lookup(n->hook()->unitTypeIndex()) ) {
             auto ut = t->as<type::Unit>();
-            checkHook(ut.get(), n->hook(), ut->isPublic(), true, n);
+            checkHook(ut, n->hook(), ut->isPublic(), true, n);
         }
         else
             error("unknown unit type", n);
     }
 
-    void checkHook(const type::Unit* unit, const declaration::HookPtr& hook, bool is_public, bool is_external,
-                   Node* n) {
+    void checkHook(const type::Unit* unit, const declaration::Hook* hook, bool is_public, bool is_external, Node* n) {
         // Note: We can't use any of the unit.isX() methods here that depend
         // on unit.isPublic() being set correctly, as they might not have
         // happened yet.
@@ -985,13 +983,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
 } // anonymous namespace
 
-void detail::validator::validatePre(Builder* builder, const ASTRootPtr& root) {
+void detail::validator::validatePre(Builder* builder, hilti::ASTRoot* root) {
     hilti::util::timing::Collector _("spicy/compiler/ast/validator");
     visitor::visit(VisitorPre(builder), root, ".spicy");
     (*hilti::plugin::registry().hiltiPlugin().ast_validate_pre)(builder, root);
 }
 
-void detail::validator::validatePost(Builder* builder, const ASTRootPtr& root) {
+void detail::validator::validatePost(Builder* builder, hilti::ASTRoot* root) {
     hilti::util::timing::Collector _("spicy/compiler/ast/validator");
     visitor::visit(VisitorPost(builder), root, ".spicy");
     (*hilti::plugin::registry().hiltiPlugin().ast_validate_post)(builder, root);

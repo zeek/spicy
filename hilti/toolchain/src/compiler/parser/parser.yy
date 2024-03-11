@@ -49,7 +49,7 @@ static hilti::Meta toMeta(hilti::detail::parser::location l) {
                                        (l.end.column > 0 ? l.end.column - 1 : 0)));
 }
 
-static hilti::QualifiedTypePtr iteratorForType(hilti::Builder* builder, hilti::QualifiedTypePtr t, hilti::Meta m) {
+static hilti::QualifiedType* iteratorForType(hilti::Builder* builder, hilti::QualifiedType* t, hilti::Meta m) {
     if ( auto iter = t->type()->iteratorType() )
         return iter;
     else {
@@ -58,7 +58,7 @@ static hilti::QualifiedTypePtr iteratorForType(hilti::Builder* builder, hilti::Q
         }
 }
 
-static hilti::QualifiedTypePtr viewForType(hilti::Builder* builder, hilti::QualifiedTypePtr t, hilti::Meta m) {
+static hilti::QualifiedType* viewForType(hilti::Builder* builder, hilti::QualifiedType* t, hilti::Meta m) {
     if ( auto v = t->type()->viewType() )
         return v;
     else {
@@ -242,39 +242,39 @@ static int _field_width = 0;
 %token YIELD "yield"
 
 %type <hilti::ID>                               local_id scoped_id dotted_id function_id scoped_function_id
-%type <hilti::DeclarationPtr>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
+%type <hilti::Declaration*>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
 %type <hilti::Declarations>                     struct_fields union_fields opt_union_fields
-%type <hilti::UnqualifiedTypePtr>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
-%type <hilti::QualifiedTypePtr>                 qtype
-%type <hilti::CtorPtr>                          ctor tuple struct_ list regexp map set
-%type <hilti::ExpressionPtr>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_func_default_expr
+%type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
+%type <hilti::QualifiedType*>                 qtype
+%type <hilti::Ctor*>                          ctor tuple struct_ list regexp map set
+%type <hilti::Expression*>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_func_default_expr
 %type <hilti::Expressions>                      opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
-%type <hilti::FunctionPtr>                      function_with_body method_with_body hook_with_body function_without_body
-%type <hilti::type::function::ParameterPtr>     func_param
+%type <hilti::Function*>                      function_with_body method_with_body hook_with_body function_without_body
+%type <hilti::type::function::Parameter*>     func_param
 %type <hilti::parameter::Kind>                  opt_func_param_kind
 %type <hilti::type::function::Flavor>           func_flavor opt_func_flavor
 %type <hilti::function::CallingConvention>      opt_func_cc
 %type <hilti::declaration::Linkage>             opt_linkage
 %type <hilti::type::function::Parameters>       func_params opt_func_params opt_struct_params
-%type <hilti::StatementPtr>                     stmt stmt_decl stmt_expr block braced_block opt_else_block
+%type <hilti::Statement*>                     stmt stmt_decl stmt_expr block braced_block opt_else_block
 %type <hilti::Statements>                       stmts opt_stmts
-%type <hilti::AttributePtr>                     attribute
-%type <hilti::AttributeSetPtr>                  opt_attributes
-%type <hilti::type::tuple::ElementPtr>          tuple_type_elem
+%type <hilti::Attribute*>                     attribute
+%type <hilti::AttributeSet*>                  opt_attributes
+%type <hilti::type::tuple::Element*>          tuple_type_elem
 %type <hilti::type::tuple::Elements>            tuple_type_elems
 %type <hilti::ctor::struct_::Fields>            struct_elems
-%type <hilti::ctor::struct_::FieldPtr>          struct_elem
+%type <hilti::ctor::struct_::Field*>          struct_elem
 %type <hilti::ctor::map::Elements>              map_elems opt_map_elems
-%type <hilti::ctor::map::ElementPtr>            map_elem
-%type <hilti::type::enum_::LabelPtr>            enum_label
+%type <hilti::ctor::map::Element*>            map_elem
+%type <hilti::type::enum_::Label*>            enum_label
 %type <hilti::type::enum_::Labels>              enum_labels
 %type <hilti::type::bitfield::BitRanges>        bitfield_bit_ranges opt_bitfield_bit_ranges
-%type <hilti::type::bitfield::BitRangePtr>      bitfield_bit_range
+%type <hilti::type::bitfield::BitRange*>      bitfield_bit_range
 %type <std::vector<std::string>>                re_patterns
 %type <std::string>                             re_pattern_constant
-%type <hilti::statement::switch_::CasePtr>      switch_case
+%type <hilti::statement::switch_::Case*>      switch_case
 %type <hilti::statement::switch_::Cases>        switch_cases opt_switch_cases
-%type <hilti::statement::try_::CatchPtr>        try_catch
+%type <hilti::statement::try_::Catch*>        try_catch
 %type <hilti::statement::try_::Catches>         try_catches
 
 %type <std::pair<Declarations, Statements>>     global_scope_items

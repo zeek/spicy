@@ -9,11 +9,9 @@
 namespace spicy::detail::coercer {
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-CtorPtr coerceCtor(Builder* builder, const CtorPtr& c, const QualifiedTypePtr& dst,
-                   bitmask<hilti::CoercionStyle> style);
+Ctor* coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst, bitmask<hilti::CoercionStyle> style);
 
 /** Implements the corresponding functionality for the Spicy compiler plugin. */
-QualifiedTypePtr coerceType(Builder* builder, const QualifiedTypePtr& t, const QualifiedTypePtr& dst,
-                            bitmask<hilti::CoercionStyle> style);
+QualifiedType* coerceType(Builder* builder, QualifiedType* t, QualifiedType* dst, bitmask<hilti::CoercionStyle> style);
 
 } // namespace spicy::detail::coercer

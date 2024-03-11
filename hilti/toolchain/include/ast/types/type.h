@@ -19,14 +19,13 @@ public:
 
     bool isResolved(node::CycleDetector* cd) const final { return typeValue()->isResolved(cd); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, Meta meta = {}) {
-        return std::shared_ptr<Type_>(new Type_(ctx, {type}, std::move(meta)));
+    static auto create(ASTContext* ctx, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<Type_>(ctx, {type}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Type_>(
-            new Type_(ctx, Wildcard(), {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
-                      m));
+        return ctx->make<Type_>(ctx, Wildcard(),
+                                {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
     }
 
 protected:

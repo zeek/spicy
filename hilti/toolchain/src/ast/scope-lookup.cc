@@ -10,7 +10,7 @@
 
 using namespace hilti;
 
-std::pair<bool, Result<std::pair<DeclarationPtr, ID>>> hilti::scope::detail::lookupID(const ID& id, const Node* n) {
+std::pair<bool, Result<std::pair<Declaration*, ID>>> hilti::scope::detail::lookupID(const ID& id, const Node* n) {
     auto resolved = n->scope()->lookupAll(id);
 
     if ( resolved.empty() ) {

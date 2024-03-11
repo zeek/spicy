@@ -10,7 +10,7 @@ using namespace hilti;
 
 type::tuple::Element::~Element() = default;
 
-std::optional<std::pair<int, std::shared_ptr<type::tuple::Element>>> type::Tuple::elementByID(const ID& id) const {
+std::optional<std::pair<int, type::tuple::Element*>> type::Tuple::elementByID(const ID& id) const {
     int i = 0;
     for ( const auto& e : elements() ) {
         if ( e->id() == id )

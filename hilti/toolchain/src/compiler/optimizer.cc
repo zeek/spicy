@@ -45,7 +45,7 @@ inline const DebugStream OptimizerCollect("optimizer-collect");
 } // namespace logging::debug
 
 // Helper function to extract innermost type, removing any wrapping in reference or container types.
-QualifiedTypePtr innermostType(QualifiedTypePtr type) {
+QualifiedType* innermostType(QualifiedType* type) {
     if ( type->type()->isReferenceType() )
         return innermostType(type->type()->dereferencedType());
 
@@ -85,9 +85,9 @@ public:
     void removeNode(Node* old, const std::string& msg = "") { replaceNode(old, nullptr, msg); }
 
     ~OptimizerVisitor() override = default;
-    virtual void collect(const NodePtr&) {}
-    virtual bool prune_uses(const NodePtr&) { return false; }
-    virtual bool prune_decls(const NodePtr&) { return false; }
+    virtual void collect(Node*) {}
+    virtual bool prune_uses(Node*) { return false; }
+    virtual bool prune_decls(Node*) { return false; }
 
     void operator()(declaration::Module* n) final { _current_module = n; }
 };
@@ -111,7 +111,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
     std::map<ID, Uses> _data;
 
-    void collect(const NodePtr& node) override {
+    void collect(Node* node) override {
         _stage = Stage::COLLECT;
 
         while ( true ) {
@@ -131,7 +131,7 @@ struct FunctionVisitor : OptimizerVisitor {
         }
     }
 
-    bool prune(const NodePtr& node) {
+    bool prune(Node* node) {
         switch ( _stage ) {
             case Stage::PRUNE_DECLS:
             case Stage::PRUNE_USES: break;
@@ -153,12 +153,12 @@ struct FunctionVisitor : OptimizerVisitor {
         return any_modification;
     }
 
-    bool prune_uses(const NodePtr& node) override {
+    bool prune_uses(Node* node) override {
         _stage = Stage::PRUNE_USES;
         return prune(node);
     }
 
-    bool prune_decls(const NodePtr& node) override {
+    bool prune_decls(Node* node) override {
         _stage = Stage::PRUNE_DECLS;
         return prune(node);
     }
@@ -409,7 +409,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 // Replace call node referencing unimplemented member function with default value.
                 if ( ! function.defined ) {
-                    if ( auto member = n->op0()->type()->type()->tryAs<type::Struct>() )
+                    if ( n->op0()->type()->type()->isA<type::Struct>() )
                         replaceNode(n, builder()->expressionCtor(builder()->ctorDefault(n->result()->type())),
                                     "replacing call to unimplemented method with default value");
                     return;
@@ -445,7 +445,6 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 // Replace call node referencing unimplemented hook with default value.
                 if ( function.hook && ! function.defined ) {
-                    auto id = n->op0()->as<expression::Name>();
                     if ( auto fn = decl->tryAs<declaration::Function>() ) {
                         replaceNode(n,
                                     builder()->expressionCtor(
@@ -502,7 +501,7 @@ struct TypeVisitor : OptimizerVisitor {
 
     std::map<ID, bool> _used;
 
-    void collect(const NodePtr& node) override {
+    void collect(Node* node) override {
         _stage = Stage::COLLECT;
 
         visitor::visit(*this, node);
@@ -514,7 +513,7 @@ struct TypeVisitor : OptimizerVisitor {
         }
     }
 
-    bool prune_decls(const NodePtr& node) override {
+    bool prune_decls(Node* node) override {
         _stage = Stage::PRUNE_DECLS;
 
         clearModified();
@@ -660,7 +659,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
 
     std::map<ID, bool> _constants;
 
-    void collect(const NodePtr& node) override {
+    void collect(Node* node) override {
         _stage = Stage::COLLECT;
 
         visitor::visit(*this, node);
@@ -673,7 +672,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
         }
     }
 
-    bool prune_uses(const NodePtr& node) override {
+    bool prune_uses(Node* node) override {
         _stage = Stage::PRUNE_USES;
 
         bool any_modification = false;
@@ -733,7 +732,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
         }
     }
 
-    std::optional<bool> tryAsBoolLiteral(const ExpressionPtr& x) {
+    std::optional<bool> tryAsBoolLiteral(Expression* x) {
         if ( auto expression = x->tryAs<expression::Ctor>() )
             if ( auto bool_ = expression->ctor()->tryAs<ctor::Bool>() )
                 return {bool_->value()};
@@ -859,7 +858,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
                 // If the `while` condition is false we never enter the loop, and
                 // run either the `else` block if it is present or nothing.
                 else if ( ! *val ) {
-                    if ( const auto& else_ = x->else_() )
+                    if ( x->else_() )
                         replaceNode(x, x->else_(), "replacing while loop with its else block");
                     else {
                         recordChange(x, "removing while loop with false condition");
@@ -889,7 +888,7 @@ public:
     enum class Stage { COLLECT, TRANSFORM };
     Stage _stage = Stage::COLLECT;
 
-    void collect(const NodePtr& node) {
+    void collect(Node* node) {
         _stage = Stage::COLLECT;
 
         visitor::visit(*this, node);
@@ -906,7 +905,7 @@ public:
         }
     }
 
-    void transform(const NodePtr& node) {
+    void transform(Node* node) {
         _stage = Stage::TRANSFORM;
         visitor::visit(*this, node);
     }
@@ -936,7 +935,7 @@ public:
                 const auto value = n->value()->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value();
 
                 if ( required != value ) {
-                    n->as<declaration::Constant>()->setValue(builder()->context(), builder()->bool_(false));
+                    n->setValue(builder()->context(), builder()->bool_(false));
                     recordChange(n, util::fmt("disabled feature '%s' of type '%s' since it is not used", feature,
                                               type_id));
                 }
@@ -1084,7 +1083,7 @@ public:
 
     // Helper function to compute all feature flags participating in an
     // condition. Feature flags are always combined with logical `or`.
-    static void featureFlagsFromCondition(const ExpressionPtr& condition, std::map<ID, std::set<std::string>>& result) {
+    static void featureFlagsFromCondition(Expression* condition, std::map<ID, std::set<std::string>>& result) {
         // Helper to extract `(ID, feature)` from a feature constant.
         auto idFeatureFromConstant = [](const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
             // Split away the module part of the resolved ID.
@@ -1209,7 +1208,7 @@ public:
                 }
 
                 meta.setComments(std::move(comments));
-                n->as<declaration::Type>()->setMeta(std::move(meta));
+                n->setMeta(std::move(meta));
                 break;
             }
         }
@@ -1225,7 +1224,7 @@ struct MemberVisitor : OptimizerVisitor {
     // Map tracking for each type which features are enabled.
     std::map<ID, std::map<std::string, bool>> _features;
 
-    void collect(const NodePtr& node) override {
+    void collect(Node* node) override {
         _stage = Stage::COLLECT;
 
         visitor::visit(*this, node);
@@ -1247,7 +1246,7 @@ struct MemberVisitor : OptimizerVisitor {
         }
     }
 
-    bool prune_decls(const NodePtr& node) override {
+    bool prune_decls(Node* node) override {
         _stage = Stage::PRUNE_DECLS;
 
         bool any_modification = false;
@@ -1393,7 +1392,7 @@ struct MemberVisitor : OptimizerVisitor {
     }
 };
 
-void detail::optimizer::optimize(Builder* builder, const ASTRootPtr& root) {
+void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
     const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");

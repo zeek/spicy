@@ -9,10 +9,10 @@
 using namespace hilti;
 using namespace hilti::type;
 
-std::shared_ptr<SignedInteger> type::SignedInteger::create(ASTContext* ctx, unsigned int width, const Meta& m) {
-    return std::shared_ptr<SignedInteger>(new SignedInteger(ctx, {}, width, m));
+SignedInteger* type::SignedInteger::create(ASTContext* ctx, unsigned int width, const Meta& m) {
+    return ctx->make<SignedInteger>(ctx, {}, width, m);
 }
 
-std::shared_ptr<UnsignedInteger> type::UnsignedInteger::create(ASTContext* ctx, unsigned int width, const Meta& m) {
-    return std::shared_ptr<UnsignedInteger>(new UnsignedInteger(ctx, {}, width, m));
+UnsignedInteger* type::UnsignedInteger::create(ASTContext* ctx, unsigned int width, const Meta& m) {
+    return ctx->make<UnsignedInteger>(ctx, {}, width, m);
 }

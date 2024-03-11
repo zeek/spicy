@@ -23,10 +23,10 @@ namespace spicy::detail::codegen::production {
  */
 class Unit : public Production {
 public:
-    Unit(ASTContext* ctx, const std::string& symbol, type::UnitPtr type, Expressions args,
+    Unit(ASTContext* ctx, const std::string& symbol, type::Unit* type, Expressions args,
          std::vector<std::unique_ptr<Production>> fields, const Location& l = location::None)
         : Production(symbol, l),
-          _type(QualifiedType::create(ctx, std::move(type), hilti::Constness::Const)),
+          _type(QualifiedType::create(ctx, type, hilti::Constness::Const)),
           _args(std::move(args)),
           _fields(std::move(fields)) {}
 
@@ -44,7 +44,7 @@ public:
         return {hilti::util::transform(_fields, [](const auto& p) { return p.get(); })};
     }
 
-    QualifiedTypePtr type() const final { return _type; };
+    QualifiedType* type() const final { return _type; };
 
     std::string dump() const final {
         return hilti::util::join(hilti::util::transform(_fields, [](const auto& p) { return p->symbol(); }), " ");
@@ -53,7 +53,7 @@ public:
     SPICY_PRODUCTION
 
 private:
-    QualifiedTypePtr _type;
+    QualifiedType* _type = nullptr;
     Expressions _args;
     std::vector<std::unique_ptr<Production>> _fields;
 };

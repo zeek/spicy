@@ -30,28 +30,28 @@ public:
         return Node::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, parameter::Kind kind, const UnqualifiedTypePtr& type, bool optional = false,
+    static auto create(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
                        std::string doc = "", Meta meta = {}) {
-        return std::shared_ptr<Operand>(new Operand(ctx, {_makeOperandType(ctx, kind, type), nullptr}, {}, kind,
-                                                    optional, std::move(doc), std::move(meta)));
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), nullptr}, ID(), kind, optional,
+                                  std::move(doc), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, const UnqualifiedTypePtr& type,
-                       bool optional = false, std::string doc = "", Meta meta = {}) {
-        return std::shared_ptr<Operand>(new Operand(ctx, {_makeOperandType(ctx, kind, type), nullptr}, std::move(id),
-                                                    kind, optional, std::move(doc), std::move(meta)));
+    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
+                       std::string doc = "", Meta meta = {}) {
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), nullptr}, std::move(id), kind, optional,
+                                  std::move(doc), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, const UnqualifiedTypePtr& type,
-                       const ExpressionPtr& default_, std::string doc = "", const Meta& meta = {}) {
-        return std::shared_ptr<Operand>(new Operand(ctx, {_makeOperandType(ctx, kind, type), default_}, std::move(id),
-                                                    kind, (default_ != nullptr), std::move(doc), meta));
+    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_,
+                       std::string doc = "", Meta meta = {}) {
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), default_}, std::move(id), kind,
+                                  (default_ != nullptr), std::move(doc), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, const UnqualifiedTypePtr& type,
-                       const ExpressionPtr& default_, bool optional, std::string doc = "", const Meta& meta = {}) {
-        return std::shared_ptr<Operand>(new Operand(ctx, {_makeOperandType(ctx, kind, type), default_}, std::move(id),
-                                                    kind, optional, std::move(doc), meta));
+    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_,
+                       bool optional, std::string doc = "", Meta meta = {}) {
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), default_}, std::move(id), kind, optional,
+                                  std::move(doc), std::move(meta));
     }
 
 protected:
@@ -66,7 +66,7 @@ protected:
     HILTI_NODE_0(type::operand_list::Operand, final);
 
 private:
-    static QualifiedTypePtr _makeOperandType(ASTContext* ctx, parameter::Kind _kind, const UnqualifiedTypePtr& type);
+    static QualifiedType* _makeOperandType(ASTContext* ctx, parameter::Kind _kind, UnqualifiedType* type);
 
     ID _id;
     parameter::Kind _kind = parameter::Kind::Unknown;
@@ -74,8 +74,7 @@ private:
     std::string _doc;
 };
 
-using OperandPtr = std::shared_ptr<Operand>;
-using Operands = std::vector<OperandPtr>;
+using Operands = std::vector<Operand*>;
 } // namespace operand_list
 
 /**
@@ -103,15 +102,15 @@ public:
     std::string_view typeClass() const final { return "operand-list"; }
 
     static auto create(ASTContext* ctx, operand_list::Operands operands, Meta meta = {}) {
-        return std::shared_ptr<OperandList>(new OperandList(ctx, node::flatten(std::move(operands)), std::move(meta)));
+        return ctx->make<OperandList>(ctx, node::flatten(std::move(operands)), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<OperandList>(new OperandList(ctx, Wildcard(), m));
+        return ctx->make<OperandList>(ctx, Wildcard(), m);
     }
 
     template<typename Container>
-    static UnqualifiedTypePtr fromParameters(ASTContext* ctx, const Container& params) {
+    static UnqualifiedType* fromParameters(ASTContext* ctx, const Container& params) {
         operand_list::Operands ops;
 
         for ( const auto& p : params )
@@ -124,8 +123,8 @@ public:
 protected:
     OperandList(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    OperandList(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"operand-list(*)"}, meta) {}
+    OperandList(ASTContext* ctx, Wildcard _, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"operand-list(*)"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::OperandList, UnqualifiedType, final);
 };

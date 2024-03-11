@@ -42,7 +42,7 @@ inline const DebugStream Parser("parser");
 
 namespace detail::parser {
 
-extern Result<ModulePtr> parseSource(Builder* builder, std::istream& in, const std::string& filename);
+extern Result<declaration::Module*> parseSource(Builder* builder, std::istream& in, const std::string& filename);
 
 class Parser;
 class Scanner;
@@ -50,7 +50,7 @@ class Scanner;
 /** Driver for flex/bison. */
 class Driver {
 public:
-    Result<ModulePtr> parse(Builder* builder, std::istream& in, const std::string& filename);
+    Result<declaration::Module*> parse(Builder* builder, std::istream& in, const std::string& filename);
 
     Scanner* scanner() const { return _scanner; }
     Parser* parser() const { return _parser; }
@@ -67,7 +67,7 @@ public:
     void enableDottedIDMode();
     void disableDottedIDMode();
 
-    void setDestinationModule(const ModulePtr& m) { _module = m; }
+    void setDestinationModule(declaration::Module* m) { _module = m; }
 
 private:
     Builder* _builder = nullptr;
@@ -75,7 +75,7 @@ private:
     Parser* _parser = nullptr;
     Scanner* _scanner = nullptr;
 
-    ModulePtr _module;
+    declaration::Module* _module = nullptr;
     int _expression_mode = 0;
 };
 

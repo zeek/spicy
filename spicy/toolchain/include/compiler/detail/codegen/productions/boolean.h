@@ -20,11 +20,9 @@ namespace spicy::detail::codegen::production {
  */
 class Boolean : public Production {
 public:
-    Boolean(ASTContext* /* ctx */, const std::string& symbol, ExpressionPtr e, std::unique_ptr<Production> alt1,
+    Boolean(ASTContext* /* ctx */, const std::string& symbol, Expression* e, std::unique_ptr<Production> alt1,
             std::unique_ptr<Production> alt2, const hilti::Location& l = hilti::location::None)
-        : Production(symbol, l),
-          _expression(std::move(e)),
-          _alternatives(std::make_pair(std::move(alt1), std::move(alt2))) {}
+        : Production(symbol, l), _expression(e), _alternatives(std::make_pair(std::move(alt1), std::move(alt2))) {}
 
     std::pair<Production*, Production*> alternatives() const {
         return std::make_pair(_alternatives.first.get(), _alternatives.second.get());
@@ -44,7 +42,7 @@ public:
         return {{_alternatives.first.get()}, {_alternatives.second.get()}};
     }
 
-    ExpressionPtr expression() const final { return _expression; }
+    Expression* expression() const final { return _expression; }
 
     std::string dump() const final {
         return hilti::util::fmt("true: %s / false: %s", _alternatives.first->symbol(), _alternatives.second->symbol());
@@ -53,7 +51,7 @@ public:
     SPICY_PRODUCTION
 
 private:
-    ExpressionPtr _expression;
+    Expression* _expression = nullptr;
     std::pair<std::unique_ptr<Production>, std::unique_ptr<Production>> _alternatives;
 };
 
