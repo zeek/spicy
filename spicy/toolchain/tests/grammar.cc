@@ -31,13 +31,13 @@ static auto sequence(hilti::ASTContext* ctx, const std::string& symbol, Ps l) {
     return std::make_unique<spicy::detail::codegen::production::Sequence>(ctx, symbol, std::move(l));
 }
 
-static auto variable(hilti::ASTContext* ctx, const std::string& symbol, const hilti::UnqualifiedTypePtr& t) {
+static auto variable(hilti::ASTContext* ctx, const std::string& symbol, hilti::UnqualifiedType* t) {
     return std::make_unique<
         spicy::detail::codegen::production::Variable>(ctx, symbol,
                                                       hilti::QualifiedType::create(ctx, t, hilti::Constness::Mutable));
 }
 
-static auto type_literal(hilti::ASTContext* ctx, const std::string& symbol, const spicy::UnqualifiedTypePtr& t) {
+static auto type_literal(hilti::ASTContext* ctx, const std::string& symbol, spicy::UnqualifiedType* t) {
     return std::make_unique<
         spicy::detail::codegen::production::TypeLiteral>(ctx, symbol,
                                                          hilti::QualifiedType::create(ctx, t, hilti::Constness::Const));

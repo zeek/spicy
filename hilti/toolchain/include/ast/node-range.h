@@ -14,7 +14,7 @@ namespace hilti::node {
  * Container to store a set of node pointers. Retains insertion order of its elements.
  */
 template<typename T>
-using Set = std::vector<std::shared_ptr<T>>;
+using Set = std::vector<T*>;
 
 /**
  * A constant iterator over a range of nodes (`node::Range`). Internally, this
@@ -23,10 +23,10 @@ using Set = std::vector<std::shared_ptr<T>>;
  */
 template<typename T>
 class RangeIterator {
-    using BaseIterator = std::vector<NodePtr>::const_iterator;
+    using BaseIterator = std::vector<Node*>::const_iterator;
 
 public:
-    using value_type = std::shared_ptr<T>;
+    using value_type = T*;
     using difference_type = BaseIterator::difference_type;
     using pointer = BaseIterator::pointer;
     using reference = BaseIterator::reference;
@@ -42,7 +42,7 @@ public:
 
     RangeIterator& operator=(const RangeIterator& other) = default;
     RangeIterator& operator=(RangeIterator&& other) noexcept = default;
-    std::shared_ptr<T> operator*() const { return _value(); }
+    T* operator*() const { return _value(); }
     // T operator->() const { return &value(); }
     bool operator==(const RangeIterator& other) const { return _iter == other._iter; }
     bool operator!=(const RangeIterator& other) const { return ! (*this == other); }
@@ -73,9 +73,9 @@ public:
     auto operator+(difference_type i) const { return RangeIterator(_iter + i); }
 
 private:
-    std::shared_ptr<T> _value() const {
+    T* _value() const {
         if ( *_iter )
-            return std::static_pointer_cast<T>(*_iter);
+            return static_cast<T*>(*_iter);
         else
             return nullptr;
     }
@@ -96,13 +96,12 @@ public:
     using value_type = typename iterator::value_type;
 
     explicit Range() {}
-    Range(typename std::vector<std::shared_ptr<T>>::const_iterator begin,
-          typename std::vector<std::shared_ptr<T>>::const_iterator end)
+    Range(typename std::vector<T*>::const_iterator begin, typename std::vector<T*>::const_iterator end)
         : _begin(begin), _end(end) {}
 
-    explicit Range(const std::vector<std::shared_ptr<T>>& nodes) : Range(nodes.begin(), nodes.end()) {}
+    explicit Range(const std::vector<T*>& nodes) : Range(nodes.begin(), nodes.end()) {}
 
-    Range(std::vector<NodePtr>::const_iterator begin, std::vector<NodePtr>::const_iterator end)
+    Range(std::vector<Node*>::const_iterator begin, std::vector<Node*>::const_iterator end)
         : _begin(begin), _end(end) {}
 
     Range(const Range& other) = default;
@@ -115,15 +114,15 @@ public:
     const T& front() const { return *_begin; }
     bool empty() const { return _begin == _end; }
 
-    operator std::vector<std::shared_ptr<T>>() const {
-        std::vector<std::shared_ptr<T>> x;
+    operator std::vector<T*>() const {
+        std::vector<T*> x;
         for ( auto i = _begin; i != _end; i++ )
             x.push_back(*i);
 
         return x;
     }
 
-    std::shared_ptr<T> operator[](size_t i) const {
+    T* operator[](size_t i) const {
         assert(static_cast<typename RangeIterator<T>::difference_type>(i) < std::distance(_begin, _end));
         return *(_begin + i);
     }

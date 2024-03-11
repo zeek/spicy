@@ -12,9 +12,7 @@ namespace hilti::statement {
 /** AST node for a `break` statement. */
 class Break : public Statement {
 public:
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Break>(new Break(ctx, {}, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Break>(ctx, {}, std::move(meta)); }
 
 protected:
     Break(ASTContext* ctx, Nodes children, Meta meta)

@@ -133,7 +133,7 @@ struct Printer : visitor::PreOrder {
 
         _out.pushScope(n->scopeID());
 
-        auto print_decls = [&](const auto& decls) {
+        auto print_decls = [&](const node::Set<Declaration>& decls) {
             for ( const auto& d : decls )
                 _out << d;
 
@@ -448,7 +448,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(expression::BuiltInFunction* n) final {
         _out << n->name() << "("
-             << util::join(node::transform(n->arguments(), [](auto& p) { return fmt("%s", p); }), ", ") << ")";
+             << util::join(node::transform(n->arguments(), [](auto p) { return fmt("%s", p); }), ", ") << ")";
     }
 
     void operator()(expression::Coerced* n) final { _out << n->expression(); }
@@ -796,7 +796,7 @@ struct Printer : visitor::PreOrder {
 
         _out.setExpandSubsequentType(false);
 
-        auto x = util::transform(util::filter(n->labels(), [](const auto& l) { return l.get()->id() != ID("Undef"); }),
+        auto x = util::transform(util::filter(n->labels(), [](auto l) { return l->id() != ID("Undef"); }),
                                  [](const auto& l) { return l->print(); });
 
         _out << "enum { " << std::make_pair(std::move(x), ", ") << " }";
@@ -1082,7 +1082,7 @@ private:
 
 } // anonymous namespace
 
-void printer::print(std::ostream& out, const NodePtr& root, bool compact) {
+void printer::print(std::ostream& out, Node* root, bool compact) {
     if ( ! detail::State::current )
         detail::State::current = std::make_unique<detail::State>();
 
@@ -1113,7 +1113,7 @@ void printer::print(std::ostream& out, const NodePtr& root, bool compact) {
     }
 }
 
-void printer::print(printer::Stream& stream, const NodePtr& root) {
+void printer::print(printer::Stream& stream, Node* root) {
     util::timing::Collector _("hilti/printer");
 
     for ( auto& p : plugin::registry().plugins() ) {

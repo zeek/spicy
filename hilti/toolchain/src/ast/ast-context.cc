@@ -34,6 +34,7 @@ inline const DebugStream Compiler("compiler");
 inline const DebugStream Resolver("resolver");
 } // namespace hilti::logging::debug
 
+
 std::string ASTRoot::_dump() const { return ""; }
 
 ASTContext::ASTContext(Context* context) : _context(context) {
@@ -43,7 +44,10 @@ ASTContext::ASTContext(Context* context) : _context(context) {
     _types_by_index.resize(1);        // index 0 is reserved for null
 }
 
-ASTContext::~ASTContext() { _root->destroyChildren(); }
+ASTContext::~ASTContext() {
+    for ( auto r : _nodes )
+        r->~Node();
+}
 
 Result<declaration::module::UID> ASTContext::parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
                                                          std::optional<hilti::rt::filesystem::path> process_extension) {
@@ -99,11 +103,11 @@ Result<declaration::module::UID> ASTContext::importModule(
     return uid;
 }
 
-std::shared_ptr<declaration::Module> ASTContext::newModule(Builder* builder, const ID& id,
-                                                           const hilti::rt::filesystem::path& process_extension) {
+declaration::Module* ASTContext::newModule(Builder* builder, const ID& id,
+                                           const hilti::rt::filesystem::path& process_extension) {
     auto uid = declaration::module::UID(id, process_extension, process_extension);
     auto m = builder->declarationModule(uid);
-    _addModuleToAST(std::move(m));
+    _addModuleToAST(m);
     return module(uid);
 }
 
@@ -144,7 +148,7 @@ Result<declaration::module::UID> ASTContext::_parseSource(
         (*module)->setUID(std::move(uid));
     }
 
-    return _addModuleToAST(std::move(*module));
+    return _addModuleToAST(*module);
 }
 
 void ASTContext::updateModuleUID(const declaration::module::UID& old_uid, const declaration::module::UID& new_uid) {
@@ -163,7 +167,7 @@ void ASTContext::updateModuleUID(const declaration::module::UID& old_uid, const 
     _modules_by_id_and_scope[std::make_pair(new_uid.id, module->second->scopePath())] = module->second;
 }
 
-ast::DeclarationIndex ASTContext::register_(const DeclarationPtr& decl) {
+ast::DeclarationIndex ASTContext::register_(Declaration* decl) {
     if ( auto index = decl->declarationIndex() )
         return index;
 
@@ -189,7 +193,7 @@ ast::DeclarationIndex ASTContext::register_(const DeclarationPtr& decl) {
     return index;
 }
 
-void ASTContext::replace(const Declaration* old, const DeclarationPtr& new_) {
+void ASTContext::replace(Declaration* old, Declaration* new_) {
     auto index = old->declarationIndex();
     if ( ! index )
         return;
@@ -200,7 +204,7 @@ void ASTContext::replace(const Declaration* old, const DeclarationPtr& new_) {
     if ( auto n = new_->tryAs<declaration::Type>() ) {
         auto o = old->tryAs<declaration::Type>();
         n->type()->type()->setDeclarationIndex(index);
-        replace(o->type()->type().get(), n->type()->type());
+        replace(o->type()->type(), n->type()->type());
     }
 
     if ( logger().isEnabled(logging::debug::Resolver) ) {
@@ -216,14 +220,14 @@ void ASTContext::replace(const Declaration* old, const DeclarationPtr& new_) {
     }
 }
 
-DeclarationPtr ASTContext::lookup(ast::DeclarationIndex index) {
+Declaration* ASTContext::lookup(ast::DeclarationIndex index) {
     if ( ! index || index.value() >= _declarations_by_index.size() )
         return nullptr;
 
     return _declarations_by_index.at(index.value());
 }
 
-ast::TypeIndex ASTContext::register_(const UnqualifiedTypePtr& type) {
+ast::TypeIndex ASTContext::register_(UnqualifiedType* type) {
     assert(! type->isWildcard());
 
     if ( auto index = type->typeIndex() )
@@ -248,7 +252,7 @@ ast::TypeIndex ASTContext::register_(const UnqualifiedTypePtr& type) {
     return index;
 }
 
-void ASTContext::replace(const UnqualifiedType* old, const UnqualifiedTypePtr& new_) {
+void ASTContext::replace(UnqualifiedType* old, UnqualifiedType* new_) {
     auto index = old->typeIndex();
     if ( ! index )
         return;
@@ -269,14 +273,14 @@ void ASTContext::replace(const UnqualifiedType* old, const UnqualifiedTypePtr& n
     }
 }
 
-UnqualifiedTypePtr ASTContext::lookup(ast::TypeIndex index) {
+UnqualifiedType* ASTContext::lookup(ast::TypeIndex index) {
     if ( ! index || index.value() >= _types_by_index.size() )
         return nullptr;
 
     return _types_by_index.at(index.value());
 }
 
-declaration::module::UID ASTContext::_addModuleToAST(ModulePtr module) {
+declaration::module::UID ASTContext::_addModuleToAST(declaration::Module* module) {
     assert(_modules_by_uid.find(module->uid()) == _modules_by_uid.end());
     assert(! module->hasParent()); // don't want to end up copying the whole AST
     auto uid = module->uid();
@@ -285,7 +289,7 @@ declaration::module::UID ASTContext::_addModuleToAST(ModulePtr module) {
     _modules_by_path[uid.path.native()] = module;
     _modules_by_id_and_scope[std::make_pair(uid.id, module->scopePath())] = module;
 
-    _root->addChild(this, std::move(module));
+    _root->addChild(this, module);
     return uid;
 }
 
@@ -397,7 +401,7 @@ void ASTContext::_checkAST(bool finished) const {
     // Check parent pointering.
     for ( const auto& n : visitor::range(visitor::PreOrder(), _root, {}) ) {
         for ( const auto& c : n->children() ) {
-            if ( c && c->parent() != n.get() )
+            if ( c && c->parent() != n )
                 logger().internalError("broken parent pointer!");
         }
     }
@@ -405,10 +409,10 @@ void ASTContext::_checkAST(bool finished) const {
     // Detect cycles, we shouldn't have them.
     std::set<Node*> seen = {};
     for ( const auto& n : visitor::range(visitor::PreOrder(), _root, {}) ) {
-        if ( seen.find(n.get()) != seen.end() )
+        if ( seen.find(n) != seen.end() )
             logger().internalError("cycle in AST detected");
 
-        seen.insert(n.get());
+        seen.insert(n);
     }
 
     if ( finished )
@@ -677,7 +681,7 @@ void ASTContext::_saveIterationAST(const Plugin& plugin, const std::string& pref
     _dumpAST(out, plugin, prefix, 0);
 }
 
-static void _recursiveDependencies(const ASTContext* ctx, const ModulePtr& module,
+static void _recursiveDependencies(const ASTContext* ctx, declaration::Module* module,
                                    std::vector<declaration::module::UID>* seen) {
     if ( std::find(seen->begin(), seen->end(), module->uid()) != seen->end() )
         return;
@@ -704,7 +708,7 @@ std::vector<declaration::module::UID> ASTContext::dependencies(const declaration
         return m->dependencies();
 }
 
-static node::ErrorPriority _recursiveValidateAST(const NodePtr& n, Location closest_location, node::ErrorPriority prio,
+static node::ErrorPriority _recursiveValidateAST(Node* n, Location closest_location, node::ErrorPriority prio,
                                                  int level, std::vector<node::Error>* errors) {
     if ( n->location() )
         closest_location = n->location();

@@ -522,8 +522,9 @@ public:
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
             .result = {Constness::Const,
-                       builder->typeTuple({builder->qualifiedType(builder->typeBool(), Constness::Const),
-                                           builder->qualifiedType(builder->typeStreamIterator(), Constness::Mutable)})},
+                       builder->typeTuple(
+                           QualifiedTypes{builder->qualifiedType(builder->typeBool(), Constness::Const),
+                                          builder->qualifiedType(builder->typeStreamIterator(), Constness::Mutable)})},
             .ns = "stream::view",
             .doc = R"(
 Searches *needle* inside the view's content. Returns a tuple of a boolean and an

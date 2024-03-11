@@ -82,7 +82,7 @@ public:
             unifier->add(to_string(op->kind()));
             unifier->add(op->id());
             unifier->add(":");
-            unifier->add(op->type()->type().get());
+            unifier->add(op->type()->type());
             unifier->add(",");
         }
         unifier->add(")");
@@ -207,7 +207,7 @@ void type_unifier::Unifier::add(UnqualifiedType* t) {
         return;
 
     if ( auto name = t->tryAs<type::Name>() ) {
-        t = name->resolvedType().get();
+        t = name->resolvedType();
         if ( ! t ) {
             abort();
             return;
@@ -239,20 +239,20 @@ void type_unifier::Unifier::add(UnqualifiedType* t) {
     }
 }
 
-void type_unifier::Unifier::add(const QualifiedTypePtr& t) {
+void type_unifier::Unifier::add(QualifiedType* t) {
     if ( _abort )
         return;
 
     if ( t->type()->unification() )
         add(t->type()->unification());
     else
-        add(t->type().get());
+        add(t->type());
 }
 
 void type_unifier::Unifier::add(const std::string& s) { _serial += s; }
 
 // Public entry function going through all plugins.
-bool type_unifier::unify(Builder* builder, const ASTRootPtr& root) {
+bool type_unifier::unify(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/ast/type-unifier");
 
     return hilti::visitor::visit(VisitorTypeUnifier(builder->context()), root, {},
@@ -260,7 +260,7 @@ bool type_unifier::unify(Builder* builder, const ASTRootPtr& root) {
 }
 
 // Public entry function going through all plugins.
-bool type_unifier::unify(ASTContext* ctx, const UnqualifiedTypePtr& type) {
+bool type_unifier::unify(ASTContext* ctx, UnqualifiedType* type) {
     util::timing::Collector _("hilti/compiler/ast/type-unifier");
 
     if ( ! type->unification() )

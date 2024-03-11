@@ -9,7 +9,7 @@
 using namespace hilti;
 using namespace hilti::detail;
 
-std::shared_ptr<declaration::Type> UnqualifiedType::typeDeclaration() const {
+declaration::Type* UnqualifiedType::typeDeclaration() const {
     if ( ! _declaration_index )
         return nullptr;
 
@@ -62,7 +62,7 @@ std::string UnqualifiedType::_dump() const {
     return util::join(x);
 }
 
-bool UnqualifiedType::unify(ASTContext* ctx, const NodePtr& scope_root) {
+bool UnqualifiedType::unify(ASTContext* ctx, Node* scope_root) {
     return type_unifier::unify(ctx, as<UnqualifiedType>());
 }
 
@@ -97,7 +97,7 @@ std::string QualifiedType::_dump() const {
     return util::join(x, " ");
 }
 
-UnqualifiedTypePtr type::follow(const UnqualifiedTypePtr& t) {
+UnqualifiedType* type::follow(UnqualifiedType* t) {
     if ( auto n = t->tryAs<type::Name>() ) {
         if ( auto r = n->resolvedType() )
             return r;
@@ -106,20 +106,19 @@ UnqualifiedTypePtr type::follow(const UnqualifiedTypePtr& t) {
     return t;
 }
 
-QualifiedTypePtr QualifiedType::createExternal(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_,
-                                               const Meta& m) {
-    return std::shared_ptr<QualifiedType>(new QualifiedType(ctx, {}, t, const_, Side::RHS, m));
+QualifiedType* QualifiedType::createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, const Meta& m) {
+    return ctx->make<QualifiedType>(ctx, {}, t, const_, Side::RHS, m);
 }
 
-QualifiedTypePtr QualifiedType::createAuto(ASTContext* ctx, const Meta& m) {
-    return QualifiedTypePtr(new QualifiedType(ctx, {type::Auto::create(ctx, m)}, Constness::Mutable, Side::RHS, m));
+QualifiedType* QualifiedType::createAuto(ASTContext* ctx, const Meta& m) {
+    return ctx->make<QualifiedType>(ctx, {type::Auto::create(ctx, m)}, Constness::Mutable, Side::RHS, m);
 }
 
-QualifiedTypePtr QualifiedType::createAuto(ASTContext* ctx, Side side, const Meta& m) {
-    return QualifiedTypePtr(new QualifiedType(ctx, {type::Auto::create(ctx, m)}, Constness::Mutable, side, m));
+QualifiedType* QualifiedType::createAuto(ASTContext* ctx, Side side, const Meta& m) {
+    return ctx->make<QualifiedType>(ctx, {type::Auto::create(ctx, m)}, Constness::Mutable, side, m);
 }
 
-UnqualifiedTypePtr QualifiedType::_type() const {
+UnqualifiedType* QualifiedType::_type() const {
     if ( _external )
         return _context->lookup(_external)->as<UnqualifiedType>();
     else

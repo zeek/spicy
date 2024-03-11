@@ -44,7 +44,7 @@ std::shared_ptr<Unit> Unit::fromExistingUID(const std::shared_ptr<Context>& cont
 
 Unit::~Unit() {}
 
-ModulePtr Unit::module() const { return context()->astContext()->module(_uid); }
+declaration::Module* Unit::module() const { return context()->astContext()->module(_uid); }
 
 bool Unit::isCompiledHILTI() const {
     if ( ! _uid.id )
@@ -55,7 +55,7 @@ bool Unit::isCompiledHILTI() const {
 }
 
 Result<Nothing> Unit::print(std::ostream& out) const {
-    if ( auto m = module() )
+    if ( module() )
         printer::print(out, module());
 
     return Nothing();

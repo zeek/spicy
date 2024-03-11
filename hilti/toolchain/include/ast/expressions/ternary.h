@@ -17,18 +17,17 @@ public:
     auto true_() const { return child<Expression>(1); }
     auto false_() const { return child<Expression>(2); }
 
-    QualifiedTypePtr type() const final {
+    QualifiedType* type() const final {
         // TODO(robin): Currently we enforce both having the same type; we
         // might need to coerce to target type though.
         return true_()->type();
     }
 
-    void setTrue(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 1, std::move(e)); }
-    void setFalse(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 2, std::move(e)); }
+    void setTrue(ASTContext* ctx, Expression* e) { setChild(ctx, 1, e); }
+    void setFalse(ASTContext* ctx, Expression* e) { setChild(ctx, 2, e); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const ExpressionPtr& true_,
-                       const ExpressionPtr& false_, const Meta& meta = {}) {
-        return std::shared_ptr<Ternary>(new Ternary(ctx, {cond, true_, false_}, meta));
+    static auto create(ASTContext* ctx, Expression* cond, Expression* true_, Expression* false_, Meta meta = {}) {
+        return ctx->make<Ternary>(ctx, {cond, true_, false_}, std::move(meta));
     }
 
 protected:

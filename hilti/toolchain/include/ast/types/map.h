@@ -19,31 +19,31 @@ class Iterator : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "iterator<map>"; }
 
-    QualifiedTypePtr keyType() const { return dereferencedType()->type()->as<type::Tuple>()->elements()[0]->type(); }
-    QualifiedTypePtr valueType() const { return dereferencedType()->type()->as<type::Tuple>()->elements()[1]->type(); }
-    QualifiedTypePtr dereferencedType() const final { return child<QualifiedType>(0); }
+    QualifiedType* keyType() const { return dereferencedType()->type()->as<type::Tuple>()->elements()[0]->type(); }
+    QualifiedType* valueType() const { return dereferencedType()->type()->as<type::Tuple>()->elements()[1]->type(); }
+    QualifiedType* dereferencedType() const final { return child<QualifiedType>(0); }
 
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& ktype, const QualifiedTypePtr& vtype,
-                       const Meta& meta = {}) {
-        return std::shared_ptr<Iterator>(
-            new Iterator(ctx, {QualifiedType::create(ctx, type::Tuple::create(ctx, {ktype, vtype}), Constness::Const)},
-                         meta));
+    static auto create(ASTContext* ctx, QualifiedType* ktype, QualifiedType* vtype, const Meta& meta = {}) {
+        return ctx->make<Iterator>(ctx,
+                                   {QualifiedType::create(ctx, type::Tuple::create(ctx, QualifiedTypes{ktype, vtype}),
+                                                          Constness::Const)},
+                                   meta);
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& meta = Meta()) {
-        return std::shared_ptr<Iterator>(
-            new Iterator(ctx, Wildcard(),
-                         {QualifiedType::create(
-                             ctx,
-                             type::Tuple::create(ctx, {QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
-                                                                             Constness::Const),
-                                                       QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
-                                                                             Constness::Const)}),
-                             Constness::Const)},
-                         meta));
+        return ctx->make<Iterator>(
+            ctx, Wildcard(),
+            {QualifiedType::create(
+                ctx,
+                type::Tuple::create(ctx, QualifiedTypes{QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
+                                                                              Constness::Const),
+                                                        QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
+                                                                              Constness::Const)}),
+                Constness::Const)},
+            meta);
     }
 
 protected:
@@ -64,30 +64,30 @@ protected:
 /** AST node for a `map` type. */
 class Map : public UnqualifiedType {
 public:
-    QualifiedTypePtr keyType() const { return iteratorType()->type()->as<map::Iterator>()->keyType(); }
-    QualifiedTypePtr valueType() const { return iteratorType()->type()->as<map::Iterator>()->valueType(); }
+    QualifiedType* keyType() const { return iteratorType()->type()->as<map::Iterator>()->keyType(); }
+    QualifiedType* valueType() const { return iteratorType()->type()->as<map::Iterator>()->valueType(); }
 
     std::string_view typeClass() const final { return "map"; }
 
-    QualifiedTypePtr iteratorType() const final { return child<QualifiedType>(0); }
-    QualifiedTypePtr elementType() const final { return valueType(); }
+    QualifiedType* iteratorType() const final { return child<QualifiedType>(0); }
+    QualifiedType* elementType() const final { return valueType(); }
 
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final { return iteratorType()->isResolved(cd); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& ktype, const QualifiedTypePtr& vtype,
-                       const Meta& meta = {}) {
-        return std::shared_ptr<Map>(
-            new Map(ctx,
-                    {QualifiedType::create(ctx, map::Iterator::create(ctx, ktype, vtype, meta), Constness::Mutable)},
-                    meta));
+    static auto create(ASTContext* ctx, QualifiedType* ktype, QualifiedType* vtype, const Meta& meta = {}) {
+        return ctx->make<Map>(ctx,
+                              {QualifiedType::create(ctx, map::Iterator::create(ctx, ktype, vtype, meta),
+                                                     Constness::Mutable)},
+                              meta);
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Map>(
-            new Map(ctx, Wildcard(),
-                    {QualifiedType::create(ctx, map::Iterator::create(ctx, Wildcard(), m), Constness::Mutable)}, m));
+        return ctx->make<Map>(ctx, Wildcard(),
+                              {QualifiedType::create(ctx, map::Iterator::create(ctx, Wildcard(), m),
+                                                     Constness::Mutable)},
+                              m);
     }
 
 protected:

@@ -32,11 +32,11 @@ public:
     auto hasOp1() const { return children().size() >= 3; }
     auto hasOp2() const { return children().size() >= 4; }
 
-    void setOp0(ASTContext* ctx, const ExpressionPtr& e) { setChild(ctx, 1, e); }
-    void setOp1(ASTContext* ctx, const ExpressionPtr& e) { setChild(ctx, 2, e); }
-    void setOp2(ASTContext* ctx, const ExpressionPtr& e) { setChild(ctx, 3, e); }
+    void setOp0(ASTContext* ctx, Expression* e) { setChild(ctx, 1, e); }
+    void setOp1(ASTContext* ctx, Expression* e) { setChild(ctx, 2, e); }
+    void setOp2(ASTContext* ctx, Expression* e) { setChild(ctx, 3, e); }
 
-    QualifiedTypePtr type() const final { return result(); }
+    QualifiedType* type() const final { return result(); }
 
     std::string printSignature() const { return operator_::detail::printSignature(kind(), operands(), meta()); }
 
@@ -48,7 +48,7 @@ public:
     HILTI_NODE_1(expression::ResolvedOperator, Expression, override);
 
 protected:
-    ResolvedOperator(ASTContext* ctx, node::Tags node_tags, const Operator* op, const QualifiedTypePtr& result,
+    ResolvedOperator(ASTContext* ctx, node::Tags node_tags, const Operator* op, QualifiedType* result,
                      const Expressions& operands, Meta meta)
         : Expression(ctx, node_tags, node::flatten(result, operands), std::move(meta)), _operator(op) {}
 

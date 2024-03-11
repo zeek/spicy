@@ -15,7 +15,7 @@ class Bool : public Ctor {
 public:
     const auto& value() const { return _value; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", _value}};
@@ -23,8 +23,8 @@ public:
     }
 
     static auto create(ASTContext* ctx, bool v, const Meta& meta = {}) {
-        return std::shared_ptr<Bool>(
-            new Bool(ctx, {QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)}, v, meta));
+        return ctx->make<Bool>(ctx, {QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)}, v,
+                               meta);
     }
 
 protected:

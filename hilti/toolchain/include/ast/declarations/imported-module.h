@@ -51,28 +51,26 @@ public:
     }
 
     static auto create(ASTContext* ctx, ID id, const std::string& parse_extension, Meta meta = {}) {
-        return std::shared_ptr<ImportedModule>(
-            new ImportedModule(ctx, std::move(id), {}, parse_extension, {}, {}, std::move(meta)));
+        return ctx->make<ImportedModule>(ctx, std::move(id), hilti::rt::filesystem::path{}, parse_extension, ID{},
+                                         std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, const std::string& parse_extension, ID search_scope, Meta meta = {}) {
-        return DeclarationPtr(
-            new ImportedModule(ctx, std::move(id), {}, parse_extension, std::move(search_scope), {}, std::move(meta)));
+        return ctx->make<ImportedModule>(ctx, std::move(id), hilti::rt::filesystem::path{}, parse_extension,
+                                         std::move(search_scope), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, Meta meta = {}) {
-        return std::shared_ptr<ImportedModule>(
-            new ImportedModule(ctx, std::move(id), std::move(path), {}, {}, {}, std::move(meta)));
+        return ctx->make<ImportedModule>(ctx, std::move(id), std::move(path), std::string{}, ID{}, std::move(meta));
     }
 
 protected:
     ImportedModule(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, const std::string& parse_extension,
-                   ID search_scope, std::vector<hilti::rt::filesystem::path> search_dirs, Meta meta)
+                   ID search_scope, Meta meta)
         : Declaration(ctx, NodeTags, {}, std::move(id), Linkage::Private, std::move(meta)),
           _path(std::move(path)),
           _parse_extension(parse_extension),
-          _scope(std::move(search_scope)),
-          _dirs(std::move(search_dirs)) {}
+          _scope(std::move(search_scope)) {}
 
     HILTI_NODE_1(declaration::ImportedModule, Declaration, final);
 

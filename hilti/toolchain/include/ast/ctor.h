@@ -16,7 +16,7 @@ public:
     ~Ctor() override;
 
     /** Returns the HILTI type of the constructor's value. */
-    virtual QualifiedTypePtr type() const = 0;
+    virtual QualifiedType* type() const = 0;
 
 protected:
     Ctor(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)

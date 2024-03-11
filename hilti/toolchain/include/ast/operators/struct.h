@@ -22,18 +22,18 @@ namespace struct_ {
 
 class MemberCall final : public Operator {
 public:
-    MemberCall(const std::shared_ptr<declaration::Field>& fdecl);
+    MemberCall(declaration::Field* fdecl);
     ~MemberCall() final;
 
-    auto declaration() const { return _fdecl.lock(); }
+    auto declaration() const { return _fdecl; }
 
     operator_::Signature signature(Builder* builder) const final;
-    Result<ResolvedOperatorPtr> instantiate(Builder* builder, Expressions operands, const Meta& meta) const final;
+    Result<expression::ResolvedOperator*> instantiate(Builder* builder, Expressions operands, Meta meta) const final;
 
     std::string name() const final { return "struct::MemberCall"; }
 
 private:
-    std::weak_ptr<declaration::Field> _fdecl;
+    declaration::Field* _fdecl = nullptr;
 };
 
 } // namespace struct_

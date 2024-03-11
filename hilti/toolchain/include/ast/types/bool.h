@@ -12,7 +12,7 @@ namespace hilti::type {
 /** AST node for a `bool` type. */
 class Bool : public UnqualifiedType {
 public:
-    static auto create(ASTContext* ctx, const Meta& meta = {}) { return std::shared_ptr<Bool>(new Bool(ctx, meta)); }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Bool>(ctx, std::move(meta)); }
 
     std::string_view typeClass() const final { return "bool"; }
 
@@ -20,7 +20,7 @@ public:
     bool isSortable() const final { return true; }
 
 protected:
-    Bool(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {"bool"}, meta) {}
+    Bool(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"bool"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::Bool, UnqualifiedType, final);
 };

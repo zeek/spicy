@@ -8,7 +8,7 @@ using namespace hilti::operator_;
 namespace {
 namespace unsigned_integer {
 
-inline UnqualifiedTypePtr widestTypeUnsigned(Builder* builder, const Expressions& operands) {
+inline UnqualifiedType* widestTypeUnsigned(Builder* builder, const Expressions& operands) {
     unsigned int w1 = 0;
     unsigned int w2 = 0;
 
@@ -49,7 +49,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -70,7 +70,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -91,7 +91,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -112,7 +112,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -133,7 +133,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(builder->typeSignedInteger(
                                           operands[0]->type()->type()->as<type::UnsignedInteger>()->width()),
                                       Constness::Const);
@@ -157,7 +157,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -185,7 +185,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -213,7 +213,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -241,7 +241,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -389,7 +389,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -417,7 +417,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -445,7 +445,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -473,7 +473,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -501,7 +501,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -529,7 +529,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -579,7 +579,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -606,7 +606,7 @@ public:
         return {{op0, op1}};
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -627,7 +627,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -654,7 +654,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return builder->qualifiedType(widestTypeUnsigned(builder, operands), Constness::Const);
     }
 
@@ -682,7 +682,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -704,7 +704,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -727,7 +727,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[1]->type()->type()->as<type::Type_>()->typeValue();
     }
 
@@ -751,7 +751,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[1]->type()->type()->as<type::Type_>()->typeValue();
     }
 
@@ -795,7 +795,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[1]->type()->type()->as<type::Type_>()->typeValue();
     }
 

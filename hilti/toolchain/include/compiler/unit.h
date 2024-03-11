@@ -55,7 +55,7 @@ public:
      * Returns the root node of the module's AST. Must only be called if
      * `isCompiledHilti()` returns true.
      */
-    ModulePtr module() const;
+    declaration::Module* module() const;
 
     /** Returns the unique module ID associated with the unit. */
     const auto& uid() const { return _uid; }

@@ -101,7 +101,7 @@ struct Plugin {
      * @param arg3 file associated with the input stream
      * @return module AST if parsing succeeded
      */
-    Hook<Result<ModulePtr>, hilti::Builder*, std::istream&, hilti::rt::filesystem::path> parse;
+    Hook<Result<declaration::Module*>, hilti::Builder*, std::istream&, hilti::rt::filesystem::path> parse;
 
     /**
      * Hook called to perform coercion of a `Ctor` into another of a given target type.
@@ -115,14 +115,14 @@ struct Plugin {
      * @param arg4 coercion style to use
      * @return new ctor if plugin performed coercion, or nullptr otherwise
      */
-    Hook<CtorPtr, Builder*, const CtorPtr&, const QualifiedTypePtr&, bitmask<CoercionStyle>> coerce_ctor;
+    Hook<Ctor*, Builder*, Ctor*, QualifiedType*, bitmask<CoercionStyle>> coerce_ctor;
 
     /**
      * Hook called to approved coercion of an expression into a different
      * type.
      *
      * If the plugin knows it can handle the coercion, it returns the
-     * resulting coerced `QualifiedTypePtr`. If so, it must then also provide an
+     * resulting coerced `QualifiedType*`. If so, it must then also provide an
      * `apply_coercions` hook that will later be called to perform the actual
      * coercion during code generation.
      *
@@ -132,8 +132,7 @@ struct Plugin {
      * @param arg4 coercion style to use
      * @return new type if plugin can handle this coercion
      */
-    Hook<QualifiedTypePtr, Builder*, const QualifiedTypePtr&, const QualifiedTypePtr&, bitmask<CoercionStyle>>
-        coerce_type;
+    Hook<QualifiedType*, Builder*, QualifiedType*, QualifiedType*, bitmask<CoercionStyle>> coerce_type;
 
     /**
      * Hook called once before any other AST processing takes place.
@@ -141,7 +140,7 @@ struct Plugin {
      * @param arg1 builder to use
      * @param arg2 root node of AST; the hook may modify the AST
      */
-    Hook<void, Builder*, const ASTRootPtr&> ast_init;
+    Hook<void, Builder*, ASTRoot*> ast_init;
 
     /**
      * Hook called to build the scopes in a module's AST.
@@ -150,7 +149,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may modify the AST
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, Builder*, const ASTRootPtr&> ast_build_scopes;
+    Hook<bool, Builder*, ASTRoot*> ast_build_scopes;
 
     /**
      * Hook called to resolve unknown types and other entities.
@@ -159,7 +158,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may modify the AST
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, Builder*, const NodePtr&> ast_resolve;
+    Hook<bool, Builder*, Node*> ast_resolve;
 
     /**
      * Hook called to validate correctness of an AST before resolving starts
@@ -169,7 +168,7 @@ struct Plugin {
      * @param arg1 builder to use
      * @param arg2 root node of AST; the hook may not modify the AST
      */
-    Hook<bool, Builder*, const ASTRootPtr&> ast_validate_pre;
+    Hook<bool, Builder*, ASTRoot*> ast_validate_pre;
 
     /**
      * Hook called to validate correctness of an AST once fully resolved. Any
@@ -178,7 +177,7 @@ struct Plugin {
      * @param arg1 builder to use
      * @param arg2 root node of AST; the hook may not modify the AST
      */
-    Hook<bool, Builder*, const ASTRootPtr&> ast_validate_post;
+    Hook<bool, Builder*, ASTRoot*> ast_validate_post;
 
     /**
      * Hook called to print an AST back as source code. The hook gets to choose
@@ -189,7 +188,7 @@ struct Plugin {
      * @param arg2 stream to print to
      * @return true if the hook printed the AST, false to fall back to default
      */
-    Hook<bool, const NodePtr&, printer::Stream&> ast_print;
+    Hook<bool, Node*, printer::Stream&> ast_print;
 
     /**
      * Hook called to replace AST nodes of one language (plugin) with nodes
@@ -199,7 +198,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may modify the AST
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, Builder*, const ASTRootPtr&> ast_transform;
+    Hook<bool, Builder*, ASTRoot*> ast_transform;
 };
 
 class PluginRegistry;

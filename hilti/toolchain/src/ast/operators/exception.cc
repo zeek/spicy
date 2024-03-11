@@ -30,7 +30,7 @@ Instantiates an instance of the exception type carrying the error message *msg*.
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type()->type()->as<type::Type_>()->typeValue();
     }
 

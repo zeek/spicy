@@ -20,8 +20,8 @@ namespace spicy::detail::codegen::production {
  */
 class TypeLiteral : public Production {
 public:
-    TypeLiteral(ASTContext* ctx, const std::string& symbol, QualifiedTypePtr type, const Location& l = location::None)
-        : Production(symbol, l), _type(std::move(type)), _expr(hilti::expression::Type_::create(ctx, _type)) {}
+    TypeLiteral(ASTContext* ctx, const std::string& symbol, QualifiedType* type, const Location& l = location::None)
+        : Production(symbol, l), _type(type), _expr(hilti::expression::Type_::create(ctx, _type)) {}
 
     bool isAtomic() const final { return true; };
     bool isEodOk() const final { return false; };
@@ -29,8 +29,8 @@ public:
     bool isNullable() const final { return false; };
     bool isTerminal() const final { return true; };
 
-    ExpressionPtr expression() const final { return _expr; }
-    QualifiedTypePtr type() const final { return _type; };
+    Expression* expression() const final { return _expr; }
+    QualifiedType* type() const final { return _type; };
     int64_t tokenID() const final { return static_cast<int64_t>(Production::tokenID(_type->print())); }
 
     std::string dump() const final { return _type->print(); }
@@ -38,8 +38,8 @@ public:
     SPICY_PRODUCTION
 
 private:
-    QualifiedTypePtr _type;
-    ExpressionPtr _expr;
+    QualifiedType* _type = nullptr;
+    Expression* _expr = nullptr;
 };
 
 } // namespace spicy::detail::codegen::production

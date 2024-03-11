@@ -9,38 +9,31 @@ using namespace hilti;
 using namespace hilti::operator_;
 
 operator_::Signature hilti::function::Call::signature(Builder* builder) const {
-    auto fdecl = _fdecl.lock();
-    assert(fdecl);
-
-    auto params = type::OperandList::fromParameters(builder->context(), fdecl->function()->ftype()->parameters());
-    auto result = fdecl->function()->ftype()->result();
+    auto params = type::OperandList::fromParameters(builder->context(), _fdecl->function()->ftype()->parameters());
+    auto result = _fdecl->function()->ftype()->result();
     auto ftype = builder->typeFunction(type::Wildcard());
-    ftype->setFunctionNameForPrinting(fdecl->id());
+    ftype->setFunctionNameForPrinting(_fdecl->id());
 
     return Signature{
         .kind = Kind::Call,
-        .op0 = {parameter::Kind::In, std::move(ftype)}, // will be found through scope lookup, not by name matching
+        .op0 = {parameter::Kind::In, ftype}, // will be found through scope lookup, not by name matching
         .op1 = {parameter::Kind::In, params},
         .result = {result->isConstant() ? Constness::Const : Constness::Mutable, result->type()},
         .skip_doc = true,
     };
 }
 
-Result<ResolvedOperatorPtr> hilti::function::Call::instantiate(Builder* builder, Expressions operands,
-                                                               const Meta& meta) const {
-    auto fdecl = _fdecl.lock();
-    assert(fdecl);
-
-    assert(fdecl->fullyQualifiedID());
-    auto callee = operands[0]->as<expression::Name>(); // builder->expressionName(fdecl->fullyQualifiedID(), meta);
+Result<expression::ResolvedOperator*> hilti::function::Call::instantiate(Builder* builder, Expressions operands,
+                                                                         Meta meta) const {
+    assert(_fdecl->fullyQualifiedID());
+    auto callee = operands[0]->as<expression::Name>();
     callee->setResolvedDeclarationIndex(builder->context(),
                                         builder->context()->register_(
-                                            fdecl->as<Declaration>())); // will be used immediately, cannot wait for
-                                                                        // resolver
+                                            _fdecl->as<Declaration>())); // will be used immediately, cannot wait for
+                                                                         // resolver
 
     auto args = operands[1];
-    auto result = fdecl->function()->ftype()->result();
+    auto result = _fdecl->function()->ftype()->result();
 
-    return {operator_::function::Call::create(builder->context(), this, result, {std::move(callee), std::move(args)},
-                                              meta)};
+    return {operator_::function::Call::create(builder->context(), this, result, {callee, args}, std::move(meta))};
 }

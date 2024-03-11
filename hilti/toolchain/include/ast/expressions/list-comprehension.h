@@ -27,16 +27,16 @@ public:
      */
     auto scope() const { return output()->scope(); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(4); }
+    QualifiedType* type() const final { return child<QualifiedType>(4); }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 4, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 4, t); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& input, const ExpressionPtr& output, const ID& id,
-                       const ExpressionPtr& cond, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Expression* input, Expression* output, const ID& id, Expression* cond,
+                       Meta meta = {}) {
         auto local = declaration::LocalVariable::create(ctx, id, QualifiedType::createAuto(ctx, meta), meta);
         auto list = QualifiedType::create(ctx, type::List::create(ctx, QualifiedType::createAuto(ctx, meta), meta),
                                           Constness::Const);
-        return std::shared_ptr<ListComprehension>(new ListComprehension(ctx, {input, output, local, cond, list}, meta));
+        return ctx->make<ListComprehension>(ctx, {input, output, local, cond, list}, std::move(meta));
     }
 
 protected:

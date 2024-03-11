@@ -14,19 +14,19 @@ class Block : public Statement {
 public:
     auto statements() const { return childrenOfType<Statement>(); }
 
-    void add(ASTContext* ctx, StatementPtr s) { addChild(ctx, std::move(s)); }
+    void add(ASTContext* ctx, Statement* s) { addChild(ctx, s); }
 
     /** Internal method for use by builder API only. */
-    void _add(ASTContext* ctx, const StatementPtr& s) { addChild(ctx, s); }
+    void _add(ASTContext* ctx, Statement* s) { addChild(ctx, s); }
 
     /** Internal method for use by builder API only. */
     auto _lastStatement() { return children().back()->as<Statement>(); }
 
     static auto create(ASTContext* ctx, Statements stmts, Meta meta = {}) {
-        return std::shared_ptr<Block>(new Block(ctx, std::move(stmts), std::move(meta)));
+        return ctx->make<Block>(ctx, std::move(stmts), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) { return create(ctx, {}, std::move(meta)); }
+    static auto create(ASTContext* ctx, const Meta& meta = {}) { return create(ctx, {}, meta); }
 
 protected:
     Block(ASTContext* ctx, Nodes children, Meta meta)

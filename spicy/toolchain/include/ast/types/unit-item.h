@@ -17,14 +17,14 @@ namespace spicy::type::unit {
 class Item : public hilti::Declaration {
 public:
     /** Returns the type of the parsed unit item. */
-    virtual QualifiedTypePtr itemType() const = 0;
+    virtual QualifiedType* itemType() const = 0;
 
     /** Returns true if the item's type has been resolved. */
     virtual bool isResolved(hilti::node::CycleDetector* cd = nullptr) const = 0;
 
 protected:
-    Item(ASTContext* ctx, node::Tags node_tags, Nodes children, ID id, const Meta& meta)
-        : hilti::Declaration(ctx, node_tags, std::move(children), std::move(id), {}, meta) {}
+    Item(ASTContext* ctx, node::Tags node_tags, Nodes children, ID id, Meta meta)
+        : hilti::Declaration(ctx, node_tags, std::move(children), std::move(id), {}, std::move(meta)) {}
 
     SPICY_NODE_1(type::unit::Item, Declaration, override);
 };

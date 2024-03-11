@@ -17,9 +17,7 @@ public:
     bool isAllocable() const final { return false; }
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Void>(new Void(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Void>(ctx, std::move(meta)); }
 
 protected:
     Void(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"void"}, std::move(meta)) {}

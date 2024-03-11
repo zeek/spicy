@@ -15,6 +15,8 @@
 #include <hilti/ast/types/operand-list.h>
 #include <hilti/base/logger.h>
 
+#include "ast/type.h"
+
 namespace hilti {
 
 namespace expression {
@@ -190,14 +192,13 @@ struct Signature {
     /** Defines an operator argument. */
     struct QType {
         parameter::Kind kind = parameter::Kind::Unknown; /**< defines passing-style */
-        UnqualifiedTypePtr type = nullptr;               /**< type of the argument */
+        UnqualifiedType* type = nullptr;                 /**< type of the argument */
         std::string doc;                                 /**< documentation string  */
-        std::optional<std::weak_ptr<UnqualifiedType>>
-            external_type; /**< alternative way to specify type through an existing one */
+        UnqualifiedType* external_type = nullptr;        /**< alternative way to specify type through an existing one */
 
-        auto getType() const {
+        UnqualifiedType* getType() const {
             if ( external_type )
-                return external_type->lock();
+                return external_type;
             else
                 return type;
         }
@@ -207,7 +208,7 @@ struct Signature {
 
     struct QResult {
         Constness constness = Constness::Const; /**< constness of the result */
-        UnqualifiedTypePtr type = nullptr;      /**< type of the argument */
+        UnqualifiedType* type = nullptr;        /**< type of the argument */
         std::string doc;                        /**< documentation string  */
 
         operator bool() const { return type != nullptr; }
@@ -215,10 +216,10 @@ struct Signature {
 
     /** Defines an operator parameter for constructor calls. */
     struct QParam {
-        std::string name;                 /**< ID of parameter */
-        QType type;                       /**< type of parameter */
-        ExpressionPtr default_ = nullptr; /**< optional default value if parameter is not given */
-        bool optional = false;            /**< true if parameter is optional */
+        std::string name;               /**< ID of parameter */
+        QType type;                     /**< type of parameter */
+        Expression* default_ = nullptr; /**< optional default value if parameter is not given */
+        bool optional = false;          /**< true if parameter is optional */
 
         operator bool() const { return type; }
     };
@@ -251,8 +252,8 @@ namespace detail {
 /** Internal representation of an operator signature after it has been processed. */
 struct ProcessedSignature {
     operator_::Kind kind = operator_::Kind::Unknown;
-    QualifiedTypePtr result; /**< result of the method; if null, `result()` will be called dynamically */
-    OperandListPtr operands; /**< null for operators to be instantiated only manually */
+    QualifiedType* result = nullptr;       /**< result of the method; if null, `result()` will be called dynamically */
+    type::OperandList* operands = nullptr; /**< null for operators to be instantiated only manually */
     operator_::Priority priority;
     std::string doc;        /**< documentation string */
     std::string result_doc; /**< explicitly set documentation string for result type */
@@ -348,7 +349,7 @@ public:
      * Must be implemented by operators if the signature does not define a
      * static result type.
      */
-    virtual QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const;
+    virtual QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const;
 
     /**
      * Refines the operator's signature based on the given operands. This can
@@ -366,7 +367,8 @@ public:
     virtual void validate(expression::ResolvedOperator* n) const {};
 
     /** Instantiates the operator as an AST node, given specific operand expressions. */
-    virtual Result<ResolvedOperatorPtr> instantiate(Builder* builder, Expressions operands, const Meta& meta) const = 0;
+    virtual Result<expression::ResolvedOperator*> instantiate(Builder* builder, Expressions operands,
+                                                              Meta meta) const = 0;
 
     /**
      * Returns a readable name describing the operator. Must be provided by
@@ -384,7 +386,7 @@ protected:
     friend class operator_::Registry;
 
     /** Initializes the operator. To be called only from the registry. */
-    bool init(Builder* builder, const NodePtr& scope_root = nullptr);
+    bool init(Builder* builder, Node* scope_root = nullptr);
 
     /**
      * Returns the operator's signature. Must be overridden by derived
@@ -401,8 +403,8 @@ protected:
      * @param kind kind of the operand specifying passing style
      * @param t type of the operand
      */
-    static std::shared_ptr<operator_::Operand> operandForType(Builder* builder, parameter::Kind kind,
-                                                              const UnqualifiedTypePtr& t, std::string doc = "");
+    static operator_::Operand* operandForType(Builder* builder, parameter::Kind kind, UnqualifiedType* t,
+                                              std::string doc = "");
 
     /**
      * Helper to create an signature operand matching the type of a given expression.
@@ -410,8 +412,8 @@ protected:
      * @param kind kind of the operand specifying passing style
      * @param e expression whose type to use
      */
-    static std::shared_ptr<operator_::Operand> operandForExpression(Builder* builder, parameter::Kind kind,
-                                                                    const Expressions& e, size_t i) {
+    static operator_::Operand* operandForExpression(Builder* builder, parameter::Kind kind, const Expressions& e,
+                                                    size_t i) {
         return operandForType(builder, kind, e[i]->type()->type(), "");
     }
 

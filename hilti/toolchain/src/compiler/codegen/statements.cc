@@ -14,7 +14,7 @@ using util::fmt;
 
 using namespace hilti::detail;
 
-inline auto traceStatement(CodeGen* cg, cxx::Block* b, const StatementPtr& s, bool skip_location = false) {
+inline auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_location = false) {
     if ( s->isA<statement::Block>() )
         return;
 
@@ -107,7 +107,7 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         else
-            block->addBlock(cg->compile(n->as<statement::Block>()));
+            block->addBlock(cg->compile(n));
     }
 
     void operator()(statement::Break* n) final { block->addStatement("break"); }
@@ -226,7 +226,7 @@ struct Visitor : hilti::visitor::PreOrder {
         std::string cxx_type;
         std::string cxx_init;
 
-        const auto& cond = n->condition();
+        auto cond = n->condition();
         cxx_type = cg->compile(cond->type(), codegen::TypeUsage::Storage);
         cxx_id = cxx::ID(cond->id());
         cxx_init = cg->compile(cond->init());
@@ -243,7 +243,7 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( exprs.size() == 1 )
                 cond = cg->compile(*exprs.begin());
             else
-                cond = util::join(node::transform(exprs, [&](auto& e) { return cg->compile(e); }), " || ");
+                cond = util::join(node::transform(exprs, [&](auto e) { return cg->compile(e); }), " || ");
 
             auto body = cg->compile(c->body());
 
@@ -304,7 +304,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(statement::While* n) final {
-        std::shared_ptr<declaration::LocalVariable> init;
+        declaration::LocalVariable* init = nullptr;
         std::optional<cxx::Expression> cxx_init;
 
         if ( n->init() )
@@ -392,7 +392,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
 } // anonymous namespace
 
-cxx::Block CodeGen::compile(const StatementPtr& s, cxx::Block* b) {
+cxx::Block CodeGen::compile(Statement* s, cxx::Block* b) {
     if ( b ) {
         pushCxxBlock(b);
         traceStatement(this, b, s);

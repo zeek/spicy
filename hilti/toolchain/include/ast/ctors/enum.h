@@ -16,12 +16,12 @@ class Enum : public Ctor {
 public:
     auto value() const { return child<type::enum_::Label>(0); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(1); }
 
-    static auto create(ASTContext* ctx, const type::enum_::LabelPtr& label, const Meta& meta = {}) {
-        return std::shared_ptr<Enum>(
-            new Enum(ctx, {label, QualifiedType::createExternal(ctx, label->enumType(), Constness::Const, meta)},
-                     meta));
+    static auto create(ASTContext* ctx, type::enum_::Label* label, const Meta& meta = {}) {
+        return ctx->make<Enum>(ctx,
+                               {label, QualifiedType::createExternal(ctx, label->enumType(), Constness::Const, meta)},
+                               meta);
     }
 
 protected:

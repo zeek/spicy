@@ -14,6 +14,6 @@ namespace hilti::detail::constant_folder {
  * expression is not represeneting a constant value, but only that we aren't
  * able to compute it.
  */
-Result<CtorPtr> fold(Builder* builder, const ExpressionPtr& expr);
+Result<Ctor*> fold(Builder* builder, Expression* expr);
 
 } // namespace hilti::detail::constant_folder

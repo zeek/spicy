@@ -59,7 +59,7 @@ std::string codegen::to_string(const Production& p) {
         if ( auto x = f->arguments(); x.size() ) {
             args = hilti::util::fmt(", args: (%s)",
                                     hilti::util::join(hilti::node::transform(x,
-                                                                             [](auto& a) {
+                                                                             [](auto a) {
                                                                                  return hilti::util::fmt("%s", a);
                                                                              }),
                                                       ", "));
@@ -74,7 +74,6 @@ std::string codegen::to_string(const Production& p) {
     auto prefix = "";
     auto postfix = "";
     auto name = p.typename_();
-    ;
     auto render = p.dump();
 
     if ( const auto* ref =

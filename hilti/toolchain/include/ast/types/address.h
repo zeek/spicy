@@ -12,9 +12,7 @@ namespace hilti::type {
 /** AST node for an `addr` type. */
 class Address : public UnqualifiedType {
 public:
-    static auto create(ASTContext* ctx, const Meta& m = Meta()) {
-        return std::shared_ptr<Address>(new Address(ctx, m));
-    }
+    static auto create(ASTContext* ctx, const Meta& m = Meta()) { return ctx->make<Address>(ctx, m); }
 
     std::string_view typeClass() const final { return "address"; }
 
@@ -22,7 +20,7 @@ public:
     bool isSortable() const final { return true; }
 
 protected:
-    Address(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {"address"}, meta) {}
+    Address(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"address"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::Address, UnqualifiedType, final);
 };

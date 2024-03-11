@@ -91,7 +91,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     // Returns an error if the given type cannot be used for ordering at
     // runtime.
-    Result<Nothing> isSortable(const QualifiedTypePtr& t) {
+    Result<Nothing> isSortable(QualifiedType* t) {
         if ( ! t->type()->isSortable() )
             return result::Error(fmt("type '%s' is not sortable", *t));
 
@@ -149,8 +149,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                     continue;
 
                 // Functions can legitimately be overloaded.
-                if ( const auto& f1 = node->tryAs<declaration::Function>() ) {
-                    if ( const auto& f2 = first_node->tryAs<declaration::Function>() )
+                if ( node->isA<declaration::Function>() ) {
+                    if ( first_node->tryAs<declaration::Function>() )
                         continue;
                 }
 
@@ -160,7 +160,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                         continue;
                 }
 
-                error(fmt("redefinition of '%s' defined in %s", id, first_node->location()), node.get());
+                error(fmt("redefinition of '%s' defined in %s", id, first_node->location()), node);
             }
         }
     }
@@ -392,7 +392,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(expression::Name* n) final {
         if ( auto decl = n->resolvedDeclaration() ) {
             if ( auto parent = n->parent<Declaration>();
-                 decl.get() == parent && ! decl->isA<declaration::Function>() && n->id() != ID("__dd") ) {
+                 decl == parent && ! decl->isA<declaration::Function>() && n->id() != ID("__dd") ) {
                 error(fmt("ID '%s' cannot be used inside its own declaration", n->id()), n);
                 return;
             }
@@ -748,12 +748,12 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
 } // anonymous namespace
 
-void validator::detail::validatePre(Builder* builder, const ASTRootPtr& root) {
+void validator::detail::validatePre(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/ast/validator");
     ::hilti::visitor::visit(VisitorPre(builder), root);
 }
 
-void validator::detail::validatePost(Builder* builder, const ASTRootPtr& root) {
+void validator::detail::validatePost(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/ast/validator");
     ::hilti::visitor::visit(VisitorPost(builder), root);
 }

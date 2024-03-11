@@ -15,17 +15,17 @@ using namespace spicy;
 namespace {
 
 struct VisitorScopeBuilder : visitor::PostOrder {
-    explicit VisitorScopeBuilder(Builder* builder, const ASTRootPtr& root) : root(root), builder(builder) {}
+    explicit VisitorScopeBuilder(Builder* builder, hilti::ASTRoot* root) : root(root), builder(builder) {}
 
-    const ASTRootPtr& root;
+    hilti::ASTRoot* root = nullptr;
     Builder* builder;
 
     void operator()(type::Unit* n) final {
         if ( auto d = n->self() )
-            n->getOrCreateScope()->insert(std::move(d));
+            n->getOrCreateScope()->insert(d);
 
         for ( auto&& x : n->parameters() )
-            n->getOrCreateScope()->insert(std::move(x));
+            n->getOrCreateScope()->insert(x);
     }
 
     void operator()(type::unit::item::Field* n) final {
@@ -43,7 +43,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
                 n->getOrCreateScope()->insert(u->self());
 
             for ( auto&& x : u->parameters() )
-                n->getOrCreateScope()->insert(std::move(x));
+                n->getOrCreateScope()->insert(x);
         }
     }
 
@@ -56,7 +56,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
             n->getOrCreateScope()->insertNotFound(ID("__dd"));
 
         for ( auto&& x : n->ftype()->parameters() )
-            n->getOrCreateScope()->insert(std::move(x));
+            n->getOrCreateScope()->insert(x);
 
         if ( auto t = builder->context()->lookup(n->unitTypeIndex()) ) {
             auto u = t->as<type::Unit>();
@@ -64,7 +64,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
                 n->getOrCreateScope()->insert(u->self());
 
             for ( auto&& x : u->parameters() )
-                n->getOrCreateScope()->insert(std::move(x));
+                n->getOrCreateScope()->insert(x);
         }
     }
 
@@ -80,14 +80,14 @@ struct VisitorScopeBuilder : visitor::PostOrder {
 
             auto dd = hilti::expression::Keyword::createDollarDollarDeclaration(builder->context(),
                                                                                 pt->type()->elementType());
-            n->getOrCreateScope()->insert(std::move(dd));
+            n->getOrCreateScope()->insert(dd);
         }
     }
 };
 
 } // anonymous namespace
 
-void detail::scope_builder::build(Builder* builder, const ASTRootPtr& root) {
+void detail::scope_builder::build(Builder* builder, hilti::ASTRoot* root) {
     hilti::util::timing::Collector _("spicy/compiler/ast/scope-builder");
 
     (*hilti::plugin::registry().hiltiPlugin().ast_build_scopes)(builder, root);

@@ -31,9 +31,9 @@ public:
     /** Shortcut to `type::cxxID()` for the declared type. */
     auto cxxID() const { return child<QualifiedType>(0)->type()->cxxID(); }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    void addAttribute(ASTContext* ctx, const AttributePtr& a) { attributes()->add(ctx, a); }
+    void addAttribute(ASTContext* ctx, Attribute* a) { attributes()->add(ctx, a); }
 
     node::Properties properties() const final {
         auto p = node::Properties{};
@@ -42,16 +42,16 @@ public:
 
     std::string_view displayName() const final { return "type"; }
 
-    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, AttributeSetPtr attrs,
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, AttributeSet* attrs,
                        declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Type>(new Type(ctx, {type, attrs}, std::move(id), linkage, std::move(meta)));
+        return ctx->make<Type>(ctx, {type, attrs}, std::move(id), linkage, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type,
-                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, declaration::Linkage linkage = Linkage::Private,
+                       Meta meta = {}) {
         return create(ctx, std::move(id), type, AttributeSet::create(ctx), linkage, std::move(meta));
     }
 

@@ -16,10 +16,10 @@ class Move : public Expression {
 public:
     auto expression() const { return child<Expression>(0); }
 
-    QualifiedTypePtr type() const final { return expression()->type(); }
+    QualifiedType* type() const final { return expression()->type(); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expression, const Meta& meta = {}) {
-        return std::shared_ptr<Move>(new Move(ctx, {expression}, meta));
+    static auto create(ASTContext* ctx, Expression* expression, Meta meta = {}) {
+        return ctx->make<Move>(ctx, {expression}, std::move(meta));
     }
 
 protected:

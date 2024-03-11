@@ -48,7 +48,7 @@ struct Visitor : hilti::visitor::PreOrder {
         cxx::Block block;
         cg->pushCxxBlock(&block);
         auto arguments =
-            util::join(node::transform(n->arguments(), [this](auto& x) { return cg->compile(x, lhs); }), ", ");
+            util::join(node::transform(n->arguments(), [this](auto x) { return cg->compile(x, lhs); }), ", ");
         cg->popCxxBlock();
 
         block.addStatement(fmt("%s(%s)", cxx::ID(n->cxxname()), arguments));
@@ -153,7 +153,7 @@ struct Visitor : hilti::visitor::PreOrder {
         auto fqid = decl->fullyQualifiedID();
         assert(fqid);
 
-        if ( auto g = decl->tryAs<declaration::GlobalVariable>() ) {
+        if ( decl->isA<declaration::GlobalVariable>() ) {
             if ( cg->options().cxx_enable_dynamic_globals ) {
                 if ( auto ns = fqid.namespace_(); ! ns.empty() )
                     result = {fmt("%s->%s", cxx::ID(ns, "__globals()"), cxx::ID(fqid.local())), Side::LHS};
@@ -216,9 +216,7 @@ struct Visitor : hilti::visitor::PreOrder {
         result = {cxx::ID(n->id()), Side::LHS};
     }
 
-    void operator()(expression::ResolvedOperator* n) final {
-        result = cg->compile(n->as<expression::ResolvedOperator>(), lhs);
-    }
+    void operator()(expression::ResolvedOperator* n) final { result = cg->compile(n, lhs); }
 
     void operator()(expression::Ternary* n) final {
         result = fmt("(%s ? %s : %s)", cg->compile(n->condition()), cg->compile(n->true_()), cg->compile(n->false_()));
@@ -246,7 +244,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
 } // anonymous namespace
 
-cxx::Expression CodeGen::compile(const ExpressionPtr& e, bool lhs) {
+cxx::Expression CodeGen::compile(Expression* e, bool lhs) {
     auto v = Visitor(this, lhs);
     if ( auto x = hilti::visitor::dispatch(v, e, [](const auto& v) { return v.result; }) )
         return lhs ? _makeLhs(*x, e->type()) : *x;

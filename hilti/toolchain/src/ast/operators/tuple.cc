@@ -71,7 +71,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         auto ctor = operands[1]->tryAs<expression::Ctor>();
         if ( ! ctor )
             return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
@@ -118,7 +118,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         auto id = operands[1]->as<expression::Member>()->id();
         auto tt = operands[0]->type()->type()->tryAs<type::Tuple>();
         if ( ! tt )
@@ -164,7 +164,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 

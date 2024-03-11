@@ -12,9 +12,7 @@ namespace hilti::statement {
 /** AST node for a `yield` statement. */
 class Yield : public Statement {
 public:
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Yield>(new Yield(ctx, {}, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Yield>(ctx, {}, std::move(meta)); }
 
 protected:
     Yield(ASTContext* ctx, Nodes children, Meta meta)

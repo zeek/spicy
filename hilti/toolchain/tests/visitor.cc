@@ -82,7 +82,7 @@ TEST_CASE("Visitor, pre-order") {
         void operator()(hilti::ctor::Bool* b) final { x += "(c:b)"; }
         void operator()(hilti::statement::Block* n) final { x += "(s:b)"; }
 
-        void testDispatch(const hilti::NodePtr& i) {
+        void testDispatch(hilti::Node* i) {
             auto old = x.size();
             dispatch(i);
             if ( x.size() == old )
@@ -116,7 +116,7 @@ TEST_CASE("Visitor, pre-order") {
         void operator()(hilti::ctor::Bool* b) final { x += "(c:b)"; }
         void operator()(hilti::statement::Block* n) final { x += "(s:b)"; }
 
-        void testDispatch(const hilti::NodePtr& i) {
+        void testDispatch(hilti::Node* i) {
             auto old = x.size();
             dispatch(i);
             if ( x.size() == old )
@@ -173,7 +173,7 @@ TEST_CASE("Copy node by value on insert") {
     auto ctx = std::make_unique<hilti::ASTContext>(nullptr);
     auto builder = hilti::Builder(ctx.get());
 
-    std::shared_ptr<hilti::Declaration> d =
+    hilti::Declaration* d =
         builder.declarationType(hilti::ID("x"), builder.qualifiedType(builder.typeString(), hilti::Constness::Mutable));
     auto uid = hilti::declaration::module::UID("m", "/tmp/m.hlt");
     auto m = builder.declarationModule(uid, {}, {d});

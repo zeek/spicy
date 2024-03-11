@@ -20,21 +20,21 @@ public:
     bool isAllocable() const final { return true; }
     bool isNameType() const final { return true; }
 
-    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& base, Meta meta = {}) {
-        return std::shared_ptr<Exception>(new Exception(ctx, {base}, std::move(meta)));
+    static auto create(ASTContext* ctx, UnqualifiedType* base, Meta meta = {}) {
+        return ctx->make<Exception>(ctx, {base}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const Meta& meta = {}) { return create(ctx, nullptr, meta); }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return create(ctx, nullptr, std::move(meta)); }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Exception>(new Exception(ctx, Wildcard(), {type::Unknown::create(ctx, m)}, m));
+        return ctx->make<Exception>(ctx, Wildcard(), {type::Unknown::create(ctx, m)}, m);
     }
 
 protected:
     Exception(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Exception(ASTContext* ctx, Wildcard _, const Nodes& children, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"exception(*)"}, children, meta) {}
+    Exception(ASTContext* ctx, Wildcard _, const Nodes& children, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"exception(*)"}, children, std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final { return baseType() ? baseType()->isResolved(cd) : true; }
 

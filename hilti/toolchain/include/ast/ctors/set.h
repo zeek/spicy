@@ -18,26 +18,26 @@ public:
     auto elementType() const { return type()->type()->as<type::Set>()->elementType(); }
     auto value() const { return children<Expression>(1, {}); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     void setValue(ASTContext* ctx, Expressions exprs) {
         removeChildren(1, {});
         addChildren(ctx, std::move(exprs));
     }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& etype, Expressions exprs, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, QualifiedType* etype, Expressions exprs, Meta meta = {}) {
         auto stype = QualifiedType::create(ctx, type::Set::create(ctx, etype, meta), Constness::Mutable, meta);
-        return std::shared_ptr<Set>(new Set(ctx, node::flatten(stype, std::move(exprs)), meta));
+        return ctx->make<Set>(ctx, node::flatten(stype, std::move(exprs)), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Expressions exprs, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Expressions exprs, Meta meta = {}) {
         // bool is just an arbitrary place-holder type for empty values.
         auto etype = exprs.empty() ?
                          QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Mutable, meta) :
                          QualifiedType::createAuto(ctx, meta);
-        return create(ctx, etype, std::move(exprs), meta);
+        return create(ctx, etype, std::move(exprs), std::move(meta));
     }
 
 protected:

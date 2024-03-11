@@ -32,7 +32,7 @@ public:
     }
 
     static auto create(ASTContext* ctx, const std::string& cxx_name, Meta meta = {}) {
-        return std::shared_ptr<Library>(new Library(ctx, cxx_name, std::move(meta)));
+        return ctx->make<Library>(ctx, cxx_name, std::move(meta));
     }
 
 private:

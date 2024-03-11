@@ -19,23 +19,23 @@ inline const DebugStream Operator("operator");
 namespace {
 
 struct VisitorCtor : visitor::PreOrder {
-    VisitorCtor(Builder* builder, QualifiedTypePtr dst, bitmask<hilti::CoercionStyle> style)
-        : builder(builder), dst(std::move(dst)), style(style) {}
+    VisitorCtor(Builder* builder, QualifiedType* dst, bitmask<hilti::CoercionStyle> style)
+        : builder(builder), dst(dst), style(style) {}
 
     Builder* builder;
-    QualifiedTypePtr dst;
+    QualifiedType* dst = nullptr;
     bitmask<hilti::CoercionStyle> style;
 
-    CtorPtr result = nullptr;
+    Ctor* result = nullptr;
 
     void operator()(hilti::ctor::String* n) final {
         if ( auto x = dst->type()->tryAs<hilti::type::Library>(); x && x->cxxName() == "::spicy::rt::MIMEType" )
-            result = builder->ctorLibrary(n->as<Ctor>(), dst, n->meta());
+            result = builder->ctorLibrary(n, dst, n->meta());
     }
 
     void operator()(hilti::ctor::Tuple* n) final {
         if ( auto x = dst->type()->tryAs<hilti::type::Library>(); x && x->cxxName() == "::spicy::rt::ParserPort" )
-            result = builder->ctorLibrary(n->as<Ctor>(), dst, n->meta());
+            result = builder->ctorLibrary(n, dst, n->meta());
     }
 
     void operator()(hilti::ctor::Struct* n) final {
@@ -51,18 +51,18 @@ struct VisitorCtor : visitor::PreOrder {
 };
 
 struct VisitorType : visitor::PreOrder {
-    explicit VisitorType(Builder* builder, QualifiedTypePtr dst, bitmask<hilti::CoercionStyle> style)
-        : builder(builder), dst(std::move(dst)), style(style) {}
+    explicit VisitorType(Builder* builder, QualifiedType* dst, bitmask<hilti::CoercionStyle> style)
+        : builder(builder), dst(dst), style(style) {}
 
     Builder* builder;
-    QualifiedTypePtr dst;
+    QualifiedType* dst = nullptr;
     bitmask<hilti::CoercionStyle> style;
 
-    QualifiedTypePtr result = nullptr;
+    QualifiedType* result = nullptr;
 
     void operator()(type::Unit* n) final {
         if ( auto x = dst->type()->tryAs<hilti::type::StrongReference>();
-             x && hilti::type::same(x->dereferencedType()->type(), n->as<UnqualifiedType>()) )
+             x && hilti::type::same(x->dereferencedType()->type(), n) )
             // Our codegen will turn a unit T into value_ref<T>, which coerces to strong_ref<T>.
             result = dst;
     }
@@ -71,8 +71,8 @@ struct VisitorType : visitor::PreOrder {
 } // anonymous namespace
 
 
-CtorPtr spicy::detail::coercer::coerceCtor(Builder* builder, const CtorPtr& c, const QualifiedTypePtr& dst,
-                                           bitmask<hilti::CoercionStyle> style) {
+Ctor* spicy::detail::coercer::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst,
+                                         bitmask<hilti::CoercionStyle> style) {
     hilti::util::timing::Collector _("spicy/compiler/ast/coercer");
 
     if ( ! (c->type()->isResolved() && dst->isResolved()) )
@@ -87,8 +87,8 @@ CtorPtr spicy::detail::coercer::coerceCtor(Builder* builder, const CtorPtr& c, c
         return (*hilti::plugin::registry().hiltiPlugin().coerce_ctor)(builder, c, dst, style);
 }
 
-QualifiedTypePtr spicy::detail::coercer::coerceType(Builder* builder, const QualifiedTypePtr& t,
-                                                    const QualifiedTypePtr& dst, bitmask<hilti::CoercionStyle> style) {
+QualifiedType* spicy::detail::coercer::coerceType(Builder* builder, QualifiedType* t, QualifiedType* dst,
+                                                  bitmask<hilti::CoercionStyle> style) {
     hilti::util::timing::Collector _("spicy/compiler/ast/coercer");
 
     if ( ! (t->isResolved() && dst->isResolved()) )

@@ -41,14 +41,14 @@ operator_::Signature CastedCoercion::signature(Builder* builder) const {
     };
 }
 
-QualifiedTypePtr CastedCoercion::result(Builder* builder, const Expressions& operands, const Meta& meta) const {
+QualifiedType* CastedCoercion::result(Builder* builder, const Expressions& operands, const Meta& meta) const {
     return operands[1]->type()->type()->as<type::Type_>()->typeValue();
 }
 
-Result<ResolvedOperatorPtr> CastedCoercion::instantiate(Builder* builder, Expressions operands,
-                                                        const Meta& meta) const {
+Result<expression::ResolvedOperator*> CastedCoercion::instantiate(Builder* builder, Expressions operands,
+                                                                  Meta meta) const {
     auto result_ = result(builder, operands, meta);
-    return {operator_::generic::CastedCoercion::create(builder->context(), this, result_, operands, meta)};
+    return {operator_::generic::CastedCoercion::create(builder->context(), this, result_, operands, std::move(meta))};
 }
 
 } // namespace hilti::generic
@@ -133,12 +133,13 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         const auto args = operands[1]->type()->type()->as<type::Tuple>()->elements();
         if ( args.empty() )
             return builder->qualifiedType(builder->typeError(), Constness::Const);
 
-        auto t = builder->typeTuple({operands[0]->type()->type()->as<type::Type_>()->typeValue(), args[0]->type()},
+        auto t = builder->typeTuple(QualifiedTypes{operands[0]->type()->type()->as<type::Type_>()->typeValue(),
+                                                   args[0]->type()},
                                     operands[0]->meta());
 
         if ( operands[2]->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value() )
@@ -231,7 +232,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         if ( auto iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
@@ -259,7 +260,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         if ( auto iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
@@ -291,7 +292,7 @@ If `x` is an expression, an instance of the expression's type will be allocated 
 )",
         };
     }
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         auto t = operands[0]->type();
 
         if ( auto tv = operands[0]->type()->type()->tryAs<type::Type_>() )

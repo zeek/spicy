@@ -54,7 +54,7 @@ public:
      *
      * @param id name of the property to return
      */
-    PropertyPtr moduleProperty(const ID& id) const;
+    Property* moduleProperty(const ID& id) const;
 
     /**
      * Returns all of module's property declarations of a given name. If
@@ -68,14 +68,14 @@ public:
      * Adds a declaration to the module. It will be appended to the current
      * list of declarations.
      */
-    void add(ASTContext* ctx, DeclarationPtr d) { addChild(ctx, std::move(d)); }
+    void add(ASTContext* ctx, Declaration* d) { addChild(ctx, d); }
 
     /**
      * Adds a top-level statement to the module. It will be appended to the
      * end of the current list of statements and execute at module initialize
      * time.
      */
-    void add(ASTContext* ctx, StatementPtr s) { child<statement::Block>(0)->add(ctx, std::move(s)); }
+    void add(ASTContext* ctx, Statement* s) { child<statement::Block>(0)->add(ctx, s); }
 
     void addDependency(declaration::module::UID uid) { _dependencies.emplace_back(std::move(uid)); }
     void setScopePath(const ID& scope) { _scope_path = scope; }
@@ -96,22 +96,21 @@ public:
     std::string_view branchTag() const final { return _uid.process_extension.native(); }
 
     static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
-                       Statements stmts, const Meta& meta = {}) {
+                       Statements stmts, Meta meta = {}) {
         Nodes nodes = {statement::Block::create(ctx, std::move(stmts), meta)};
         for ( auto d : decls )
             nodes.push_back(std::move(d));
 
-        return std::shared_ptr<Module>(new Module(ctx, std::move(nodes), uid, scope, meta));
+        return ctx->make<Module>(ctx, std::move(nodes), uid, scope, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope = {},
-                       const Meta& meta = {}) {
-        return create(ctx, uid, scope, {}, {}, meta);
+    static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope = {}, Meta meta = {}) {
+        return create(ctx, uid, scope, {}, {}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
-                       const Meta& meta = {}) {
-        return create(ctx, uid, scope, decls, {}, meta);
+                       Meta meta = {}) {
+        return create(ctx, uid, scope, decls, {}, std::move(meta));
     }
 
 protected:

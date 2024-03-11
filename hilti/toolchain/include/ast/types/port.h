@@ -17,9 +17,7 @@ public:
     bool isAllocable() const final { return true; }
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Port>(new Port(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Port>(ctx, std::move(meta)); }
 
 protected:
     Port(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"port"}, std::move(meta)) {}

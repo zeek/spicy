@@ -21,24 +21,24 @@ class Sink : public unit::Item {
 public:
     auto attributes() const { return child<AttributeSet>(0); }
 
-    QualifiedTypePtr itemType() const final { return child<QualifiedType>(1); }
+    QualifiedType* itemType() const final { return child<QualifiedType>(1); }
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
 
     std::string_view displayName() const final { return "unit sink"; }
 
-    static auto create(ASTContext* ctx, ID id, AttributeSetPtr attrs, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, ID id, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Sink>(
-            new Sink(ctx, {attrs, QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::Mutable)},
-                     std::move(id), meta));
+        return ctx->make<Sink>(ctx,
+                               {attrs, QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::Mutable)},
+                               std::move(id), std::move(meta));
     }
 
 protected:
-    Sink(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
-        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), meta) {}
+    Sink(ASTContext* ctx, Nodes children, ID id, Meta meta)
+        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), std::move(meta)) {}
 
     SPICY_NODE_2(type::unit::item::Sink, type::unit::Item, Declaration, final);
 };

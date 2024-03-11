@@ -140,7 +140,7 @@ namespace type {
  * `type::Name` encountered,  that's `t` itself. If a `type::Name` is
  * encountered that has not been resolved yet, returns that `type::Name` itself.
  */
-extern UnqualifiedTypePtr follow(const UnqualifiedTypePtr& t);
+extern UnqualifiedType* follow(UnqualifiedType* t);
 
 } // namespace type
 
@@ -178,7 +178,7 @@ public:
      * in the AST context. That means, the index must have been set for this to
      * return anything.
      */
-    std::shared_ptr<declaration::Type> typeDeclaration() const;
+    declaration::Type* typeDeclaration() const;
 
     /**
      * Returns the C++ ID associated with this type, if any. This is a shortcut
@@ -224,7 +224,7 @@ public:
      * be set (yet), returns false. If it's already set, returns true without
      * changing anything.
      */
-    bool unify(ASTContext* ctx, const NodePtr& scope_root = nullptr);
+    bool unify(ASTContext* ctx, Node* scope_root = nullptr);
 
     /**
      * Sets the type's unification string explicitly. Should normally be called
@@ -245,19 +245,19 @@ public:
      * For deferenceable types, returns the type of dereferenced elements.
      * Returns null for all other types.
      */
-    virtual QualifiedTypePtr dereferencedType() const { return {}; }
+    virtual QualifiedType* dereferencedType() const { return {}; }
 
     /**
      * For container types, returns the type of elements. Returns null for all
      * other types.
      */
-    virtual QualifiedTypePtr elementType() const { return {}; }
+    virtual QualifiedType* elementType() const { return {}; }
 
     /**
      * For iterable types, returns the type of an iterator. Returns null for
      * all other types.
      */
-    virtual QualifiedTypePtr iteratorType() const { return {}; }
+    virtual QualifiedType* iteratorType() const { return {}; }
 
     /** Returns any parameters the type expects on construction. */
     virtual hilti::node::Set<type::function::Parameter> parameters() const { return {}; }
@@ -266,7 +266,7 @@ public:
      * For viewable types, returns the type of a view. Returns null for all
      * other types.
      */
-    virtual QualifiedTypePtr viewType() const { return {}; }
+    virtual QualifiedType* viewType() const { return {}; }
 
     /** Returns true for types that can be used to instantiate variables. */
     virtual bool isAllocable() const { return false; }
@@ -299,14 +299,17 @@ public:
 
 protected:
     friend class ASTContext;
-    friend UnqualifiedTypePtr hilti::type::follow(const UnqualifiedTypePtr& t);
+    friend UnqualifiedType* hilti::type::follow(UnqualifiedType* t);
 
     UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Unification&& u, Meta meta)
         : Node::Node(ctx, node_tags, std::move(meta)), _context(ctx), _unification(std::move(u)) {}
     UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Unification&& u, Nodes children, Meta meta)
         : Node::Node(ctx, node_tags, std::move(children), std::move(meta)), _context(ctx), _unification(std::move(u)) {}
-    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard _, type::Unification&& u, const Meta& meta)
-        : Node::Node(ctx, node_tags, {}, meta), _context(ctx), _unification(std::move(u)), _is_wildcard(true) {}
+    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard _, type::Unification&& u, Meta meta)
+        : Node::Node(ctx, node_tags, {}, std::move(meta)),
+          _context(ctx),
+          _unification(std::move(u)),
+          _is_wildcard(true) {}
     UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard _, type::Unification&& u, Nodes children,
                     Meta meta)
         : Node::Node(ctx, node_tags, std::move(children), std::move(meta)),
@@ -351,7 +354,7 @@ public:
      *
      * @param follow if true, follows any `type::Name` references to the actual type
      */
-    UnqualifiedTypePtr type(bool follow = true) const { return follow ? type::follow(_type()) : _type(); }
+    UnqualifiedType* type(bool follow = true) const { return follow ? type::follow(_type()) : _type(); }
 
     /** Returns true if the qualified type is constant. */
     bool isConstant() const { return _constness == Constness::Const; }
@@ -393,13 +396,13 @@ public:
      * @param is_constant true if the type is constant
      * @param m meta data to attach
      */
-    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_, Meta m = Meta()) {
+    static auto create(ASTContext* ctx, UnqualifiedType* t, Constness const_, Meta m = Meta()) {
         if ( ! m )
             m = t->meta();
 
-        auto qt = std::shared_ptr<QualifiedType>(new QualifiedType(ctx, Nodes{t}, const_, Side::RHS, std::move(m)));
+        auto qt = ctx->make<QualifiedType>(ctx, Nodes{t}, const_, Side::RHS, std::move(m));
         qt->type()->unify(ctx);
-        qt->_type()->newlyQualified(qt.get());
+        qt->_type()->newlyQualified(qt);
         return qt;
     }
 
@@ -412,11 +415,10 @@ public:
      * @param side the type's "sideness"
      * @param m meta data to attach
      */
-    static auto create(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_, Side side,
-                       const Meta& m = Meta()) {
-        auto qt = std::shared_ptr<QualifiedType>(new QualifiedType(ctx, Nodes{t}, const_, side, m));
+    static auto create(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side side, const Meta& m = Meta()) {
+        auto qt = ctx->make<QualifiedType>(ctx, Nodes{t}, const_, side, m);
         qt->type()->unify(ctx);
-        qt->_type()->newlyQualified(qt.get());
+        qt->_type()->newlyQualified(qt);
         return qt;
     }
 
@@ -432,23 +434,22 @@ public:
      * @param is_constant true if the type is constant
      * @param m meta data to attach
      */
-    static QualifiedTypePtr createExternal(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_,
-                                           const Meta& m = Meta());
+    static QualifiedType* createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, const Meta& m = Meta());
 
-    static QualifiedTypePtr createExternal(ASTContext* ctx, const UnqualifiedTypePtr& t, Constness const_, Side side,
-                                           const Meta& m = Meta());
+    static QualifiedType* createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side side,
+                                         const Meta& m = Meta());
 
     /**
      * Shortcut to create a qualified type wrapping a `type::Auto` instance.
      * This sets sideness to RHS, and constness to false.
      */
-    static QualifiedTypePtr createAuto(ASTContext* ctx, const Meta& m = Meta());
+    static QualifiedType* createAuto(ASTContext* ctx, const Meta& m = Meta());
 
     /**
      * Shortcut to create a qualified type wrapping a `type::Auto` instance.
      * This sets constness to false.
      */
-    static QualifiedTypePtr createAuto(ASTContext* ctx, Side side, const Meta& m = Meta());
+    static QualifiedType* createAuto(ASTContext* ctx, Side side, const Meta& m = Meta());
 
     /** Factory method creating a copy of the type with "sideness" changed to LHS. */
     auto recreateAsLhs(ASTContext* ctx) const {
@@ -474,8 +475,7 @@ protected:
           _constness(constness),
           _side(side) {}
 
-    QualifiedType(ASTContext* ctx, Nodes children, const UnqualifiedTypePtr& t, Constness constness, Side side,
-                  Meta meta)
+    QualifiedType(ASTContext* ctx, Nodes children, UnqualifiedType* t, Constness constness, Side side, Meta meta)
         : Node(ctx, NodeTags, std::move(children), std::move(meta)),
           _context(ctx),
           _external(ctx->register_(t)),
@@ -489,7 +489,7 @@ protected:
 
 private:
     // Internal version of _type() that doesn't follow name references.
-    UnqualifiedTypePtr _type() const;
+    UnqualifiedType* _type() const;
 
     ASTContext* _context; // context that the node is part of
 
@@ -504,25 +504,19 @@ namespace type {
  * Returns true if a type is fully resolved. This asks the type's `isResolved`
  * handler whether it considers itself resolved.
  */
-inline bool isResolved(const UnqualifiedTypePtr& t) { return t->isResolved(); }
-
-/**
- * Returns true if a type is fully resolved. This asks the type's `isResolved`
- * handler whether it considers itself resolved.
- */
-inline bool isResolved(const UnqualifiedType* t) { return t->isResolved(); }
+inline bool isResolved(UnqualifiedType* t) { return t->isResolved(); }
 
 /**
  * Returns true if a qualified type's wrapped type is fully resolved. This asks
  * the type's `isResolved` handler whether it considers itself resolved.
  */
-inline bool isResolved(const QualifiedTypePtr& t) { return isResolved(t->type()); }
+inline bool isResolved(QualifiedType* t) { return isResolved(t->type()); }
 
 /**
  * Returns true if two types are semantically equal. This returns true only if
  * both types have been fully resolved already.
  */
-inline bool same(const UnqualifiedTypePtr& t1, const UnqualifiedTypePtr& t2) {
+inline bool same(UnqualifiedType* t1, UnqualifiedType* t2) {
     auto t1_ = follow(t1);
     auto t2_ = follow(t2);
 
@@ -536,7 +530,7 @@ inline bool same(const UnqualifiedTypePtr& t1, const UnqualifiedTypePtr& t2) {
  * Returns true if two types are semantically equal. This returns true only if
  * both types have been fully resolved already.
  */
-inline bool same(const QualifiedTypePtr& t1, const QualifiedTypePtr& t2) {
+inline bool same(QualifiedType* t1, QualifiedType* t2) {
     if ( t1->isConstant() != t2->isConstant() )
         return false;
 
@@ -553,7 +547,7 @@ inline bool same(const QualifiedTypePtr& t1, const QualifiedTypePtr& t2) {
  * Returns true if two types are semantically equal ignoring their constness.
  * This returns true only if both types have been fully resolved already.
  */
-inline bool sameExceptForConstness(const QualifiedTypePtr& t1, const QualifiedTypePtr& t2) {
+inline bool sameExceptForConstness(QualifiedType* t1, QualifiedType* t2) {
     if ( ! isResolved(t1) || ! isResolved(t2) )
         return false;
 

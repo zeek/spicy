@@ -17,9 +17,7 @@ public:
     bool isAllocable() const final { return true; }
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Interval>(new Interval(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Interval>(ctx, std::move(meta)); }
 
 protected:
     Interval(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"interval"}, std::move(meta)) {}

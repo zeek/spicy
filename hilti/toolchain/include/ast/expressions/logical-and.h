@@ -17,15 +17,16 @@ public:
     auto op0() const { return child<Expression>(0); }
     auto op1() const { return child<Expression>(1); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(2); }
+    QualifiedType* type() const final { return child<QualifiedType>(2); }
 
-    void setOp0(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 0, std::move(e)); }
-    void setOp1(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 1, std::move(e)); }
+    void setOp0(ASTContext* ctx, Expression* e) { setChild(ctx, 0, e); }
+    void setOp1(ASTContext* ctx, Expression* e) { setChild(ctx, 1, e); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& op0, const ExpressionPtr& op1, const Meta& meta = {}) {
-        return std::shared_ptr<LogicalAnd>(
-            new LogicalAnd(ctx, {op0, op1, QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)},
-                           meta));
+    static auto create(ASTContext* ctx, Expression* op0, Expression* op1, const Meta& meta = {}) {
+        return ctx->make<LogicalAnd>(ctx,
+                                     {op0, op1,
+                                      QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)},
+                                     meta);
     }
 
 protected:

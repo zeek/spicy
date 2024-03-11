@@ -13,7 +13,7 @@ namespace hilti::type_unifier {
  *
  * @returns true if at least one type was unified that wasn't before.
  */
-bool unify(Builder* builder, const ASTRootPtr& root);
+bool unify(Builder* builder, ASTRoot* root);
 
 /**
  * Unifies an unqualified type, if possible. If it's already unified, no change
@@ -22,7 +22,7 @@ bool unify(Builder* builder, const ASTRootPtr& root);
  * @returns true if either the type is now unified, either because it was
  * already or because it could be unified now.
  */
-bool unify(ASTContext* ctx, const UnqualifiedTypePtr& type);
+bool unify(ASTContext* ctx, UnqualifiedType* type);
 
 /**
  * API class for implementing type unification for custom types by plugins.
@@ -34,7 +34,7 @@ public:
     void add(UnqualifiedType* t);
 
     /** Add the unification string for a given type. The processes the type recursively. */
-    void add(const QualifiedTypePtr& t);
+    void add(QualifiedType* t);
 
     /** Add a string to the current unification string. */
     void add(const std::string& s);

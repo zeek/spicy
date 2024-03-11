@@ -18,10 +18,9 @@ public:
     auto sequence() const { return child<::hilti::Expression>(1); }
     auto body() const { return child<hilti::Statement>(2); }
 
-    static auto create(ASTContext* ctx, const hilti::ID& id, const ExpressionPtr& seq, const StatementPtr& body,
-                       Meta meta = {}) {
+    static auto create(ASTContext* ctx, const hilti::ID& id, hilti::Expression* seq, Statement* body, Meta meta = {}) {
         auto local = declaration::LocalVariable::create(ctx, id, meta);
-        return std::shared_ptr<For>(new For(ctx, {local, seq, body}, std::move(meta)));
+        return ctx->make<For>(ctx, {local, seq, body}, std::move(meta));
     }
 
 protected:

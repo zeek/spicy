@@ -29,7 +29,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type()->type()->dereferencedType();
     }
 
@@ -49,7 +49,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -69,7 +69,7 @@ public:
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
 
@@ -254,7 +254,7 @@ public:
         return {{op0, op1}};
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type()->type()->as<type::Map>()->valueType()->recreateAsConst(builder->context());
     }
 
@@ -285,7 +285,7 @@ public:
         return {{op0, op1}};
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type()->type()->as<type::Map>()->valueType()->recreateAsLhs(builder->context());
     }
 
@@ -347,7 +347,7 @@ the default value if provided; otherwise throws a runtime error.
         };
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type()->type()->as<type::Map>()->valueType()->recreateAsLhs(builder->context());
     }
 

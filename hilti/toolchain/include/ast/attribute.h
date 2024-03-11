@@ -27,7 +27,7 @@ public:
      *
      * @exception `std::out_of_range` if the attribute does not have an argument
      */
-    NodePtr value() const { return child(0); }
+    Node* value() const { return child(0); }
 
     /**
      * Returns the expression argument associated with the attribute.
@@ -35,7 +35,7 @@ public:
      * @return the argument, or an error if the attribute does not have an
      * argument, or if it's not an expression.
      */
-    Result<ExpressionPtr> valueAsExpression() const;
+    Result<Expression*> valueAsExpression() const;
 
     /**
      * Returns the expression argument associated with the attribute as a
@@ -66,7 +66,7 @@ public:
      * result's value is false); a failure if a coercion would have been
      * necessary, but failed, or the attribute does not have a expression value.
      */
-    Result<bool> coerceValueTo(Builder* builder, const QualifiedTypePtr& dst);
+    Result<bool> coerceValueTo(Builder* builder, QualifiedType* dst);
 
     node::Properties properties() const final {
         auto p = node::Properties{{"tag", _tag}};
@@ -81,8 +81,8 @@ public:
      * @param v node representing the argument to associate with the attribute; must be an expression
      * @param m meta data to associate with the node
      */
-    static auto create(ASTContext* ctx, const std::string& tag, const ExpressionPtr& v, const Meta& m = Meta()) {
-        return std::shared_ptr<Attribute>(new Attribute(ctx, {v}, tag, m));
+    static auto create(ASTContext* ctx, const std::string& tag, Expression* v, const Meta& m = Meta()) {
+        return ctx->make<Attribute>(ctx, {v}, tag, m);
     }
 
     /**
@@ -119,7 +119,7 @@ public:
      *
      * @return attribute if found
      */
-    AttributePtr find(std::string_view tag) const;
+    Attribute* find(std::string_view tag) const;
 
     /**
      * Retrieves all attributes with a given name from the set.
@@ -136,7 +136,7 @@ public:
     bool has(std::string_view tag) const { return find(tag) != nullptr; }
 
     /** Adds an attribute to the set. */
-    void add(ASTContext* ctx, const AttributePtr& a) { addChild(ctx, a); }
+    void add(ASTContext* ctx, Attribute* a) { addChild(ctx, a); }
 
     /** Removes all attributes of the given tag. */
     void remove(std::string_view tag);
@@ -145,7 +145,7 @@ public:
     operator bool() const { return ! attributes().empty(); }
 
     static auto create(ASTContext* ctx, Attributes attrs = {}, Meta m = Meta()) {
-        return std::shared_ptr<AttributeSet>(new AttributeSet(ctx, Nodes{std::move(attrs)}, std::move(m)));
+        return ctx->make<AttributeSet>(ctx, Nodes{std::move(attrs)}, std::move(m));
     }
 
 protected:

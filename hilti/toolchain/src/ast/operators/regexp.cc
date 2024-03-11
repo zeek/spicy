@@ -61,8 +61,9 @@ public:
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
             .result = {Constness::Const,
-                       builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
-                                           builder->qualifiedType(builder->typeBytes(), Constness::Mutable)})},
+                       builder->typeTuple(
+                           QualifiedTypes{builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
+                                          builder->qualifiedType(builder->typeBytes(), Constness::Mutable)})},
             .ns = "regexp",
             .doc = R"(
 Searches the regular expression in *data* and returns the matching part.
@@ -154,8 +155,9 @@ public:
                     .default_ = builder->expressionCtor(builder->ctorBool(false)),
                 },
             .result = {Constness::Const,
-                       builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
-                                           builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
+                       builder->typeTuple(
+                           QualifiedTypes{builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
+                                          builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
             .ns = "regexp_match_state",
             .doc = R"(
 Feeds a chunk of data into the token match state, continuing matching where it
@@ -192,8 +194,9 @@ public:
                     .default_ = builder->expressionCtor(builder->ctorBool(false)),
                 },
             .result = {Constness::Const,
-                       builder->typeTuple({builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
-                                           builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
+                       builder->typeTuple(
+                           QualifiedTypes{builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
+                                          builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
             .ns = "regexp_match_state",
             .doc = R"(
 Feeds a chunk of data into the token match state, continuing matching where it

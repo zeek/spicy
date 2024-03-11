@@ -22,13 +22,13 @@ struct ProductionFactory {
     ProductionFactory(CodeGen* cg, codegen::GrammarBuilder* gb, Grammar* g) : cg(cg), grammar(g) {}
 
     const auto& currentField() { return fields.back(); }
-    void pushField(spicy::type::unit::item::FieldPtr f) { fields.emplace_back(std::move(f)); }
+    void pushField(spicy::type::unit::item::Field* f) { fields.emplace_back(std::move(f)); }
     void popField() { fields.pop_back(); }
     bool haveField() { return ! fields.empty(); }
 
-    std::unique_ptr<Production> createProduction(const NodePtr& node);
+    std::unique_ptr<Production> createProduction(Node* node);
 
-    std::vector<spicy::type::unit::item::FieldPtr> fields;
+    std::vector<spicy::type::unit::item::Field*> fields;
     hilti::util::Cache<ID, Production*> cache;
     CodeGen* cg;
     Grammar* grammar;
@@ -43,7 +43,7 @@ struct Visitor : public visitor::PreOrder {
 
     auto context() const { return pf->cg->context(); }
 
-    std::unique_ptr<Production> productionForItem(const NodePtr& item) {
+    std::unique_ptr<Production> productionForItem(Node* item) {
         auto field = item->tryAs<spicy::type::unit::item::Field>();
         if ( field )
             pf->pushField(field);
@@ -56,11 +56,11 @@ struct Visitor : public visitor::PreOrder {
         return p;
     }
 
-    std::unique_ptr<Production> productionForCtor(const CtorPtr& c, const ID& id) {
+    std::unique_ptr<Production> productionForCtor(Ctor* c, const ID& id) {
         return std::make_unique<production::Ctor>(context(), pf->cg->uniquer()->get(id), c, c->meta().location());
     }
 
-    std::unique_ptr<Production> productionForType(const QualifiedTypePtr& t, const ID& id) {
+    std::unique_ptr<Production> productionForType(QualifiedType* t, const ID& id) {
         if ( auto prod = pf->createProduction(t->type()) )
             return prod;
         else
@@ -69,7 +69,7 @@ struct Visitor : public visitor::PreOrder {
                                                           t->meta().location());
     }
 
-    std::unique_ptr<Production> productionForLoop(std::unique_ptr<Production> sub, const NodePtr& n) {
+    std::unique_ptr<Production> productionForLoop(std::unique_ptr<Production> sub, Node* n) {
         const auto& loc = n->location();
         const auto& field = pf->currentField();
         auto id = pf->cg->uniquer()->get(field->id());
@@ -89,7 +89,7 @@ struct Visitor : public visitor::PreOrder {
             m.setField(field, false);
 
         m.setContainer(field);
-        sub->setMeta(std::move(m));
+        sub->setMeta(m);
 
         if ( repeat && ! repeat->type()->type()->isA<hilti::type::Null>() )
             return std::make_unique<production::Counter>(context(), id, repeat, std::move(sub), loc);
@@ -118,7 +118,7 @@ struct Visitor : public visitor::PreOrder {
         c->preprocessLookAhead(pf->cg->context(), pf->grammar);
         auto me = c->meta();
         me.setField(field, false);
-        c->setMeta(std::move(me));
+        c->setMeta(me);
         return std::move(c);
     }
 
@@ -131,10 +131,9 @@ struct Visitor : public visitor::PreOrder {
                 auto prod = productionForCtor(ctor, n->id());
                 auto m = prod->meta();
                 m.setField(pf->currentField(), true);
-                prod->setMeta(std::move(m));
-                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()),
-                                                          n->as<type::unit::item::Field>(), std::move(prod),
-                                                          n->meta().location());
+                prod->setMeta(m);
+                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n,
+                                                          std::move(prod), n->meta().location());
             }
 
             else if ( n->item() ) {
@@ -142,9 +141,8 @@ struct Visitor : public visitor::PreOrder {
             }
 
             else if ( n->size(context()) )
-                skip =
-                    std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()),
-                                                       n->as<type::unit::item::Field>(), nullptr, n->meta().location());
+                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
+                                                          n->meta().location());
 
             else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
                 // Bytes with fixed size already handled above.
@@ -153,8 +151,7 @@ struct Visitor : public visitor::PreOrder {
                 auto until_including_attr = n->attributes()->find("&until-including");
 
                 if ( eod_attr || until_attr || until_including_attr )
-                    skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()),
-                                                              n->as<type::unit::item::Field>(), nullptr,
+                    skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
                                                               n->meta().location());
             }
 
@@ -178,14 +175,13 @@ struct Visitor : public visitor::PreOrder {
             prod = productionForCtor(c, n->id());
 
             if ( n->isContainer() )
-                prod = productionForLoop(std::move(prod), n->as<Node>());
+                prod = productionForLoop(std::move(prod), n);
         }
         else if ( n->item() ) {
-            auto sub = productionForItem(n->as<spicy::type::unit::item::Field>()->item());
-            auto m = sub->meta();
+            auto sub = productionForItem(n->item());
 
             if ( n->isContainer() )
-                prod = productionForLoop(std::move(sub), n->as<Node>());
+                prod = productionForLoop(std::move(sub), n);
             else {
                 if ( sub->meta().field() )
                     sub->meta().field()->setForwarding(true);
@@ -199,18 +195,17 @@ struct Visitor : public visitor::PreOrder {
 
         auto m = prod->meta();
         m.setField(pf->currentField(), true);
-        prod->setMeta(std::move(m));
+        prod->setMeta(m);
 
         result = std::move(prod);
     }
 
     void operator()(spicy::type::unit::item::Switch* n) final {
-        auto productionForCase = [this](const std::shared_ptr<spicy::type::unit::item::switch_::Case>& c,
-                                        const std::string& label) {
+        auto productionForCase = [this](spicy::type::unit::item::switch_::Case* c, const std::string& label) {
             std::vector<std::unique_ptr<Production>> prods;
 
             for ( const auto& n : c->items() ) {
-                if ( auto prod = productionForItem(NodePtr(n)) )
+                if ( auto prod = productionForItem(n) )
                     prods.push_back(std::move(prod));
             }
 
@@ -225,7 +220,7 @@ struct Visitor : public visitor::PreOrder {
             std::unique_ptr<Production> default_;
             int i = 0;
 
-            for ( const auto& c : n->as<spicy::type::unit::item::Switch>()->cases() ) {
+            for ( const auto& c : n->cases() ) {
                 if ( c->isDefault() )
                     default_ = productionForCase(c, fmt("%s_default", switch_sym));
                 else {
@@ -246,7 +241,7 @@ struct Visitor : public visitor::PreOrder {
             int i = 0;
             auto d = production::look_ahead::Default::None;
 
-            for ( const auto& c : n->as<spicy::type::unit::item::Switch>()->cases() ) {
+            for ( const auto& c : n->cases() ) {
                 std::unique_ptr<Production> prod;
 
                 if ( c->isDefault() )
@@ -301,8 +296,8 @@ struct Visitor : public visitor::PreOrder {
 
         std::vector<std::unique_ptr<Production>> items;
 
-        for ( const auto& n : n->as<type::Unit>()->childrenOfType<spicy::type::unit::Item>() ) {
-            if ( auto p = productionForItem(NodePtr(n)) )
+        for ( const auto& n : n->childrenOfType<spicy::type::unit::Item>() ) {
+            if ( auto p = productionForItem(n) )
                 items.push_back(std::move(p));
         }
 
@@ -311,8 +306,7 @@ struct Visitor : public visitor::PreOrder {
         if ( pf->haveField() )
             args = pf->currentField()->arguments();
 
-        auto unit = std::make_unique<production::Unit>(context(), pid, n->as<type::Unit>(), args, std::move(items),
-                                                       n->meta().location());
+        auto unit = std::make_unique<production::Unit>(context(), pid, n, args, std::move(items), n->meta().location());
 
         // This takes ownership of the unit production, storing it inside the grammar.
         pf->grammar->resolve(dynamic_cast<production::Deferred*>(unresolved.get()), std::move(unit));
@@ -322,18 +316,18 @@ struct Visitor : public visitor::PreOrder {
 
     void operator()(hilti::type::Vector* n) final {
         auto sub = productionForType(n->elementType(), ID(fmt("%s", n->elementType())));
-        result = productionForLoop(std::move(sub), n->as<Node>());
+        result = productionForLoop(std::move(sub), n);
     }
 };
 
-std::unique_ptr<Production> ProductionFactory::createProduction(const NodePtr& node) {
+std::unique_ptr<Production> ProductionFactory::createProduction(Node* node) {
     return visitor::dispatch(Visitor(this), node,
                              [](auto& v) -> std::unique_ptr<Production> { return std::move(v.result); });
 }
 
 } // anonymous namespace
 
-hilti::Result<hilti::Nothing> GrammarBuilder::run(const std::shared_ptr<type::Unit>& unit) {
+hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
     assert(unit->canonicalID());
     auto id = unit->canonicalID();
     if ( _grammars.find(id) != _grammars.end() )

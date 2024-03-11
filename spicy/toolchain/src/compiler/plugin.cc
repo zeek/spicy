@@ -35,21 +35,19 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
             },
 
         .coerce_ctor =
-            [](hilti::Builder* builder, const CtorPtr& c, const QualifiedTypePtr& dst,
-               bitmask<hilti::CoercionStyle> style) {
+            [](hilti::Builder* builder, Ctor* c, QualifiedType* dst, bitmask<hilti::CoercionStyle> style) {
                 auto spicy_builder = static_cast<spicy::Builder*>(builder);
                 return coercer::coerceCtor(spicy_builder, c, dst, style);
             },
 
         .coerce_type =
-            [](hilti::Builder* builder, const QualifiedTypePtr& t, const QualifiedTypePtr& dst,
-               bitmask<hilti::CoercionStyle> style) {
+            [](hilti::Builder* builder, QualifiedType* t, QualifiedType* dst, bitmask<hilti::CoercionStyle> style) {
                 auto spicy_builder = static_cast<spicy::Builder*>(builder);
                 return coercer::coerceType(spicy_builder, t, dst, style);
             },
 
         .ast_init =
-            [](hilti::Builder* builder, const ASTRootPtr& root) {
+            [](hilti::Builder* builder, hilti::ASTRoot* root) {
                 hilti::util::timing::Collector _("spicy/compiler/ast/init");
 
                 if ( builder->options().import_standard_modules ) {
@@ -60,35 +58,35 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
             },
 
         .ast_build_scopes =
-            [](hilti::Builder* builder, const ASTRootPtr& root) {
+            [](hilti::Builder* builder, hilti::ASTRoot* root) {
                 auto spicy_builder = static_cast<spicy::Builder*>(builder);
                 scope_builder::build(spicy_builder, root);
                 return false;
             },
 
         .ast_resolve =
-            [](hilti::Builder* builder, const NodePtr& root) {
+            [](hilti::Builder* builder, Node* root) {
                 auto spicy_builder = static_cast<spicy::Builder*>(builder);
                 return resolver::resolve(spicy_builder, root);
             },
 
         .ast_validate_pre =
-            [](hilti::Builder* builder, const ASTRootPtr& m) {
+            [](hilti::Builder* builder, hilti::ASTRoot* m) {
                 auto spicy_builder = static_cast<spicy::Builder*>(builder);
                 validator::validatePre(spicy_builder, m);
                 return false;
             },
 
         .ast_validate_post =
-            [](hilti::Builder* builder, const ASTRootPtr& root) {
+            [](hilti::Builder* builder, hilti::ASTRoot* root) {
                 auto spicy_builder = static_cast<spicy::Builder*>(builder);
                 validator::validatePost(spicy_builder, root);
                 return false;
             },
 
-        .ast_print = [](const NodePtr& node, hilti::printer::Stream& out) { return printer::print(out, node); },
+        .ast_print = [](Node* node, hilti::printer::Stream& out) { return printer::print(out, node); },
 
-        .ast_transform = [](hilti::Builder* builder, const ASTRootPtr& m) -> bool {
+        .ast_transform = [](hilti::Builder* builder, hilti::ASTRoot* m) -> bool {
             auto spicy_builder = static_cast<spicy::Builder*>(builder);
             return CodeGen(spicy_builder).compileAST(m);
         },

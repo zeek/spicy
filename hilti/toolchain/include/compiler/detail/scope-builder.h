@@ -8,6 +8,6 @@
 namespace hilti::detail::scope_builder {
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void build(Builder* builder, const ASTRootPtr& root);
+void build(Builder* builder, ASTRoot* root);
 
 } // namespace hilti::detail::scope_builder

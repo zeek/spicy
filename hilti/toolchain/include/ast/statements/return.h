@@ -15,10 +15,10 @@ class Return : public Statement {
 public:
     auto expression() const { return child<::hilti::Expression>(0); }
 
-    void setExpression(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 0, c); }
+    void setExpression(ASTContext* ctx, hilti::Expression* c) { setChild(ctx, 0, c); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, Meta meta = {}) {
-        return std::shared_ptr<Return>(new Return(ctx, {expr}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Expression* expr, Meta meta = {}) {
+        return ctx->make<Return>(ctx, {expr}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Meta meta = {}) { return create(ctx, nullptr, std::move(meta)); }

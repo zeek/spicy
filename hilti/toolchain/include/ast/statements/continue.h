@@ -13,9 +13,7 @@ namespace hilti::statement {
 /** AST node for a `continue` statement. */
 class Continue : public Statement {
 public:
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Continue>(new Continue(ctx, {}, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Continue>(ctx, {}, std::move(meta)); }
 
 protected:
     Continue(ASTContext* ctx, Nodes children, Meta meta)
