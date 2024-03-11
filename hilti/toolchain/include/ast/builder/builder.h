@@ -613,7 +613,7 @@ public:
     auto addWhileElse(Expression* cond, const Meta& m = Meta()) {
         auto body = Builder::statementBlock();
         auto else_ = Builder::statementBlock();
-        Builder::block()->_add(Builder::context(), statementWhile(cond, body, else_, m));
+        Builder::block()->_add(Builder::context(), Builder::statementWhile(cond, body, else_, m));
         return std::make_pair(_newBuilder(body), _newBuilder(else_));
     }
 
