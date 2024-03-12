@@ -80,8 +80,7 @@ Exception::Exception(Internal, const char* type, std::string_view desc, std::str
     : Exception(Internal(), type, ! location.empty() ? fmt("%s (%s)", desc, location) : fmt("%s", desc), desc,
                 location) {}
 
-Exception::Exception() : std::runtime_error("<no error>") { /* no profiling */
-}
+Exception::Exception() : std::runtime_error("<no error>") { /* no profiling */ }
 
 Exception::~Exception() = default;
 

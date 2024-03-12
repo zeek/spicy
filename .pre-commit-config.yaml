@@ -37,7 +37,7 @@ repos:
     stages: ["commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'v17.0.6'
+  rev: 'v18.1.1'
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
@@ -86,9 +86,23 @@ repos:
     stages: ["commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.16.23
+  rev: v1.19.0
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*'
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.3.2
+  hooks:
+  - id: ruff
+    args: [ --fix ]
+  - id: ruff-format
+
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.10.1
+  hooks:
+  - id: pyupgrade
+    args: ["--py37-plus"]
 
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)
