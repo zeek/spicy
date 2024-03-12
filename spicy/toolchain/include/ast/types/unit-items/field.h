@@ -137,7 +137,7 @@ public:
 protected:
     Field(ASTContext* ctx, Nodes children, size_t args_start, size_t args_end, size_t sinks_start, size_t sinks_end,
           size_t hooks_start, size_t hooks_end, const ID& id, Engine engine, bool skip, const Meta& meta)
-        : unit::Item(ctx, std::move(children), (id ? id : _uniquer.get("_anon", false)), meta),
+        : unit::Item(ctx, NodeTags, std::move(children), (id ? id : _uniquer.get("_anon", false)), meta),
           _is_anonymous(! id),
           _is_skip(skip),
           _engine(engine),
@@ -148,7 +148,7 @@ protected:
           _hooks_start(static_cast<int>(hooks_start)),
           _hooks_end(static_cast<int>(hooks_end)) {}
 
-    HILTI_NODE(spicy, Field)
+    SPICY_NODE_2(type::unit::item::Field, type::unit::Item, Declaration, final);
 
 private:
     static std::shared_ptr<Field> _create(ASTContext* ctx, const ID& id, QualifiedTypePtr org_type, NodePtr node,

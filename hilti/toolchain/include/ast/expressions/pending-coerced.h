@@ -27,9 +27,9 @@ public:
 
 protected:
     PendingCoerced(ASTContext* ctx, Nodes children, Meta meta)
-        : Expression(ctx, std::move(children), std::move(meta)) {}
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, PendingCoerced)
+    HILTI_NODE_1(expression::PendingCoerced, Expression, final);
 };
 
 } // namespace hilti::expression

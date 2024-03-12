@@ -45,9 +45,9 @@ public:
 
 protected:
     Variable(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
-        : unit::Item(ctx, std::move(children), std::move(id), meta) {}
+        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), meta) {}
 
-    HILTI_NODE(spicy, Variable)
+    SPICY_NODE_2(type::unit::item::Variable, type::unit::Item, Declaration, final);
 };
 
 } // namespace spicy::type::unit::item

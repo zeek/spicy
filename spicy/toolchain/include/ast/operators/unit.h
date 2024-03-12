@@ -12,23 +12,23 @@
 namespace spicy {
 
 namespace operator_ {
-HILTI_NODE_OPERATOR(spicy, unit, Backtrack)
-HILTI_NODE_OPERATOR(spicy, unit, ConnectFilter)
-HILTI_NODE_OPERATOR(spicy, unit, ContextConst)
-HILTI_NODE_OPERATOR(spicy, unit, ContextNonConst)
-HILTI_NODE_OPERATOR(spicy, unit, Find)
-HILTI_NODE_OPERATOR(spicy, unit, Forward)
-HILTI_NODE_OPERATOR(spicy, unit, ForwardEod)
-HILTI_NODE_OPERATOR(spicy, unit, HasMember)
-HILTI_NODE_OPERATOR(spicy, unit, Input)
-HILTI_NODE_OPERATOR(spicy, unit, MemberCall);
-HILTI_NODE_OPERATOR(spicy, unit, MemberConst)
-HILTI_NODE_OPERATOR(spicy, unit, MemberNonConst)
-HILTI_NODE_OPERATOR(spicy, unit, Offset)
-HILTI_NODE_OPERATOR(spicy, unit, Position)
-HILTI_NODE_OPERATOR(spicy, unit, SetInput)
-HILTI_NODE_OPERATOR(spicy, unit, TryMember)
-HILTI_NODE_OPERATOR(spicy, unit, Unset)
+SPICY_NODE_OPERATOR(unit, Backtrack)
+SPICY_NODE_OPERATOR(unit, ConnectFilter)
+SPICY_NODE_OPERATOR(unit, ContextConst)
+SPICY_NODE_OPERATOR(unit, ContextNonConst)
+SPICY_NODE_OPERATOR(unit, Find)
+SPICY_NODE_OPERATOR(unit, Forward)
+SPICY_NODE_OPERATOR(unit, ForwardEod)
+SPICY_NODE_OPERATOR(unit, HasMember)
+SPICY_NODE_OPERATOR(unit, Input)
+SPICY_NODE_OPERATOR(unit, MemberCall);
+SPICY_NODE_OPERATOR(unit, MemberConst)
+SPICY_NODE_OPERATOR(unit, MemberNonConst)
+SPICY_NODE_OPERATOR(unit, Offset)
+SPICY_NODE_OPERATOR(unit, Position)
+SPICY_NODE_OPERATOR(unit, SetInput)
+SPICY_NODE_OPERATOR(unit, TryMember)
+SPICY_NODE_OPERATOR(unit, Unset)
 } // namespace operator_
 
 namespace unit {

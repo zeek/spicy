@@ -32,13 +32,13 @@ public:
 
 protected:
     Exception(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Exception(ASTContext* ctx, Wildcard _, const Nodes& children, const Meta& meta)
-        : UnqualifiedType(ctx, Wildcard(), {"exception(*)"}, children, meta) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"exception(*)"}, children, meta) {}
 
     bool isResolved(node::CycleDetector* cd) const final { return baseType() ? baseType()->isResolved(cd) : true; }
 
-    HILTI_NODE(hilti, Exception)
+    HILTI_NODE_1(type::Exception, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

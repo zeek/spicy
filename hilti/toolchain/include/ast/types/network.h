@@ -22,9 +22,9 @@ public:
     }
 
 protected:
-    Network(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"network"}, std::move(meta)) {}
+    Network(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"network"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Network)
+    HILTI_NODE_1(type::Network, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

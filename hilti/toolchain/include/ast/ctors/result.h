@@ -55,9 +55,9 @@ public:
     }
 
 protected:
-    Result(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    Result(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Result)
+    HILTI_NODE_1(ctor::Result, Ctor, final);
 };
 
 } // namespace hilti::ctor

@@ -817,7 +817,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::struct_::MemberNonConst* n) final { result = structMember(n); }
 
     void operator()(operator_::struct_::MemberCall* n) final {
-        const auto& op = dynamic_cast<const struct_::MemberCall&>(n->operator_());
+        const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
         auto fdecl = op.declaration();
         assert(fdecl);
 

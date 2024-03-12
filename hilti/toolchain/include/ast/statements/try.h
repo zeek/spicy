@@ -31,14 +31,14 @@ public:
     }
 
 protected:
-    Catch(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, std::move(children), std::move(meta)) {
+    Catch(ASTContext* ctx, Nodes children, Meta meta = {}) : Node(ctx, NodeTags, std::move(children), std::move(meta)) {
         if ( child(0) && ! child(0)->isA<declaration::Parameter>() )
             logger().internalError("'catch' first child must be parameter");
     }
 
     std::string _dump() const final;
 
-    HILTI_NODE(hilti, Catch);
+    HILTI_NODE_0(statement::try_::Catch, final);
 };
 
 using CatchPtr = std::shared_ptr<Catch>;
@@ -59,9 +59,9 @@ public:
     }
 
 protected:
-    Try(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
+    Try(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Try)
+    HILTI_NODE_1(statement::Try, Statement, final);
 };
 
 } // namespace hilti::statement

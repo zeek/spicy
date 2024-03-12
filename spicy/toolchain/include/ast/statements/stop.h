@@ -19,9 +19,9 @@ public:
     }
 
 protected:
-    Stop(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, std::move(children), std::move(meta)) {}
+    Stop(ASTContext* ctx, Nodes children, Meta meta) : Statement(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(spicy, Stop)
+    SPICY_NODE_1(statement::Stop, Statement, final);
 };
 
 } // namespace spicy::statement

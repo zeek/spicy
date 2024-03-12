@@ -19,6 +19,10 @@
 using namespace hilti;
 using namespace hilti::detail;
 
+std::string node::to_string(const Tags& ti) {
+    return util::join(util::transform(ti, [](auto i) { return std::to_string(i); }), ",");
+}
+
 Node::~Node() {
     for ( auto& c : _children ) {
         if ( c )
@@ -141,7 +145,7 @@ NodePtr Node::_newChild(ASTContext* ctx, NodePtr child) {
         return child;
 }
 
-void Node::_checkThisForCastBackend() const {
+void Node::_checkCastBackend() const {
     if ( dynamic_cast<const QualifiedType*>(this) )
         logger().internalError("as/tryAs/isA used on a QualifiedType; probably meant to use its type() instead");
 }

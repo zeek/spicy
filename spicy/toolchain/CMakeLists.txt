@@ -27,7 +27,6 @@ set(SOURCES_COMPILER
     src/ast/types/unit.cc
     src/ast/types/unit-items/field.cc
     src/ast/types/unit-items/switch.cc
-    src/ast/visitor-dispatcher.cc
     src/compiler/codegen/codegen.cc
     src/compiler/codegen/grammar.cc
     src/compiler/codegen/grammar-builder.cc

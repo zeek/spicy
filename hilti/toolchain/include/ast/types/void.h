@@ -22,9 +22,9 @@ public:
     }
 
 protected:
-    Void(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"void"}, std::move(meta)) {}
+    Void(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"void"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Void)
+    HILTI_NODE_1(type::Void, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

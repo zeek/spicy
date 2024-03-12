@@ -32,9 +32,10 @@ public:
     }
 
 protected:
-    Ternary(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
+    Ternary(ASTContext* ctx, Nodes children, Meta meta)
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Ternary)
+    HILTI_NODE_1(expression::Ternary, Expression, final);
 };
 
 } // namespace hilti::expression

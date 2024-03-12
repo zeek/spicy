@@ -90,13 +90,13 @@ public:
 
 protected:
     Function(ASTContext* ctx, Nodes children, function::Flavor flavor, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)), _flavor(flavor) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)), _flavor(flavor) {}
 
     Function(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"function(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"function(*)"}, std::move(children), std::move(meta)) {}
 
 
-    HILTI_NODE(hilti, Function)
+    HILTI_NODE_1(type::Function, UnqualifiedType, final);
 
 private:
     function::Flavor _flavor;

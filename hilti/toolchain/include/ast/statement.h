@@ -13,11 +13,12 @@ namespace hilti {
 /** Base class for statement nodes. */
 class Statement : public Node {
 protected:
-    Statement(ASTContext* ctx, Nodes children, Meta meta) : Node::Node(ctx, std::move(children), std::move(meta)) {}
+    Statement(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)
+        : Node::Node(ctx, node_tags, std::move(children), std::move(meta)) {}
 
     std::string _dump() const override;
 
-    HILTI_NODE_BASE(hilti, Statement);
+    HILTI_NODE_0(Statement, override);
 };
 
 } // namespace hilti

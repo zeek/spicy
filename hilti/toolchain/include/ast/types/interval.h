@@ -22,9 +22,9 @@ public:
     }
 
 protected:
-    Interval(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"interval"}, std::move(meta)) {}
+    Interval(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"interval"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Interval)
+    HILTI_NODE_1(type::Interval, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

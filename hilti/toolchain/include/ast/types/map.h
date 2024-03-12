@@ -48,15 +48,15 @@ public:
 
 protected:
     Iterator(ASTContext* ctx, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Iterator(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"iterator(map(*))"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"iterator(map(*))"}, std::move(children), std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final {
         return keyType()->isResolved(cd) && valueType()->isResolved(cd);
     }
 
-    HILTI_NODE(hilti, Iterator)
+    HILTI_NODE_1(type::map::Iterator, UnqualifiedType, final);
 };
 
 } // namespace map
@@ -91,9 +91,10 @@ public:
     }
 
 protected:
-    Map(ASTContext* ctx, Nodes children, Meta meta) : UnqualifiedType(ctx, {}, std::move(children), std::move(meta)) {}
+    Map(ASTContext* ctx, Nodes children, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Map(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"map(*)"}, std::move(children), std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"map(*)"}, std::move(children), std::move(meta)) {}
 
 
     void newlyQualified(const QualifiedType* qtype) const final {
@@ -101,7 +102,7 @@ protected:
         iteratorType()->type()->dereferencedType()->setConst(qtype->constness());
     }
 
-    HILTI_NODE(hilti, Map)
+    HILTI_NODE_1(type::Map, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

@@ -21,9 +21,9 @@ public:
     bool isAllocable() const final { return true; }
 
 protected:
-    Error(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {"error"}, std::move(meta)) {}
+    Error(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"error"}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Error)
+    HILTI_NODE_1(type::Error, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

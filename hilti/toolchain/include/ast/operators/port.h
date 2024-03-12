@@ -10,9 +10,9 @@
 // NOLINTNEXTLINE(modernize-concat-nested-namespaces)
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, port, Equal)
-HILTI_NODE_OPERATOR(hilti, port, Unequal)
-HILTI_NODE_OPERATOR(hilti, port, Ctor)
-HILTI_NODE_OPERATOR(hilti, port, Protocol)
+HILTI_NODE_OPERATOR(port, Equal)
+HILTI_NODE_OPERATOR(port, Unequal)
+HILTI_NODE_OPERATOR(port, Ctor)
+HILTI_NODE_OPERATOR(port, Protocol)
 
 } // namespace hilti::operator_

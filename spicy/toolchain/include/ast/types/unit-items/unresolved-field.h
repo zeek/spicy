@@ -93,7 +93,7 @@ protected:
     UnresolvedField(ASTContext* ctx, Nodes children, size_t args_start, size_t args_end, size_t sinks_start,
                     size_t sinks_end, size_t hooks_start, size_t hooks_end, ID id, Engine engine, bool skip,
                     const Meta& meta)
-        : unit::Item(ctx, std::move(children), std::move(id), meta),
+        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), meta),
           _is_skip(skip),
           _engine(engine),
           args_start(static_cast<int>(args_start)),
@@ -103,7 +103,7 @@ protected:
           _hooks_start(static_cast<int>(hooks_start)),
           _hooks_end(static_cast<int>(hooks_end)) {}
 
-    HILTI_NODE(spicy, UnresolvedField)
+    SPICY_NODE_2(type::unit::item::UnresolvedField, type::unit::Item, Declaration, final);
 
 private:
     static std::shared_ptr<UnresolvedField> _create(ASTContext* ctx, ID id, NodePtr node, Engine engine, bool skip,

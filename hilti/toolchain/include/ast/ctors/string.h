@@ -31,9 +31,11 @@ public:
 
 protected:
     String(ASTContext* ctx, Nodes children, std::string value, bool is_literal, Meta meta)
-        : Ctor(ctx, std::move(children), std::move(meta)), _value(std::move(value)), _is_literal(is_literal) {}
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)),
+          _value(std::move(value)),
+          _is_literal(is_literal) {}
 
-    HILTI_NODE(hilti, String)
+    HILTI_NODE_1(ctor::String, Ctor, final);
 
 private:
     std::string _value;

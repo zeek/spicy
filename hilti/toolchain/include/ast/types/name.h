@@ -59,11 +59,11 @@ public:
 
 protected:
     Name(ASTContext* ctx, ID id, bool builtin, Meta meta)
-        : UnqualifiedType(ctx, {}, std::move(meta)), _id(std::move(id)), _builtin(builtin) {}
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(meta)), _id(std::move(id)), _builtin(builtin) {}
 
     bool isResolved(node::CycleDetector* cd) const final;
 
-    HILTI_NODE(hilti, Name)
+    HILTI_NODE_1(type::Name, UnqualifiedType, final);
 
 private:
     ID _id;

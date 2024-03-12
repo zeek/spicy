@@ -86,13 +86,13 @@ public:
 
 protected:
     Parameter(ASTContext* ctx, Nodes children, ID id, parameter::Kind kind, bool is_type_param, Meta meta)
-        : Declaration(ctx, std::move(children), std::move(id), Linkage::Private, std::move(meta)),
+        : Declaration(ctx, NodeTags, std::move(children), std::move(id), Linkage::Private, std::move(meta)),
           _kind(kind),
           _is_type_param(is_type_param) {}
 
     std::string _dump() const override { return isResolved() ? "(resolved)" : "(not resolved)"; }
 
-    HILTI_NODE(hilti, Parameter)
+    HILTI_NODE_1(declaration::Parameter, Declaration, final);
 
 private:
     static QualifiedTypePtr _qtype(ASTContext* ctx, const UnqualifiedTypePtr& t, parameter::Kind kind) {

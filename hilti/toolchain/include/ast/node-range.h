@@ -74,12 +74,10 @@ public:
 
 private:
     std::shared_ptr<T> _value() const {
-        if ( ! *_iter )
+        if ( *_iter )
+            return std::static_pointer_cast<T>(*_iter);
+        else
             return nullptr;
-
-        auto t = std::dynamic_pointer_cast<T>(*_iter);
-        assert(t);
-        return t;
     }
 
     BaseIterator _iter;

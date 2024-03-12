@@ -93,12 +93,13 @@ public:
     }
 
 protected:
-    Struct(ASTContext* ctx, const Nodes& children, const Meta& meta) : UnqualifiedType(ctx, {}, children, meta) {}
+    Struct(ASTContext* ctx, const Nodes& children, const Meta& meta)
+        : UnqualifiedType(ctx, NodeTags, {}, children, meta) {}
 
     Struct(ASTContext* ctx, Wildcard _, const Nodes& children, Meta meta)
-        : UnqualifiedType(ctx, Wildcard(), {"struct(*)"}, children, std::move(meta)) {}
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"struct(*)"}, children, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Struct)
+    HILTI_NODE_1(type::Struct, UnqualifiedType, final);
 
 private:
     void _setSelf(ASTContext* ctx);

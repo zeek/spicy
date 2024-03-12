@@ -1042,7 +1042,7 @@ public:
                     }
 
                 // Check if call imposes requirements on any of the types of the arguments.
-                const auto& op = dynamic_cast<const struct_::MemberCall&>(n->operator_());
+                const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
                 assert(op.declaration());
                 auto ftype = op.declaration()->type()->type()->as<type::Function>();
 

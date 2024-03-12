@@ -9,14 +9,14 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, strong_reference, Deref)
-HILTI_NODE_OPERATOR(hilti, strong_reference, Equal)
-HILTI_NODE_OPERATOR(hilti, strong_reference, Unequal)
-HILTI_NODE_OPERATOR(hilti, weak_reference, Deref)
-HILTI_NODE_OPERATOR(hilti, weak_reference, Equal)
-HILTI_NODE_OPERATOR(hilti, weak_reference, Unequal)
-HILTI_NODE_OPERATOR(hilti, value_reference, Deref)
-HILTI_NODE_OPERATOR(hilti, value_reference, Equal)
-HILTI_NODE_OPERATOR(hilti, value_reference, Unequal)
+HILTI_NODE_OPERATOR(strong_reference, Deref)
+HILTI_NODE_OPERATOR(strong_reference, Equal)
+HILTI_NODE_OPERATOR(strong_reference, Unequal)
+HILTI_NODE_OPERATOR(weak_reference, Deref)
+HILTI_NODE_OPERATOR(weak_reference, Equal)
+HILTI_NODE_OPERATOR(weak_reference, Unequal)
+HILTI_NODE_OPERATOR(value_reference, Deref)
+HILTI_NODE_OPERATOR(value_reference, Equal)
+HILTI_NODE_OPERATOR(value_reference, Unequal)
 
 } // namespace hilti::operator_

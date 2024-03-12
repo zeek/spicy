@@ -22,9 +22,10 @@ public:
     }
 
 protected:
-    Void(ASTContext* ctx, Nodes children, Meta meta) : Expression(ctx, std::move(children), std::move(meta)) {}
+    Void(ASTContext* ctx, Nodes children, Meta meta)
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Void)
+    HILTI_NODE_1(expression::Void, Expression, final);
 };
 
 } // namespace hilti::expression

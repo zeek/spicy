@@ -8,6 +8,7 @@
 #include <hilti/ast/type.h>
 
 #include <spicy/ast/forward.h>
+#include <spicy/ast/node.h>
 
 namespace spicy::type {
 
@@ -21,9 +22,9 @@ public:
     bool isAllocable() const final { return true; }
 
 protected:
-    Sink(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, {"sink"}, meta) {}
+    Sink(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {"sink"}, meta) {}
 
-    HILTI_NODE(spicy, Sink)
+    SPICY_NODE_1(type::Sink, UnqualifiedType, final);
 };
 
 } // namespace spicy::type

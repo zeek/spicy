@@ -9,12 +9,12 @@
 namespace hilti {
 
 namespace operator_ {
-HILTI_NODE_OPERATOR(hilti, generic, CastedCoercion);
-HILTI_NODE_OPERATOR(hilti, generic, Pack)
-HILTI_NODE_OPERATOR(hilti, generic, Unpack)
-HILTI_NODE_OPERATOR(hilti, generic, Begin)
-HILTI_NODE_OPERATOR(hilti, generic, End)
-HILTI_NODE_OPERATOR(hilti, generic, New)
+HILTI_NODE_OPERATOR(generic, CastedCoercion);
+HILTI_NODE_OPERATOR(generic, Pack)
+HILTI_NODE_OPERATOR(generic, Unpack)
+HILTI_NODE_OPERATOR(generic, Begin)
+HILTI_NODE_OPERATOR(generic, End)
+HILTI_NODE_OPERATOR(generic, New)
 } // namespace operator_
 
 namespace generic {

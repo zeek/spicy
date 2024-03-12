@@ -41,9 +41,9 @@ public:
 
 protected:
     Deferred(ASTContext* ctx, Nodes children, bool catch_exception, Meta meta)
-        : Expression(ctx, std::move(children), std::move(meta)), _catch_exception(catch_exception) {}
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)), _catch_exception(catch_exception) {}
 
-    HILTI_NODE(hilti, Deferred)
+    HILTI_NODE_1(expression::Deferred, Expression, final);
 
 private:
     bool _catch_exception;

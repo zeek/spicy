@@ -9,7 +9,7 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, error, Ctor)
-HILTI_NODE_OPERATOR(hilti, error, Description)
+HILTI_NODE_OPERATOR(error, Ctor)
+HILTI_NODE_OPERATOR(error, Description)
 
 } // namespace hilti::operator_

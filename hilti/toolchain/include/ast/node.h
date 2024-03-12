@@ -19,32 +19,65 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/meta.h>
 #include <hilti/ast/node-range.h>
+#include <hilti/ast/node-tag.h>
 #include <hilti/ast/scope.h>
 #include <hilti/ast/visitor-dispatcher.h>
 
-#define HILTI_NODE_BASE(NS, CLASS) void dispatch(::NS::visitor::Dispatcher& v) override;
+#define __HILTI_NODE_COMMON_final(NS, CLASS)                                                                           \
+    ::hilti::NodePtr _clone(::hilti::ASTContext* ctx) const final { return std::shared_ptr<CLASS>(new CLASS(*this)); }
 
-#define HILTI_NODE(NS, CLASS)                                                                                          \
-    ::hilti::NodePtr _clone(::hilti::ASTContext* ctx) const final { return std::shared_ptr<CLASS>(new CLASS(*this)); } \
-    std::string _typename() const final { return hilti::util::typename_(*this); }                                      \
-    void dispatch(::hilti::visitor::Dispatcher& v) final;                                                              \
-    friend class ::NS::builder::NodeBuilder;
+#define __HILTI_NODE_COMMON_override(NS, CLASS)
 
-#define HILTI_NODE_IMPLEMENTATION_0(NS, CLASS)                                                                         \
-    void ::NS::CLASS::dispatch(::hilti::visitor::Dispatcher& v) {                                                      \
+#define __HILTI_NODE_COMMON(NS, CLASS, override_)                                                                      \
+    friend class ::NS::builder::NodeBuilder;                                                                           \
+    friend class hilti::Node;                                                                                          \
+    std::string _typename() const override { return hilti::util::typename_(*this); }                                   \
+    __HILTI_NODE_COMMON_##override_(NS, CLASS)
+
+#define __HILTI_NODE_0(NS, CLASS, override_)                                                                           \
+    __HILTI_NODE_COMMON(NS, CLASS, override_)                                                                          \
+                                                                                                                       \
+    static constexpr uint16_t NodeLevel = 1;                                                                           \
+    static constexpr ::hilti::node::Tag NodeTag = ::hilti::node::tag::CLASS;                                           \
+    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node, ::hilti::node::tag::CLASS};
+
+#define HILTI_NODE_0(CLASS, override_)                                                                                 \
+    __HILTI_NODE_0(hilti, CLASS, override_)                                                                            \
+                                                                                                                       \
+    void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
         v(static_cast<::hilti::Node*>(this));                                                                          \
         v(this);                                                                                                       \
     }
 
-#define HILTI_NODE_IMPLEMENTATION_1(NS, CLASS, BASE)                                                                   \
-    void ::NS::CLASS::dispatch(::hilti::visitor::Dispatcher& v) {                                                      \
+#define __HILTI_NODE_1(NS, CLASS, BASE, override_)                                                                     \
+    __HILTI_NODE_COMMON(NS, CLASS, override_)                                                                          \
+                                                                                                                       \
+    static constexpr uint16_t NodeLevel = 2;                                                                           \
+    static constexpr ::hilti::node::Tag NodeTag = ::hilti::node::tag::CLASS;                                           \
+    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node, ::hilti::node::tag::BASE,               \
+                                                     ::hilti::node::tag::CLASS};
+
+#define HILTI_NODE_1(CLASS, BASE, override_)                                                                           \
+    __HILTI_NODE_1(hilti, CLASS, BASE, override_)                                                                      \
+                                                                                                                       \
+    void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
         v(static_cast<::hilti::Node*>(this));                                                                          \
         v(static_cast<BASE*>(this));                                                                                   \
         v(this);                                                                                                       \
     }
 
-#define HILTI_NODE_IMPLEMENTATION_2(NS, CLASS, BASE1, BASE2)                                                           \
-    void ::NS::CLASS::dispatch(::hilti::visitor::Dispatcher& v) {                                                      \
+#define __HILTI_NODE_2(NS, CLASS, BASE1, BASE2, override_)                                                             \
+    __HILTI_NODE_COMMON(NS, CLASS, override_)                                                                          \
+                                                                                                                       \
+    static constexpr uint16_t NodeLevel = 3;                                                                           \
+    static constexpr ::hilti::node::Tag NodeTag = ::hilti::node::tag::CLASS;                                           \
+    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node, ::hilti::node::tag::BASE2,              \
+                                                     ::hilti::node::tag::BASE1, ::hilti::node::tag::CLASS};
+
+#define HILTI_NODE_2(CLASS, BASE1, BASE2, override_)                                                                   \
+    __HILTI_NODE_2(hilti, CLASS, BASE1, BASE2, override_)                                                              \
+                                                                                                                       \
+    void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
         v(static_cast<::hilti::Node*>(this));                                                                          \
         v(static_cast<BASE1*>(this));                                                                                  \
         v(static_cast<BASE2*>(this));                                                                                  \
@@ -159,6 +192,9 @@ class Node : public std::enable_shared_from_this<Node> {
 public:
     virtual ~Node();
 
+    /** Returns the node tag associated with the instance's class. */
+    auto nodeTag() const { return _node_tags.back(); }
+
     /** Returns true if the node has a parent (i.e., it's part of an AST). */
     bool hasParent() const { return _parent; }
 
@@ -189,8 +225,8 @@ public:
     T* parent() const {
         if ( ! _parent )
             return nullptr;
-        else if ( auto p = dynamic_cast<T*>(_parent) )
-            return p;
+        else if ( _parent->isA<T>() )
+            return static_cast<T*>(_parent);
         else
             return _parent->parent<T>();
     }
@@ -502,10 +538,9 @@ public:
     template<typename T>
     bool isA() const {
 #ifndef NDEBUG
-        _checkThisForCast<T>();
+        _checkCast<T>(false);
 #endif
-
-        return dynamic_cast<const T*>(this) != nullptr;
+        return (T::NodeLevel < _node_tags.size() && T::NodeTag == _node_tags[T::NodeLevel]);
     }
 
     /**
@@ -515,16 +550,9 @@ public:
     template<typename T>
     auto as() const {
 #ifndef NDEBUG
-        _checkThisForCast<T>();
+        _checkCast<T>(true);
 #endif
-
-        if ( auto p = std::dynamic_pointer_cast<const T>(shared_from_this()) )
-            return p;
-
-        std::cerr << hilti::util::fmt("internal error: unexpected type, want %s but have %s",
-                                      hilti::util::typename_<T>(), typename_())
-                  << std::endl;
-        hilti::util::abortWithBacktrace();
+        return std::static_pointer_cast<const T>(shared_from_this());
     }
 
     /**
@@ -536,18 +564,9 @@ public:
     template<typename T>
     auto as() {
 #ifndef NDEBUG
-        _checkThisForCast<T>();
-
-        if ( auto p = std::dynamic_pointer_cast<T>(shared_from_this()) )
-            return p;
-
-        std::cerr << hilti::util::fmt("internal error: unexpected type, want %s but have %s",
-                                      hilti::util::typename_<T>(), typename_())
-                  << std::endl;
-        hilti::util::abortWithBacktrace();
-#else
-        return std::static_pointer_cast<T>(shared_from_this());
+        _checkCast<T>(true);
 #endif
+        return std::static_pointer_cast<T>(shared_from_this());
     }
 
     /**
@@ -557,10 +576,13 @@ public:
     template<typename T>
     auto tryAs() const {
 #ifndef NDEBUG
-        _checkThisForCast<T>();
+        _checkCast<T>(false);
 #endif
 
-        return std::dynamic_pointer_cast<const T>(shared_from_this());
+        if ( isA<T>() )
+            return std::static_pointer_cast<const T>(shared_from_this());
+        else
+            return std::shared_ptr<const T>();
     }
 
     /**
@@ -570,21 +592,27 @@ public:
     template<typename T>
     auto tryAs() {
 #ifndef NDEBUG
-        _checkThisForCast<T>();
+        _checkCast<T>(false);
 #endif
-
-        return std::dynamic_pointer_cast<T>(shared_from_this());
+        if ( isA<T>() )
+            return std::static_pointer_cast<T>(shared_from_this());
+        else
+            return std::shared_ptr<T>();
     }
 
     /**
      * Alternate version to attempt casting a node into a particular class.
-     * Returns a nullptr if the cast failed. This version skips some internal
-     * consistency checks, which can be helpful in case of false positives. You
-     * should normally avoid using this unless absolutely necessary.
+     * Returns a nullptr if the cast failed. This version skips any potential
+     * internal consistency checks, which can be helpful in case of false
+     * positives. You should normally avoid using this unless absolutely
+     * necessary.
      */
     template<typename T>
     auto tryAs_() {
-        return std::dynamic_pointer_cast<T>(shared_from_this());
+        if ( isA<T>() )
+            return std::static_pointer_cast<T>(shared_from_this());
+        else
+            return std::shared_ptr<T>();
     }
 
     /**
@@ -716,6 +744,11 @@ public:
     virtual std::string_view branchTag() const { return ""; }
 
     Node& operator=(const Node& other) = delete;
+    Node& operator=(Node&& other) noexcept = delete;
+
+    static constexpr uint16_t NodeLevel = 0; // distance from `Node` in the inheritance hierarchy
+    static constexpr ::hilti::node::Tag NodeTag = ::hilti::node::tag::Node;     // this class' node tag
+    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node}; // this class' inheritance path
 
 protected:
     /**
@@ -727,7 +760,9 @@ protected:
      * @param ctx current context in use
      * @param children child nodes to add initially
      */
-    Node(ASTContext* ctx, Nodes children, Meta meta) : _meta(std::move(meta)) {
+    Node(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)
+        : _node_tags(node_tags), _meta(std::move(meta)) {
+        assert(! _node_tags.empty());
         for ( auto&& c : children ) {
             if ( c ) {
                 c = _newChild(ctx, std::move(c));
@@ -740,7 +775,9 @@ protected:
     }
 
     /** Constructor initializing the node with meta data but no children. */
-    Node(ASTContext* ctx, Meta meta) : _meta(std::move(meta)) {}
+    Node(ASTContext* ctx, node::Tags node_tags, Meta meta) : _node_tags(node_tags), _meta(std::move(meta)) {
+        assert(! _node_tags.empty());
+    }
 
     Node(Node&& other) = default;
 
@@ -751,7 +788,7 @@ protected:
      * Use `node::deepcopy()` to fully copy a node.
      *
      */
-    Node(const Node& other) : enable_shared_from_this(other) {
+    Node(const Node& other) : enable_shared_from_this(other), _node_tags(other._node_tags) {
         _meta = other._meta;
         _inherit_scope = other._inherit_scope;
         _parent = nullptr;
@@ -818,25 +855,49 @@ private:
         }
     }
 
+#ifndef NDEBUG
     // Checks casts for common mistakes.
+    //
+    // @param enforce_success if true, we'll abort if the cast fails due to a type mismatch
     template<typename T>
-    void _checkThisForCast() const {
+    void _checkCast(bool enforce_success) const {
+        // Ensure that our RTTI information yields the same `isA<>` result as
+        // the C++ type system.
+        auto ours = (T::NodeLevel < _node_tags.size() && T::NodeTag == _node_tags[T::NodeLevel]);
+        auto theirs = (dynamic_cast<const T*>(this) != nullptr);
+
+        if ( ours != theirs ) {
+            std::cerr << util::fmt("internal error: Node::_checkCast() RTTI mismatch\n")
+                      << util::fmt("isA<T=%s>(%s) -> %s but dynamic_cast() says %s\n", typeid(T).name(), _typename(),
+                                   ours ? "true" : "false", theirs ? "true" : "false")
+                      << util::fmt("T::type_level=%" PRIu16 " T::node_tags={%s} this->types={%s}\n", T::NodeLevel,
+                                   node::to_string(T::NodeTags), node::to_string(_node_tags));
+            abort();
+        }
+
+        if ( enforce_success && ! ours ) {
+            std::cerr << util::fmt("internal error: unexpected type, want %s but have %s\n", util::typename_<T>(),
+                                   _typename());
+            abort();
+        }
+
         // Debugging helper: If `this` is a `QualifiedType`, it's virtually
         // always wrong to try casting it into a class derived from
         // `UnqualifiedType`. Most likely that's meant to instead cast
         // `this->type()`. We abort here to make debugging such problems
         // easier.
         if ( std::is_base_of_v<UnqualifiedType, T> && ! std::is_same_v<UnqualifiedType, T> )
-            _checkThisForCastBackend();
+            _checkCastBackend();
     }
+#endif
 
-    void _checkThisForCastBackend() const;
+    // Helper for _checkCast() to spot unexpected casts from `QualifiedType`.
+    void _checkCastBackend() const;
 
-    Node& operator=(Node&& other) noexcept = default;
-
-    Node* _parent = nullptr; // parent node inside the AST, or null if not yet added to an AST
-    Nodes _children;         // set of child nodes
-    Meta _meta;              // meta information associated with the node
+    const node::Tags _node_tags; // inheritance path for the node
+    Node* _parent = nullptr;     // parent node inside the AST, or null if not yet added to an AST
+    Nodes _children;             // set of child nodes
+    Meta _meta;                  // meta information associated with the node
 
     bool _inherit_scope = true;              // flag controlling whether scope lookups should continue in parent nodes
     std::unique_ptr<Scope> _scope = nullptr; // scope associated with the node, or null if non (i.e., scope is empty)

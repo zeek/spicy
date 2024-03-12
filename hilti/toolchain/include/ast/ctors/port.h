@@ -31,9 +31,9 @@ public:
 
 protected:
     Port(ASTContext* ctx, Nodes children, hilti::rt::Port v, Meta meta)
-        : Ctor(ctx, std::move(children), std::move(meta)), _value(v) {}
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)), _value(v) {}
 
-    HILTI_NODE(hilti, Port)
+    HILTI_NODE_1(ctor::Port, Ctor, final);
 
 private:
     hilti::rt::Port _value;

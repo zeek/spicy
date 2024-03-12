@@ -2,55 +2,19 @@
 
 #pragma once
 
-#include <hilti/ast/visitor-dispatcher.h>
+#include <hilti/ast/node.h>
 
 #include <spicy/ast/forward.h>
-
-#define SPICY_NODE_IMPLEMENTATION_0(NS, CLASS)                                                                         \
-    void ::NS::CLASS::dispatch(::hilti::visitor::Dispatcher& v) {                                                      \
-        if ( auto sv = dynamic_cast<spicy::visitor::Dispatcher*>(&v) ) {                                               \
-            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
-            (*sv)(this);                                                                                               \
-        }                                                                                                              \
-        else {                                                                                                         \
-            v(static_cast<::hilti::Node*>(this));                                                                      \
-            v(this);                                                                                                   \
-        }                                                                                                              \
-    }
-
-#define SPICY_NODE_IMPLEMENTATION_1(NS, CLASS, BASE)                                                                   \
-    void ::NS::CLASS::dispatch(::hilti::visitor::Dispatcher& v) {                                                      \
-        if ( auto sv = dynamic_cast<spicy::visitor::Dispatcher*>(&v) ) {                                               \
-            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
-            (*sv)(static_cast<BASE*>(this));                                                                           \
-            (*sv)(this);                                                                                               \
-        }                                                                                                              \
-        else {                                                                                                         \
-            v(static_cast<::hilti::Node*>(this));                                                                      \
-            v(static_cast<BASE*>(this));                                                                               \
-            v(this);                                                                                                   \
-        }                                                                                                              \
-    }
-
-#define SPICY_NODE_IMPLEMENTATION_2(NS, CLASS, BASE1, BASE2)                                                           \
-    void ::NS::CLASS::dispatch(::hilti::visitor::Dispatcher& v) {                                                      \
-        if ( auto sv = dynamic_cast<spicy::visitor::Dispatcher*>(&v) ) {                                               \
-            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
-            (*sv)(static_cast<BASE1*>(this));                                                                          \
-            (*sv)(static_cast<BASE2*>(this));                                                                          \
-            (*sv)(this);                                                                                               \
-        }                                                                                                              \
-        else {                                                                                                         \
-            v(static_cast<::hilti::Node*>(this));                                                                      \
-            v(static_cast<BASE1*>(this));                                                                              \
-            v(static_cast<BASE2*>(this));                                                                              \
-        }                                                                                                              \
-    }
 
 namespace spicy::visitor {
 
 class Dispatcher : public hilti::visitor::Dispatcher {
 public:
+    /** Tag for the Spicy dispatcher. */
+    static constexpr unsigned int Spicy = 100;
+
+    Dispatcher() : hilti::visitor::Dispatcher(Spicy) {}
+
     using hilti::visitor::Dispatcher::operator();
 
     virtual void operator()(spicy::operator_::unit::MemberCall*) {}

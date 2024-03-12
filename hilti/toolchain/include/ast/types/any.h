@@ -21,9 +21,9 @@ public:
 
 protected:
     // We create this as no-match type because we handle matching against `any` explicitly.
-    Any(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, {type::NeverMatch()}, std::move(meta)) {}
+    Any(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {type::NeverMatch()}, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Any);
+    HILTI_NODE_1(type::Any, UnqualifiedType, final);
 };
 
 } // namespace hilti::type

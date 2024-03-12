@@ -29,9 +29,9 @@ public:
 
 protected:
     DocOnly(ASTContext* ctx, std::string description, Meta meta)
-        : UnqualifiedType(ctx, {"doc-only"}, std::move(meta)), _description(std::move(description)) {}
+        : UnqualifiedType(ctx, NodeTags, {"doc-only"}, std::move(meta)), _description(std::move(description)) {}
 
-    HILTI_NODE(hilti, DocOnly)
+    HILTI_NODE_1(type::DocOnly, UnqualifiedType, final);
 
 private:
     std::string _description;

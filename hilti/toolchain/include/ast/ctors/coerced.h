@@ -22,9 +22,9 @@ public:
     }
 
 protected:
-    Coerced(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, std::move(children), std::move(meta)) {}
+    Coerced(ASTContext* ctx, Nodes children, Meta meta) : Ctor(ctx, NodeTags, std::move(children), std::move(meta)) {}
 
-    HILTI_NODE(hilti, Coerced)
+    HILTI_NODE_1(ctor::Coerced, Ctor, final);
 };
 
 } // namespace hilti::ctor

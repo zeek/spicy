@@ -78,11 +78,11 @@ public:
 
 protected:
     Name(ASTContext* ctx, Nodes children, hilti::ID id, Meta meta)
-        : Expression(ctx, std::move(children), std::move(meta)), _id(std::move(id)), _context(ctx) {}
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)), _id(std::move(id)), _context(ctx) {}
 
     ASTContext* context() const { return _context; }
 
-    HILTI_NODE(hilti, Name)
+    HILTI_NODE_1(expression::Name, Expression, final);
 
 private:
     hilti::ID _id;

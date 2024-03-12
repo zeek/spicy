@@ -1,0 +1,81 @@
+// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
+#pragma once
+
+#include <memory>
+#include <utility>
+
+#include <hilti/ast/node-tag.h>
+#include <hilti/ast/visitor-dispatcher.h>
+
+#include <spicy/ast/visitor.h>
+
+#define SPICY_NODE_0(CLASS, override_)                                                                                 \
+    __HILTI_NODE_0(spicy, CLASS, override_)                                                                            \
+                                                                                                                       \
+    void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
+        if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
+            auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
+            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
+            (*sv)(this);                                                                                               \
+        }                                                                                                              \
+        else {                                                                                                         \
+            v(static_cast<::hilti::Node*>(this));                                                                      \
+            v(this);                                                                                                   \
+        }                                                                                                              \
+    }
+
+#define SPICY_NODE_1(CLASS, BASE, override_)                                                                           \
+    __HILTI_NODE_1(spicy, CLASS, BASE, override_)                                                                      \
+                                                                                                                       \
+    void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
+        if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
+            auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
+            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
+            (*sv)(static_cast<BASE*>(this));                                                                           \
+            (*sv)(this);                                                                                               \
+        }                                                                                                              \
+        else {                                                                                                         \
+            v(static_cast<::hilti::Node*>(this));                                                                      \
+            v(static_cast<BASE*>(this));                                                                               \
+            v(this);                                                                                                   \
+        }                                                                                                              \
+    }
+
+#define SPICY_NODE_2(CLASS, BASE1, BASE2, override_)                                                                   \
+    __HILTI_NODE_2(spicy, CLASS, BASE1, BASE2, override_)                                                              \
+                                                                                                                       \
+    void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
+        using namespace hilti;                                                                                         \
+        if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
+            auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
+            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
+            (*sv)(static_cast<BASE1*>(this));                                                                          \
+            (*sv)(static_cast<BASE2*>(this));                                                                          \
+            (*sv)(this);                                                                                               \
+        }                                                                                                              \
+        else {                                                                                                         \
+            v(static_cast<::hilti::Node*>(this));                                                                      \
+            v(static_cast<BASE1*>(this));                                                                              \
+            v(static_cast<BASE2*>(this));                                                                              \
+        }                                                                                                              \
+    }
+
+#define SPICY_NODE_OPERATOR(ns, cls)                                                                                   \
+    namespace ns {                                                                                                     \
+    class cls : public hilti::expression::ResolvedOperator {                                                           \
+    public:                                                                                                            \
+        static std::shared_ptr<cls> create(hilti::ASTContext* ctx, const hilti::Operator* op,                          \
+                                           const hilti::QualifiedTypePtr& result, const hilti::Expressions& operands,  \
+                                           const hilti::Meta& meta) {                                                  \
+            return std::shared_ptr<cls>(new cls(ctx, op, result, operands, meta));                                     \
+        }                                                                                                              \
+                                                                                                                       \
+        SPICY_NODE_2(operator_::ns::cls, expression::ResolvedOperator, Expression, final);                             \
+                                                                                                                       \
+    private:                                                                                                           \
+        cls(ASTContext* ctx, const hilti::Operator* op, const QualifiedTypePtr& result, const Expressions& operands,   \
+            Meta meta)                                                                                                 \
+            : ResolvedOperator(ctx, NodeTags, op, result, operands, std::move(meta)) {}                                \
+    };                                                                                                                 \
+    } // namespace ns

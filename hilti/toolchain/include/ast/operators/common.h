@@ -10,7 +10,7 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/forward.h>
 
-#define HILTI_NODE_OPERATOR(scope, ns, cls)                                                                            \
+#define HILTI_NODE_OPERATOR(ns, cls)                                                                                   \
     namespace ns {                                                                                                     \
     class cls : public hilti::expression::ResolvedOperator {                                                           \
     public:                                                                                                            \
@@ -20,9 +20,11 @@
             return std::shared_ptr<cls>(new cls(ctx, op, result, operands, meta));                                     \
         }                                                                                                              \
                                                                                                                        \
-        HILTI_NODE(scope, cls)                                                                                         \
+        HILTI_NODE_2(operator_::ns::cls, expression::ResolvedOperator, Expression, final);                             \
                                                                                                                        \
     private:                                                                                                           \
-        using hilti::expression::ResolvedOperator::ResolvedOperator;                                                   \
+        cls(ASTContext* ctx, const hilti::Operator* op, const QualifiedTypePtr& result, const Expressions& operands,   \
+            Meta meta)                                                                                                 \
+            : ResolvedOperator(ctx, NodeTags, op, result, operands, std::move(meta)) {}                                \
     };                                                                                                                 \
     } // namespace ns

@@ -73,11 +73,11 @@ public:
 
 protected:
     Function(ASTContext* ctx, Nodes children, ID id, function::CallingConvention cc, Meta meta = {})
-        : Node(ctx, std::move(children), std::move(meta)), _id(std::move(id)), _cc(cc) {}
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)), _id(std::move(id)), _cc(cc) {}
 
     std::string _dump() const override;
 
-    HILTI_NODE(hilti, Function);
+    HILTI_NODE_0(Function, final);
 
 private:
     ID _id;

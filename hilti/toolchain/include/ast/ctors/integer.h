@@ -26,8 +26,8 @@ public:
     }
 
 protected:
-    IntegerBase(ASTContext* ctx, Nodes children, Value v, unsigned int width, Meta meta)
-        : Ctor(ctx, std::move(children), std::move(meta)), _value(v), _width(width) {}
+    IntegerBase(ASTContext* ctx, node::Tags node_tags, Nodes children, Value v, unsigned int width, Meta meta)
+        : Ctor(ctx, node_tags, std::move(children), std::move(meta)), _value(v), _width(width) {}
 
 private:
     Value _value;
@@ -48,9 +48,9 @@ public:
 
 protected:
     SignedInteger(ASTContext* ctx, Nodes children, int64_t value, unsigned int width, Meta meta)
-        : IntegerBase(ctx, std::move(children), value, width, std::move(meta)) {}
+        : IntegerBase(ctx, NodeTags, std::move(children), value, width, std::move(meta)) {}
 
-    HILTI_NODE(hilti, SignedInteger)
+    HILTI_NODE_1(ctor::SignedInteger, Ctor, final);
 };
 
 /** AST node for a unsigned integer constructor. */
@@ -70,9 +70,9 @@ public:
 
 protected:
     UnsignedInteger(ASTContext* ctx, Nodes children, uint64_t value, unsigned int width, Meta meta)
-        : IntegerBase(ctx, std::move(children), value, width, std::move(meta)) {}
+        : IntegerBase(ctx, NodeTags, std::move(children), value, width, std::move(meta)) {}
 
-    HILTI_NODE(hilti, UnsignedInteger)
+    HILTI_NODE_1(ctor::UnsignedInteger, Ctor, final);
 };
 
 } // namespace hilti::ctor

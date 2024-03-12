@@ -15,6 +15,7 @@
 
 #include <spicy/ast/engine.h>
 #include <spicy/ast/forward.h>
+#include <spicy/ast/node.h>
 
 namespace spicy {
 
@@ -95,10 +96,11 @@ public:
 
 protected:
     Hook(ASTContext* ctx, Nodes children, Engine engine, Meta m = Meta())
-        : Declaration(ctx, std::move(children), hilti::ID(), hilti::declaration::Linkage::Private, std::move(m)),
+        : Declaration(ctx, NodeTags, std::move(children), hilti::ID(), hilti::declaration::Linkage::Private,
+                      std::move(m)),
           _engine(engine) {}
 
-    HILTI_NODE(spicy, Hook);
+    SPICY_NODE_1(declaration::Hook, Declaration, final);
 
 private:
     Engine _engine = {};

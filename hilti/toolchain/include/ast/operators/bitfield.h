@@ -9,7 +9,7 @@
 
 namespace hilti::operator_ {
 
-HILTI_NODE_OPERATOR(hilti, bitfield, Member)
-HILTI_NODE_OPERATOR(hilti, bitfield, HasMember)
+HILTI_NODE_OPERATOR(bitfield, Member)
+HILTI_NODE_OPERATOR(bitfield, HasMember)
 
 } // namespace hilti::operator_

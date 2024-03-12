@@ -1,3 +1,35 @@
+1.11.0-dev.30 | 2024-03-12 12:02:43 +0100
+
+  * Get rid of more dynamic casts. (Robin Sommer, Corelight)
+
+    The main use of dynamic casts that's left now (other than for
+    debugging code) is inside the grammar's production hierarchy. That
+    logic isn't standing out during profiling, so seems fine to leave for
+    now.
+
+  * Introduce custom RTTI system for casting safely between node
+    types. (Robin Sommer, Corelight)
+
+    Our custom system is faster than C++'s `dynamic_cast<>`, resulting in
+    a noticeable speed-up for larger parsers.
+
+    We assign a unique integer tag to  each `Node`-derived class. Each
+    class' constructors pass an array through to the top-level `Node`
+    class that contains a series of these integers describing the
+    inheritance path from the derived class back up to `Node`. The `Node`
+    class stores this path for fast type checks. In addition, each
+    `Node`-derived class `T` gets a couple constants as members: (1) a
+    copy of its own tag (`T::NodeTag`), and (2) a level indicating its
+    distance from `Node` in the inheritance tree (`T::NodeLevel`). The
+    level is used as index into an instance's tag array when performing
+    type checks. The result is that we can do `isA<T>` operation with just
+    a single comparison between an array element and a constant value.
+
+    This system is optimized for our very simple Node hierarchy: not very
+    deep (max. 4 entries in the tag array), single-inheritance only,
+    derived class are always the same distance from `Node`, and
+    all `Node`-derived classes are known upfront.
+
 1.11.0-dev.27 | 2024-03-06 17:06:09 +0100
 
   * Speed up `util::toIdentifier`. (Robin Sommer)

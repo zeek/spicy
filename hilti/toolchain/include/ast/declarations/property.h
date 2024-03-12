@@ -29,9 +29,9 @@ public:
 
 protected:
     Property(ASTContext* ctx, Nodes children, ID id, Meta meta)
-        : Declaration(ctx, std::move(children), std::move(id), Linkage::Private, std::move(meta)) {}
+        : Declaration(ctx, NodeTags, std::move(children), std::move(id), Linkage::Private, std::move(meta)) {}
 
-    HILTI_NODE(hilti, Property)
+    HILTI_NODE_1(declaration::Property, Declaration, final);
 };
 
 using PropertyPtr = std::shared_ptr<Property>;

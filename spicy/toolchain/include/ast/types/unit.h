@@ -139,16 +139,17 @@ public:
     }
 
 protected:
-    Unit(ASTContext* ctx, const Nodes& children, const Meta& meta) : UnqualifiedType(ctx, {}, children, meta) {
+    Unit(ASTContext* ctx, const Nodes& children, const Meta& meta)
+        : UnqualifiedType(ctx, NodeTags, {}, children, meta) {
         _assignItemIndices();
     }
 
     Unit(ASTContext* ctx, hilti::type::Wildcard _, const Nodes& children, Meta meta)
-        : UnqualifiedType(ctx, hilti::type::Wildcard(), {"unit(*)"}, children, std::move(meta)) {
+        : UnqualifiedType(ctx, NodeTags, hilti::type::Wildcard(), {"unit(*)"}, children, std::move(meta)) {
         _assignItemIndices();
     }
 
-    HILTI_NODE(spicy, Unit)
+    SPICY_NODE_1(type::Unit, UnqualifiedType, final);
 
 private:
     void _setSelf(ASTContext* ctx);

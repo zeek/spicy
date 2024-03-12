@@ -45,11 +45,11 @@ public:
     static auto create(ASTContext* ctx) { return std::shared_ptr<ASTRoot>(new ASTRoot(ctx)); }
 
 protected:
-    ASTRoot(ASTContext* ctx) : Node(ctx, {}, Meta(Location("<root>"))) {}
+    ASTRoot(ASTContext* ctx) : Node(ctx, NodeTags, {}, Meta(Location("<root>"))) {}
 
     std::string _dump() const final;
 
-    HILTI_NODE(hilti, ASTRoot);
+    HILTI_NODE_0(ASTRoot, final);
 };
 
 namespace ast {

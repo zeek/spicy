@@ -32,9 +32,9 @@ public:
     }
 
     // Accelerated accessors for the first three operands, returning raw pointers.
-    const Expression* op0() const { return dynamic_cast<Expression*>(children()[1].get()); }
-    const Expression* op1() const { return dynamic_cast<Expression*>(children()[2].get()); }
-    const Expression* op2() const { return dynamic_cast<Expression*>(children()[3].get()); }
+    const Expression* op0() const { return static_cast<Expression*>(children()[1].get()); }
+    const Expression* op1() const { return static_cast<Expression*>(children()[2].get()); }
+    const Expression* op2() const { return static_cast<Expression*>(children()[3].get()); }
 
     /** Implements interface for use with `OverloadRegistry`. */
     hilti::node::Range<Expression> operands() const { return children<Expression>(1, {}); }
@@ -63,9 +63,9 @@ public:
 
 protected:
     UnresolvedOperator(ASTContext* ctx, Nodes children, operator_::Kind kind, Meta meta)
-        : Expression(ctx, std::move(children), std::move(meta)), _kind(kind) {}
+        : Expression(ctx, NodeTags, std::move(children), std::move(meta)), _kind(kind) {}
 
-    HILTI_NODE(hilti, UnresolvedOperator)
+    HILTI_NODE_1(expression::UnresolvedOperator, Expression, final);
 
 private:
     operator_::Kind _kind;
