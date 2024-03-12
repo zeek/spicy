@@ -86,7 +86,7 @@ repos:
     stages: ["commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.16.23
+  rev: v1.19.0
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*'

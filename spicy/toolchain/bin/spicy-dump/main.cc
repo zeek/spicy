@@ -117,7 +117,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABD:f:hdX:QVlp:PSRL:J", long_options, nullptr);
+        int c = getopt_long(argc, argv, "BAD:f:hdX:QVlp:PSRL:J", long_options, nullptr);
 
         if ( c < 0 )
             break;
