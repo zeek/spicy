@@ -10,7 +10,7 @@ import os.path
 from docutils import nodes
 from docutils.parsers.rst import directives
 from sphinx.util.nodes import make_refnode, logging
-from sphinx.util.console import bold, purple, darkgreen, red, term_width_line
+from sphinx.util.console import darkgreen, red
 from sphinx.roles import XRefRole
 from sphinx.locale import _
 from sphinx.domains import Domain, ObjType
@@ -18,7 +18,6 @@ from sphinx.directives.code import CodeBlock, LiteralInclude
 from sphinx.directives import ObjectDescription
 from sphinx import version_info
 from sphinx import addnodes
-import sys
 import subprocess
 
 
@@ -122,7 +121,6 @@ class SpicyMethod(SpicyGeneric):
     def handle_signature(self, sig, signode):
         m = sig.split()
         name = m[0]
-        self = m[1]
         method = m[2]
         const = m[3]
         result = m[4].replace("~", " ")
@@ -252,7 +250,9 @@ class SpicyCode(CodeBlock):
             self.file = self.env.relfn2path(os.path.join("examples/", file))
             try:
                 os.mkdir(os.path.dirname(self.file))
-            except:
+            except FileExistsError:
+                pass
+            except FileNotFoundError:
                 pass
         else:
             self.file = None
@@ -338,7 +338,7 @@ class SpicyOutput(LiteralInclude):
 
         if "show-as" in options:
             self.show_as = options.get("show-as", None)
-            if not "prefix" in options:
+            if "prefix" not in options:
                 self.prefix = None
 
         self.content_hash = ("# Automatically generated; do not edit. -- <HASH> %s/%s/%s" %
@@ -367,12 +367,12 @@ class SpicyOutput(LiteralInclude):
             return literal
 
     def update(self, source_orig, source, destination, cmd):
-        if os.path.exists(destination) and not "UPDATE_SPICY_CODE" in os.environ:
+        if os.path.exists(destination) and "UPDATE_SPICY_CODE" not in os.environ:
             destination_time = os.path.getmtime(destination)
 
             if os.path.exists(source):
                 source_time = os.path.getmtime(source)
-            elif not "UPDATE_SPICY_CODE" in os.environ:
+            elif "UPDATE_SPICY_CODE" not in os.environ:
                 return
 
             if source_time <= destination_time:

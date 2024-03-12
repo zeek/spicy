@@ -91,4 +91,11 @@ repos:
   - id: typos
     exclude: 'tests/.*/regexp/.*'
 
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.3.2
+  hooks:
+  - id: ruff
+    args: [ --fix ]
+
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)
