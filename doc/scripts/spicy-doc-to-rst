@@ -24,24 +24,24 @@ def fatalError(message: str):
 
 def call(name):
     def _(op):
-        return "{}({})".format(
-            name,
-            op.operands[0].rst(in_operator=True, markup=False))
+        return "{}({})".format(name, op.operands[0].rst(in_operator=True, markup=False))
+
     return _
 
 
 def keyword(name):
     def _(op):
         return "{} <sp> {}".format(name, op.operands[0].rst(in_operator=True))
+
     return _
 
 
 def unary(prefix, postfix=""):
     def _(op):
         return "op:{} {} op:{}".format(
-            prefix,
-            op.operands[0].rst(in_operator=True),
-            postfix)
+            prefix, op.operands[0].rst(in_operator=True), postfix
+        )
+
     return _
 
 
@@ -62,7 +62,7 @@ def binary(token):
 Operators = {
     "Add": lambda op: "add <sp> {}[{}]".format(
         op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False)
+        op.operands[1].rst(in_operator=True, markup=False),
     ),
     "Begin": call("begin"),
     "BitAnd": binary("&"),
@@ -70,22 +70,19 @@ Operators = {
     "BitXor": binary("^"),
     "End": call("end"),
     "Call": lambda op: "{}({})".format(
-        op.operands[0].rst(in_operator=True,
-                           markup=False),
-        ", ".join(arg.rst(in_operator=True, markup=False)
-                  for arg in op.operands[1:])),
-    "Cast": lambda op: "cast<{}>({})".format(
-        TypedType.sub("\\1", op.operands[1].rst(
-            in_operator=True, markup=False)),
-        op.operands[0].rst(in_operator=True, markup=False)),
-    "CustomAssign": lambda op: "{} = {}".format(
-        op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True)
+        op.operands[0].rst(in_operator=True, markup=False),
+        ", ".join(arg.rst(in_operator=True, markup=False) for arg in op.operands[1:]),
     ),
-
+    "Cast": lambda op: "cast<{}>({})".format(
+        TypedType.sub("\\1", op.operands[1].rst(in_operator=True, markup=False)),
+        op.operands[0].rst(in_operator=True, markup=False),
+    ),
+    "CustomAssign": lambda op: "{} = {}".format(
+        op.operands[0].rst(in_operator=True), op.operands[1].rst(in_operator=True)
+    ),
     "Delete": lambda op: "delete <sp> {}[{}]".format(
         op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False)
+        op.operands[1].rst(in_operator=True, markup=False),
     ),
     "Deref": unary("*"),
     "DecrPostfix": unary("", "--"),
@@ -105,11 +102,13 @@ Operators = {
     "Member": binary("."),
     "Index": lambda op: "{}[{}]".format(
         op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False)),
+        op.operands[1].rst(in_operator=True, markup=False),
+    ),
     "IndexAssign": lambda op: "{}[{}] = {}".format(
         op.operands[0].rst(in_operator=True),
         op.operands[1].rst(in_operator=True, markup=False),
-        op.operands[2].rst(in_operator=True, markup=False)),
+        op.operands[2].rst(in_operator=True, markup=False),
+    ),
     "IncrPostfix": unary("", "++"),
     "IncrPrefix": unary("++"),
     "LogicalAnd": binary("&&"),
@@ -126,7 +125,7 @@ Operators = {
     "Unpack": keyword("unpack"),
     "Unset": lambda op: "unset <sp> {}.{}".format(
         op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False)
+        op.operands[1].rst(in_operator=True, markup=False),
     ),
     "SignNeg": unary("-"),
     "Size": unary("|", "|"),
@@ -140,7 +139,7 @@ Operators = {
 NamespaceMappings = {
     "signed_integer": "integer",
     "unsigned_integer": "integer",
-    "struct_": "struct"
+    "struct_": "struct",
 }
 
 TypeMappings = {
@@ -149,7 +148,7 @@ TypeMappings = {
 }
 
 LibraryType = re.compile(r'__library_type\("(.*)"\)')
-TypedType: Pattern = re.compile(r'type<(.*)>')
+TypedType: Pattern = re.compile(r"type<(.*)>")
 
 
 def namespace(ns):
@@ -210,7 +209,8 @@ class Operand:
         if not in_operator:
             default = " = {}".format(self.default) if self.default else ""
             x = "{id}: {type}{default}".format(
-                id=self.id, type=type, default=default).strip()
+                id=self.id, type=type, default=default
+            ).strip()
         else:
             if markup:
                 x = "t:{type}".format(type=type)
@@ -236,19 +236,21 @@ class Operator:
             sig = Operators[self.kind](self)
         except KeyError:
             print(
-                "error: "
-                "operator {} not supported by spicy-doc-to-rst yet".format(
-                    self.kind), file=sys.stderr)
+                "error: " "operator {} not supported by spicy-doc-to-rst yet".format(
+                    self.kind
+                ),
+                file=sys.stderr,
+            )
             sys.exit(1)
 
         result = fmtType(self.rtype)
-        return ".. spicy:operator:: "\
-            "{ns}::{kind} {result} {sig}\n\n{doc}".format(
-                ns=self.namespace,
-                kind=self.kind,
-                result=result,
-                sig=sig,
-                doc=fmtDoc(self.doc))
+        return ".. spicy:operator:: " "{ns}::{kind} {result} {sig}\n\n{doc}".format(
+            ns=self.namespace,
+            kind=self.kind,
+            result=result,
+            sig=sig,
+            doc=fmtDoc(self.doc),
+        )
 
     def __lt__(self, other):
         # Sort by string representation to make sure
@@ -279,7 +281,8 @@ class Method:
         const = self.self.const == "const"
         self_ = fmtType(self.self.type)
         result = fmtType(self.rtype)
-        sig = ".. spicy:method:: "\
+        sig = (
+            ".. spicy:method:: "
             "{ns}::{id} {self} {id} {const} {result} ({args})\n\n{doc}".format(
                 ns=self.namespace,
                 result=result,
@@ -287,7 +290,9 @@ class Method:
                 const=const,
                 id=self.id,
                 args=args,
-                doc=fmtDoc(self.doc))
+                doc=fmtDoc(self.doc),
+            )
+        )
         return sig
 
     def __lt__(self, other):
@@ -295,16 +300,28 @@ class Method:
         # the rendered output has a fixed order.
         return self.rst() < other.rst()
 
+
 # Main
 
 
 parser = argparse.ArgumentParser(
-    description="Converts the output of spicy-doc on stdin into reST")
-parser.add_argument("-d", action="store", dest="dir", metavar="DIR",
-                    help="create output for all types in given directory")
-parser.add_argument("-t", action="store", dest="types", metavar="TYPES",
-                    help="create output for specified, comma-separated types;"
-                    "without -d, output goes to stdout")
+    description="Converts the output of spicy-doc on stdin into reST"
+)
+parser.add_argument(
+    "-d",
+    action="store",
+    dest="dir",
+    metavar="DIR",
+    help="create output for all types in given directory",
+)
+parser.add_argument(
+    "-t",
+    action="store",
+    dest="types",
+    metavar="TYPES",
+    help="create output for specified, comma-separated types;"
+    "without -d, output goes to stdout",
+)
 args = parser.parse_args()
 
 if not args.dir and not args.types:
@@ -330,9 +347,9 @@ for op in meta:
         x2 += [m2]
 
         # If we have a `in` operator automatically generate docs for `!in`.
-        if m2.kind == 'In':
+        if m2.kind == "In":
             m3 = copy.copy(m2)
-            m3.kind = 'InInv'
+            m3.kind = "InInv"
             m3.doc = "Performs the inverse of the corresponding ``in`` operation."
             x2 = operators.setdefault(m3.namespace, [])
             x2 += [m3]
