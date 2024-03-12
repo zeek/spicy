@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 #
 # Configuration file for the Sphinx documentation builder.

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 """X
@@ -52,7 +50,7 @@ class SpicyGeneric(ObjectDescription):
             if key in objects:
                 self.env.warn(
                     self.env.docname,
-                    "duplicate description of %s %s, " % (self.objtype, name)
+                    f"duplicate description of {self.objtype} {name}, "
                     + "other instance in "
                     + self.env.doc2path(objects[key]),
                     self.lineno,
@@ -136,7 +134,7 @@ class SpicyMethod(SpicyGeneric):
         #        except ValueError:
         #            rnode = nodes.inline("", result)
 
-        signode += nodes.literal("", "%s(%s)" % (method, args))
+        signode += nodes.literal("", f"{method}({args})")
 
         if result != "-":
             signode += nodes.inline("", " → ")
@@ -354,7 +352,7 @@ class SpicyOutput(LiteralInclude):
         source_orig = args[1][0]
         file = "_" + source_orig
         index = "_%s" % args[1][1] if len(args[1]) > 1 else ""
-        output = "examples/%s.output%s" % (file, index)
+        output = f"examples/{file}.output{index}"
         args = list(args)
         args[1] = [output]
         args[2]["lines"] = "2-"

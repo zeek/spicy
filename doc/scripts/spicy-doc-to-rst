@@ -24,23 +24,21 @@ def fatalError(message: str):
 
 def call(name):
     def _(op):
-        return "{}({})".format(name, op.operands[0].rst(in_operator=True, markup=False))
+        return f"{name}({op.operands[0].rst(in_operator=True, markup=False)})"
 
     return _
 
 
 def keyword(name):
     def _(op):
-        return "{} <sp> {}".format(name, op.operands[0].rst(in_operator=True))
+        return f"{name} <sp> {op.operands[0].rst(in_operator=True)}"
 
     return _
 
 
 def unary(prefix, postfix=""):
     def _(op):
-        return "op:{} {} op:{}".format(
-            prefix, op.operands[0].rst(in_operator=True), postfix
-        )
+        return f"op:{prefix} {op.operands[0].rst(in_operator=True)} op:{postfix}"
 
     return _
 
@@ -54,7 +52,7 @@ def binary(token):
         if op.commutative and op1 != op2:
             commutative = " $commutative$"
 
-        return "{} <sp> op:{} <sp> {}{}".format(op1, token, op2, commutative)
+        return f"{op1} <sp> op:{token} <sp> {op2}{commutative}"
 
     return _
 
@@ -156,7 +154,7 @@ def namespace(ns):
 
 
 def rstHeading(title, level):
-    return "{}\n{}\n".format(title, "==-~"[level] * len(title))
+    return f"{title}\n{"==-~"[level] * len(title)}\n"
 
 
 def fmtDoc(doc):
@@ -207,18 +205,16 @@ class Operand:
             type = fmtType(self.type)
 
         if not in_operator:
-            default = " = {}".format(self.default) if self.default else ""
-            x = "{id}: {type}{default}".format(
-                id=self.id, type=type, default=default
-            ).strip()
+            default = f" = {self.default}" if self.default else ""
+            x = f"{self.id}: {type}{default}".strip()
         else:
             if markup:
-                x = "t:{type}".format(type=type)
+                x = f"t:{type}"
             else:
-                x = "{type}".format(type=type)
+                x = f"{type}"
 
-        x = "{}{}".format(prefix, x)
-        return "[ {} ]".format(x) if self.optional else x
+        x = f"{prefix}{x}"
+        return f"[ {x} ]" if self.optional else x
 
 
 class Operator:
@@ -236,9 +232,7 @@ class Operator:
             sig = Operators[self.kind](self)
         except KeyError:
             print(
-                "error: " "operator {} not supported by spicy-doc-to-rst yet".format(
-                    self.kind
-                ),
+                "error: " f"operator {self.kind} not supported by spicy-doc-to-rst yet",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -331,7 +325,7 @@ if not args.dir and not args.types:
 try:
     meta = json.load(sys.stdin)
 except ValueError as e:
-    fatalError("cannot parse input: {}".format(e))
+    fatalError(f"cannot parse input: {e}")
 
 operators: Dict[str, List[Operator]] = {}
 methods: Dict[str, List[Method]] = {}
@@ -408,7 +402,7 @@ for ns in sorted(keys):
 
     x1 = sorted(methods.get(ns, []))
     if x1:
-        print(".. rubric:: %sMethods\n" % prefix, file=out)
+        print(f".. rubric:: {prefix}Methods\n", file=out)
 
         for method in sorted(x1):
             print_unique(method.rst())
@@ -416,7 +410,7 @@ for ns in sorted(keys):
     x2 = sorted(operators.get(ns, []))
 
     if x2:
-        print(".. rubric:: %sOperators\n" % prefix, file=out)
+        print(f".. rubric:: {prefix}Operators\n", file=out)
 
         for operator in sorted(x2):
             print_unique(operator.rst())
