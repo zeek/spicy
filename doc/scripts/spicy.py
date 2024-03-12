@@ -249,7 +249,7 @@ class SpicyCode(CodeBlock):
         if file:
             self.file = self.env.relfn2path(os.path.join("examples/", file))
             try:
-                os.mkdir(os.path.dirname(self.file))
+                os.mkdir(os.path.dirname(self.file[1]))
             except FileExistsError:
                 pass
             except FileNotFoundError:
