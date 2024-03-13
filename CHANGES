@@ -1,3 +1,19 @@
+1.11.0-dev.39 | 2024-03-13 09:07:42 +0100
+
+  * Bump softprops/action-gh-release from 1 to 2 (dependabot[bot])
+
+  * Bump typos pre-commit hook. (Benjamin Bannier, Corelight)
+
+  * Bump clang-format. (Benjamin Bannier, Corelight)
+
+  * Modernize Python scripts with `pyupgrade`. (Benjamin Bannier, Corelight)
+
+  * Reformat Python with ruff-format. (Benjamin Bannier, Corelight)
+
+  * Fix generation of doc example code. (Benjamin Bannier, Corelight)
+
+  * Fix Python lints diagnosed by ruff. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.30 | 2024-03-12 12:02:43 +0100
 
   * Get rid of more dynamic casts. (Robin Sommer, Corelight)
