@@ -74,7 +74,7 @@ private:
     std::string _doc;
 };
 
-using Operands = std::vector<Operand*>;
+using Operands = NodeVector<Operand>;
 } // namespace operand_list
 
 /**

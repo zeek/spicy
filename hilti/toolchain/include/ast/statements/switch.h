@@ -84,7 +84,7 @@ private:
     int _end_exprs;
 };
 
-using Cases = std::vector<Case*>;
+using Cases = NodeVector<Case>;
 
 } // namespace switch_
 

@@ -90,7 +90,7 @@ private:
     unsigned int _field_width = 0;
 };
 
-using BitRanges = std::vector<BitRange*>;
+using BitRanges = NodeVector<BitRange>;
 
 } // namespace bitfield
 

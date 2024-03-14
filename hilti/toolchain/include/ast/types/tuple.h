@@ -47,7 +47,7 @@ private:
     ID _id;
 };
 
-using Elements = std::vector<Element*>;
+using Elements = NodeVector<Element>;
 
 } // namespace tuple
 

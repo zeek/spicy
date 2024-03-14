@@ -288,7 +288,7 @@ struct ProductionVisitor : public production::Visitor {
                             builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")), offset);
                     }
 
-                    std::vector<QualifiedType*> x =
+                    QualifiedTypes x =
                         {builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable),
                          pb->lookAheadType(),
                          builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Const),
@@ -444,7 +444,7 @@ struct ProductionVisitor : public production::Visitor {
 
                     builder()->setLocation(p.location());
 
-                    std::vector<QualifiedType*> x =
+                    QualifiedTypes x =
                         {builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable),
                          pb->lookAheadType(),
                          builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Const),

@@ -38,7 +38,7 @@ protected:
     HILTI_NODE_0(ctor::map::Element, final);
 };
 
-using Elements = std::vector<Element*>;
+using Elements = NodeVector<Element>;
 
 } // namespace map
 

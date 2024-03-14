@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace hilti {
@@ -724,18 +725,40 @@ class Operand;
 
 } // namespace type
 
-using Attributes = std::vector<Attribute*>;
-using Declarations = std::vector<Declaration*>;
-using Expressions = std::vector<Expression*>;
-using Statements = std::vector<Statement*>;
-using QualifiedTypes = std::vector<QualifiedType*>;
-using UnqualifiedTypes = std::vector<UnqualifiedType*>;
+template<typename T>
+using NodeVector = std::vector<T*>;
+
+using Attributes = NodeVector<Attribute>;
+using Declarations = NodeVector<Declaration>;
+using Expressions = NodeVector<Expression>;
+using Statements = NodeVector<Statement>;
+using QualifiedTypes = NodeVector<QualifiedType>;
+using UnqualifiedTypes = NodeVector<UnqualifiedType>;
 
 class Builder;
 using BuilderPtr = std::shared_ptr<Builder>;
 
 class ASTContext;
-class Nodes;
 
+/**
+ * Container storing a set of nodes. This is just our standard vector with an
+ * additional constructor.
+ */
+class Nodes : public NodeVector<Node> {
+public:
+    using NodeVector<Node>::NodeVector;
+
+    /** Constructor accepting a vector of pointers to a derived class. */
+    template<typename T>
+    Nodes(NodeVector<T> m) {
+        reserve(m.size());
+        for ( auto* x : m )
+            emplace_back(x);
+    }
+
+    Nodes() = default;
+    Nodes(const Nodes&) = default;
+    Nodes(Nodes&&) = default;
+};
 
 } // namespace hilti

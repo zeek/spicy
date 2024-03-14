@@ -23,8 +23,8 @@ namespace {
 
 // Copy a range of nodes into an actual vector.
 template<typename T>
-auto copy_vector = [](const auto& in) -> std::vector<T*> {
-    std::vector<T*> out;
+auto copy_vector = [](const auto& in) -> NodeVector<T> {
+    NodeVector<T> out;
     for ( const auto& i : in )
         out.push_back(i);
 

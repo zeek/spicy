@@ -108,7 +108,7 @@ private:
     hilti::ast::DeclarationIndex _unit_field_index;
 };
 
-using Hooks = std::vector<Hook*>;
+using Hooks = NodeVector<Hook>;
 
 } // namespace declaration
 } // namespace spicy
