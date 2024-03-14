@@ -116,6 +116,6 @@ private:
     ast::TypeIndex _linked_type_index;
 };
 
-using FieldList = std::vector<Field*>;
+using FieldList = NodeVector<Field>;
 
 } // namespace hilti::declaration

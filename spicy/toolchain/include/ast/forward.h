@@ -9,8 +9,6 @@
 
 #include <spicy/ast/node-tag.h>
 
-namespace hilti::node {}
-
 namespace hilti {
 class ID;
 class Meta;
@@ -24,6 +22,12 @@ class ExtendedBuilderTemplate;
 namespace spicy {
 
 namespace node = hilti::node; // NOLINT
+
+template<typename T>
+using NodeVector = hilti::NodeVector<T>;
+
+using Node = hilti::Node;
+using Nodes = hilti::Nodes;
 
 class BuilderBase;
 using Builder = hilti::ExtendedBuilderTemplate<BuilderBase>;
@@ -41,7 +45,7 @@ namespace declaration {
 class Hook;
 class UnitHook;
 
-using Hooks = std::vector<Hook*>;
+using Hooks = NodeVector<Hook>;
 } // namespace declaration
 
 namespace operator_ {
@@ -102,7 +106,7 @@ class Unit;
 
 namespace unit {
 class Item;
-using Items = std::vector<Item*>;
+using Items = NodeVector<Item>;
 
 namespace item {
 class Field;
@@ -115,10 +119,10 @@ class Variable;
 
 namespace switch_ {
 class Case;
-using Cases = std::vector<Case*>;
+using Cases = NodeVector<Case>;
 }; // namespace switch_
 
-using Properties = std::vector<Property*>;
+using Properties = NodeVector<Property>;
 } // namespace item
 
 } // namespace unit
@@ -139,10 +143,10 @@ using Statement = hilti::Statement;
 using UnqualifiedType = hilti::UnqualifiedType;
 using AttributeSet = hilti::AttributeSet;
 
-using Nodes = hilti::Nodes;
-using Expressions = hilti::Expressions;
-using Statements = hilti::Statements;
 using Declarations = hilti::Declarations;
+using Expressions = hilti::Expressions;
+using QualifiedTypes = hilti::QualifiedTypes;
+using Statements = hilti::Statements;
 
 using ASTContext = hilti::ASTContext;
 using Meta = hilti::Meta;

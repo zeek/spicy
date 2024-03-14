@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include <hilti/ast/ast-context.h>
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
 

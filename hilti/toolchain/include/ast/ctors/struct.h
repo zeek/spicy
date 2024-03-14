@@ -41,7 +41,7 @@ private:
     ID _id;
 };
 
-using Fields = std::vector<Field*>;
+using Fields = NodeVector<Field>;
 
 } // namespace struct_
 

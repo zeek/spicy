@@ -135,7 +135,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     // Checks if a set of operator candidates contains only calls to hooks of the same type.
-    bool checkForHooks(Builder* builder, expression::UnresolvedOperator* u, const std::vector<Expression*>& matches) {
+    bool checkForHooks(Builder* builder, expression::UnresolvedOperator* u, const Expressions& matches) {
         if ( u->kind() != operator_::Kind::Call )
             return false;
 
@@ -405,9 +405,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     // Matches an unresolved operator against a set of operator candidates,
     // returning instantiations of all matches.
-    std::vector<Expression*> matchOperators(expression::UnresolvedOperator* u,
-                                            const std::vector<const Operator*>& candidates,
-                                            bool disallow_type_changes = false) {
+    Expressions matchOperators(expression::UnresolvedOperator* u, const std::vector<const Operator*>& candidates,
+                               bool disallow_type_changes = false) {
         const std::array<bitmask<CoercionStyle>, 7> styles = {
             CoercionStyle::TryExactMatch,
             CoercionStyle::TryDeref,
@@ -471,7 +470,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return resolved;
         };
 
-        auto try_all_candidates = [&](std::vector<Expression*>* resolved, std::set<operator_::Kind>* kinds_resolved,
+        auto try_all_candidates = [&](Expressions* resolved, std::set<operator_::Kind>* kinds_resolved,
                                       operator_::Priority priority) {
             for ( auto style : styles ) {
                 if ( disallow_type_changes )
@@ -526,7 +525,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         logging::DebugPushIndent _(logging::debug::Operator);
 
         std::set<operator_::Kind> kinds_resolved;
-        std::vector<Expression*> resolved;
+        Expressions resolved;
 
         try_all_candidates(&resolved, &kinds_resolved, operator_::Priority::Normal);
         if ( resolved.size() )

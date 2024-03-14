@@ -441,9 +441,8 @@ private:
     std::map<std::pair<ID, ID>, declaration::Module*>
         _modules_by_id_and_scope; // all known modules indexed by their ID and search scope
 
-    std::vector<Declaration*>
-        _declarations_by_index; // all registered declarations; vector position corresponds to their index
-    std::vector<UnqualifiedType*> _types_by_index; // all registered types; vector position corresponds to their index
+    Declarations _declarations_by_index; // all registered declarations; vector position corresponds to their index
+    UnqualifiedTypes _types_by_index;    // all registered types; vector position corresponds to their index
 };
 
 /**

@@ -145,7 +145,7 @@ public:
     operator bool() const { return ! attributes().empty(); }
 
     static auto create(ASTContext* ctx, Attributes attrs = {}, Meta m = Meta()) {
-        return ctx->make<AttributeSet>(ctx, Nodes{std::move(attrs)}, std::move(m));
+        return ctx->make<AttributeSet>(ctx, std::move(attrs), std::move(m));
     }
 
 protected:

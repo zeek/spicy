@@ -108,7 +108,7 @@ private:
     bool _is_type_param = false;
 };
 
-using Parameters = std::vector<Parameter*>;
+using Parameters = NodeVector<Parameter>;
 
 } // namespace hilti::declaration
 

@@ -90,22 +90,6 @@ namespace builder {
 class NodeBuilder;
 }
 
-/**
- * Container storing a set of nodes. This is just a `std::vector` with an
- * additional constructor.
- */
-class Nodes : public std::vector<Node*> {
-public:
-    using std::vector<Node*>::vector;
-
-    /** Constructor accepting a vector of pointers to a derived class. */
-    template<typename T>
-    Nodes(std::vector<T*> m) {
-        for ( auto&& x : m )
-            emplace_back(std::move(x));
-    }
-};
-
 namespace node {
 
 namespace detail {

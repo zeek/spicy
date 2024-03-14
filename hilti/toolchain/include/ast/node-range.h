@@ -14,7 +14,7 @@ namespace hilti::node {
  * Container to store a set of node pointers. Retains insertion order of its elements.
  */
 template<typename T>
-using Set = std::vector<T*>;
+using Set = NodeVector<T>;
 
 /**
  * A constant iterator over a range of nodes (`node::Range`). Internally, this
@@ -23,7 +23,7 @@ using Set = std::vector<T*>;
  */
 template<typename T>
 class RangeIterator {
-    using BaseIterator = std::vector<Node*>::const_iterator;
+    using BaseIterator = Nodes::const_iterator;
 
 public:
     using value_type = T*;
@@ -96,13 +96,12 @@ public:
     using value_type = typename iterator::value_type;
 
     explicit Range() {}
-    Range(typename std::vector<T*>::const_iterator begin, typename std::vector<T*>::const_iterator end)
+    Range(typename NodeVector<T>::const_iterator begin, typename NodeVector<T>::const_iterator end)
         : _begin(begin), _end(end) {}
 
-    explicit Range(const std::vector<T*>& nodes) : Range(nodes.begin(), nodes.end()) {}
+    explicit Range(const NodeVector<T>& nodes) : Range(nodes.begin(), nodes.end()) {}
 
-    Range(std::vector<Node*>::const_iterator begin, std::vector<Node*>::const_iterator end)
-        : _begin(begin), _end(end) {}
+    Range(Nodes::const_iterator begin, Nodes::const_iterator end) : _begin(begin), _end(end) {}
 
     Range(const Range& other) = default;
     Range(Range&& other) noexcept = default;
@@ -114,8 +113,9 @@ public:
     const T& front() const { return *_begin; }
     bool empty() const { return _begin == _end; }
 
-    operator std::vector<T*>() const {
-        std::vector<T*> x;
+    operator NodeVector<T>() const {
+        NodeVector<T> x;
+        x.reserve(size());
         for ( auto i = _begin; i != _end; i++ )
             x.push_back(*i);
 

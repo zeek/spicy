@@ -57,7 +57,7 @@ private:
     int _value = -1;
 };
 
-using Labels = std::vector<Label*>;
+using Labels = NodeVector<Label>;
 
 } // namespace enum_
 

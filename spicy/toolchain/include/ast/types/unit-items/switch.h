@@ -73,7 +73,7 @@ private:
     bool _look_ahead = false;
 };
 
-using Cases = std::vector<Case*>;
+using Cases = NodeVector<Case>;
 
 } // namespace switch_
 

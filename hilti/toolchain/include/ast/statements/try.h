@@ -41,7 +41,7 @@ protected:
     HILTI_NODE_0(statement::try_::Catch, final);
 };
 
-using Catches = std::vector<Catch*>;
+using Catches = NodeVector<Catch>;
 
 } // namespace try_
 
