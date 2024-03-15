@@ -1,44 +1,59 @@
 # Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 # Declares a new fuzzer target.
-function (fuzz_parser Name SpicyInput Parser)
-    string(REPLACE ":" "_" parser ${Parser})
-    set(name ${Name}-${parser})
-    add_custom_command(
-        OUTPUT "${name}.cc"
-        COMMAND ${CMAKE_BINARY_DIR}/bin/spicyc -c -o "${name}.cc" "${SpicyInput}"
-        DEPENDS spicyc
-        COMMENT "Generating C++ code for ${Parser}")
+function (fuzz_parser)
+    set(options)
+    set(oneValueArg PARSER)
+    set(multiValueArgs MODULES SOURCES)
+
+    cmake_parse_arguments(PARSE_ARGV 0 FUZZ "${options}" "${oneValueArg}" "${multiValueArgs}")
+
+    if (NOT DEFINED FUZZ_PARSER)
+        message(FATAL_ERROR "PARSER" is required)
+    endif ()
+
+    string(REPLACE "::" "_" _parser ${FUZZ_PARSER})
+
+    list(TRANSFORM FUZZ_MODULES PREPEND ${_parser}_ OUTPUT_VARIABLE _generated_sources)
+    list(TRANSFORM _generated_sources APPEND ".cc" OUTPUT_VARIABLE _generated_sources)
+    list(APPEND _generated_sources "${_parser}___linker__.cc")
 
     add_custom_command(
-        OUTPUT "${name}_link.cc"
-        COMMAND ${CMAKE_BINARY_DIR}/bin/spicyc -l -o "${name}_link.cc" "${SpicyInput}"
+        OUTPUT ${_generated_sources}
+        COMMAND ${CMAKE_BINARY_DIR}/bin/spicyc -x ${CMAKE_CURRENT_BINARY_DIR}/${_parser}
+                "${FUZZ_SOURCES}"
         DEPENDS spicyc
-        COMMENT "Generating C++ linker code for ${Parser}")
+        COMMENT "Generating C++ code for ${FUZZ_PARSER}")
 
-    add_executable(fuzz-${name} fuzz.cc "${name}.cc" "${name}_link.cc")
-    target_compile_definitions(fuzz-${name} PRIVATE SPICY_FUZZ_PARSER="${Parser}")
-    target_compile_options(fuzz-${name} PRIVATE -fsanitize=fuzzer-no-link)
-    target_link_options(fuzz-${name} PRIVATE -fsanitize=fuzzer-no-link)
+    add_executable(fuzz-${_parser} fuzz.cc ${_generated_sources})
+    target_compile_definitions(fuzz-${_parser} PRIVATE SPICY_FUZZ_PARSER="${_parser}")
+    target_compile_options(fuzz-${_parser} PRIVATE -fsanitize=fuzzer-no-link)
+    target_link_options(fuzz-${_parser} PRIVATE -fsanitize=fuzzer-no-link)
 
-    set(LIBFUZZER_LIB $ENV{LIBFUZZER_LIB})
-    if ("${LIBFUZZER_LIB}" STREQUAL "")
+    set(_libfuzzer_lib $ENV{LIBFUZZER_LIB})
+    if ("${_libfuzzer_lib}" STREQUAL "")
         message(FATAL_ERROR "When building fuzzers the environment variable LIBFUZZER_LIB "
                             "must contain the path to libclang_rt.fuzzer_no_main-<arch>.a")
     endif ()
-    if (NOT EXISTS ${LIBFUZZER_LIB})
-        message(FATAL_ERROR "Configured LIBFUZZER_LIB ${LIBFUZZER_LIB} does not exist")
+    if (NOT EXISTS ${_libfuzzer_lib})
+        message(FATAL_ERROR "Configured LIBFUZZER_LIB ${_libfuzzer_lib} does not exist")
     endif ()
 
-    target_link_libraries(fuzz-${name} spicy-rt hilti-rt "${LIBFUZZER_LIB}")
+    target_link_libraries(fuzz-${_parser} spicy-rt hilti-rt "${_libfuzzer_lib}")
 endfunction ()
 
-fuzz_parser(dhcp ${CMAKE_SOURCE_DIR}/spicy-dhcp/analyzer/analyzer.spicy "dhcp::Message")
-fuzz_parser(tftp ${CMAKE_SOURCE_DIR}/spicy-tftp/analyzer/tftp.spicy "TFTP::Packet")
-fuzz_parser(pe ${CMAKE_SOURCE_DIR}/spicy-pe/analyzer/analyzer.spicy "pe::ImageFile")
-fuzz_parser(png ${CMAKE_SOURCE_DIR}/spicy-png/analyzer/analyzer.spicy "PNG::File")
-fuzz_parser(dns ${CMAKE_SOURCE_DIR}/spicy-dns/analyzer/analyzer.spicy "dns::Message")
-fuzz_parser(http ${CMAKE_SOURCE_DIR}/spicy-http/analyzer/analyzer.spicy "HTTP::Request")
-fuzz_parser(http ${CMAKE_SOURCE_DIR}/spicy-http/analyzer/analyzer.spicy "HTTP::Requests")
-fuzz_parser(http ${CMAKE_SOURCE_DIR}/spicy-http/analyzer/analyzer.spicy "HTTP::Reply")
-fuzz_parser(http ${CMAKE_SOURCE_DIR}/spicy-http/analyzer/analyzer.spicy "HTTP::Replies")
+fuzz_parser(PARSER "DHCP::Message" SOURCES ${CMAKE_SOURCE_DIR}/spicy-dhcp/analyzer/analyzer.spicy
+            MODULES DHCP)
+fuzz_parser(PARSER "TFTP::Packet" SOURCES ${CMAKE_SOURCE_DIR}/spicy-tftp/analyzer/tftp.spicy
+            MODULES TFTP)
+fuzz_parser(PARSER "pe::ImageFile" SOURCES ${CMAKE_SOURCE_DIR}/spicy-pe/analyzer/analyzer.spicy
+            MODULES pe)
+fuzz_parser(PARSER "PNG::File" SOURCES ${CMAKE_SOURCE_DIR}/spicy-png/analyzer/analyzer.spicy
+            MODULES PNG)
+fuzz_parser(PARSER "dns::Message" SOURCES ${CMAKE_SOURCE_DIR}/spicy-dns/analyzer/analyzer.spicy
+            MODULES dns)
+
+foreach (P IN ITEMS Request Requests Reply Replies)
+    fuzz_parser(PARSER "HTTP::${P}" SOURCES ${CMAKE_SOURCE_DIR}/spicy-http/analyzer/analyzer.spicy
+                MODULES HTTP filter)
+endforeach ()

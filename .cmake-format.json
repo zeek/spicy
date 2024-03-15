@@ -1,12 +1,11 @@
 {
   "parse": {
     "additional_commands": {
-        "spicy_add_analyzer": {
+        "fuzz_parser": {
             "kwargs": {
-                "NAME": "*",
-                "PACKAGE_NAME": "*",
+                "PARSER": "1",
                 "SOURCES": "*",
-                "SCRIPTS": "*"
+                "MODULES": "*"
             }
         }
     }
