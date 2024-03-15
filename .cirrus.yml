@@ -7,7 +7,6 @@ environment:
     HILTI_JIT_SEQUENTIAL: 1
 
     # Images for macOS
-    IMAGE_MACOS_MONTEREY: ghcr.io/cirruslabs/macos-monterey-base:latest
     IMAGE_MACOS_VENTURA: ghcr.io/cirruslabs/macos-ventura-base:latest
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
@@ -274,17 +273,6 @@ ventura_task:
     - ninja -C build
   test_script:
     - (source /tmp/btest.venv/bin/activate && btest -djc tests/btest.cfg)
-
-homebrew_monterey_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  macos_instance:
-    image: $IMAGE_MACOS_MONTEREY
-
-  script:
-    - brew tap zeek/zeek
-    - brew install spicy --HEAD
-    - brew test spicy
 
 homebrew_ventura_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
