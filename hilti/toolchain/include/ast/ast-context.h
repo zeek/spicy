@@ -4,7 +4,6 @@
 
 #include <map>
 #include <memory>
-#include <memory_resource>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -16,6 +15,7 @@
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/monotonic_buffer_resource.h>
 #include <hilti/base/uniquer.h>
 
 namespace hilti {
@@ -424,8 +424,8 @@ private:
     // Dumps the accumulated state tables of the context to a debugging stream.
     void _dumpDeclarations(const logging::DebugStream& stream, const Plugin& plugin);
 
-    Context* _context = nullptr;                          // compiler context
-    std::pmr::monotonic_buffer_resource _memory_resource; // memory resource for all AST nodes
+    Context* _context = nullptr;                        // compiler context
+    detail::monotonic_buffer_resource _memory_resource; // memory resource for all AST nodes
     std::vector<Node*> _nodes; // all nodes allocated through the context so that we can run destructors at the end
 
     ASTRoot* _root = nullptr;            // root node of the AST
