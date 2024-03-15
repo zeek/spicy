@@ -154,7 +154,8 @@ def namespace(ns):
 
 
 def rstHeading(title, level):
-    return f"{title}\n{"==-~"[level] * len(title)}\n"
+    return "{}\n{}\n".format(title, "==-~"[level] * len(title))
+    return f'{title}\n{"==-~"[level] * len(title)}\n'
 
 
 def fmtDoc(doc):

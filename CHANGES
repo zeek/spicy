@@ -1,3 +1,11 @@
+1.11.0-dev.45 | 2024-03-15 15:11:26 +0100
+
+  * Fix broken f-string. (Benjamin Bannier, Corelight)
+
+  * Remove Moneterey Homebrew CI tasks. (Benjamin Bannier, Corelight)
+
+  * Add Cirrus tasks running non-Homebrew macos builds and tests. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.41 | 2024-03-15 12:47:42 +0100
 
   * Fix fuzzer builds for reworked AST. (Benjamin Bannier, Corelight)
