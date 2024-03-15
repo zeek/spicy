@@ -247,6 +247,34 @@ validate_release_tarball_task:
     - cd /tmp/spicy-tarball/spicy-*
     - make -C tests
 
+ventura_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+  macos_instance:
+    image: $IMAGE_MACOS_VENTURA
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+
+  update_git_script:
+    - git submodule update --recursive --init
+  install_dependencies_script:
+    - brew install bison cmake flex ninja ccache
+    - python3 -mvenv /tmp/btest.venv && /tmp/btest.venv/bin/pip install btest
+  configure_script:
+    - ./configure --with-flex=$(brew --prefix flex) --with-bison=$(brew --prefix bison) --generator=Ninja --enable-ccache --build-type=Debug
+  build_script:
+    - ninja -C build
+  test_script:
+    - (source /tmp/btest.venv/bin/activate && btest -djc tests/btest.cfg)
+
 homebrew_monterey_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
