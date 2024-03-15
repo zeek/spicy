@@ -322,8 +322,14 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     // Resume parsing.
                     assert(_input && _resumable);
 
-                    if ( size )
-                        (*_input)->append(data, size);
+                    std::optional<hilti::rt::stream::detail::AppendLazy> lazy;
+
+                    if ( size ) {
+                        if ( data )
+                            lazy = hilti::rt::stream::detail::AppendLazy(_input->get(), std::string_view{data, size});
+                        else
+                            (*_input)->append(data, size);
+                    }
 
                     if ( eod ) {
                         DRIVER_DEBUG("end of data");

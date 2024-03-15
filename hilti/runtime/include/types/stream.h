@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -63,6 +64,7 @@ enum class Direction : int64_t { Forward, Backward };
 
 namespace detail {
 
+class AppendLazy;
 class Chain;
 using ChainPtr = IntrusivePtr<Chain>;
 class UnsafeConstIterator;
@@ -89,6 +91,9 @@ public:
     Chunk(const Offset& o, const View& d);
     Chunk(const Offset& o, std::string s);
 
+    // Constructs a non-owning chunk.
+    Chunk(const Offset& o, std::string_view s) : _offset(o), _non_owning_data(s) {}
+
     // Constructs a gap chunk which signifies empty data.
     Chunk(const Offset& o, size_t len) : _offset(o), _gap_size(len) { assert(_gap_size > 0); }
 
@@ -101,6 +106,7 @@ public:
     Chunk& operator=(Chunk&& other) noexcept {
         _offset = other._offset;
         _data = std::move(other._data);
+        _non_owning_data = other._non_owning_data;
         _next = std::move(other._next);
         _chain = other._chain;
         return *this;
@@ -112,12 +118,29 @@ public:
     Offset endOffset() const { return _offset + size(); }
     bool isGap() const { return _gap_size > 0; };
     bool inRange(const Offset& offset) const { return offset >= _offset && offset < endOffset(); }
+    bool isLazy() const { return ! _non_owning_data.empty(); };
+    void makeOwning(Offset begin, Offset end) {
+        if ( isGap() || ! isLazy() )
+            return;
+
+        begin = inRange(begin) ? std::max(begin.Ref(), offset().Ref()) : offset().Ref();
+        end = inRange(end) ? std::min(end.Ref(), endOffset().Ref()) : endOffset().Ref();
+
+        assert(_data.empty());
+        _data = std::string{_non_owning_data.data() + (begin.Ref() - offset().Ref()), end.Ref() - begin.Ref()};
+        _offset = begin;
+        _non_owning_data = "";
+    }
 
     const Byte* data() const {
         if ( isGap() )
             throw MissingData("data is missing");
 
-        return reinterpret_cast<const Byte*>(_data.data());
+        else if ( isLazy() )
+            return reinterpret_cast<const Byte*>(_non_owning_data.data());
+
+        else
+            return reinterpret_cast<const Byte*>(_data.data());
     }
 
     const Byte* data(const Offset& offset) const {
@@ -129,14 +152,22 @@ public:
         if ( isGap() )
             throw MissingData("data is missing");
 
-        return reinterpret_cast<const Byte*>(data() + _data.size());
+        else if ( isLazy() )
+            return reinterpret_cast<const Byte*>(data() + _non_owning_data.size());
+
+        else
+            return reinterpret_cast<const Byte*>(data() + _data.size());
     }
 
     Size size() const {
         if ( isGap() )
             return _gap_size;
 
-        return _data.size();
+        else if ( isLazy() )
+            return _non_owning_data.size();
+
+        else
+            return _data.size();
     }
 
     bool isLast() const { return ! _next; }
@@ -204,11 +235,12 @@ protected:
     void clearNext() { _next = nullptr; }
 
 private:
-    Offset _offset = 0;            // global offset of 1st byte
-    std::string _data;             // content of this chunk
-    size_t _gap_size = 0;          // non-zero if this is a gap in which case _data is irrelevant
-    const Chain* _chain = nullptr; // chain this chunk is part of, or null if not linked to a chain yet (non-owning;
-                                   // will stay valid at least as long as the current chunk does)
+    Offset _offset = 0;                // global offset of 1st byte
+    std::string _data;                 // content of this chunk
+    size_t _gap_size = 0;              // non-zero if this is a gap in which case _data is irrelevant
+    std::string_view _non_owning_data; // set if has non-owning data
+    const Chain* _chain = nullptr;     // chain this chunk is part of, or null if not linked to a chain yet (non-owning;
+                                       // will stay valid at least as long as the current chunk does)
     std::unique_ptr<Chunk> _next = nullptr; // next chunk in chain, or null if last
 };
 
@@ -1607,6 +1639,12 @@ public:
      */
     void append(const char* data, size_t len);
 
+    // FIXME(bbannier): document.
+    Offset append_lazy(std::string_view data); // FIXME(bbannier): remove.
+
+    // FIXME(bbannier): document.
+    void commit_chunk_at(Offset offset); // FIXME(bbannier): remove.
+
     /**
      * Cuts off the beginning of the data up to, but excluding, a given
      * iterator. All existing iterators pointing beyond that point will
@@ -1681,6 +1719,8 @@ public:
     static void debugPrint(std::ostream& out, const stream::detail::Chain* chain);
 
 private:
+    friend class stream::detail::AppendLazy;
+
     Stream(Chunk&& ch) : _chain(make_intrusive<Chain>(std::make_unique<Chunk>(std::move(ch)))) {}
 
     ChainPtr _chain; // always non-null
@@ -1705,5 +1745,46 @@ inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
 
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) { return hilti::rt::to_string(x.view()); }
 } // namespace detail::adl
+
+namespace stream::detail {
+
+class AppendLazy {
+public:
+    AppendLazy(const Stream* s, std::string_view data) : _s(s), _o(AppendLazy::append(s, data)) {}
+
+    AppendLazy(const AppendLazy&) = delete;
+    AppendLazy(AppendLazy&&) = default;
+    AppendLazy& operator=(const AppendLazy&) = delete;
+    AppendLazy& operator=(AppendLazy&&) = default;
+
+    void commit() {
+        if ( auto* c = _s->_chain->findChunk(_o) )
+            c->makeOwning(_s->begin().offset(), _s->endOffset());
+    }
+
+    ~AppendLazy() {
+        try {
+            commit();
+        } catch ( ... ) {
+            internalError("error committing chunks");
+        }
+    }
+
+private:
+    static Offset append(const Stream* s, std::string_view data) {
+        // If we append the current end will point into the chunk.
+        auto o = s->endOffset();
+
+        if ( ! data.empty() )
+            s->_chain->append(std::make_unique<Chunk>(0, data));
+        return o;
+    }
+
+    const Stream* _s;
+    Offset _o;
+};
+
+} // namespace stream::detail
+
 
 } // namespace hilti::rt
