@@ -15,8 +15,8 @@ class Expression : public Statement {
 public:
     auto expression() const { return child<hilti::Expression>(0); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& e, Meta meta = {}) {
-        return std::shared_ptr<Expression>(new Expression(ctx, {e}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Expression* e, Meta meta = {}) {
+        return ctx->make<Expression>(ctx, {e}, std::move(meta));
     }
 
 protected:

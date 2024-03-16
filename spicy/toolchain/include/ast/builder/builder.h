@@ -22,8 +22,8 @@ public:
     BuilderBase(ASTContext* ctx) : hilti::Builder(ctx), spicy::builder::NodeFactory(ctx) {}
     BuilderBase(hilti::Builder* builder) : hilti::Builder(builder), builder::NodeFactory(builder->context()) {}
 
-    BuilderBase(ASTContext* context, std::shared_ptr<hilti::statement::Block> block)
-        : hilti::Builder(context, std::move(block)), spicy::builder::NodeFactory(context) {}
+    BuilderBase(ASTContext* context, hilti::statement::Block* block)
+        : hilti::Builder(context, block), spicy::builder::NodeFactory(context) {}
 
     using hilti::Builder::context;
 };
@@ -40,7 +40,7 @@ namespace builder {
  * @param expr the expression to parse
  * @param meta meta information to attach to the resulting expression
  */
-hilti::Result<hilti::ExpressionPtr> parseExpression(Builder* builder, const std::string& expr, const hilti::Meta& meta);
+hilti::Result<hilti::Expression*> parseExpression(Builder* builder, const std::string& expr, const hilti::Meta& meta);
 
 } // namespace builder
 } // namespace spicy

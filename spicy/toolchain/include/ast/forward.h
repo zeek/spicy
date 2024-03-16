@@ -9,8 +9,6 @@
 
 #include <spicy/ast/node-tag.h>
 
-namespace hilti::node {}
-
 namespace hilti {
 class ID;
 class Meta;
@@ -24,6 +22,12 @@ class ExtendedBuilderTemplate;
 namespace spicy {
 
 namespace node = hilti::node; // NOLINT
+
+template<typename T>
+using NodeVector = hilti::NodeVector<T>;
+
+using Node = hilti::Node;
+using Nodes = hilti::Nodes;
 
 class BuilderBase;
 using Builder = hilti::ExtendedBuilderTemplate<BuilderBase>;
@@ -41,8 +45,7 @@ namespace declaration {
 class Hook;
 class UnitHook;
 
-using HookPtr = std::shared_ptr<Hook>;
-using Hooks = std::vector<HookPtr>;
+using Hooks = NodeVector<Hook>;
 } // namespace declaration
 
 namespace operator_ {
@@ -103,8 +106,7 @@ class Unit;
 
 namespace unit {
 class Item;
-using ItemPtr = std::shared_ptr<Item>;
-using Items = std::vector<ItemPtr>;
+using Items = NodeVector<Item>;
 
 namespace item {
 class Field;
@@ -117,26 +119,13 @@ class Variable;
 
 namespace switch_ {
 class Case;
-using CasePtr = std::shared_ptr<Case>;
-using Cases = std::vector<CasePtr>;
+using Cases = NodeVector<Case>;
 }; // namespace switch_
 
-using HookPtr = std::shared_ptr<declaration::Hook>;
-using FieldPtr = std::shared_ptr<Field>;
-using ItemPtr = std::shared_ptr<Item>;
-using PropertyPtr = std::shared_ptr<Property>;
-using SinkPtr = std::shared_ptr<Sink>;
-using VariablePtr = std::shared_ptr<Variable>;
-using SwitchPtr = std::shared_ptr<Switch>;
-using UnitHookPtr = std::shared_ptr<UnitHook>;
-using UnresolvedFieldPtr = std::shared_ptr<UnresolvedField>;
-
-using Properties = std::vector<PropertyPtr>;
+using Properties = NodeVector<Property>;
 } // namespace item
 
 } // namespace unit
-
-using UnitPtr = std::shared_ptr<Unit>;
 
 } // namespace type
 
@@ -154,23 +143,10 @@ using Statement = hilti::Statement;
 using UnqualifiedType = hilti::UnqualifiedType;
 using AttributeSet = hilti::AttributeSet;
 
-using AttributePtr = hilti::AttributePtr;
-using AttributeSetPtr = hilti::AttributeSetPtr;
-using CtorPtr = hilti::CtorPtr;
-using DeclarationPtr = hilti::DeclarationPtr;
-using ExpressionPtr = hilti::ExpressionPtr;
-using FunctionPtr = hilti::FunctionPtr;
-using NodePtr = hilti::NodePtr;
-using StatementPtr = hilti::StatementPtr;
-using QualifiedTypePtr = hilti::QualifiedTypePtr;
-using UnqualifiedTypePtr = hilti::UnqualifiedTypePtr;
-using ModulePtr = hilti::ModulePtr;
-using ASTRootPtr = hilti::ASTRootPtr;
-
-using Nodes = hilti::Nodes;
-using Expressions = hilti::Expressions;
-using Statements = hilti::Statements;
 using Declarations = hilti::Declarations;
+using Expressions = hilti::Expressions;
+using QualifiedTypes = hilti::QualifiedTypes;
+using Statements = hilti::Statements;
 
 using ASTContext = hilti::ASTContext;
 using Meta = hilti::Meta;

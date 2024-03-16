@@ -8,6 +8,7 @@
 #include <hilti/ast/operators/common.h>
 
 #include <spicy/ast/forward.h>
+#include <spicy/ast/node.h>
 
 namespace spicy {
 
@@ -35,19 +36,19 @@ namespace unit {
 
 class MemberCall final : public hilti::Operator {
 public:
-    MemberCall(const type::unit::item::FieldPtr& field);
+    MemberCall(type::unit::item::Field* field);
     ~MemberCall() final;
 
-    auto field() const { return _field.lock(); }
+    auto field() const { return _field; }
 
     hilti::operator_::Signature signature(hilti::Builder* builder) const final;
-    hilti::Result<hilti::ResolvedOperatorPtr> instantiate(hilti::Builder* builder, Expressions operands,
-                                                          const Meta& meta) const final;
+    hilti::Result<hilti::expression::ResolvedOperator*> instantiate(hilti::Builder* builder, Expressions operands,
+                                                                    Meta meta) const final;
 
     std::string name() const final { return "unit::MemberCall"; }
 
 private:
-    std::weak_ptr<type::unit::item::Field> _field;
+    type::unit::item::Field* _field = nullptr;
 };
 
 } // namespace unit

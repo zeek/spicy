@@ -25,14 +25,14 @@ using namespace hilti;
 namespace {
 
 struct Visitor : visitor::PostOrder {
-    explicit Visitor(Builder* builder, const ASTRootPtr& root) : root(root), builder(builder) {}
+    explicit Visitor(Builder* builder, ASTRoot* root) : root(root), builder(builder) {}
 
-    const ASTRootPtr& root;
+    ASTRoot* root = nullptr;
     Builder* builder;
 
-    void operator()(declaration::Constant* n) final { n->parent()->getOrCreateScope()->insert(n->as<Declaration>()); }
+    void operator()(declaration::Constant* n) final { n->parent()->getOrCreateScope()->insert(n); }
 
-    void operator()(declaration::Expression* n) final { n->parent()->getOrCreateScope()->insert(n->as<Declaration>()); }
+    void operator()(declaration::Expression* n) final { n->parent()->getOrCreateScope()->insert(n); }
 
     void operator()(declaration::Function* n) final {
         auto x = n->parent();
@@ -41,10 +41,10 @@ struct Visitor : visitor::PostOrder {
         assert(module);
 
         if ( ! n->id().namespace_() || n->id().namespace_() == module->id().namespace_() )
-            x->getOrCreateScope()->insert(n->id().local(), n->as<Declaration>());
+            x->getOrCreateScope()->insert(n->id().local(), n);
 
         for ( auto x : n->function()->ftype()->parameters() )
-            n->getOrCreateScope()->insert(std::move(x));
+            n->getOrCreateScope()->insert(x);
 
         if ( n->linkage() == declaration::Linkage::Struct ) {
             if ( ! n->id().namespace_() ) {
@@ -59,14 +59,14 @@ struct Visitor : visitor::PostOrder {
                 n->getOrCreateScope()->insert(t->self());
 
                 for ( auto x : t->parameters() )
-                    n->getOrCreateScope()->insert(std::move(x));
+                    n->getOrCreateScope()->insert(x);
             }
         }
     }
 
     void operator()(declaration::GlobalVariable* n) final {
         if ( n->parent()->isA<declaration::Module>() )
-            n->parent()->getOrCreateScope()->insert(n->as<declaration::GlobalVariable>());
+            n->parent()->getOrCreateScope()->insert(n);
     }
 
     void operator()(declaration::ImportedModule* n) final {
@@ -86,7 +86,7 @@ struct Visitor : visitor::PostOrder {
     }
 
     void operator()(declaration::Module* n) final {
-        auto m = n->as<declaration::Module>();
+        auto m = n;
 
         // Insert into the module's own scope so that IDs inside the module can
         // be qualified with the module's own name. We insert it under
@@ -102,18 +102,18 @@ struct Visitor : visitor::PostOrder {
 
     void operator()(declaration::Type* n) final {
         if ( n->parent()->isA<declaration::Module>() )
-            n->parent()->getOrCreateScope()->insert(n->as<declaration::Type>());
+            n->parent()->getOrCreateScope()->insert(n);
     }
 
     void operator()(declaration::Field* n) final {
         if ( auto func = n->inlineFunction() ) {
             for ( auto x : func->ftype()->parameters() )
-                n->getOrCreateScope()->insert(std::move(x));
+                n->getOrCreateScope()->insert(x);
         }
 
         if ( n->isStatic() )
             // Insert static member into struct's namespace.
-            n->parent(3)->getOrCreateScope()->insert(n->as<Declaration>());
+            n->parent(3)->getOrCreateScope()->insert(n);
     }
 
     void operator()(expression::ListComprehension* n) final { n->getOrCreateScope()->insert(n->local()); }
@@ -131,17 +131,17 @@ struct Visitor : visitor::PostOrder {
 
     void operator()(statement::try_::Catch* n) final {
         if ( auto x = n->parameter() )
-            n->getOrCreateScope()->insert(std::move(x));
+            n->getOrCreateScope()->insert(x);
     }
 
     void operator()(statement::While* n) final {
         if ( auto x = n->init() )
-            n->getOrCreateScope()->insert(std::move(x));
+            n->getOrCreateScope()->insert(x);
     }
 
     void operator()(type::bitfield::BitRange* n) final {
         if ( auto d = n->dd() )
-            n->scope()->insert(std::move(d));
+            n->scope()->insert(d);
     }
 
     void operator()(type::Enum* n) final {
@@ -151,13 +151,13 @@ struct Visitor : visitor::PostOrder {
         if ( ! n->typeID() )
             return;
 
-        for ( const auto& d : n->as<type::Enum>()->labelDeclarations() )
+        for ( const auto& d : n->labelDeclarations() )
             n->parent(2)->getOrCreateScope()->insert(d);
     }
 
     void operator()(type::Struct* n) final {
         for ( auto x : n->parameters() )
-            n->getOrCreateScope()->insert(std::move(x));
+            n->getOrCreateScope()->insert(x);
 
         if ( n->typeID() )
             // We need to associate the type ID with the `self` declaration,
@@ -168,7 +168,7 @@ struct Visitor : visitor::PostOrder {
 
 } // anonymous namespace
 
-void detail::scope_builder::build(Builder* builder, const ASTRootPtr& root) {
+void detail::scope_builder::build(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/ast/scope-builder");
     ::hilti::visitor::visit(Visitor(builder, root), root);
 }

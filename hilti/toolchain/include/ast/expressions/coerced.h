@@ -15,11 +15,10 @@ class Coerced : public Expression {
 public:
     auto expression() const { return child<Expression>(0); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(1); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const QualifiedTypePtr& target,
-                       const Meta& meta = {}) {
-        return std::shared_ptr<Coerced>(new Coerced(ctx, {expr, target}, meta));
+    static auto create(ASTContext* ctx, Expression* expr, QualifiedType* target, Meta meta = {}) {
+        return ctx->make<Coerced>(ctx, {expr, target}, std::move(meta));
     }
 
 protected:

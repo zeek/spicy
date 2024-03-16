@@ -15,8 +15,8 @@ class Declaration : public Statement {
 public:
     auto declaration() const { return child<::hilti::Declaration>(0); }
 
-    static auto create(ASTContext* ctx, const hilti::DeclarationPtr& d, Meta meta = {}) {
-        return std::shared_ptr<Declaration>(new Declaration(ctx, {d}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Declaration* d, Meta meta = {}) {
+        return ctx->make<Declaration>(ctx, {d}, std::move(meta));
     }
 
 protected:

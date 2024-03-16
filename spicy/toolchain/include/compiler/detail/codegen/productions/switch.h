@@ -19,15 +19,15 @@ namespace spicy::detail::codegen::production {
  */
 class Switch : public Production {
 public:
-    using Cases = std::vector<std::pair<std::vector<ExpressionPtr>, std::unique_ptr<Production>>>;
+    using Cases = std::vector<std::pair<std::vector<Expression*>, std::unique_ptr<Production>>>;
 
-    Switch(ASTContext* /* ctx */, const std::string& symbol, ExpressionPtr expr, Cases cases,
-           std::unique_ptr<Production> default_, AttributeSetPtr attributes, const Location& l = location::None)
+    Switch(ASTContext* /* ctx */, const std::string& symbol, Expression* expr, Cases cases,
+           std::unique_ptr<Production> default_, AttributeSet* attributes, const Location& l = location::None)
         : Production(symbol, l),
-          _expression(std::move(expr)),
+          _expression(expr),
           _cases(std::move(cases)),
           _default(std::move(default_)),
-          _attributes(std::move(attributes)) {}
+          _attributes(attributes) {}
 
     const auto& cases() const { return _cases; }
     const auto* default_() const { return _default.get(); }
@@ -42,7 +42,7 @@ public:
     bool isNullable() const final { return production::isNullable(rhss()); };
     bool isTerminal() const final { return false; };
 
-    ExpressionPtr expression() const final { return _expression; }
+    Expression* expression() const final { return _expression; }
     std::vector<std::vector<Production*>> rhss() const final;
 
     std::string dump() const final;
@@ -50,10 +50,10 @@ public:
     SPICY_PRODUCTION
 
 private:
-    ExpressionPtr _expression;
+    Expression* _expression = nullptr;
     Cases _cases;
     std::unique_ptr<Production> _default;
-    AttributeSetPtr _attributes;
+    AttributeSet* _attributes = nullptr;
 };
 
 } // namespace spicy::detail::codegen::production

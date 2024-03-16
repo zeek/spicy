@@ -16,7 +16,7 @@ namespace spicy::detail::codegen::production {
 /** A literal represented by a ctor. */
 class Ctor : public Production {
 public:
-    Ctor(ASTContext* ctx, const std::string& symbol, const CtorPtr& ctor, const Location& l = location::None)
+    Ctor(ASTContext* ctx, const std::string& symbol, hilti::Ctor* ctor, const Location& l = location::None)
         : Production(symbol, l), _ctor(hilti::expression::Ctor::create(ctx, ctor)) {
         assert(_ctor->isA<hilti::expression::Ctor>());
     }
@@ -30,8 +30,8 @@ public:
     bool isTerminal() const final { return true; };
 
     // std::vector<std::vector<Production*>> rhss() const final { return {}; };
-    ExpressionPtr expression() const final { return _ctor; }
-    QualifiedTypePtr type() const final { return _ctor->type(); };
+    Expression* expression() const final { return _ctor; }
+    QualifiedType* type() const final { return _ctor->type(); };
 
     int64_t tokenID() const final {
         return static_cast<int64_t>(Production::tokenID(hilti::util::fmt("%s|%s", *_ctor, *_ctor->type())));
@@ -42,7 +42,7 @@ public:
     SPICY_PRODUCTION
 
 private:
-    ExpressionPtr _ctor;
+    Expression* _ctor = nullptr;
 };
 
 } // namespace spicy::detail::codegen::production

@@ -19,7 +19,7 @@ using namespace hilti::operator_;
 namespace {
 namespace bitfield {
 
-QualifiedTypePtr _itemType(Builder* builder, const Expressions& operands) {
+QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
     if ( auto range =
              operands[0]->type()->type()->as<type::Bitfield>()->bits(operands[1]->as<expression::Member>()->id()) )
         return range->itemType();
@@ -48,7 +48,7 @@ right.
 )"};
     }
 
-    QualifiedTypePtr result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return _itemType(builder, operands);
     }
 

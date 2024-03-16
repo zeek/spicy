@@ -5,7 +5,7 @@
 
 using namespace spicy;
 
-hilti::Result<hilti::ExpressionPtr> builder::parseExpression(Builder* builder, const std::string& expr,
-                                                             const hilti::Meta& meta) {
+hilti::Result<hilti::Expression*> builder::parseExpression(Builder* builder, const std::string& expr,
+                                                           const hilti::Meta& meta) {
     return detail::parser::parseExpression(builder, expr, meta);
 }

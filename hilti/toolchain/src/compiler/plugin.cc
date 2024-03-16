@@ -64,14 +64,14 @@ Plugin hilti::detail::createHiltiPlugin() {
         .parse = [](Builder* builder, std::istream& in,
                     const hilti::rt::filesystem::path& path) { return parser::parseSource(builder, in, path); },
 
-        .coerce_ctor = [](Builder* builder, const CtorPtr& c, const QualifiedTypePtr& dst,
+        .coerce_ctor = [](Builder* builder, Ctor* c, QualifiedType* dst,
                           bitmask<CoercionStyle> style) { return coercer::detail::coerceCtor(builder, c, dst, style); },
 
-        .coerce_type = [](Builder* builder, const QualifiedTypePtr& t, const QualifiedTypePtr& dst,
+        .coerce_type = [](Builder* builder, QualifiedType* t, QualifiedType* dst,
                           bitmask<CoercionStyle> style) { return coercer::detail::coerceType(builder, t, dst, style); },
 
         .ast_init =
-            [](Builder* builder, const ASTRootPtr& root) {
+            [](Builder* builder, ASTRoot* root) {
                 util::timing::Collector _("hilti/compiler/ast/init");
 
                 if ( builder->options().import_standard_modules )
@@ -79,21 +79,21 @@ Plugin hilti::detail::createHiltiPlugin() {
             },
 
         .ast_build_scopes =
-            [](Builder* builder, const ASTRootPtr& root) {
+            [](Builder* builder, ASTRoot* root) {
                 scope_builder::build(builder, root);
                 return false;
             },
 
-        .ast_resolve = [](Builder* builder, const NodePtr& root) { return resolver::resolve(builder, root); },
+        .ast_resolve = [](Builder* builder, Node* root) { return resolver::resolve(builder, root); },
 
         .ast_validate_pre =
-            [](Builder* builder, const ASTRootPtr& m) {
+            [](Builder* builder, ASTRoot* m) {
                 validator::detail::validatePre(builder, m);
                 return false;
             },
 
         .ast_validate_post =
-            [](Builder* builder, const ASTRootPtr& root) {
+            [](Builder* builder, ASTRoot* root) {
                 validator::detail::validatePost(builder, root);
                 return false;
             },

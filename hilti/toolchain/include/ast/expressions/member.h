@@ -17,16 +17,15 @@ class Member : public Expression {
 public:
     const auto& id() const { return _id; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"id", _id}};
         return Expression::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& member_type, const hilti::ID& id,
-                       const Meta& meta = {}) {
-        return std::shared_ptr<Member>(new Member(ctx, {member_type}, id, meta));
+    static auto create(ASTContext* ctx, QualifiedType* member_type, const hilti::ID& id, Meta meta = {}) {
+        return ctx->make<Member>(ctx, {member_type}, id, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, const hilti::ID& id, const Meta& meta = {}) {

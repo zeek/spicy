@@ -269,7 +269,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
 } // anonymous namespace
 
-cxx::Expression CodeGen::compile(const CtorPtr& c, bool lhs) {
+cxx::Expression CodeGen::compile(Ctor* c, bool lhs) {
     auto v = Visitor(this);
     if ( auto x = hilti::visitor::dispatch(v, c, [](const auto& v) { return v.result; }) )
         return lhs ? _makeLhs(*x, c->type()) : *x;

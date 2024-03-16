@@ -28,24 +28,23 @@ public:
 
     bool isOptional() const { return attributes()->has("&optional"); }
 
-    QualifiedTypePtr itemType() const final { return child<QualifiedType>(0); }
+    QualifiedType* itemType() const final { return child<QualifiedType>(0); }
 
     bool isResolved(hilti::node::CycleDetector* cd) const final { return itemType()->isResolved(cd); }
 
     std::string_view displayName() const final { return "unit variable"; }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedTypePtr type, ExpressionPtr default_, AttributeSetPtr attrs,
-                       const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Expression* default_, AttributeSet* attrs,
+                       Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Variable>(
-            new Variable(ctx, {std::move(type), std::move(default_), attrs}, std::move(id), meta));
+        return ctx->make<Variable>(ctx, {type, default_, attrs}, std::move(id), std::move(meta));
     }
 
 protected:
-    Variable(ASTContext* ctx, Nodes children, ID id, const Meta& meta)
-        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), meta) {}
+    Variable(ASTContext* ctx, Nodes children, ID id, Meta meta)
+        : unit::Item(ctx, NodeTags, std::move(children), std::move(id), std::move(meta)) {}
 
     SPICY_NODE_2(type::unit::item::Variable, type::unit::Item, Declaration, final);
 };

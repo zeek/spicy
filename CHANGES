@@ -1,3 +1,24 @@
+1.11.0-dev.50 | 2024-03-16 08:55:11 +0100
+
+  * Rework memory management for AST nodes. (Robin Sommer, Corelight)
+
+    We switch memory management of AST nodes to an arena/bump allocator
+    that releases them as a whole once the AST gets destroyed, not
+    individually/continiously through their own life-time scoping. This
+    then allows us to also switch them from `shared_ptr` to raw pointers
+    throughout the AST code. The result is a compiler speed up of about
+    20% for some complex analyzer.
+
+  * Centralize the `vector` type we use for storing AST nodes. (Robin Sommer, Corelight)
+
+    No functional change, this just unifies the various vectors of
+    `Node`-derived classes so that there's a central place where to define
+    the underlying vector type. For now this is just for easier
+    maintenance. In the future we could experiment with different vector
+    or allocator implementations.
+
+  * Make node tags `constexpr`. (Robin Sommer, Corelight)
+
 1.11.0-dev.45 | 2024-03-15 15:11:26 +0100
 
   * Fix broken f-string. (Benjamin Bannier, Corelight)

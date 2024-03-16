@@ -9,12 +9,12 @@
 
 using namespace hilti;
 
-QualifiedTypePtr expression::Name::type() const {
+QualifiedType* expression::Name::type() const {
     struct Visitor : hilti::visitor::PreOrder {
         Visitor(const Name* name) : name(name) {}
 
         const Name* name = nullptr;
-        QualifiedTypePtr result = nullptr;
+        QualifiedType* result = nullptr;
 
         void operator()(declaration::Constant* n) final { result = n->type(); }
         void operator()(declaration::Expression* n) final { result = n->expression()->type(); }

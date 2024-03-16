@@ -43,10 +43,10 @@ class SignedInteger : public detail::IntegerBase {
 public:
     std::string_view typeClass() const final { return "int"; }
 
-    static std::shared_ptr<SignedInteger> create(ASTContext* ctx, unsigned int width, const Meta& m = Meta());
+    static SignedInteger* create(ASTContext* ctx, unsigned int width, const Meta& m = Meta());
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<SignedInteger>(new SignedInteger(ctx, Wildcard(), m));
+        return ctx->make<SignedInteger>(ctx, Wildcard(), m);
     }
 
 protected:
@@ -63,10 +63,10 @@ class UnsignedInteger : public detail::IntegerBase {
 public:
     std::string_view typeClass() const final { return "uint"; }
 
-    static std::shared_ptr<UnsignedInteger> create(ASTContext* ctx, unsigned int width, const Meta& m = Meta());
+    static UnsignedInteger* create(ASTContext* ctx, unsigned int width, const Meta& m = Meta());
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<UnsignedInteger>(new UnsignedInteger(ctx, Wildcard(), m));
+        return ctx->make<UnsignedInteger>(ctx, Wildcard(), m);
     }
 
 protected:

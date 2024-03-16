@@ -43,15 +43,15 @@ public:
 
     auto preprocessedExpressions() const { return children<hilti::Expression>(_end_exprs, {}); }
 
-    static auto create(ASTContext* ctx, const Expressions& exprs, const StatementPtr& body, Meta meta = {}) {
-        return std::shared_ptr<Case>(new Case(ctx, node::flatten(body, exprs), std::move(meta)));
+    static auto create(ASTContext* ctx, const Expressions& exprs, Statement* body, Meta meta = {}) {
+        return ctx->make<Case>(ctx, node::flatten(body, exprs), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const StatementPtr& body, Meta meta = {}) {
+    static auto create(ASTContext* ctx, hilti::Expression* expr, Statement* body, Meta meta = {}) {
         return create(ctx, Expressions{expr}, body, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, switch_::Default /*unused*/, const StatementPtr& body, Meta meta = {}) {
+    static auto create(ASTContext* ctx, switch_::Default /*unused*/, Statement* body, Meta meta = {}) {
         return create(ctx, Expressions{}, body, std::move(meta));
     }
 
@@ -84,8 +84,7 @@ private:
     int _end_exprs;
 };
 
-using CasePtr = std::shared_ptr<Case>;
-using Cases = std::vector<CasePtr>;
+using Cases = NodeVector<Case>;
 
 } // namespace switch_
 
@@ -95,7 +94,7 @@ public:
     auto condition() const { return child<declaration::LocalVariable>(0); }
     auto cases() const { return children<switch_::Case>(1, {}); }
 
-    switch_::CasePtr default_() const {
+    switch_::Case* default_() const {
         for ( const auto& c : cases() ) {
             if ( c->isDefault() )
                 return c;
@@ -115,16 +114,16 @@ public:
     }
 
 
-    void addCase(ASTContext* ctx, const switch_::CasePtr& c) {
+    void addCase(ASTContext* ctx, switch_::Case* c) {
         addChild(ctx, c);
         _preprocessed = false;
     }
 
-    static auto create(ASTContext* ctx, DeclarationPtr cond, const switch_::Cases& cases, Meta meta = {}) {
-        return std::shared_ptr<Switch>(new Switch(ctx, node::flatten(std::move(cond), cases), std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Declaration* cond, const switch_::Cases& cases, Meta meta = {}) {
+        return ctx->make<Switch>(ctx, node::flatten(cond, cases), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const switch_::Cases& cases, Meta meta = {}) {
+    static auto create(ASTContext* ctx, hilti::Expression* cond, const switch_::Cases& cases, Meta meta = {}) {
         return create(ctx, declaration::LocalVariable::create(ctx, ID("__x"), cond), cases, std::move(meta));
     }
 

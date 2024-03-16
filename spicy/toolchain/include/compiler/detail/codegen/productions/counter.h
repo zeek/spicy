@@ -19,9 +19,9 @@ namespace spicy::detail::codegen::production {
  */
 class Counter : public Production {
 public:
-    Counter(ASTContext* /* ctx */, const std::string& symbol, ExpressionPtr e, std::unique_ptr<Production> body,
+    Counter(ASTContext* /* ctx */, const std::string& symbol, Expression* e, std::unique_ptr<Production> body,
             const Location& l = location::None)
-        : Production(symbol, l), _expression(std::move(e)), _body(std::move(body)) {}
+        : Production(symbol, l), _expression(e), _body(std::move(body)) {}
 
     auto body() const { return _body.get(); }
 
@@ -30,7 +30,7 @@ public:
     bool isLiteral() const final { return false; };
     bool isNullable() const final { return production::isNullable(rhss()); };
     bool isTerminal() const final { return false; };
-    ExpressionPtr expression() const final { return _expression; }
+    Expression* expression() const final { return _expression; }
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
     std::string dump() const override { return hilti::util::fmt("counter(%s): %s", _expression, _body->symbol()); }
@@ -38,7 +38,7 @@ public:
     SPICY_PRODUCTION
 
 private:
-    ExpressionPtr _expression;
+    Expression* _expression = nullptr;
     std::unique_ptr<Production> _body;
 };
 

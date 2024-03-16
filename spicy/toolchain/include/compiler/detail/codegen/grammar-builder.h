@@ -40,7 +40,7 @@ public:
      * Generates the grammar for a unit type. The grammar will afterwards be
      * available through `grammar()`.
      */
-    hilti::Result<hilti::Nothing> run(const std::shared_ptr<type::Unit>& unit);
+    hilti::Result<hilti::Nothing> run(type::Unit* unit);
 
     /**
      * Returns the grammar for a unit type. The type must have been computed

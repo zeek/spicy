@@ -15,11 +15,11 @@ namespace bytes {
 /** AST node for a bytes iterator type. */
 class Iterator : public UnqualifiedType {
 public:
-    QualifiedTypePtr dereferencedType() const final { return child<QualifiedType>(0); }
+    QualifiedType* dereferencedType() const final { return child<QualifiedType>(0); }
 
-    static auto create(ASTContext* ctx, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Meta meta = {}) {
         auto etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::Const, meta);
-        return std::shared_ptr<Iterator>(new Iterator(ctx, {etype}, meta));
+        return ctx->make<Iterator>(ctx, {etype}, std::move(meta));
     }
 
     std::string_view typeClass() const final { return "iterator<bytes>"; }
@@ -39,12 +39,13 @@ protected:
 /** AST node for a `bytes` type. */
 class Bytes : public UnqualifiedType {
 public:
-    QualifiedTypePtr elementType() const final { return iteratorType()->type()->dereferencedType(); }
-    QualifiedTypePtr iteratorType() const final { return child<QualifiedType>(0); }
+    QualifiedType* elementType() const final { return iteratorType()->type()->dereferencedType(); }
+    QualifiedType* iteratorType() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        return std::shared_ptr<Bytes>(
-            new Bytes(ctx, {QualifiedType::create(ctx, bytes::Iterator::create(ctx, meta), Constness::Mutable)}, meta));
+        return ctx->make<Bytes>(ctx,
+                                {QualifiedType::create(ctx, bytes::Iterator::create(ctx, meta), Constness::Mutable)},
+                                meta);
     }
 
     std::string_view typeClass() const final { return "bytes"; }

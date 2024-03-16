@@ -17,9 +17,7 @@ public:
     bool isAllocable() const final { return true; }
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Real>(new Real(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Real>(ctx, std::move(meta)); }
 
 protected:
     Real(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"real"}, std::move(meta)) {}

@@ -10,9 +10,8 @@ using namespace hilti;
 using namespace hilti::type;
 
 
-QualifiedTypePtr operand_list::Operand::_makeOperandType(ASTContext* ctx, parameter::Kind kind,
-                                                         const UnqualifiedTypePtr& type) {
-    QualifiedTypePtr qtype;
+QualifiedType* operand_list::Operand::_makeOperandType(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type) {
+    QualifiedType* qtype = nullptr;
 
     switch ( kind ) {
         case parameter::Kind::In:

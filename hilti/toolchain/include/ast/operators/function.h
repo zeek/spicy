@@ -19,18 +19,18 @@ namespace function {
 
 class Call final : public Operator {
 public:
-    Call(const std::shared_ptr<declaration::Function>& f) : Operator(f->meta(), false), _fdecl(f) {}
+    Call(declaration::Function* f) : Operator(f->meta(), false), _fdecl(f) {}
 
     operator_::Signature signature(Builder* builder) const final;
 
-    Result<ResolvedOperatorPtr> instantiate(Builder* builder, Expressions operands, const Meta& meta) const final;
+    Result<expression::ResolvedOperator*> instantiate(Builder* builder, Expressions operands, Meta meta) const final;
 
     std::string name() const final { return "function::Call"; }
 
 private:
     friend class declaration::Function;
 
-    std::weak_ptr<declaration::Function> _fdecl;
+    declaration::Function* _fdecl = nullptr;
 };
 
 } // namespace function

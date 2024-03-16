@@ -34,13 +34,13 @@ public:
     }
 
     /** Returns the type set through ``%context`, if available and resolved already. */
-    UnqualifiedTypePtr contextType() const { return child<UnqualifiedType>(2); }
+    UnqualifiedType* contextType() const { return child<UnqualifiedType>(2); }
 
     /**
      * Returns the item of a given name if it exists. This descends
      * recursively into children as well.
      */
-    unit::ItemPtr itemByName(const ID& id) const;
+    unit::Item* itemByName(const ID& id) const;
 
     /**
      * Returns all of the unit's items of a particular subtype T.
@@ -54,7 +54,7 @@ public:
      * Returns the property of a given name if it exists. If it exists more
      * than once, it's undefined which one is returned.
      */
-    type::unit::item::PropertyPtr propertyItem(const std::string& name) const;
+    type::unit::item::Property* propertyItem(const std::string& name) const;
 
     /** Returns all properties of a given name. */
     unit::item::Properties propertyItems(const std::string& name) const;
@@ -72,8 +72,7 @@ public:
      * bitfield, and the bitrange within it named *id*; if not successful, a
      * pair of null pointers
      */
-    std::pair<unit::item::FieldPtr, std::shared_ptr<hilti::type::bitfield::BitRange>> findRangeInAnonymousBitField(
-        const ID& id) const;
+    std::pair<unit::item::Field*, hilti::type::bitfield::BitRange*> findRangeInAnonymousBitField(const ID& id) const;
 
     /**
      * Returns true if the unit has been declared as publically/externally
@@ -99,8 +98,8 @@ public:
         _assignItemIndices();
     }
 
-    void setAttributes(ASTContext* ctx, const AttributeSetPtr& attrs) { setChild(ctx, 1, attrs); }
-    void setContextType(ASTContext* ctx, const UnqualifiedTypePtr& type) { setChild(ctx, 2, type); }
+    void setAttributes(ASTContext* ctx, AttributeSet* attrs) { setChild(ctx, 1, attrs); }
+    void setContextType(ASTContext* ctx, UnqualifiedType* type) { setChild(ctx, 2, type); }
     void setGrammar(std::shared_ptr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
     void setPublic(bool p) { _public = p; }
 
@@ -119,28 +118,28 @@ public:
     }
 
     static auto create(ASTContext* ctx, const hilti::declaration::Parameters& params, type::unit::Items items,
-                       AttributeSetPtr attrs, const Meta& meta = {}) {
+                       AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = hilti::AttributeSet::create(ctx);
 
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        auto t = std::shared_ptr<Unit>(
-            new Unit(ctx, node::flatten(nullptr, attrs, nullptr, params, std::move(items)), meta));
+        auto t =
+            ctx->make<Unit>(ctx, node::flatten(nullptr, attrs, nullptr, params, std::move(items)), std::move(meta));
 
         t->_setSelf(ctx);
         return t;
     }
 
-    static auto create(ASTContext* ctx, hilti::type::Wildcard _, const Meta& meta = {}) {
-        return std::shared_ptr<Unit>(
-            new Unit(ctx, hilti::type::Wildcard(), {nullptr, AttributeSet::create(ctx), nullptr}, meta));
+    static auto create(ASTContext* ctx, hilti::type::Wildcard _, Meta meta = {}) {
+        return ctx->make<Unit>(ctx, hilti::type::Wildcard(), {nullptr, AttributeSet::create(ctx), nullptr},
+                               std::move(meta));
     }
 
 protected:
-    Unit(ASTContext* ctx, const Nodes& children, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, {}, children, meta) {
+    Unit(ASTContext* ctx, const Nodes& children, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, {}, children, std::move(meta)) {
         _assignItemIndices();
     }
 

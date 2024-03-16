@@ -16,10 +16,10 @@ namespace spicy::detail::codegen::production {
 /** A production simply skipping input data. */
 class Skip : public Production {
 public:
-    Skip(ASTContext* ctx, const std::string& symbol, type::unit::item::FieldPtr field, std::unique_ptr<Production> ctor,
+    Skip(ASTContext* ctx, const std::string& symbol, type::unit::item::Field* field, std::unique_ptr<Production> ctor,
          const Location& l = location::None)
         : Production(symbol, l),
-          _field(std::move(field)),
+          _field(field),
           _ctor(std::move(ctor)),
           _void(QualifiedType::create(ctx, hilti::type::Void::create(ctx), hilti::Constness::Const)) {}
 
@@ -32,7 +32,7 @@ public:
     bool isNullable() const final { return false; };
     bool isTerminal() const final { return true; };
 
-    QualifiedTypePtr type() const final { return _void; };
+    QualifiedType* type() const final { return _void; };
 
     std::string dump() const override {
         return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : _field->print());
@@ -41,9 +41,9 @@ public:
     SPICY_PRODUCTION
 
 private:
-    type::unit::item::FieldPtr _field; // stores a shallow copy of the reference passed into ctor
+    type::unit::item::Field* _field = nullptr; // stores a shallow copy of the reference passed into ctor
     std::unique_ptr<Production> _ctor;
-    QualifiedTypePtr _void;
+    QualifiedType* _void = nullptr;
 };
 
 } // namespace spicy::detail::codegen::production

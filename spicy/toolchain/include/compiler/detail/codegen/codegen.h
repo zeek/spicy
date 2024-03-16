@@ -45,19 +45,16 @@ public:
     const auto& options() const { return compilerContext()->options(); }
 
     /** Entry point for transformation from a Spicy AST to a HILTI AST. */
-    bool compileAST(const ASTRootPtr& root);
+    bool compileAST(hilti::ASTRoot* root);
 
     /** Turns a Spicy unit into a HILTI struct, along with all the necessary implementation code. */
-    UnqualifiedTypePtr compileUnit(
-        const type::UnitPtr& unit,
+    UnqualifiedType* compileUnit(
+        type::Unit* unit,
         bool declare_only = true); // Compiles a Unit type into its HILTI struct representation.
 
-    std::shared_ptr<hilti::declaration::Function> compileHook(const type::Unit& unit, const ID& id,
-                                                              std::shared_ptr<type::unit::item::Field> field,
-                                                              bool foreach, bool debug,
-                                                              hilti::type::function::Parameters params,
-                                                              const hilti::StatementPtr& body,
-                                                              const ExpressionPtr& priority, const hilti::Meta& meta);
+    hilti::declaration::Function* compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
+                                              bool foreach, bool debug, hilti::type::function::Parameters params,
+                                              hilti::Statement* body, Expression* priority, const hilti::Meta& meta);
 
     // These must be called only while a module is being compiled.
     codegen::ParserBuilder* parserBuilder() { return &_pb; }
@@ -75,16 +72,16 @@ public:
      * We leave the latter to a later stage, which will replace all recorded
      * mappings at the end when its safe to modify the AST.
      */
-    auto recordTypeMapping(UnqualifiedType* from, UnqualifiedTypePtr to) { _type_mappings[from] = std::move(to); }
+    auto recordTypeMapping(UnqualifiedType* from, UnqualifiedType* to) { _type_mappings[from] = to; }
 
     /**
      * Records a new declaration to be added to the current module. The
      * additional will be performed at the end of codegen when its safe to
      * modify the AST.
      */
-    void addDeclaration(DeclarationPtr d) {
+    void addDeclaration(Declaration* d) {
         _decls_added.insert(d->id());
-        _new_decls.push_back(std::move(d));
+        _new_decls.push_back(d);
     }
 
     /**
@@ -94,7 +91,7 @@ public:
     bool haveAddedDeclaration(const ID& id) { return _decls_added.find(id) != _decls_added.end(); }
 
 private:
-    bool _compileModule(const ModulePtr& module, int pass);
+    bool _compileModule(hilti::declaration::Module* module, int pass);
     void _updateDeclarations(visitor::MutatingPostOrder* v, hilti::declaration::Module* module);
 
     Builder* _builder;
@@ -102,7 +99,7 @@ private:
     codegen::ParserBuilder _pb;
 
     std::vector<hilti::declaration::Property> _properties;
-    std::map<UnqualifiedType*, UnqualifiedTypePtr> _type_mappings;
+    std::map<UnqualifiedType*, UnqualifiedType*> _type_mappings;
 
     hilti::declaration::Module* _hilti_module = nullptr;
     Declarations _new_decls;

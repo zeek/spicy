@@ -15,14 +15,14 @@ namespace spicy::type {
 /** AST node for a Sink type. */
 class Sink : public UnqualifiedType {
 public:
-    static auto create(ASTContext* ctx, const Meta& meta = {}) { return std::shared_ptr<Sink>(new Sink(ctx, meta)); }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Sink>(ctx, std::move(meta)); }
 
     std::string_view typeClass() const final { return "sink"; }
 
     bool isAllocable() const final { return true; }
 
 protected:
-    Sink(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {"sink"}, meta) {}
+    Sink(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {"sink"}, std::move(meta)) {}
 
     SPICY_NODE_1(type::Sink, UnqualifiedType, final);
 };

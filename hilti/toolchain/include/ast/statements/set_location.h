@@ -14,8 +14,8 @@ class SetLocation : public Statement {
 public:
     auto expression() const { return child<::hilti::Expression>(0); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, Meta meta = {}) {
-        return std::shared_ptr<SetLocation>(new SetLocation(ctx, {expr}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Expression* expr, Meta meta = {}) {
+        return ctx->make<SetLocation>(ctx, {expr}, std::move(meta));
     }
 
 protected:

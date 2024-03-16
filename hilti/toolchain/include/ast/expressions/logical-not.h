@@ -16,15 +16,15 @@ class LogicalNot : public Expression {
 public:
     auto expression() const { return child<Expression>(0); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(1); }
 
-    void setExpression(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 0, std::move(e)); }
+    void setExpression(ASTContext* ctx, Expression* e) { setChild(ctx, 0, e); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expression, const Meta& meta = {}) {
-        return std::shared_ptr<LogicalNot>(
-            new LogicalNot(ctx,
-                           {expression, QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)},
-                           meta));
+    static auto create(ASTContext* ctx, Expression* expression, const Meta& meta = {}) {
+        return ctx->make<LogicalNot>(ctx,
+                                     {expression,
+                                      QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)},
+                                     meta);
     }
 
 protected:

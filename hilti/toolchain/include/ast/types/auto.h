@@ -12,14 +12,14 @@ namespace hilti::type {
 /** AST node for an `auto` type. */
 class Auto : public UnqualifiedType {
 public:
-    static auto create(ASTContext* ctx, const Meta& m = Meta()) { return std::shared_ptr<Auto>(new Auto(ctx, m)); }
+    static auto create(ASTContext* ctx, const Meta& m = Meta()) { return ctx->make<Auto>(ctx, m); }
 
     std::string_view typeClass() const final { return "auto"; }
 
     bool isResolved(node::CycleDetector* cd) const final { return false; }
 
 protected:
-    Auto(ASTContext* ctx, const Meta& meta) : UnqualifiedType(ctx, NodeTags, {}, meta) {}
+    Auto(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {}, std::move(meta)) {}
 
 
     HILTI_NODE_1(type::Auto, UnqualifiedType, final);

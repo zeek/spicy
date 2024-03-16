@@ -17,20 +17,20 @@ class StrongReference : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "strong_ref"; }
 
-    QualifiedTypePtr dereferencedType() const final { return child(0)->as<QualifiedType>(); }
+    QualifiedType* dereferencedType() const final { return child(0)->as<QualifiedType>(); }
 
     bool isAllocable() const final { return true; }
     bool isReferenceType() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, Meta meta = {}) {
-        return std::shared_ptr<StrongReference>(new StrongReference(ctx, {type}, std::move(meta)));
+    static auto create(ASTContext* ctx, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<StrongReference>(ctx, {type}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<StrongReference>(
-            new StrongReference(ctx, Wildcard(),
-                                {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)}, m));
+        return ctx->make<StrongReference>(ctx, Wildcard(),
+                                          {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)},
+                                          m);
     }
 
 protected:
@@ -47,19 +47,18 @@ class WeakReference : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "weak_ref"; }
 
-    QualifiedTypePtr dereferencedType() const final { return child(0)->as<QualifiedType>(); }
+    QualifiedType* dereferencedType() const final { return child(0)->as<QualifiedType>(); }
 
     bool isAllocable() const final { return true; }
     bool isReferenceType() const final { return true; }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, Meta meta = {}) {
-        return std::shared_ptr<WeakReference>(new WeakReference(ctx, {type}, std::move(meta)));
+    static auto create(ASTContext* ctx, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<WeakReference>(ctx, {type}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<WeakReference>(
-            new WeakReference(ctx, Wildcard(),
-                              {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)}, m));
+        return ctx->make<WeakReference>(ctx, Wildcard(),
+                                        {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)}, m);
     }
 
 protected:
@@ -78,19 +77,18 @@ class ValueReference : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "value_ref"; }
 
-    QualifiedTypePtr dereferencedType() const final { return child(0)->as<QualifiedType>(); }
+    QualifiedType* dereferencedType() const final { return child(0)->as<QualifiedType>(); }
 
     bool isAllocable() const final { return true; }
     bool isReferenceType() const final { return true; }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, Meta meta = {}) {
-        return std::shared_ptr<ValueReference>(new ValueReference(ctx, {type}, std::move(meta)));
+    static auto create(ASTContext* ctx, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<ValueReference>(ctx, {type}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<ValueReference>(
-            new ValueReference(ctx, Wildcard(),
-                               {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)}, m));
+        return ctx->make<ValueReference>(ctx, Wildcard(),
+                                         {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)}, m);
     }
 
 protected:

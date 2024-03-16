@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace hilti {
@@ -85,8 +86,6 @@ class Module;
 class Parameter;
 class Property;
 class Type;
-
-using ParameterPtr = std::shared_ptr<Parameter>;
 
 } // namespace declaration
 
@@ -710,7 +709,6 @@ class Iterator;
 
 namespace function {
 using Parameter = declaration::Parameter;
-using ParameterPtr = declaration::ParameterPtr;
 } // namespace function
 
 namespace tuple {
@@ -727,35 +725,40 @@ class Operand;
 
 } // namespace type
 
-using ASTRootPtr = std::shared_ptr<ASTRoot>;
-using AttributePtr = std::shared_ptr<Attribute>;
-using AttributeSetPtr = std::shared_ptr<AttributeSet>;
-using CtorPtr = std::shared_ptr<Ctor>;
-using DeclarationPtr = std::shared_ptr<Declaration>;
-using ExpressionPtr = std::shared_ptr<Expression>;
-using FunctionPtr = std::shared_ptr<Function>;
-using ModulePtr = std::shared_ptr<declaration::Module>;
-using NodePtr = std::shared_ptr<Node>;
-using StatementPtr = std::shared_ptr<Statement>;
-using UnqualifiedTypePtr = std::shared_ptr<UnqualifiedType>;
-using QualifiedTypePtr = std::shared_ptr<QualifiedType>;
-using ResolvedOperatorPtr = std::shared_ptr<expression::ResolvedOperator>;
-using UnresolvedOperatorPtr = std::shared_ptr<expression::UnresolvedOperator>;
-using OperandListPtr = std::shared_ptr<type::OperandList>;
-using OperandPtr = std::shared_ptr<type::operand_list::Operand>;
+template<typename T>
+using NodeVector = std::vector<T*>;
 
-using Attributes = std::vector<AttributePtr>;
-using Declarations = std::vector<DeclarationPtr>;
-using Expressions = std::vector<ExpressionPtr>;
-using Statements = std::vector<StatementPtr>;
-using QualifiedTypes = std::vector<QualifiedTypePtr>;
-using UnqualifiedTypes = std::vector<UnqualifiedTypePtr>;
+using Attributes = NodeVector<Attribute>;
+using Declarations = NodeVector<Declaration>;
+using Expressions = NodeVector<Expression>;
+using Statements = NodeVector<Statement>;
+using QualifiedTypes = NodeVector<QualifiedType>;
+using UnqualifiedTypes = NodeVector<UnqualifiedType>;
 
 class Builder;
 using BuilderPtr = std::shared_ptr<Builder>;
 
 class ASTContext;
-class Nodes;
 
+/**
+ * Container storing a set of nodes. This is just our standard vector with an
+ * additional constructor.
+ */
+class Nodes : public NodeVector<Node> {
+public:
+    using NodeVector<Node>::NodeVector;
+
+    /** Constructor accepting a vector of pointers to a derived class. */
+    template<typename T>
+    Nodes(NodeVector<T> m) {
+        reserve(m.size());
+        for ( auto* x : m )
+            emplace_back(x);
+    }
+
+    Nodes() = default;
+    Nodes(const Nodes&) = default;
+    Nodes(Nodes&&) = default;
+};
 
 } // namespace hilti

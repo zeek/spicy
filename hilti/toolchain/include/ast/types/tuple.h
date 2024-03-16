@@ -29,12 +29,12 @@ public:
         return Node::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, Meta meta = {}) {
-        return std::shared_ptr<Element>(new Element(ctx, {type}, std::move(id), std::move(meta)));
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<Element>(ctx, {type}, std::move(id), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, Meta meta = {}) {
-        return std::shared_ptr<Element>(new Element(ctx, {type}, ID(), std::move(meta)));
+    static auto create(ASTContext* ctx, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<Element>(ctx, {type}, ID(), std::move(meta));
     }
 
 protected:
@@ -47,8 +47,7 @@ private:
     ID _id;
 };
 
-using ElementPtr = std::shared_ptr<Element>;
-using Elements = std::vector<std::shared_ptr<Element>>;
+using Elements = NodeVector<Element>;
 
 } // namespace tuple
 
@@ -56,7 +55,7 @@ using Elements = std::vector<std::shared_ptr<Element>>;
 class Tuple : public UnqualifiedType {
 public:
     auto elements() const { return children<tuple::Element>(0, {}); }
-    std::optional<std::pair<int, type::tuple::ElementPtr>> elementByID(const ID& id) const;
+    std::optional<std::pair<int, type::tuple::Element*>> elementByID(const ID& id) const;
 
     std::string_view typeClass() const final { return "tuple"; }
 
@@ -65,23 +64,23 @@ public:
     bool isSortable() const final { return true; }
 
     static auto create(ASTContext* ctx, type::tuple::Elements elements, Meta meta = {}) {
-        return std::shared_ptr<Tuple>(new Tuple(ctx, std::move(elements), std::move(meta)));
+        return ctx->make<Tuple>(ctx, std::move(elements), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const QualifiedTypes& types, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, const QualifiedTypes& types, Meta meta = {}) {
         auto elements = util::transform(types, [&](const auto& t) { return tuple::Element::create(ctx, t, meta); });
-        return std::shared_ptr<Tuple>(new Tuple(ctx, std::move(elements), meta));
+        return ctx->make<Tuple>(ctx, std::move(elements), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Tuple>(new Tuple(ctx, Wildcard(), m));
+        return ctx->make<Tuple>(ctx, Wildcard(), m);
     }
 
 protected:
     Tuple(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Tuple(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"tuple(*)"}, meta) {}
+    Tuple(ASTContext* ctx, Wildcard _, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"tuple(*)"}, std::move(meta)) {}
 
 
     HILTI_NODE_1(type::Tuple, UnqualifiedType, final);

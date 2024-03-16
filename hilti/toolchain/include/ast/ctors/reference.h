@@ -15,17 +15,15 @@ namespace hilti::ctor {
 /** AST node for a `strong_ref<T>` constructor value (which can only be null). */
 class StrongReference : public Ctor {
 public:
-    QualifiedTypePtr dereferencedType() const {
-        return type()->type()->as<type::StrongReference>()->dereferencedType();
-    }
+    QualifiedType* dereferencedType() const { return type()->type()->as<type::StrongReference>()->dereferencedType(); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& t, const Meta& meta = {}) {
-        return CtorPtr(new StrongReference(ctx,
-                                           {QualifiedType::create(ctx, type::StrongReference::create(ctx, t, meta),
-                                                                  Constness::Const)},
-                                           meta));
+    static auto create(ASTContext* ctx, QualifiedType* t, const Meta& meta = {}) {
+        return ctx->make<StrongReference>(ctx,
+                                          {QualifiedType::create(ctx, type::StrongReference::create(ctx, t, meta),
+                                                                 Constness::Const)},
+                                          meta);
     }
 
 protected:
@@ -38,15 +36,15 @@ protected:
 /** AST node for a `weak_ref<T>` constructor value (which can only be null). */
 class WeakReference : public Ctor {
 public:
-    QualifiedTypePtr dereferencedType() const { return type()->type()->as<type::WeakReference>()->dereferencedType(); }
+    QualifiedType* dereferencedType() const { return type()->type()->as<type::WeakReference>()->dereferencedType(); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& t, const Meta& meta = {}) {
-        return CtorPtr(
-            new WeakReference(ctx,
-                              {QualifiedType::create(ctx, type::WeakReference::create(ctx, t, meta), Constness::Const)},
-                              meta));
+    static auto create(ASTContext* ctx, QualifiedType* t, const Meta& meta = {}) {
+        return ctx->make<WeakReference>(ctx,
+                                        {QualifiedType::create(ctx, type::WeakReference::create(ctx, t, meta),
+                                                               Constness::Const)},
+                                        meta);
     }
 
 protected:
@@ -59,16 +57,16 @@ protected:
 /** AST node for a `value_ref<T>` constructor value. */
 class ValueReference : public Ctor {
 public:
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
-    ExpressionPtr expression() const { return child<Expression>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
+    Expression* expression() const { return child<Expression>(1); }
 
-    QualifiedTypePtr dereferencedType() const { return type()->type()->as<type::ValueReference>()->dereferencedType(); }
+    QualifiedType* dereferencedType() const { return type()->type()->as<type::ValueReference>()->dereferencedType(); }
 
-    void setType(ASTContext* ctx, QualifiedTypePtr t) { setChild(ctx, 0, std::move(t)); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Expression* expr, Meta meta = {}) {
         auto auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
-        return std::shared_ptr<ValueReference>(new ValueReference(ctx, {auto_, expr}, meta));
+        return ctx->make<ValueReference>(ctx, {auto_, expr}, std::move(meta));
     }
 
 protected:

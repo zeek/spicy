@@ -15,8 +15,8 @@
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
 #include <hilti/base/logger.h>
-
-#include "base/uniquer.h"
+#include <hilti/base/monotonic_buffer_resource.h>
+#include <hilti/base/uniquer.h>
 
 namespace hilti {
 
@@ -24,6 +24,10 @@ class ASTContext;
 class Context;
 class Driver;
 struct Plugin;
+
+namespace type {
+struct Wildcard;
+}
 
 /**
  * Parses a HILTI source file into an AST.
@@ -34,23 +38,7 @@ struct Plugin;
  *
  * @returns the parsed AST, or a corresponding error if parsing failed.
  */
-Result<ModulePtr> parseSource(Builder* builder, std::istream& in, const std::string& filename);
-
-/**
- * Root node for the AST inside an AST context. This will always exist exactly
- * once.
- */
-class ASTRoot : public Node {
-public:
-    static auto create(ASTContext* ctx) { return std::shared_ptr<ASTRoot>(new ASTRoot(ctx)); }
-
-protected:
-    ASTRoot(ASTContext* ctx) : Node(ctx, NodeTags, {}, Meta(Location("<root>"))) {}
-
-    std::string _dump() const final;
-
-    HILTI_NODE_0(ASTRoot, final);
-};
+Result<declaration::Module*> parseSource(Builder* builder, std::istream& in, const std::string& filename);
 
 namespace ast {
 
@@ -180,8 +168,8 @@ public:
                                                   std::vector<hilti::rt::filesystem::path> search_dirs);
 
     /** Adds a new, empty module to the AST. */
-    std::shared_ptr<declaration::Module> newModule(Builder* builder, const ID& id,
-                                                   const hilti::rt::filesystem::path& process_extension);
+    declaration::Module* newModule(Builder* builder, const ID& id,
+                                   const hilti::rt::filesystem::path& process_extension);
 
     /**
      * Retrieves a module node from the AST given its UID. Returns null if no
@@ -189,7 +177,7 @@ public:
      *
      * @param uid UID of module to return
      */
-    ModulePtr module(const declaration::module::UID& uid) const {
+    declaration::Module* module(const declaration::module::UID& uid) const {
         if ( auto m = _modules_by_uid.find(uid); m != _modules_by_uid.end() )
             return m->second;
         else
@@ -257,7 +245,7 @@ public:
      * @returns the index now associated with the declaration; it's value is
      * guaranteed to not be `None` (and hence be larger than zero).
      */
-    ast::DeclarationIndex register_(const DeclarationPtr& decl);
+    ast::DeclarationIndex register_(Declaration* decl);
 
     /**
      * Returns the declaration associated with an index.
@@ -266,7 +254,7 @@ public:
      * not trigger an internal error; unless its `None`, in which case it
      * returns `null`.
      */
-    DeclarationPtr lookup(ast::DeclarationIndex index); // must exists, otherwise internal error -> result is not null
+    Declaration* lookup(ast::DeclarationIndex index); // must exists, otherwise internal error -> result is not null
 
     /**
      * Replaces a previously registered declaration with a new one. This means
@@ -283,7 +271,7 @@ public:
      * the method returns without doing anything
      * @param new new declaration to take the place of the old one
      */
-    void replace(const Declaration* old, const DeclarationPtr& new_);
+    void replace(Declaration* old, Declaration* new_);
 
     /**
      * Registers a type with the context, assigning it a unique index through
@@ -297,7 +285,7 @@ public:
      * @returns the index now associated with the type; it's value is
      * guaranteed to not be `None` (and hence be larger than zero).
      */
-    ast::TypeIndex register_(const UnqualifiedTypePtr& type);
+    ast::TypeIndex register_(UnqualifiedType* type);
 
     /**
      * Returns the type associated with an index.
@@ -306,7 +294,7 @@ public:
      * not trigger an internal error; unless its `None`, in which case it
      * returns `null`.
      */
-    UnqualifiedTypePtr lookup(ast::TypeIndex index);
+    UnqualifiedType* lookup(ast::TypeIndex index);
 
     /**
      * Replaces a previously registered type with a new one. This means
@@ -319,7 +307,7 @@ public:
      * the method returns without doing any tying
      * @param new new type to take the place of the old one
      */
-    void replace(const UnqualifiedType* old, const UnqualifiedTypePtr& new_);
+    void replace(UnqualifiedType* old, UnqualifiedType* new_);
 
     /**
      * Given an ID that's supposed to become a declaration's canonical ID,
@@ -335,7 +323,61 @@ public:
      */
     void dump(const hilti::logging::DebugStream& stream, const std::string& prefix);
 
+    /**
+     * Factory function creating a new node of type T. This allocates the new
+     * through the context-wide memory resource.
+     *
+     * @param args arguments to pass to the constructor of T
+     */
+    template<typename T, typename... Args>
+    T* make(Args&&... args) {
+        return new (allocateNode<T>()) T(std::forward<Args>(args)...);
+    }
+
+    /**
+     * Factory function creating a new node of type T. This allocates the new
+     * through the context-wide memory resource.
+     *
+     * We need this variant because `std::initializer_list` cannot be passed
+     * through the generic `std::forward`.
+     *
+     * @param ctx first argument to pass to the constructor of T; must be `this`
+     * @param children second argument to pass to the constructor of T
+     * @param args remaining arguments to pass to the constructor of T
+     */
+    template<typename T, typename... Args>
+    T* make(ASTContext* ctx, std::initializer_list<Node*> children, Args&&... args) {
+        assert(ctx == this);
+        return new (allocateNode<T>()) T(ctx, children, std::forward<Args>(args)...);
+    }
+
+    /**
+     * Factory function creating a new node of type T. This allocates the new
+     * through the context-wide memory resource.
+     *
+     * We need this variant because `std::initializer_list` cannot be passed
+     * through the generic `std::forward`.
+     *
+     * @param ctx first argument to pass to the constructor of T; must be `this`
+     * @param wildcard second argument to pass to the constructor of T; must be `this`
+     * @param children third second argument to pass to the constructor of T
+     * @param args remaining arguments to pass to the constructor of T
+     */
+    template<typename T, typename... Args>
+    T* make(ASTContext* ctx, type::Wildcard&& wildcard, std::initializer_list<Node*> children, Args&&... args) {
+        assert(ctx == this);
+        return new (allocateNode<T>())
+            T(ctx, std::forward<type::Wildcard>(wildcard), children, std::forward<Args>(args)...);
+    }
+
 private:
+    template<typename T>
+    T* allocateNode() {
+        auto* t = reinterpret_cast<T*>(_memory_resource.allocate(sizeof(T), alignof(T)));
+        _nodes.emplace_back(t);
+        return t;
+    }
+
     // The following methods implement the corresponding phases of AST processing.
 
     Result<declaration::module::UID> _parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
@@ -354,7 +396,7 @@ private:
 
     // Adds a module to the AST. The module must not be part of any AST yet
     // (including the current one).
-    declaration::module::UID _addModuleToAST(ModulePtr module);
+    declaration::module::UID _addModuleToAST(declaration::Module* module);
 
     // Performs internal consistency checks on the AST. Meant to execute only
     // in debug builds as it may affect performance.
@@ -382,22 +424,41 @@ private:
     // Dumps the accumulated state tables of the context to a debugging stream.
     void _dumpDeclarations(const logging::DebugStream& stream, const Plugin& plugin);
 
-    Context* _context = nullptr;         // compiler context
-    std::shared_ptr<ASTRoot> _root;      // root node of the AST
+    Context* _context = nullptr;                        // compiler context
+    detail::monotonic_buffer_resource _memory_resource; // memory resource for all AST nodes
+    std::vector<Node*> _nodes; // all nodes allocated through the context so that we can run destructors at the end
+
+    ASTRoot* _root = nullptr;            // root node of the AST
     bool _resolved = false;              // true if `processAST()` has finished successfully
     Driver* _driver = nullptr;           // pointer to compiler drive during `processAST()`, null outside of that
     util::Uniquer<ID> _canon_id_uniquer; // Produces unique canonified IDs
 
     uint64_t _total_rounds = 0; // total number of rounds of AST processing
 
-    std::unordered_map<declaration::module::UID, ModulePtr> _modules_by_uid; // all known modules indexed by UID
-    std::unordered_map<std::string, ModulePtr> _modules_by_path;             // all known modules indexed by path
-    std::map<std::pair<ID, ID>, ModulePtr>
+    std::unordered_map<declaration::module::UID, declaration::Module*>
+        _modules_by_uid;                                                    // all known modules indexed by UID
+    std::unordered_map<std::string, declaration::Module*> _modules_by_path; // all known modules indexed by path
+    std::map<std::pair<ID, ID>, declaration::Module*>
         _modules_by_id_and_scope; // all known modules indexed by their ID and search scope
 
-    std::vector<DeclarationPtr>
-        _declarations_by_index; // all registered declarations; vector position corresponds to their index
-    std::vector<UnqualifiedTypePtr> _types_by_index; // all registered types; vector position corresponds to their index
+    Declarations _declarations_by_index; // all registered declarations; vector position corresponds to their index
+    UnqualifiedTypes _types_by_index;    // all registered types; vector position corresponds to their index
+};
+
+/**
+ * Root node for the AST inside an AST context. This will always exist exactly
+ * once.
+ */
+class ASTRoot : public Node {
+public:
+    static auto create(ASTContext* ctx) { return ctx->make<ASTRoot>(ctx); }
+
+protected:
+    ASTRoot(ASTContext* ctx) : Node(ctx, NodeTags, {}, Meta(Location("<root>"))) {}
+
+    std::string _dump() const final;
+
+    HILTI_NODE_0(ASTRoot, final);
 };
 
 } // namespace hilti

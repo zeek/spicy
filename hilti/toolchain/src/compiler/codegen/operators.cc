@@ -36,11 +36,11 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     auto compileExpressions(const Expressions& exprs) {
-        return util::transform(exprs, [&](const auto& e) { return cg->compile(e); });
+        return util::transform(exprs, [&](auto e) { return cg->compile(e); });
     }
 
     auto compileExpressions(const node::Range<Expression>& exprs) {
-        return node::transform(exprs, [&](const auto& e) { return cg->compile(e); });
+        return node::transform(exprs, [&](auto e) { return cg->compile(e); });
     }
 
     auto methodArguments(const expression::ResolvedOperator* o) {
@@ -64,7 +64,7 @@ struct Visitor : hilti::visitor::PreOrder {
         util::cannotBeReached();
     }
 
-    auto tupleArguments(expression::ResolvedOperator* o, const ExpressionPtr& op) {
+    auto tupleArguments(expression::ResolvedOperator* o, Expression* op) {
         auto ctor = op->as<expression::Ctor>()->ctor();
 
         if ( auto x = ctor->tryAs<ctor::Coerced>() )
@@ -73,7 +73,7 @@ struct Visitor : hilti::visitor::PreOrder {
         return compileExpressions(ctor->as<ctor::Tuple>()->value());
     }
 
-    auto tupleArgumentType(const ExpressionPtr& op, int i) {
+    auto tupleArgumentType(Expression* op, int i) {
         auto ctor = op->as<expression::Ctor>()->ctor();
 
         if ( auto x = ctor->tryAs<ctor::Coerced>() )
@@ -755,7 +755,7 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( auto ctor = n->op1()->tryAs<expression::Ctor>() ) {
                 auto t = ctor->ctor()->as<ctor::Tuple>()->value();
                 result = fmt("::hilti::rt::fmt(%s, %s)", op0(n),
-                             util::join(node::transform(t, [this](auto& x) { return cg->compile(x); }), ", "));
+                             util::join(node::transform(t, [this](auto x) { return cg->compile(x); }), ", "));
                 return;
             }
         }
@@ -822,23 +822,23 @@ struct Visitor : hilti::visitor::PreOrder {
         assert(fdecl);
 
         auto ft = fdecl->type()->type()->as<type::Function>();
-        auto stype = n->op0()->type()->type()->as<type::Struct>();
         auto args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         auto id = n->op1()->as<expression::Member>()->id();
 
-        std::vector<std::pair<ExpressionPtr, bool>> zipped;
+        std::vector<std::pair<Expression*, bool>> zipped;
 
         zipped.reserve(args.size());
         for ( auto i = 0U; i < args.size(); i++ )
             zipped.emplace_back(args[i], ft->parameters()[i]->kind() == parameter::Kind::InOut);
 
-        result =
-            memberAccess(n,
-                         fmt("%s(%s)", id,
-                             util::join(util::transform(zipped,
-                                                        [this](auto& x) { return cg->compile(x.first, x.second); }),
-                                        ", ")),
-                         false);
+        result = memberAccess(n,
+                              fmt("%s(%s)", id,
+                                  util::join(util::transform(zipped,
+                                                             [this](const auto& x) {
+                                                                 return cg->compile(x.first, x.second);
+                                                             }),
+                                             ", ")),
+                              false);
     }
 
     void operator()(operator_::struct_::HasMember* n) final {
@@ -873,7 +873,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     /// Union
 
-    unsigned int unionFieldIndex(const ExpressionPtr& op0, const ExpressionPtr& op1) {
+    unsigned int unionFieldIndex(Expression* op0, Expression* op1) {
         auto id = op1->as<expression::Member>()->id();
         return op0->type()->type()->as<type::Union>()->index(id);
     }
@@ -1034,7 +1034,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::tuple::CustomAssign* n) final {
         auto t = n->operands()[0]->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
-        auto l = util::join(node::transform(t, [this](auto& x) { return cg->compile(x, true); }), ", ");
+        auto l = util::join(node::transform(t, [this](auto x) { return cg->compile(x, true); }), ", ");
         result = {fmt("std::tie(%s) = %s", l, op1(n)), Side::LHS};
     }
 
@@ -1235,7 +1235,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
 } // anonymous namespace
 
-cxx::Expression CodeGen::compile(const std::shared_ptr<expression::ResolvedOperator>& o, bool lhs) {
+cxx::Expression CodeGen::compile(expression::ResolvedOperator* o, bool lhs) {
     auto v = Visitor(this, lhs);
     if ( auto x = hilti::visitor::dispatch(v, o, [](const auto& v) { return v.result; }) )
         return lhs ? _makeLhs(*x, o->type()) : *x;

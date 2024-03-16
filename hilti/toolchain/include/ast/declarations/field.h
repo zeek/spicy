@@ -30,7 +30,7 @@ public:
      */
     auto operator_() const { return _operator; }
 
-    QualifiedTypePtr type() const {
+    QualifiedType* type() const {
         if ( const auto& func = inlineFunction() )
             return func->type();
         else
@@ -47,7 +47,7 @@ public:
             return type->isResolved(cd);
     }
 
-    ExpressionPtr default_() const {
+    hilti::Expression* default_() const {
         if ( auto a = attributes()->find("&default") )
             return *a->valueAsExpression();
         else
@@ -62,9 +62,9 @@ public:
 
     auto linkedTypeIndex() const { return _linked_type_index; }
 
-    void setAttributes(ASTContext* ctx, AttributeSetPtr attrs) { setChild(ctx, 1, std::move(attrs)); }
+    void setAttributes(ASTContext* ctx, AttributeSet* attrs) { setChild(ctx, 1, attrs); }
     void setOperator(const Operator* op) { _operator = op; }
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
     void setLinkedTypeIndex(ast::TypeIndex idx) {
         assert(idx);
         _linked_type_index = idx;
@@ -74,7 +74,7 @@ public:
 
     node::Properties properties() const final;
 
-    static auto create(ASTContext* ctx, ID id, QualifiedTypePtr type, AttributeSetPtr attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -82,26 +82,23 @@ public:
             // make it assignable
             type = type->recreateAsLhs(ctx);
 
-        return std::shared_ptr<Field>(
-            new Field(ctx, {std::move(type), attrs, nullptr}, std::move(id), {}, std::move(meta)));
+        return ctx->make<Field>(ctx, {type, attrs, nullptr}, std::move(id), std::nullopt, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, ::hilti::function::CallingConvention cc, const type::FunctionPtr& ftype,
-                       AttributeSetPtr attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, ::hilti::function::CallingConvention cc, type::Function* ftype,
+                       AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Field>(new Field(ctx,
-                                                {QualifiedType::create(ctx, ftype, Constness::Const), attrs, nullptr},
-                                                std::move(id), cc, std::move(meta)));
+        return ctx->make<Field>(ctx, {QualifiedType::create(ctx, ftype, Constness::Const), attrs, nullptr},
+                                std::move(id), cc, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ID& id, const FunctionPtr& inline_func, AttributeSetPtr attrs,
-                       Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, hilti::Function* inline_func, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Field>(new Field(ctx, {nullptr, attrs, inline_func}, id, {}, std::move(meta)));
+        return ctx->make<Field>(ctx, {nullptr, attrs, inline_func}, std::move(id), std::nullopt, std::move(meta));
     }
 
 protected:
@@ -118,8 +115,5 @@ private:
     const Operator* _operator = nullptr;
     ast::TypeIndex _linked_type_index;
 };
-
-using FieldPtr = std::shared_ptr<Field>;
-using FieldList = std::vector<FieldPtr>;
 
 } // namespace hilti::declaration

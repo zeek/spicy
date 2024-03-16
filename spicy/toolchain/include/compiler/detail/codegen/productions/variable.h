@@ -19,9 +19,8 @@ namespace spicy::detail::codegen::production {
  */
 class Variable : public Production {
 public:
-    Variable(ASTContext* /* ctx */, const std::string& symbol, QualifiedTypePtr type,
-             const Location& l = location::None)
-        : Production(symbol, l), _type(std::move(type)) {}
+    Variable(ASTContext* /* ctx */, const std::string& symbol, QualifiedType* type, const Location& l = location::None)
+        : Production(symbol, l), _type(type) {}
 
     bool isAtomic() const final { return true; };
     bool isEodOk() const final { return false; };
@@ -29,14 +28,14 @@ public:
     bool isNullable() const final { return false; };
     bool isTerminal() const final { return true; };
 
-    QualifiedTypePtr type() const final { return _type; };
+    QualifiedType* type() const final { return _type; };
 
     std::string dump() const final { return hilti::util::fmt("%s", *_type); }
 
     SPICY_PRODUCTION
 
 private:
-    QualifiedTypePtr _type;
+    QualifiedType* _type = nullptr;
 };
 
 } // namespace spicy::detail::codegen::production

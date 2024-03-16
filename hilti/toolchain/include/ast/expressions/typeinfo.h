@@ -16,12 +16,12 @@ class TypeInfo : public Expression {
 public:
     auto expression() const { return child<Expression>(0); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(1); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Expression* expr, Meta meta = {}) {
         auto ti =
             QualifiedType::create(ctx, type::Library::create(ctx, "hilti::rt::TypeInfo const*"), Constness::Const);
-        return std::shared_ptr<TypeInfo>(new TypeInfo(ctx, {expr, ti}, meta));
+        return ctx->make<TypeInfo>(ctx, {expr, ti}, std::move(meta));
     }
 
 protected:

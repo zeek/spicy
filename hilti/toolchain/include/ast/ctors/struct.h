@@ -27,8 +27,8 @@ public:
         return Node::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, ID id, const ExpressionPtr& expr, Meta meta = {}) {
-        return std::shared_ptr<Field>(new Field(ctx, {expr}, std::move(id), std::move(meta)));
+    static auto create(ASTContext* ctx, ID id, Expression* expr, Meta meta = {}) {
+        return ctx->make<Field>(ctx, {expr}, std::move(id), std::move(meta));
     }
 
 protected:
@@ -41,8 +41,7 @@ private:
     ID _id;
 };
 
-using FieldPtr = std::shared_ptr<Field>;
-using Fields = std::vector<FieldPtr>;
+using Fields = NodeVector<Field>;
 
 } // namespace struct_
 
@@ -55,7 +54,7 @@ public:
     auto fields() const { return children<struct_::Field>(1, {}); }
 
     /** Returns a field initialized by the constructor by its ID. */
-    struct_::FieldPtr field(const ID& id) const {
+    struct_::Field* field(const ID& id) const {
         for ( const auto& f : fields() ) {
             if ( f->id() == id )
                 return f;
@@ -64,8 +63,8 @@ public:
         return nullptr;
     }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     /** Implements the node interface. */
     node::Properties properties() const override {
@@ -73,13 +72,12 @@ public:
         return Ctor::properties() + node::WithUniqueID::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, struct_::Fields fields, QualifiedTypePtr t, const Meta& meta = {}) {
-        return std::shared_ptr<Struct>(new Struct(ctx, node::flatten(std::move(t), std::move(fields)), meta));
+    static auto create(ASTContext* ctx, struct_::Fields fields, QualifiedType* t, Meta meta = {}) {
+        return ctx->make<Struct>(ctx, node::flatten(t, std::move(fields)), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, struct_::Fields fields, const Meta& meta = {}) {
-        return std::shared_ptr<Struct>(
-            new Struct(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), std::move(fields)), meta));
+        return ctx->make<Struct>(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), std::move(fields)), meta);
     }
 
 protected:

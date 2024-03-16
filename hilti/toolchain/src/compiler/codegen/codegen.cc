@@ -43,7 +43,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
     std::vector<cxx::declaration::Constant> constants;
 
     // Helper creating function to access dynamically allocated globals, if needed.
-    void createGlobalsAccessorFunction(const ModulePtr& module, const ID& module_id, cxx::Unit* unit) {
+    void createGlobalsAccessorFunction(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
         if ( ! cg->options().cxx_enable_dynamic_globals )
             // Access to globals is direct, no need for function.
             return;
@@ -71,7 +71,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
     }
 
     // Helper adding declarations for module's globals, if needed.
-    void createGlobalsDeclarations(const ModulePtr& module, const ID& module_id, cxx::Unit* unit) {
+    void createGlobalsDeclarations(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
         if ( cg->options().cxx_enable_dynamic_globals )
             // Access to globals goes through dynamic accessor function; no need for declarations.
             return;
@@ -92,7 +92,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
     }
 
     // Helper creating function initializing the module's globals.
-    void createInitGlobals(const ModulePtr& module, const ID& module_id, cxx::Unit* unit) {
+    void createInitGlobals(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
         auto id = cxx::ID{ns, "__init_globals"};
 
@@ -139,7 +139,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
     }
 
     // Helpers creating function destroying the module's globals, if needed.
-    void createDestroyGlobals(const ModulePtr& module, const ID& module_id, cxx::Unit* unit) {
+    void createDestroyGlobals(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
         if ( cg->options().cxx_enable_dynamic_globals )
             // Will be implicitly destroyed at termination by the runtime.
             return;
@@ -163,7 +163,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
         unit->add(body_impl);
     }
 
-    static void addDeclarations(CodeGen* cg, const ModulePtr& module, const ID& module_id, cxx::Unit* unit,
+    static void addDeclarations(CodeGen* cg, hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit,
                                 bool include_implementation) {
         auto v = GlobalsVisitor(cg, include_implementation);
 
@@ -661,9 +661,9 @@ codegen::TypeUsage CodeGen::parameterKindToTypeUsage(parameter::Kind k) {
     util::cannotBeReached();
 }
 
-cxx::declaration::Function CodeGen::compile(const ID& id, const std::shared_ptr<type::Function>& ft,
-                                            declaration::Linkage linkage, function::CallingConvention cc,
-                                            const AttributeSetPtr& fattrs, std::optional<cxx::ID> namespace_) {
+cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, declaration::Linkage linkage,
+                                            function::CallingConvention cc, AttributeSet* fattrs,
+                                            std::optional<cxx::ID> namespace_) {
     auto result_ = [&]() {
         auto rt = compile(ft->result(), codegen::TypeUsage::FunctionResult);
 
@@ -725,7 +725,7 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
 
     unsigned int i = 0;
     for ( const auto& p : params ) {
-        ExpressionPtr arg = (i < args.size() ? args[i] : p->default_());
+        Expression* arg = (i < args.size() ? args[i] : p->default_());
         x.emplace_back(compile(arg, p->kind() == parameter::Kind::InOut));
         i++;
     }
@@ -737,23 +737,21 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
                                                            const node::Range<declaration::Parameter>& params) {
     assert(args.size() == params.size());
 
-    auto kinds = node::transform(params, [](auto& x) { return x->kind(); });
+    auto kinds = node::transform(params, [](auto x) { return x->kind(); });
 
     std::vector<cxx::Expression> x;
     x.reserve(args.size());
-    for ( auto i = 0U; i < args.size(); i++ ) {
-        ExpressionPtr arg = (i < args.size() ? args[i] : params[i]->default_());
+    for ( auto i = 0U; i < args.size(); i++ )
         x.emplace_back(compile(args[i], params[i]->kind() == parameter::Kind::InOut));
-    }
 
     return x;
 }
 
-Result<cxx::Unit> CodeGen::compileModule(const ModulePtr& module, bool include_implementation) {
+Result<cxx::Unit> CodeGen::compileModule(declaration::Module* module, bool include_implementation) {
     util::timing::Collector _("hilti/compiler/codegen");
 
     _cxx_unit = std::make_unique<cxx::Unit>(context());
-    _hilti_module = module.get();
+    _hilti_module = module;
     auto v = Visitor(this, module->scope(), _cxx_unit.get());
 
     v.dispatch(module);
@@ -851,8 +849,8 @@ void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
     block->addStatement(cxx::Expression(fmt("hilti::rt::profiler::stop(%s)", profiler)));
 }
 
-cxx::Expression CodeGen::unsignedIntegerToBitfield(const std::shared_ptr<type::Bitfield>& t,
-                                                   const cxx::Expression& value, const cxx::Expression& bitorder) {
+cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx::Expression& value,
+                                                   const cxx::Expression& bitorder) {
     std::vector<cxx::Expression> bits;
     for ( const auto& b : t->bits(false) ) {
         auto x = fmt("hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
@@ -874,7 +872,7 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(const std::shared_ptr<type::B
 }
 
 
-cxx::ID CodeGen::uniqueID(const std::string& prefix, const NodePtr& n) {
+cxx::ID CodeGen::uniqueID(const std::string& prefix, Node* n) {
     std::string x;
 
     if ( ! n->location() )

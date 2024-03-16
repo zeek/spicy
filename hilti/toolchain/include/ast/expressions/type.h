@@ -16,12 +16,13 @@ class Type_ : public Expression {
 public:
     auto typeValue() const { return type()->type()->as<type::Type_>()->typeValue(); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& type, const Meta& meta = {}) {
-        return std::shared_ptr<Type_>(
-            new Type_(ctx, {QualifiedType::create(ctx, type::Type_::create(ctx, type, meta), Constness::Const, meta)},
-                      meta));
+    static auto create(ASTContext* ctx, QualifiedType* type, const Meta& meta = {}) {
+        return ctx->make<Type_>(ctx,
+                                {QualifiedType::create(ctx, type::Type_::create(ctx, type, meta), Constness::Const,
+                                                       meta)},
+                                meta);
     }
 
 protected:

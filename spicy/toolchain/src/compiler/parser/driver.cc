@@ -15,14 +15,15 @@
 using namespace spicy;
 using namespace spicy::detail::parser;
 
-hilti::Result<ModulePtr> detail::parser::parseSource(Builder* builder, std::istream& in, const std::string& filename) {
+hilti::Result<hilti::declaration::Module*> detail::parser::parseSource(Builder* builder, std::istream& in,
+                                                                       const std::string& filename) {
     hilti::util::timing::Collector _("spicy/compiler/ast/parser");
 
     return Driver().parse(builder, in, filename);
 }
 
-hilti::Result<ExpressionPtr> detail::parser::parseExpression(Builder* builder, const std::string& expr,
-                                                             const Meta& meta) {
+hilti::Result<Expression*> detail::parser::parseExpression(Builder* builder, const std::string& expr,
+                                                           const Meta& meta) {
     spicy::detail::parser::Driver driver;
     return driver.parseExpression(builder, expr, meta);
 }
@@ -31,7 +32,8 @@ namespace hilti::logging::debug {
 inline const DebugStream Parser("parser");
 } // namespace hilti::logging::debug
 
-hilti::Result<ModulePtr> Driver::parse(Builder* builder, std::istream& in, const std::string& filename) {
+hilti::Result<hilti::declaration::Module*> Driver::parse(Builder* builder, std::istream& in,
+                                                         const std::string& filename) {
     _builder = builder;
 
     auto old_errors = hilti::logger().errors();
@@ -62,7 +64,7 @@ hilti::Result<ModulePtr> Driver::parse(Builder* builder, std::istream& in, const
     return _module;
 }
 
-hilti::Result<ExpressionPtr> Driver::parseExpression(Builder* builder, const std::string& expression, const Meta& m) {
+hilti::Result<Expression*> Driver::parseExpression(Builder* builder, const std::string& expression, const Meta& m) {
     _builder = builder;
 
     auto old_errors = hilti::logger().errors();

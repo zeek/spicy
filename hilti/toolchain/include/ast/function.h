@@ -52,23 +52,23 @@ public:
     auto callingConvention() const { return _cc; }
     auto isStatic() const { return attributes()->find("&static") != nullptr; }
 
-    void setBody(ASTContext* ctx, const StatementPtr& b) { setChild(ctx, 1, b); }
+    void setBody(ASTContext* ctx, Statement* b) { setChild(ctx, 1, b); }
     void setID(ID id) { _id = std::move(id); }
-    void setResultType(ASTContext* ctx, const QualifiedTypePtr& t) { ftype()->setResultType(ctx, t); }
+    void setResultType(ASTContext* ctx, QualifiedType* t) { ftype()->setResultType(ctx, t); }
 
     node::Properties properties() const override {
         auto p = node::Properties{{"id", _id}, {"cc", to_string(_cc)}};
         return Node::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const ID& id, const type::FunctionPtr& ftype, const StatementPtr& body,
+    static auto create(ASTContext* ctx, const ID& id, type::Function* ftype, Statement* body,
                        function::CallingConvention cc = function::CallingConvention::Standard,
-                       AttributeSetPtr attrs = nullptr, const Meta& meta = {}) {
+                       AttributeSet* attrs = nullptr, const Meta& meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Function>(
-            new Function(ctx, {QualifiedType::create(ctx, ftype, Constness::Const, meta), body, attrs}, id, cc, meta));
+        return ctx->make<Function>(ctx, {QualifiedType::create(ctx, ftype, Constness::Const, meta), body, attrs}, id,
+                                   cc, meta);
     }
 
 protected:

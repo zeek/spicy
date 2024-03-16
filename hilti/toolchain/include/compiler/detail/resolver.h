@@ -8,6 +8,6 @@
 namespace hilti::detail::resolver {
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-bool resolve(Builder* builder, const NodePtr& root);
+bool resolve(Builder* builder, Node* root);
 
 } // namespace hilti::detail::resolver

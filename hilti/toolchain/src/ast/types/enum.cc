@@ -29,7 +29,7 @@ void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
         l->setEnumType(ctx, enum_type);
 
         auto d = declaration::Constant::create(ctx, l->id(), expression::Ctor::create(ctx, ctor::Enum::create(ctx, l)));
-        addChild(ctx, std::move(d));
+        addChild(ctx, d);
     }
 
     auto undef_label = type::enum_::Label::create(ctx, ID("Undef"), -1, meta())->as<type::enum_::Label>();
@@ -39,7 +39,7 @@ void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
         declaration::Constant::create(ctx, undef_label->id(),
                                       expression::Ctor::create(ctx, ctor::Enum::create(ctx, undef_label)));
 
-    addChild(ctx, std::move(undef_decl));
+    addChild(ctx, undef_decl);
 }
 
 type::enum_::Labels type::Enum::labels() const {

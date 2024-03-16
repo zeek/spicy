@@ -16,7 +16,7 @@ class Error : public Ctor {
 public:
     const auto& value() const { return _value; }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", _value}};
@@ -24,8 +24,8 @@ public:
     }
 
     static auto create(ASTContext* ctx, std::string v, const Meta& meta = {}) {
-        return CtorPtr(new Error(ctx, {QualifiedType::create(ctx, type::Error::create(ctx, meta), Constness::Const)},
-                                 std::move(v), meta));
+        return ctx->make<Error>(ctx, {QualifiedType::create(ctx, type::Error::create(ctx, meta), Constness::Const)},
+                                std::move(v), meta);
     }
 
 protected:

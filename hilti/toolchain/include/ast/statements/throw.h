@@ -15,13 +15,11 @@ class Throw : public Statement {
 public:
     auto expression() const { return child<::hilti::Expression>(0); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, Meta meta = {}) {
-        return std::shared_ptr<Throw>(new Throw(ctx, {expr}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Expression* expr, Meta meta = {}) {
+        return ctx->make<Throw>(ctx, {expr}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Throw>(new Throw(ctx, {nullptr}, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Throw>(ctx, {nullptr}, std::move(meta)); }
 
 protected:
     Throw(ASTContext* ctx, Nodes children, Meta meta)

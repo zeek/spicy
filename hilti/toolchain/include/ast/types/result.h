@@ -16,19 +16,18 @@ class Result : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "result"; }
 
-    QualifiedTypePtr dereferencedType() const final { return child(0)->as<QualifiedType>(); }
+    QualifiedType* dereferencedType() const final { return child(0)->as<QualifiedType>(); }
 
     bool isAllocable() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& t, Meta m = Meta()) {
-        return std::shared_ptr<Result>(new Result(ctx, {t}, std::move(m)));
+    static auto create(ASTContext* ctx, QualifiedType* t, Meta m = Meta()) {
+        return ctx->make<Result>(ctx, {t}, std::move(m));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Result>(
-            new Result(ctx, Wildcard(), {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
-                       m));
+        return ctx->make<Result>(ctx, Wildcard(),
+                                 {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
     }
 
 protected:

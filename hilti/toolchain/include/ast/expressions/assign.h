@@ -16,12 +16,12 @@ public:
     auto target() const { return child<Expression>(0); }
     auto source() const { return child<Expression>(1); }
 
-    QualifiedTypePtr type() const final { return target()->type(); }
+    QualifiedType* type() const final { return target()->type(); }
 
-    void setSource(ASTContext* ctx, const ExpressionPtr& src) { setChild(ctx, 1, src); }
+    void setSource(ASTContext* ctx, Expression* src) { setChild(ctx, 1, src); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& target, const ExpressionPtr& src, const Meta& meta = {}) {
-        return std::shared_ptr<Assign>(new Assign(ctx, {target, src}, meta));
+    static auto create(ASTContext* ctx, Expression* target, Expression* src, Meta meta = {}) {
+        return ctx->make<Assign>(ctx, {target, src}, std::move(meta));
     }
 
 protected:

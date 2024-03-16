@@ -11,7 +11,7 @@
 using namespace spicy;
 using namespace spicy::detail;
 
-std::optional<std::pair<ExpressionPtr, QualifiedTypePtr>> type::unit::item::Field::convertExpression() const {
+std::optional<std::pair<Expression*, QualifiedType*>> type::unit::item::Field::convertExpression() const {
     if ( auto convert = attributes()->find("&convert") )
         return std::make_pair(*convert->valueAsExpression(), nullptr);
 
@@ -22,13 +22,13 @@ std::optional<std::pair<ExpressionPtr, QualifiedTypePtr>> type::unit::item::Fiel
 
     if ( auto x = t->type()->tryAs<type::Unit>() ) {
         if ( auto convert = x->attributes()->find("&convert") )
-            return std::make_pair(*convert->valueAsExpression(), std::move(t));
+            return std::make_pair(*convert->valueAsExpression(), t);
     }
 
     return {};
 }
 
-void type::unit::item::Field::setDDType(ASTContext* ctx, const QualifiedTypePtr& t) {
+void type::unit::item::Field::setDDType(ASTContext* ctx, QualifiedType* t) {
     setChild(ctx, 0, hilti::expression::Keyword::createDollarDollarDeclaration(ctx, t));
 }
 
@@ -37,7 +37,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
 
     Builder* builder;
     const spicy::type::unit::item::Field& field;
-    ExpressionPtr result;
+    Expression* result = nullptr;
 
     void operator()(hilti::type::Address* n) final {
         if ( field.attributes()->has("&ipv4") )
@@ -59,7 +59,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     }
 };
 
-ExpressionPtr spicy::type::unit::item::Field::size(ASTContext* ctx) const {
+Expression* spicy::type::unit::item::Field::size(ASTContext* ctx) const {
     Builder builder(ctx);
 
     if ( const auto& size = attributes()->find("&size") )

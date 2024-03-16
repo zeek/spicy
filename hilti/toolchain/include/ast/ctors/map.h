@@ -25,8 +25,8 @@ public:
     auto key() const { return child<Expression>(0); }
     auto value() const { return child<Expression>(1); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& key, const ExpressionPtr& value, Meta meta = {}) {
-        return std::shared_ptr<Element>(new Element(ctx, {key, value}, std::move(meta)));
+    static auto create(ASTContext* ctx, Expression* key, Expression* value, Meta meta = {}) {
+        return ctx->make<Element>(ctx, {key, value}, std::move(meta));
     }
 
 protected:
@@ -38,8 +38,7 @@ protected:
     HILTI_NODE_0(ctor::map::Element, final);
 };
 
-using ElementPtr = std::shared_ptr<Element>;
-using Elements = std::vector<ElementPtr>;
+using Elements = NodeVector<Element>;
 
 } // namespace map
 
@@ -62,27 +61,27 @@ public:
             return type(); // auto
     }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& type) { setChild(ctx, 0, type); }
+    void setType(ASTContext* ctx, QualifiedType* type) { setChild(ctx, 0, type); }
 
     void setValue(ASTContext* ctx, map::Elements exprs) {
         removeChildren(1, {});
         addChildren(ctx, std::move(exprs));
     }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& key, const QualifiedTypePtr& value,
-                       map::Elements elements, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, QualifiedType* key, QualifiedType* value, map::Elements elements,
+                       Meta meta = {}) {
         auto mtype = QualifiedType::create(ctx, type::Map::create(ctx, key, value, meta), Constness::Mutable, meta);
-        return std::shared_ptr<Map>(new Map(ctx, node::flatten(mtype, std::move(elements)), meta));
+        return ctx->make<Map>(ctx, node::flatten(mtype, std::move(elements)), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, map::Elements elements, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, map::Elements elements, Meta meta = {}) {
         // bool is just an arbitrary place-holder type for empty values.
         auto mtype = elements.empty() ?
                          QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Mutable, meta) :
                          QualifiedType::createAuto(ctx, meta);
-        return std::shared_ptr<Map>(new Map(ctx, node::flatten(mtype, std::move(elements)), meta));
+        return ctx->make<Map>(ctx, node::flatten(mtype, std::move(elements)), std::move(meta));
     }
 
 protected:

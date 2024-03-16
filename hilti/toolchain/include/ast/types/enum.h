@@ -33,12 +33,12 @@ public:
         return Node::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const ID& id, int value, const Meta& meta = {}) {
-        return std::shared_ptr<Label>(new Label(ctx, {nullptr}, id, value, meta));
+    static auto create(ASTContext* ctx, const ID& id, int value, Meta meta = {}) {
+        return ctx->make<Label>(ctx, {nullptr}, id, value, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ID& id, const Meta& meta = {}) {
-        return std::shared_ptr<Label>(new Label(ctx, {nullptr}, id, -1, meta));
+    static auto create(ASTContext* ctx, const ID& id, Meta meta = {}) {
+        return ctx->make<Label>(ctx, {nullptr}, id, -1, std::move(meta));
     }
 
 protected:
@@ -48,7 +48,7 @@ protected:
         : Node(ctx, NodeTags, std::move(children), std::move(meta)), _id(std::move(id)), _value(value) {}
 
     void setValue(int value) { _value = value; }
-    void setEnumType(ASTContext* ctx, const QualifiedTypePtr& type) { setChild(ctx, 0, type); }
+    void setEnumType(ASTContext* ctx, QualifiedType* type) { setChild(ctx, 0, type); }
 
     HILTI_NODE_0(type::enum_::Label, final);
 
@@ -57,8 +57,7 @@ private:
     int _value = -1;
 };
 
-using LabelPtr = std::shared_ptr<Label>;
-using Labels = std::vector<LabelPtr>;
+using Labels = NodeVector<Label>;
 
 } // namespace enum_
 
@@ -74,7 +73,7 @@ public:
      */
     enum_::Labels uniqueLabels() const;
 
-    enum_::LabelPtr label(const ID& id) const {
+    enum_::Label* label(const ID& id) const {
         for ( const auto& l : labels() ) {
             if ( l->id() == id )
                 return l;
@@ -90,20 +89,20 @@ public:
     bool isNameType() const final { return true; }
 
     static auto create(ASTContext* ctx, enum_::Labels labels, Meta meta = {}) {
-        auto t = std::shared_ptr<Enum>(new Enum(ctx, Nodes(), std::move(meta)));
+        auto t = ctx->make<Enum>(ctx, Nodes(), std::move(meta));
         t->_setLabels(ctx, std::move(labels));
         return t;
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Enum>(new Enum(ctx, Wildcard(), m));
+        return ctx->make<Enum>(ctx, Wildcard(), m);
     }
 
 protected:
     Enum(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Enum(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"enum(*)"}, meta) {}
+    Enum(ASTContext* ctx, Wildcard _, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"enum(*)"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::Enum, UnqualifiedType, final);
 

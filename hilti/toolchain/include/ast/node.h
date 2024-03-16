@@ -24,12 +24,13 @@
 #include <hilti/ast/visitor-dispatcher.h>
 
 #define __HILTI_NODE_COMMON_final(NS, CLASS)                                                                           \
-    ::hilti::NodePtr _clone(::hilti::ASTContext* ctx) const final { return std::shared_ptr<CLASS>(new CLASS(*this)); }
+    ::hilti::Node* _clone(::hilti::ASTContext* ctx) const final { return ctx->make<CLASS>(*this); }
 
 #define __HILTI_NODE_COMMON_override(NS, CLASS)
 
 #define __HILTI_NODE_COMMON(NS, CLASS, override_)                                                                      \
     friend class ::NS::builder::NodeBuilder;                                                                           \
+    friend class hilti::ASTContext;                                                                                    \
     friend class hilti::Node;                                                                                          \
     std::string _typename() const override { return hilti::util::typename_(*this); }                                   \
     __HILTI_NODE_COMMON_##override_(NS, CLASS)
@@ -89,27 +90,11 @@ namespace builder {
 class NodeBuilder;
 }
 
-/**
- * Container storing a set of nodes. This is just a `std::vector` with an
- * additional constructor.
- */
-class Nodes : public std::vector<NodePtr> {
-public:
-    using std::vector<NodePtr>::vector;
-
-    /** Constructor accepting a vector of pointers to a derived class. */
-    template<typename T>
-    Nodes(std::vector<std::shared_ptr<T>> m) {
-        for ( auto&& x : m )
-            emplace_back(std::move(x));
-    }
-};
-
 namespace node {
 
 namespace detail {
 /** Backend for `node::deepcopy()`, see there. */
-NodePtr deepcopy(ASTContext* ctx, const NodePtr& n, bool force);
+Node* deepcopy(ASTContext* ctx, Node* n, bool force);
 } // namespace detail
 
 /**
@@ -122,7 +107,7 @@ NodePtr deepcopy(ASTContext* ctx, const NodePtr& n, bool force);
  * it performs the copy only if then adding the node to an AST.
  */
 template<typename T>
-std::shared_ptr<T> deepcopy(ASTContext* ctx, const std::shared_ptr<T>& n, bool force = false) {
+T* deepcopy(ASTContext* ctx, T* n, bool force = false) {
     if ( ! n )
         return nullptr;
 
@@ -188,7 +173,7 @@ using Properties = std::map<std::string, node::PropertyValue>;
 } // namespace node
 
 /** Base class for all AST nodes. */
-class Node : public std::enable_shared_from_this<Node> {
+class Node {
 public:
     virtual ~Node();
 
@@ -286,7 +271,7 @@ public:
      * @return if found, a pair of the declaration the ID refers to plus the declarations canonical ID; if not found an
      * error message appropriate for reporting to the user
      */
-    Result<std::pair<DeclarationPtr, ID>> lookupID(const ID& id, const std::string_view& what) const;
+    Result<std::pair<Declaration*, ID>> lookupID(const ID& id, const std::string_view& what) const;
 
     /**
      * Returns a flag indicating whether a scope lookup passing this node
@@ -322,15 +307,22 @@ public:
      * @return child casted to type `T`, or null if there's no child node at that index
      */
     template<typename T>
-    std::shared_ptr<T> child(unsigned int i) const {
+    T* child(unsigned int i) const {
         if ( i >= _children.size() )
             return nullptr;
 
         return _children[i] ? _children[i]->as<T>() : nullptr;
     }
 
+    /**
+     * Returns a child.
+     *
+     * @tparam T type that the child nodes are assumed to (and must) have
+     * @param i zero-based index of the child, in the order they were passed into the constructor and/or added
+     * @return child casted to type `T`, or null if there's no child node at that index
+     */
     template<typename T>
-    std::shared_ptr<T> childTryAs(unsigned int i) const {
+    T* childTryAs(unsigned int i) const {
         if ( i >= _children.size() )
             return nullptr;
 
@@ -344,7 +336,7 @@ public:
      * @param i index of the child, with zero being the first
      * @return child at given index, or null if there's no child at that index
      **/
-    NodePtr child(unsigned int i) const {
+    Node* child(unsigned int i) const {
         if ( i >= _children.size() )
             return nullptr;
 
@@ -418,18 +410,18 @@ public:
      * @param ctx current context in use
      * @param n child node to add; it's ok for this to be null to leave a child slot unset
      */
-    void addChild(ASTContext* ctx, NodePtr n) {
+    void addChild(ASTContext* ctx, Node* n) {
         if ( ! n ) {
             _children.emplace_back(nullptr);
             return;
         }
 
-        n = _newChild(ctx, std::move(n));
+        n = _newChild(ctx, n);
 
         if ( ! n->location() && _meta.location() )
             n->setMeta(_meta);
 
-        _children.emplace_back(std::move(n));
+        _children.emplace_back(n);
         _children.back()->_parent = this;
     }
 
@@ -440,9 +432,9 @@ public:
      * @param ctx current context in use
      * @param children nodes to add
      */
-    void addChildren(ASTContext* ctx, Nodes children) {
+    void addChildren(ASTContext* ctx, const Nodes& children) {
         for ( auto&& n : children )
-            addChild(ctx, std::move(n));
+            addChild(ctx, n);
     }
 
     /**
@@ -451,7 +443,7 @@ public:
      *
      * @param n child node to remove
      */
-    void removeChild(const NodePtr& n) {
+    void removeChild(Node* n) {
         if ( ! n )
             return;
 
@@ -494,9 +486,9 @@ public:
      * @param idx index of child to set
      * @param n child node to set; this may be null to unset the particular index
      */
-    void setChild(ASTContext* ctx, size_t idx, NodePtr n) {
+    void setChild(ASTContext* ctx, size_t idx, Node* n) {
         if ( n ) {
-            n = _newChild(ctx, std::move(n));
+            n = _newChild(ctx, n);
 
             if ( ! n->location() && _meta.location() )
                 n->setMeta(_meta);
@@ -505,7 +497,7 @@ public:
         if ( _children[idx] )
             _children[idx]->_parent = nullptr;
 
-        _children[idx] = std::move(n);
+        _children[idx] = n;
 
         if ( _children[idx] )
             _children[idx]->_parent = this;
@@ -520,7 +512,7 @@ public:
      * @param ctx current context in use
      * @param children new children to set
      */
-    void replaceChildren(ASTContext* ctx, Nodes children);
+    void replaceChildren(ASTContext* ctx, const Nodes& children);
 
     /**
      * Replaces a single child with a new one. The old one is removed, and the
@@ -532,7 +524,7 @@ public:
      * @param old child to replace, which must exist (otherwise the method will abort with an internal error)
      * @param new_ new child to replace *old* with
      */
-    void replaceChild(ASTContext* ctx, const Node* old, NodePtr new_);
+    void replaceChild(ASTContext* ctx, Node* old, Node* new_);
 
     /** Returns true if a node is of a particular type (class). */
     template<typename T>
@@ -548,11 +540,11 @@ public:
      * dynamic pointer cast, otherwise execution will abort with an internal error.
      */
     template<typename T>
-    auto as() const {
+    T* as() const {
 #ifndef NDEBUG
         _checkCast<T>(true);
 #endif
-        return std::static_pointer_cast<const T>(shared_from_this());
+        return static_cast<const T*>(this);
     }
 
     /**
@@ -562,11 +554,11 @@ public:
      * we'll catch invalid cases and abort with an internal error.
      */
     template<typename T>
-    auto as() {
+    T* as() {
 #ifndef NDEBUG
         _checkCast<T>(true);
 #endif
-        return std::static_pointer_cast<T>(shared_from_this());
+        return static_cast<T*>(this);
     }
 
     /**
@@ -574,15 +566,15 @@ public:
      * the cast failed.
      */
     template<typename T>
-    auto tryAs() const {
+    const T* tryAs() const {
 #ifndef NDEBUG
         _checkCast<T>(false);
 #endif
 
         if ( isA<T>() )
-            return std::static_pointer_cast<const T>(shared_from_this());
+            return static_cast<const T*>(this);
         else
-            return std::shared_ptr<const T>();
+            return nullptr;
     }
 
     /**
@@ -590,14 +582,14 @@ public:
      * the cast failed.
      */
     template<typename T>
-    auto tryAs() {
+    T* tryAs() {
 #ifndef NDEBUG
         _checkCast<T>(false);
 #endif
         if ( isA<T>() )
-            return std::static_pointer_cast<T>(shared_from_this());
+            return static_cast<T*>(this);
         else
-            return std::shared_ptr<T>();
+            return nullptr;
     }
 
     /**
@@ -608,11 +600,11 @@ public:
      * necessary.
      */
     template<typename T>
-    auto tryAs_() {
+    const T* tryAs_() {
         if ( isA<T>() )
-            return std::static_pointer_cast<T>(shared_from_this());
+            return static_cast<const T*>(this);
         else
-            return std::shared_ptr<T>();
+            return nullptr;
     }
 
     /**
@@ -715,15 +707,12 @@ public:
     /** Clears any error message associated with the node. */
     void clearErrors() { _errors.clear(); }
 
-    /** Removes all children. */
+    /**
+     * Removes all children from the node. It doesn't destroy the children,
+     * pointers remain valid, it just unlinks them from their current parent.
+     */
     void clearChildren();
 
-    /**
-     * Recursively clears all child nodes and then deletes them from this node.
-     * This helps to break reference cycles.
-     */
-
-    void destroyChildren();
     /**
      * Returns any instance properties associated with the node. These are used
      * (only) for debug logging. Derived classes should override this to add
@@ -763,14 +752,15 @@ protected:
     Node(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)
         : _node_tags(node_tags), _meta(std::move(meta)) {
         assert(! _node_tags.empty());
+        _children.reserve(children.size());
         for ( auto&& c : children ) {
             if ( c ) {
-                c = _newChild(ctx, std::move(c));
+                c = _newChild(ctx, c);
                 assert(! c->_parent);
                 c->_parent = this;
             }
 
-            _children.push_back(std::move(c));
+            _children.push_back(c);
         }
     }
 
@@ -788,7 +778,7 @@ protected:
      * Use `node::deepcopy()` to fully copy a node.
      *
      */
-    Node(const Node& other) : enable_shared_from_this(other), _node_tags(other._node_tags) {
+    Node(const Node& other) : _node_tags(other._node_tags) {
         _meta = other._meta;
         _inherit_scope = other._inherit_scope;
         _parent = nullptr;
@@ -813,7 +803,7 @@ protected:
      * latter being copied just by reference. This is for internal use only,
      * use node::deepcopy() to fully clone nodes.
      */
-    virtual NodePtr _clone(ASTContext* ctx) const = 0; // shallow copy
+    virtual Node* _clone(ASTContext* ctx) const = 0; // shallow copy
 
     /**
      * Returns additional information to include into the node's `dump()`
@@ -822,11 +812,11 @@ protected:
     virtual std::string _dump() const { return ""; }
 
 private:
-    friend NodePtr node::detail::deepcopy(ASTContext* ctx, const NodePtr& n, bool force);
+    friend Node* node::detail::deepcopy(ASTContext* ctx, Node* n, bool force);
 
     // Prepares a node for being added as a child, deep-copying it if it
     // already has a parent.
-    static NodePtr _newChild(ASTContext* ctx, NodePtr child);
+    static Node* _newChild(ASTContext* ctx, Node* child);
 
     // Clears the node's parent pointer.
     void _clearParent() { _parent = nullptr; }
@@ -1005,14 +995,14 @@ Nodes flatten(hilti::node::Range<T> t) {
 }
 
 /** Create a 1-element vector of nodes for an object implementing the `Node` API. */
-template<typename T = NodePtr>
-inline Nodes flatten(NodePtr n) {
-    return {std::move(n)};
+template<typename T = Node*>
+inline Nodes flatten(Node* n) {
+    return {n};
 }
 
 /** Create a 1-element vector of nodes for an object implementing the `Node` API. */
 template<typename T>
-inline Nodes flatten(std::shared_ptr<T> n) {
+inline Nodes flatten(T* n) {
     return {std::move(n)};
 }
 
@@ -1070,7 +1060,7 @@ auto filter(const hilti::node::Set<X>& x, F f) {
  */
 template<typename X, typename F>
 auto transform(const hilti::node::Range<X>& x, F f) {
-    using Y = std::invoke_result_t<F, std::shared_ptr<X>&>;
+    using Y = std::invoke_result_t<F, X*>;
     std::vector<Y> y;
     y.reserve(x.size());
     for ( const auto& i : x )
@@ -1085,7 +1075,7 @@ auto transform(const hilti::node::Range<X>& x, F f) {
  */
 template<typename X, typename F>
 auto transform(const hilti::node::Set<X>& x, F f) {
-    using Y = std::invoke_result_t<F, std::shared_ptr<X>&>;
+    using Y = std::invoke_result_t<F, X*>;
     std::vector<Y> y;
     y.reserve(x.size());
     for ( const auto& i : x )

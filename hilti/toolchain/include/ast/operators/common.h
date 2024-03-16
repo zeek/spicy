@@ -14,17 +14,15 @@
     namespace ns {                                                                                                     \
     class cls : public hilti::expression::ResolvedOperator {                                                           \
     public:                                                                                                            \
-        static std::shared_ptr<cls> create(hilti::ASTContext* ctx, const hilti::Operator* op,                          \
-                                           const hilti::QualifiedTypePtr& result, const hilti::Expressions& operands,  \
-                                           const hilti::Meta& meta) {                                                  \
-            return std::shared_ptr<cls>(new cls(ctx, op, result, operands, meta));                                     \
+        static cls* create(hilti::ASTContext* ctx, const hilti::Operator* op, hilti::QualifiedType* result,            \
+                           const hilti::Expressions& operands, hilti::Meta meta) {                                     \
+            return ctx->make<cls>(ctx, op, result, operands, std::move(meta));                                         \
         }                                                                                                              \
                                                                                                                        \
         HILTI_NODE_2(operator_::ns::cls, expression::ResolvedOperator, Expression, final);                             \
                                                                                                                        \
     private:                                                                                                           \
-        cls(ASTContext* ctx, const hilti::Operator* op, const QualifiedTypePtr& result, const Expressions& operands,   \
-            Meta meta)                                                                                                 \
+        cls(ASTContext* ctx, const hilti::Operator* op, QualifiedType* result, const Expressions& operands, Meta meta) \
             : ResolvedOperator(ctx, NodeTags, op, result, operands, std::move(meta)) {}                                \
     };                                                                                                                 \
     } // namespace ns

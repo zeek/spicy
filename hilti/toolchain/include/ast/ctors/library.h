@@ -23,15 +23,15 @@ class Library : public Ctor {
 public:
     auto value() const { return child<Ctor>(0); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(1); }
 
-    static auto create(ASTContext* ctx, const CtorPtr& ctor, const QualifiedTypePtr& type, const Meta& meta = {}) {
-        return std::shared_ptr<Library>(new Library(ctx,
-                                                    {
-                                                        ctor,
-                                                        type,
-                                                    },
-                                                    meta));
+    static auto create(ASTContext* ctx, Ctor* ctor, QualifiedType* type, const Meta& meta = {}) {
+        return ctx->make<Library>(ctx,
+                                  {
+                                      ctor,
+                                      type,
+                                  },
+                                  meta);
     }
 
 protected:

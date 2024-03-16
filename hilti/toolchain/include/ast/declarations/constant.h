@@ -19,7 +19,7 @@ class Constant : public Declaration {
 public:
     auto value() const { return child<hilti::Expression>(1); }
 
-    QualifiedTypePtr type() const {
+    QualifiedType* type() const {
         if ( auto t = child<QualifiedType>(0) )
             return t;
         else
@@ -28,19 +28,19 @@ public:
 
     std::string_view displayName() const final { return "constant"; }
 
-    void setValue(ASTContext* ctx, ExpressionPtr e) { setChild(ctx, 1, std::move(e)); }
+    void setValue(ASTContext* ctx, hilti::Expression* e) { setChild(ctx, 1, e); }
 
-    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, const ExpressionPtr& value,
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, hilti::Expression* value,
                        declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
-        QualifiedTypePtr t = type;
+        QualifiedType* t = type;
 
         if ( t )
             t = t->recreateAsConst(ctx);
 
-        return std::shared_ptr<Constant>(new Constant(ctx, {t, value}, std::move(id), linkage, std::move(meta)));
+        return ctx->make<Constant>(ctx, {t, value}, std::move(id), linkage, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, const ExpressionPtr& value,
+    static auto create(ASTContext* ctx, ID id, hilti::Expression* value,
                        declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
         return create(ctx, std::move(id), {}, value, linkage, std::move(meta));
     }

@@ -46,10 +46,10 @@ private:
 namespace detail {
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void validatePre(Builder* builder, const ASTRootPtr& root);
+void validatePre(Builder* builder, ASTRoot* root);
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void validatePost(Builder* builder, const ASTRootPtr& root);
+void validatePost(Builder* builder, ASTRoot* root);
 
 } // namespace detail
 } // namespace hilti::validator

@@ -20,9 +20,9 @@ class DocOnly : public UnqualifiedType {
 public:
     auto description() const { return _description; }
 
-    static auto create(ASTContext* ctx, const std::string& description, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, const std::string& description, Meta meta = {}) {
         // Note: We allow (i.e., must support) `ctx` being null.
-        return std::shared_ptr<DocOnly>(new DocOnly(ctx, description, meta));
+        return ctx->make<DocOnly>(ctx, description, std::move(meta));
     }
 
     std::string_view typeClass() const final { return "doc-only"; }

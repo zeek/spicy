@@ -22,11 +22,11 @@ public:
     }
 
     static auto create(ASTContext* ctx, const ID& id, Meta meta = {}) {
-        return std::shared_ptr<Member>(new Member(ctx, id, std::move(meta)));
+        return ctx->make<Member>(ctx, id, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Member>(new Member(ctx, Wildcard(), m));
+        return ctx->make<Member>(ctx, Wildcard(), m);
     }
 
 protected:
@@ -35,8 +35,8 @@ protected:
         assert(_id);
     }
 
-    Member(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"member(*)"}, meta), _id("<wildcard>") {}
+    Member(ASTContext* ctx, Wildcard _, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"member(*)"}, std::move(meta)), _id("<wildcard>") {}
 
     HILTI_NODE_1(type::Member, UnqualifiedType, final);
 

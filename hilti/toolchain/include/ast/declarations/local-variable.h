@@ -21,8 +21,8 @@ public:
 
     auto typeArguments() const { return children<hilti::Expression>(2, {}); }
 
-    void setType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t->recreateAsLhs(ctx)); }
-    void setInit(ASTContext* ctx, ExpressionPtr init) { setChild(ctx, 1, std::move(init)); }
+    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t->recreateAsLhs(ctx)); }
+    void setInit(ASTContext* ctx, hilti::Expression* init) { setChild(ctx, 1, init); }
 
     void setTypeArguments(ASTContext* ctx, Expressions args) {
         removeChildren(2, {});
@@ -31,23 +31,22 @@ public:
 
     std::string_view displayName() const final { return "local variable"; }
 
-    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, Expressions args,
-                       ExpressionPtr init = nullptr, Meta meta = {}) {
-        return std::shared_ptr<LocalVariable>(
-            new LocalVariable(ctx, node::flatten(type->recreateAsLhs(ctx), std::move(init), std::move(args)),
-                              std::move(id), std::move(meta)));
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Expressions args, hilti::Expression* init = nullptr,
+                       Meta meta = {}) {
+        return ctx->make<LocalVariable>(ctx, node::flatten(type->recreateAsLhs(ctx), init, std::move(args)),
+                                        std::move(id), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, ExpressionPtr init, Meta meta = {}) {
-        return create(ctx, std::move(id), type->recreateAsLhs(ctx), {}, std::move(init), std::move(meta));
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, hilti::Expression* init, Meta meta = {}) {
+        return create(ctx, std::move(id), type->recreateAsLhs(ctx), {}, init, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, const QualifiedTypePtr& type, Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Meta meta = {}) {
         return create(ctx, std::move(id), type->recreateAsLhs(ctx), {}, nullptr, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, ExpressionPtr init, const Meta& meta = {}) {
-        return create(ctx, std::move(id), QualifiedType::createAuto(ctx, meta), {}, std::move(init), meta);
+    static auto create(ASTContext* ctx, ID id, hilti::Expression* init, const Meta& meta = {}) {
+        return create(ctx, std::move(id), QualifiedType::createAuto(ctx, meta), {}, init, meta);
     }
 
     static auto create(ASTContext* ctx, ID id, const Meta& meta = {}) {

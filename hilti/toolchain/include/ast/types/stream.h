@@ -17,14 +17,14 @@ namespace stream {
 class Iterator : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "iterator<stream>"; }
-    QualifiedTypePtr dereferencedType() const final { return child<QualifiedType>(0); }
+    QualifiedType* dereferencedType() const final { return child<QualifiedType>(0); }
 
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
 
-    static auto create(ASTContext* ctx, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Meta meta = {}) {
         auto etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::Mutable, meta);
-        return std::shared_ptr<Iterator>(new Iterator(ctx, {etype}, meta));
+        return ctx->make<Iterator>(ctx, {etype}, std::move(meta));
     }
 
 protected:
@@ -42,12 +42,12 @@ public:
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
 
-    QualifiedTypePtr elementType() const final { return iteratorType()->type()->dereferencedType(); }
-    QualifiedTypePtr iteratorType() const final { return child<QualifiedType>(0); }
+    QualifiedType* elementType() const final { return iteratorType()->type()->dereferencedType(); }
+    QualifiedType* iteratorType() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        return std::shared_ptr<View>(
-            new View(ctx, {QualifiedType::create(ctx, Iterator::create(ctx, meta), Constness::Mutable)}, meta));
+        return ctx->make<View>(ctx, {QualifiedType::create(ctx, Iterator::create(ctx, meta), Constness::Mutable)},
+                               meta);
     }
 
 protected:
@@ -68,13 +68,13 @@ public:
     bool isMutable() const final { return true; }
     bool isSortable() const final { return true; }
 
-    QualifiedTypePtr elementType() const final { return iteratorType()->type()->dereferencedType(); }
-    QualifiedTypePtr iteratorType() const final { return viewType()->type()->iteratorType(); }
-    QualifiedTypePtr viewType() const final { return child<QualifiedType>(0); }
+    QualifiedType* elementType() const final { return iteratorType()->type()->dereferencedType(); }
+    QualifiedType* iteratorType() const final { return viewType()->type()->iteratorType(); }
+    QualifiedType* viewType() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        return std::shared_ptr<Stream>(
-            new Stream(ctx, {QualifiedType::create(ctx, stream::View::create(ctx, meta), Constness::Mutable)}, meta));
+        return ctx->make<Stream>(ctx, {QualifiedType::create(ctx, stream::View::create(ctx, meta), Constness::Mutable)},
+                                 meta);
     }
 
 protected:

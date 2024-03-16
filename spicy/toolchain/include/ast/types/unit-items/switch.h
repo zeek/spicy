@@ -50,17 +50,17 @@ public:
 
     static auto create(ASTContext* ctx, const Expressions& exprs, const type::unit::Items& items,
                        const Meta& m = Meta()) {
-        return std::shared_ptr<Case>(new Case(ctx, node::flatten(exprs, items), false, m));
+        return ctx->make<Case>(ctx, node::flatten(exprs, items), false, m);
     }
 
     /** Factory function for a default case. */
     static auto create(ASTContext* ctx, const type::unit::Items& items, const Meta& m = Meta()) {
-        return std::shared_ptr<Case>(new Case(ctx, items, false, m));
+        return ctx->make<Case>(ctx, items, false, m);
     }
 
     /** Factory function for a look-ahead case. */
-    static auto create(ASTContext* ctx, const type::unit::ItemPtr& field, const Meta& m = Meta()) {
-        return std::shared_ptr<Case>(new Case(ctx, {field}, true, m));
+    static auto create(ASTContext* ctx, type::unit::Item* field, const Meta& m = Meta()) {
+        return ctx->make<Case>(ctx, {field}, true, m);
     }
 
 protected:
@@ -73,8 +73,7 @@ private:
     bool _look_ahead = false;
 };
 
-using CasePtr = std::shared_ptr<Case>;
-using Cases = std::vector<CasePtr>;
+using Cases = NodeVector<Case>;
 
 } // namespace switch_
 
@@ -95,9 +94,9 @@ public:
      *
      * field: The field.
      */
-    switch_::CasePtr case_(const type::unit::item::FieldPtr& field) const;
+    switch_::Case* case_(const type::unit::item::Field* field) const;
 
-    QualifiedTypePtr itemType() const final { return child<QualifiedType>(3); }
+    QualifiedType* itemType() const final { return child<QualifiedType>(3); }
 
     bool isResolved(hilti::node::CycleDetector* cd) const final {
         for ( const auto& c : cases() ) {
@@ -115,24 +114,22 @@ public:
         return unit::Item::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, ExpressionPtr expr, type::unit::item::switch_::Cases cases, Engine engine,
-                       ExpressionPtr cond, spicy::declaration::Hooks hooks, AttributeSetPtr attrs,
-                       const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, Expression* expr, type::unit::item::switch_::Cases cases, Engine engine,
+                       Expression* cond, spicy::declaration::Hooks hooks, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return std::shared_ptr<Switch>(
-            new Switch(ctx,
-                       node::flatten(std::move(expr), std::move(cond), attrs,
-                                     QualifiedType::create(ctx, hilti::type::Void::create(ctx),
-                                                           hilti::Constness::Const),
-                                     std::move(cases), std::move(hooks)),
-                       engine, meta));
+        return ctx->make<Switch>(ctx,
+                                 node::flatten(expr, cond, attrs,
+                                               QualifiedType::create(ctx, hilti::type::Void::create(ctx),
+                                                                     hilti::Constness::Const),
+                                               std::move(cases), std::move(hooks)),
+                                 engine, std::move(meta));
     }
 
 protected:
-    Switch(ASTContext* ctx, Nodes children, Engine engine, const Meta& meta)
-        : unit::Item(ctx, NodeTags, std::move(children), ID(), meta), _engine(engine) {}
+    Switch(ASTContext* ctx, Nodes children, Engine engine, Meta meta)
+        : unit::Item(ctx, NodeTags, std::move(children), ID(), std::move(meta)), _engine(engine) {}
 
     SPICY_NODE_2(type::unit::item::Switch, type::unit::Item, Declaration, final);
 

@@ -16,7 +16,7 @@
 using namespace spicy;
 using namespace spicy::type;
 
-static NodePtr itemByNameBackend(const std::shared_ptr<spicy::type::unit::Item>& i, const ID& id) {
+static Node* itemByNameBackend(spicy::type::unit::Item* i, const ID& id) {
     if ( i->id() == id &&
          (i->isA<unit::item::Field>() || i->isA<unit::item::Variable>() || i->isA<unit::item::Sink>()) )
         return i;
@@ -33,7 +33,7 @@ static NodePtr itemByNameBackend(const std::shared_ptr<spicy::type::unit::Item>&
     return {};
 }
 
-unit::item::PropertyPtr Unit::propertyItem(const std::string& name) const {
+unit::item::Property* Unit::propertyItem(const std::string& name) const {
     for ( const auto& i : items<unit::item::Property>() ) {
         if ( i->id() == name )
             return i;
@@ -75,7 +75,7 @@ bool Unit::isResolved(node::CycleDetector* cd) const {
     return true;
 }
 
-unit::ItemPtr Unit::itemByName(const ID& id) const {
+unit::Item* Unit::itemByName(const ID& id) const {
     for ( const auto& i : items() ) {
         if ( auto x = itemByNameBackend(i, id) )
             return x->as<unit::Item>();
@@ -84,7 +84,7 @@ unit::ItemPtr Unit::itemByName(const ID& id) const {
     return {};
 }
 
-static std::pair<unit::item::FieldPtr, std::shared_ptr<hilti::type::bitfield::BitRange>> findRangeInAnonymousBitField(
+static std::pair<unit::item::Field*, hilti::type::bitfield::BitRange*> findRangeInAnonymousBitField(
     const hilti::node::Set<type::unit::Item>& items, const ID& id) {
     for ( const auto& item : items ) {
         if ( auto field = item->tryAs<type::unit::item::Field>() ) {
@@ -109,8 +109,7 @@ static std::pair<unit::item::FieldPtr, std::shared_ptr<hilti::type::bitfield::Bi
     return {};
 }
 
-std::pair<unit::item::FieldPtr, std::shared_ptr<hilti::type::bitfield::BitRange>> Unit::findRangeInAnonymousBitField(
-    const ID& id) const {
+std::pair<unit::item::Field*, hilti::type::bitfield::BitRange*> Unit::findRangeInAnonymousBitField(const ID& id) const {
     return ::findRangeInAnonymousBitField(items(), id);
 }
 
@@ -154,5 +153,5 @@ void Unit::_setSelf(ASTContext* ctx) {
 
     auto decl = hilti::declaration::Expression::create(ctx, ID("self"), self, {}, meta());
 
-    setChild(ctx, 0, std::move(decl));
+    setChild(ctx, 0, decl);
 }

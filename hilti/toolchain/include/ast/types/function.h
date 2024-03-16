@@ -17,7 +17,6 @@ namespace hilti::type {
 namespace function {
 
 using Parameter = declaration::Parameter;
-using ParameterPtr = declaration::ParameterPtr;
 using Parameters = declaration::Parameters;
 
 /**
@@ -65,7 +64,7 @@ public:
 
     bool isResolved(node::CycleDetector* cd) const final;
 
-    void setResultType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
+    void setResultType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
     void setFunctionNameForPrinting(ID id) { _id = std::move(id); } // just for operating printing
     void setParameters(ASTContext* ctx, const declaration::Parameters& params) {
         removeChildren(1, {});
@@ -77,15 +76,14 @@ public:
         return UnqualifiedType::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& result, const declaration::Parameters& params,
-                       function::Flavor flavor = function::Flavor::Standard, const Meta& meta = {}) {
-        return std::shared_ptr<Function>(new Function(ctx, flatten(result, params), flavor, meta));
+    static auto create(ASTContext* ctx, QualifiedType* result, const declaration::Parameters& params,
+                       function::Flavor flavor = function::Flavor::Standard, Meta meta = {}) {
+        return ctx->make<Function>(ctx, flatten(result, params), flavor, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Function>(
-            new Function(ctx, Wildcard(), {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
-                         m));
+        return ctx->make<Function>(ctx, Wildcard(),
+                                   {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
     }
 
 protected:
@@ -103,13 +101,11 @@ private:
     ID _id;
 };
 
-using FunctionPtr = std::shared_ptr<Function>;
-
 /**
  * Returns true if two function types are equivalent, even if not
  * identical. This for example allows parameter ID to be different.
  */
-inline bool areEquivalent(const FunctionPtr& f1, const FunctionPtr& f2) {
+inline bool areEquivalent(Function* f1, Function* f2) {
     if ( ! type::same(f1->result(), f2->result()) )
         return false;
 

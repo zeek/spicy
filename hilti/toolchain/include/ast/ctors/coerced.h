@@ -15,10 +15,10 @@ public:
     auto originalCtor() const { return child<Ctor>(0); }
     auto coercedCtor() const { return child<Ctor>(1); }
 
-    QualifiedTypePtr type() const final { return coercedCtor()->type(); }
+    QualifiedType* type() const final { return coercedCtor()->type(); }
 
-    static auto create(ASTContext* ctx, const CtorPtr& orig, const CtorPtr& new_, const Meta& meta = {}) {
-        return std::shared_ptr<Coerced>(new Coerced(ctx, {orig, new_}, meta));
+    static auto create(ASTContext* ctx, Ctor* orig, Ctor* new_, Meta meta = {}) {
+        return ctx->make<Coerced>(ctx, {orig, new_}, std::move(meta));
     }
 
 protected:

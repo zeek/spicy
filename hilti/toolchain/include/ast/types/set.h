@@ -18,20 +18,19 @@ class Iterator : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "iterator<set>"; }
 
-    QualifiedTypePtr dereferencedType() const override { return child<QualifiedType>(0); }
+    QualifiedType* dereferencedType() const override { return child<QualifiedType>(0); }
 
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& etype, Meta meta = {}) {
-        return std::shared_ptr<Iterator>(new Iterator(ctx, {etype}, std::move(meta)));
+    static auto create(ASTContext* ctx, QualifiedType* etype, Meta meta = {}) {
+        return ctx->make<Iterator>(ctx, {etype}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Iterator>(
-            new Iterator(ctx, Wildcard(), {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
-                         m));
+        return ctx->make<Iterator>(ctx, Wildcard(),
+                                   {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
     }
 
 protected:
@@ -51,22 +50,24 @@ class Set : public UnqualifiedType {
 public:
     std::string_view typeClass() const final { return "set"; }
 
-    QualifiedTypePtr elementType() const final { return iteratorType()->type()->dereferencedType(); }
-    QualifiedTypePtr iteratorType() const final { return child<QualifiedType>(0); }
+    QualifiedType* elementType() const final { return iteratorType()->type()->dereferencedType(); }
+    QualifiedType* iteratorType() const final { return child<QualifiedType>(0); }
 
     bool isAllocable() const override { return true; }
     bool isMutable() const override { return true; }
     bool isResolved(node::CycleDetector* cd) const final { return iteratorType()->isResolved(cd); }
 
-    static auto create(ASTContext* ctx, const QualifiedTypePtr& t, const Meta& meta = {}) {
-        return std::shared_ptr<Set>(
-            new Set(ctx, {QualifiedType::create(ctx, set::Iterator::create(ctx, t, meta), Constness::Mutable)}, meta));
+    static auto create(ASTContext* ctx, QualifiedType* t, const Meta& meta = {}) {
+        return ctx->make<Set>(ctx,
+                              {QualifiedType::create(ctx, set::Iterator::create(ctx, t, meta), Constness::Mutable)},
+                              meta);
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Set>(
-            new Set(ctx, Wildcard(),
-                    {QualifiedType::create(ctx, set::Iterator::create(ctx, Wildcard(), m), Constness::Mutable)}, m));
+        return ctx->make<Set>(ctx, Wildcard(),
+                              {QualifiedType::create(ctx, set::Iterator::create(ctx, Wildcard(), m),
+                                                     Constness::Mutable)},
+                              m);
     }
 
 protected:

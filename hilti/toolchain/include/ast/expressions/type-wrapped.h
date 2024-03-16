@@ -15,11 +15,10 @@ class TypeWrapped : public Expression {
 public:
     auto expression() const { return child<Expression>(0); }
 
-    QualifiedTypePtr type() const final { return child<QualifiedType>(1); }
+    QualifiedType* type() const final { return child<QualifiedType>(1); }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const QualifiedTypePtr& type,
-                       const Meta& meta = {}) {
-        return std::shared_ptr<TypeWrapped>(new TypeWrapped(ctx, {expr, type}, meta));
+    static auto create(ASTContext* ctx, Expression* expr, QualifiedType* type, Meta meta = {}) {
+        return ctx->make<TypeWrapped>(ctx, {expr, type}, std::move(meta));
     }
 
 protected:

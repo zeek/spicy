@@ -12,9 +12,7 @@ namespace hilti::type {
 /** AST node for a error type. */
 class Error : public UnqualifiedType {
 public:
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Error>(new Error(ctx, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Error>(ctx, std::move(meta)); }
 
     std::string_view typeClass() const final { return "error"; }
 

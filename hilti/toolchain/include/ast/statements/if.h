@@ -20,16 +20,15 @@ public:
     auto true_() const { return child<hilti::Statement>(2); }
     auto false_() const { return child<Statement>(3); }
 
-    void setCondition(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 1, c); }
+    void setCondition(ASTContext* ctx, hilti::Expression* c) { setChild(ctx, 1, c); }
 
-    static auto create(ASTContext* ctx, const DeclarationPtr& init, const ExpressionPtr& cond,
-                       const StatementPtr& true_, const StatementPtr& false_, Meta meta = {}) {
-        return std::shared_ptr<If>(new If(ctx, {init, cond, true_, false_}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Declaration* init, hilti::Expression* cond, Statement* true_,
+                       Statement* false_, Meta meta = {}) {
+        return ctx->make<If>(ctx, {init, cond, true_, false_}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ExpressionPtr& cond, const StatementPtr& true_,
-                       const StatementPtr& false_, Meta meta = {}) {
-        return std::shared_ptr<If>(new If(ctx, {nullptr, cond, true_, false_}, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Expression* cond, Statement* true_, Statement* false_, Meta meta = {}) {
+        return ctx->make<If>(ctx, {nullptr, cond, true_, false_}, std::move(meta));
     }
 
 protected:

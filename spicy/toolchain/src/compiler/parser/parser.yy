@@ -49,7 +49,7 @@ static hilti::Meta toMeta(spicy::detail::parser::location l) {
                                        (l.end.column > 0 ? l.end.column - 1 : 0)));
 }
 
-static hilti::QualifiedTypePtr iteratorForType(spicy::Builder* builder, hilti::QualifiedTypePtr t, hilti::Meta m) {
+static hilti::QualifiedType* iteratorForType(spicy::Builder* builder, hilti::QualifiedType* t, hilti::Meta m) {
     if ( auto iter = t->type()->iteratorType() )
         return iter;
     else {
@@ -58,7 +58,7 @@ static hilti::QualifiedTypePtr iteratorForType(spicy::Builder* builder, hilti::Q
         }
 }
 
-static hilti::QualifiedTypePtr viewForType(spicy::Builder* builder, hilti::QualifiedTypePtr t, hilti::Meta m) {
+static hilti::QualifiedType* viewForType(spicy::Builder* builder, hilti::QualifiedType* t, hilti::Meta m) {
     if ( auto v = t->type()->viewType() )
         return v;
     else {
@@ -267,36 +267,36 @@ static std::vector<hilti::DocString> _docs;
 %token WHILE
 
 %type <hilti::ID>                           local_id scoped_id dotted_id unit_hook_id
-%type <hilti::DeclarationPtr>               local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
+%type <hilti::Declaration*>               local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
 %type <hilti::Declarations>                 struct_fields
-%type <hilti::UnqualifiedTypePtr>           base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
-%type <hilti::QualifiedTypePtr>             qtype func_result opt_func_result
-%type <hilti::CtorPtr>                      ctor tuple struct_ regexp list vector map set unit_field_ctor
-%type <hilti::ExpressionPtr>                expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_range_value
+%type <hilti::UnqualifiedType*>           base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
+%type <hilti::QualifiedType*>             qtype func_result opt_func_result
+%type <hilti::Ctor*>                      ctor tuple struct_ regexp list vector map set unit_field_ctor
+%type <hilti::Expression*>                expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_range_value
 %type <hilti::Expressions>                  opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
-%type <hilti::type::function::ParameterPtr> func_param
+%type <hilti::type::function::Parameter*> func_param
 %type <hilti::parameter::Kind>              opt_func_param_kind
 %type <hilti::type::function::Flavor>       opt_func_flavor
 %type <hilti::function::CallingConvention>  opt_func_cc
 %type <hilti::declaration::Linkage>         opt_linkage
 %type <hilti::declaration::Parameters>      func_params opt_func_params opt_unit_params opt_unit_hook_params
-%type <hilti::StatementPtr>                 stmt stmt_decl stmt_expr block braced_block opt_else_block
+%type <hilti::Statement*>                 stmt stmt_decl stmt_expr block braced_block opt_else_block
 %type <hilti::Statements>                   stmts opt_stmts
-%type <hilti::AttributePtr>                 attribute unit_hook_attribute
-%type <hilti::AttributeSetPtr>              opt_attributes opt_unit_hook_attributes
-%type <hilti::type::tuple::ElementPtr>      tuple_type_elem
+%type <hilti::Attribute*>                 attribute unit_hook_attribute
+%type <hilti::AttributeSet*>              opt_attributes opt_unit_hook_attributes
+%type <hilti::type::tuple::Element*>      tuple_type_elem
 %type <hilti::type::tuple::Elements>        tuple_type_elems
 %type <hilti::ctor::struct_::Fields>        struct_elems
-%type <hilti::ctor::struct_::FieldPtr>      struct_elem
+%type <hilti::ctor::struct_::Field*>      struct_elem
 %type <hilti::ctor::map::Elements>          map_elems opt_map_elems
-%type <hilti::ctor::map::ElementPtr>        map_elem
-%type <hilti::type::enum_::LabelPtr>        enum_label
+%type <hilti::ctor::map::Element*>        map_elem
+%type <hilti::type::enum_::Label*>        enum_label
 %type <hilti::type::enum_::Labels>          enum_labels
 %type <hilti::type::bitfield::BitRanges>    bitfield_bit_ranges opt_bitfield_bit_ranges
-%type <hilti::type::bitfield::BitRangePtr>  bitfield_bit_range
+%type <hilti::type::bitfield::BitRange*>  bitfield_bit_range
 %type <std::vector<std::string>>            re_patterns
 %type <std::string>                         re_pattern_constant
-%type <hilti::statement::switch_::CasePtr>  switch_case
+%type <hilti::statement::switch_::Case*>  switch_case
 %type <hilti::statement::switch_::Cases>    switch_cases
 
 %type <std::pair<hilti::Declarations, hilti::Statements>> global_scope_items
@@ -304,13 +304,13 @@ static std::vector<hilti::DocString> _docs;
 // Spicy-only
 %type <hilti::ID>                            opt_unit_field_id
 %type <spicy::Engine>                        opt_unit_field_engine opt_hook_engine
-%type <spicy::declaration::HookPtr>          unit_hook
+%type <spicy::declaration::Hook*>          unit_hook
 %type <spicy::declaration::Hooks>            opt_unit_item_hooks unit_hooks
-%type <spicy::type::unit::ItemPtr>           unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink
+%type <spicy::type::unit::Item*>           unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink
 %type <spicy::type::unit::Items>             unit_items opt_unit_items
-%type <spicy::type::unit::item::switch_::CasePtr>   unit_switch_case
+%type <spicy::type::unit::item::switch_::Case*>   unit_switch_case
 %type <spicy::type::unit::item::switch_::Cases>     unit_switch_cases
-%type <std::pair<hilti::QualifiedTypePtr, hilti::ExpressionPtr>> global_decl_type_and_init
+%type <std::pair<hilti::QualifiedType*, hilti::Expression*>> global_decl_type_and_init
 
 %type <int64_t>  const_sint
 %type <uint64_t> const_uint

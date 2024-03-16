@@ -55,7 +55,7 @@ struct VisitorPrinter : visitor::PreOrder {
 
 } // anonymous namespace
 
-bool spicy::detail::printer::print(hilti::printer::Stream& stream, const NodePtr& root) {
+bool spicy::detail::printer::print(hilti::printer::Stream& stream, Node* root) {
     hilti::util::timing::Collector _("spicy/printer");
 
     return visitor::dispatch(VisitorPrinter(stream), root, [](const auto& v) { return v.result; });

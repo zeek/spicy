@@ -19,16 +19,15 @@ using hilti::util::fmt;
 namespace {
 
 struct LiteralParser {
-    LiteralParser(ParserBuilder* pb, const Production* p, ExpressionPtr dst)
-        : pb(pb), production(p), dst(std::move(dst)) {}
+    LiteralParser(ParserBuilder* pb, const Production* p, Expression* dst) : pb(pb), production(p), dst(dst) {}
 
     ParserBuilder* pb;
     const Production* production;
-    const ExpressionPtr dst;
+    Expression* dst = nullptr;
 
-    ExpressionPtr buildParser(const NodePtr& n);
+    Expression* buildParser(Node* n);
 
-    ExpressionPtr destination(const UnqualifiedTypePtr& t) {
+    Expression* destination(UnqualifiedType* t) {
         if ( dst )
             return dst;
 
@@ -43,7 +42,7 @@ struct Visitor : public visitor::PreOrder {
     Visitor(LiteralParser* lp) : lp(lp) {}
 
     LiteralParser* lp;
-    ExpressionPtr result = nullptr;
+    Expression* result = nullptr;
 
     auto pb() { return lp->pb; }
     auto state() { return pb()->state(); }
@@ -59,8 +58,7 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::ctor::Bytes* n) final {
         auto error_msg = fmt("expecting '%s'", n->value());
         auto len = builder()->integer(static_cast<uint64_t>(n->value().size()));
-        auto cond =
-            builder()->memberCall(state().cur, "starts_with", {builder()->expression(n->as<hilti::ctor::Bytes>())});
+        auto cond = builder()->memberCall(state().cur, "starts_with", {builder()->expression(n)});
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
@@ -75,7 +73,7 @@ struct Visitor : public visitor::PreOrder {
                 popBuilder();
 
                 pushBuilder(builder()->addIf(
-                    builder()->unequal(builder()->expression(n->as<hilti::ctor::Bytes>()),
+                    builder()->unequal(builder()->expression(n),
                                        builder()->memberCall(state().cur, "sub",
                                                              {builder()->begin(state().cur), state().lahead_end}))));
                 pb()->parseError("unexpected data when consuming token", n->meta());
@@ -95,10 +93,9 @@ struct Visitor : public visitor::PreOrder {
                 popBuilder();
 
                 if ( state().literal_mode != LiteralMode::Skip )
-                    builder()->addAssign(lp->destination(n->type()->type()),
-                                         builder()->expression(n->as<hilti::ctor::Bytes>()));
+                    builder()->addAssign(lp->destination(n->type()->type()), builder()->expression(n));
 
-                result = builder()->expression(n->as<hilti::ctor::Bytes>());
+                result = builder()->expression(n);
                 return;
             }
 
@@ -126,7 +123,7 @@ struct Visitor : public visitor::PreOrder {
             pb()->cg()->addDeclaration(d);
         }
 
-        auto parse = [&](ExpressionPtr result) -> ExpressionPtr {
+        auto parse = [&](Expression* result) -> Expression* {
             auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
             if ( ! result && state().literal_mode != LiteralMode::Skip )
                 result = lp->destination(builder()->typeBytes());
@@ -219,8 +216,8 @@ struct Visitor : public visitor::PreOrder {
 
     void operator()(hilti::expression::Ctor* n) final { result = lp->buildParser(n->ctor()); }
 
-    ExpressionPtr parseInteger(const UnqualifiedTypePtr& type, const ExpressionPtr& expected, const Meta& meta) {
-        auto offset = [this](ExpressionPtr view) { return builder()->memberCall(std::move(view), "offset"); };
+    Expression* parseInteger(UnqualifiedType* type, Expression* expected, const Meta& meta) {
+        auto offset = [this](Expression* view) { return builder()->memberCall(view, "offset"); };
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
@@ -279,16 +276,15 @@ struct Visitor : public visitor::PreOrder {
     }
 
     void operator()(hilti::ctor::UnsignedInteger* n) final {
-        result =
-            parseInteger(n->type()->type(), builder()->expression(n->as<hilti::ctor::UnsignedInteger>()), n->meta());
+        result = parseInteger(n->type()->type(), builder()->expression(n), n->meta());
     }
 
     void operator()(hilti::ctor::SignedInteger* n) final {
-        result = parseInteger(n->type()->type(), builder()->expression(n->as<hilti::ctor::SignedInteger>()), n->meta());
+        result = parseInteger(n->type()->type(), builder()->expression(n), n->meta());
     }
 
     void operator()(hilti::ctor::Bitfield* n) final {
-        auto offset = [this](ExpressionPtr view) { return builder()->memberCall(std::move(view), "offset"); };
+        auto offset = [this](Expression* view) { return builder()->memberCall(view, "offset"); };
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
@@ -363,13 +359,13 @@ struct Visitor : public visitor::PreOrder {
     }
 };
 
-ExpressionPtr LiteralParser::buildParser(const NodePtr& n) {
+Expression* LiteralParser::buildParser(Node* n) {
     return hilti::visitor::dispatch(Visitor(this), n, [](const auto& v) { return v.result; });
 }
 
 } // namespace
 
-ExpressionPtr ParserBuilder::parseLiteral(const Production& p, const ExpressionPtr& dst) {
+Expression* ParserBuilder::parseLiteral(const Production& p, Expression* dst) {
     if ( auto e = LiteralParser(this, &p, dst).buildParser(p.expression()) )
         return e;
 

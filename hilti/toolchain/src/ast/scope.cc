@@ -17,8 +17,8 @@
 
 using namespace hilti;
 
-void Scope::insert(const ID& id, DeclarationPtr d) { _items[id].insert(std::move(d)); }
-void Scope::insert(const DeclarationPtr& d) { _items[d->id()].insert(d); }
+void Scope::insert(const ID& id, Declaration* d) { _items[id].insert(d); }
+void Scope::insert(Declaration* d) { _items[d->id()].insert(d); }
 
 void Scope::insertNotFound(const ID& id) { _items[std::string(id)] = {nullptr}; }
 
@@ -26,8 +26,8 @@ static auto createRefs(const std::vector<Scope::Referee>& refs, const std::strin
     std::vector<Scope::Referee> result;
 
     result.reserve(refs.size());
-    for ( auto r : refs ) {
-        result.push_back(Scope::Referee{.node = std::move(r.node),
+    for ( const auto& r : refs ) {
+        result.push_back(Scope::Referee{.node = r.node,
                                         .qualified = (ns + "::" + r.qualified),
                                         .external = (external || r.external)});
     }

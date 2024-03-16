@@ -32,7 +32,7 @@ public:
         return Statement::properties() + p;
     }
 
-    void setExpression(ASTContext* ctx, const ExpressionPtr& c) { setChild(ctx, 0, c); }
+    void setExpression(ASTContext* ctx, hilti::Expression* c) { setChild(ctx, 0, c); }
 
     /**
      * Creates an assert statement that expects an expression to evaluate to true at runtime.
@@ -41,8 +41,8 @@ public:
      * @param msg optional message to report an runtime if assertions fails
      * @param m meta information for AST node
      */
-    static auto create(ASTContext* ctx, const ExpressionPtr& expr, const ExpressionPtr& msg = nullptr, Meta meta = {}) {
-        return std::shared_ptr<Assert>(new Assert(ctx, {expr, nullptr, msg}, false, std::move(meta)));
+    static auto create(ASTContext* ctx, hilti::Expression* expr, hilti::Expression* msg = nullptr, Meta meta = {}) {
+        return ctx->make<Assert>(ctx, {expr, nullptr, msg}, false, std::move(meta));
     }
 
     /**
@@ -55,9 +55,9 @@ public:
      * @param msg optional message to report an runtime if assertions fails
      * @param m meta information for AST node
      */
-    static auto create(ASTContext* ctx, assert::Exception /*unused*/, const ExpressionPtr& expr,
-                       const UnqualifiedTypePtr& excpt, const ExpressionPtr& msg = nullptr, const Meta& meta = {}) {
-        return std::shared_ptr<Assert>(new Assert(ctx, {expr, excpt, msg}, true, meta));
+    static auto create(ASTContext* ctx, assert::Exception /*unused*/, hilti::Expression* expr, UnqualifiedType* excpt,
+                       hilti::Expression* msg = nullptr, Meta meta = {}) {
+        return ctx->make<Assert>(ctx, {expr, excpt, msg}, true, std::move(meta));
     }
 
 protected:

@@ -14,11 +14,11 @@ namespace hilti::expression {
 /** AST node for a void expression. */
 class Void : public Expression {
 public:
-    QualifiedTypePtr type() const final { return child<QualifiedType>(0); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        return std::shared_ptr<Void>(
-            new Void(ctx, {QualifiedType::create(ctx, type::Void::create(ctx, meta), Constness::Const)}, meta));
+        return ctx->make<Void>(ctx, {QualifiedType::create(ctx, type::Void::create(ctx, meta), Constness::Const)},
+                               meta);
     }
 
 protected:

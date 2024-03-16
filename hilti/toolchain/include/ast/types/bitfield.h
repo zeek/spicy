@@ -47,30 +47,28 @@ public:
         return Declaration::properties() + p;
     }
 
-    void setItemType(ASTContext* ctx, const QualifiedTypePtr& t) { setChild(ctx, 0, t); }
-    void setAttributes(ASTContext* ctx, const AttributeSetPtr& attrs) { setChild(ctx, 1, attrs); }
-    void setCtorValue(ASTContext* ctx, const ExpressionPtr& e) { setChild(ctx, 2, e); }
+    void setItemType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
+    void setAttributes(ASTContext* ctx, AttributeSet* attrs) { setChild(ctx, 1, attrs); }
+    void setCtorValue(ASTContext* ctx, Expression* e) { setChild(ctx, 2, e); }
 
     static auto create(ASTContext* ctx, const ID& id, unsigned int lower, unsigned int upper, unsigned int field_width,
-                       AttributeSetPtr attrs = {}, const ExpressionPtr& ctor_value = nullptr,
-                       const Meta& meta = Meta()) {
+                       AttributeSet* attrs = {}, Expression* ctor_value = nullptr, Meta meta = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         auto dd = expression::Keyword::createDollarDollarDeclaration(
             ctx, QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, field_width), Constness::Const));
 
-        return std::shared_ptr<BitRange>(
-            new BitRange(ctx, node::flatten(QualifiedType::createAuto(ctx), attrs, ctor_value, dd), id, lower, upper,
-                         field_width, meta));
+        return ctx->make<BitRange>(ctx, node::flatten(QualifiedType::createAuto(ctx), attrs, ctor_value, dd), id, lower,
+                                   upper, field_width, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, const ID& id, unsigned int lower, unsigned int upper, unsigned int field_width,
-                       AttributeSetPtr attrs = {}, const Meta& meta = Meta()) {
+                       AttributeSet* attrs = {}, Meta meta = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return create(ctx, id, lower, upper, field_width, attrs, nullptr, meta);
+        return create(ctx, id, lower, upper, field_width, attrs, nullptr, std::move(meta));
     }
 
 protected:
@@ -92,8 +90,7 @@ private:
     unsigned int _field_width = 0;
 };
 
-using BitRangePtr = std::shared_ptr<BitRange>;
-using BitRanges = std::vector<BitRangePtr>;
+using BitRanges = NodeVector<BitRange>;
 
 } // namespace bitfield
 
@@ -110,7 +107,7 @@ public:
             return children<bitfield::BitRange>(1, -1);
     }
 
-    bitfield::BitRangePtr bits(const ID& id) const;
+    bitfield::BitRange* bits(const ID& id) const;
     std::optional<unsigned int> bitsIndex(const ID& id) const;
 
     /**
@@ -118,9 +115,9 @@ public:
      * a bitfield ctor value that corresponds to all values defined by any of
      * the bits. If none does, return nothing.
      */
-    CtorPtr ctorValue(ASTContext* ctx);
+    Ctor* ctorValue(ASTContext* ctx);
 
-    void addField(ASTContext* ctx, const bitfield::BitRangePtr& f) { addChild(ctx, f); }
+    void addField(ASTContext* ctx, bitfield::BitRange* f) { addChild(ctx, f); }
 
     std::string_view typeClass() const final { return "bitfield"; }
 
@@ -136,17 +133,17 @@ public:
         return UnqualifiedType::properties() + node::WithUniqueID::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, unsigned int width, type::bitfield::BitRanges bits, AttributeSetPtr attrs,
+    static auto create(ASTContext* ctx, unsigned int width, type::bitfield::BitRanges bits, AttributeSet* attrs,
                        const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         auto value = bitfield::BitRange::create(ctx, ID("__value__"), 0, width - 1, width, {}, m);
-        return std::shared_ptr<Bitfield>(new Bitfield(ctx, node::flatten(attrs, std::move(bits), value), width, m));
+        return ctx->make<Bitfield>(ctx, node::flatten(attrs, std::move(bits), value), width, m);
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return std::shared_ptr<Bitfield>(new Bitfield(ctx, Wildcard(), m));
+        return ctx->make<Bitfield>(ctx, Wildcard(), m);
     }
 
 protected:
@@ -155,8 +152,8 @@ protected:
           WithUniqueID("bitfield"),
           _width(width) {}
 
-    Bitfield(ASTContext* ctx, Wildcard _, const Meta& meta)
-        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"bitfield(*)"}, meta), WithUniqueID("bitfield") {}
+    Bitfield(ASTContext* ctx, Wildcard _, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, Wildcard(), {"bitfield(*)"}, std::move(meta)), WithUniqueID("bitfield") {}
 
     HILTI_NODE_1(type::Bitfield, UnqualifiedType, final);
 

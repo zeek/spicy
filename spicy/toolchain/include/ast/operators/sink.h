@@ -8,6 +8,7 @@
 #include <hilti/ast/operators/common.h>
 
 #include <spicy/ast/forward.h>
+#include <spicy/ast/node.h>
 
 namespace spicy::operator_ {
 

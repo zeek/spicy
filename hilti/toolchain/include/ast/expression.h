@@ -21,7 +21,7 @@ public:
     auto isResolved(node::CycleDetector* cd = nullptr) const { return type()->type()->isResolved(cd); }
 
     /** Returns the expression's HILTI type when evaluated. */
-    virtual QualifiedTypePtr type() const = 0;
+    virtual QualifiedType* type() const = 0;
 
 protected:
     Expression(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)

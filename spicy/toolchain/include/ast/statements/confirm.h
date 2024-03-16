@@ -14,9 +14,7 @@ namespace spicy::statement {
 /** AST node for a `break` statement. */
 class Confirm : public Statement {
 public:
-    static auto create(ASTContext* ctx, Meta meta = {}) {
-        return std::shared_ptr<Confirm>(new Confirm(ctx, {}, std::move(meta)));
-    }
+    static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Confirm>(ctx, {}, std::move(meta)); }
 
 protected:
     Confirm(ASTContext* ctx, Nodes children, Meta meta)

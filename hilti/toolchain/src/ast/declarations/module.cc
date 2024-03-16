@@ -9,17 +9,17 @@ using namespace hilti;
 
 std::string declaration::Module::_dump() const { return ""; }
 
-std::shared_ptr<declaration::Property> declaration::Module::moduleProperty(const ID& id) const {
+declaration::Property* declaration::Module::moduleProperty(const ID& id) const {
     for ( const auto& d : declarations() ) {
         if ( ! d->isA<declaration::Property>() )
             return {};
 
         const auto& x = d->as<declaration::Property>();
         if ( x->id() == id )
-            return {x};
+            return x;
     }
 
-    return {};
+    return nullptr;
 }
 
 node::Set<declaration::Property> declaration::Module::moduleProperties(const ID& id) const {
