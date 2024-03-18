@@ -1,3 +1,7 @@
+1.11.0-dev.54 | 2024-03-18 09:56:58 +0100
+
+  * Refresh CI platforms. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.50 | 2024-03-16 08:55:11 +0100
 
   * Rework memory management for AST nodes. (Robin Sommer, Corelight)
