@@ -47,11 +47,11 @@ fuzz_parser(PARSER "DHCP::Message" SOURCES ${CMAKE_SOURCE_DIR}/spicy-dhcp/analyz
 fuzz_parser(PARSER "TFTP::Packet" SOURCES ${CMAKE_SOURCE_DIR}/spicy-tftp/analyzer/tftp.spicy
             MODULES TFTP)
 fuzz_parser(PARSER "pe::ImageFile" SOURCES ${CMAKE_SOURCE_DIR}/spicy-pe/analyzer/analyzer.spicy
-            MODULES pe)
+            MODULES PE)
 fuzz_parser(PARSER "PNG::File" SOURCES ${CMAKE_SOURCE_DIR}/spicy-png/analyzer/analyzer.spicy
             MODULES PNG)
 fuzz_parser(PARSER "dns::Message" SOURCES ${CMAKE_SOURCE_DIR}/spicy-dns/analyzer/analyzer.spicy
-            MODULES dns)
+            MODULES DNS)
 
 foreach (P IN ITEMS Request Requests Reply Replies)
     fuzz_parser(PARSER "HTTP::${P}" SOURCES ${CMAKE_SOURCE_DIR}/spicy-http/analyzer/analyzer.spicy
