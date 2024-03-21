@@ -751,7 +751,7 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     return x;
 }
 
-Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* module, bool include_implementation) {
+Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* module) {
     if ( auto cxx = module->cxxUnit() )
         return cxx;
 
@@ -769,7 +769,7 @@ Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* m
         v.dispatch(i);
 
     GlobalsVisitor::addDeclarations(this, module, ID(std::string(_cxx_unit->moduleID())), _cxx_unit.get(),
-                                    include_implementation);
+                                    ! module->skipImplementation());
 
     auto x = _need_decls;
     for ( const auto& t : x ) {

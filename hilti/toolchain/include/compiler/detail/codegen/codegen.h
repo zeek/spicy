@@ -65,8 +65,7 @@ public:
     CodeGen(const std::shared_ptr<Context>& context);
 
     /** Entry point for code generation. */
-    Result<std::shared_ptr<cxx::Unit>> compileModule(declaration::Module* module,
-                                                     bool include_implementation); // NOLINT(google-runtime-references)
+    Result<std::shared_ptr<cxx::Unit>> compileModule(declaration::Module* module);
 
     /** Entry point for generating additional cross-unit C++ code through HILTI's linker. */
     Result<std::shared_ptr<cxx::Unit>> linkUnits(const std::vector<cxx::linker::MetaData>& mds);

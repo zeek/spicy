@@ -73,7 +73,7 @@ Result<std::shared_ptr<detail::cxx::Unit>> Unit::_codegenModule(const declaratio
     auto module = context()->astContext()->module(uid);
     assert(module);
 
-    auto cxx = detail::CodeGen(context()).compileModule(module, ! module->skipImplementation());
+    auto cxx = detail::CodeGen(context()).compileModule(module);
 
     if ( logger().errors() )
         return result::Error("errors encountered during code generation");
