@@ -119,7 +119,7 @@ Result<Nothing> Unit::codegen() {
     return Nothing();
 }
 
-std::vector<declaration::module::UID> Unit::dependencies(bool recursive) const {
+std::set<declaration::module::UID> Unit::dependencies(bool recursive) const {
     return context()->astContext()->dependencies(_uid, recursive);
 }
 

@@ -213,7 +213,7 @@ public:
      * dependent units, vs just direct dependencies of the specified unit
      * @return set of dependencies
      */
-    std::vector<declaration::module::UID> dependencies(const declaration::module::UID& uid,
+    std::set<declaration::module::UID> dependencies(const declaration::module::UID& uid,
                                                        bool recursive = false) const;
 
     /**

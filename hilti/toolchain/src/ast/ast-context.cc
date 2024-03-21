@@ -682,25 +682,24 @@ void ASTContext::_saveIterationAST(const Plugin& plugin, const std::string& pref
 }
 
 static void _recursiveDependencies(const ASTContext* ctx, declaration::Module* module,
-                                   std::vector<declaration::module::UID>* seen) {
-    if ( std::find(seen->begin(), seen->end(), module->uid()) != seen->end() )
+                                   std::set<declaration::module::UID>* seen) {
+    if ( seen->count(module->uid()) )
         return;
 
     for ( const auto& uid : module->dependencies() ) {
-        seen->push_back(uid);
+        seen->insert(uid);
         auto dep = ctx->module(uid);
         assert(dep);
         _recursiveDependencies(ctx, dep, seen);
     }
 }
 
-std::vector<declaration::module::UID> ASTContext::dependencies(const declaration::module::UID& uid,
-                                                               bool recursive) const {
+std::set<declaration::module::UID> ASTContext::dependencies(const declaration::module::UID& uid, bool recursive) const {
     auto m = module(uid);
     assert(m);
 
     if ( recursive ) {
-        std::vector<declaration::module::UID> seen;
+        std::set<declaration::module::UID> seen;
         _recursiveDependencies(this, m, &seen);
         return seen;
     }

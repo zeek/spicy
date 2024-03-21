@@ -105,7 +105,7 @@ public:
      * @param recursive if true, return the transitive closure of all
      * dependent units, vs just direct dependencies of the current unit
      */
-    std::vector<declaration::module::UID> dependencies(bool recursive = false) const;
+    std::set<declaration::module::UID> dependencies(bool recursive = false) const;
 
     /**
      * Returns the unit's meta data for the internal HILTI linker.
@@ -164,7 +164,8 @@ public:
      * @param path path associated with the C++ code, if any
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromCXX(const std::shared_ptr<Context>& context, std::shared_ptr<detail::cxx::Unit> cxx,
+    static Result<std::shared_ptr<Unit>> fromCXX(const std::shared_ptr<Context>& context,
+                                                 std::shared_ptr<detail::cxx::Unit> cxx,
                                                  const hilti::rt::filesystem::path& path = "");
 
     // Must already be part of AST.

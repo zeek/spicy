@@ -87,7 +87,7 @@ public:
      */
     void add(ASTContext* ctx, Statement* s) { child<statement::Block>(0)->add(ctx, s); }
 
-    void addDependency(declaration::module::UID uid) { _dependencies.emplace_back(std::move(uid)); }
+    void addDependency(declaration::module::UID uid) { _dependencies.insert(std::move(uid)); }
     void setScopePath(const ID& scope) { _scope_path = scope; }
     void setUID(declaration::module::UID uid) { _uid = std::move(uid); }
 
@@ -136,7 +136,7 @@ protected:
 private:
     declaration::module::UID _uid;
     ID _scope_path;
-    std::vector<declaration::module::UID> _dependencies;
+    std::set<declaration::module::UID> _dependencies;
     bool _skip_implementation = true;
     std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit = {};
 };
