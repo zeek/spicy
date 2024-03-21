@@ -621,8 +621,6 @@ Result<Nothing> Driver::_codegenUnits() {
         // No need to kick off code generation.
         return Nothing();
 
-    logging::DebugPushIndent _(logging::debug::Compiler);
-
     for ( auto& [uid, unit] : _units ) {
         if ( ! unit->isCompiledHILTI() )
             continue;

@@ -65,11 +65,11 @@ public:
     CodeGen(const std::shared_ptr<Context>& context);
 
     /** Entry point for code generation. */
-    Result<cxx::Unit> compileModule(declaration::Module* module,
-                                    bool include_implementation); // NOLINT(google-runtime-references)
+    Result<std::shared_ptr<cxx::Unit>> compileModule(declaration::Module* module,
+                                                     bool include_implementation); // NOLINT(google-runtime-references)
 
     /** Entry point for generating additional cross-unit C++ code through HILTI's linker. */
-    Result<cxx::Unit> linkUnits(const std::vector<cxx::linker::MetaData>& mds);
+    Result<std::shared_ptr<cxx::Unit>> linkUnits(const std::vector<cxx::linker::MetaData>& mds);
 
     std::shared_ptr<Context> context() const { return _context.lock(); }
     const Options& options() const { return context()->options(); }
@@ -155,7 +155,7 @@ private:
     std::weak_ptr<Context> _context;
     std::unique_ptr<Builder> _builder;
 
-    std::unique_ptr<cxx::Unit> _cxx_unit;
+    std::shared_ptr<cxx::Unit> _cxx_unit;
     hilti::declaration::Module* _hilti_module = nullptr;
     std::vector<detail::cxx::Expression> _self = {{"__self", Side::LHS}};
     std::vector<detail::cxx::Expression> _dd = {{"__dd", Side::LHS}};

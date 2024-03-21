@@ -31,11 +31,11 @@ public:
 
     void add(const linker::MetaData& md);
     void finalize();
-    Result<cxx::Unit> linkerUnit(); // only after finalize and at least one module
+    Result<std::shared_ptr<cxx::Unit>> linkerUnit(); // only after finalize and at least one module
 
 private:
     CodeGen* _codegen;
-    std::optional<cxx::Unit> _linker_unit;
+    std::shared_ptr<cxx::Unit> _linker_unit;
 
     std::set<std::pair<std::string, std::string>> _modules;
     std::map<std::string, std::vector<cxx::linker::Join>> _joins;
