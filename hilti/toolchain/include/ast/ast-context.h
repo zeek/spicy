@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -212,8 +213,7 @@ public:
      * dependent units, vs just direct dependencies of the specified unit
      * @return set of dependencies
      */
-    std::vector<declaration::module::UID> dependencies(const declaration::module::UID& uid,
-                                                       bool recursive = false) const;
+    std::set<declaration::module::UID> dependencies(const declaration::module::UID& uid, bool recursive = false) const;
 
     /**
      * Updates an existing UID with new information.

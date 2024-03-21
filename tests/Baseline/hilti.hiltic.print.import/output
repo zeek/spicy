@@ -75,6 +75,8 @@ namespace __hlt::Bar {
     inline unsigned int __globals_index;
     static inline auto __globals() { return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
     extern void __init_globals(::hilti::rt::Context* ctx);
+    extern void __init_module();
+    extern void __register_module();
 }
 
 namespace __hlt::Foo {

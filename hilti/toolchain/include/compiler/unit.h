@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -104,7 +105,7 @@ public:
      * @param recursive if true, return the transitive closure of all
      * dependent units, vs just direct dependencies of the current unit
      */
-    std::vector<declaration::module::UID> dependencies(bool recursive = false) const;
+    std::set<declaration::module::UID> dependencies(bool recursive = false) const;
 
     /**
      * Returns the unit's meta data for the internal HILTI linker.
@@ -163,7 +164,8 @@ public:
      * @param path path associated with the C++ code, if any
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromCXX(const std::shared_ptr<Context>& context, const detail::cxx::Unit& cxx,
+    static Result<std::shared_ptr<Unit>> fromCXX(const std::shared_ptr<Context>& context,
+                                                 std::shared_ptr<detail::cxx::Unit> cxx,
                                                  const hilti::rt::filesystem::path& path = "");
 
     // Must already be part of AST.
@@ -207,15 +209,16 @@ private:
     // `from*()` factory functions instead to instantiate a unit.
     Unit(const std::shared_ptr<Context>& context, declaration::module::UID uid)
         : _context(context), _uid(std::move(uid)) {}
-    Unit(const std::shared_ptr<Context>& context, declaration::module::UID uid, const detail::cxx::Unit& cxx_unit)
-        : _context(context), _uid(std::move(uid)), _cxx_unit(cxx_unit) {}
+    Unit(const std::shared_ptr<Context>& context, declaration::module::UID uid,
+         std::shared_ptr<detail::cxx::Unit> cxx_unit)
+        : _context(context), _uid(std::move(uid)), _cxx_unit(std::move(cxx_unit)) {}
 
-    Result<detail::cxx::Unit> _codegenModule(const declaration::module::UID& uid);
+    Result<std::shared_ptr<detail::cxx::Unit>> _codegenModule(const declaration::module::UID& uid);
 
-    std::weak_ptr<Context> _context;            // global context
-    declaration::module::UID _uid;              // module's globally unique ID
-    std::optional<detail::cxx::Unit> _cxx_unit; // compiled C++ code for this unit, once available
-    bool _requires_compilation = false;         // mark explicitly as requiring compilation to C++
+    std::weak_ptr<Context> _context;              // global context
+    declaration::module::UID _uid;                // module's globally unique ID
+    std::shared_ptr<detail::cxx::Unit> _cxx_unit; // compiled C++ code for this unit, once available
+    bool _requires_compilation = false;           // mark explicitly as requiring compilation to C++
 };
 
 } // namespace hilti

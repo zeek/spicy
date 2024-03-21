@@ -42,11 +42,11 @@ void cxx::Linker::add(const linker::MetaData& md) {
 }
 
 void cxx::Linker::finalize() {
-    cxx::Unit unit(_codegen->context(), "__linker__");
-    unit.addComment("Linker code generated for modules:");
+    auto unit = std::shared_ptr<cxx::Unit>(new cxx::Unit(_codegen->context(), "__linker__"));
+    unit->addComment("Linker code generated for modules:");
 
     for ( const auto& m : _modules )
-        unit.addComment(fmt("  - %s (%s)", m.first, m.second));
+        unit->addComment(fmt("  - %s (%s)", m.first, m.second));
 
     // Create the HLTO version information.
     auto version = rt::library::Version{
@@ -57,14 +57,14 @@ void cxx::Linker::finalize() {
 
     for ( const auto& p : plugin::registry().plugins() )
         for ( const auto& i : p.cxx_includes )
-            unit.add(cxx::declaration::IncludeFile{i});
+            unit->add(cxx::declaration::IncludeFile{i});
 
     auto cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
 
-    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_library_version = R\"(%s)\";", cxx_namespace,
-                 version.toJSON()));
-    unit.add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();",
-                 cxx_namespace));
+    unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_library_version = R\"(%s)\";", cxx_namespace,
+                  version.toJSON()));
+    unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();",
+                  cxx_namespace));
 
     // Create a scope string that's likely to be unique to this linker module.
     std::size_t hash = 0;
@@ -75,7 +75,7 @@ void cxx::Linker::finalize() {
     }
 
     auto scope = hilti::rt::fmt("%" PRIx64, hash);
-    unit.add(fmt("const char HILTI_WEAK * %s_hlto_scope = \"%s\";", cxx_namespace, scope));
+    unit->add(fmt("const char HILTI_WEAK * %s_hlto_scope = \"%s\";", cxx_namespace, scope));
 
     std::string init_modules = "nullptr";
     std::string init_globals = "nullptr";
@@ -83,10 +83,10 @@ void cxx::Linker::finalize() {
     for ( const auto& j : _joins ) {
         for ( const auto& c : j.second ) {
             if ( ! c.declare_only )
-                unit.add(c.callee);
+                unit->add(c.callee);
 
             for ( const auto& t : c.aux_types )
-                unit.add(t);
+                unit->add(t);
         }
     }
 
@@ -123,24 +123,24 @@ void cxx::Linker::finalize() {
         if ( std::string(impl.declaration.result) != "void" )
             impl.body.addStatement("return {}");
 
-        unit.add(impl.declaration);
-        unit.add(impl);
+        unit->add(impl.declaration);
+        unit->add(impl);
     }
 
     unsigned int cnt = 0;
     for ( auto g : _globals ) {
         g.init = fmt("%u", cnt++);
         g.linkage = "extern";
-        unit.add(g);
+        unit->add(g);
     }
 
-    unit.finalize();
+    unit->finalize();
     _linker_unit = std::move(unit);
 }
 
-Result<cxx::Unit> cxx::Linker::linkerUnit() {
+Result<std::shared_ptr<cxx::Unit>> cxx::Linker::linkerUnit() {
     if ( _linker_unit )
-        return *_linker_unit;
+        return _linker_unit;
 
     return result::Error("linked unit has not been finalized");
 }

@@ -1,3 +1,27 @@
+1.11.0-dev.59 | 2024-03-21 12:35:06 +0100
+
+  * Rework order of C++ codegen. (Robin Sommer)
+
+    We used to potentially codegen modules multiple times. Now we cache a
+    module's generated C++ code inside the AST node the first time we
+    create it. From there, we can then easily reuse it later, in
+    particular when needing to import its declarations into another
+    module. Internally, we switch storage for `cxx::Unit` to shared
+    pointers, and tweak the debug logging a bit for better readability in
+    this new model.
+
+  * Cleanup: Remove flag to compile implementation from higher-level codegen method. (Robin Sommer)
+
+    Pushing down the condition that we used to pass in, to lower-level
+    code.
+
+  * Fix duplicates in module dependency tracking. (Robin Sommer)
+
+    We now use a set instead of a vector to unique dependencies
+    automatically.
+
+  * Fix file name case for fuzzer builds. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.54 | 2024-03-18 09:56:58 +0100
 
   * Refresh CI platforms. (Benjamin Bannier, Corelight)

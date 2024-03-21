@@ -25,6 +25,10 @@ using util::fmt;
 using namespace hilti::detail;
 using namespace hilti::detail::codegen;
 
+namespace hilti::logging::debug {
+inline const DebugStream Compiler("compiler");
+} // namespace hilti::logging::debug
+
 namespace {
 
 // This visitor will only receive AST nodes of the first two levels (i.e.,
@@ -747,7 +751,12 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     return x;
 }
 
-Result<cxx::Unit> CodeGen::compileModule(declaration::Module* module, bool include_implementation) {
+Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* module) {
+    if ( auto cxx = module->cxxUnit() )
+        return cxx;
+
+    HILTI_DEBUG(logging::debug::Compiler, fmt("generating C++ for module %s", module->uid()));
+    logging::DebugPushIndent __(logging::debug::Compiler);
     util::timing::Collector _("hilti/compiler/codegen");
 
     _cxx_unit = std::make_unique<cxx::Unit>(context());
@@ -760,7 +769,7 @@ Result<cxx::Unit> CodeGen::compileModule(declaration::Module* module, bool inclu
         v.dispatch(i);
 
     GlobalsVisitor::addDeclarations(this, module, ID(std::string(_cxx_unit->moduleID())), _cxx_unit.get(),
-                                    include_implementation);
+                                    ! module->skipImplementation());
 
     auto x = _need_decls;
     for ( const auto& t : x ) {
@@ -768,14 +777,14 @@ Result<cxx::Unit> CodeGen::compileModule(declaration::Module* module, bool inclu
             unit()->add(*dt);
     }
 
-    cxx::Unit u = *_cxx_unit;
+    module->setCxxUnit(std::move(_cxx_unit));
     _cxx_unit.reset();
     _hilti_module = nullptr;
 
-    return std::move(u);
+    return module->cxxUnit();
 }
 
-Result<cxx::Unit> CodeGen::linkUnits(const std::vector<cxx::linker::MetaData>& mds) {
+Result<std::shared_ptr<cxx::Unit>> CodeGen::linkUnits(const std::vector<cxx::linker::MetaData>& mds) {
     util::timing::Collector _("hilti/linker");
 
     cxx::Linker linker(this);

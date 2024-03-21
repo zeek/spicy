@@ -955,7 +955,8 @@
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] performing global transformations
 [debug/compiler] [HILTI] validating (post)
-[debug/compiler]   compiling module Foo to C++
+[debug/compiler] codegen module Foo to C++
+[debug/compiler]   generating C++ for module Foo
 [debug/compiler]   finalizing module Foo
 // Begin of Foo (from "<...>/basic-module.hlt")
 // Compiled by HILTI version X.X.X

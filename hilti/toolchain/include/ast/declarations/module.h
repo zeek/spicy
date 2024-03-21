@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -17,7 +18,13 @@
 #include <hilti/ast/node.h>
 #include <hilti/ast/statements/block.h>
 
-namespace hilti::declaration {
+namespace hilti {
+
+namespace detail::cxx {
+class Unit;
+}
+
+namespace declaration {
 
 /** AST node for a module declaration. */
 class Module : public Declaration {
@@ -40,6 +47,9 @@ public:
 
     /** Sets the module's `%skip-implementation` flag. */
     void setSkipImplementation(bool skip_implementation) { _skip_implementation = skip_implementation; }
+
+    auto cxxUnit() const { return _cxx_unit; }
+    void setCxxUnit(std::shared_ptr<::hilti::detail::cxx::Unit> unit) { _cxx_unit = std::move(unit); }
 
     /**
      * Removes any content from the module. The result is an empty module just
@@ -77,7 +87,7 @@ public:
      */
     void add(ASTContext* ctx, Statement* s) { child<statement::Block>(0)->add(ctx, s); }
 
-    void addDependency(declaration::module::UID uid) { _dependencies.emplace_back(std::move(uid)); }
+    void addDependency(declaration::module::UID uid) { _dependencies.insert(std::move(uid)); }
     void setScopePath(const ID& scope) { _scope_path = scope; }
     void setUID(declaration::module::UID uid) { _uid = std::move(uid); }
 
@@ -126,8 +136,10 @@ protected:
 private:
     declaration::module::UID _uid;
     ID _scope_path;
-    std::vector<declaration::module::UID> _dependencies;
+    std::set<declaration::module::UID> _dependencies;
     bool _skip_implementation = true;
+    std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit = {};
 };
 
-} // namespace hilti::declaration
+} // namespace declaration
+} // namespace hilti

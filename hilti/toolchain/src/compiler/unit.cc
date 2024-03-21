@@ -31,10 +31,11 @@ Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& c
     return std::shared_ptr<Unit>(new Unit(context, *uid));
 }
 
-Result<std::shared_ptr<Unit>> Unit::fromCXX(const std::shared_ptr<Context>& context, const detail::cxx::Unit& cxx,
+Result<std::shared_ptr<Unit>> Unit::fromCXX(const std::shared_ptr<Context>& context,
+                                            std::shared_ptr<detail::cxx::Unit> cxx,
                                             const hilti::rt::filesystem::path& path) {
     auto uid = declaration::module::UID("<from-cpp-code>", path.native());
-    return std::shared_ptr<Unit>(new Unit(context, uid, cxx));
+    return std::shared_ptr<Unit>(new Unit(context, uid, std::move(cxx)));
 }
 
 std::shared_ptr<Unit> Unit::fromExistingUID(const std::shared_ptr<Context>& context, declaration::module::UID uid) {
@@ -68,14 +69,11 @@ Result<Nothing> Unit::createPrototypes(std::ostream& out) {
     return _cxx_unit->createPrototypes(out);
 }
 
-Result<detail::cxx::Unit> Unit::_codegenModule(const declaration::module::UID& uid) {
+Result<std::shared_ptr<detail::cxx::Unit>> Unit::_codegenModule(const declaration::module::UID& uid) {
     auto module = context()->astContext()->module(uid);
     assert(module);
 
-    HILTI_DEBUG(logging::debug::Compiler, fmt("compiling module %s to C++", uid));
-    logging::DebugPushIndent _(logging::debug::Compiler);
-
-    auto cxx = detail::CodeGen(context()).compileModule(module, ! module->skipImplementation());
+    auto cxx = detail::CodeGen(context()).compileModule(module);
 
     if ( logger().errors() )
         return result::Error("errors encountered during code generation");
@@ -91,6 +89,9 @@ Result<Nothing> Unit::codegen() {
     if ( ! _uid )
         return Nothing();
 
+    HILTI_DEBUG(logging::debug::Compiler, fmt("codegen module %s to C++", _uid));
+    logging::DebugPushIndent __(logging::debug::Compiler);
+
     auto cxx = _codegenModule(_uid);
     if ( ! cxx )
         return cxx.error();
@@ -102,21 +103,23 @@ Result<Nothing> Unit::codegen() {
     // only generated declarations.
     for ( const auto& d : dependencies(true) ) {
         HILTI_DEBUG(logging::debug::Compiler, fmt("importing declarations from module %s", d));
+        logging::DebugPushIndent _(logging::debug::Compiler);
+
         if ( auto other_cxx = _codegenModule(d) )
-            cxx->importDeclarations(*other_cxx);
+            (*cxx)->importDeclarations(**other_cxx);
         else
             return other_cxx.error();
     }
 
     HILTI_DEBUG(logging::debug::Compiler, fmt("finalizing module %s", _uid));
-    if ( auto x = cxx->finalize(); ! x )
+    if ( auto x = (*cxx)->finalize(); ! x )
         return x.error();
 
     _cxx_unit = *cxx;
     return Nothing();
 }
 
-std::vector<declaration::module::UID> Unit::dependencies(bool recursive) const {
+std::set<declaration::module::UID> Unit::dependencies(bool recursive) const {
     return context()->astContext()->dependencies(_uid, recursive);
 }
 

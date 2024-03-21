@@ -4,6 +4,7 @@
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/statements/block.h>
 #include <hilti/ast/visitor.h>
+#include <hilti/compiler/detail/cxx/unit.h>
 
 using namespace hilti;
 
