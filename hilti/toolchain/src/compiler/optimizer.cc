@@ -2,7 +2,6 @@
 
 #include "hilti/compiler/detail/optimizer.h"
 
-#include <algorithm>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -16,6 +15,7 @@
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/module.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
@@ -36,6 +36,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
+#include <hilti/compiler/detail/cfg.h>
 
 namespace hilti {
 
@@ -89,7 +90,7 @@ public:
     virtual bool prune_uses(Node*) { return false; }
     virtual bool prune_decls(Node*) { return false; }
 
-    void operator()(declaration::Module* n) final { _current_module = n; }
+    void operator()(declaration::Module* n) override { _current_module = n; }
 };
 
 struct FunctionVisitor : OptimizerVisitor {
@@ -1392,6 +1393,47 @@ struct MemberVisitor : OptimizerVisitor {
     }
 };
 
+struct FunctionBodyVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+
+    bool prune_uses(Node* node) override {
+        visitor::visit(*this, node);
+        return isModified();
+    }
+
+    void visit_body(Statement* body) {
+        auto cfg = detail::cfg::CFG(body);
+        for ( auto&& n : cfg.unreachable_nodes() ) {
+            const auto& data = n->getData();
+
+            if ( data->isA<Statement>() && data->hasParent() )
+                removeNode(data, "unreachable code");
+
+            else if ( data->isA<Expression>() ) {
+                auto* p = data->parent();
+
+                while ( p && ! p->isA<Statement>() )
+                    p = p->parent();
+
+                if ( p && p->hasParent() )
+                    removeNode(p, "unreachable code");
+            }
+        }
+    }
+
+    void operator()(declaration::Function* f) override {
+        if ( auto&& body = f->function()->body() )
+            visit_body(body);
+    }
+
+    void operator()(declaration::Module* m) override {
+        OptimizerVisitor::operator()(m);
+
+        if ( auto&& body = m->statements() )
+            visit_body(body);
+    }
+};
+
 void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1410,14 +1452,17 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         v.transform(root);
     }
 
-    const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
-        {{"constant_folding",
-          [&builder]() { return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer); }},
-         {"functions",
-          [&builder]() { return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer); }},
-         {"members",
-          [&builder]() { return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer); }},
-         {"types", [&builder]() { return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer); }}};
+    const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators = {
+        {"constant_folding",
+         [&builder]() { return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer); }},
+        {"functions",
+         [&builder]() { return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer); }},
+        {"members",
+         [&builder]() { return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer); }},
+        {"types", [&builder]() { return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer); }},
+        {"cfg",
+         [&builder]() { return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer); }},
+    };
 
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {

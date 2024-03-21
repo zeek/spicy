@@ -177,9 +177,6 @@ class Node {
 public:
     virtual ~Node();
 
-    /** Returns the node tag associated with the instance's class. */
-    auto nodeTag() const { return _node_tags.back(); }
-
     /** Returns true if the node has a parent (i.e., it's part of an AST). */
     bool hasParent() const { return _parent; }
 
