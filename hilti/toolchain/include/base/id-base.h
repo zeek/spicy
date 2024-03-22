@@ -56,7 +56,7 @@ public:
     bool empty() const { return _id.empty(); }
 
     /** Returns the number of namespace components (incl. the local ID0. */
-    auto length() const { return util::split(_id, "::").size(); }
+    auto length() const { return _id.empty() ? 0 : util::split(_id, "::").size(); }
 
     bool isAbsolute() const { return util::startsWith(_id, "::"); }
 
