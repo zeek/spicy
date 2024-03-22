@@ -51,7 +51,7 @@ public:
      *
      * @param level max level to include, with 1 being the first.
      */
-    std::optional<std::string> namespace_(int level = -1) const;
+    ID namespace_(int level = -1) const;
 
     /**
      * Adjust an ID's scoping relative to a namespace.

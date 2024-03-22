@@ -200,7 +200,8 @@ std::string util::toIdentifier(std::string s) {
         // Fast-path: no special-characters, no leading digits.
         return s;
 
-    char buffer[s.size() * 3 + 1]; // max possible size of modified string
+    auto buffer_size = s.size() * 3 + 1;
+    char* buffer = reinterpret_cast<char*>(alloca(buffer_size)); // max possible size of modified string
     char* p = buffer;
 
     if ( isdigit(s[0]) )
@@ -235,7 +236,7 @@ std::string util::toIdentifier(std::string s) {
         }
     }
 
-    assert(p < buffer + sizeof(buffer));
+    assert(p < buffer + buffer_size);
     return std::string(buffer, p - buffer);
 }
 

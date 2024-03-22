@@ -9,7 +9,12 @@
 
 using namespace hilti;
 
-std::string normalizeID(std::string id) { return util::replace(id, "%", "XXX_"); } // NOLINT
+std::optional<std::string> normalizeID(std::string_view id) {
+    if ( id.substr(0, 1) == "%" )
+        return std::string("XXX_") + std::string(id.substr(1));
+
+    return std::nullopt;
+}
 
 class ID : public detail::IDBase<ID, normalizeID> {
     using Base = detail::IDBase<ID, normalizeID>;

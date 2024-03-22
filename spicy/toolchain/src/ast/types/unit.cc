@@ -35,7 +35,7 @@ static Node* itemByNameBackend(spicy::type::unit::Item* i, const ID& id) {
 
 unit::item::Property* Unit::propertyItem(const std::string& name) const {
     for ( const auto& i : items<unit::item::Property>() ) {
-        if ( i->id() == name )
+        if ( i->id() == ID(name) )
             return i;
     }
 
@@ -46,7 +46,7 @@ unit::item::Properties Unit::propertyItems(const std::string& name) const {
     unit::item::Properties props;
 
     for ( const auto& i : items<unit::item::Property>() ) {
-        if ( i->id() == name )
+        if ( i->id() == ID(name) )
             props.push_back(i);
     }
 

@@ -25,15 +25,7 @@ public:
      * @param s string to construct from
      * @param meta meta data to attach
      */
-    ID(const char* s, Meta meta) : IDBase(s), _meta(std::move(meta)) {}
-
-    /**
-     * Constructs an ID from a string.
-     *
-     * @param s string to construct from
-     * @param meta meta data to attach
-     */
-    explicit ID(std::string s, Meta meta) : IDBase(std::move(s)), _meta(std::move(meta)) {}
+    explicit ID(std::string_view s, Meta meta) : IDBase(s), _meta(std::move(meta)) {}
 
     /** Returns the meta data attached to the ID. */
     const auto& meta() const { return _meta; }

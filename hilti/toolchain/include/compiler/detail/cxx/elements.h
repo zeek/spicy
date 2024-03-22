@@ -48,6 +48,7 @@ public:
     bool isMultiLine() const { return _s.find('\n') != std::string::npos; }
 
     operator std::string() const { return _s; }
+    operator std::string_view() const { return _s; }
     explicit operator bool() const { return ! _s.empty(); }
     bool operator<(const Element& s) const { return _s < s._s; }
     bool operator==(const Element& s) const { return _s == s._s; }
@@ -73,6 +74,7 @@ public:
     bool isLhs() const { return _side == Side::LHS; }
 
     operator std::string() const { return _s; }
+    operator std::string_view() const { return _s; }
     explicit operator bool() const { return ! _s.empty(); }
     bool operator<(const Expression& s) const { return _s < s._s; }
     bool operator==(const Expression& s) const { return _s == s._s; }
@@ -83,7 +85,7 @@ private:
     Side _side = Side::LHS;
 };
 
-extern std::string normalizeID(std::string id);
+extern std::optional<std::string> normalizeID(std::string_view id);
 
 /** A C++ ID. */
 class ID : public detail::IDBase<ID, normalizeID> {
@@ -91,14 +93,14 @@ public:
     using Base = detail::IDBase<ID, normalizeID>;
     using Base::IDBase;
     ID() = default;
-    explicit ID(const ::hilti::ID& id) : Base(std::string(id)) {}
+    explicit ID(const ::hilti::ID& id) : Base(id.str()) {}
     ID& operator=(const ::hilti::ID& id) {
         *this = ID(id);
         return *this;
     }
 
     /** Wrapper to construct an ID from an already normalized string name. */
-    static ID fromNormalized(const std::string& id) { return ID(id, Base::AlreadyNormalized()); }
+    static ID fromNormalized(std::string_view id) { return ID(id, Base::AlreadyNormalized()); }
 };
 
 extern void to_json(nlohmann::json& j, const cxx::ID& id);   // NOLINT

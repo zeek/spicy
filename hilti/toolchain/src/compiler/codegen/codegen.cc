@@ -703,7 +703,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, de
     if ( linkage == declaration::Linkage::Struct ) {
         // For method implementations, check if the ID is fully scoped with
         // the module name; if so, remove.
-        if ( id.sub(0) == _hilti_module->uid() )
+        if ( id.sub(0).str() == _hilti_module->uid().str() )
             cxx_id = id.sub(1, -1);
     }
 
@@ -712,7 +712,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, de
     if ( namespace_ && *namespace_ )
         ns += *namespace_;
     else
-        ns += _hilti_module->uid();
+        ns += _hilti_module->uid().str();
 
     return cxx::declaration::Function{.result = result_(),
                                       .id = {ns, cxx_id},

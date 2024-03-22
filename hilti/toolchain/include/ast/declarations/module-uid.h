@@ -73,7 +73,7 @@ struct UID {
 
     /** Hashes the UID. */
     size_t hash() const {
-        return rt::hashCombine(std::hash<std::string>{}(id.str()), std::hash<std::string>{}(path.native()),
+        return rt::hashCombine(std::hash<std::string_view>{}(id.str()), std::hash<std::string>{}(path.native()),
                                std::hash<std::string>{}(parse_extension.native()),
                                std::hash<std::string>{}(process_extension.native()));
     }
@@ -93,7 +93,7 @@ struct UID {
     }
 
     /** Returns the module's globally uniqued name. */
-    std::string str() const { return unique; }
+    const std::string& str() const { return unique.str(); }
 
     /** Forwards to `str()`. */
     operator std::string() const { return str(); }

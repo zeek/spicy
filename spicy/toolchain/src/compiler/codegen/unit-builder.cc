@@ -155,9 +155,8 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     for ( const auto& i : unit->items() )
         v.dispatch(i);
 
-    auto add_hook = [&](std::string id, hilti::declaration::Parameters params, AttributeSet* attributes = {}) {
-        if ( auto hook_decl =
-                 compileHook(*unit, ID(std::move(id)), {}, false, false, std::move(params), {}, {}, unit->meta()) ) {
+    auto add_hook = [&](const std::string& id, hilti::declaration::Parameters params, AttributeSet* attributes = {}) {
+        if ( auto hook_decl = compileHook(*unit, ID(id), {}, false, false, std::move(params), {}, {}, unit->meta()) ) {
             auto nf = builder()->declarationField(hook_decl->id().local(), hook_decl->function()->type(), attributes,
                                                   unit->meta());
             v.addField(nf);
