@@ -4,4 +4,4 @@
 
 using namespace hilti;
 
-std::unordered_set<Location> Meta::_cache;
+std::unordered_set<Meta> Meta::_cache;

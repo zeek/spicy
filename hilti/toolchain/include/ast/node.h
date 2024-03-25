@@ -231,13 +231,13 @@ public:
 
 
     /** Returns the meta data associated with the node. */
-    const auto& meta() const { return _meta; }
+    const auto& meta() const { return *_meta; }
 
     /** Short-cut to return the location from the node's meta information. */
-    const auto& location() const { return _meta.location(); }
+    const auto& location() const { return _meta->location(); }
 
     /** Sets the meta data associated with the node. */
-    void setMeta(Meta m) { _meta = std::move(m); }
+    void setMeta(Meta m) { _meta = Meta::get(std::move(m)); }
 
     /**
      * Returns the scope associated with the node, if any. Returns null if no
@@ -418,8 +418,8 @@ public:
 
         n = _newChild(ctx, n);
 
-        if ( ! n->location() && _meta.location() )
-            n->setMeta(_meta);
+        if ( ! n->location() && _meta->location() )
+            n->_meta = _meta;
 
         _children.emplace_back(n);
         _children.back()->_parent = this;
@@ -490,8 +490,8 @@ public:
         if ( n ) {
             n = _newChild(ctx, n);
 
-            if ( ! n->location() && _meta.location() )
-                n->setMeta(_meta);
+            if ( ! n->location() && _meta->location() )
+                n->_meta = _meta;
         }
 
         if ( _children[idx] )
@@ -750,7 +750,7 @@ protected:
      * @param children child nodes to add initially
      */
     Node(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)
-        : _node_tags(node_tags), _meta(std::move(meta)) {
+        : _node_tags(node_tags), _meta(Meta::get(std::move(meta))) {
         assert(! _node_tags.empty());
         _children.reserve(children.size());
         for ( auto&& c : children ) {
@@ -765,7 +765,7 @@ protected:
     }
 
     /** Constructor initializing the node with meta data but no children. */
-    Node(ASTContext* ctx, node::Tags node_tags, Meta meta) : _node_tags(node_tags), _meta(std::move(meta)) {
+    Node(ASTContext* ctx, node::Tags node_tags, Meta meta) : _node_tags(node_tags), _meta(Meta::get(std::move(meta))) {
         assert(! _node_tags.empty());
     }
 
@@ -887,7 +887,7 @@ private:
     const node::Tags _node_tags; // inheritance path for the node
     Node* _parent = nullptr;     // parent node inside the AST, or null if not yet added to an AST
     Nodes _children;             // set of child nodes
-    Meta _meta;                  // meta information associated with the node
+    const Meta* _meta;           // meta information associated with the node; returned and managed by Meta::get()
 
     bool _inherit_scope = true;              // flag controlling whether scope lookups should continue in parent nodes
     std::unique_ptr<Scope> _scope = nullptr; // scope associated with the node, or null if non (i.e., scope is empty)
