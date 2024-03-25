@@ -695,17 +695,23 @@ public:
         error.context = std::move(context);
         error.priority = priority;
 
-        _errors.emplace_back(std::move(error));
+        if ( ! _errors )
+            _errors = std::make_unique<std::vector<node::Error>>();
+
+        _errors->emplace_back(std::move(error));
     }
 
     /** Returns true if there are any errors associated with the node. */
-    bool hasErrors() const { return _errors.size(); }
+    bool hasErrors() const { return _errors && _errors->size(); }
 
     /** Returns any error messages associated with the node. */
-    const auto& errors() const { return _errors; }
+    const auto& errors() const {
+        static std::vector<node::Error> no_errors;
+        return _errors ? *_errors : no_errors;
+    }
 
     /** Clears any error message associated with the node. */
-    void clearErrors() { _errors.clear(); }
+    void clearErrors() { _errors.reset(); }
 
     /**
      * Removes all children from the node. It doesn't destroy the children,
@@ -891,7 +897,7 @@ private:
 
     bool _inherit_scope = true;              // flag controlling whether scope lookups should continue in parent nodes
     std::unique_ptr<Scope> _scope = nullptr; // scope associated with the node, or null if non (i.e., scope is empty)
-    std::vector<node::Error> _errors;        // errors associated with the node
+    std::unique_ptr<std::vector<node::Error>> _errors; // errors associated with the node, or null if none
 };
 
 namespace node {
