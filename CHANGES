@@ -1,3 +1,18 @@
+1.11.0-dev.62 | 2024-03-25 10:39:42 +0100
+
+  * Reimplement `IDBase` for better performance. (Robin Sommer)
+
+    Our codegen phase had quite some overhead due to repeated ID
+    operations recomputing the same information over and over again (e.g.,
+    subpaths and namespaces). This reimplements the class to compute
+    everything once upfront, cutting codegen time into half.
+
+  * Add more tests for `IDBase`. (Robin Sommer)
+
+    This includes a tiny semantic change for `IDBase::length()`: it now
+    returns zero for an empty ID, which seems more consistent. (This
+    doesn't seem to have an impact anywhere, all tests pass.)
+
 1.11.0-dev.59 | 2024-03-21 12:35:06 +0100
 
   * Rework order of C++ codegen. (Robin Sommer)

@@ -137,7 +137,7 @@ private:
     std::multimap<ID, Function> _function_implementations;
     std::vector<std::string> _statements;
     std::set<linker::Join> _linker_joins; // set to keep sorted.
-    std::set<std::string> _namespaces;    // set to keep sorted.
+    std::set<cxx::ID> _namespaces;        // set to keep sorted.
     std::set<ID> _ids;
 
     cxx::Block _init_module;

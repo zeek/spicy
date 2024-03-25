@@ -33,7 +33,7 @@ namespace detail {
 
 /** Maintains printer state while output is in progress. */
 struct State {
-    std::vector<ID> scopes = {""};
+    std::vector<ID> scopes = {{""}};
     std::string pending;
     int indent = 0;
     bool wrote_nl = false;

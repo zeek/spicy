@@ -913,11 +913,11 @@ public:
 
     WithUniqueID() = delete;
     WithUniqueID(const WithUniqueID& other) = default;
-    WithUniqueID(WithUniqueID&& other) = default;
+    WithUniqueID(WithUniqueID&& other) noexcept = default;
     ~WithUniqueID() = default;
 
     WithUniqueID& operator=(const WithUniqueID& other) = default;
-    WithUniqueID& operator=(WithUniqueID&& other) = default;
+    WithUniqueID& operator=(WithUniqueID&& other) noexcept = default;
 
 protected:
     /**

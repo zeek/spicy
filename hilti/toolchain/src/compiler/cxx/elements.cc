@@ -21,134 +21,166 @@ static const unsigned int AddSeparatorAfter = (1U << 2U);  // Force adding a sep
 static const unsigned int AddSeparatorBefore = (1U << 4U); // Force adding a separator before block.
 } // namespace flags
 
+static const std::set<std::string_view> reserved_keywords = {
+    "NULL",
+    "_Alignas",
+    "_Alignof",
+    "_Atomic",
+    "_Bool",
+    "_Complex",
+    "_Decimal128",
+    "_Decimal32",
+    "_Decimal64",
+    "_Generic",
+    "_Imaginary",
+    "_Noreturn",
+    "_Pragma",
+    "_Static_assert",
+    "_Thread_local",
+    "alignas",
+    "alignof",
+    "and",
+    "and_eq",
+    "asm",
+    "atomic_cancel",
+    "atomic_commit",
+    "atomic_noexcept",
+    "auto",
+    "bitand",
+    "bitor",
+    "bool",
+    "break",
+    "case",
+    "catch",
+    "char",
+    "char16_t",
+    "char32_t",
+    "char8_t",
+    "class",
+    "co_await",
+    "co_return",
+    "co_yield",
+    "compl",
+    "concept",
+    "const",
+    "const_cast",
+    "consteval",
+    "constexpr",
+    "constinit",
+    "continue",
+    "decltype",
+    "default",
+    "delete",
+    "do",
+    "double",
+    "dynamic_cast",
+    "else",
+    "enum",
+    "explicit",
+    "export",
+    "extern",
+    "false",
+    "float",
+    "for",
+    "fortran",
+    "friend",
+    "goto",
+    "if",
+    "inline",
+    "int",
+    "long",
+    "mutable",
+    "namespace",
+    "new",
+    "noexcept",
+    "not",
+    "not_eq",
+    "nullptr",
+    "operator",
+    "or",
+    "or_eq",
+    "private",
+    "protected",
+    "public",
+    "reflexpr",
+    "register",
+    "reinterpret_cast",
+    "requires",
+    "restrict",
+    "return",
+    "short",
+    "signed",
+    "sizeof",
+    "static",
+    "static_assert",
+    "static_cast",
+    "struct",
+    "switch",
+    "synchronized",
+    "template",
+    "this",
+    "thread_local",
+    "true",
+    "typedef",
+    "typeid",
+    "typename",
+    "union",
+    "unsigned",
+    "using",
+    "virtual",
+    "void",
+    "volatile",
+    "wchar_t",
+    "while",
+    "xor",
+    "xor_eq",
+};
 
-std::string cxx::normalizeID(std::string id) {
-    static const std::set<std::string> reserved = {
-        "NULL",
-        "_Alignas",
-        "_Alignof",
-        "_Atomic",
-        "_Bool",
-        "_Complex",
-        "_Decimal128",
-        "_Decimal32",
-        "_Decimal64",
-        "_Generic",
-        "_Imaginary",
-        "_Noreturn",
-        "_Pragma",
-        "_Static_assert",
-        "_Thread_local",
-        "alignas",
-        "alignof",
-        "and",
-        "and_eq",
-        "asm",
-        "atomic_cancel",
-        "atomic_commit",
-        "atomic_noexcept",
-        "auto",
-        "bitand",
-        "bitor",
-        "bool",
-        "break",
-        "case",
-        "catch",
-        "char",
-        "char16_t",
-        "char32_t",
-        "char8_t",
-        "class",
-        "co_await",
-        "co_return",
-        "co_yield",
-        "compl",
-        "concept",
-        "const",
-        "const_cast",
-        "consteval",
-        "constexpr",
-        "constinit",
-        "continue",
-        "decltype",
-        "default",
-        "delete",
-        "do",
-        "double",
-        "dynamic_cast",
-        "else",
-        "enum",
-        "explicit",
-        "export",
-        "extern",
-        "false",
-        "float",
-        "for",
-        "fortran",
-        "friend",
-        "goto",
-        "if",
-        "inline",
-        "int",
-        "long",
-        "mutable",
-        "namespace",
-        "new",
-        "noexcept",
-        "not",
-        "not_eq",
-        "nullptr",
-        "operator",
-        "or",
-        "or_eq",
-        "private",
-        "protected",
-        "public",
-        "reflexpr",
-        "register",
-        "reinterpret_cast",
-        "requires",
-        "restrict",
-        "return",
-        "short",
-        "signed",
-        "sizeof",
-        "static",
-        "static_assert",
-        "static_cast",
-        "struct",
-        "switch",
-        "synchronized",
-        "template",
-        "this",
-        "thread_local",
-        "true",
-        "typedef",
-        "typeid",
-        "typename",
-        "union",
-        "unsigned",
-        "using",
-        "virtual",
-        "void",
-        "volatile",
-        "wchar_t",
-        "while",
-        "xor",
-        "xor_eq",
-    };
+std::optional<std::string> cxx::normalizeID(std::string_view id) {
+    if ( id.empty() )
+        return std::nullopt;
 
-    auto map = [](auto id) {
-        if ( reserved.find(id) != reserved.end() )
-            id.append("_");
+    if ( reserved_keywords.count(id) )
+        return std::string(id) + "_";
 
-        id = util::replace(id, "%", "0x25");
-        id = util::replace(id, "@", "0x40");
-        id = util::replace(id, "~", "_0x7e_"); // we expect to see this only at the beginning (for "~finally")
-        return id;
-    };
+    if ( std::all_of(id.begin(), id.end(), [](auto c) { return std::isalnum(c) || c == '_'; }) )
+        // Fast-path: no special-characters, no leading digits.
+        return std::nullopt;
 
-    return util::join(util::transform(util::split(std::move(id), "::"), map), "::");
+    auto buffer_size = id.size() * 6 + 1;
+    char* buffer = reinterpret_cast<char*>(alloca(buffer_size)); // max possible size of modified string
+    char* p = buffer;
+
+    for ( auto c : id ) {
+        switch ( c ) {
+            // We normalize only characters that we expected to see here during codegen.
+            case '%': {
+                strncpy(p, "0x25", 4);
+                p += 4;
+                break;
+            }
+
+            case '@': {
+                strncpy(p, "0x40", 4);
+                p += 4;
+                break;
+            }
+
+            case '~': { // we expect to see this only at the beginning (for "~finally")
+                strncpy(p, "_0x7e_", 6);
+                p += 6;
+                break;
+            }
+
+            default: {
+                *p++ = c;
+                break;
+            }
+        }
+    }
+
+    assert(p < buffer + buffer_size);
+    return std::string(buffer, p - buffer);
 }
 
 cxx::Block::Block(std::vector<std::string> stmts) {
@@ -671,12 +703,12 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Expression& x) { r
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::ID& x) {
     if ( x.namespace_() == f.namespace_() )
         return f << x.local().str();
-
-    return f << x.str();
+    else
+        return f << x.str();
 }
 
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Type& x) {
-    return f << util::replace(x, fmt("%s::", *f.namespace_(0)), "");
+    return f << util::replace(x, fmt("%s::", f.namespace_(0)), "");
 }
 
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Type& x) {
@@ -791,7 +823,7 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Const
 
 void cxx::to_json(json& j, const cxx::ID& id) { j = std::string(id); }
 
-void cxx::from_json(const json& j, cxx::ID& id) { id = cxx::ID(j); }
+void cxx::from_json(const json& j, cxx::ID& id) { id = cxx::ID(j.get<std::string>()); }
 
 void cxx::declaration::to_json(json& j, const cxx::declaration::Argument& a) {
     j = json{{"id", a.id}, {"type", a.type}};

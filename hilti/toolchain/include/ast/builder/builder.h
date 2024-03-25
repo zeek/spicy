@@ -76,16 +76,17 @@ public:
 
     //////// Declarations
 
-    auto import(std::string module, const Meta& m = Meta()) {
-        return declarationImportedModule(hilti::ID(std::move(module), m), std::string(".hlt"), m);
+    auto import(const std::string& module, const Meta& m = Meta()) {
+        return declarationImportedModule(hilti::ID(module, m), std::string(".hlt"), m);
     }
 
-    auto import(std::string module, const std::string& parse_extension, const Meta& m = Meta()) {
-        return declarationImportedModule(hilti::ID(std::move(module), m), parse_extension, m);
+    auto import(const std::string& module, const std::string& parse_extension, const Meta& m = Meta()) {
+        return declarationImportedModule(hilti::ID(module, m), parse_extension, m);
     }
 
-    auto import(std::string module, const std::string& parse_extension, ID search_scope, const Meta& m = Meta()) {
-        return declarationImportedModule(hilti::ID(std::move(module), m), parse_extension, std::move(search_scope), m);
+    auto import(const std::string& module, const std::string& parse_extension, ID search_scope,
+                const Meta& m = Meta()) {
+        return declarationImportedModule(hilti::ID(module, m), parse_extension, std::move(search_scope), m);
     }
 
     auto local(ID id_, QualifiedType* t, Meta m = Meta()) {
@@ -342,29 +343,26 @@ public:
         return expressionUnresolvedOperator(operator_::Kind::Unequal, {op1, op2}, m);
     }
 
-    auto member(Expression* self, std::string id_, const Meta& m = Meta()) {
-        return expressionUnresolvedOperator(operator_::Kind::Member, {self, expressionMember(ID(std::move(id_)), m)},
-                                            m);
+    auto member(Expression* self, const std::string& id_, const Meta& m = Meta()) {
+        return expressionUnresolvedOperator(operator_::Kind::Member, {self, expressionMember(ID(id_), m)}, m);
     }
 
-    auto hasMember(Expression* self, std::string id_, const Meta& m = Meta()) {
-        return expressionUnresolvedOperator(operator_::Kind::HasMember, {self, expressionMember(ID(std::move(id_)), m)},
-                                            m);
+    auto hasMember(Expression* self, const std::string& id_, const Meta& m = Meta()) {
+        return expressionUnresolvedOperator(operator_::Kind::HasMember, {self, expressionMember(ID(id_), m)}, m);
     }
 
-    auto tryMember(Expression* self, std::string id_, const Meta& m = Meta()) {
-        return expressionUnresolvedOperator(operator_::Kind::TryMember, {self, expressionMember(ID(std::move(id_)), m)},
-                                            m);
+    auto tryMember(Expression* self, const std::string& id_, const Meta& m = Meta()) {
+        return expressionUnresolvedOperator(operator_::Kind::TryMember, {self, expressionMember(ID(id_), m)}, m);
     }
 
-    auto memberCall(Expression* self, std::string id_, const Expressions& args = {}, const Meta& m = Meta()) {
+    auto memberCall(Expression* self, const std::string& id_, const Expressions& args = {}, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::MemberCall,
-                                            {self, expressionMember(ID(std::move(id_)), m), tuple(args, m)}, m);
+                                            {self, expressionMember(ID(id_), m), tuple(args, m)}, m);
     }
 
-    auto memberCall(Expression* self, std::string id_, ctor::Tuple* args, const Meta& m = Meta()) {
+    auto memberCall(Expression* self, const std::string& id_, ctor::Tuple* args, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::MemberCall,
-                                            {self, expressionMember(ID(std::move(id_)), m), expressionCtor(args)}, m);
+                                            {self, expressionMember(ID(id_), m), expressionCtor(args)}, m);
     }
 
     auto pack(QualifiedType* type, const Expressions& args, const Meta& m = Meta()) {

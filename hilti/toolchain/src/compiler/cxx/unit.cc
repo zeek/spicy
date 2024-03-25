@@ -151,8 +151,8 @@ void Unit::_addHeader(Formatter& f) {
 }
 
 void Unit::_addModuleInitFunction() {
-    auto addInitFunction = [&](Context* ctx, auto f, std::string id_) {
-        auto id = cxx::ID{cxxNamespace(), std::move(id_)};
+    auto addInitFunction = [&](Context* ctx, auto f, const std::string& id_) {
+        auto id = cxx::ID{cxxNamespace(), id_};
 
         auto body_decl = cxx::declaration::Function{.result = "void", .id = id, .args = {}, .linkage = "extern"};
 

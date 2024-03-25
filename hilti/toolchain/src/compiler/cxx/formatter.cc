@@ -77,9 +77,9 @@ void Formatter::popNamespace() {
     _namespaces.pop_back();
 }
 
-std::optional<std::string> Formatter::namespace_(int level) const {
+ID Formatter::namespace_(int level) const {
     if ( ! _namespaces.empty() )
-        return util::join(util::slice(_namespaces, level), "::");
+        return ID(util::join(util::slice(_namespaces, level), "::"));
 
     return {};
 }
