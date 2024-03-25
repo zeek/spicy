@@ -11,12 +11,17 @@ type Bar = unit {
     all: bytes &eod;
 };
 
+function get_input(t: test) : iterator<stream> {
+    print "get_input"; # we want this printed only once (regression test for https://github.com/zeek/spicy-pe/issues/16)
+    return t.input();
+}
+
 public type test = unit {
     a: bytes &size=4;
     b: bytes &size=4;
 
     C: Foo &parse-at=self.input();
-    D: Bar &parse-at=self.input() &size=5;
+    D: Bar &parse-at=get_input(self) &size=5;
 
     d: bytes &size=2;
 
