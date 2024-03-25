@@ -459,7 +459,7 @@ Result<Nothing> Driver::initialize() {
         _compiler_options.print(std::cerr);
 
     _ctx = std::make_shared<Context>(_compiler_options);
-    _builder = createBuilder(_ctx->astContext().get());
+    _builder = createBuilder(_ctx->astContext());
 
     operator_::registry().initPending(_builder.get());
 

@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    hilti::Builder builder(driver.context()->astContext().get());
+    hilti::Builder builder(driver.context()->astContext());
     json all_operators;
 
     // Helper function adding one operator to all_operators.

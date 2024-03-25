@@ -119,11 +119,11 @@ public:
     const Options& options() const { return _options; }
 
     /** Returns the global AST context. */
-    std::shared_ptr<ASTContext> astContext() const { return _ast_context; }
+    auto* astContext() const { return _ast_context.get(); }
 
 private:
     Options _options;
-    std::shared_ptr<ASTContext> _ast_context;
+    std::unique_ptr<ASTContext> _ast_context;
 };
 
 } // namespace hilti

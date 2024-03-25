@@ -61,6 +61,6 @@ void Options::print(std::ostream& out) const {
 }
 
 Context::Context(Options options)
-    : _options(std::move(std::move(options))), _ast_context(std::make_shared<ASTContext>(this)) {}
+    : _options(std::move(std::move(options))), _ast_context(std::make_unique<ASTContext>(this)) {}
 
 Context::~Context() {}
