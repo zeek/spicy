@@ -14,6 +14,7 @@
 #include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/validator.h>
 
+#include "ast/node.h"
 #include "ast/type.h"
 
 using namespace spicy;
@@ -754,7 +755,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
     void operator()(spicy::type::unit::item::UnresolvedField* n) final {
         if ( auto id = n->unresolvedID() )
-            error(fmt("unknown ID '%s'", id), n);
+            error(fmt("unknown ID '%s'", id), n, node::ErrorPriority::High);
         else
             // I don't think this can actually happen ...
             error("unit field left unresolved", n);
