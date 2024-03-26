@@ -448,11 +448,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 }
             }
         }
-
-        if ( n->inheritScope() ) {
-            recordChange(n, "set no-inherit");
-            n->setInheritScope(false);
-        }
     }
 
     void operator()(type::unit::item::Field* n) final {

@@ -275,17 +275,9 @@ public:
 
     /**
      * Returns a flag indicating whether a scope lookup passing this node
-     * shall find IDs in parent nodes as well. This flag is set by default.
+     * shall find IDs in parent nodes as well. This returns true by default.
      */
-    bool inheritScope() const { return _inherit_scope; }
-
-    /**
-     * Sets a flag indicating whether a scope lookup passing this node
-     * shall find IDs in parent nodes as well.
-     *
-     * @param inherit if true, scope lookup will continue in parent nodes
-     */
-    void setInheritScope(bool inherit) { _inherit_scope = inherit; }
+    virtual bool inheritScope() const { return true; }
 
     /**
      * Returns the C++-level type for the nodes' class. This should be only
@@ -786,7 +778,6 @@ protected:
      */
     Node(const Node& other) : _node_tags(other._node_tags) {
         _meta = other._meta;
-        _inherit_scope = other._inherit_scope;
         _parent = nullptr;
 
         // Don't copy children. We can't copy the pointers because that would
@@ -895,7 +886,6 @@ private:
     Nodes _children;             // set of child nodes
     const Meta* _meta;           // meta information associated with the node; returned and managed by Meta::get()
 
-    bool _inherit_scope = true;              // flag controlling whether scope lookups should continue in parent nodes
     std::unique_ptr<Scope> _scope = nullptr; // scope associated with the node, or null if non (i.e., scope is empty)
     std::unique_ptr<std::vector<node::Error>> _errors; // errors associated with the node, or null if none
 };

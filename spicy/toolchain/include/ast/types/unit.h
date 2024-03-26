@@ -107,6 +107,7 @@ public:
 
     hilti::declaration::Parameters parameters() const final { return childrenOfType<hilti::declaration::Parameter>(); }
 
+    bool inheritScope() const final { return false; }
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
     bool isNameType() const final { return true; }
