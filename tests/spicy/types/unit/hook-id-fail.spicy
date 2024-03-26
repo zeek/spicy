@@ -1,0 +1,35 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure reasonable error messages for various cases of using an unknown unit ID.
+
+module Test;
+
+public type MagicUnit = unit {
+  chunk: bytes &chunked &eod;
+};
+
+on MagikUnit::%done {
+  if ( self.chunk == b"b" )
+    print "yes";
+}
+
+# @TEST-START-NEXT
+
+module Test;
+
+public type MagicUnit = unit {
+  chunk: bytes &chunked &eod;
+};
+
+on MagicUnit::chunk::%done {}
+
+# @TEST-START-NEXT
+
+module Test;
+
+public type X = unit() {
+  m: ASN1Messup(True) {
+    print self.m;
+  }
+};

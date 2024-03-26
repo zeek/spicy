@@ -20,6 +20,5 @@
 [error] <...>/hooks-fail.spicy:27:13-27:14: no field 'y1' in unit type
 [error] <...>/hooks-fail.spicy:28:14-28:15: unknown hook '%y2'
 [error] <...>/hooks-fail.spicy:29:16-29:17: cannot use paths in hooks; trigger on the top-level field instead
-[error] <...>/hooks-fail.spicy:30:12-30:13: unknown ID 'XXXX::x'
-[error] <...>/hooks-fail.spicy:31:19-31:20: cannot use hook '%done' with a unit field
+[error] <...>/hooks-fail.spicy:30:19-30:20: cannot use hook '%done' with a unit field
 [error] spicyc: aborting after errors

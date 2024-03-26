@@ -220,7 +220,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                             }
                         }
 
-                        n->addError(resolved.error());
+                        n->addError(hilti::util::fmt("hook namespace `%s` does not refer to a type", ns),
+                                    node::ErrorPriority::High);
                         return;
                     }
                 }

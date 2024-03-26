@@ -1233,6 +1233,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     if ( n->id() == ID("__dd") )
                         // Provide better error message
                         n->addError("$$ is not available in this context", node::ErrorPriority::High);
+                    else if ( n->id() == ID("self") )
+                        n->addError(resolved.error(), node::ErrorPriority::Normal); // let other errors take precedence
+                                                                                    // explaining why we didn't set self
                     else
                         n->addError(resolved.error(), node::ErrorPriority::High);
                 }
