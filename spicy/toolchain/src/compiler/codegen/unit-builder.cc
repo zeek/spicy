@@ -336,96 +336,119 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     auto s = builder()->typeStruct(unit->parameters(), std::move(v.fields));
     _pb.addParserMethods(s, unit, declare_only);
 
-    if ( ! declare_only ) {
-        auto description = unit->propertyItem("%description");
-        auto mime_types =
-            hilti::node::transform(unit->propertyItems("%mime-type"), [](const auto& p) { return p->expression(); });
-        auto ports = hilti::node::transform(unit->propertyItems("%port"), [this](auto p) -> Expression* {
-            auto dir = ID("spicy_rt::Direction::Both");
-
-            if ( const auto& attrs = p->attributes() ) {
-                auto orig = attrs->find("&originator");
-                auto resp = attrs->find("&responder");
-
-                if ( orig && ! resp )
-                    dir = ID("spicy_rt::Direction::Originator");
-
-                else if ( resp && ! orig )
-                    dir = ID("spicy_rt::Direction::Responder");
-            }
-
-            return builder()->tuple({p->expression(), builder()->expressionName(dir)});
-        });
-
-        Expression* parse1 = builder()->null();
-        Expression* parse3 = builder()->null();
-
-        // Only create `parse1` and `parse3` if the unit can be default constructed.
-        const auto& parameters = unit->parameters();
-        if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p->default_(); }) ) {
-            parse1 = _pb.parseMethodExternalOverload1(*unit);
-            parse3 = _pb.parseMethodExternalOverload3(*unit);
-        }
-
-        Expression* context_new = builder()->null();
-
-        if ( unit->contextType() )
-            context_new = _pb.contextNewFunction(*unit);
-
-        _pb.pushBuilder();
-
-        // Register the parser if the `is_filter` or `supports_sinks` features are
-        // active; `public` units we always register (by passing an empty list of
-        // features to the feature guard).
-        const auto dependentFeatureFlags = unit->isPublic() ?
-                                               std::vector<std::string_view>{} :
-                                               std::vector<std::string_view>({"is_filter", "supports_sinks"});
-
-        _pb.guardFeatureCode(unit, dependentFeatureFlags, [&]() {
-            auto ty_mime_types = builder()->typeVector(
-                builder()->qualifiedType(builder()->typeName("spicy_rt::MIMEType"), hilti::Constness::Const));
-            auto ty_ports = builder()->typeVector(
-                builder()->qualifiedType(builder()->typeName("spicy_rt::ParserPort"), hilti::Constness::Const));
-
-            auto parser = builder()->struct_(
-                {builder()->ctorStructField(ID("name"), builder()->stringLiteral(unit->typeID().str())),
-                 builder()->ctorStructField(ID("is_public"), builder()->bool_(unit->isPublic())),
-                 builder()->ctorStructField(ID("parse1"), parse1),
-                 builder()->ctorStructField(ID("parse2"), _pb.parseMethodExternalOverload2(*unit)),
-                 builder()->ctorStructField(ID("parse3"), parse3),
-                 builder()->ctorStructField(ID("context_new"), context_new),
-                 builder()->ctorStructField(ID("type_info"), builder()->typeinfo(builder()->id(unit->typeID()))),
-                 // We emit different string types for generated and user-provided strings. The distinction
-                 // is whether they have a location, so set a dummy location so both branches behave
-                 // identically.
-                 builder()->ctorStructField(ID("description"),
-                                            (description ? description->expression() : builder()->stringMutable(""))),
-                 builder()->ctorStructField(ID("mime_types"),
-                                            builder()->vector(builder()->qualifiedType(ty_mime_types,
-                                                                                       hilti::Constness::Const),
-                                                              std::move(mime_types))),
-                 builder()->ctorStructField(ID("ports"),
-                                            builder()->vector(builder()->qualifiedType(ty_ports,
-                                                                                       hilti::Constness::Const),
-                                                              std::move(ports)))},
-                unit->meta());
-
-            _pb.builder()->addAssign(builder()->id(ID(unit->typeID(), "__parser")), parser);
-
-            _pb.builder()->addExpression(
-                builder()->call("spicy_rt::registerParser",
-                                {builder()->id(ID(unit->typeID(), "__parser")), builder()->scope(),
-                                 builder()->strongReference(builder()->qualifiedType(unit, hilti::Constness::Const))}));
-        });
-
-        auto block = _pb.popBuilder()->block();
-
-        auto register_unit =
-            builder()->function(ID(fmt("__register_%s_%s", hiltiModule()->uid(), unit->typeID().local())),
-                                builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const), {}, block,
-                                hilti::type::function::Flavor::Standard, hilti::declaration::Linkage::Init);
-        addDeclaration(register_unit);
-    }
+    if ( ! declare_only )
+        _compileParserRegistration(unit->typeID(), unit->typeID(), unit);
 
     return s;
+}
+
+void CodeGen::compilePublicUnitAlias(hilti::declaration::Module* module, const ID& alias_id, type::Unit* unit) {
+    // We create a mini parser struct here that just contains the `__parser` field for runtime registration.
+    auto attrs = builder()->attributeSet(
+        {builder()->attribute("&static"), builder()->attribute("&internal"),
+         builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_filters"))});
+
+    auto parser_field = builder()->declarationField(ID("__parser"),
+                                                    builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
+                                                                             hilti::Constness::Mutable),
+                                                    attrs);
+
+    auto struct_id = ID(alias_id.namespace_(), "__parser_" + alias_id.local().str());
+    auto struct_decl = builder()->declarationType(struct_id.local(),
+                                                  builder()->qualifiedType(builder()->typeStruct({parser_field}),
+                                                                           hilti::Constness::Mutable),
+                                                  hilti::declaration::Linkage::Public, unit->meta());
+    module->add(context(), struct_decl);
+
+    _compileParserRegistration(alias_id, struct_id, unit);
+}
+
+void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_id, type::Unit* unit) {
+    auto description = unit->propertyItem("%description");
+    auto mime_types =
+        hilti::node::transform(unit->propertyItems("%mime-type"), [](const auto& p) { return p->expression(); });
+    auto ports = hilti::node::transform(unit->propertyItems("%port"), [this](auto p) -> Expression* {
+        auto dir = ID("spicy_rt::Direction::Both");
+
+        if ( const auto& attrs = p->attributes() ) {
+            auto orig = attrs->find("&originator");
+            auto resp = attrs->find("&responder");
+
+            if ( orig && ! resp )
+                dir = ID("spicy_rt::Direction::Originator");
+
+            else if ( resp && ! orig )
+                dir = ID("spicy_rt::Direction::Responder");
+        }
+
+        return builder()->tuple({p->expression(), builder()->expressionName(dir)});
+    });
+
+    Expression* parse1 = builder()->null();
+    Expression* parse3 = builder()->null();
+
+    // Only create `parse1` and `parse3` if the unit can be default constructed.
+    const auto& parameters = unit->parameters();
+    if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p->default_(); }) ) {
+        parse1 = _pb.parseMethodExternalOverload1(*unit);
+        parse3 = _pb.parseMethodExternalOverload3(*unit);
+    }
+
+    Expression* context_new = builder()->null();
+
+    if ( unit->contextType() )
+        context_new = _pb.contextNewFunction(*unit);
+
+    _pb.pushBuilder();
+
+    // Register the parser if the `is_filter` or `supports_sinks` features are
+    // active; `public` units we always register (by passing an empty list of
+    // features to the feature guard).
+    const auto dependentFeatureFlags = unit->isPublic() ?
+                                           std::vector<std::string_view>{} :
+                                           std::vector<std::string_view>({"is_filter", "supports_sinks"});
+
+    _pb.guardFeatureCode(unit, dependentFeatureFlags, [&]() {
+        auto ty_mime_types = builder()->typeVector(
+            builder()->qualifiedType(builder()->typeName("spicy_rt::MIMEType"), hilti::Constness::Const));
+        auto ty_ports = builder()->typeVector(
+            builder()->qualifiedType(builder()->typeName("spicy_rt::ParserPort"), hilti::Constness::Const));
+
+        auto parser = builder()->struct_(
+            {builder()->ctorStructField(ID("name"), builder()->stringLiteral(public_id.str())),
+             builder()->ctorStructField(ID("is_public"), builder()->bool_(unit->isPublic())),
+             builder()->ctorStructField(ID("parse1"), parse1),
+             builder()->ctorStructField(ID("parse2"), _pb.parseMethodExternalOverload2(*unit)),
+             builder()->ctorStructField(ID("parse3"), parse3),
+             builder()->ctorStructField(ID("context_new"), context_new),
+             builder()->ctorStructField(ID("type_info"), builder()->typeinfo(builder()->id(unit->typeID()))),
+             // We emit different string types for generated and user-provided strings. The distinction
+             // is whether they have a location, so set a dummy location so both branches behave
+             // identically.
+             builder()->ctorStructField(ID("description"),
+                                        (description ? description->expression() : builder()->stringMutable(""))),
+             builder()->ctorStructField(ID("mime_types"),
+                                        builder()->vector(builder()->qualifiedType(ty_mime_types,
+                                                                                   hilti::Constness::Const),
+                                                          std::move(mime_types))),
+             builder()->ctorStructField(ID("ports"),
+                                        builder()->vector(builder()->qualifiedType(ty_ports, hilti::Constness::Const),
+                                                          std::move(ports)))},
+            unit->meta());
+
+        _pb.builder()->addAssign(builder()->id(ID(struct_id, "__parser")), parser);
+
+        _pb.builder()->addExpression(
+            builder()->call("spicy_rt::registerParser",
+                            {builder()->id(ID(struct_id, "__parser")), builder()->scope(),
+                             builder()->strongReference(builder()->qualifiedType(unit, hilti::Constness::Const))}));
+    });
+
+    auto block = _pb.popBuilder()->block();
+
+    auto register_unit =
+        builder()->function(ID(fmt("__register_%s_%s", hiltiModule()->uid(), public_id.local())),
+                            builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const), {}, block,
+                            hilti::type::function::Flavor::Standard, hilti::declaration::Linkage::Init);
+    addDeclaration(register_unit);
 }

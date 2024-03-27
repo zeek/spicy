@@ -52,6 +52,9 @@ public:
         type::Unit* unit,
         bool declare_only = true); // Compiles a Unit type into its HILTI struct representation.
 
+    /** For a public unit type alias, creates the runtime code to register the parser under the alias name. */
+    void compilePublicUnitAlias(hilti::declaration::Module* module, const ID& alias_id, type::Unit* unit);
+
     hilti::declaration::Function* compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
                                               bool foreach, bool debug, hilti::type::function::Parameters params,
                                               hilti::Statement* body, Expression* priority, const hilti::Meta& meta);
@@ -93,6 +96,7 @@ public:
 private:
     bool _compileModule(hilti::declaration::Module* module, int pass);
     void _updateDeclarations(visitor::MutatingPostOrder* v, hilti::declaration::Module* module);
+    void _compileParserRegistration(const ID& public_id, const ID& struct_id, type::Unit* unit);
 
     Builder* _builder;
     codegen::GrammarBuilder _gb;

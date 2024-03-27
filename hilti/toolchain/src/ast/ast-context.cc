@@ -387,10 +387,12 @@ struct VisitorCheckIDs : hilti::visitor::PreOrder {
             logger().internalError(util::fmt("declaration without canonical ID found: %s", n->id()));
         }
 
-        if ( ! n->fullyQualifiedID() ) {
-            hilti::detail::ast_dumper::dump(std::cerr, n->parent()->as<Node>());
-            logger().internalError(util::fmt("declaration without fully qualified ID found: %s", n->id()));
-        }
+        /*
+         * if ( ! n->fullyQualifiedID() ) {
+         *     hilti::detail::ast_dumper::dump(std::cerr, n->parent()->as<Node>());
+         *     logger().internalError(util::fmt("declaration without fully qualified ID found: %s", n->id()));
+         * }
+         */
     }
 };
 

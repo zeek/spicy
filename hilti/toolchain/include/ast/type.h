@@ -378,6 +378,9 @@ public:
     /** Returns the type's "sideness". */
     auto side() const { return _side; }
 
+    /** Shortcut to try-cast to `type::Name`. */
+    type::Name* alias() const;
+
     /**
      * Sets the constness of the type.
      *
