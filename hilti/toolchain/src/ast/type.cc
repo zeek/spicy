@@ -86,6 +86,8 @@ bool QualifiedType::isResolved(node::CycleDetector* cd) const {
 
 bool QualifiedType::isAuto() const { return type()->isA<type::Auto>(); }
 
+type::Name* QualifiedType::alias() const { return _type()->tryAs<type::Name>(); }
+
 hilti::node::Properties QualifiedType::properties() const {
     auto side = (_side == Side::LHS ? "lhs" : "rhs");
     auto constness = (_constness == Constness::Const ? "true" : "false");

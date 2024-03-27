@@ -295,7 +295,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::declaration::Type* n) final {
-        if ( auto u = n->type()->type()->tryAs<type::Unit>() ) {
+        if ( auto u = n->type()->type()->tryAs<type::Unit>(); u && ! n->type()->alias() ) {
             if ( n->linkage() == hilti::declaration::Linkage::Public && ! u->isPublic() ) {
                 recordChange(n, "set public");
                 u->setPublic(true);
