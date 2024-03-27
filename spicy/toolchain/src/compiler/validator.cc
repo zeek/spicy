@@ -330,6 +330,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             error(fmt("unknown property '%s'", n->id().str()), n);
     }
 
+    void operator()(hilti::declaration::Type* n) final {
+        if ( n->linkage() == hilti::declaration::Linkage::Public && n->type()->alias() ) {
+            if ( n->type()->alias()->resolvedDeclaration()->linkage() != hilti::declaration::Linkage::Public )
+                error("public unit alias cannot refer to a non-public type", n);
+        }
+    }
+
     void operator()(spicy::type::unit::item::Property* n) final {
         if ( n->id().str() == "%random-access" ) {
             if ( n->expression() )

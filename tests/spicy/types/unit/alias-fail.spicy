@@ -1,0 +1,15 @@
+# @TEST-EXEC-FAIL: spicyc -d -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that we catch illegal type aliases
+
+module Test;
+
+
+type A = unit {
+    x: bytes &eod;
+    on %done { print self; }
+};
+
+public type X = A; # not ok
+type non_public = A; # ok
