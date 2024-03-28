@@ -1,0 +1,8 @@
+# @TEST-EXEC: echo 12345 | spicy-driver -i 1 %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type X = unit {
+    x: bytes &chunked &eod &convert="deprecated";
+};

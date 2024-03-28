@@ -703,6 +703,12 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( count_attr && (repeat && ! repeat->type()->type()->isA<hilti::type::Null>()) )
             error("cannot have both `[..]` and &count", n);
 
+        if ( n->attributes()->has("&convert") && n->attributes()->has("&chunked") )
+            hilti::logger().deprecated(
+                "usage of &convert on &chunked field is ill-defined and deprecated; support will be "
+                "removed in future versions",
+                n);
+
         if ( n->sinks().size() && ! n->parseType()->type()->isA<hilti::type::Bytes>() )
             error("only a bytes field can have sinks attached", n);
 
