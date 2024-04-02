@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <cstring>
+
 #include <hilti/rt/json.h>
 
 #include <hilti/base/logger.h>
@@ -155,19 +157,19 @@ std::optional<std::string> cxx::normalizeID(std::string_view id) {
         switch ( c ) {
             // We normalize only characters that we expected to see here during codegen.
             case '%': {
-                strncpy(p, "0x25", 4);
+                memcpy(p, "0x25", 4); // NOLINT(bugprone-not-null-terminated-result)
                 p += 4;
                 break;
             }
 
             case '@': {
-                strncpy(p, "0x40", 4);
+                memcpy(p, "0x40", 4); // NOLINT(bugprone-not-null-terminated-result)
                 p += 4;
                 break;
             }
 
-            case '~': { // we expect to see this only at the beginning (for "~finally")
-                strncpy(p, "_0x7e_", 6);
+            case '~': {                 // we expect to see this only at the beginning (for "~finally")
+                memcpy(p, "_0x7e_", 6); // NOLINT(bugprone-not-null-terminated-result)
                 p += 6;
                 break;
             }

@@ -1,3 +1,7 @@
+1.11.0-dev.64 | 2024-04-02 17:44:13 +0200
+
+  * Fix GCC false positive around `strncpy` use. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.62 | 2024-03-25 10:39:42 +0100
 
   * Reimplement `IDBase` for better performance. (Robin Sommer)
