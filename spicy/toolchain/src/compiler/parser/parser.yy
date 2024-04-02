@@ -345,15 +345,15 @@ local_id      : IDENT                            { std::string name($1);
                                                    if ( name.substr(0, 2) == "__" )
                                                        hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
 
-                                                   $$ = hilti::ID(std::move(name), __loc__);
+                                                   $$ = hilti::ID(std::move(name));
                                                  }
 
 scoped_id     : local_id                         { $$ = std::move($1); }
-              | SCOPED_IDENT                     { $$ = hilti::ID($1, __loc__); }
+              | SCOPED_IDENT                     { $$ = hilti::ID($1); }
 
 dotted_id     : { driver->enableDottedIDMode(); }
                 DOTTED_IDENT
-                { driver->disableDottedIDMode(); } { $$ = hilti::ID($2, __loc__); }
+                { driver->disableDottedIDMode(); } { $$ = hilti::ID($2); }
 
 /* Declarations */
 
@@ -869,7 +869,7 @@ opt_unit_hook_attributes
 
 unit_hook_id: { driver->enableHookIDMode(); }
               HOOK_IDENT
-              { driver->disableHookIDMode(); } { $$ = hilti::ID(hilti::util::replace($2, "%", "0x25_"), __loc__); }
+              { driver->disableHookIDMode(); } { $$ = hilti::ID(hilti::util::replace($2, "%", "0x25_")); }
 
 unit_hook_attribute
               : FOREACH                          { $$ = builder->attribute("foreach", __loc__); }

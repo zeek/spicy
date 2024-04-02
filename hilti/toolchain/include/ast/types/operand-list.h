@@ -32,25 +32,31 @@ public:
 
     static auto create(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
                        std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), nullptr}, ID(), kind, optional,
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), nullptr}, ID(), kind, optional,
                                   std::move(doc), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
                        std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), nullptr}, std::move(id), kind, optional,
-                                  std::move(doc), std::move(meta));
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), nullptr}, std::move(id), kind,
+                                  optional, std::move(doc), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_,
                        std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), default_}, std::move(id), kind,
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), default_}, std::move(id), kind,
                                   (default_ != nullptr), std::move(doc), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_,
                        bool optional, std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type), default_}, std::move(id), kind, optional,
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), default_}, std::move(id), kind,
+                                  optional, std::move(doc), std::move(meta));
+    }
+
+    static auto createExternal(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
+                               std::string doc = "", Meta meta = {}) {
+        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, true), nullptr}, ID(), kind, optional,
                                   std::move(doc), std::move(meta));
     }
 
@@ -66,7 +72,8 @@ protected:
     HILTI_NODE_0(type::operand_list::Operand, final);
 
 private:
-    static QualifiedType* _makeOperandType(ASTContext* ctx, parameter::Kind _kind, UnqualifiedType* type);
+    static QualifiedType* _makeOperandType(ASTContext* ctx, parameter::Kind _kind, UnqualifiedType* type,
+                                           bool make_external_type);
 
     ID _id;
     parameter::Kind _kind = parameter::Kind::Unknown;

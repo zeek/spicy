@@ -332,7 +332,12 @@ std::string Operator::dump() const {
 }
 
 Operand* Operator::operandForType(Builder* builder, parameter::Kind kind, UnqualifiedType* t, std::string doc) {
-    return builder->typeOperandListOperand(kind, t, false, std::move(doc), t->meta());
+    if ( t->isNameType() && ! t->isWildcard() )
+        // create external type for potentially complex types involving many nodes
+        return type::operand_list::Operand::createExternal(builder->context(), kind, t, false, std::move(doc),
+                                                           t->meta());
+    else
+        return type::operand_list::Operand::create(builder->context(), kind, t, false, std::move(doc), t->meta());
 }
 
 std::string BuiltInMemberCall::print() const { return _printOperator(kind(), operands(), meta()); }

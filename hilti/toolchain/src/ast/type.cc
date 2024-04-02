@@ -109,7 +109,12 @@ UnqualifiedType* type::follow(UnqualifiedType* t) {
 }
 
 QualifiedType* QualifiedType::createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, const Meta& m) {
-    return ctx->make<QualifiedType>(ctx, {}, t, const_, Side::RHS, m);
+    return createExternal(ctx, t, const_, Side::RHS, m);
+}
+
+QualifiedType* QualifiedType::createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side side,
+                                             const Meta& m) {
+    return ctx->make<QualifiedType>(ctx, {}, t, const_, side, m);
 }
 
 QualifiedType* QualifiedType::createAuto(ASTContext* ctx, const Meta& m) {

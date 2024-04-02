@@ -16,9 +16,6 @@ namespace hilti {
 class ID : public detail::IDBase<ID> {
 public:
     using IDBase::IDBase;
-
-    // TODO: Remove this constructor.
-    explicit ID(std::string_view s, const Meta& meta) : IDBase(s) {}
 };
 
 inline std::ostream& operator<<(std::ostream& out, const ID& id) {

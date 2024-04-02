@@ -26,31 +26,30 @@
 [debug/ast-stats]     - type::bytes::Iterator: 48
 [debug/ast-stats]     - type::enum_::Label: 70
 [debug/ast-stats] # [HILTI] AST statistics:
-[debug/ast-stats]   - max tree depth: 29
-[debug/ast-stats]   - # AST rounds 6
+[debug/ast-stats]   - max tree depth: 27
+[debug/ast-stats]   - # AST rounds 5
 [debug/ast-stats]   - # context declarations: 256
 [debug/ast-stats]   - # context types: 53
-[debug/ast-stats]   - # nodes: 20397
+[debug/ast-stats]   - # nodes: 18560
 [debug/ast-stats]   - # nodes > 1%:
-[debug/ast-stats]     - Attribute: 376
-[debug/ast-stats]     - AttributeSet: 833
-[debug/ast-stats]     - QualifiedType: 6393
-[debug/ast-stats]     - ctor::String: 286
+[debug/ast-stats]     - Attribute: 283
+[debug/ast-stats]     - AttributeSet: 635
+[debug/ast-stats]     - QualifiedType: 5789
+[debug/ast-stats]     - ctor::String: 241
 [debug/ast-stats]     - ctor::Tuple: 237
-[debug/ast-stats]     - declaration::Field: 229
-[debug/ast-stats]     - declaration::Parameter: 460
-[debug/ast-stats]     - expression::Ctor: 795
-[debug/ast-stats]     - expression::Member: 332
-[debug/ast-stats]     - expression::Name: 1013
-[debug/ast-stats]     - operator_::value_reference::Deref: 255
+[debug/ast-stats]     - declaration::Parameter: 352
+[debug/ast-stats]     - expression::Ctor: 741
+[debug/ast-stats]     - expression::Member: 331
+[debug/ast-stats]     - expression::Name: 1012
+[debug/ast-stats]     - operator_::value_reference::Deref: 254
+[debug/ast-stats]     - statement::Block: 187
 [debug/ast-stats]     - statement::Expression: 251
-[debug/ast-stats]     - type::Function: 221
-[debug/ast-stats]     - type::Member: 332
-[debug/ast-stats]     - type::Name: 468
-[debug/ast-stats]     - type::Optional: 426
-[debug/ast-stats]     - type::String: 402
-[debug/ast-stats]     - type::Tuple: 302
-[debug/ast-stats]     - type::UnsignedInteger: 1251
-[debug/ast-stats]     - type::stream::Iterator: 878
-[debug/ast-stats]     - type::stream::View: 450
-[debug/ast-stats]     - type::tuple::Element: 615
+[debug/ast-stats]     - type::Member: 331
+[debug/ast-stats]     - type::Name: 427
+[debug/ast-stats]     - type::Optional: 378
+[debug/ast-stats]     - type::String: 351
+[debug/ast-stats]     - type::Tuple: 296
+[debug/ast-stats]     - type::UnsignedInteger: 1133
+[debug/ast-stats]     - type::stream::Iterator: 800
+[debug/ast-stats]     - type::stream::View: 396
+[debug/ast-stats]     - type::tuple::Element: 591

@@ -384,7 +384,7 @@ public:
     /**
      * Sets the constness of the type.
      *
-     * @param is_const true if the type is constant
+     * @param const new constness of type
      */
     void setConst(Constness constness) { _constness = constness; }
 
@@ -396,7 +396,7 @@ public:
      *
      * @param ctx context to use
      * @param t underlying type to wrap
-     * @param is_constant true if the type is constant
+     * @param const constness of type
      * @param m meta data to attach
      */
     static auto create(ASTContext* ctx, UnqualifiedType* t, Constness const_, Meta m = Meta()) {
@@ -414,7 +414,7 @@ public:
      *
      * @param ctx context to use
      * @param t underlying type to wrap
-     * @param is_constant true if the type is constant
+     * @param const constness of type
      * @param side the type's "sideness"
      * @param m meta data to attach
      */
@@ -434,12 +434,25 @@ public:
      *
      * @param ctx context to use
      * @param t underlying type to wrap
-     * @param is_constant true if the type is constant
+     * @param const constness of type
      * @param m meta data to attach
      */
     static QualifiedType* createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, const Meta& m = Meta());
 
-    static QualifiedType* createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side side,
+    /**
+     * Factory method creating a qualified type linking directly to an already
+     * existing unqualified type.
+     *
+     * This avoid copying the existing type over into a child, and can help to
+     * breaks reference cycles.
+     *
+     * @param ctx context to use
+     * @param t underlying type to wrap
+     * @param const constness of type
+     * @param side the type's "sideness"
+     * @param m meta data to attach
+     */
+    static QualifiedType* createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side sideness,
                                          const Meta& m = Meta());
 
     /**
