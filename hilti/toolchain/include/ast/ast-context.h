@@ -58,7 +58,7 @@ public:
      * @param index value to store with the index, which should be larger than
      * zero for valid indices; zero is the default and reserved for `None`.
      */
-    explicit ContextIndex(uint64_t index = 0) : _value(index) {}
+    explicit ContextIndex(size_t index = 0) : _value(index) {}
 
     /** Returns the index' value. */
     auto value() const { return _value; }
@@ -67,7 +67,7 @@ public:
      * Returns a string representation of the value, including a prefix
      * indicating the index' type.
      */
-    auto str() const { return _value > 0 ? std::string(1, Prefix) + std::to_string(_value) : std::string("-"); }
+    auto str() const { return _value > 0 ? std::string(1, Prefix) + rt::to_string(_value) : std::string("-"); }
 
     /** Returns true if the index is not `None` (i.e., zero). */
     explicit operator bool() const { return *this != None; }
@@ -83,7 +83,7 @@ public:
     inline static const ContextIndex None{0}; /**< index with reserved value zero representing an unset index */
 
 private:
-    uint64_t _value;
+    rt::integer::safe<uint32_t> _value = 0; // safe integer to catch any uint32_t overflows
 };
 
 template<char Prefix>

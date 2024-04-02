@@ -171,7 +171,7 @@ ast::DeclarationIndex ASTContext::register_(Declaration* decl) {
     if ( auto index = decl->declarationIndex() )
         return index;
 
-    auto index = ast::DeclarationIndex(_declarations_by_index.size());
+    auto index = ast::DeclarationIndex(static_cast<uint32_t>(_declarations_by_index.size()));
     decl->setDeclarationIndex(index);
     _declarations_by_index.emplace_back(decl);
 
@@ -233,7 +233,7 @@ ast::TypeIndex ASTContext::register_(UnqualifiedType* type) {
     if ( auto index = type->typeIndex() )
         return index;
 
-    auto index = ast::TypeIndex(_types_by_index.size());
+    auto index = ast::TypeIndex(static_cast<uint32_t>(_types_by_index.size()));
     type->setTypeIndex(index);
     _types_by_index.emplace_back(type);
 
