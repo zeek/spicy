@@ -4,9 +4,7 @@
 
 #include <functional>
 #include <iostream>
-#include <optional>
 #include <string>
-#include <utility>
 
 #include <hilti/ast/meta.h>
 #include <hilti/base/id-base.h>
