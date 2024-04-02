@@ -315,7 +315,7 @@ struct Visitor : public visitor::PreOrder {
     }
 
     void operator()(hilti::type::Vector* n) final {
-        auto sub = productionForType(n->elementType(), ID(fmt("%s", n->elementType())));
+        auto sub = productionForType(n->elementType(), ID(fmt("%s", *n->elementType())));
         result = productionForLoop(std::move(sub), n);
     }
 };

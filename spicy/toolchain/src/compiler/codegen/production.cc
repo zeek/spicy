@@ -60,7 +60,7 @@ std::string codegen::to_string(const Production& p) {
             args = hilti::util::fmt(", args: (%s)",
                                     hilti::util::join(hilti::node::transform(x,
                                                                              [](auto a) {
-                                                                                 return hilti::util::fmt("%s", a);
+                                                                                 return hilti::util::fmt("%s", *a);
                                                                              }),
                                                       ", "));
 

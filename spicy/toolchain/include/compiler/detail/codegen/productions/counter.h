@@ -33,7 +33,7 @@ public:
     Expression* expression() const final { return _expression; }
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
-    std::string dump() const override { return hilti::util::fmt("counter(%s): %s", _expression, _body->symbol()); }
+    std::string dump() const override { return hilti::util::fmt("counter(%s): %s", *_expression, _body->symbol()); }
 
     SPICY_PRODUCTION
 
