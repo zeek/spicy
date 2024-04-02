@@ -9,44 +9,6 @@
 using namespace spicy;
 using namespace hilti::operator_;
 
-spicy::unit::MemberCall::MemberCall(type::unit::item::Field* field)
-    : hilti::Operator(field->meta(), false), _field(field) {}
-
-spicy::unit::MemberCall::~MemberCall() {}
-
-hilti::operator_::Signature spicy::unit::MemberCall::signature(hilti::Builder* builder) const {
-    auto field = MemberCall::field();
-    assert(field);
-
-    auto ftype = field->itemType()->type()->as<hilti::type::Function>();
-    auto stype = field->parent(1)->as<type::Unit>();
-    auto params = hilti::type::OperandList::fromParameters(builder->context(), ftype->parameters());
-    auto result = ftype->result();
-
-    return Signature{
-        .kind = Kind::MemberCall,
-        .self = {hilti::parameter::Kind::InOut, nullptr, "", stype},
-        .op1 = {hilti::parameter::Kind::In, builder->typeMember(ID(field->id()))},
-        .op2 = {hilti::parameter::Kind::In, params},
-        .result = {result->constness(), result->type()},
-    };
-}
-
-hilti::Result<hilti::expression::ResolvedOperator*> spicy::unit::MemberCall::instantiate(hilti::Builder* builder,
-                                                                                         Expressions operands,
-                                                                                         Meta meta) const {
-    auto field = MemberCall::field();
-    assert(field);
-
-    auto callee = operands[0];
-    auto member = operands[1];
-    auto args = operands[2];
-    auto result = field->itemType()->type()->as<hilti::type::Function>()->result();
-
-    return {
-        operator_::unit::MemberCall::create(builder->context(), this, result, {callee, member, args}, std::move(meta))};
-}
-
 namespace {
 
 namespace unit {
