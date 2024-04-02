@@ -170,6 +170,69 @@ struct Error {
  */
 using Properties = std::map<std::string, node::PropertyValue>;
 
+/** Smart pointer wrapping a node, automatically pinning and unpinning it. */
+template<typename T>
+class RetainedPtr {
+public:
+    RetainedPtr() = default;
+    RetainedPtr(T* n) : _node(n) { retain(); }
+    RetainedPtr(const RetainedPtr& other) : _node(other._node) { retain(); }
+    RetainedPtr(RetainedPtr&& other) noexcept : _node(other._node) {
+        other._node = nullptr;
+        // reuse the other's retain
+    }
+
+    ~RetainedPtr() { release(); }
+
+    RetainedPtr& operator=(const RetainedPtr& other) {
+        if ( this == &other )
+            return *this;
+
+        release();
+        _node = other._node;
+        retain();
+        return *this;
+    }
+
+    RetainedPtr& operator=(RetainedPtr&& other) noexcept {
+        if ( this == &other )
+            return *this;
+
+        release();
+        _node = other._node;
+        other._node = nullptr;
+        // reuse the other's retain
+        return *this;
+    }
+
+    void reset() {
+        release();
+        _node = nullptr;
+    }
+
+    T* operator->() const { return _node; }
+    T& operator*() const { return *_node; }
+    explicit operator bool() const { return _node != nullptr; }
+    operator T*() const { return _node; }
+
+    T* get() const { return _node; }
+
+private:
+    void retain() {
+        if ( _node )
+            _node->retain();
+    }
+
+    void release() {
+        if ( _node ) {
+            _node->release();
+            _node = nullptr;
+        }
+    }
+
+    T* _node = nullptr;
+};
+
 } // namespace node
 
 /** Base class for all AST nodes. */
@@ -414,7 +477,8 @@ public:
             n->_meta = _meta;
 
         _children.emplace_back(n);
-        _children.back()->_parent = this;
+        n->_parent = this;
+        n->retain();
     }
 
     /**
@@ -441,6 +505,7 @@ public:
 
         if ( auto i = std::find(_children.begin(), _children.end(), n); i != _children.end() ) {
             (*i)->_parent = nullptr;
+            (*i)->release();
             _children.erase(i);
         }
     }
@@ -460,8 +525,10 @@ public:
 
         auto end_ = _children.begin() + *end;
         for ( auto i = _children.begin() + begin; i < end_; i++ ) {
-            if ( *i )
+            if ( *i ) {
                 (*i)->_parent = nullptr;
+                (*i)->release();
+            }
         }
 
         _children.erase(_children.begin() + begin, end_);
@@ -479,20 +546,24 @@ public:
      * @param n child node to set; this may be null to unset the particular index
      */
     void setChild(ASTContext* ctx, size_t idx, Node* n) {
-        if ( n ) {
-            n = _newChild(ctx, n);
-
-            if ( ! n->location() && _meta->location() )
-                n->_meta = _meta;
+        if ( auto old = _children[idx] ) {
+            old->_parent = nullptr;
+            old->release();
         }
 
-        if ( _children[idx] )
-            _children[idx]->_parent = nullptr;
+        if ( ! n ) {
+            _children[idx] = nullptr;
+            return;
+        }
+
+        n = _newChild(ctx, n);
+        n->_parent = this;
+        n->retain();
+
+        if ( ! n->location() && _meta->location() )
+            n->_meta = _meta;
 
         _children[idx] = n;
-
-        if ( _children[idx] )
-            _children[idx]->_parent = this;
     }
 
     /**
@@ -694,7 +765,7 @@ public:
     }
 
     /** Returns true if there are any errors associated with the node. */
-    bool hasErrors() const { return _errors && _errors->size(); }
+    bool hasErrors() const { return _errors && ! _errors->empty(); }
 
     /** Returns any error messages associated with the node. */
     const auto& errors() const {
@@ -710,6 +781,25 @@ public:
      * pointers remain valid, it just unlinks them from their current parent.
      */
     void clearChildren();
+
+    /** Pins the node in memory, ensuring garbage collection won't delete it. */
+    void retain() {
+        assert(_ref_count != -1); // dtor sets ref count to -1
+        ++_ref_count;
+    }
+
+    /**
+     * Unpins the node, allowing garbage collection to delete it (assuming no
+     * other pins).
+     */
+    void release() {
+        assert(_ref_count != -1); // dtor sets ref count to -1
+        assert(_ref_count > 0);
+        --_ref_count;
+    }
+
+    /** Returns true if at least one party has currently retained the node. */
+    bool isRetained() const { return _ref_count > 0; }
 
     /**
      * Returns any instance properties associated with the node. These are used
@@ -756,6 +846,7 @@ protected:
                 c = _newChild(ctx, c);
                 assert(! c->_parent);
                 c->_parent = this;
+                c->retain();
             }
 
             _children.push_back(c);
@@ -814,9 +905,6 @@ private:
     // Prepares a node for being added as a child, deep-copying it if it
     // already has a parent.
     static Node* _newChild(ASTContext* ctx, Node* child);
-
-    // Clears the node's parent pointer.
-    void _clearParent() { _parent = nullptr; }
 
     // Do Python-style array indexing with negative indices.
     std::optional<int> _normalizeEndIndex(int begin, std::optional<int> end) const {
@@ -882,9 +970,11 @@ private:
     void _checkCastBackend() const;
 
     const node::Tags _node_tags; // inheritance path for the node
-    Node* _parent = nullptr;     // parent node inside the AST, or null if not yet added to an AST
-    Nodes _children;             // set of child nodes
-    const Meta* _meta;           // meta information associated with the node; returned and managed by Meta::get()
+    int64_t _ref_count = 0;  // number of pins currently held on the node; -1 is a special value set by the dtor to mark
+                             // an already destroyed node (for debugging)
+    Node* _parent = nullptr; // parent node inside the AST, or null if not yet added to an AST
+    Nodes _children;         // set of child nodes
+    const Meta* _meta;       // meta information associated with the node; returned and managed by Meta::get()
 
     std::unique_ptr<Scope> _scope = nullptr; // scope associated with the node, or null if non (i.e., scope is empty)
     std::unique_ptr<std::vector<node::Error>> _errors; // errors associated with the node, or null if none

@@ -23,7 +23,10 @@ std::string node::to_string(const Tags& ti) {
     return util::join(util::transform(ti, [](auto i) { return std::to_string(i); }), ",");
 }
 
-Node::~Node() {}
+Node::~Node() {
+    clearChildren();
+    _ref_count = -1; // for debugging, mark as destroyed
+}
 
 std::string Node::dump() const {
     std::stringstream s;
@@ -115,8 +118,10 @@ void Node::replaceChildren(ASTContext* ctx, const Nodes& children) {
 
 void Node::clearChildren() {
     for ( auto& c : _children ) {
-        if ( c )
-            c->_clearParent();
+        if ( c ) {
+            c->_parent = nullptr;
+            c->release();
+        }
     }
 
     _children.clear();

@@ -736,6 +736,8 @@ Result<Nothing> Driver::compile() {
         return error(rc.error());
 
     if ( _driver_options.execute_code && ! _driver_options.output_prototypes ) {
+        context()->astContext()->clear(); // release memory
+
         if ( auto rc = jitUnits(); ! rc )
             return error(rc.error());
 

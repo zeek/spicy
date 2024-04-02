@@ -252,8 +252,9 @@ namespace detail {
 /** Internal representation of an operator signature after it has been processed. */
 struct ProcessedSignature {
     operator_::Kind kind = operator_::Kind::Unknown;
-    QualifiedType* result = nullptr;       /**< result of the method; if null, `result()` will be called dynamically */
-    type::OperandList* operands = nullptr; /**< null for operators to be instantiated only manually */
+    node::RetainedPtr<QualifiedType>
+        result; /**< result of the method; if null, `result()` will be called dynamically */
+    node::RetainedPtr<type::OperandList> operands; /**< null for operators to be instantiated only manually */
     operator_::Priority priority;
     std::string doc;        /**< documentation string */
     std::string result_doc; /**< explicitly set documentation string for result type */

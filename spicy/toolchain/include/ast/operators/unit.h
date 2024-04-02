@@ -28,4 +28,4 @@ SPICY_NODE_OPERATOR(unit, Position)
 SPICY_NODE_OPERATOR(unit, SetInput)
 SPICY_NODE_OPERATOR(unit, TryMember)
 SPICY_NODE_OPERATOR(unit, Unset)
-} // namespace operator_
+} // namespace spicy::operator_

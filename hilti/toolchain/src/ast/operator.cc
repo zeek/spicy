@@ -297,7 +297,7 @@ bool Operator::init(Builder* builder, Node* scope_root) {
     }
 
     if ( _signature->result ) {
-        if ( ! visitor::visit(v, _signature->result, {}, [](auto& v) { return v.result; }) )
+        if ( ! visitor::visit(v, _signature->result.get(), {}, [](auto& v) { return v.result; }) )
             return false;
 
         if ( ! _signature->result->type(false)->unify(builder->context(), scope_root) )

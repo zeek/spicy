@@ -87,6 +87,9 @@ public:
     /** Returns true if any registered operators remain uninitialized. */
     bool havePending() const { return ! _pending.empty(); }
 
+    /** Removes all registered operators, releasing their memory. */
+    void clear();
+
     /**
      * Aborts with an internal error if any registered built-in operators
      * remain uninitialized. If this happens after an AST has otherwise be
