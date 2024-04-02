@@ -43,7 +43,6 @@ bool codegen::production::isNullable(const std::vector<std::vector<Production*>>
 
 std::string codegen::to_string(const Production& p) {
     std::string can_sync;
-    std::string sync_at;
     std::string kind;
     std::string field;
     std::string container;

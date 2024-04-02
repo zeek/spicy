@@ -882,8 +882,6 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
 
 
 cxx::ID CodeGen::uniqueID(const std::string& prefix, Node* n) {
-    std::string x;
-
     if ( ! n->location() )
         // We rely on the location for creating a unique ID. If we ever arrive
         // here, it shouldn't be too difficult to get location information into
