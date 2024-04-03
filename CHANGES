@@ -1,3 +1,9 @@
+1.11.0-dev.75 | 2024-04-03 11:55:16 +0200
+
+  * Remove a few left-over unused variables. (Benjamin Bannier, Corelight)
+
+  * Fix a few instances where codegen was non-deterministic. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.72 | 2024-04-03 09:35:23 +0200
 
   * Fix repeated evaluations of `&parse-at` expression. (Robin Sommer)

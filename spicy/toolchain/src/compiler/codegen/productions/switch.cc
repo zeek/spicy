@@ -26,7 +26,7 @@ std::string codegen::production::Switch::dump() const {
 
         exprs.reserve(c.first.size());
         for ( const auto& e : c.first )
-            exprs.push_back(hilti::util::fmt("%s", e));
+            exprs.push_back(hilti::util::fmt("%s", *e));
 
         if ( r.size() )
             r += " | ";
