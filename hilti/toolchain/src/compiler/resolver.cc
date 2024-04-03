@@ -1067,7 +1067,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 setFqID(n, m->scopeID() + n->id()); // global scope
         }
 
-        if ( ! n->declarationIndex() ) {
+        if ( ! n->declarationIndex() && ! n->type()->alias() ) {
             auto index = context()->register_(n);
             recordChange(n->type()->type(), util::fmt("set type's declaration to %s", index));
         }

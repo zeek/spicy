@@ -1,0 +1,23 @@
+# @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
+# @TEST-EXEC: spicy-driver -l test.hlto >>output
+# @TEST-EXEC: echo 123 | spicy-driver test.hlto -p Test::A >>output
+# @TEST-EXEC: echo 123 | spicy-driver test.hlto -p Test::X >>output
+# @TEST-EXEC: echo 123 | spicy-driver test.hlto -p Test::Y >>output
+# @TEST-EXEC: echo 123 | spicy-driver test.hlto -p Test::Z >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks exported unit aliases: they should be accessible for parsing
+
+module Test;
+
+public type X = A;
+
+public type A = unit {
+    x: bytes &eod;
+    on %done { print self; }
+};
+
+public type Y = A;
+public type Z = Y;
+
+type non_public = A;

@@ -48,13 +48,23 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
 
     CodeGen* cg;
     hilti::declaration::Module* module = nullptr;
-    ID module_id = ID("<no module>");
 
     void operator()(hilti::declaration::Type* n) final {
-        // Replace unit type with compiled struct type.
         auto u = n->type()->type()->tryAs<type::Unit>();
         if ( ! u )
             return;
+
+        if ( n->type()->alias() ) {
+            // Special case: For an alias, if it's public, we just need to
+            // register the unit under the alias name as well.
+            if ( n->linkage() == hilti::declaration::Linkage::Public )
+                cg->compilePublicUnitAlias(module, n->fullyQualifiedID(), u);
+
+            n->type()->type(false)->as<hilti::type::Name>()->clearResolvedTypeIndex(); // will rebind to new struct
+            return;
+        }
+
+        // Replace unit type with compiled struct type.
 
         if ( auto r = cg->grammarBuilder()->run(u); ! r ) {
             hilti::logger().error(r.error().description(), n->location());
@@ -92,7 +102,6 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
 
     CodeGen* cg;
     hilti::declaration::Module* module = nullptr;
-    ID module_id = ID("<no module>");
 
     Expression* argument(Expression* args, unsigned int i, std::optional<Expression*> def = {}) {
         auto ctor = args->as<hilti::expression::Ctor>()->ctor();

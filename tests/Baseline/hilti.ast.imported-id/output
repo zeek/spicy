@@ -46,8 +46,6 @@
 [debug/resolver] [foo.hlt:6:20-6:23] type::Bool "bool" -> set type's declaration to D1
 [debug/resolver] [foo.hlt:7:1-7:29] declaration::Type "public type Foo2 = Bar::Bar1;" -> set declaration's canonical ID to Foo::Foo2
 [debug/resolver] [foo.hlt:7:1-7:29] declaration::Type "public type Foo2 = Bar::Bar1;" -> set declaration's fully qualified ID to Foo::Foo2
-[debug/resolver] -> [D2] declaration::Type Foo::Foo2 | public type Foo2 = Bar::Bar1; (foo.hlt:7:1-7:29)
-[debug/resolver] [foo.hlt:7:20-7:28] type::Name "Bar::Bar1" -> set type's declaration to D2
 [debug/resolver] [foo.hlt:9:20-9:27] declaration::Parameter "bool foo" -> set declaration's canonical ID to Foo::foo
 [debug/resolver] [foo.hlt:9:20-9:27] declaration::Parameter "bool foo" -> set declaration's fully qualified ID to foo
 [debug/resolver] [foo.hlt:9:30-9:42] declaration::Parameter "Bar::Bar1 bar" -> set declaration's canonical ID to Foo::bar
@@ -56,8 +54,8 @@
 [debug/resolver] [foo.hlt:9:1-9:44] declaration::Function "declare function string foo(bool foo, Bar::Bar1 bar);" -> set declaration's fully qualified ID to Foo::foo
 [debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); }" -> set declaration's fully qualified ID to Foo
 [debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); }" -> set module's canonical ID to Foo
-[debug/resolver] -> [D3] declaration::Module Foo | module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); } (foo.hlt:2:1-11:1)
-[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); }" -> set module's declaration index to D3
+[debug/resolver] -> [D2] declaration::Module Foo | module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); } (foo.hlt:2:1-11:1)
+[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); }" -> set module's declaration index to D2
 [debug/resolver] [hilti.hlt:6:1-6:21] declaration::Property "" -> set declaration's canonical ID to hilti::%skip-implementation
 [debug/resolver] [hilti.hlt:6:1-6:21] declaration::Property "" -> set declaration's fully qualified ID to hilti::%skip-implementation
 [debug/resolver] [hilti.hlt:8:24-8:42] declaration::Constant "const enum { LSB0 = 0, MSB0 = 1 } LSB0 = <anon-enum>::LSB0;" -> set declaration's canonical ID to hilti::LSB0
@@ -66,8 +64,8 @@
 [debug/resolver] [hilti.hlt:8:44-8:82] Attribute "&cxxname="hilti::rt::integer::BitOrder"" -> Attribute "&cxxname="::hilti::rt::integer::BitOrder""
 [debug/resolver] [hilti.hlt:8:1-8:83] declaration::Type "public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder";" -> set declaration's canonical ID to hilti::BitOrder
 [debug/resolver] [hilti.hlt:8:1-8:83] declaration::Type "public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder";" -> set declaration's fully qualified ID to hilti::BitOrder
-[debug/resolver] -> [D4] declaration::Type hilti::BitOrder | public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; (hilti.hlt:8:1-8:83)
-[debug/resolver] [hilti.hlt:8:24-8:42] type::Enum "hilti::BitOrder" -> set type's declaration to D4
+[debug/resolver] -> [D3] declaration::Type hilti::BitOrder | public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; (hilti.hlt:8:1-8:83)
+[debug/resolver] [hilti.hlt:8:24-8:42] type::Enum "hilti::BitOrder" -> set type's declaration to D3
 [debug/resolver] [hilti.hlt:9:25-9:59] declaration::Constant "const enum { Little = 0, Big = 1, Network = 2, Host = 3 } Little = <anon-enum>::Little;" -> set declaration's canonical ID to hilti::Little
 [debug/resolver] [hilti.hlt:9:25-9:59] declaration::Constant "const enum { Little = 0, Big = 1, Network = 2, Host = 3 } Big = <anon-enum>::Big;" -> set declaration's canonical ID to hilti::Big
 [debug/resolver] [hilti.hlt:9:25-9:59] declaration::Constant "const enum { Little = 0, Big = 1, Network = 2, Host = 3 } Network = <anon-enum>::Network;" -> set declaration's canonical ID to hilti::Network
@@ -76,8 +74,8 @@
 [debug/resolver] [hilti.hlt:9:61-9:91] Attribute "&cxxname="hilti::rt::ByteOrder"" -> Attribute "&cxxname="::hilti::rt::ByteOrder""
 [debug/resolver] [hilti.hlt:9:1-9:92] declaration::Type "public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder";" -> set declaration's canonical ID to hilti::ByteOrder
 [debug/resolver] [hilti.hlt:9:1-9:92] declaration::Type "public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder";" -> set declaration's fully qualified ID to hilti::ByteOrder
-[debug/resolver] -> [D5] declaration::Type hilti::ByteOrder | public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; (hilti.hlt:9:1-9:92)
-[debug/resolver] [hilti.hlt:9:25-9:59] type::Enum "hilti::ByteOrder" -> set type's declaration to D5
+[debug/resolver] -> [D4] declaration::Type hilti::ByteOrder | public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; (hilti.hlt:9:1-9:92)
+[debug/resolver] [hilti.hlt:9:25-9:59] type::Enum "hilti::ByteOrder" -> set type's declaration to D4
 [debug/resolver] [hilti.hlt:10:20-10:45] declaration::Constant "const enum { Left = 0, Right = 1, Both = 2 } Left = <anon-enum>::Left;" -> set declaration's canonical ID to hilti::Left
 [debug/resolver] [hilti.hlt:10:20-10:45] declaration::Constant "const enum { Left = 0, Right = 1, Both = 2 } Right = <anon-enum>::Right;" -> set declaration's canonical ID to hilti::Right
 [debug/resolver] [hilti.hlt:10:20-10:45] declaration::Constant "const enum { Left = 0, Right = 1, Both = 2 } Both = <anon-enum>::Both;" -> set declaration's canonical ID to hilti::Both
@@ -85,24 +83,24 @@
 [debug/resolver] [hilti.hlt:10:47-10:79] Attribute "&cxxname="hilti::rt::bytes::Side"" -> Attribute "&cxxname="::hilti::rt::bytes::Side""
 [debug/resolver] [hilti.hlt:10:1-10:80] declaration::Type "public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side";" -> set declaration's canonical ID to hilti::Side
 [debug/resolver] [hilti.hlt:10:1-10:80] declaration::Type "public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side";" -> set declaration's fully qualified ID to hilti::Side
-[debug/resolver] -> [D6] declaration::Type hilti::Side | public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; (hilti.hlt:10:1-10:80)
-[debug/resolver] [hilti.hlt:10:20-10:45] type::Enum "hilti::Side" -> set type's declaration to D6
+[debug/resolver] -> [D5] declaration::Type hilti::Side | public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; (hilti.hlt:10:1-10:80)
+[debug/resolver] [hilti.hlt:10:20-10:45] type::Enum "hilti::Side" -> set type's declaration to D5
 [debug/resolver] [hilti.hlt:11:29-11:47] declaration::Constant "const enum { IPv4 = 0, IPv6 = 1 } IPv4 = <anon-enum>::IPv4;" -> set declaration's canonical ID to hilti::IPv4
 [debug/resolver] [hilti.hlt:11:29-11:47] declaration::Constant "const enum { IPv4 = 0, IPv6 = 1 } IPv6 = <anon-enum>::IPv6;" -> set declaration's canonical ID to hilti::IPv6
 [debug/resolver] [hilti.hlt:11:29-11:47] declaration::Constant "const enum { IPv4 = 0, IPv6 = 1 } Undef = <anon-enum>::Undef;" -> set declaration's canonical ID to hilti::Undef_4
 [debug/resolver] [hilti.hlt:11:49-11:83] Attribute "&cxxname="hilti::rt::AddressFamily"" -> Attribute "&cxxname="::hilti::rt::AddressFamily""
 [debug/resolver] [hilti.hlt:11:1-11:84] declaration::Type "public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily";" -> set declaration's canonical ID to hilti::AddressFamily
 [debug/resolver] [hilti.hlt:11:1-11:84] declaration::Type "public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily";" -> set declaration's fully qualified ID to hilti::AddressFamily
-[debug/resolver] -> [D7] declaration::Type hilti::AddressFamily | public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; (hilti.hlt:11:1-11:84)
-[debug/resolver] [hilti.hlt:11:29-11:47] type::Enum "hilti::AddressFamily" -> set type's declaration to D7
+[debug/resolver] -> [D6] declaration::Type hilti::AddressFamily | public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; (hilti.hlt:11:1-11:84)
+[debug/resolver] [hilti.hlt:11:29-11:47] type::Enum "hilti::AddressFamily" -> set type's declaration to D6
 [debug/resolver] [hilti.hlt:12:24-12:62] declaration::Constant "const enum { IEEE754_Single = 0, IEEE754_Double = 1 } IEEE754_Single = <anon-enum>::IEEE754_Single;" -> set declaration's canonical ID to hilti::IEEE754_Single
 [debug/resolver] [hilti.hlt:12:24-12:62] declaration::Constant "const enum { IEEE754_Single = 0, IEEE754_Double = 1 } IEEE754_Double = <anon-enum>::IEEE754_Double;" -> set declaration's canonical ID to hilti::IEEE754_Double
 [debug/resolver] [hilti.hlt:12:24-12:62] declaration::Constant "const enum { IEEE754_Single = 0, IEEE754_Double = 1 } Undef = <anon-enum>::Undef;" -> set declaration's canonical ID to hilti::Undef_5
 [debug/resolver] [hilti.hlt:12:64-12:95] Attribute "&cxxname="hilti::rt::real::Type"" -> Attribute "&cxxname="::hilti::rt::real::Type""
 [debug/resolver] [hilti.hlt:12:1-12:96] declaration::Type "public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type";" -> set declaration's canonical ID to hilti::RealType
 [debug/resolver] [hilti.hlt:12:1-12:96] declaration::Type "public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type";" -> set declaration's fully qualified ID to hilti::RealType
-[debug/resolver] -> [D8] declaration::Type hilti::RealType | public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; (hilti.hlt:12:1-12:96)
-[debug/resolver] [hilti.hlt:12:24-12:62] type::Enum "hilti::RealType" -> set type's declaration to D8
+[debug/resolver] -> [D7] declaration::Type hilti::RealType | public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; (hilti.hlt:12:1-12:96)
+[debug/resolver] [hilti.hlt:12:24-12:62] type::Enum "hilti::RealType" -> set type's declaration to D7
 [debug/resolver] [hilti.hlt:13:24-13:46] declaration::Constant "const enum { TCP = 0, UDP = 1, ICMP = 2 } TCP = <anon-enum>::TCP;" -> set declaration's canonical ID to hilti::TCP
 [debug/resolver] [hilti.hlt:13:24-13:46] declaration::Constant "const enum { TCP = 0, UDP = 1, ICMP = 2 } UDP = <anon-enum>::UDP;" -> set declaration's canonical ID to hilti::UDP
 [debug/resolver] [hilti.hlt:13:24-13:46] declaration::Constant "const enum { TCP = 0, UDP = 1, ICMP = 2 } ICMP = <anon-enum>::ICMP;" -> set declaration's canonical ID to hilti::ICMP
@@ -110,16 +108,16 @@
 [debug/resolver] [hilti.hlt:13:48-13:77] Attribute "&cxxname="hilti::rt::Protocol"" -> Attribute "&cxxname="::hilti::rt::Protocol""
 [debug/resolver] [hilti.hlt:13:1-13:78] declaration::Type "public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol";" -> set declaration's canonical ID to hilti::Protocol
 [debug/resolver] [hilti.hlt:13:1-13:78] declaration::Type "public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol";" -> set declaration's fully qualified ID to hilti::Protocol
-[debug/resolver] -> [D9] declaration::Type hilti::Protocol | public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; (hilti.hlt:13:1-13:78)
-[debug/resolver] [hilti.hlt:13:24-13:46] type::Enum "hilti::Protocol" -> set type's declaration to D9
+[debug/resolver] -> [D8] declaration::Type hilti::Protocol | public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; (hilti.hlt:13:1-13:78)
+[debug/resolver] [hilti.hlt:13:24-13:46] type::Enum "hilti::Protocol" -> set type's declaration to D8
 [debug/resolver] [hilti.hlt:14:23-14:42] declaration::Constant "const enum { ASCII = 0, UTF8 = 1 } ASCII = <anon-enum>::ASCII;" -> set declaration's canonical ID to hilti::ASCII
 [debug/resolver] [hilti.hlt:14:23-14:42] declaration::Constant "const enum { ASCII = 0, UTF8 = 1 } UTF8 = <anon-enum>::UTF8;" -> set declaration's canonical ID to hilti::UTF8
 [debug/resolver] [hilti.hlt:14:23-14:42] declaration::Constant "const enum { ASCII = 0, UTF8 = 1 } Undef = <anon-enum>::Undef;" -> set declaration's canonical ID to hilti::Undef_7
 [debug/resolver] [hilti.hlt:14:44-14:79] Attribute "&cxxname="hilti::rt::bytes::Charset"" -> Attribute "&cxxname="::hilti::rt::bytes::Charset""
 [debug/resolver] [hilti.hlt:14:1-14:80] declaration::Type "public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset";" -> set declaration's canonical ID to hilti::Charset
 [debug/resolver] [hilti.hlt:14:1-14:80] declaration::Type "public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset";" -> set declaration's fully qualified ID to hilti::Charset
-[debug/resolver] -> [D10] declaration::Type hilti::Charset | public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; (hilti.hlt:14:1-14:80)
-[debug/resolver] [hilti.hlt:14:23-14:42] type::Enum "hilti::Charset" -> set type's declaration to D10
+[debug/resolver] -> [D9] declaration::Type hilti::Charset | public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; (hilti.hlt:14:1-14:80)
+[debug/resolver] [hilti.hlt:14:23-14:42] type::Enum "hilti::Charset" -> set type's declaration to D9
 [debug/resolver] [hilti.hlt:15:35-15:66] declaration::Constant "const enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } IGNORE = <anon-enum>::IGNORE;" -> set declaration's canonical ID to hilti::IGNORE
 [debug/resolver] [hilti.hlt:15:35-15:66] declaration::Constant "const enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } REPLACE = <anon-enum>::REPLACE;" -> set declaration's canonical ID to hilti::REPLACE
 [debug/resolver] [hilti.hlt:15:35-15:66] declaration::Constant "const enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } STRICT = <anon-enum>::STRICT;" -> set declaration's canonical ID to hilti::STRICT
@@ -127,16 +125,16 @@
 [debug/resolver] [hilti.hlt:15:68-15:115] Attribute "&cxxname="hilti::rt::bytes::DecodeErrorStrategy"" -> Attribute "&cxxname="::hilti::rt::bytes::DecodeErrorStrategy""
 [debug/resolver] [hilti.hlt:15:1-15:116] declaration::Type "public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy";" -> set declaration's canonical ID to hilti::DecodeErrorStrategy
 [debug/resolver] [hilti.hlt:15:1-15:116] declaration::Type "public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy";" -> set declaration's fully qualified ID to hilti::DecodeErrorStrategy
-[debug/resolver] -> [D11] declaration::Type hilti::DecodeErrorStrategy | public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; (hilti.hlt:15:1-15:116)
-[debug/resolver] [hilti.hlt:15:35-15:66] type::Enum "hilti::DecodeErrorStrategy" -> set type's declaration to D11
+[debug/resolver] -> [D10] declaration::Type hilti::DecodeErrorStrategy | public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; (hilti.hlt:15:1-15:116)
+[debug/resolver] [hilti.hlt:15:35-15:66] type::Enum "hilti::DecodeErrorStrategy" -> set type's declaration to D10
 [debug/resolver] [hilti.hlt:16:1-16:37] declaration::Type "public type Captures = vector<bytes>;" -> set declaration's canonical ID to hilti::Captures
 [debug/resolver] [hilti.hlt:16:1-16:37] declaration::Type "public type Captures = vector<bytes>;" -> set declaration's fully qualified ID to hilti::Captures
-[debug/resolver] -> [D12] declaration::Type hilti::Captures | public type Captures = vector<bytes>; (hilti.hlt:16:1-16:37)
-[debug/resolver] [hilti.hlt:16:24-16:36] type::Vector "vector<bytes>" -> set type's declaration to D12
+[debug/resolver] -> [D11] declaration::Type hilti::Captures | public type Captures = vector<bytes>; (hilti.hlt:16:1-16:37)
+[debug/resolver] [hilti.hlt:16:24-16:36] type::Vector "vector<bytes>" -> set type's declaration to D11
 [debug/resolver] [hilti.hlt:17:1-17:61] declaration::Type "public type Profiler = __library_type("::hilti::rt::Profiler");" -> set declaration's canonical ID to hilti::Profiler
 [debug/resolver] [hilti.hlt:17:1-17:61] declaration::Type "public type Profiler = __library_type("::hilti::rt::Profiler");" -> set declaration's fully qualified ID to hilti::Profiler
-[debug/resolver] -> [D13] declaration::Type hilti::Profiler | public type Profiler = hilti::Profiler; (hilti.hlt:17:1-17:61)
-[debug/resolver] [hilti.hlt:17:24-17:60] type::Library "hilti::Profiler" -> set type's declaration to D13
+[debug/resolver] -> [D12] declaration::Type hilti::Profiler | public type Profiler = hilti::Profiler; (hilti.hlt:17:1-17:61)
+[debug/resolver] [hilti.hlt:17:24-17:60] type::Library "hilti::Profiler" -> set type's declaration to D12
 [debug/resolver] [hilti.hlt:19:26-21:1] declaration::Expression "self" -> set declaration's canonical ID to hilti::self
 [debug/resolver] [hilti.hlt:19:26-21:1] declaration::Expression "self" -> set declaration's fully qualified ID to self
 [debug/resolver] [hilti.hlt:20:30-20:40] declaration::Parameter "stream data" -> set declaration's canonical ID to hilti::data
@@ -146,8 +144,8 @@
 [debug/resolver] [hilti.hlt:21:3-21:42] Attribute "&cxxname="hilti::rt::regexp::MatchState"" -> Attribute "&cxxname="::hilti::rt::regexp::MatchState""
 [debug/resolver] [hilti.hlt:19:1-21:43] declaration::Type "public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState";" -> set declaration's canonical ID to hilti::MatchState
 [debug/resolver] [hilti.hlt:19:1-21:43] declaration::Type "public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState";" -> set declaration's fully qualified ID to hilti::MatchState
-[debug/resolver] -> [D14] declaration::Type hilti::MatchState | public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; (hilti.hlt:19:1-21:43)
-[debug/resolver] [hilti.hlt:19:26-21:1] type::Struct "hilti::MatchState" -> set type's declaration to D14
+[debug/resolver] -> [D13] declaration::Type hilti::MatchState | public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; (hilti.hlt:19:1-21:43)
+[debug/resolver] [hilti.hlt:19:26-21:1] type::Struct "hilti::MatchState" -> set type's declaration to D13
 [debug/resolver] [hilti.hlt:23:27-23:33] declaration::Parameter "any obj" -> set declaration's canonical ID to hilti::obj
 [debug/resolver] [hilti.hlt:23:27-23:33] declaration::Parameter "any obj" -> set declaration's fully qualified ID to obj
 [debug/resolver] [hilti.hlt:23:36-23:54] declaration::Parameter "bool newline = True" -> set declaration's canonical ID to hilti::newline
@@ -229,28 +227,28 @@
 [debug/resolver] [hilti.hlt:39:35-39:65] Attribute "&cxxname="hilti::rt::Exception"" -> Attribute "&cxxname="::hilti::rt::Exception""
 [debug/resolver] [hilti.hlt:39:1-39:66] declaration::Type "public type Exception = exception &cxxname="::hilti::rt::Exception";" -> set declaration's canonical ID to hilti::Exception
 [debug/resolver] [hilti.hlt:39:1-39:66] declaration::Type "public type Exception = exception &cxxname="::hilti::rt::Exception";" -> set declaration's fully qualified ID to hilti::Exception
-[debug/resolver] -> [D15] declaration::Type hilti::Exception | public type Exception = exception &cxxname="::hilti::rt::Exception"; (hilti.hlt:39:1-39:66)
-[debug/resolver] [hilti.hlt:39:25-39:33] type::Exception "hilti::Exception" -> set type's declaration to D15
+[debug/resolver] -> [D14] declaration::Type hilti::Exception | public type Exception = exception &cxxname="::hilti::rt::Exception"; (hilti.hlt:39:1-39:66)
+[debug/resolver] [hilti.hlt:39:25-39:33] type::Exception "hilti::Exception" -> set type's declaration to D14
 [debug/resolver] [hilti.hlt:42:55-42:79] Attribute "&cxxname="std::exception"" -> Attribute "&cxxname="::std::exception""
 [debug/resolver] [hilti.hlt:42:1-42:80] declaration::Type "public type SystemException = [exception :Exception &cxxname="::std::exception";" -> set declaration's canonical ID to hilti::SystemException
 [debug/resolver] [hilti.hlt:42:1-42:80] declaration::Type "public type SystemException = [exception :Exception &cxxname="::std::exception";" -> set declaration's fully qualified ID to hilti::SystemException
-[debug/resolver] -> [D16] declaration::Type hilti::SystemException | public type SystemException = [exception :Exception &cxxname="::std::exception"; (hilti.hlt:42:1-42:80)
-[debug/resolver] [hilti.hlt:42:31-42:53] type::Exception "hilti::SystemException" -> set type's declaration to D16
+[debug/resolver] -> [D15] declaration::Type hilti::SystemException | public type SystemException = [exception :Exception &cxxname="::std::exception"; (hilti.hlt:42:1-42:80)
+[debug/resolver] [hilti.hlt:42:31-42:53] type::Exception "hilti::SystemException" -> set type's declaration to D15
 [debug/resolver] [hilti.hlt:46:52-46:85] Attribute "&cxxname="hilti::rt::RuntimeError"" -> Attribute "&cxxname="::hilti::rt::RuntimeError""
 [debug/resolver] [hilti.hlt:46:1-46:86] declaration::Type "public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError";" -> set declaration's canonical ID to hilti::RuntimeError
 [debug/resolver] [hilti.hlt:46:1-46:86] declaration::Type "public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError";" -> set declaration's fully qualified ID to hilti::RuntimeError
-[debug/resolver] -> [D17] declaration::Type hilti::RuntimeError | public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; (hilti.hlt:46:1-46:86)
-[debug/resolver] [hilti.hlt:46:28-46:50] type::Exception "hilti::RuntimeError" -> set type's declaration to D17
+[debug/resolver] -> [D16] declaration::Type hilti::RuntimeError | public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; (hilti.hlt:46:1-46:86)
+[debug/resolver] [hilti.hlt:46:28-46:50] type::Exception "hilti::RuntimeError" -> set type's declaration to D16
 [debug/resolver] [hilti.hlt:49:58-49:97] Attribute "&cxxname="hilti::rt::RecoverableFailure"" -> Attribute "&cxxname="::hilti::rt::RecoverableFailure""
 [debug/resolver] [hilti.hlt:49:1-49:98] declaration::Type "public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure";" -> set declaration's canonical ID to hilti::RecoverableFailure
 [debug/resolver] [hilti.hlt:49:1-49:98] declaration::Type "public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure";" -> set declaration's fully qualified ID to hilti::RecoverableFailure
-[debug/resolver] -> [D18] declaration::Type hilti::RecoverableFailure | public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; (hilti.hlt:49:1-49:98)
-[debug/resolver] [hilti.hlt:49:34-49:56] type::Exception "hilti::RecoverableFailure" -> set type's declaration to D18
+[debug/resolver] -> [D17] declaration::Type hilti::RecoverableFailure | public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; (hilti.hlt:49:1-49:98)
+[debug/resolver] [hilti.hlt:49:34-49:56] type::Exception "hilti::RecoverableFailure" -> set type's declaration to D17
 [debug/resolver] [hilti.hlt:52:51-52:83] Attribute "&cxxname="hilti::rt::MissingData"" -> Attribute "&cxxname="::hilti::rt::MissingData""
 [debug/resolver] [hilti.hlt:52:1-52:84] declaration::Type "public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData";" -> set declaration's canonical ID to hilti::MissingData
 [debug/resolver] [hilti.hlt:52:1-52:84] declaration::Type "public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData";" -> set declaration's fully qualified ID to hilti::MissingData
-[debug/resolver] -> [D19] declaration::Type hilti::MissingData | public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; (hilti.hlt:52:1-52:84)
-[debug/resolver] [hilti.hlt:52:27-52:49] type::Exception "hilti::MissingData" -> set type's declaration to D19
+[debug/resolver] -> [D18] declaration::Type hilti::MissingData | public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; (hilti.hlt:52:1-52:84)
+[debug/resolver] [hilti.hlt:52:27-52:49] type::Exception "hilti::MissingData" -> set type's declaration to D18
 [debug/resolver] [hilti.hlt:55:38-55:58] declaration::Parameter "hilti::SystemException excpt" -> set declaration's canonical ID to hilti::excpt
 [debug/resolver] [hilti.hlt:55:38-55:58] declaration::Parameter "hilti::SystemException excpt" -> set declaration's fully qualified ID to excpt
 [debug/resolver] [hilti.hlt:55:61-55:97] Attribute "&cxxname="hilti::rt::exception::what"" -> Attribute "&cxxname="::hilti::rt::exception::what""
@@ -277,19 +275,17 @@
 [debug/resolver] [hilti.hlt:60:1-60:119] declaration::Function "declare public function string exception_where(hilti::RecoverableFailure excpt) &cxxname="::hilti::rt::exception::where" &have_prototype;" -> creating function call operator
 [debug/resolver] [hilti.hlt:3:1-61:1] declaration::Module "module hilti { public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; public type Captures = vector<bytes>; public type Profiler = Profiler &cxxname="::hilti::rt::Profiler"; public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; public type Exception = exception &cxxname="::hilti::rt::Exception"; public type SystemException = [exception :Exception &cxxname="::std::exception"; public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; declare public function void print(any obj, bool newline = True) &cxxname="::hilti::rt::print" &have_prototype; declare public function void printValues(tuple<*> t, bool newline = True) &cxxname="::hilti::rt::printValues" &have_prototype; declare public function void debug(string dbg_stream, any obj) &cxxname="::hilti::rt::debug::print" &have_prototype; declare public function void debugIndent(string dbg_stream) &cxxname="::hilti::rt::debug::indent" &have_prototype; declare public function void debugDedent(string dbg_stream) &cxxname="::hilti::rt::debug::dedent" &have_prototype; declare public function time current_time() &cxxname="::hilti::rt::time::current_time" &have_prototype; declare public function time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<64> M, uint<64> S) &cxxname="::hilti::rt::time::mktime" &have_prototype; declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype; declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype; declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype; declare public function string exception_what(SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_what(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_where(SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; declare public function string exception_where(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; }" -> set declaration's fully qualified ID to hilti
 [debug/resolver] [hilti.hlt:3:1-61:1] declaration::Module "module hilti { public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; public type Captures = vector<bytes>; public type Profiler = Profiler &cxxname="::hilti::rt::Profiler"; public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; public type Exception = exception &cxxname="::hilti::rt::Exception"; public type SystemException = [exception :Exception &cxxname="::std::exception"; public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; declare public function void print(any obj, bool newline = True) &cxxname="::hilti::rt::print" &have_prototype; declare public function void printValues(tuple<*> t, bool newline = True) &cxxname="::hilti::rt::printValues" &have_prototype; declare public function void debug(string dbg_stream, any obj) &cxxname="::hilti::rt::debug::print" &have_prototype; declare public function void debugIndent(string dbg_stream) &cxxname="::hilti::rt::debug::indent" &have_prototype; declare public function void debugDedent(string dbg_stream) &cxxname="::hilti::rt::debug::dedent" &have_prototype; declare public function time current_time() &cxxname="::hilti::rt::time::current_time" &have_prototype; declare public function time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<64> M, uint<64> S) &cxxname="::hilti::rt::time::mktime" &have_prototype; declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype; declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype; declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype; declare public function string exception_what(SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_what(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_where(SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; declare public function string exception_where(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; }" -> set module's canonical ID to hilti
-[debug/resolver] -> [D20] declaration::Module hilti | module hilti { public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; public type Captures = vector<bytes>; public type Profiler = Profiler &cxxname="::hilti::rt::Profiler"; public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; public type Exception = exception &cxxname="::hilti::rt::Exception"; public type SystemException = [exception :Exception &cxxname="::std::exception"; public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; declare public function void print(any obj, bool newline = True) &cxxname="::hilti::rt::print" &have_prototype; declare public function void printValues(tuple<*> t, bool newline = True) &cxxname="::hilti::rt::printValues" &have_prototype; declare public function void debug(string dbg_stream, any obj) &cxxname="::hilti::rt::debug::print" &have_prototype; declare public function void debugIndent(string dbg_stream) &cxxname="::hilti::rt::debug::indent" &have_prototype; declare public function void debugDedent(string dbg_stream) &cxxname="::hilti::rt::debug::dedent" &have_prototype; declare public function time current_time() &cxxname="::hilti::rt::time::current_time" &have_prototype; declare public function time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<64> M, uint<64> S) &cxxname="::hilti::rt::time::mktime" &have_prototype; declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype; declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype; declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype; declare public function string exception_what(SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_what(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_where(SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; declare public function string exception_where(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; } (hilti.hlt:3:1-61:1)
-[debug/resolver] [hilti.hlt:3:1-61:1] declaration::Module "module hilti { public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; public type Captures = vector<bytes>; public type Profiler = Profiler &cxxname="::hilti::rt::Profiler"; public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; public type Exception = exception &cxxname="::hilti::rt::Exception"; public type SystemException = [exception :Exception &cxxname="::std::exception"; public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; declare public function void print(any obj, bool newline = True) &cxxname="::hilti::rt::print" &have_prototype; declare public function void printValues(tuple<*> t, bool newline = True) &cxxname="::hilti::rt::printValues" &have_prototype; declare public function void debug(string dbg_stream, any obj) &cxxname="::hilti::rt::debug::print" &have_prototype; declare public function void debugIndent(string dbg_stream) &cxxname="::hilti::rt::debug::indent" &have_prototype; declare public function void debugDedent(string dbg_stream) &cxxname="::hilti::rt::debug::dedent" &have_prototype; declare public function time current_time() &cxxname="::hilti::rt::time::current_time" &have_prototype; declare public function time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<64> M, uint<64> S) &cxxname="::hilti::rt::time::mktime" &have_prototype; declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype; declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype; declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype; declare public function string exception_what(SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_what(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_where(SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; declare public function string exception_where(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; }" -> set module's declaration index to D20
+[debug/resolver] -> [D19] declaration::Module hilti | module hilti { public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; public type Captures = vector<bytes>; public type Profiler = Profiler &cxxname="::hilti::rt::Profiler"; public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; public type Exception = exception &cxxname="::hilti::rt::Exception"; public type SystemException = [exception :Exception &cxxname="::std::exception"; public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; declare public function void print(any obj, bool newline = True) &cxxname="::hilti::rt::print" &have_prototype; declare public function void printValues(tuple<*> t, bool newline = True) &cxxname="::hilti::rt::printValues" &have_prototype; declare public function void debug(string dbg_stream, any obj) &cxxname="::hilti::rt::debug::print" &have_prototype; declare public function void debugIndent(string dbg_stream) &cxxname="::hilti::rt::debug::indent" &have_prototype; declare public function void debugDedent(string dbg_stream) &cxxname="::hilti::rt::debug::dedent" &have_prototype; declare public function time current_time() &cxxname="::hilti::rt::time::current_time" &have_prototype; declare public function time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<64> M, uint<64> S) &cxxname="::hilti::rt::time::mktime" &have_prototype; declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype; declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype; declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype; declare public function string exception_what(SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_what(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_where(SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; declare public function string exception_where(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; } (hilti.hlt:3:1-61:1)
+[debug/resolver] [hilti.hlt:3:1-61:1] declaration::Module "module hilti { public type BitOrder = enum { LSB0 = 0, MSB0 = 1 } &cxxname="::hilti::rt::integer::BitOrder"; public type ByteOrder = enum { Little = 0, Big = 1, Network = 2, Host = 3 } &cxxname="::hilti::rt::ByteOrder"; public type Side = enum { Left = 0, Right = 1, Both = 2 } &cxxname="::hilti::rt::bytes::Side"; public type AddressFamily = enum { IPv4 = 0, IPv6 = 1 } &cxxname="::hilti::rt::AddressFamily"; public type RealType = enum { IEEE754_Single = 0, IEEE754_Double = 1 } &cxxname="::hilti::rt::real::Type"; public type Protocol = enum { TCP = 0, UDP = 1, ICMP = 2 } &cxxname="::hilti::rt::Protocol"; public type Charset = enum { ASCII = 0, UTF8 = 1 } &cxxname="::hilti::rt::bytes::Charset"; public type DecodeErrorStrategy = enum { IGNORE = 0, REPLACE = 1, STRICT = 2 } &cxxname="::hilti::rt::bytes::DecodeErrorStrategy"; public type Captures = vector<bytes>; public type Profiler = Profiler &cxxname="::hilti::rt::Profiler"; public type MatchState = struct { method Captures captures(stream data); } &cxxname="::hilti::rt::regexp::MatchState"; public type Exception = exception &cxxname="::hilti::rt::Exception"; public type SystemException = [exception :Exception &cxxname="::std::exception"; public type RuntimeError = [exception :Exception &cxxname="::hilti::rt::RuntimeError"; public type RecoverableFailure = [exception :Exception &cxxname="::hilti::rt::RecoverableFailure"; public type MissingData = [exception :Exception &cxxname="::hilti::rt::MissingData"; declare public function void print(any obj, bool newline = True) &cxxname="::hilti::rt::print" &have_prototype; declare public function void printValues(tuple<*> t, bool newline = True) &cxxname="::hilti::rt::printValues" &have_prototype; declare public function void debug(string dbg_stream, any obj) &cxxname="::hilti::rt::debug::print" &have_prototype; declare public function void debugIndent(string dbg_stream) &cxxname="::hilti::rt::debug::indent" &have_prototype; declare public function void debugDedent(string dbg_stream) &cxxname="::hilti::rt::debug::dedent" &have_prototype; declare public function time current_time() &cxxname="::hilti::rt::time::current_time" &have_prototype; declare public function time mktime(uint<64> y, uint<64> m, uint<64> d, uint<64> H, uint<64> M, uint<64> S) &cxxname="::hilti::rt::time::mktime" &have_prototype; declare public function void abort() &cxxname="::hilti::rt::abort_with_backtrace" &have_prototype; declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype; declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype; declare public function string exception_what(SystemException excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_what(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::what" &have_prototype; declare public function string exception_where(SystemException excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; declare public function string exception_where(RecoverableFailure excpt) &cxxname="::hilti::rt::exception::where" &have_prototype; }" -> set module's declaration index to D19
 [debug/resolver] [bar.hlt:4:1-4:11] declaration::ImportedModule "import Foo;" -> set declaration's canonical ID to Bar::Foo
 [debug/resolver] [bar.hlt:4:1-4:11] declaration::ImportedModule "import Foo;" -> set declaration's fully qualified ID to Bar::Foo
 [debug/resolver] [bar.hlt:4:1-4:11] declaration::ImportedModule "import Foo;" -> imported module Foo
 [debug/resolver] [bar.hlt:6:1-6:26] declaration::Type "public type Bar1 = string;" -> set declaration's canonical ID to Bar::Bar1
 [debug/resolver] [bar.hlt:6:1-6:26] declaration::Type "public type Bar1 = string;" -> set declaration's fully qualified ID to Bar::Bar1
-[debug/resolver] -> [D21] declaration::Type Bar::Bar1 | public type Bar1 = string; (bar.hlt:6:1-6:26)
-[debug/resolver] [bar.hlt:6:20-6:25] type::String "string" -> set type's declaration to D21
+[debug/resolver] -> [D20] declaration::Type Bar::Bar1 | public type Bar1 = string; (bar.hlt:6:1-6:26)
+[debug/resolver] [bar.hlt:6:20-6:25] type::String "string" -> set type's declaration to D20
 [debug/resolver] [bar.hlt:7:1-7:29] declaration::Type "public type Bar2 = Foo::Foo1;" -> set declaration's canonical ID to Bar::Bar2
 [debug/resolver] [bar.hlt:7:1-7:29] declaration::Type "public type Bar2 = Foo::Foo1;" -> set declaration's fully qualified ID to Bar::Bar2
-[debug/resolver] -> [D22] declaration::Type Bar::Bar2 | public type Bar2 = Foo::Foo1; (bar.hlt:7:1-7:29)
-[debug/resolver] [bar.hlt:7:20-7:28] type::Name "Foo::Foo1" -> set type's declaration to D22
 [debug/resolver] [bar.hlt:9:20-9:27] declaration::Parameter "Bar1 bar" -> set declaration's canonical ID to Bar::bar
 [debug/resolver] [bar.hlt:9:20-9:27] declaration::Parameter "Bar1 bar" -> set declaration's fully qualified ID to bar
 [debug/resolver] [bar.hlt:9:30-9:42] declaration::Parameter "Foo::Foo1 foo" -> set declaration's canonical ID to Bar::foo
@@ -298,13 +294,13 @@
 [debug/resolver] [bar.hlt:9:1-9:44] declaration::Function "declare function string bar(Bar1 bar, Foo::Foo1 foo);" -> set declaration's fully qualified ID to Bar::bar
 [debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); }" -> set declaration's fully qualified ID to Bar
 [debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); }" -> set module's canonical ID to Bar
-[debug/resolver] -> [D23] declaration::Module Bar | module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); } (bar.hlt:2:1-11:1)
-[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); }" -> set module's declaration index to D23
+[debug/resolver] -> [D21] declaration::Module Bar | module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); } (bar.hlt:2:1-11:1)
+[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); }" -> set module's declaration index to D21
 [debug/compiler]       -> modified
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     [HILTI] building scopes
-[debug/resolver] -> [D24] declaration::Constant hilti::UTF8 | const hilti::Charset UTF8 = hilti::Charset::UTF8; (hilti.hlt:14:23-14:42)
-[debug/resolver] -> [D25] declaration::Constant hilti::REPLACE | const hilti::DecodeErrorStrategy REPLACE = hilti::DecodeErrorStrategy::REPLACE; (hilti.hlt:15:35-15:66)
+[debug/resolver] -> [D22] declaration::Constant hilti::UTF8 | const hilti::Charset UTF8 = hilti::Charset::UTF8; (hilti.hlt:14:23-14:42)
+[debug/resolver] -> [D23] declaration::Constant hilti::REPLACE | const hilti::DecodeErrorStrategy REPLACE = hilti::DecodeErrorStrategy::REPLACE; (hilti.hlt:15:35-15:66)
 [debug/compiler]     [HILTI] resolving AST
 [debug/resolver] -> [T16] type::String Bar::Bar1 | string (bar.hlt:6:20-6:25)
 [debug/resolver] [foo.hlt:7:20-7:28] type::Name "Bar::Bar1" -> set resolved type to T16
@@ -351,14 +347,14 @@
 [debug/compiler]     [HILTI] resolving AST
 [debug/ast-final] # [HILTI] Final AST (round 3)
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
-[debug/ast-final]       | Bar -> declaration::Module <canonical-id="Bar" declaration="D23" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D3" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       | hilti -> declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]     - declaration::Module <canonical-id="Foo" declaration="D3" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] (foo.hlt:2:1-11:1) [@d:XXX]
-[debug/ast-final]         | Bar -> declaration::Module <canonical-id="Bar" declaration="D23" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D3" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]       | Bar -> declaration::Module <canonical-id="Bar" declaration="D21" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]       | hilti -> declaration::Module <canonical-id="hilti" declaration="D19" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]     - declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] (foo.hlt:2:1-11:1) [@d:XXX]
+[debug/ast-final]         | Bar -> declaration::Module <canonical-id="Bar" declaration="D21" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo1 -> declaration::Type <canonical-id="Foo::Foo1" declaration="D1" fqid="Foo::Foo1" id="Foo1" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Foo2 -> declaration::Type <canonical-id="Foo::Foo2" declaration="D2" fqid="Foo::Foo2" id="Foo2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Foo2 -> declaration::Type <canonical-id="Foo::Foo2" declaration="-" fqid="Foo::Foo2" id="Foo2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | foo -> declaration::Function <canonical-id="Foo::foo_2" declaration="-" fqid="Foo::foo" id="foo" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (foo.hlt:2:1-11:1) [@s:XXX]
 [debug/ast-final]       - declaration::ImportedModule <canonical-id="Foo::Bar" declaration="-" dirs="" ext=".hlt" fqid="Foo::Bar" id="Bar" linkage="private" path="" scope="<n/a>" uid="Bar"> [parent @d:XXX] (foo.hlt:4:1-4:11) [@d:XXX]
@@ -366,9 +362,9 @@
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (foo.hlt:6:20-6:23) [@q:XXX]
 [debug/ast-final]           - type::Bool <declaration="D1" type="T10" unified="bool" wildcard="false"> [parent @q:XXX] (foo.hlt:6:20-6:23) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (foo.hlt:6:24-6:23) [@a:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="Foo::Foo2" declaration="D2" fqid="Foo::Foo2" id="Foo2" linkage="public"> [parent @d:XXX] (foo.hlt:7:1-7:29) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="Foo::Foo2" declaration="-" fqid="Foo::Foo2" id="Foo2" linkage="public"> [parent @d:XXX] (foo.hlt:7:1-7:29) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (foo.hlt:7:20-7:28) [@q:XXX]
-[debug/ast-final]           - type::Name <builtin="false" declaration="D2" id="Bar::Bar1" resolved-type="T16" type="-" unified="string" wildcard="false"> [parent @q:XXX] (foo.hlt:7:20-7:28) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Name <builtin="false" declaration="-" id="Bar::Bar1" resolved-type="T16" type="-" unified="string" wildcard="false"> [parent @q:XXX] (foo.hlt:7:20-7:28) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (foo.hlt:7:29-7:28) [@a:XXX]
 [debug/ast-final]       - declaration::Function <canonical-id="Foo::foo_2" declaration="-" fqid="Foo::foo" id="foo" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (foo.hlt:9:1-9:44) [@d:XXX]
 [debug/ast-final]           | bar -> declaration::Parameter <canonical-id="Foo::bar" declaration="-" fqid="bar" id="bar" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
@@ -390,23 +386,23 @@
 [debug/ast-final]                 - AttributeSet [parent @d:XXX] (foo.hlt:9:43-9:42) [@a:XXX]
 [debug/ast-final]           - <empty>
 [debug/ast-final]           - AttributeSet [parent @f:XXX] (foo.hlt:9:44-9:43) [@a:XXX]
-[debug/ast-final]     - declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (hilti.hlt:3:1-61:1) [@d:XXX]
-[debug/ast-final]         | AddressFamily -> declaration::Type <canonical-id="hilti::AddressFamily" declaration="D7" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | BitOrder -> declaration::Type <canonical-id="hilti::BitOrder" declaration="D4" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | ByteOrder -> declaration::Type <canonical-id="hilti::ByteOrder" declaration="D5" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Captures -> declaration::Type <canonical-id="hilti::Captures" declaration="D12" fqid="hilti::Captures" id="Captures" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Charset -> declaration::Type <canonical-id="hilti::Charset" declaration="D10" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | DecodeErrorStrategy -> declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D11" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Exception -> declaration::Type <canonical-id="hilti::Exception" declaration="D15" fqid="hilti::Exception" id="Exception" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | MatchState -> declaration::Type <canonical-id="hilti::MatchState" declaration="D14" fqid="hilti::MatchState" id="MatchState" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | MissingData -> declaration::Type <canonical-id="hilti::MissingData" declaration="D19" fqid="hilti::MissingData" id="MissingData" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Profiler -> declaration::Type <canonical-id="hilti::Profiler" declaration="D13" fqid="hilti::Profiler" id="Profiler" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Protocol -> declaration::Type <canonical-id="hilti::Protocol" declaration="D9" fqid="hilti::Protocol" id="Protocol" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | RealType -> declaration::Type <canonical-id="hilti::RealType" declaration="D8" fqid="hilti::RealType" id="RealType" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | RecoverableFailure -> declaration::Type <canonical-id="hilti::RecoverableFailure" declaration="D18" fqid="hilti::RecoverableFailure" id="RecoverableFailure" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | RuntimeError -> declaration::Type <canonical-id="hilti::RuntimeError" declaration="D17" fqid="hilti::RuntimeError" id="RuntimeError" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Side -> declaration::Type <canonical-id="hilti::Side" declaration="D6" fqid="hilti::Side" id="Side" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | SystemException -> declaration::Type <canonical-id="hilti::SystemException" declaration="D16" fqid="hilti::SystemException" id="SystemException" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]     - declaration::Module <canonical-id="hilti" declaration="D19" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (hilti.hlt:3:1-61:1) [@d:XXX]
+[debug/ast-final]         | AddressFamily -> declaration::Type <canonical-id="hilti::AddressFamily" declaration="D6" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | BitOrder -> declaration::Type <canonical-id="hilti::BitOrder" declaration="D3" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | ByteOrder -> declaration::Type <canonical-id="hilti::ByteOrder" declaration="D4" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Captures -> declaration::Type <canonical-id="hilti::Captures" declaration="D11" fqid="hilti::Captures" id="Captures" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Charset -> declaration::Type <canonical-id="hilti::Charset" declaration="D9" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | DecodeErrorStrategy -> declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D10" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Exception -> declaration::Type <canonical-id="hilti::Exception" declaration="D14" fqid="hilti::Exception" id="Exception" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | MatchState -> declaration::Type <canonical-id="hilti::MatchState" declaration="D13" fqid="hilti::MatchState" id="MatchState" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | MissingData -> declaration::Type <canonical-id="hilti::MissingData" declaration="D18" fqid="hilti::MissingData" id="MissingData" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Profiler -> declaration::Type <canonical-id="hilti::Profiler" declaration="D12" fqid="hilti::Profiler" id="Profiler" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Protocol -> declaration::Type <canonical-id="hilti::Protocol" declaration="D8" fqid="hilti::Protocol" id="Protocol" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | RealType -> declaration::Type <canonical-id="hilti::RealType" declaration="D7" fqid="hilti::RealType" id="RealType" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | RecoverableFailure -> declaration::Type <canonical-id="hilti::RecoverableFailure" declaration="D17" fqid="hilti::RecoverableFailure" id="RecoverableFailure" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | RuntimeError -> declaration::Type <canonical-id="hilti::RuntimeError" declaration="D16" fqid="hilti::RuntimeError" id="RuntimeError" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Side -> declaration::Type <canonical-id="hilti::Side" declaration="D5" fqid="hilti::Side" id="Side" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | SystemException -> declaration::Type <canonical-id="hilti::SystemException" declaration="D15" fqid="hilti::SystemException" id="SystemException" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | abort -> declaration::Function <canonical-id="hilti::abort" declaration="-" fqid="hilti::abort" id="abort" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | current_time -> declaration::Function <canonical-id="hilti::current_time" declaration="-" fqid="hilti::current_time" id="current_time" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | debug -> declaration::Function <canonical-id="hilti::debug" declaration="-" fqid="hilti::debug" id="debug" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
@@ -416,7 +412,7 @@
 [debug/ast-final]         | exception_what -> declaration::Function <canonical-id="hilti::exception_what" declaration="-" fqid="hilti::exception_what" id="exception_what" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | exception_where -> declaration::Function <canonical-id="hilti::exception_where_2" declaration="-" fqid="hilti::exception_where" id="exception_where" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | exception_where -> declaration::Function <canonical-id="hilti::exception_where" declaration="-" fqid="hilti::exception_where" id="exception_where" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | hilti -> declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | hilti -> declaration::Module <canonical-id="hilti" declaration="D19" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | mktime -> declaration::Function <canonical-id="hilti::mktime" declaration="-" fqid="hilti::mktime" id="mktime" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | print -> declaration::Function <canonical-id="hilti::print" declaration="-" fqid="hilti::print" id="print" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | printValues -> declaration::Function <canonical-id="hilti::printValues" declaration="-" fqid="hilti::printValues" id="printValues" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
@@ -424,12 +420,12 @@
 [debug/ast-final]         | profiler_stop -> declaration::Function <canonical-id="hilti::profiler_stop" declaration="-" fqid="hilti::profiler_stop" id="profiler_stop" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (hilti.hlt:3:1-61:1) [@s:XXX]
 [debug/ast-final]       - declaration::Property <canonical-id="hilti::%skip-implementation" declaration="-" fqid="hilti::%skip-implementation" id="%skip-implementation" linkage="private"> [parent @d:XXX] (hilti.hlt:6:1-6:21) [@d:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::BitOrder" declaration="D4" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:8:1-8:83) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::BitOrder" declaration="D3" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:8:1-8:83) [@d:XXX]
 [debug/ast-final]           | LSB0 -> declaration::Constant <canonical-id="hilti::LSB0" declaration="-" fqid="hilti::BitOrder::LSB0" id="LSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | MSB0 -> declaration::Constant <canonical-id="hilti::MSB0" declaration="-" fqid="hilti::BitOrder::MSB0" id="MSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef" declaration="-" fqid="hilti::BitOrder::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:8:24-8:42) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D4" type="T1" unified="name(hilti::BitOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:8:24-8:42) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D3" type="T1" unified="name(hilti::BitOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:8:24-8:42) (resolved) [@t:XXX]
 [debug/ast-final]               | LSB0 -> declaration::Constant <canonical-id="hilti::LSB0" declaration="-" fqid="hilti::BitOrder::LSB0" id="LSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | MSB0 -> declaration::Constant <canonical-id="hilti::MSB0" declaration="-" fqid="hilti::BitOrder::MSB0" id="MSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef" declaration="-" fqid="hilti::BitOrder::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -460,14 +456,14 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::integer::BitOrder"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::ByteOrder" declaration="D5" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:9:1-9:92) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::ByteOrder" declaration="D4" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:9:1-9:92) [@d:XXX]
 [debug/ast-final]           | Big -> declaration::Constant <canonical-id="hilti::Big" declaration="-" fqid="hilti::ByteOrder::Big" id="Big" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Host -> declaration::Constant <canonical-id="hilti::Host" declaration="-" fqid="hilti::ByteOrder::Host" id="Host" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Little -> declaration::Constant <canonical-id="hilti::Little" declaration="-" fqid="hilti::ByteOrder::Little" id="Little" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Network -> declaration::Constant <canonical-id="hilti::Network" declaration="-" fqid="hilti::ByteOrder::Network" id="Network" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_2" declaration="-" fqid="hilti::ByteOrder::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:9:25-9:59) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D5" type="T2" unified="name(hilti::ByteOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:9:25-9:59) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D4" type="T2" unified="name(hilti::ByteOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:9:25-9:59) (resolved) [@t:XXX]
 [debug/ast-final]               | Big -> declaration::Constant <canonical-id="hilti::Big" declaration="-" fqid="hilti::ByteOrder::Big" id="Big" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Host -> declaration::Constant <canonical-id="hilti::Host" declaration="-" fqid="hilti::ByteOrder::Host" id="Host" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Little -> declaration::Constant <canonical-id="hilti::Little" declaration="-" fqid="hilti::ByteOrder::Little" id="Little" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -514,13 +510,13 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::ByteOrder"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Side" declaration="D6" fqid="hilti::Side" id="Side" linkage="public"> [parent @d:XXX] (hilti.hlt:10:1-10:80) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Side" declaration="D5" fqid="hilti::Side" id="Side" linkage="public"> [parent @d:XXX] (hilti.hlt:10:1-10:80) [@d:XXX]
 [debug/ast-final]           | Both -> declaration::Constant <canonical-id="hilti::Both" declaration="-" fqid="hilti::Side::Both" id="Both" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Left -> declaration::Constant <canonical-id="hilti::Left" declaration="-" fqid="hilti::Side::Left" id="Left" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Right -> declaration::Constant <canonical-id="hilti::Right" declaration="-" fqid="hilti::Side::Right" id="Right" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_3" declaration="-" fqid="hilti::Side::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:10:20-10:45) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D6" type="T3" unified="name(hilti::Side)" wildcard="false"> [parent @q:XXX] (hilti.hlt:10:20-10:45) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D5" type="T3" unified="name(hilti::Side)" wildcard="false"> [parent @q:XXX] (hilti.hlt:10:20-10:45) (resolved) [@t:XXX]
 [debug/ast-final]               | Both -> declaration::Constant <canonical-id="hilti::Both" declaration="-" fqid="hilti::Side::Both" id="Both" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Left -> declaration::Constant <canonical-id="hilti::Left" declaration="-" fqid="hilti::Side::Left" id="Left" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Right -> declaration::Constant <canonical-id="hilti::Right" declaration="-" fqid="hilti::Side::Right" id="Right" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -559,12 +555,12 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::bytes::Side"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::AddressFamily" declaration="D7" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] (hilti.hlt:11:1-11:84) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::AddressFamily" declaration="D6" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] (hilti.hlt:11:1-11:84) [@d:XXX]
 [debug/ast-final]           | IPv4 -> declaration::Constant <canonical-id="hilti::IPv4" declaration="-" fqid="hilti::AddressFamily::IPv4" id="IPv4" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | IPv6 -> declaration::Constant <canonical-id="hilti::IPv6" declaration="-" fqid="hilti::AddressFamily::IPv6" id="IPv6" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_4" declaration="-" fqid="hilti::AddressFamily::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:11:29-11:47) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D7" type="T4" unified="name(hilti::AddressFamily)" wildcard="false"> [parent @q:XXX] (hilti.hlt:11:29-11:47) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D6" type="T4" unified="name(hilti::AddressFamily)" wildcard="false"> [parent @q:XXX] (hilti.hlt:11:29-11:47) (resolved) [@t:XXX]
 [debug/ast-final]               | IPv4 -> declaration::Constant <canonical-id="hilti::IPv4" declaration="-" fqid="hilti::AddressFamily::IPv4" id="IPv4" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | IPv6 -> declaration::Constant <canonical-id="hilti::IPv6" declaration="-" fqid="hilti::AddressFamily::IPv6" id="IPv6" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_4" declaration="-" fqid="hilti::AddressFamily::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -595,12 +591,12 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::AddressFamily"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::RealType" declaration="D8" fqid="hilti::RealType" id="RealType" linkage="public"> [parent @d:XXX] (hilti.hlt:12:1-12:96) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::RealType" declaration="D7" fqid="hilti::RealType" id="RealType" linkage="public"> [parent @d:XXX] (hilti.hlt:12:1-12:96) [@d:XXX]
 [debug/ast-final]           | IEEE754_Double -> declaration::Constant <canonical-id="hilti::IEEE754_Double" declaration="-" fqid="hilti::RealType::IEEE754_Double" id="IEEE754_Double" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | IEEE754_Single -> declaration::Constant <canonical-id="hilti::IEEE754_Single" declaration="-" fqid="hilti::RealType::IEEE754_Single" id="IEEE754_Single" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_5" declaration="-" fqid="hilti::RealType::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:12:24-12:62) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D8" type="T5" unified="name(hilti::RealType)" wildcard="false"> [parent @q:XXX] (hilti.hlt:12:24-12:62) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D7" type="T5" unified="name(hilti::RealType)" wildcard="false"> [parent @q:XXX] (hilti.hlt:12:24-12:62) (resolved) [@t:XXX]
 [debug/ast-final]               | IEEE754_Double -> declaration::Constant <canonical-id="hilti::IEEE754_Double" declaration="-" fqid="hilti::RealType::IEEE754_Double" id="IEEE754_Double" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | IEEE754_Single -> declaration::Constant <canonical-id="hilti::IEEE754_Single" declaration="-" fqid="hilti::RealType::IEEE754_Single" id="IEEE754_Single" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_5" declaration="-" fqid="hilti::RealType::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -631,13 +627,13 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::real::Type"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Protocol" declaration="D9" fqid="hilti::Protocol" id="Protocol" linkage="public"> [parent @d:XXX] (hilti.hlt:13:1-13:78) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Protocol" declaration="D8" fqid="hilti::Protocol" id="Protocol" linkage="public"> [parent @d:XXX] (hilti.hlt:13:1-13:78) [@d:XXX]
 [debug/ast-final]           | ICMP -> declaration::Constant <canonical-id="hilti::ICMP" declaration="-" fqid="hilti::Protocol::ICMP" id="ICMP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | TCP -> declaration::Constant <canonical-id="hilti::TCP" declaration="-" fqid="hilti::Protocol::TCP" id="TCP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | UDP -> declaration::Constant <canonical-id="hilti::UDP" declaration="-" fqid="hilti::Protocol::UDP" id="UDP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_6" declaration="-" fqid="hilti::Protocol::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:13:24-13:46) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D9" type="T6" unified="name(hilti::Protocol)" wildcard="false"> [parent @q:XXX] (hilti.hlt:13:24-13:46) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D8" type="T6" unified="name(hilti::Protocol)" wildcard="false"> [parent @q:XXX] (hilti.hlt:13:24-13:46) (resolved) [@t:XXX]
 [debug/ast-final]               | ICMP -> declaration::Constant <canonical-id="hilti::ICMP" declaration="-" fqid="hilti::Protocol::ICMP" id="ICMP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | TCP -> declaration::Constant <canonical-id="hilti::TCP" declaration="-" fqid="hilti::Protocol::TCP" id="TCP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | UDP -> declaration::Constant <canonical-id="hilti::UDP" declaration="-" fqid="hilti::Protocol::UDP" id="UDP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -676,14 +672,14 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::Protocol"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Charset" declaration="D10" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] (hilti.hlt:14:1-14:80) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Charset" declaration="D9" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] (hilti.hlt:14:1-14:80) [@d:XXX]
 [debug/ast-final]           | ASCII -> declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]           | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D24" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D22" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:14:23-14:42) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D10" type="T7" unified="name(hilti::Charset)" wildcard="false"> [parent @q:XXX] (hilti.hlt:14:23-14:42) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D9" type="T7" unified="name(hilti::Charset)" wildcard="false"> [parent @q:XXX] (hilti.hlt:14:23-14:42) (resolved) [@t:XXX]
 [debug/ast-final]               | ASCII -> declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]               | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D24" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D22" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:42) [@d:XXX]
 [debug/ast-final]               - <empty>
@@ -692,7 +688,7 @@
 [debug/ast-final]                   - type::enum_::Label <id="ASCII" value="0"> [parent @c:XXX] (hilti.hlt:14:30-14:34) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:14:30-14:34) [@q:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
-[debug/ast-final]             - declaration::Constant <canonical-id="hilti::UTF8" declaration="D24" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:42) [@d:XXX]
+[debug/ast-final]             - declaration::Constant <canonical-id="hilti::UTF8" declaration="D22" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:42) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - ctor::Enum [parent @e:XXX] [@c:XXX]
@@ -712,15 +708,15 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::bytes::Charset"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D11" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] (hilti.hlt:15:1-15:116) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D10" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] (hilti.hlt:15:1-15:116) [@d:XXX]
 [debug/ast-final]           | IGNORE -> declaration::Constant <canonical-id="hilti::IGNORE" declaration="-" fqid="hilti::DecodeErrorStrategy::IGNORE" id="IGNORE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]           | REPLACE -> declaration::Constant <canonical-id="hilti::REPLACE" declaration="D25" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | REPLACE -> declaration::Constant <canonical-id="hilti::REPLACE" declaration="D23" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | STRICT -> declaration::Constant <canonical-id="hilti::STRICT" declaration="-" fqid="hilti::DecodeErrorStrategy::STRICT" id="STRICT" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_8" declaration="-" fqid="hilti::DecodeErrorStrategy::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:15:35-15:66) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D11" type="T8" unified="name(hilti::DecodeErrorStrategy)" wildcard="false"> [parent @q:XXX] (hilti.hlt:15:35-15:66) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Enum <declaration="D10" type="T8" unified="name(hilti::DecodeErrorStrategy)" wildcard="false"> [parent @q:XXX] (hilti.hlt:15:35-15:66) (resolved) [@t:XXX]
 [debug/ast-final]               | IGNORE -> declaration::Constant <canonical-id="hilti::IGNORE" declaration="-" fqid="hilti::DecodeErrorStrategy::IGNORE" id="IGNORE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]               | REPLACE -> declaration::Constant <canonical-id="hilti::REPLACE" declaration="D25" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | REPLACE -> declaration::Constant <canonical-id="hilti::REPLACE" declaration="D23" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | STRICT -> declaration::Constant <canonical-id="hilti::STRICT" declaration="-" fqid="hilti::DecodeErrorStrategy::STRICT" id="STRICT" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_8" declaration="-" fqid="hilti::DecodeErrorStrategy::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::IGNORE" declaration="-" fqid="hilti::DecodeErrorStrategy::IGNORE" id="IGNORE" linkage="private"> [parent @t:XXX] (hilti.hlt:15:35-15:66) [@d:XXX]
@@ -730,7 +726,7 @@
 [debug/ast-final]                   - type::enum_::Label <id="IGNORE" value="0"> [parent @c:XXX] (hilti.hlt:15:42-15:47) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:15:42-15:47) [@q:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
-[debug/ast-final]             - declaration::Constant <canonical-id="hilti::REPLACE" declaration="D25" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] (hilti.hlt:15:35-15:66) [@d:XXX]
+[debug/ast-final]             - declaration::Constant <canonical-id="hilti::REPLACE" declaration="D23" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] (hilti.hlt:15:35-15:66) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - ctor::Enum [parent @e:XXX] [@c:XXX]
@@ -757,9 +753,9 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::bytes::DecodeErrorStrategy"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Captures" declaration="D12" fqid="hilti::Captures" id="Captures" linkage="public"> [parent @d:XXX] (hilti.hlt:16:1-16:37) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Captures" declaration="D11" fqid="hilti::Captures" id="Captures" linkage="public"> [parent @d:XXX] (hilti.hlt:16:1-16:37) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:16:24-16:36) [@q:XXX]
-[debug/ast-final]           - type::Vector <declaration="D12" type="T11" unified="vector(bytes)" wildcard="false"> [parent @q:XXX] (hilti.hlt:16:24-16:36) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Vector <declaration="D11" type="T11" unified="vector(bytes)" wildcard="false"> [parent @q:XXX] (hilti.hlt:16:24-16:36) (resolved) [@t:XXX]
 [debug/ast-final]             - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:16:24-16:36) [@q:XXX]
 [debug/ast-final]               - type::vector::Iterator <declaration="-" type="-" unified="iterator(vector(bytes))" wildcard="false"> [parent @q:XXX] (hilti.hlt:16:24-16:36) (resolved) [@t:XXX]
 [debug/ast-final]                 - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:16:31-16:35) [@q:XXX]
@@ -769,18 +765,18 @@
 [debug/ast-final]                         - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:16:31-16:35) [@q:XXX]
 [debug/ast-final]                           - type::UnsignedInteger <declaration="-" type="-" unified="uint8" width="8" wildcard="false"> [parent @q:XXX] (hilti.hlt:16:31-16:35) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:16:37-16:36) [@a:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Profiler" declaration="D13" fqid="hilti::Profiler" id="Profiler" linkage="public"> [parent @d:XXX] (hilti.hlt:17:1-17:61) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Profiler" declaration="D12" fqid="hilti::Profiler" id="Profiler" linkage="public"> [parent @d:XXX] (hilti.hlt:17:1-17:61) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:17:24-17:60) [@q:XXX]
-[debug/ast-final]           - type::Library <cxx_name="::hilti::rt::Profiler" declaration="D13" type="T12" unified="library(hilti::rt::Profiler)" wildcard="false"> [parent @q:XXX] (hilti.hlt:17:24-17:60) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Library <cxx_name="::hilti::rt::Profiler" declaration="D12" type="T12" unified="library(hilti::rt::Profiler)" wildcard="false"> [parent @q:XXX] (hilti.hlt:17:24-17:60) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:17:61-17:60) [@a:XXX]
 [debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:17:61-17:60) [@a:XXX]
 [debug/ast-final]             - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::Profiler"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::MatchState" declaration="D14" fqid="hilti::MatchState" id="MatchState" linkage="public"> [parent @d:XXX] (hilti.hlt:19:1-21:43) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::MatchState" declaration="D13" fqid="hilti::MatchState" id="MatchState" linkage="public"> [parent @d:XXX] (hilti.hlt:19:1-21:43) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:19:26-21:1) [@q:XXX]
-[debug/ast-final]           - type::Struct <declaration="D14" type="T9" unified="name(hilti::MatchState)" wildcard="false"> [parent @q:XXX] (hilti.hlt:19:26-21:1) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Struct <declaration="D13" type="T9" unified="name(hilti::MatchState)" wildcard="false"> [parent @q:XXX] (hilti.hlt:19:26-21:1) (resolved) [@t:XXX]
 [debug/ast-final]               | self -> declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] [@d:XXX] (type: [@e:XXX] [@t:XXX])
 [debug/ast-final]             - declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] (hilti.hlt:19:26-21:1) [@d:XXX]
 [debug/ast-final]               - expression::Keyword <kind="self"> [parent @d:XXX]  (non-const)  (resolved) [@e:XXX]
@@ -1104,9 +1100,9 @@
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:36:126-36:140) [@a:XXX]
 [debug/ast-final]               - <empty>
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Exception" declaration="D15" fqid="hilti::Exception" id="Exception" linkage="public"> [parent @d:XXX] (hilti.hlt:39:1-39:66) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Exception" declaration="D14" fqid="hilti::Exception" id="Exception" linkage="public"> [parent @d:XXX] (hilti.hlt:39:1-39:66) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:39:25-39:33) [@q:XXX]
-[debug/ast-final]           - type::Exception <declaration="D15" type="T13" unified="exception" wildcard="false"> [parent @q:XXX] (hilti.hlt:39:25-39:33) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Exception <declaration="D14" type="T13" unified="exception" wildcard="false"> [parent @q:XXX] (hilti.hlt:39:25-39:33) (resolved) [@t:XXX]
 [debug/ast-final]             - <empty>
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:39:34-39:33) [@a:XXX]
 [debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:39:34-39:33) [@a:XXX]
@@ -1114,9 +1110,9 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::Exception"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::SystemException" declaration="D16" fqid="hilti::SystemException" id="SystemException" linkage="public"> [parent @d:XXX] (hilti.hlt:42:1-42:80) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::SystemException" declaration="D15" fqid="hilti::SystemException" id="SystemException" linkage="public"> [parent @d:XXX] (hilti.hlt:42:1-42:80) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:42:31-42:53) [@q:XXX]
-[debug/ast-final]           - type::Exception <declaration="D16" type="T14" unified="name(hilti::SystemException)" wildcard="false"> [parent @q:XXX] (hilti.hlt:42:31-42:53) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Exception <declaration="D15" type="T14" unified="name(hilti::SystemException)" wildcard="false"> [parent @q:XXX] (hilti.hlt:42:31-42:53) (resolved) [@t:XXX]
 [debug/ast-final]             - type::Name <builtin="false" declaration="-" id="Exception" resolved-type="T13" type="-" unified="exception" wildcard="false"> [parent @t:XXX] (hilti.hlt:42:44-42:52) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:42:54-42:53) [@a:XXX]
 [debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:42:54-42:53) [@a:XXX]
@@ -1124,9 +1120,9 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::std::exception"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::RuntimeError" declaration="D17" fqid="hilti::RuntimeError" id="RuntimeError" linkage="public"> [parent @d:XXX] (hilti.hlt:46:1-46:86) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::RuntimeError" declaration="D16" fqid="hilti::RuntimeError" id="RuntimeError" linkage="public"> [parent @d:XXX] (hilti.hlt:46:1-46:86) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:46:28-46:50) [@q:XXX]
-[debug/ast-final]           - type::Exception <declaration="D17" type="-" unified="name(hilti::RuntimeError)" wildcard="false"> [parent @q:XXX] (hilti.hlt:46:28-46:50) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Exception <declaration="D16" type="-" unified="name(hilti::RuntimeError)" wildcard="false"> [parent @q:XXX] (hilti.hlt:46:28-46:50) (resolved) [@t:XXX]
 [debug/ast-final]             - type::Name <builtin="false" declaration="-" id="Exception" resolved-type="T13" type="-" unified="exception" wildcard="false"> [parent @t:XXX] (hilti.hlt:46:41-46:49) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:46:51-46:50) [@a:XXX]
 [debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:46:51-46:50) [@a:XXX]
@@ -1134,9 +1130,9 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::RuntimeError"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::RecoverableFailure" declaration="D18" fqid="hilti::RecoverableFailure" id="RecoverableFailure" linkage="public"> [parent @d:XXX] (hilti.hlt:49:1-49:98) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::RecoverableFailure" declaration="D17" fqid="hilti::RecoverableFailure" id="RecoverableFailure" linkage="public"> [parent @d:XXX] (hilti.hlt:49:1-49:98) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:49:34-49:56) [@q:XXX]
-[debug/ast-final]           - type::Exception <declaration="D18" type="T15" unified="name(hilti::RecoverableFailure)" wildcard="false"> [parent @q:XXX] (hilti.hlt:49:34-49:56) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Exception <declaration="D17" type="T15" unified="name(hilti::RecoverableFailure)" wildcard="false"> [parent @q:XXX] (hilti.hlt:49:34-49:56) (resolved) [@t:XXX]
 [debug/ast-final]             - type::Name <builtin="false" declaration="-" id="Exception" resolved-type="T13" type="-" unified="exception" wildcard="false"> [parent @t:XXX] (hilti.hlt:49:47-49:55) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:49:57-49:56) [@a:XXX]
 [debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:49:57-49:56) [@a:XXX]
@@ -1144,9 +1140,9 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::RecoverableFailure"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::MissingData" declaration="D19" fqid="hilti::MissingData" id="MissingData" linkage="public"> [parent @d:XXX] (hilti.hlt:52:1-52:84) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::MissingData" declaration="D18" fqid="hilti::MissingData" id="MissingData" linkage="public"> [parent @d:XXX] (hilti.hlt:52:1-52:84) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:52:27-52:49) [@q:XXX]
-[debug/ast-final]           - type::Exception <declaration="D19" type="-" unified="name(hilti::MissingData)" wildcard="false"> [parent @q:XXX] (hilti.hlt:52:27-52:49) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Exception <declaration="D18" type="-" unified="name(hilti::MissingData)" wildcard="false"> [parent @q:XXX] (hilti.hlt:52:27-52:49) (resolved) [@t:XXX]
 [debug/ast-final]             - type::Name <builtin="false" declaration="-" id="Exception" resolved-type="T13" type="-" unified="exception" wildcard="false"> [parent @t:XXX] (hilti.hlt:52:40-52:48) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:52:50-52:49) [@a:XXX]
 [debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:52:50-52:49) [@a:XXX]
@@ -1238,21 +1234,21 @@
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:60:104-60:118) [@a:XXX]
 [debug/ast-final]               - <empty>
-[debug/ast-final]     - declaration::Module <canonical-id="Bar" declaration="D23" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (bar.hlt:2:1-11:1) [@d:XXX]
-[debug/ast-final]         | Bar -> declaration::Module <canonical-id="Bar" declaration="D23" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Bar1 -> declaration::Type <canonical-id="Bar::Bar1" declaration="D21" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Bar2 -> declaration::Type <canonical-id="Bar::Bar2" declaration="D22" fqid="Bar::Bar2" id="Bar2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D3" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]     - declaration::Module <canonical-id="Bar" declaration="D21" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (bar.hlt:2:1-11:1) [@d:XXX]
+[debug/ast-final]         | Bar -> declaration::Module <canonical-id="Bar" declaration="D21" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Bar1 -> declaration::Type <canonical-id="Bar::Bar1" declaration="D20" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Bar2 -> declaration::Type <canonical-id="Bar::Bar2" declaration="-" fqid="Bar::Bar2" id="Bar2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | bar -> declaration::Function <canonical-id="Bar::bar_2" declaration="-" fqid="Bar::bar" id="bar" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (bar.hlt:2:1-11:1) [@s:XXX]
 [debug/ast-final]       - declaration::ImportedModule <canonical-id="Bar::Foo" declaration="-" dirs="" ext=".hlt" fqid="Bar::Foo" id="Foo" linkage="private" path="" scope="<n/a>" uid="Foo"> [parent @d:XXX] (bar.hlt:4:1-4:11) [@d:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="Bar::Bar1" declaration="D21" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] (bar.hlt:6:1-6:26) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="Bar::Bar1" declaration="D20" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] (bar.hlt:6:1-6:26) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (bar.hlt:6:20-6:25) [@q:XXX]
-[debug/ast-final]           - type::String <declaration="D21" type="T16" unified="string" wildcard="false"> [parent @q:XXX] (bar.hlt:6:20-6:25) (resolved) [@t:XXX]
+[debug/ast-final]           - type::String <declaration="D20" type="T16" unified="string" wildcard="false"> [parent @q:XXX] (bar.hlt:6:20-6:25) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (bar.hlt:6:26-6:25) [@a:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="Bar::Bar2" declaration="D22" fqid="Bar::Bar2" id="Bar2" linkage="public"> [parent @d:XXX] (bar.hlt:7:1-7:29) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="Bar::Bar2" declaration="-" fqid="Bar::Bar2" id="Bar2" linkage="public"> [parent @d:XXX] (bar.hlt:7:1-7:29) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (bar.hlt:7:20-7:28) [@q:XXX]
-[debug/ast-final]           - type::Name <builtin="false" declaration="D22" id="Foo::Foo1" resolved-type="T10" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (bar.hlt:7:20-7:28) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Name <builtin="false" declaration="-" id="Foo::Foo1" resolved-type="T10" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (bar.hlt:7:20-7:28) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (bar.hlt:7:29-7:28) [@a:XXX]
 [debug/ast-final]       - declaration::Function <canonical-id="Bar::bar_2" declaration="-" fqid="Bar::bar" id="bar" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (bar.hlt:9:1-9:44) [@d:XXX]
 [debug/ast-final]           | bar -> declaration::Parameter <canonical-id="Bar::bar" declaration="-" fqid="bar" id="bar" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
@@ -1276,30 +1272,28 @@
 [debug/ast-final]           - AttributeSet [parent @f:XXX] (bar.hlt:9:44-9:43) [@a:XXX]
 [debug/ast-final] # State tables:
 [debug/ast-final]   [D1] Foo::Foo1 [declaration::Type] (foo.hlt:6:1-6:24)
-[debug/ast-final]   [D2] Foo::Foo2 [declaration::Type] (foo.hlt:7:1-7:29)
-[debug/ast-final]   [D3] Foo [declaration::Module] (foo.hlt:2:1-11:1)
-[debug/ast-final]   [D4] hilti::BitOrder [declaration::Type] (hilti.hlt:8:1-8:83)
-[debug/ast-final]   [D5] hilti::ByteOrder [declaration::Type] (hilti.hlt:9:1-9:92)
-[debug/ast-final]   [D6] hilti::Side [declaration::Type] (hilti.hlt:10:1-10:80)
-[debug/ast-final]   [D7] hilti::AddressFamily [declaration::Type] (hilti.hlt:11:1-11:84)
-[debug/ast-final]   [D8] hilti::RealType [declaration::Type] (hilti.hlt:12:1-12:96)
-[debug/ast-final]   [D9] hilti::Protocol [declaration::Type] (hilti.hlt:13:1-13:78)
-[debug/ast-final]   [D10] hilti::Charset [declaration::Type] (hilti.hlt:14:1-14:80)
-[debug/ast-final]   [D11] hilti::DecodeErrorStrategy [declaration::Type] (hilti.hlt:15:1-15:116)
-[debug/ast-final]   [D12] hilti::Captures [declaration::Type] (hilti.hlt:16:1-16:37)
-[debug/ast-final]   [D13] hilti::Profiler [declaration::Type] (hilti.hlt:17:1-17:61)
-[debug/ast-final]   [D14] hilti::MatchState [declaration::Type] (hilti.hlt:19:1-21:43)
-[debug/ast-final]   [D15] hilti::Exception [declaration::Type] (hilti.hlt:39:1-39:66)
-[debug/ast-final]   [D16] hilti::SystemException [declaration::Type] (hilti.hlt:42:1-42:80)
-[debug/ast-final]   [D17] hilti::RuntimeError [declaration::Type] (hilti.hlt:46:1-46:86)
-[debug/ast-final]   [D18] hilti::RecoverableFailure [declaration::Type] (hilti.hlt:49:1-49:98)
-[debug/ast-final]   [D19] hilti::MissingData [declaration::Type] (hilti.hlt:52:1-52:84)
-[debug/ast-final]   [D20] hilti [declaration::Module] (hilti.hlt:3:1-61:1)
-[debug/ast-final]   [D21] Bar::Bar1 [declaration::Type] (bar.hlt:6:1-6:26)
-[debug/ast-final]   [D22] Bar::Bar2 [declaration::Type] (bar.hlt:7:1-7:29)
-[debug/ast-final]   [D23] Bar [declaration::Module] (bar.hlt:2:1-11:1)
-[debug/ast-final]   [D24] hilti::UTF8 [declaration::Constant] (hilti.hlt:14:23-14:42)
-[debug/ast-final]   [D25] hilti::REPLACE [declaration::Constant] (hilti.hlt:15:35-15:66)
+[debug/ast-final]   [D2] Foo [declaration::Module] (foo.hlt:2:1-11:1)
+[debug/ast-final]   [D3] hilti::BitOrder [declaration::Type] (hilti.hlt:8:1-8:83)
+[debug/ast-final]   [D4] hilti::ByteOrder [declaration::Type] (hilti.hlt:9:1-9:92)
+[debug/ast-final]   [D5] hilti::Side [declaration::Type] (hilti.hlt:10:1-10:80)
+[debug/ast-final]   [D6] hilti::AddressFamily [declaration::Type] (hilti.hlt:11:1-11:84)
+[debug/ast-final]   [D7] hilti::RealType [declaration::Type] (hilti.hlt:12:1-12:96)
+[debug/ast-final]   [D8] hilti::Protocol [declaration::Type] (hilti.hlt:13:1-13:78)
+[debug/ast-final]   [D9] hilti::Charset [declaration::Type] (hilti.hlt:14:1-14:80)
+[debug/ast-final]   [D10] hilti::DecodeErrorStrategy [declaration::Type] (hilti.hlt:15:1-15:116)
+[debug/ast-final]   [D11] hilti::Captures [declaration::Type] (hilti.hlt:16:1-16:37)
+[debug/ast-final]   [D12] hilti::Profiler [declaration::Type] (hilti.hlt:17:1-17:61)
+[debug/ast-final]   [D13] hilti::MatchState [declaration::Type] (hilti.hlt:19:1-21:43)
+[debug/ast-final]   [D14] hilti::Exception [declaration::Type] (hilti.hlt:39:1-39:66)
+[debug/ast-final]   [D15] hilti::SystemException [declaration::Type] (hilti.hlt:42:1-42:80)
+[debug/ast-final]   [D16] hilti::RuntimeError [declaration::Type] (hilti.hlt:46:1-46:86)
+[debug/ast-final]   [D17] hilti::RecoverableFailure [declaration::Type] (hilti.hlt:49:1-49:98)
+[debug/ast-final]   [D18] hilti::MissingData [declaration::Type] (hilti.hlt:52:1-52:84)
+[debug/ast-final]   [D19] hilti [declaration::Module] (hilti.hlt:3:1-61:1)
+[debug/ast-final]   [D20] Bar::Bar1 [declaration::Type] (bar.hlt:6:1-6:26)
+[debug/ast-final]   [D21] Bar [declaration::Module] (bar.hlt:2:1-11:1)
+[debug/ast-final]   [D22] hilti::UTF8 [declaration::Constant] (hilti.hlt:14:23-14:42)
+[debug/ast-final]   [D23] hilti::REPLACE [declaration::Constant] (hilti.hlt:15:35-15:66)
 [debug/ast-final]   [T1] hilti::BitOrder [type::Enum] (hilti.hlt:8:24-8:42)
 [debug/ast-final]   [T2] hilti::ByteOrder [type::Enum] (hilti.hlt:9:25-9:59)
 [debug/ast-final]   [T3] hilti::Side [type::Enum] (hilti.hlt:10:20-10:45)
