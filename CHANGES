@@ -1,3 +1,22 @@
+1.11.0-dev.72 | 2024-04-03 09:35:23 +0200
+
+  * Fix repeated evaluations of `&parse-at` expression. (Robin Sommer)
+
+  * GH-1316: GH-1635: Provide better error messages for some cases of unknown unit IDs. (Robin Sommer, Corelight)
+
+  * GH-1493: Support/fix public type aliases to units. (Robin Sommer, Corelight)
+
+    An alias like `public type Unit1 = Unit2` used to lead to C++-side
+    compiler errors, which this fixes. We also fully support this now by
+    making both `Unit1` and `Unit2` available for parsing to host
+    applications. Internally, the `Unit1` parser is just a small facade
+    pointing to the parsing functions for `Unit2`.
+
+  * GH-1661: Deprecate usage of `&convert` with `&chunked`. (Robin Sommer, Corelight)
+
+    Per discussion in #1661, this combination can lead to confusion and
+    can be worked around if really needed.
+
 1.11.0-dev.64 | 2024-04-02 17:44:13 +0200
 
   * Fix GCC false positive around `strncpy` use. (Benjamin Bannier, Corelight)
