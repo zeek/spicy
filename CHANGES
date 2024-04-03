@@ -1,3 +1,33 @@
+1.8.3-4 | 2024-04-03 15:27:42 +0200
+
+  * Fix repeated evaluations of `&parse-at` expression. (Robin Sommer, Corelight)
+
+    (cherry picked from commit 67f6d2b4cc7f3b9bf11e43451cdeedf9776194e6)
+
+  * Fix stray Python escape sequence. (Benjamin Bannier, Corelight)
+
+    At least on my platform with python-3.12.2 the previous code produced a
+    warning
+
+        ../scripts/autogen-type-erased:137: SyntaxWarning: invalid escape sequence '\{'
+          i = re.search("(.*) *with *default *(\{.*)$", s)
+
+    (cherry picked from commit 09bc76d9dd815567fcd767b707462eff5d9ffe9f)
+
+  * Fix skipping of literal fields with condition. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 2559ed404aff719d15d4b5f9e2a39e8d74248473)
+
+  * Fix type of generated code for `string::size`. (Benjamin Bannier, Corelight)
+
+    While we defined `string`'s size operator to return an `uint64` and
+    documented that it returns the length in codepoints, not bytes, we still
+    generated C++ code which worked on the underlying bytes (i.e., it
+    directly invoked `std::string::size` instead of using
+    `hilti::rt::string::size`).
+
+    (cherry picked from commit c34daf68f271d9e87398d9f0cdacf17303753d15)
+
 1.8.3 | 2024-01-11 19:43:24 +0100
 
   * Drop freebsd-12 from CI. (Benjamin Bannier, Corelight)
