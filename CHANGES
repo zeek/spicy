@@ -1,3 +1,38 @@
+1.9.0-4 | 2024-04-03 15:20:51 +0200
+
+  * Fix repeated evaluations of `&parse-at` expression. (Robin Sommer, Corelight)
+
+    (cherry picked from commit 67f6d2b4cc7f3b9bf11e43451cdeedf9776194e6)
+
+  * Fix stray Python escape sequence. (Benjamin Bannier, Corelight)
+
+    At least on my platform with python-3.12.2 the previous code produced a
+    warning
+
+        ../scripts/autogen-type-erased:137: SyntaxWarning: invalid escape sequence '\{'
+          i = re.search("(.*) *with *default *(\{.*)$", s)
+
+    (cherry picked from commit 09bc76d9dd815567fcd767b707462eff5d9ffe9f)
+
+  * Drop freebsd-12 from CI. (Benjamin Bannier, Corelight)
+
+    This reached end of life on 2023-12-31 and is not supported anymore.
+
+    (cherry picked from commit 57c98d01e7d86ff3afc47d2fd03f29f84ed603ac)
+
+  * GH-1617: Fix handling of `%synchronize-*` attributes for units in lists. (Benjamin Bannier, Corelight)
+
+    We previously would not detect `%synchronize-at` or `%synchronize-from`
+    attributes if the unit was not directly in a field, i.e., we mishandled
+    the common case of synchronizing on a unit in a list.
+
+    With this patch we now handle these attributes, regardless of how the
+    unit appears.
+
+    Closes #1617.
+
+    (cherry picked from commit 57debb2d3abb3a89690d10991b1ddfd5e3198e14)
+
 1.9.0 | 2023-10-24 16:28:18 +0200
 
   * Release 1.9.0.
