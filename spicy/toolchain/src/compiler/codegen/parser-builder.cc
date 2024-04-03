@@ -1278,8 +1278,8 @@ struct ProductionVisitor
         pstate.lahead = builder()->addTmp("parse_lah", look_ahead::Type, look_ahead::None);
         pstate.lahead_end = builder()->addTmp("parse_lahe", type::stream::Iterator());
 
-        auto cur = builder::memberCall(state().cur, "advance", {position});
         pstate.begin = builder()->addTmp("parse_begin", builder::optional(position));
+        auto cur = builder::memberCall(state().cur, "advance", {builder::deref(pstate.begin)});
         pstate.cur = builder()->addTmp("parse_cur", cur);
         pstate.ncur = {};
         pushState(std::move(pstate));
