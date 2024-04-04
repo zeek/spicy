@@ -40,7 +40,8 @@ public:
         return Signature{
             .kind = Kind::Size,
             .op0 = {hilti::parameter::Kind::In,
-                    builder.typeStrongReference(builder.qualifiedType(builder.typeSink(), hilti::Constness::Const))},
+                    builder.typeStrongReference(
+                        builder.qualifiedType(builder.typeSink(), hilti::Constness::Mutable, hilti::Side::LHS))},
             .result = {hilti::Constness::Const, builder_->typeUnsignedInteger(64)},
             .ns = "sink",
             .doc = R"(
@@ -90,10 +91,10 @@ public:
             .param0 =
                 {
                     .name = "u",
-                    .type = {hilti::parameter::Kind::InOut,
+                    .type = {hilti::parameter::Kind::In,
                              builder.typeStrongReference(
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
-                                                       hilti::Constness::Const))},
+                                                       hilti::Constness::Mutable, hilti::Side::LHS))},
                 },
             .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",
@@ -177,10 +178,10 @@ public:
             .param0 =
                 {
                     .name = "filter",
-                    .type = {hilti::parameter::Kind::InOut,
+                    .type = {hilti::parameter::Kind::In,
                              builder.typeStrongReference(
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
-                                                       hilti::Constness::Const))},
+                                                       hilti::Constness::Mutable, hilti::Side::LHS))},
                 },
             .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "sink",

@@ -20,3 +20,13 @@ assert b3 == b4;
 print b4;
 
 assert-exception b3 == b"XXX";
+
+global b5: bytes& = new bytes;
+assert *b5 == b"";
+*b5 = b"Hello";
+assert *b5 == b"Hello";
+*b5 += b" World";
+assert *b5 == b"Hello World";
+
+global b6 = new int64;
+assert *b6 == 0;

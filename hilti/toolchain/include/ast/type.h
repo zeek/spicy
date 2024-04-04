@@ -388,6 +388,13 @@ public:
      */
     void setConst(Constness constness) { _constness = constness; }
 
+    /**
+     * Sets the type's "sideness".
+     *
+     * @param side new "sideness" of type
+     */
+    void setSide(Side side) { _side = side; }
+
     /** Implements `Node` interface. */
     hilti::node::Properties properties() const override;
 
@@ -469,17 +476,26 @@ public:
 
     /** Factory method creating a copy of the type with "sideness" changed to LHS. */
     auto recreateAsLhs(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::Mutable, Side::LHS);
+        if ( auto t = _type(); t->isNameType() )
+            return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::LHS);
+        else
+            return QualifiedType::create(ctx, t, Constness::Mutable, Side::LHS);
     }
 
     /** Factory method creating a copy of the type with constness changed to constant. */
     auto recreateAsConst(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::Const, Side::RHS);
+        if ( auto t = _type(); t->isNameType() )
+            return QualifiedType::createExternal(ctx, t, Constness::Const, Side::RHS);
+        else
+            return QualifiedType::create(ctx, t, Constness::Const, Side::RHS);
     }
 
     /** Factory method creating a copy of the type with constness changed to non-constant. */
     auto recreateAsNonConst(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::Mutable, Side::RHS);
+        if ( auto t = _type(); t->isNameType() )
+            return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::RHS);
+        else
+            return QualifiedType::create(ctx, t, Constness::Mutable, Side::RHS);
     }
 
 protected:

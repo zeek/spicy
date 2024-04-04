@@ -35,7 +35,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 108
-%expect-rr 165
+%expect-rr 164
 
 %{
 
@@ -269,7 +269,7 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::ID>                           local_id scoped_id dotted_id unit_hook_id
 %type <hilti::Declaration*>               local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
 %type <hilti::Declarations>                 struct_fields
-%type <hilti::UnqualifiedType*>           base_type_no_ref base_type type tuple_type struct_type enum_type unit_type bitfield_type reference_type
+%type <hilti::UnqualifiedType*>           base_type_no_ref base_type type type_no_ref tuple_type struct_type enum_type unit_type bitfield_type reference_type
 %type <hilti::QualifiedType*>             qtype func_result opt_func_result
 %type <hilti::Ctor*>                      ctor tuple struct_ regexp list vector map set unit_field_ctor
 %type <hilti::Expression*>                expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_range_value
@@ -646,10 +646,16 @@ base_type_no_ref
               ;
 
 /* We split this out from "base_type" because it can lead to ambigitious in some contexts. */
-reference_type: qtype '&'                         { $$ = builder->typeStrongReference(std::move($1), __loc__); }
+reference_type: qtype '&'                        { $1->setSide(hilti::Side::LHS);
+                                                   $1->setConst(hilti::Constness::Mutable);
+                                                   $$ = builder->typeStrongReference(std::move($1), __loc__);
+                                                 }
 
 base_type     : base_type_no_ref                 { $$ = std::move($1); }
-                reference_type: qtype '&'         { $$ = builder->typeStrongReference(std::move($1), __loc__); }
+                reference_type: qtype '&'        { $1->setSide(hilti::Side::LHS);
+                                                   $1->setConst(hilti::Constness::Mutable);
+                                                   $$ = builder->typeStrongReference(std::move($1), __loc__);
+                                                 }
               ;
 
 type          : base_type                        { $$ = std::move($1); }
@@ -657,8 +663,13 @@ type          : base_type                        { $$ = std::move($1); }
               | scoped_id                        { $$ = builder->typeName(std::move($1)); }
               ;
 
-qtype         : type                             { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable, __loc__); }
-              | CONST type                       { $$ = builder->qualifiedType(std::move($2), hilti::Constness::Const, __loc__); }
+type_no_ref   : base_type                        { $$ = std::move($1); }
+              | scoped_id                        { $$ = builder->typeName(std::move($1)); }
+              ;
+
+qtype         : type_no_ref                      { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable, __loc__); }
+              | CONST type_no_ref                { $$ = builder->qualifiedType(std::move($2), hilti::Constness::Const, __loc__); }
+              | reference_type                   { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Const, __loc__); }
               | AUTO                             { $$ = builder->qualifiedType(builder->typeAuto(__loc__), hilti::Constness::Const, __loc__); }
               ;
 
@@ -993,7 +1004,8 @@ expr_e        : CAST type_param_begin qtype type_param_end '(' expr ')'   { $$ =
               | UNPACK type_param_begin qtype type_param_end tuple_expr   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Unpack, {builder->expressionType(std::move($3)), std::move($5), builder->expressionCtor(builder->ctorBool(true), __loc__)}, __loc__); }
               | BEGIN_ '(' expr ')'              { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
               | END_ '(' expr ')'                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
-              | NEW ctor                         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionCtor(std::move($2), __loc__), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
+              | NEW base_type_no_ref             { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionCtor(builder->ctorDefault(std::move($2))), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
+              | NEW ctor                         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionCtor(std::move($2), __loc__),             builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
               | NEW scoped_id                    { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionName(std::move($2), __loc__), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
               | NEW scoped_id '(' opt_exprs ')'  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionName(std::move($2), __loc__), builder->expressionCtor(builder->ctorTuple(std::move($4), __loc__))}, __loc__); }
               | expr_f                           { $$ = std::move($1); }

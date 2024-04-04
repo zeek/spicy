@@ -747,59 +747,74 @@ This works with subunits inside containers as well:
     :exec: printf '\05\01\02\03' | spicy-driver %INPUT
     :show-with: foo.spicy
 
-Unit parameters follow the same passing conventions as :ref:`function
-parameters <functions>`. In particular, they are read-only by default.
-If the subunit wants to modify a parameter it receives, it needs
-to be declared as ``inout`` (e.g., ``Bar(inout foo: Foo)``
+A common use-case for unit parameters is passing the ``self`` of a
+higher-level unit down into a subunit:
 
-.. note::
+.. spicy-code::
 
-    ``inout`` parameters need to be reference types which holds for other units
-    types, but currently not for basic types (:issue:`674`). In order to pass a
-    basic type as unit parameter it needs to be declared as a reference (e.g.,
-    ``string&``) and explicitly wrapped when being set:
+    type Foo = unit {
+        ...
+        b: Bar(self);
+        ...
+    }
+
+    type Bar = unit(foo: Foo) {
+        # We now have access to any state in "foo".
+    }
+
+That way, the subunit can for example store state directly in the
+parent. If you declare the ``foo`` parameter as ``inout``, the subunit
+can also modify its members.
+
+Unit parameters generally follow the same passing conventions as
+:ref:`function parameters <functions>`, yet with some restrictions.
+By default, just like with functions, parameters are read-only by
+default. If you want the receiving unit to be able to modify the
+value, there are two options:
+
+1. If the parameter itself is a unit, you can declare it as ``inout``
+   as described above.
+
+2. For all other types, you instead need to pass the parameter as a
+   :ref:`reference <type_reference>`. Here's an example passing a
+   string so that it can be modified by the subunit:
 
     .. spicy-code:: unit-params-string.spicy
 
         module Test;
 
-        type X = unit(inout msg: string&) {
-            n : uint8 {
-              local s = "Parsed %d" % $$;
-              msg = new s;
-            }
+        type X = unit(s: string&) {
+            n: uint8 {
+                *s = "Hello, world!";
+               }
         };
 
-        global msg = new "Nothing parsed, yet";
-
         public type Y = unit {
-            x: X(msg);
-            on %done { print msg; }
+            x: X(self.s);
+
+            on %done { print self.s; }
+
+            var s: string& = new string;
         };
 
     .. spicy-output:: unit-params-string.spicy
         :exec: printf '\x2a' | spicy-driver %INPUT
         :show-with: foo.spicy
 
+.. **
+
 .. note::
 
-    A common use-case for unit parameters is passing the ``self`` of a
-    higher-level unit down into a subunit:
-
-    .. spicy-code::
-
-        type Foo = unit {
-            ...
-            b: Bar(self);
-            ...
-        }
-
-        type Bar = unit(foo: Foo) {
-            # We now have access to any state in "foo".
-        }
-
-    That way, the subunit can for example store state directly in the
-    parent.
+    While this lack of support for ``inout`` may seem like a
+    surprising restriction at first, it follows from Spicy's safety
+    guarantees: since a subunit may access its parameters during its
+    entire lifetime, generally Spicy couldn't guarantee that a
+    parameter passed as ``inout`` at initialization time would
+    actually remain around for modification the whole time. References
+    do not have that problem: their wrapped values are guaranteed to
+    remain valid as long as necessary. (Units happen to share that
+    behaviour, too, which is why Spicy can support ``inout`` for
+    them.)
 
 .. _unit_attributes:
 
@@ -2063,7 +2078,7 @@ For example:
 When used as a top-level entry point to parsing, the unit will then,
 by default, receive a unique context value of that type. That context
 value can be accessed through the :spicy:method:`unit::context`
-method, which will return a reference to it:
+method, which will return a :ref:`reference <type_reference>` to it:
 
 .. spicy-code:: context-empty.spicy
 

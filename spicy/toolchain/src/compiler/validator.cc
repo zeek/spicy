@@ -672,8 +672,11 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         for ( auto* p : n->parameters() ) {
             if ( p->kind() == hilti::parameter::Kind::InOut ) {
                 auto t = p->type()->type();
-                if ( ! (t->isReferenceType() || t->isA<type::Unit>()) )
-                    error("type of inout parameter must be a reference or a unit", p);
+                if ( ! t->isA<type::Unit>() )
+                    error(
+                        "type of inout unit parameter must itself be a unit; for other parameter types, use references "
+                        "instead of inout",
+                        p);
             }
         }
 

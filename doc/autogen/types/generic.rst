@@ -10,11 +10,11 @@
 
 .. spicy:operator:: generic::New strong_ref<T> new <sp> t:<any>
 
-    Returns a reference to an instance of a type newly allocated on the
-    heap. If `x' is a type, a default instance of that type will be
-    allocated. If `x` is an expression, an instance of the expression's
-    type will be allocated and initialized with the value of the
-    expression.
+    Returns a :ref:`reference <type_reference>` to an instance of a type
+    newly allocated on the heap. If `x' is a type, a default instance of
+    that type will be allocated. If `x` is an expression, an instance of
+    the expression's type will be allocated and initialized with the value
+    of the expression.
 
 .. spicy:operator:: generic::Pack bytes pack <sp> t:tuple
 

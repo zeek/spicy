@@ -81,7 +81,7 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
 
                     if ( replace ) {
                         auto rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
-                        replaceNode(qtype, builder()->qualifiedType(rt, Constness::Mutable, Side::LHS),
+                        replaceNode(qtype, builder()->qualifiedType(rt, qtype->constness(), qtype->side()),
                                     "&on-heap replacement");
                     }
                 }
