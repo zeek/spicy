@@ -7,7 +7,6 @@ environment:
     HILTI_JIT_SEQUENTIAL: 1
 
     # Images for macOS
-    IMAGE_MACOS_MONTEREY: ghcr.io/cirruslabs/macos-monterey-base:latest
     IMAGE_MACOS_VENTURA: ghcr.io/cirruslabs/macos-ventura-base:latest
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
@@ -20,7 +19,7 @@ environment:
     CCACHE_MAXSIZE: "2G"
 
 lint_task:
-  skip: $CIRRUS_CRON == '' && $CIRRUS_PR == ''
+  skip: $CIRRUS_PR == ''
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -36,12 +35,12 @@ lint_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    LD_LIBRARY_PATH: /usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-17/lib/clang/17/lib/linux/
 
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-15 --clang-format `which clang-format-15` --clang-tidy `which clang-tidy-15` --rpath /usr/lib/llvm-15/lib/clang/15.0.7/lib/linux/
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
   build_script:       ./ci/run-ci -b build build
   test_code_script:   ./ci/run-ci -b build test-code
 
@@ -55,9 +54,7 @@ lint_task:
     clang_artifacts:
         path: build/ci
 
-clang12_ubuntu_debug_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
+clang17_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -73,12 +70,12 @@ clang12_ubuntu_debug_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    LD_LIBRARY_PATH: /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-17/lib/clang/17/lib/linux/
 
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-12 --clang-format `which clang-format-12` --clang-tidy `which clang-tidy-12` --rpath /usr/lib/llvm-12/lib/clang/12.0.1/lib/linux/
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   install_script:     ./ci/run-ci -b build install
@@ -99,7 +96,7 @@ clang12_ubuntu_debug_task:
     clang_artifacts:
         path: build/ci
 
-clang10_lts_ubuntu_release_task:
+clang17_lts_ubuntu_release_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -119,7 +116,7 @@ clang10_lts_ubuntu_release_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-10 --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10`
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
   build_script:          ./ci/run-ci -b build build
   test_build_script:     ./ci/run-ci -b build test-build
   install_script:        ./ci/run-ci -b build install
@@ -140,7 +137,7 @@ clang10_lts_ubuntu_release_task:
       type: text/xml
       format: junit
 
-clang9_lts_ubuntu_release_static_task:
+clang17_lts_ubuntu_release_static_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -160,7 +157,7 @@ clang9_lts_ubuntu_release_static_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-9 --clang-format `which clang-format-10` --clang-tidy `which clang-tidy-10` --build-static-libs
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17` --build-static-libs
   build_script:          ./ci/run-ci -b build build
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup
@@ -173,119 +170,6 @@ clang9_lts_ubuntu_release_static_task:
       path: artifacts/diag.xml
       type: text/xml
       format: junit
-
-clang11_nightly_task:
-  # This task is only executed on main.
-  # Failing this task does not fail the build.
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-  allow_failures: true
-
-  container:
-    dockerfile: ci/Dockerfile
-    cpu: 4
-    memory: 8G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    LD_LIBRARY_PATH: /usr/lib/llvm-11/lib/clang/9.0.1/lib/linux/
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-11 --clang-format `which clang-format-11` --clang-tidy `which clang-tidy-11`
-  build_script:          ./ci/run-ci -b build build
-  test_build_script:     ./ci/run-ci -b build test-build
-  install_script:        ./ci/run-ci -b build install
-  cleanup_script:        ./ci/run-ci -b build cleanup
-  test_install_script:   ./ci/run-ci -b build test-install
-  packaging_script:
-    - ninja -C build package
-
-  packages_artifacts:
-    path: build/spicy*.tar.gz
-    type: application/gzip
-
-  on_failure:
-    ci_artifacts:
-      path: artifacts
-    junit_artifacts:
-      path: artifacts/diag.xml
-      type: text/xml
-      format: junit
-
-macos_monterey_task:
-  macos_instance:
-    image: $IMAGE_MACOS_MONTEREY
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  environment:
-    CCACHE_DIR: /tmp/ccache
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  install_dependencies_script:
-    - brew install llvm bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache
-    - sudo pip3 install "btest>=0.66" sphinx_rtd_theme
-
-  configure_script:
-    - ./configure --generator=Ninja --with-bison=/opt/Homebrew/opt/bison --with-flex=/opt/Homebrew/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
-  build_script:
-    - ninja -C build all check
-  test_build_script:
-    - make -C tests test
-  packaging_script:
-    - ninja -C build package
-
-  packages_artifacts:
-    path: build/spicy*.tar.gz
-    type: application/gzip
-
-macos_ventura_task:
-  macos_instance:
-    image: $IMAGE_MACOS_VENTURA
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  environment:
-    CCACHE_DIR: /tmp/ccache
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  install_dependencies_script:
-    - brew install bison flex cmake ninja python@3.8 sphinx-doc doxygen ccache
-    - sudo pip3 install btest sphinx_rtd_theme zkg
-
-  configure_script:
-    - ./configure --generator=Ninja --with-bison=/opt/Homebrew/opt/bison --with-flex=/opt/Homebrew/opt/flex --enable-ccache --enable-werror --prefix=/opt/spicy
-  build_script:
-    - ninja -C build all check
-  test_build_script:
-    - make -C tests test
-  packaging_script:
-    - ninja -C build package
-
-  packages_artifacts:
-    path: build/spicy*.tar.gz
-    type: application/gzip
 
 no_toolchain_task:
   container:
@@ -362,16 +246,33 @@ validate_release_tarball_task:
     - cd /tmp/spicy-tarball/spicy-*
     - make -C tests
 
-homebrew_monterey_task:
+ventura_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
   macos_instance:
-    image: $IMAGE_MACOS_MONTEREY
+    image: $IMAGE_MACOS_VENTURA
 
-  script:
-    - brew tap zeek/zeek
-    - brew install spicy --HEAD
-    - brew test spicy
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+
+  update_git_script:
+    - git submodule update --recursive --init
+  install_dependencies_script:
+    - brew install bison cmake flex ninja ccache
+    - python3 -mvenv /tmp/btest.venv && /tmp/btest.venv/bin/pip install btest
+  configure_script:
+    - ./configure --with-flex=$(brew --prefix flex) --with-bison=$(brew --prefix bison) --generator=Ninja --enable-ccache --build-type=Debug
+  build_script:
+    - ninja -C build
+  test_script:
+    - (source /tmp/btest.venv/bin/activate && btest -djc tests/btest.cfg)
 
 homebrew_ventura_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
@@ -453,11 +354,9 @@ docker_centos_stream_8_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_debian10_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
+docker_debian11_task:
   container:
-    dockerfile: docker/Dockerfile.debian-10
+    dockerfile: docker/Dockerfile.debian-11
     cpu: 4
     memory: 12G
 
@@ -489,9 +388,9 @@ docker_debian10_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_debian11_task:
+docker_debian12_task:
   container:
-    dockerfile: docker/Dockerfile.debian-11
+    dockerfile: docker/Dockerfile.debian-12
     cpu: 4
     memory: 12G
 
@@ -596,43 +495,6 @@ docker_ubuntu22_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora37_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  container:
-    dockerfile: docker/Dockerfile.fedora-37
-    cpu: 4
-    memory: 12G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
-  build_script:
-    - ninja -j4 -C build check all package
-    - cp build/spicy*.rpm .
-    - rpm -i ./spicy*.rpm
-    - rm -rf build
-  test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
-
-  packages_artifacts:
-    path: ./spicy*.{deb,rpm}
-    type: application/gzip
-
 docker_fedora38_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
@@ -670,11 +532,48 @@ docker_fedora38_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_opensuse15_2_task:
+docker_fedora39_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.opensuse-15.2
+    dockerfile: docker/Dockerfile.fedora-39
+    cpu: 4
+    memory: 12G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  update_git_script:
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+  build_script:
+    - ninja -j4 -C build check all package
+    - cp build/spicy*.rpm .
+    - rpm -i ./spicy*.rpm
+    - rm -rf build
+  test_install_script:
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
+
+  packages_artifacts:
+    path: ./spicy*.{deb,rpm}
+    type: application/gzip
+
+docker_opensuse15_5_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
+  container:
+    dockerfile: docker/Dockerfile.opensuse-15.5
     cpu: 4
     memory: 12G
 
@@ -709,7 +608,43 @@ docker_opensuse15_2_task:
 
 freebsd13_task:
   freebsd_instance:
-    image_family: freebsd-13-2
+    image_family: freebsd-13-3
+    cpu: 8
+    memory: 8GB
+
+  prepare_script: ./ci/prepare_freebsd.sh
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  update_git_script:
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --enable-werror
+  build_script:
+    - ninja -j4 -C build install
+  test_install_script:
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test
+  packaging_script:
+    - ninja -C build package
+
+  packages_artifacts:
+    path: build/spicy*.tar.gz
+    type: application/gzip
+
+freebsd14_task:
+  freebsd_instance:
+    image_family: freebsd-14-0
     cpu: 8
     memory: 8GB
 

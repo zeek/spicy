@@ -48,9 +48,7 @@ Configure options:
     --clang-format <path>          Path to clang-format to use (default: found in PATH)
     --clang-tidy <path>            Path to clang-tidy to use   (default: found in PATH)
     --cxx-compiler <path>          Path to C++ compiler to use (default: found by cmake)
-    --disable-benchmark            Do not build benchmark targets
     --disable-precompiled-headers  Disable use of precompiled headers for developer tests
-    --rpath <path>                 Additional rpaths to use; will end up in LD_LIBRARY_PATH (default: none)
 
 EOF
 
@@ -96,7 +94,6 @@ function run_configure {
 
     clang_format=$(which clang-format 2>/dev/null)
     clang_tidy=$(which clang-tidy 2>/dev/null)
-    rpath=""
 
     if [ "${build_type}" == "release" ]; then
         :
@@ -128,19 +125,9 @@ function run_configure {
                 shift 2;
                 ;;
 
-            --rpath)
-                test $# -gt 0 || usage
-                rpath="$2"
-                shift 2;
-                ;;
-
             --build-toolchain)
                 configure="${configure} --build-toolchain=$2"
                 shift 2;
-                ;;
-
-            --disable-benchmark)
-                disable_benchmark=1
                 ;;
 
             --disable-precompiled-headers)
@@ -162,11 +149,6 @@ function run_configure {
         esac
     done
 
-    # When using this script enable building of benchmark targets by default unless explicitly disabled.
-    if [[ -z "${disable_benchmark+set}" ]]; then
-        configure="${configure} --enable-benchmark"
-    fi
-
     if [ -e ${build} ]; then
         error "Build directory ${build} already exists, delete first"
     fi
@@ -179,18 +161,14 @@ function run_configure {
 
     log_stage "Running configure ... (${configure})"
 
-    export LD_LIBRARY_PATH=${rpath}
     ${configure} || exit 1
     mkdir -p ${artifacts}
 
     echo "${clang_format}" >${build}/.clang_format
     echo "${clang_tidy}" >${build}/.clang_tidy
-    echo "${rpath}" >${build}/.rpath
 }
 
 function run_build {
-    export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
-
     log_stage "Building code ..."
 
     # The level of parallelism chosen here is tuned for what's configured
@@ -227,8 +205,6 @@ function execute_btest {
 
     log_stage "Running ${name} tests ... (${btest_alternative} ${btest_group})"
     pushd ${cwd} >/dev/null
-
-    export LD_LIBRARY_PATH=$(cat ${build}/.rpath)
 
     eval ${preload} \
         btest -j 5 \
