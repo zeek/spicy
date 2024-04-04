@@ -1,0 +1,25 @@
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
+FROM opensuse/leap:15.5
+
+RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.2:Update/standard/openSUSE:Leap:15.2:Update.repo \
+ && zypper refresh \
+ && zypper install -y \
+      bison \
+      ccache \
+      cmake \
+      flex \
+      gcc9-c++ \
+      git \
+      ninja \
+      python3 \
+      python3-pip \
+      rpmbuild \
+      which \
+      zlib-devel \
+ && zypper clean
+
+RUN pip3 install "btest>=0.66" sphinx-rtd-theme
+
+ENV CXX g++-9
+ENV CC gcc-9
