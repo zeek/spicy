@@ -7,7 +7,6 @@ environment:
     HILTI_JIT_SEQUENTIAL: 1
 
     # Images for macOS
-    IMAGE_MACOS_MONTEREY: ghcr.io/cirruslabs/macos-monterey-base:latest
     IMAGE_MACOS_VENTURA: ghcr.io/cirruslabs/macos-ventura-base:latest
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
@@ -247,16 +246,33 @@ validate_release_tarball_task:
     - cd /tmp/spicy-tarball/spicy-*
     - make -C tests
 
-homebrew_monterey_task:
+ventura_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
   macos_instance:
-    image: $IMAGE_MACOS_MONTEREY
+    image: $IMAGE_MACOS_VENTURA
 
-  script:
-    - brew tap zeek/zeek
-    - brew install spicy --HEAD
-    - brew test spicy
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+
+  update_git_script:
+    - git submodule update --recursive --init
+  install_dependencies_script:
+    - brew install bison cmake flex ninja ccache
+    - python3 -mvenv /tmp/btest.venv && /tmp/btest.venv/bin/pip install btest
+  configure_script:
+    - ./configure --with-flex=$(brew --prefix flex) --with-bison=$(brew --prefix bison) --generator=Ninja --enable-ccache --build-type=Debug
+  build_script:
+    - ninja -C build
+  test_script:
+    - (source /tmp/btest.venv/bin/activate && btest -djc tests/btest.cfg)
 
 homebrew_ventura_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
@@ -338,11 +354,9 @@ docker_centos_stream_8_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_debian10_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
+docker_debian11_task:
   container:
-    dockerfile: docker/Dockerfile.debian-10
+    dockerfile: docker/Dockerfile.debian-11
     cpu: 4
     memory: 12G
 
@@ -374,9 +388,9 @@ docker_debian10_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_debian11_task:
+docker_debian12_task:
   container:
-    dockerfile: docker/Dockerfile.debian-11
+    dockerfile: docker/Dockerfile.debian-12
     cpu: 4
     memory: 12G
 
@@ -481,43 +495,6 @@ docker_ubuntu22_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora37_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  container:
-    dockerfile: docker/Dockerfile.fedora-37
-    cpu: 4
-    memory: 12G
-
-  timeout_in: 120m
-
-  always:
-    ccache_cache:
-      folder: /tmp/ccache
-      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
-      reupload_on_changes: true
-
-  env:
-    CCACHE_DIR: /tmp/ccache
-    CCACHE_COMPRESS: 1
-
-  update_git_script:
-    - git submodule update --recursive --init
-
-  configure_script:
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
-  build_script:
-    - ninja -j4 -C build check all package
-    - cp build/spicy*.rpm .
-    - rpm -i ./spicy*.rpm
-    - rm -rf build
-  test_install_script:
-    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
-
-  packages_artifacts:
-    path: ./spicy*.{deb,rpm}
-    type: application/gzip
-
 docker_fedora38_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
@@ -555,11 +532,48 @@ docker_fedora38_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_opensuse15_2_task:
+docker_fedora39_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.opensuse-15.2
+    dockerfile: docker/Dockerfile.fedora-39
+    cpu: 4
+    memory: 12G
+
+  timeout_in: 120m
+
+  always:
+    ccache_cache:
+      folder: /tmp/ccache
+      fingerprint_script: echo $CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
+  env:
+    CCACHE_DIR: /tmp/ccache
+    CCACHE_COMPRESS: 1
+
+  update_git_script:
+    - git submodule update --recursive --init
+
+  configure_script:
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+  build_script:
+    - ninja -j4 -C build check all package
+    - cp build/spicy*.rpm .
+    - rpm -i ./spicy*.rpm
+    - rm -rf build
+  test_install_script:
+    - SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test-install
+
+  packages_artifacts:
+    path: ./spicy*.{deb,rpm}
+    type: application/gzip
+
+docker_opensuse15_5_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
+  container:
+    dockerfile: docker/Dockerfile.opensuse-15.5
     cpu: 4
     memory: 12G
 
