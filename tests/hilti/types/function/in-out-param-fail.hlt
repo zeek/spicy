@@ -1,0 +1,20 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test that `inout` parameters must match arguments types exactly; no coercion.
+
+module foo {
+
+function void inc(inout uint<64> i) {
+  i = 42;
+}
+
+global uint<64> x = 0;
+inc(x); # ok, compiles
+assert x == 42; # pass
+
+global uint<8> y = 0;
+inc(y); # error, type mismatch
+assert y == 42;
+
+}
