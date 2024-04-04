@@ -16,7 +16,6 @@
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
 #include <hilti/base/logger.h>
-#include <hilti/base/monotonic_buffer_resource.h>
 #include <hilti/base/uniquer.h>
 
 namespace hilti {
@@ -58,7 +57,7 @@ public:
      * @param index value to store with the index, which should be larger than
      * zero for valid indices; zero is the default and reserved for `None`.
      */
-    explicit ContextIndex(uint64_t index = 0) : _value(index) {}
+    explicit ContextIndex(size_t index = 0) : _value(index) {}
 
     /** Returns the index' value. */
     auto value() const { return _value; }
@@ -67,7 +66,7 @@ public:
      * Returns a string representation of the value, including a prefix
      * indicating the index' type.
      */
-    auto str() const { return _value > 0 ? std::string(1, Prefix) + std::to_string(_value) : std::string("-"); }
+    auto str() const { return _value > 0 ? std::string(1, Prefix) + rt::to_string(_value) : std::string("-"); }
 
     /** Returns true if the index is not `None` (i.e., zero). */
     explicit operator bool() const { return *this != None; }
@@ -83,7 +82,7 @@ public:
     inline static const ContextIndex None{0}; /**< index with reserved value zero representing an unset index */
 
 private:
-    uint64_t _value;
+    rt::integer::safe<uint32_t> _value = 0; // safe integer to catch any uint32_t overflows
 };
 
 template<char Prefix>
@@ -124,7 +123,7 @@ public:
     ~ASTContext();
 
     /** Returns the AST's root node. This always exists. */
-    auto root() const { return _root; }
+    auto root() const { return _root.get(); }
 
     /**
      * Parses a source file and adds it to the AST as a new module. If a module
@@ -331,7 +330,9 @@ public:
      */
     template<typename T, typename... Args>
     T* make(Args&&... args) {
-        return new (allocateNode<T>()) T(std::forward<Args>(args)...);
+        auto t = new T(std::forward<Args>(args)...);
+        _nodes.emplace_back(std::unique_ptr<Node>(t));
+        return t;
     }
 
     /**
@@ -348,7 +349,9 @@ public:
     template<typename T, typename... Args>
     T* make(ASTContext* ctx, std::initializer_list<Node*> children, Args&&... args) {
         assert(ctx == this);
-        return new (allocateNode<T>()) T(ctx, children, std::forward<Args>(args)...);
+        auto t = new T(ctx, children, std::forward<Args>(args)...);
+        _nodes.emplace_back(std::unique_ptr<Node>(t));
+        return t;
     }
 
     /**
@@ -366,18 +369,18 @@ public:
     template<typename T, typename... Args>
     T* make(ASTContext* ctx, type::Wildcard&& wildcard, std::initializer_list<Node*> children, Args&&... args) {
         assert(ctx == this);
-        return new (allocateNode<T>())
-            T(ctx, std::forward<type::Wildcard>(wildcard), children, std::forward<Args>(args)...);
-    }
-
-private:
-    template<typename T>
-    T* allocateNode() {
-        auto* t = reinterpret_cast<T*>(_memory_resource.allocate(sizeof(T), alignof(T)));
-        _nodes.emplace_back(t);
+        auto t = new T(ctx, std::forward<type::Wildcard>(wildcard), children, std::forward<Args>(args)...);
+        _nodes.emplace_back(std::unique_ptr<Node>(t));
         return t;
     }
 
+    /** Clears up an AST nodes that are not currently retained by anybody. */
+    void garbageCollect();
+
+    /** Release all state. */
+    void clear();
+
+private:
     // The following methods implement the corresponding phases of AST processing.
 
     Result<declaration::module::UID> _parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
@@ -419,30 +422,33 @@ private:
     void _dumpState(const logging::DebugStream& stream);
 
     // Dump statistics about the AST to a debugging stream.
-    void _dumpStats(const logging::DebugStream& stream, const Plugin& plugin);
+    void _dumpStats(const logging::DebugStream& stream, std::string_view tag);
 
     // Dumps the accumulated state tables of the context to a debugging stream.
     void _dumpDeclarations(const logging::DebugStream& stream, const Plugin& plugin);
 
-    Context* _context = nullptr;                        // compiler context
-    detail::monotonic_buffer_resource _memory_resource; // memory resource for all AST nodes
-    std::vector<Node*> _nodes; // all nodes allocated through the context so that we can run destructors at the end
+    Context* _context = nullptr;               // compiler context
+    std::vector<std::unique_ptr<Node>> _nodes; // all nodes allocated through the context; used by garbage collection
 
-    ASTRoot* _root = nullptr;            // root node of the AST
-    bool _resolved = false;              // true if `processAST()` has finished successfully
-    Driver* _driver = nullptr;           // pointer to compiler drive during `processAST()`, null outside of that
-    util::Uniquer<ID> _canon_id_uniquer; // Produces unique canonified IDs
+    node::RetainedPtr<ASTRoot> _root = nullptr; // root node of the AST
+    bool _resolved = false;                     // true if `processAST()` has finished successfully
+    Driver* _driver = nullptr;                  // pointer to compiler drive during `processAST()`, null outside of that
+    util::Uniquer<ID> _canon_id_uniquer;        // Produces unique canonified IDs
 
     uint64_t _total_rounds = 0; // total number of rounds of AST processing
 
-    std::unordered_map<declaration::module::UID, declaration::Module*>
-        _modules_by_uid;                                                    // all known modules indexed by UID
-    std::unordered_map<std::string, declaration::Module*> _modules_by_path; // all known modules indexed by path
-    std::map<std::pair<ID, ID>, declaration::Module*>
-        _modules_by_id_and_scope; // all known modules indexed by their ID and search scope
+    std::unordered_map<declaration::module::UID, node::RetainedPtr<declaration::Module>>
+        _modules_by_uid; // all known modules indexed by UID
 
-    Declarations _declarations_by_index; // all registered declarations; vector position corresponds to their index
-    UnqualifiedTypes _types_by_index;    // all registered types; vector position corresponds to their index
+    std::unordered_map<std::string, declaration::Module*>
+        _modules_by_path; // all known modules indexed by path (retained by _by_uid)
+    std::map<std::pair<ID, ID>, declaration::Module*>
+        _modules_by_id_and_scope; // all known modules indexed by their ID and search scope (retained by _by_uid)
+
+    std::vector<node::RetainedPtr<Declaration>>
+        _declarations_by_index; // all registered declarations; vector position corresponds to their index
+    std::vector<node::RetainedPtr<UnqualifiedType>>
+        _types_by_index; // all registered types; vector position corresponds to their index
 };
 
 /**

@@ -77,16 +77,16 @@ public:
     //////// Declarations
 
     auto import(const std::string& module, const Meta& m = Meta()) {
-        return declarationImportedModule(hilti::ID(module, m), std::string(".hlt"), m);
+        return declarationImportedModule(hilti::ID(module), std::string(".hlt"), m);
     }
 
     auto import(const std::string& module, const std::string& parse_extension, const Meta& m = Meta()) {
-        return declarationImportedModule(hilti::ID(module, m), parse_extension, m);
+        return declarationImportedModule(hilti::ID(module), parse_extension, m);
     }
 
     auto import(const std::string& module, const std::string& parse_extension, ID search_scope,
                 const Meta& m = Meta()) {
-        return declarationImportedModule(hilti::ID(module, m), parse_extension, std::move(search_scope), m);
+        return declarationImportedModule(hilti::ID(module), parse_extension, std::move(search_scope), m);
     }
 
     auto local(ID id_, QualifiedType* t, Meta m = Meta()) {

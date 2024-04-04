@@ -459,7 +459,7 @@ Result<Nothing> Driver::initialize() {
         _compiler_options.print(std::cerr);
 
     _ctx = std::make_shared<Context>(_compiler_options);
-    _builder = createBuilder(_ctx->astContext().get());
+    _builder = createBuilder(_ctx->astContext());
 
     operator_::registry().initPending(_builder.get());
 
@@ -736,6 +736,8 @@ Result<Nothing> Driver::compile() {
         return error(rc.error());
 
     if ( _driver_options.execute_code && ! _driver_options.output_prototypes ) {
+        context()->astContext()->clear(); // release memory
+
         if ( auto rc = jitUnits(); ! rc )
             return error(rc.error());
 

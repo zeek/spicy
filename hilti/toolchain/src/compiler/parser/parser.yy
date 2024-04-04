@@ -299,15 +299,15 @@ local_id      : IDENT                            { std::string name($1);
                                                    if ( name.substr(0, 2) == "__" && name != "__str__" )
                                                        hilti::logger().error(util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
 
-                                                   $$ = hilti::ID(std::move(name), __loc__);
+                                                   $$ = hilti::ID(std::move(name));
                                                  }
 
 scoped_id     : local_id                         { $$ = std::move($1); }
-              | SCOPED_IDENT                     { $$ = hilti::ID($1, __loc__); }
+              | SCOPED_IDENT                     { $$ = hilti::ID($1); }
 
 dotted_id     : { driver->enableDottedIDMode(); }
                 DOTTED_IDENT
-                { driver->disableDottedIDMode(); } { $$ = hilti::ID($2, __loc__); }
+                { driver->disableDottedIDMode(); } { $$ = hilti::ID($2); }
 
 /* Declarations */
 
@@ -392,12 +392,12 @@ opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Link
 /* Functions */
 
 function_id   : local_id                         { $$ = std::move($1); }
-              | FINALIZE                         { $$ = hilti::ID("~finally", __loc__); }
+              | FINALIZE                         { $$ = hilti::ID("~finally"); }
 
 scoped_function_id:
                 function_id                      { $$ = std::move($1); }
-              | SCOPED_IDENT                     { $$ = hilti::ID($1, __loc__); }
-              | SCOPED_FINALIZE                  { $$ = hilti::ID($1, __loc__); }
+              | SCOPED_IDENT                     { $$ = hilti::ID($1); }
+              | SCOPED_FINALIZE                  { $$ = hilti::ID($1); }
 
 function_with_body
               : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
@@ -831,7 +831,7 @@ expr_g        : '(' expr ')'                     { $$ = builder->expressionGroup
 
 
 member_expr   : local_id                         { $$ = builder->expressionMember(std::move($1), __loc__); }
-              | ERROR                            { $$ = builder->expressionMember(ID("error", __loc__), __loc__); } // allow methods of that name even though reserved keyword
+              | ERROR                            { $$ = builder->expressionMember(ID("error"), __loc__); } // allow methods of that name even though reserved keyword
 
 /* Constants */
 

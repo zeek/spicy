@@ -25,7 +25,7 @@ public:
     MemberCall(declaration::Field* fdecl);
     ~MemberCall() final;
 
-    auto declaration() const { return _fdecl; }
+    auto declaration() const { return _fdecl.get(); }
 
     operator_::Signature signature(Builder* builder) const final;
     Result<expression::ResolvedOperator*> instantiate(Builder* builder, Expressions operands, Meta meta) const final;
@@ -33,7 +33,7 @@ public:
     std::string name() const final { return "struct::MemberCall"; }
 
 private:
-    declaration::Field* _fdecl = nullptr;
+    node::RetainedPtr<declaration::Field> _fdecl = nullptr;
 };
 
 } // namespace struct_

@@ -45,8 +45,33 @@ ASTContext::ASTContext(Context* context) : _context(context) {
 }
 
 ASTContext::~ASTContext() {
-    for ( auto r : _nodes )
-        r->~Node();
+    try {
+        clear();
+    } catch ( const std::exception& e ) {
+        logger().internalError(util::fmt("unexpected exception in ~ASTContext: %s", e.what()));
+    }
+}
+
+void ASTContext::clear() {
+    _root.reset();
+
+    _declarations_by_index.clear();
+    _types_by_index.clear();
+    _modules_by_uid.clear();
+    _modules_by_path.clear();
+    _modules_by_id_and_scope.clear();
+
+    operator_::registry().clear(); // make sure there are no operators left using any of our nodes, because their
+                                   // storage will go away
+
+    garbageCollect();
+
+#ifndef NDEBUG
+    if ( auto live = _nodes.size() )
+        logger().internalError(util::fmt("AST still has %" PRIu64 " live nodes after context clearing!", live));
+#endif
+
+    _nodes.clear();
 }
 
 Result<declaration::module::UID> ASTContext::parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
@@ -111,6 +136,46 @@ declaration::Module* ASTContext::newModule(Builder* builder, const ID& id,
     return module(uid);
 }
 
+void ASTContext::garbageCollect() {
+    hilti::util::timing::Collector _("hilti/compiler/ast/garbage-collector");
+
+    // We're compacting the node array until all non-retained nodes are gone.
+
+    std::vector<std::unique_ptr<Node>> new_nodes;
+
+    size_t collected = 0;
+    size_t retained = 0;
+
+    bool changed;
+    uint64_t rounds = 0;
+    do {
+        ++rounds;
+        retained = 0;
+        new_nodes.reserve(_nodes.size()); // NOLINT(bugprone-use-after-move)
+        changed = false;
+
+        for ( auto& n : _nodes ) {
+            assert(n);
+
+            if ( n->isRetained() ) {
+                ++retained;
+                new_nodes.emplace_back(std::move(n));
+            }
+            else {
+                changed = true;
+                ++collected;
+                n.reset();
+            }
+        }
+
+        _nodes = std::move(new_nodes);
+    } while ( changed );
+
+    HILTI_DEBUG(logging::debug::AstStats,
+                util::fmt("garbage collected %zu nodes in %" PRIu64 " round%s, %zu left retained", collected, rounds,
+                          (rounds != 1 ? "s" : ""), retained));
+}
+
 Result<declaration::module::UID> ASTContext::_parseSource(
     Builder* builder, const hilti::rt::filesystem::path& path, const ID& scope,
     std::optional<hilti::rt::filesystem::path> process_extension) {
@@ -171,9 +236,9 @@ ast::DeclarationIndex ASTContext::register_(Declaration* decl) {
     if ( auto index = decl->declarationIndex() )
         return index;
 
-    auto index = ast::DeclarationIndex(_declarations_by_index.size());
-    decl->setDeclarationIndex(index);
+    auto index = ast::DeclarationIndex(static_cast<uint32_t>(_declarations_by_index.size()));
     _declarations_by_index.emplace_back(decl);
+    decl->setDeclarationIndex(index);
 
     if ( auto t = decl->tryAs<declaration::Type>() )
         t->type()->type()->setDeclarationIndex(index);
@@ -198,8 +263,8 @@ void ASTContext::replace(Declaration* old, Declaration* new_) {
     if ( ! index )
         return;
 
-    new_->setDeclarationIndex(index);
     _declarations_by_index[index.value()] = new_;
+    new_->setDeclarationIndex(index);
 
     if ( auto n = new_->tryAs<declaration::Type>() ) {
         auto o = old->tryAs<declaration::Type>();
@@ -233,9 +298,9 @@ ast::TypeIndex ASTContext::register_(UnqualifiedType* type) {
     if ( auto index = type->typeIndex() )
         return index;
 
-    auto index = ast::TypeIndex(_types_by_index.size());
-    type->setTypeIndex(index);
+    auto index = ast::TypeIndex(static_cast<uint32_t>(_types_by_index.size()));
     _types_by_index.emplace_back(type);
+    type->setTypeIndex(index);
 
     if ( logger().isEnabled(logging::debug::Resolver) ) {
         std::string type_id;
@@ -257,8 +322,8 @@ void ASTContext::replace(UnqualifiedType* old, UnqualifiedType* new_) {
     if ( ! index )
         return;
 
-    new_->setTypeIndex(index);
     _types_by_index[index.value()] = new_;
+    new_->setTypeIndex(index);
 
     if ( logger().isEnabled(logging::debug::Resolver) ) {
         std::string type_id;
@@ -394,7 +459,7 @@ void ASTContext::_checkAST(bool finished) const {
     util::timing::Collector _("hilti/compiler/ast/check-ast");
 
     // Check parent pointering.
-    for ( const auto& n : visitor::range(visitor::PreOrder(), _root, {}) ) {
+    for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) ) {
         for ( const auto& c : n->children() ) {
             if ( c && c->parent() != n )
                 logger().internalError("broken parent pointer!");
@@ -403,7 +468,7 @@ void ASTContext::_checkAST(bool finished) const {
 
     // Detect cycles, we shouldn't have them.
     std::set<Node*> seen = {};
-    for ( const auto& n : visitor::range(visitor::PreOrder(), _root, {}) ) {
+    for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) ) {
         if ( seen.find(n) != seen.end() )
             logger().internalError("cycle in AST detected");
 
@@ -425,7 +490,7 @@ Result<Nothing> ASTContext::_init(Builder* builder, const Plugin& plugin) {
 Result<Nothing> ASTContext::_clearState(Builder* builder, const Plugin& plugin) {
     util::timing::Collector _("hilti/compiler/ast/clear-state");
 
-    for ( const auto& n : visitor::range(visitor::PreOrder(), _root, {}) ) {
+    for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) ) {
         assert(n); // walk() should not give us null pointer children.
         n->clearErrors();
     }
@@ -436,7 +501,7 @@ Result<Nothing> ASTContext::_clearState(Builder* builder, const Plugin& plugin) 
 Result<Nothing> ASTContext::_buildScopes(Builder* builder, const Plugin& plugin) {
     {
         util::timing::Collector _("hilti/compiler/ast/clear-scope");
-        for ( const auto& n : visitor::range(visitor::PreOrder(), _root, {}) )
+        for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) )
             n->clearScope();
     }
 
@@ -455,8 +520,6 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
     HILTI_DEBUG(logging::debug::Compiler, fmt("resolving units with plugin %s", plugin.component))
 
     logging::DebugPushIndent _(logging::debug::Compiler);
-
-    _total_rounds = 0;
 
     int round = 1;
 
@@ -478,6 +541,8 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
         if ( auto rc = _resolveRoot(&modified, builder, plugin); ! rc )
             return rc;
 
+        garbageCollect();
+
         _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", round);
         _saveIterationAST(plugin, "AST after resolving", round);
 
@@ -490,7 +555,7 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
 
     _dumpAST(logging::debug::AstFinal, plugin, "Final AST", round);
     _dumpState(logging::debug::AstFinal);
-    _dumpStats(logging::debug::AstStats, plugin);
+    _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
     _saveIterationAST(plugin, "Final AST", round);
 
@@ -504,6 +569,7 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
 
     HILTI_DEBUG(logging::debug::Compiler, "finalized AST");
     _resolved = true;
+    _total_rounds = 0;
 
     return Nothing();
 }
@@ -592,6 +658,8 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
 
     for ( auto idx = 1U; idx < _declarations_by_index.size(); idx++ ) {
         auto n = _declarations_by_index[idx];
+        assert(n->isRetained());
+
         auto id = n->canonicalID() ? n->canonicalID() : ID("<no-canon-id>");
         HILTI_DEBUG(stream,
                     fmt("[%s] %s [%s] (%s)", ast::DeclarationIndex(idx), id, n->typename_(), n->location().dump(true)));
@@ -599,6 +667,8 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
 
     for ( auto idx = 1U; idx < _types_by_index.size(); idx++ ) {
         auto n = _types_by_index[idx];
+        assert(n->isRetained());
+
         auto id = n->typeID() ? n->typeID() : ID("<no-type-id>");
         HILTI_DEBUG(stream,
                     fmt("[%s] %s [%s] (%s)", ast::TypeIndex(idx), id, n->typename_(), n->location().dump(true)));
@@ -607,33 +677,48 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
     logger().debugPopIndent(stream);
 }
 
-void ASTContext::_dumpStats(const logging::DebugStream& stream, const Plugin& plugin) {
+void ASTContext::_dumpStats(const logging::DebugStream& stream, std::string_view tag) {
     if ( ! logger().isEnabled(stream) )
         return;
 
-    std::map<std::string, uint64_t> types;
-    uint64_t total_nodes = 0;
     size_t depth = 0;
+    uint64_t reachable = 0;
 
     for ( const auto& n : visitor::range(visitor::PreOrder(), root(), {}) ) {
-        total_nodes++;
-        types[n->typename_()]++;
         depth = std::max(depth, n->pathLength());
+        reachable++;
     }
 
-    HILTI_DEBUG(stream, fmt("# [%s] AST statistics:", plugin.component));
+    uint64_t retained = 0;
+    uint64_t live = 0;
+    std::map<std::string, uint64_t> live_by_type;
+
+    for ( const auto& n : _nodes ) {
+        ++live;
+        live_by_type[n->typename_()]++;
+
+        if ( n->isRetained() )
+            ++retained;
+    }
+
+    HILTI_DEBUG(stream, fmt("# [%s] AST statistics:", tag));
     logger().debugPushIndent(stream);
+
+    if ( _total_rounds )
+        HILTI_DEBUG(stream, fmt("- # AST rounds %" PRIu64, _total_rounds));
 
     HILTI_DEBUG(stream, fmt("- max tree depth: %zu", depth));
-    HILTI_DEBUG(stream, fmt("- # AST rounds %" PRIu64, _total_rounds));
     HILTI_DEBUG(stream, fmt("- # context declarations: %zu", _declarations_by_index.size()));
     HILTI_DEBUG(stream, fmt("- # context types: %zu", _types_by_index.size()));
-    HILTI_DEBUG(stream, fmt("- # nodes: %" PRIu64, total_nodes));
-    HILTI_DEBUG(stream, fmt("- # nodes > 1%%:"));
+    HILTI_DEBUG(stream, fmt("- # context modules: %zu", _modules_by_uid.size()));
+    HILTI_DEBUG(stream, fmt("- # nodes reachable in AST: %" PRIu64, reachable));
+    HILTI_DEBUG(stream, fmt("- # nodes live: %" PRIu64, live));
+    HILTI_DEBUG(stream, fmt("- # nodes retained: %" PRIu64, retained));
+    HILTI_DEBUG(stream, fmt("- # nodes live > 1%%:"));
 
     logger().debugPushIndent(stream);
-    for ( const auto& [type, num] : types ) {
-        if ( static_cast<double>(num) / static_cast<double>(total_nodes) > 0.01 )
+    for ( const auto& [type, num] : live_by_type ) {
+        if ( static_cast<double>(num) / static_cast<double>(live) > 0.01 )
             HILTI_DEBUG(stream, fmt("- %s: %" PRIu64, type, num));
     }
     logger().debugPopIndent(stream);
@@ -647,7 +732,7 @@ void ASTContext::_dumpDeclarations(const logging::DebugStream& stream, const Plu
 
     HILTI_DEBUG(stream, fmt("# [%s]", plugin.component));
 
-    auto nodes = visitor::range(visitor::PreOrder(), _root, {});
+    auto nodes = visitor::range(visitor::PreOrder(), _root.get(), {});
     for ( auto i = nodes.begin(); i != nodes.end(); ++i ) {
         auto decl = (*i)->tryAs<Declaration>();
         if ( ! decl )

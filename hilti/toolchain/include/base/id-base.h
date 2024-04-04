@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <initializer_list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -53,15 +54,9 @@ public:
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
     IDBase(std::initializer_list<std::string_view> x) { _init(util::join(x, "::"), false); }
 
-    IDBase(const IDBase& other) {
-        _id = other._id;
-        _initViews();
-    }
+    IDBase(const IDBase& other) : _id(std::move(other._id)) {}
 
-    IDBase(IDBase&& other) {
-        _id = std::move(other._id);
-        _initViews();
-    }
+    IDBase(IDBase&& other) noexcept : _id(std::move(other._id)) {}
 
     ~IDBase() = default;
 
@@ -70,16 +65,16 @@ public:
             return *this;
 
         _id = other._id;
-        _initViews();
+        _views.reset();
         return *this;
     }
 
-    IDBase& operator=(IDBase&& other) {
+    IDBase& operator=(IDBase&& other) noexcept {
         if ( &other == this )
             return *this;
 
         _id = std::move(other._id);
-        _initViews();
+        _views.reset();
         return *this;
     }
 
@@ -87,16 +82,16 @@ public:
     const std::string& str() const { return _id; }
 
     /** Returns the ID local part, which is the most-rhs element of the ID path. */
-    Derived local() const { return Derived(_local, AlreadyNormalized()); }
+    Derived local() const { return Derived(_cachedViews()->local, AlreadyNormalized()); }
 
     /** Returns the ID's namespace. That's everything except the local part. */
-    Derived namespace_() const { return Derived(_namespace, AlreadyNormalized()); }
+    Derived namespace_() const { return Derived(_cachedViews()->namespace_, AlreadyNormalized()); }
 
     /** Returns true if the ID's value has length zero. */
     bool empty() const { return _id.empty(); }
 
     /** Returns the number of namespace components. */
-    size_t length() const { return _path.size(); }
+    size_t length() const { return _cachedViews()->path.size(); }
 
     /**  Returns true if the ID is absolute, i.e., starts with `::`. */
     bool isAbsolute() const { return ! _id.empty() && _id[0] == ':'; }
@@ -109,11 +104,13 @@ public:
      * @param i index of path component to return
      */
     Derived sub(int i) const {
-        if ( i < 0 )
-            i = static_cast<int>(_path.size()) + i;
+        const auto& path = _cachedViews()->path;
 
-        if ( i >= 0 && static_cast<size_t>(i) < _path.size() )
-            return Derived(_path[i], AlreadyNormalized());
+        if ( i < 0 )
+            i = static_cast<int>(path.size()) + i;
+
+        if ( i >= 0 && static_cast<size_t>(i) < path.size() )
+            return Derived(path[i], AlreadyNormalized());
         else
             return Derived();
     }
@@ -126,7 +123,7 @@ public:
      * @param to one beyond last index to include
      */
     Derived sub(int from, int to) const {
-        return Derived(util::join(util::slice(_path, from, to), "::"), AlreadyNormalized());
+        return Derived(util::join(util::slice(_cachedViews()->path, from, to), "::"), AlreadyNormalized());
     }
 
     /**
@@ -202,6 +199,13 @@ public:
     operator std::string_view() const { return _id; }
 
 private:
+    // Caches views into the ID string.
+    struct Views {
+        std::vector<std::string_view> path; // views into _id; empty for empty ID
+        std::string_view local;             // view into _id
+        std::string_view namespace_;        // view into _id
+    };
+
     void _init(std::string_view s, bool already_normalized) {
         if ( s.empty() )
             return;
@@ -223,8 +227,6 @@ private:
                 }
             }
         }
-
-        _initViews();
     }
 
     void _normalizeAndAdd(std::string_view x) {
@@ -235,36 +237,41 @@ private:
             _id += x;
     }
 
-    void _initViews() noexcept {
+    Views* _cachedViews() const noexcept {
+        if ( _views )
+            return _views.get();
+
+        _views = std::make_unique<Views>();
+
         size_t ns_end = std::string::npos;
-        _path.clear();
+        _views->path.clear();
 
         for ( size_t i = 0; i < _id.size(); /* empty */ ) {
             if ( auto p = _id.find("::", i); p != std::string::npos ) {
-                _path.emplace_back(std::string_view(_id).substr(i, p - i));
+                _views->path.emplace_back(std::string_view(_id).substr(i, p - i));
                 i = p + 2;
                 ns_end = p;
             }
             else {
-                _path.emplace_back(std::string_view(_id).substr(i));
+                _views->path.emplace_back(std::string_view(_id).substr(i));
                 break;
             }
         }
 
         if ( ns_end != std::string::npos ) {
-            _namespace = std::string_view(_id).substr(0, ns_end);
-            _local = std::string_view(_id).substr(ns_end + 2);
+            _views->namespace_ = std::string_view(_id).substr(0, ns_end);
+            _views->local = std::string_view(_id).substr(ns_end + 2);
         }
         else {
-            _namespace = {};
-            _local = std::string_view(_id);
+            _views->namespace_ = {};
+            _views->local = std::string_view(_id);
         }
+
+        return _views.get();
     }
 
-    std::string _id;                     // normalized full-path ID
-    std::vector<std::string_view> _path; // views into _id; empty for empty ID
-    std::string_view _local;             // view into _id
-    std::string_view _namespace;         // view into _id
+    std::string _id;                       // normalized full-path ID
+    mutable std::unique_ptr<Views> _views; // allocated on demand first time view information is needed
 };
 
 } // namespace hilti::detail

@@ -30,7 +30,7 @@ public:
 private:
     friend class declaration::Function;
 
-    declaration::Function* _fdecl = nullptr;
+    node::RetainedPtr<declaration::Function> _fdecl;
 };
 
 } // namespace function

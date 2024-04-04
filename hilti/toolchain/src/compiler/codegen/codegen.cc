@@ -638,7 +638,7 @@ struct Visitor : hilti::visitor::PreOrder {
 } // anonymous namespace
 
 CodeGen::CodeGen(const std::shared_ptr<Context>& context)
-    : _context(context), _builder(new Builder(context->astContext().get())) {}
+    : _context(context), _builder(new Builder(context->astContext())) {}
 
 cxx::Unit* CodeGen::unit() const {
     if ( ! _cxx_unit )

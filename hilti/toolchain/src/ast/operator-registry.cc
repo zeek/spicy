@@ -130,3 +130,12 @@ std::pair<bool, std::optional<std::vector<const Operator*>>> Registry::functionC
     // Nothing found.
     return std::make_pair(true, std::vector<const Operator*>{});
 }
+
+void Registry::clear() {
+    _pending.clear();
+    _operators.clear();
+    _operators_by_name.clear();
+    _operators_by_kind.clear();
+    _operators_by_builtin_function.clear();
+    _operators_by_method.clear();
+}
