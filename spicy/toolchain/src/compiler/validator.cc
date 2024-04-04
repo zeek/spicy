@@ -669,6 +669,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( n->propertyItem("%synchronize-at") && n->propertyItem("%synchronize-after") )
             error("unit cannot specify both %synchronize-at and %synchronize-after", n);
 
+        for ( auto* p : n->parameters() ) {
+            if ( p->kind() == hilti::parameter::Kind::InOut ) {
+                auto t = p->type()->type();
+                if ( ! (t->isReferenceType() || t->isA<type::Unit>()) )
+                    error("type of inout parameter must be a reference or a unit", p);
+            }
+        }
 
         // Ensure that the items of anonymous bitfields do not lead to ambiguities.
         std::set<ID> seen_bits;
