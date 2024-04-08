@@ -1,0 +1,18 @@
+# @TEST-EXEC-FAIL: spicy-driver %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that we catch ways to use sinks as parameters that aren't correct.
+
+module Test;
+
+type X = unit(s: sink) { # fail, must use reference
+    : bytes &eod { s.write($$); } # fail, s is read-only
+    : bytes &eod-> s; # fail, s is read-only
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+type X = unit(inout s: sink) { # fail, must use reference
+};

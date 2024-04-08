@@ -1,0 +1,27 @@
+# @TEST-EXEC: echo 1234 | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Pass a sink as an inout parameter into another unit.
+
+module Test;
+
+public type Message = unit {
+    on %init {
+        self.s.connect(new S());
+    }
+
+    : X(self.s);
+
+    sink s;
+};
+
+type X = unit(s: sink&) {
+    : bytes &size=2 -> (*s);
+    : bytes &size=2 { (*s).write($$); }
+};
+
+type S = unit {
+    b: bytes &size=4 {
+        print $$;
+    }
+};
