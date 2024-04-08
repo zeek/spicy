@@ -8,6 +8,7 @@
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/reference.h>
 
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/types/unit-item.h>
@@ -31,8 +32,10 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
+        auto sink = QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::Mutable);
         return ctx->make<Sink>(ctx,
-                               {attrs, QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::Mutable)},
+                               {attrs, QualifiedType::create(ctx, hilti::type::StrongReference::create(ctx, sink, meta),
+                                                             hilti::Constness::Const, meta)},
                                std::move(id), std::move(meta));
     }
 

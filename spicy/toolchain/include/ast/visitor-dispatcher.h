@@ -18,8 +18,7 @@ public:
     using hilti::visitor::Dispatcher::operator();
 
     virtual void operator()(spicy::operator_::unit::MemberCall*) {}
-    virtual void operator()(spicy::operator_::sink::SizeValue* n) {}
-    virtual void operator()(spicy::operator_::sink::SizeReference* n) {}
+    virtual void operator()(spicy::operator_::sink::Size* n) {}
     virtual void operator()(spicy::operator_::sink::Close* n) {}
     virtual void operator()(spicy::operator_::sink::Connect* n) {}
     virtual void operator()(spicy::operator_::sink::ConnectMIMETypeString* n) {}

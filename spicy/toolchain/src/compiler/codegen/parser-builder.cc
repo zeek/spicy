@@ -2340,8 +2340,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
 
     for ( const auto& s : field->sinks() ) {
         builder()->addDebugMsg("spicy-verbose", "- writing %" PRIu64 " bytes to sink", {builder()->size(value)});
-        builder()->addMemberCall(builder()->deref(s), "write", {value, builder()->null(), builder()->null()},
-                                 field->meta());
+        builder()->addMemberCall(s, "write", {value, builder()->null(), builder()->null()}, field->meta());
     }
 
     if ( field->emitHook() ) {

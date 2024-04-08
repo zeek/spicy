@@ -730,6 +730,16 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( n->sinks().size() && ! n->parseType()->type()->isA<hilti::type::Bytes>() )
             error("only a bytes field can have sinks attached", n);
 
+        for ( auto* s : n->sinks() ) {
+            auto t = s->type();
+
+            if ( t->type()->isReferenceType() )
+                t = t->type()->dereferencedType();
+
+            if ( t->isConstant() )
+                error("sink must be writable, cannot be a constant value", s);
+        }
+
         if ( const auto& c = n->ctor() ) {
             // Check that constants are of a supported type.
             if ( ! supportsLiterals(c->type()) )

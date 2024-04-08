@@ -131,10 +131,11 @@ struct FieldBuilder : public visitor::PreOrder {
             {builder()->attribute("&default", builder()->new_(type)), builder()->attribute("&internal"),
              builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_sinks"))});
 
-        auto nf =
-            builder()->declarationField(s->id(),
-                                        builder()->qualifiedType(builder()->typeSink(), hilti::Constness::Mutable),
-                                        attrs, s->meta());
+        auto sink = builder()->qualifiedType(builder()->typeSink(), hilti::Constness::Mutable, hilti::Side::LHS);
+        auto nf = builder()->declarationField(s->id(),
+                                              builder()->qualifiedType(builder()->typeStrongReference(sink),
+                                                                       hilti::Constness::Const),
+                                              attrs, s->meta());
         addField(nf);
     }
 

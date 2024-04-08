@@ -235,6 +235,12 @@ public:
     void setUnification(type::Unification u) { _unification = std::move(u); }
 
     /**
+     * Clears any previously set unification string. It will be recomputed next
+     * time the type unifier runs.
+     */
+    void clearUnification() { _unification = {}; }
+
+    /**
      * Returns a static string that's descriptive and unique for all instances
      * of this type class. This is used to determine whether two types are of
      * the same class when comparing them for equality.

@@ -12,7 +12,7 @@ using namespace hilti::operator_;
 namespace {
 namespace sink {
 
-class SizeValue : public hilti::Operator {
+class Size : public hilti::Operator {
 public:
     Signature signature(hilti::Builder* builder_) const final {
         auto builder = Builder(builder_);
@@ -29,31 +29,9 @@ filters attached, this returns the value after filtering.
         };
     }
 
-    HILTI_OPERATOR(spicy, sink::SizeValue)
+    HILTI_OPERATOR(spicy, sink::Size)
 };
-HILTI_OPERATOR_IMPLEMENTATION(SizeValue);
-
-class SizeReference : public hilti::Operator {
-public:
-    Signature signature(hilti::Builder* builder_) const final {
-        auto builder = Builder(builder_);
-        return Signature{
-            .kind = Kind::Size,
-            .op0 = {hilti::parameter::Kind::In,
-                    builder.typeStrongReference(
-                        builder.qualifiedType(builder.typeSink(), hilti::Constness::Mutable, hilti::Side::LHS))},
-            .result = {hilti::Constness::Const, builder_->typeUnsignedInteger(64)},
-            .ns = "sink",
-            .doc = R"(
-Returns the number of bytes written into the referenced sink so far. If the sink has
-filters attached, this returns the value after filtering.
-)",
-        };
-    }
-
-    HILTI_OPERATOR(spicy, sink::SizeReference)
-};
-HILTI_OPERATOR_IMPLEMENTATION(SizeReference);
+HILTI_OPERATOR_IMPLEMENTATION(Size);
 
 class Close : public hilti::BuiltInMemberCall {
 public:
