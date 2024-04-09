@@ -1,0 +1,26 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Trigger errors trying to mutate a constant integer value.
+
+module Test {
+
+type X = struct {
+  uint<32> a;
+  int<32> b;
+};
+
+function void foo(X x) {
+  x.a++;
+  x.a--;
+  --x.a;
+  ++x.a;
+
+  x.b++;
+  x.b--;
+  --x.b;
+  ++x.b;
+
+}
+
+}
