@@ -47,6 +47,11 @@ ASTContext::ASTContext(Context* context) : _context(context) {
 ASTContext::~ASTContext() {
     try {
         clear();
+
+#ifndef NDEBUG
+        if ( auto live = _nodes.size() )
+            logger().internalError(util::fmt("AST still has %" PRIu64 " live nodes at context destruction!", live));
+#endif
     } catch ( const std::exception& e ) {
         logger().internalError(util::fmt("unexpected exception in ~ASTContext: %s", e.what()));
     }
@@ -66,12 +71,8 @@ void ASTContext::clear() {
 
     garbageCollect();
 
-#ifndef NDEBUG
-    if ( auto live = _nodes.size() )
-        logger().internalError(util::fmt("AST still has %" PRIu64 " live nodes after context clearing!", live));
-#endif
-
-    _nodes.clear();
+    // We may have some live node left here if there are any external;y
+    // retained pointers around still.
 }
 
 Result<declaration::module::UID> ASTContext::parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
