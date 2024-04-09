@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc -j -d %INPUT
+#
+# @TEST-DOC: Check forwarding of reference parameter to non-ref parameter. Regression tests for #1711.
+
+module Test;
+
+type Share = unit {};
+
+type Alert = unit(sh: Share&) {
+    alerts: Alert_message(sh);
+};
+
+type Alert_message = unit(sh: Share) {};
