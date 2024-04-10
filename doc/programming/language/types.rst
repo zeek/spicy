@@ -311,16 +311,16 @@ This type supports the :ref:`pack/unpack operators <packing>`.
 .. _type_reference:
 
 Reference
-—--------
+---------
 
 A reference ``T&`` wraps a value of another type ``T``, allowing to
 pass it around without creating a copy. Multiple references can wrap
 the same value, and the value will stay around for as long as there's
 at least one reference to it.
 
-You can create a reference through the Spicy's ``new T`` operator,
-which instantiates a value of type ``T``, initialized to the type's
-default; and then returns a reference to it:
+You can create a reference through the Spicy's :ref:`new T operator
+<operator_new>`, which instantiates a value of type ``T``, initialized
+to the type's default; and then returns a reference to it:
 
 .. spicy-code::
 

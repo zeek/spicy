@@ -440,4 +440,10 @@ for ns in sorted(keys):
         for operator in sorted(x2):
             print_unique(out, operator.rst())
 
+            # Special case generic operators: write them into individual per-kind files as well.
+            if operator.namespace == "generic" and out.fd != sys.stdout:
+                out2 = OutputFile(f"{ns}_{operator.kind.lower()}", args)
+                print(operator.rst() + "\n", file=out2.fd)
+                out2.close()
+
     out.close()

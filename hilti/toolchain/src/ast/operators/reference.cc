@@ -16,7 +16,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
+            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "(T&)"},
             .result_doc = "<dereferenced type>",
             .ns = "strong_reference",
             .doc = "Returns the referenced instance, or throws an exception if none or expired.",
@@ -36,8 +36,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
+            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
+            .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
             .result = {Constness::Const, builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if both operands reference the same instance.",
@@ -58,8 +58,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard())},
+            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
+            .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
             .result = {Constness::Const, builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if the two operands reference different instances.",
