@@ -280,12 +280,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         replaceNode(n, x);
     }
 
-    void operator()(operator_::sink::SizeValue* n) final {
-        auto x = builder()->memberCall(n->op0(), "size");
-        replaceNode(n, x);
-    }
-
-    void operator()(operator_::sink::SizeReference* n) final {
+    void operator()(operator_::sink::Size* n) final {
         auto x = builder()->memberCall(n->op0(), "size");
         replaceNode(n, x);
     }
@@ -351,10 +346,14 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
     }
 
     void operator()(type::Sink* n) final {
-        // Strong reference (instead of value reference) so that copying unit
-        // instances doesn't copy the sink.
-        auto sink = builder()->typeStrongReference(
-            builder()->qualifiedType(builder()->typeName("spicy_rt::Sink", n->meta()), hilti::Constness::Mutable));
+        // Replace with a reference to the runtime type.
+        auto sink = builder()->typeName("spicy_rt::Sink", n->meta());
+
+        // If we are embedded into a different type (e.g., a reference), that
+        // type's unification needs to recomputed.
+        if ( auto p = n->parent<UnqualifiedType>() )
+            p->clearUnification();
+
         replaceNode(n, sink);
     }
 

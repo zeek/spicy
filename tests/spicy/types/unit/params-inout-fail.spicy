@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that we catch illegal inout parameter types
+
+module foo;
+
+type A = unit(inout n: B) {}; # ok
+
+type B = unit(inout n: uint64&) {}; # ok
+
+type C = unit(inout n: string) { # faul
+};

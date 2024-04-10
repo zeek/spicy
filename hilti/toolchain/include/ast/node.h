@@ -273,7 +273,7 @@ public:
     T* parent() const {
         if ( ! _parent )
             return nullptr;
-        else if ( _parent->isA<T>() )
+        else if ( _parent->isA_<T>() )
             return static_cast<T*>(_parent);
         else
             return _parent->parent<T>();
@@ -595,6 +595,17 @@ public:
 #ifndef NDEBUG
         _checkCast<T>(false);
 #endif
+        return (T::NodeLevel < _node_tags.size() && T::NodeTag == _node_tags[T::NodeLevel]);
+    }
+
+    /**
+     * Alternate version to check if  a node is of a particular type (class).
+     * This version skips any potential internal consistency checks, which can
+     * be helpful in case of false positives. You should normally avoid using
+     * this unless absolutely necessary.
+     */
+    template<typename T>
+    bool isA_() const {
         return (T::NodeLevel < _node_tags.size() && T::NodeTag == _node_tags[T::NodeLevel]);
     }
 

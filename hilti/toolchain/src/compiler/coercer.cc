@@ -876,6 +876,17 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
              ! (style & CoercionStyle::FunctionCall) )
             return result::Error("no valid coercion found");
 
+        if ( needs_mutable && result.nexpr && ! oat->type()->isWildcard() && ! oat->type()->isReferenceType() ) {
+            auto new_t = result.nexpr->type()->type();
+            auto orig_t = exprs[i]->type()->type();
+
+            if ( orig_t->isReferenceType() )
+                orig_t = orig_t->dereferencedType()->type();
+
+            if ( ! type::same(orig_t, new_t) )
+                return result::Error("parameter requires exact type match");
+        }
+
         transformed.emplace_back(*result.coerced);
 
         if ( result.nexpr )

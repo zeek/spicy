@@ -1,12 +1,15 @@
 
 .. _statements:
 
-==========
-Statements
-==========
+======================
+Statements & Operators
+======================
 
-Most of Spicy's statements are pretty standard stuff. We summarize
-them briefly in the following.
+Most of Spicy's language constructs are pretty standard stuff. We
+summarize them briefly in the following. We include Spicy's statements
+here, as well as some generic, non-trivial operators that aren't
+type-specific (e.g.,  ``new``, ``begin``). For operators specific to a
+type, see the type's documentation.
 
 .. _statement_assert:
 
@@ -24,6 +27,13 @@ doesn't, an exception gets thrown that will typically abort execution.
 ``EXPR`` must either be of boolean type to begin with, or support
 coercion into it. If ``MSG`` is specified, it must be a string and
 will be carried along with the exception.
+
+.. _operator_begin:
+
+``begin``
+---------
+
+.. include:: /autogen/types/generic-begin.rst
 
 .. _statement_break:
 
@@ -54,6 +64,13 @@ again. If the unit is not in trial mode ``confirm`` has no effect.
 See :ref:`statement_reject` to reject the synchronization instead.
 
 ``confirm`` can only be invoked from hooks.
+
+.. _operator_end:
+
+``end``
+-------
+
+.. include:: /autogen/types/generic-end.rst
 
 .. _statement_for:
 
@@ -121,6 +138,20 @@ A classic ``if``-statement branching based on a boolean expression
 
 Makes the content of another module available, see :ref:`modules` for
 more.
+
+.. _operator_new:
+
+``new``
+-------
+
+.. include:: /autogen/types/generic-new.rst
+
+.. _operator_pack:
+
+``pack``
+--------
+
+.. include:: /autogen/types/generic-pack.rst
 
 .. _statement_print:
 
@@ -277,6 +308,13 @@ exception. If no ``catch`` matches an exception thrown in the ``try``
 block, it'll be propagated further up the stack. A bare ``throw``
 statement can be used inside a ``catch`` block to rethrow the current
 exception.
+
+.. _operator_unpack:
+
+``unpack``
+----------
+
+.. include:: /autogen/types/generic-unpack.rst
 
 .. _statement_while:
 

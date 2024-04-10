@@ -106,6 +106,20 @@ public:
     }
 
     /**
+     * Simply returns the value reference itself. This exists only is to make
+     * the API compatible with other other reference types, which all offer the
+     * same method.
+     */
+    const ValueReference<T>& derefAsValue() const { return *this; }
+
+    /**
+     * Simply returns the value reference itself. This exists only is to make
+     * the API compatible with other other reference types, which all offer the
+     * same method.
+     */
+    ValueReference<T>& derefAsValue() { return *this; }
+
+    /**
      * Returns a pointer to the referred value. The result may be null if the
      * instance does not refer to a valid value.
      */

@@ -64,7 +64,7 @@ public:
             .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
             .result = {Constness::Mutable, builder->typeBytes()},
             .ns = "generic",
-            .doc = "Packs a value into a binary representation.",
+            .doc = "Packs a value into a binary representation. See :ref:`packing` for details.",
         };
     }
 
@@ -129,7 +129,7 @@ public:
             .op2 = {parameter::Kind::In, builder->typeBool()},
             .result_doc = "<unpacked value>",
             .ns = "generic",
-            .doc = "Unpacks a value from a binary representation.",
+            .doc = "Unpacks a value from a binary representation. See :ref:`packing` for details.",
         };
     }
 
@@ -281,14 +281,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::New,
-            .op0 = {parameter::Kind::In, builder->typeAny(), "<any>"},
+            .op0 = {parameter::Kind::In, builder->typeAny(), "T"},
             .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .result_doc = "strong_ref<T>",
+            .result_doc = "T&",
             .ns = "generic",
             .doc = R"(
-Returns a reference to an instance of a type newly allocated on the heap.
-If `x' is a type, a default instance of that type will be allocated.
-If `x` is an expression, an instance of the expression's type will be allocated and initialized with the value of the expression.
+Returns a :ref:`reference <type_reference>` to an instance of a type newly allocated on the heap.
+If ``T`` is a type, a default instance of that type will be allocated.
+If ``T`` is an expression, an instance of the expression's type will be allocated and initialized with the value of the expression.
 )",
         };
     }
@@ -298,7 +298,9 @@ If `x` is an expression, an instance of the expression's type will be allocated 
         if ( auto tv = operands[0]->type()->type()->tryAs<type::Type_>() )
             t = tv->typeValue();
 
-        return builder->qualifiedType(builder->typeStrongReference(t, t->meta()), Constness::Mutable);
+        t = t->recreateAsLhs(builder->context());
+
+        return builder->qualifiedType(builder->typeStrongReference(t, t->meta()), Constness::Const, Side::RHS);
     }
 
     void validate(expression::ResolvedOperator* n) const final {

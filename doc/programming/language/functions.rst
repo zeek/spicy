@@ -44,6 +44,14 @@ parameter can be prefixed with ``inout``:
 .. spicy-output:: function-inout.spicy
     :exec: spicyc -j %INPUT
 
+.. note::
+
+    When calling a function with an ``inout`` parameter, the type of
+    the corresponding argument must match the type of the parameter
+    exactly. For example, while normally you can pass an integer of
+    type `uint8` to to a parameter of type `uint64`, that doesn't work
+    if the parameter is `inout`.
+
 Spicy has couple more function-like constructs (:ref:`unit_hooks` and
 :ref:`unit_parameters`) that use the same conventions for parameter
 passing.

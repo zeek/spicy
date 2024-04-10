@@ -1,3 +1,75 @@
+1.11.0-dev.105 | 2024-04-10 13:24:03 +0200
+
+  * Add missing file to git. (Robin Sommer, Corelight)
+
+  * Document generic operators. (Robin Sommer, Corelight)
+
+  * Refactor output logic in `spicy-doc-to-rst`. (Robin Sommer, Corelight)
+
+  * GH-1711: Fix forwarding of a reference unit parameter to a non-reference parameter. (Robin Sommer, Corelight)
+
+  * GH-1599: Fix integer increment/decrement operators require mutable arguments. (Robin Sommer, Corelight)
+
+  * Add tests checking sinks as unit parameters. (Robin Sommer, Corelight)
+
+  * GH-1710: Improve implementation of sink type. (Robin Sommer, Corelight)
+
+    So far we lowered Spicy's `sink` type into a `strong_ref` a HILTI
+    codegen time, meaning that a unit's `sink` field would have type
+    `sink` at the Spicy-level and then later `strong_ref<sink>` inside
+    HILTI (actually: `strong_ref<spicy_rt::Sink>`). This approach led some
+    inconsistencies because of the mismatch between the two levels, and it
+    also made the implementation more complex than necessary. We now let
+    `sink` fields simply have type `sink&` (i.e., `strong_ref<sink>`) in
+    Spicy; everything else then falls in place more easily. From a user
+    perspective, the change should remain largely invisible.
+
+  * Fix internal assertion potentially triggering erroneously during retrieval of parent node. (Robin Sommer, Corelight)
+
+  * GH-1618: Fix and clarify usage of references in Spicy. (Robin Sommer, Corelight)
+
+    References weren't fully consistent in their properties and
+    implementation, and they weren't documented either. This commit cleans
+    that up and adds documentation.
+
+    Changes:
+
+    - Constness 1: For a type `T&`, which internally is `strong_ref<T>`,
+      we now consistently make the inner `T` a mutable LHS type. That
+      seems most natural and useful from a user perspective. In
+      particular, this allows mutating objects passed into functions as
+      parameters without declaring them `inout`: (`foo (x: bytes&)`). This
+      is important because declaring the parameter `inout` makes the
+      reference itself mutable (not the contained object), which isn't
+      what one wants. Plus, the latter doesn't work for unit parameters
+      anyways. Accordingly, we also adapt our built-in operators to
+      use`T&` instead of `inout T&`.
+
+    - Constness 2: For a type `T&`, we now make the outer reference type
+      constant and non-mutable. This is mostly for consistency, it doesn't
+      really change anything as we didn't havemutating operations on
+      references anyways.
+
+    - Feature: We add `new BASIC_TYPE` as syntax for creating default
+      initialized values of basic types. So far we only had `new
+      NAMED_TYPE` and `new VALUE`.
+
+    Technical note to the reviewer: the changes to the `recreateAs*`
+    methods are necessary to avoid complex types being copied into the
+    newly created type, which would lead to name resolution problems. This
+    is tested through existing tests which fail otherwise
+    (`spicy.types.sink.filter-it.spicy`,
+    `spicy.rt.base64-filter-eod.spicy`). (Well, `recreateAsLHS()` is
+    tested that way, but the others would have the same issue.) This is a
+    good change anyways, because it keeps the AST smaller.
+
+  * GH-1515: Catch unsupported types for unit inout parameters. (Robin Sommer, Corelight)
+
+    We support only types that are (internally) passed around as
+    references.
+
+  * GH-1583: Disallow coercion when passing arguments to `inout` parameters. (Robin Sommer, Corelight)
+
 1.11.0-dev.92 | 2024-04-10 09:40:32 +0200
 
   * Update release version in documentation. (Robin Sommer, Corelight)

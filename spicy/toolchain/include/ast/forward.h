@@ -51,8 +51,7 @@ using Hooks = NodeVector<Hook>;
 namespace operator_ {
 
 namespace sink {
-class SizeValue;
-class SizeReference;
+class Size;
 class Close;
 class Connect;
 class ConnectMIMETypeString;

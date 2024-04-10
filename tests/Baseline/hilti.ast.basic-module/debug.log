@@ -8,16 +8,16 @@
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
 [debug/compiler]       -> modified
-[debug/ast-stats] garbage collected 1197 nodes in 12 rounds, 5166 left retained
+[debug/ast-stats] garbage collected 514 nodes in 12 rounds, 5166 left retained
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
 [debug/compiler]       -> modified
-[debug/ast-stats] garbage collected 888 nodes in 9 rounds, 5422 left retained
+[debug/ast-stats] garbage collected 205 nodes in 9 rounds, 5422 left retained
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
-[debug/ast-stats] garbage collected 712 nodes in 3 rounds, 5450 left retained
+[debug/ast-stats] garbage collected 29 nodes in 2 rounds, 5450 left retained
 [debug/ast-final] # [HILTI] Final AST (round 3)
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
 [debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])

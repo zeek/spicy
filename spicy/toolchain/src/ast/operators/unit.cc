@@ -40,7 +40,7 @@ QualifiedType* contextResult(hilti::Builder* builder, const Expressions& operand
 
     if ( const auto& ctype = operands[0]->type()->type()->as<type::Unit>()->contextType() )
         return builder->qualifiedType(builder->typeStrongReference(
-                                          builder->qualifiedType(ctype, hilti::Constness::Mutable)),
+                                          builder->qualifiedType(ctype, hilti::Constness::Mutable, hilti::Side::LHS)),
                                       constness);
 
     return builder->qualifiedType(builder->typeVoid(), constness);
@@ -319,10 +319,10 @@ public:
             .param0 =
                 {
                     .name = "filter",
-                    .type = {hilti::parameter::Kind::InOut,
+                    .type = {hilti::parameter::Kind::In,
                              builder.typeStrongReference(
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
-                                                       hilti::Constness::Const))},
+                                                       hilti::Constness::Mutable, hilti::Side::LHS))},
                 },
             .result = {hilti::Constness::Const, builder.typeVoid()},
             .ns = "unit",

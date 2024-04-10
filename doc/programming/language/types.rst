@@ -308,6 +308,93 @@ This type supports the :ref:`pack/unpack operators <packing>`.
 
 .. include:: /autogen/types/real.rst
 
+.. _type_reference:
+
+Reference
+---------
+
+A reference ``T&`` wraps a value of another type ``T``, allowing to
+pass it around without creating a copy. Multiple references can wrap
+the same value, and the value will stay around for as long as there's
+at least one reference to it.
+
+You can create a reference through the Spicy's :ref:`new T operator
+<operator_new>`, which instantiates a value of type ``T``, initialized
+to the type's default; and then returns a reference to it:
+
+.. spicy-code::
+
+  local x = new bytes; # x is now of type "bytes&"
+
+To access or modify the value, one generally needs to dereference it
+first through the ``*`` operator:
+
+.. spicy-code::
+
+  assert *x == b"";   # x was initialized to empty
+  *x = b"Hello";      # x now holds "Hello"
+  *x += b" World";    # x now holds "Hello World"
+  assert *x == b"Hello World";
+
+.. **
+
+In some cases Spicy implicitly dereferences a reference, such as when
+printing it, or when passing it to a function that expects a value of
+the wrapped type:
+
+.. spicy-code::
+
+  print x;  # prints "Hello World"
+
+  function f(x: bytes) { assert x == b"Hello World"; }
+  f(x);     # passes the value of x to f
+
+
+Automatic dereferencing even works for a value's operators as long as
+that's non-ambiguous. For example, above we could have just said ``x
++= b" World"`` instead of ``*x += b" World"``.
+
+A reference's wrapped value remains mutable, so you can leverage a
+reference for passing a value to a function for modification:
+
+.. spicy-code::
+
+  function m(x: bytes&) { *x += b" World"; }
+
+  local x = new b"Hello"; # creates pre-initialized bytes value
+  m(x);
+  print x; # prints "Hello World"
+
+.. **
+
+Note that this is subtly different from passing a value as an
+``inout`` parameter. While both allow a function to modify the value,
+the reference continues to wrap a value that's been created elsewhere,
+possibly with further references around that will see the same changes
+and keep the value alive---whereas with an ``inout`` parameter,
+life-time and visibility remain tied to normal scoping rules at the
+call site.
+
+.. note::
+
+  Nothing prevents you from passing a reference as an ``inout``
+  parameter, like: ``function f(inout x: bytes&)``. However, doing so
+  may not be that useful because the ``inout`` refers to the reference
+  itself, meaning all you can do is rebind it to another reference.
+  While you *can* modify the wrapped value through dereferentation,
+  that's independent of making the reference ``inout``.
+
+.. rubric:: Type
+
+- ``T&`` represents a reference wrapping a value of type ``T``.
+
+.. rubric:: Constants
+
+- ``Null`` is the only constant for references, representing an unset
+  reference.
+
+.. include:: /autogen/types/strong-reference.rst
+
 .. _type_regexp:
 
 Regular Expression

@@ -9,7 +9,7 @@
     parsing unit can *not* be reconnected; trying to do so will still
     throw a ``UnitAlreadyConnected`` exception.
 
-.. spicy:method:: sink::connect sink connect False void (inout u: strong_ref<unit>)
+.. spicy:method:: sink::connect sink connect False void (u: strong_ref<unit>)
 
     Connects a parsing unit to a sink. All subsequent write operations to
     the sink will pass their data on to this parsing unit. Each unit can
@@ -17,7 +17,7 @@
     a ``UnitAlreadyConnected`` exception is thrown. However, a sink can
     have more than one unit connected to it.
 
-.. spicy:method:: sink::connect_filter sink connect_filter False void (inout filter: strong_ref<unit>)
+.. spicy:method:: sink::connect_filter sink connect_filter False void (filter: strong_ref<unit>)
 
     Connects a filter unit to the sink that will transform its input
     transparently before forwarding it for parsing to other connected
@@ -127,10 +127,4 @@
 
     Returns the number of bytes written into the sink so far. If the sink
     has filters attached, this returns the value after filtering.
-
-.. spicy:operator:: sink::Size uint<64> op:| t:strong_ref<sink> op:|
-
-    Returns the number of bytes written into the referenced sink so far.
-    If the sink has filters attached, this returns the value after
-    filtering.
 

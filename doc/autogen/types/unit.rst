@@ -6,7 +6,7 @@
     recent ``&try`` attribute. Turns into a parse error if there's no
     ``&try`` in scope.
 
-.. spicy:method:: unit::connect_filter unit connect_filter False void (inout filter: strong_ref<unit>)
+.. spicy:method:: unit::connect_filter unit connect_filter False void (filter: strong_ref<unit>)
 
     Connects a separate filter unit to transform the unit's input
     transparently before parsing. The filter unit will see the original

@@ -235,6 +235,12 @@ public:
     void setUnification(type::Unification u) { _unification = std::move(u); }
 
     /**
+     * Clears any previously set unification string. It will be recomputed next
+     * time the type unifier runs.
+     */
+    void clearUnification() { _unification = {}; }
+
+    /**
      * Returns a static string that's descriptive and unique for all instances
      * of this type class. This is used to determine whether two types are of
      * the same class when comparing them for equality.
@@ -388,6 +394,13 @@ public:
      */
     void setConst(Constness constness) { _constness = constness; }
 
+    /**
+     * Sets the type's "sideness".
+     *
+     * @param side new "sideness" of type
+     */
+    void setSide(Side side) { _side = side; }
+
     /** Implements `Node` interface. */
     hilti::node::Properties properties() const override;
 
@@ -469,17 +482,26 @@ public:
 
     /** Factory method creating a copy of the type with "sideness" changed to LHS. */
     auto recreateAsLhs(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::Mutable, Side::LHS);
+        if ( auto t = _type(); t->isNameType() )
+            return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::LHS);
+        else
+            return QualifiedType::create(ctx, t, Constness::Mutable, Side::LHS);
     }
 
     /** Factory method creating a copy of the type with constness changed to constant. */
     auto recreateAsConst(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::Const, Side::RHS);
+        if ( auto t = _type(); t->isNameType() )
+            return QualifiedType::createExternal(ctx, t, Constness::Const, Side::RHS);
+        else
+            return QualifiedType::create(ctx, t, Constness::Const, Side::RHS);
     }
 
     /** Factory method creating a copy of the type with constness changed to non-constant. */
     auto recreateAsNonConst(ASTContext* ctx) const {
-        return QualifiedType::create(ctx, _type(), Constness::Mutable, Side::RHS);
+        if ( auto t = _type(); t->isNameType() )
+            return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::RHS);
+        else
+            return QualifiedType::create(ctx, t, Constness::Mutable, Side::RHS);
     }
 
 protected:

@@ -296,6 +296,43 @@ class Method:
         return self.rst() < other.rst()
 
 
+# Manages a single output file.
+class OutputFile:
+    def __init__(self, ns, args):
+        self.fd = sys.stdout
+        self.fname = None
+        self.fname_tmp = None
+
+        if args.dir:
+            self.fname = namespace(ns)
+
+            if self.fname.endswith("_"):
+                self.fname = self.fname[:-1]
+
+            self.fname = (
+                self.fname.lower().replace("::", "-").replace("_", "-") + ".rst"
+            )
+            self.fname = os.path.join(args.dir, self.fname)
+            self.fname_tmp = self.fname + ".tmp"
+            self.fd = open(self.fname_tmp, "w+", encoding="utf-8")
+        else:
+            self.fd = sys.stdout
+
+    def close(self):
+        if not self.fname:
+            return
+
+        assert self.fname_tmp
+        self.fd.close()
+
+        if not os.path.exists(self.fname) or not filecmp.cmp(
+            self.fname, self.fname_tmp
+        ):
+            os.rename(self.fname_tmp, self.fname)
+        else:
+            os.unlink(self.fname_tmp)
+
+
 # Main
 
 
@@ -365,21 +402,6 @@ if args.types:
                 keys.add(i)
 
 for ns in sorted(keys):
-    fname = None
-    fname_tmp = None
-    if args.dir:
-        fname = namespace(ns)
-
-        if fname.endswith("_"):
-            fname = fname[:-1]
-
-        fname = fname.lower().replace("::", "-").replace("_", "-") + ".rst"
-        fname = os.path.join(args.dir, fname)
-        fname_tmp = fname + ".tmp"
-        out = open(fname_tmp, "w+")
-    else:
-        out = sys.stdout
-
     prefix = ""
 
     if "::view" in ns:
@@ -396,31 +418,32 @@ for ns in sorted(keys):
     # namespaces for integers.
     already_recorded: Set[str] = set()
 
-    def print_unique(s):
+    def print_unique(out, s):
         if s not in already_recorded:
-            print(s + "\n", file=out)
+            print(s + "\n", file=out.fd)
             already_recorded.add(s)
+
+    out = OutputFile(ns, args)
 
     x1 = sorted(methods.get(ns, []))
     if x1:
-        print(f".. rubric:: {prefix}Methods\n", file=out)
+        print(f".. rubric:: {prefix}Methods\n", file=out.fd)
 
         for method in sorted(x1):
-            print_unique(method.rst())
+            print_unique(out, method.rst())
 
     x2 = sorted(operators.get(ns, []))
 
     if x2:
-        print(f".. rubric:: {prefix}Operators\n", file=out)
+        print(f".. rubric:: {prefix}Operators\n", file=out.fd)
 
         for operator in sorted(x2):
-            print_unique(operator.rst())
+            print_unique(out, operator.rst())
 
-    if fname:
-        assert fname_tmp
-        out.close()
+            # Special case generic operators: write them into individual per-kind files as well.
+            if operator.namespace == "generic" and out.fd != sys.stdout:
+                out2 = OutputFile(f"{ns}_{operator.kind.lower()}", args)
+                print(operator.rst() + "\n", file=out2.fd)
+                out2.close()
 
-        if not os.path.exists(fname) or not filecmp.cmp(fname, fname_tmp):
-            os.rename(fname_tmp, fname)
-        else:
-            os.unlink(fname_tmp)
+    out.close()

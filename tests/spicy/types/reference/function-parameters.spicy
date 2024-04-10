@@ -1,0 +1,29 @@
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+function x(b: bytes&) {
+    *b = b"Hello";
+    b += b" world";
+}
+
+function y1(inout b: bytes&) {
+    b += b" once more";
+}
+
+function y2(inout b: bytes&) {
+    b = new b"Goodbye";
+}
+
+global a = new bytes;
+global b = a;
+
+x(a);
+print a, b;
+
+y1(a);
+print a, b;
+
+y2(a);
+print a, b;

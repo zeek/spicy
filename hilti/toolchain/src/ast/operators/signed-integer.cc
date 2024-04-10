@@ -42,7 +42,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DecrPostfix,
-            .op0 = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+            .op0 = {parameter::Kind::InOut, builder->typeSignedInteger(type::Wildcard())},
             .result_doc = "int",
             .ns = "signed_integer",
             .doc = "Decrements the value, returning the old value.",
@@ -63,7 +63,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DecrPrefix,
-            .op0 = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+            .op0 = {parameter::Kind::InOut, builder->typeSignedInteger(type::Wildcard())},
             .result_doc = "int",
             .ns = "signed_integer",
             .doc = "Increments the value, returning the new value.",
@@ -84,7 +84,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+            .op0 = {parameter::Kind::InOut, builder->typeSignedInteger(type::Wildcard())},
             .result_doc = "int",
             .ns = "signed_integer",
             .doc = "Increments the value, returning the old value.",
@@ -105,7 +105,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+            .op0 = {parameter::Kind::InOut, builder->typeSignedInteger(type::Wildcard())},
             .result_doc = "int",
             .ns = "signed_integer",
             .doc = "Increments the value, returning the new value.",

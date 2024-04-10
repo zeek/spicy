@@ -669,6 +669,16 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( n->propertyItem("%synchronize-at") && n->propertyItem("%synchronize-after") )
             error("unit cannot specify both %synchronize-at and %synchronize-after", n);
 
+        for ( auto* p : n->parameters() ) {
+            if ( p->kind() == hilti::parameter::Kind::InOut ) {
+                auto t = p->type()->type();
+                if ( ! t->isA<type::Unit>() )
+                    error(
+                        "type of inout unit parameter must itself be a unit; for other parameter types, use references "
+                        "instead of inout",
+                        p);
+            }
+        }
 
         // Ensure that the items of anonymous bitfields do not lead to ambiguities.
         std::set<ID> seen_bits;
@@ -719,6 +729,16 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         if ( n->sinks().size() && ! n->parseType()->type()->isA<hilti::type::Bytes>() )
             error("only a bytes field can have sinks attached", n);
+
+        for ( auto* s : n->sinks() ) {
+            auto t = s->type();
+
+            if ( t->type()->isReferenceType() )
+                t = t->type()->dereferencedType();
+
+            if ( t->isConstant() )
+                error("sink must be writable, cannot be a constant value", s);
+        }
 
         if ( const auto& c = n->ctor() ) {
             // Check that constants are of a supported type.

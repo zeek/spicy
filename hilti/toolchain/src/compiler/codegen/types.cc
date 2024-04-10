@@ -698,7 +698,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         else
             t = "*";
 
-        result = CxxTypes{.base_type = t, .param_in = fmt("%s", t), .param_inout = fmt("%s", t)};
+        result = CxxTypes{.base_type = t, .param_in = fmt("%s", t), .param_inout = fmt("%s&", t)};
     }
 
     void operator()(type::stream::View* n) final { result = CxxTypes{.base_type = "::hilti::rt::stream::View"}; }

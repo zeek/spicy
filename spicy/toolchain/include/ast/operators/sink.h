@@ -12,8 +12,7 @@
 
 namespace spicy::operator_ {
 
-SPICY_NODE_OPERATOR(sink, SizeValue)
-SPICY_NODE_OPERATOR(sink, SizeReference)
+SPICY_NODE_OPERATOR(sink, Size)
 SPICY_NODE_OPERATOR(sink, Close)
 SPICY_NODE_OPERATOR(sink, Connect)
 SPICY_NODE_OPERATOR(sink, ConnectMIMETypeString)
