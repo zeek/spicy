@@ -314,7 +314,7 @@ class OutputFile:
             )
             self.fname = os.path.join(args.dir, self.fname)
             self.fname_tmp = self.fname + ".tmp"
-            self.fd = open(self.fname_tmp, "w+")
+            self.fd = open(self.fname_tmp, "w+", encoding="utf-8")
         else:
             self.fd = sys.stdout
 
