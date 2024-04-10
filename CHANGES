@@ -1,3 +1,16 @@
+1.11.0-dev.92 | 2024-04-10 09:40:32 +0200
+
+  * Update release version in documentation. (Robin Sommer, Corelight)
+
+    This hadn't been updated, leading to outdated links.
+
+  * Do not require all AST nodes to be destroyed before we begin compilation. (Robin Sommer)
+
+    If a 3rdparty (like Zeek) still retains a pointer to a `Node`, the
+    check would trigger, making usage awkward. Instead we now just
+    check at context destruction time that we no longer have any live
+    nodes.
+
 1.11.0-dev.88 | 2024-04-09 09:33:03 +0200
 
   * Bump 3rdparty/utf8proc from `1fe43f5` to `894e810` (dependabot[bot])

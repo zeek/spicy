@@ -21,11 +21,11 @@ sys.path.insert(0, os.path.abspath("scripts"))
 # -- Project information -----------------------------------------------------
 
 project = "Spicy"
-copyright = "2023 by the Zeek Project"
+copyright = "2024 by the Zeek Project"
 author = "Zeek Project"
 
 version = open("../VERSION").readline()
-release = "1.9.0"  # most recent release version
+release = "1.10.0"  # most recent release version
 
 # -- General configuration ---------------------------------------------------
 
