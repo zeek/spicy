@@ -11,6 +11,9 @@ using namespace hilti::rt::stream;
 using namespace hilti::rt::stream::detail;
 
 Chunk::~Chunk() {
+    if ( _is_owning )
+        delete[] _data;
+
     // The default dtr would turn deletion the list behind `_next` into a
     // recursive list traversal. For very long lists this could lead to stack
     // overflows. Traverse the list in a loop instead. This is adapted from
@@ -19,12 +22,17 @@ Chunk::~Chunk() {
         ; // Nothing.
 }
 
-Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
-    _data.resize(d.size());
-    d.copyRaw(reinterpret_cast<Byte*>(_data.data()));
+Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset), _size(d.size()), _is_owning(true) {
+    auto data = new Byte[_size];
+    d.copyRaw(data);
+    _data = data;
 }
 
-Chunk::Chunk(const Offset& offset, std::string s) : _offset(offset), _data(std::move(s)) {}
+Chunk::Chunk(const Offset& offset, std::string s) : _offset(offset), _size(s.size()), _is_owning(true) {
+    auto data = new Byte[_size];
+    memcpy(data, s.data(), _size);
+    _data = data;
+}
 
 void Chain::append(std::unique_ptr<Chunk> chunk) {
     _ensureValid();
@@ -380,8 +388,6 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
 
 Stream::Stream(Bytes d) : Stream(Chunk(0, std::move(d).str())) {}
 
-Stream::Stream(const char* d, const Size& n) : Stream() { append(d, n); }
-
 void Stream::append(Bytes&& data) {
     if ( data.isEmpty() )
         return;
@@ -402,6 +408,16 @@ void Stream::append(const char* data, size_t len) {
 
     if ( data )
         _chain->append(std::make_unique<Chunk>(0, std::string{data, len}));
+    else
+        _chain->append(std::make_unique<Chunk>(0, len));
+}
+
+void Stream::append(const char* data, size_t len, NonOwning) {
+    if ( len == 0 )
+        return;
+
+    if ( data )
+        _chain->append(std::make_unique<Chunk>(0, reinterpret_cast<const Byte*>(data), len, stream::NonOwning()));
     else
         _chain->append(std::make_unique<Chunk>(0, len));
 }
@@ -590,5 +606,5 @@ void Stream::debugPrint(std::ostream& out) const { debugPrint(out, _chain.get())
 void Chunk::debugPrint(std::ostream& out) const {
     auto x = std::string(reinterpret_cast<const char*>(data()), size());
     x = escapeBytes(x);
-    out << fmt("offset %lu  data=|%s|", _offset, x) << '\n';
+    out << fmt("offset %lu  data=|%s| (%s)", _offset, x, (_is_owning ? "owning" : "non-owning")) << '\n';
 }
