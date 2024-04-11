@@ -1720,6 +1720,13 @@ public:
     /** Returns true if the instance is currently frozen. */
     bool isFrozen() const { return _chain->isFrozen(); }
 
+    /**
+     * Returns the stream into a freshly initialized state, as if it was just
+     * created. (This concerns only externally visible state, it retains any
+     * potentially cached resources for reuse.)
+     */
+    void reset() { _chain->reset(); }
+
     /** Ensure the stream fully owns all its data. */
     void makeOwning() {
         // Only the final chunk can be non-owning, that's guaranteed by
