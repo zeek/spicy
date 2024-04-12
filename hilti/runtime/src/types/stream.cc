@@ -10,6 +10,12 @@ using namespace hilti::rt;
 using namespace hilti::rt::stream;
 using namespace hilti::rt::stream::detail;
 
+namespace {
+// Provide a valid non-null pointer for zero-size data. We initialize it to an
+// actual string for easier debugging.
+const Byte* EmptyData = reinterpret_cast<const Byte*>("<empty>");
+} // namespace
+
 Chunk::~Chunk() {
     if ( _allocated > 0 )
         delete[] _data;
@@ -23,18 +29,33 @@ Chunk::~Chunk() {
 }
 
 Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset), _size(d.size()), _allocated(_size) {
+    if ( _size == 0 ) {
+        _data = EmptyData;
+        return;
+    }
+
     auto data = new Byte[_size];
     d.copyRaw(data);
     _data = data;
 }
 
 Chunk::Chunk(const Offset& offset, std::string s) : _offset(offset), _size(s.size()), _allocated(_size) {
+    if ( _size == 0 ) {
+        _data = EmptyData;
+        return;
+    }
+
     auto data = new Byte[_size];
     memcpy(data, s.data(), _size);
     _data = data;
 }
 
 Chunk::Chunk(const Offset& offset, const Byte* b, size_t size) : _offset(offset), _size(size), _allocated(_size) {
+    if ( _size == 0 ) {
+        _data = EmptyData;
+        return;
+    }
+
     auto data = new Byte[_size];
     memcpy(data, b, _size);
     _data = data;

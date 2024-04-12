@@ -185,7 +185,7 @@ public:
     // Creates a new copy of the data internally if the chunk is currently not
     // owning it. On return, is guaranteed to now own the data.
     void makeOwning() {
-        if ( _allocated > 0 || ! _data )
+        if ( _size == 0 || _allocated > 0 || ! _data )
             return;
 
         auto* data = new Byte[_size];

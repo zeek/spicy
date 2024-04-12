@@ -256,13 +256,21 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                 assert(_parser->profiler_tags);
                 auto profiler = hilti::rt::profiler::start(_parser->profiler_tags.prepare_block);
 
-                auto input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
-                input->freeze();
+                if ( ! _input ) {
+                    _input =
+                        hilti::rt::reference::make_value<hilti::rt::Stream>(data, size, hilti::rt::stream::NonOwning());
 
-                if ( ! _parser->parse1 )
-                    throw InvalidUnitType(
-                        fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
-                            _parser->name));
+                    if ( ! _parser->parse1 )
+                        throw InvalidUnitType(
+                            fmt("unit type '%s' cannot be used as external entry point because it requires arguments",
+                                _parser->name));
+                }
+                else {
+                    (*_input)->reset();
+                    (*_input)->append(data, size, hilti::rt::stream::NonOwning());
+                }
+
+                (*_input)->freeze();
 
                 if ( _parser->context_new ) {
                     if ( _context )
@@ -273,7 +281,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
 
                 hilti::rt::profiler::stop(profiler);
 
-                _resumable = _parser->parse1(input, {}, _context);
+                _resumable = _parser->parse1(*_input, {}, _context);
 
                 if ( ! *_resumable )
                     hilti::rt::internalError("block-based parsing yielded");
@@ -305,7 +313,8 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                             DRIVER_DEBUG("no context provided");
                     }
 
-                    _input = hilti::rt::reference::make_value<hilti::rt::Stream>(data, size);
+                    _input =
+                        hilti::rt::reference::make_value<hilti::rt::Stream>(data, size, hilti::rt::stream::NonOwning());
                     if ( eod )
                         (*_input)->freeze();
 
@@ -323,7 +332,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     assert(_input && _resumable);
 
                     if ( size )
-                        (*_input)->append(data, size);
+                        (*_input)->append(data, size, hilti::rt::stream::NonOwning());
 
                     if ( eod ) {
                         DRIVER_DEBUG("end of data");
@@ -346,6 +355,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
                     if ( eod )
                         hilti::rt::internalError("parsing yielded for final data chunk");
 
+                    (*_input)->makeOwning();
                     return Continue;
                 }
             }
