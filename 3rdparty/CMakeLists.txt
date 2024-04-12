@@ -49,3 +49,13 @@ check_cxx_compiler_flag("-Wno-changes-meaning" _has_no_changes_meaning_flag)
 if (_has_no_changes_meaning_flag)
     set_property(TARGET reproc++ PROPERTY COMPILE_OPTIONS "-Wno-changes-meaning")
 endif ()
+
+include(FetchContent)
+FetchContent_Declare(
+    cxxgraph
+    GIT_REPOSITORY https://github.com/ZigRazor/CXXGraph.git
+    GIT_TAG v3.1.0
+)
+FetchContent_MakeAvailable(cxxgraph)
+add_library(CXXGraph INTERFACE)
+target_include_directories(CXXGraph SYSTEM INTERFACE ${cxxgraph_SOURCE_DIR}/include)
