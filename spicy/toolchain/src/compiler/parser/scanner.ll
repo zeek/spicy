@@ -46,6 +46,10 @@ static std::string expandEscapes(Driver* driver, std::string s, spicy::detail::p
     }
 }
 
+static auto countNewLines(const char* s , int size) {
+    return std::count(s, s + size, '\n');
+}
+
 static std::string preprocessor_directive;
 
 %}
@@ -91,10 +95,10 @@ preprocessor @[a-zA-Z_][a-zA-Z_0-9-]*
 
 {blank}+              yylloc->step();
 [\n]+                 yylloc->lines(yyleng); yylloc->step();
-{comment}             yylloc->lines(1); yylloc->step();
-{doc_summary}         yylloc->lines(1); driver->docSummary(std::string(yytext)); yylloc->step();
-{doc_field}           yylloc->lines(1); driver->docField(std::string(yytext)); yylloc->step();
-{doc_text}            yylloc->lines(1); driver->docText(std::string(yytext)); yylloc->step();
+{comment}             yylloc->lines(countNewLines(yytext, yyleng)); yylloc->step();
+{doc_summary}         yylloc->lines(countNewLines(yytext, yyleng)); driver->docSummary(std::string(yytext)); yylloc->step();
+{doc_field}           yylloc->lines(countNewLines(yytext, yyleng)); driver->docField(std::string(yytext)); yylloc->step();
+{doc_text}            yylloc->lines(countNewLines(yytext, yyleng)); driver->docText(std::string(yytext)); yylloc->step();
 __library_type        return token::LIBRARY_TYPE;
 addr                  return token::ADDRESS;
 add                   return token::ADD;
