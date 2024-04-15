@@ -2,6 +2,8 @@
 
 #include <csignal>
 
+#include <hilti/ast/declarations/module.h>
+#include <hilti/ast/types/reference.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/plugin.h>
@@ -25,6 +27,18 @@ struct VisitorPrinter : visitor::PreOrder {
 
     void operator()(type::Sink* n) final {
         out << "sink";
+        result = true;
+    }
+
+    void operator()(hilti::type::StrongReference* n) final {
+        if ( auto m = n->parent<hilti::declaration::Module>(); m && m->uid().process_extension != ".spicy" )
+            return;
+
+        if ( n->isWildcard() )
+            out << "T&";
+        else
+            out << n->dereferencedType() << "&";
+
         result = true;
     }
 
