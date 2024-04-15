@@ -673,10 +673,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             if ( p->kind() == hilti::parameter::Kind::InOut ) {
                 auto t = p->type()->type();
                 if ( ! t->isA<type::Unit>() )
-                    error(
-                        "type of inout unit parameter must itself be a unit; for other parameter types, use references "
-                        "instead of inout",
-                        p);
+                    error(fmt("unsupported type for unit parameter '%s': type of inout unit parameters must "
+                              "itself be a unit; for other parameter types, use references instead of inout",
+                              p->id()),
+                          p);
             }
         }
 

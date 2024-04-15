@@ -4,6 +4,6 @@
 [error] <...>/context-fail.spicy:17:5-17:18: %context requires a type
 [error] <...>/context-fail.spicy:20:17-23:1: unit cannot have more than one %context
 [error] <...>/context-fail.spicy:26:16-26:29: context() used with a unit which did not declare %context
-[error] <...>/context-fail.spicy:33:3-33:18: %context requires a type
-[error] <...>/context-fail.spicy:35:14-35:27: context() used with a unit which did not declare %context
+[error] <...>/context-fail.spicy:32:3-32:18: %context requires a type
+[error] <...>/context-fail.spicy:34:14-34:27: context() used with a unit which did not declare %context
 [error] spicyc: aborting after errors

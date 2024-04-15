@@ -1,0 +1,8 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+function f(s: string&) {
+    *s = new "xxx";
+}

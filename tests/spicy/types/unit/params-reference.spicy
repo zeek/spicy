@@ -3,21 +3,29 @@
 
 module Test;
 
+type S = struct {
+    x: string;
+};
+
 type X = unit(s: string&) {
     n: uint8 {
         print "X", s;
         *s = "new";
-        # *s = new "new"; # should fail, but doesn't
-        # s = new b"new"; # fail
        }
 };
 
 public type Y = unit {
-    on %init {
-        # self.s = "new"; #fail
-    }
     x: X(self.s);
-    on %done { print "Y", self.s; }
+    z: Z(self.struct_);
+    on %done {
+        print "Y", self.s;
+        print "struct_", self.struct_;
+    }
 
     var s: string& = new "old";
+    var struct_: S& = new S;
+};
+
+type Z = unit(s: S&) {
+    on %init { s.x = "xxx"; }
 };

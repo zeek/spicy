@@ -1,3 +1,34 @@
+1.11.0-dev.112 | 2024-04-15 17:22:55 +0200
+
+  * Update NEWS with a list of incompatibilities compared to previous version. (Robin Sommer)
+
+  * Pretty print reference types in Spicy output. (Robin Sommer)
+
+    We now render `strong_ref<T>` as `T&`, as one would expect on
+    the Spicy side.
+
+  * Do not perform automatic deref on RHS of an assignment. (Robin Sommer)
+
+    This used to be accepted but had not the intended effect at runtime:
+
+    ```
+    function f(s: string&) {
+         *s = new "xxx";
+    }
+    ```
+
+  * Fix line numbers. (Robin Sommer)
+
+    Line numbers could be off in the presence of comments including '#'
+    characters.
+
+  * Fix auto-deref of LHS references. (Robin Sommer)
+
+    We were checking the constness of the reference, not of the wrapped
+    value.
+
+  * Improve error message. (Robin Sommer)
+
 1.11.0-dev.105 | 2024-04-10 13:24:03 +0200
 
   * Add missing file to git. (Robin Sommer, Corelight)
