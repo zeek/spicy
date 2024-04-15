@@ -11,15 +11,10 @@ type X = unit(s: string&) {
     n: uint8 {
         print "X", s;
         *s = "new";
-        # *s = new "new"; # should fail, but doesn't
-        # s = new b"new"; # fail
        }
 };
 
 public type Y = unit {
-    on %init {
-        # self.s = "new"; #fail
-    }
     x: X(self.s);
     z: Z(self.struct_);
     on %done {

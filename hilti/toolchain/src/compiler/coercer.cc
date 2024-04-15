@@ -985,7 +985,8 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
         }
     }
 
-    if ( (style & CoercionStyle::TryDeref) && ! (style & CoercionStyle::DisallowTypeChanges) ) {
+    if ( (style & CoercionStyle::TryDeref) &&
+         ! (style & (CoercionStyle::DisallowTypeChanges | CoercionStyle::Assignment)) ) {
         if ( src->type()->isReferenceType() ) {
             auto nsrc = src->type()->dereferencedType();
             if ( type::same(nsrc, dst) )
