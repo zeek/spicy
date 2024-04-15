@@ -836,9 +836,16 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
             case parameter::Kind::Unknown: logger().internalError("unknown operand kind"); break;
         }
 
-        if ( needs_mutable && exprs[i]->isConstant() ) {
-            HILTI_DEBUG(logging::debug::Coercer, util::fmt("  [param %d] need mutable expression -> failure", i));
-            return result::Error("parameter requires non-constant expression");
+        if ( needs_mutable ) {
+            auto t = exprs[i]->type();
+
+            if ( t->type()->isReferenceType() && (style & CoercionStyle::TryDeref) )
+                t = t->type()->dereferencedType();
+
+            if ( t->isConstant() ) {
+                HILTI_DEBUG(logging::debug::Coercer, util::fmt("  [param %d] need mutable expression -> failure", i));
+                return result::Error("parameter requires non-constant expression");
+            }
         }
 
         CoercedExpression result;
