@@ -9,6 +9,29 @@ Version 1.11 (in progress)
 
 .. rubric:: Changed Functionality
 
+- The Spicy compiler has become a bit more strict and is now rejecting
+  some ill-defined code constructs that previous versions ended up
+  letting through. Specifically, the following cases will need
+  updating in existing code:
+
+    - Identifiers from the (internal) `hilti::` namespace are no
+      longer accessible. Usually you can just scope them with
+      `spicy::` instead.
+
+    - Previous versions did not always enforce constness as it should
+      have. In particular, function parameters could end up being
+      mutable even when they weren't declared as `inout`. Now `inout`
+      is required for supporting any mutable operations on a
+      parameter, so make sure to add it where needed.
+
+    - When using unit parameters, the type of any `inout` parameters
+      now must be unit itself. To pass other types into a unit so that
+      they can be modified by the unit, use reference instead of
+      `inout`. For example, use `type Foo = unit(s: sink&)` instead of
+      `type Foo = unit(inout: sink)`. See
+      https://docs.zeek.org/projects/spicy/en/latest/programming/parsing.html#unit-parameters
+      for more.
+
 .. rubric:: Bug fixes
 
 .. rubric:: Documentation
