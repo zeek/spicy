@@ -1,3 +1,7 @@
+1.11.0-dev.114 | 2024-04-16 09:38:38 +0200
+
+  * Bump baselines. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.112 | 2024-04-15 17:22:55 +0200
 
   * Update NEWS with a list of incompatibilities compared to previous version. (Robin Sommer)
