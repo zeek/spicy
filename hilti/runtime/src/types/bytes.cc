@@ -191,8 +191,8 @@ uint64_t Bytes::toUInt(ByteOrder byte_order) const {
         case ByteOrder::Big: break;
     }
 
-    if ( size() > 8 )
-        throw RuntimeError("more than max of 8 bytes for conversion to integer");
+    if ( auto size_ = size(); size_ > 8 )
+        throw RuntimeError(fmt("more than max of 8 bytes for conversion to integer (have %" PRIu64 ")", size_));
 
     uint64_t i = 0;
 

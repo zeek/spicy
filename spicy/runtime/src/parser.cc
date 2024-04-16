@@ -97,7 +97,9 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
         if ( ! waitForInputOrEod(data, cur, filters) ) {
             SPICY_RT_DEBUG_VERBOSE(
                 hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
-            throw ParseError(std::string(error_msg), std::string(location));
+            auto msg =
+                hilti::rt::fmt("%s (%" PRIu64 " byte%s available)", error_msg, cur.size(), cur.size() != 1 ? "s" : "");
+            throw ParseError(msg, std::string(location));
         }
 }
 
@@ -146,7 +148,9 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
     if ( ! waitForInputOrEod(data, cur, filters) ) {
         SPICY_RT_DEBUG_VERBOSE(
             hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
-        throw ParseError(std::string(error_msg), std::string(location));
+        auto msg =
+            hilti::rt::fmt("%s (%" PRIu64 " byte%s available)", error_msg, cur.size(), cur.size() != 1 ? "s" : "");
+        throw ParseError(msg, std::string(location));
     }
 }
 

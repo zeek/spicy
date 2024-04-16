@@ -163,6 +163,26 @@ struct ProductionVisitor : public production::Visitor {
                               hilti::statement::comment::Separator::After);
     }
 
+    void _checkSizeAmount(hilti::Attribute* size, Expression* ncur, type::unit::item::Field* field = nullptr) {
+        // Make sure we parsed the entire &size amount.
+        auto missing =
+            builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(ncur, "offset"));
+        auto insufficient = builder()->addIf(missing);
+        pushBuilder(insufficient, [&]() {
+            if ( field && ! field->isAnonymous() )
+                // Clear the field in case the type parsing has started
+                // to fill it.
+                builder()->addExpression(builder()->unset(state().self, field->id()));
+
+            auto want = *size->valueAsExpression();
+            auto got = builder()->difference(builder()->memberCall(state().cur, "offset"),
+                                             builder()->grouping(
+                                                 builder()->difference(builder()->memberCall(ncur, "offset"), want)));
+            pb->parseError("&size amount not consumed: expected %" PRIu64 " bytes, but got %" PRIu64 " bytes",
+                           {want, got}, size->meta());
+        });
+    }
+
     void parseNonAtomicProduction(const Production& p, type::Unit* unit) {
         // We wrap the parsing of a non-atomic production into a new
         // function that's cached and reused. This ensures correct
@@ -812,8 +832,7 @@ struct ProductionVisitor : public production::Visitor {
             pushBuilder(exceeded, [&]() {
                 // We didn't finish parsing the data, which is an error.
                 if ( ! field->isAnonymous() )
-                    // Clear the field in case the type parsing has started
-                    // to fill it.
+                    // Clear the field in case the type parsing has started to fill it.
                     builder()->addExpression(builder()->unset(state().self, field->id()));
 
                 pb->parseError("parsing not done within &max-size bytes", a->meta());
@@ -824,21 +843,8 @@ struct ProductionVisitor : public production::Visitor {
             ncur_max_size = state().cur;
         }
 
-        else if ( auto a = field->attributes()->find("&size") ) {
-            // Make sure we parsed the entire &size amount.
-            auto missing =
-                builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(*ncur, "offset"));
-            auto insufficient = builder()->addIf(missing);
-            pushBuilder(insufficient, [&]() {
-                // We didn't parse all the data, which is an error.
-                if ( ! field->isAnonymous() )
-                    // Clear the field in case the type parsing has started
-                    // to fill it.
-                    builder()->addExpression(builder()->unset(state().self, field->id()));
-
-                pb->parseError("&size amount not consumed", a->meta());
-            });
-        }
+        else if ( auto a = field->attributes()->find("&size") )
+            _checkSizeAmount(a, *ncur, field);
 
         auto val = destination();
 
@@ -1523,16 +1529,13 @@ struct ProductionVisitor : public production::Visitor {
         }
         else {
             auto default_ = switch_.addDefault(p->location());
-            pushBuilder(default_, [&]() { pb->parseError("no matching case in switch statement", p->location()); });
+            pushBuilder(default_, [&]() {
+                pb->parseError("no matching case in switch statement for value '%s'", {p->expression()}, p->location());
+            });
         }
 
         if ( auto a = p->attributes()->find("&size") ) {
-            // Make sure we parsed the entire &size amount.
-            auto missing =
-                builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(*ncur, "offset"));
-            auto insufficient = builder()->addIf(missing);
-            pushBuilder(insufficient, [&]() { pb->parseError("&size amount not consumed", a->meta()); });
-
+            _checkSizeAmount(a, *ncur);
             popState();
             builder()->addAssign(state().cur, *ncur);
         }
@@ -1681,13 +1684,8 @@ struct ProductionVisitor : public production::Visitor {
         }
 
         else if ( auto a = p->unitType()->attributes()->find("&size") ) {
-            // Make sure we parsed the entire &size amount.
-            auto missing = builder()->lower(builder()->memberCall(state().cur, "offset"),
-                                            builder()->memberCall(*state().ncur, "offset"));
-            auto insufficient = builder()->addIf(missing);
-            pushBuilder(insufficient, [&]() { pb->parseError("&size amount not consumed", a->meta()); });
-
             auto ncur = state().ncur;
+            _checkSizeAmount(a, *ncur);
             popState();
             builder()->addAssign(state().cur, *ncur);
         }
