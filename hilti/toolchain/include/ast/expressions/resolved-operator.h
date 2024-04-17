@@ -40,7 +40,7 @@ public:
 
     std::string printSignature() const { return operator_::detail::printSignature(kind(), operands(), meta()); }
 
-    node::Properties properties() const final {
+    node::Properties properties() const override {
         auto p = node::Properties{{"kind", to_string(_operator->kind())}};
         return Expression::properties() + p;
     }

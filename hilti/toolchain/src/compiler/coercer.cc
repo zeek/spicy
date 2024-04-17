@@ -914,14 +914,22 @@ Expression* skipReferenceValue(Builder* builder, Expression* op) {
     if ( ! op->type()->type()->isReferenceType() )
         return op;
 
+    operator_::reference::DerefBase* deref = nullptr;
+
     if ( op->type()->type()->isA<type::ValueReference>() )
-        return *value_reference_deref->instantiate(builder, {op}, op->meta());
+        deref = static_cast<operator_::reference::DerefBase*>(
+            *value_reference_deref->instantiate(builder, {op}, op->meta()));
     else if ( op->type()->type()->isA<type::StrongReference>() )
-        return *strong_reference_deref->instantiate(builder, {op}, op->meta());
+        deref = static_cast<operator_::reference::DerefBase*>(
+            *strong_reference_deref->instantiate(builder, {op}, op->meta()));
     else if ( op->type()->type()->isA<type::WeakReference>() )
-        return *weak_reference_deref->instantiate(builder, {op}, op->meta());
+        deref = static_cast<operator_::reference::DerefBase*>(
+            *weak_reference_deref->instantiate(builder, {op}, op->meta()));
     else
         logger().internalError("unknown reference type");
+
+    deref->setIsAutomaticCoercion(true);
+    return deref;
 }
 
 static CoercedExpression _coerceExpression(Builder* builder, Expression* e, QualifiedType* src_, QualifiedType* dst_,
