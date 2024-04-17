@@ -92,6 +92,17 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         auto new_n = builder()->ctorStruct(n->fields(), n->meta());
         replaceNode(n, new_n);
     }
+
+    void operator()(hilti::operator_::strong_reference::Deref* n) final {
+        if ( n->isAutomaticCoercion() ) {
+            // Revert any automatic derefs of units (or structs created from
+            // units) inserted by automatic coercion. We'll re-resolve them
+            // during HILTI compilation where needed for their value_refs.
+            auto sref = n->op0()->type()->type()->as<hilti::type::StrongReference>();
+            if ( auto dtype = sref->dereferencedType()->type(); dtype->isA<type::Unit>() || dtype->isOnHeap() )
+                replaceNode(n, n->op0(), "reverting strong_ref deref coercion");
+        }
+    }
 };
 
 // Visitor that runs repeatedly over the AST of a module until no further
