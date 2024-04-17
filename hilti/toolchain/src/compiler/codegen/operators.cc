@@ -525,7 +525,15 @@ struct Visitor : hilti::visitor::PreOrder {
         auto t = n->op0()->type()->type();
 
         if ( auto tv = t->tryAs<type::Type_>() ) {
-            auto args = util::join(tupleArguments(n, n->op1()), ", ");
+            auto ctor = n->op1()->as<expression::Ctor>()->ctor();
+
+            if ( auto x = ctor->tryAs<ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            auto args = util::join(cg->compileCallArguments(ctor->as<ctor::Tuple>()->value(),
+                                                            tv->typeValue()->type()->parameters()),
+                                   ", ");
+
             result = fmt("::hilti::rt::reference::make_strong<%s>(%s)",
                          cg->compile(tv->typeValue(), codegen::TypeUsage::Ctor), args);
         }
