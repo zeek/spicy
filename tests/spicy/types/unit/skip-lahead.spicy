@@ -1,0 +1,11 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03.' | spicy-dump %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that look-ahead works with skipped literals
+
+module foo;
+
+public type X = unit {
+    xs: uint8[];
+    : skip b".";
+};
