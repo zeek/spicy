@@ -80,8 +80,21 @@ public:
      */
     auto isPublic() const { return _public; };
 
-    /** * Returns true if this unit type can act as a filter. */
+    /** Returns true if this unit type can act as a filter. */
     bool isFilter() const { return propertyItem("%filter") != nullptr; }
+
+    /**
+     * Returns true if this unit may have a filter attached. This is derived
+     * from actual use of the type inside the global AST and will be valid only
+     * after the Spicy resolver has finished.
+     */
+    auto mayHaveFilter() const { return _may_have_filter; }
+
+    /**
+     * Sets the flag indicating whether the unit may see a filter getting
+     * attached. Should be called only by the resolver.
+     */
+    void setMayHaveFilter(bool may_have_filter) { _may_have_filter = may_have_filter; }
 
     /**
      * Returns the grammar associated with the type. It must have been set
@@ -114,7 +127,7 @@ public:
     bool isResolved(hilti::node::CycleDetector* cd) const final;
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"public", _public}};
+        auto p = node::Properties{{"public", _public}, {"may_have_filter", _may_have_filter}};
         return hilti::UnqualifiedType::properties() + p;
     }
 
@@ -156,6 +169,7 @@ private:
     void _assignItemIndices();
 
     bool _public = false;
+    bool _may_have_filter = false;
     std::shared_ptr<spicy::detail::codegen::Grammar> _grammar;
 };
 
