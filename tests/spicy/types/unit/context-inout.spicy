@@ -11,6 +11,11 @@ type X = unit(inout ctx: Ctx) {
 
 public type Y = unit {
 	%context = Ctx;
+
+	on %init {
+		new X(self.context()); # make sure this compiles as well (regression test for #1719)
+	}
+
 	: X(self.context());
 
 	on %done() { print self.context(); }
