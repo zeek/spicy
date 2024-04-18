@@ -205,7 +205,7 @@ Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose]     failed to parse, will try to synchronize at 'd'
 [spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expecting 'B' (<...>/synchronize.spicy:39:8-39:11)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expecting 'B' (0 bytes available) (<...>/synchronize.spicy:39:8-39:11)
 [spicy-verbose] - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no

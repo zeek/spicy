@@ -1,3 +1,59 @@
+1.11.0-dev.125 | 2024-04-18 15:53:48 +0200
+
+  * GH-1501: Improve some error messages for runtime parse errors. (Robin Sommer, Corelight)
+
+  * GH-1586: Make skip productions behave like the production they are wrapping. (Robin Sommer, Corelight)
+
+  * GH-1719: Fix `new` passing a unit reference to an `inout` unit parameter. (Robin Sommer, Corelight)
+
+    One might debate whether this is something we should allow at all but
+    we do permit it elsewhere when passing unit parameters, and changing
+    that would probably break code, so for consistency this allows it for
+    `new` as well.
+
+    Internally, there was a more general inconsistency introduced by
+    automatic derefs of Spicy-level strong references. While we do need
+    that deref to happen for operator resolution, we now remove it after
+    generation of HILTI code so that HILTI-level resolution can then work
+    as expected on the value references introduced for units. I wouldn't
+    be surprised if the prior behavior was causing more trouble than just
+    #1719 and we just hadn't run into yet it.
+
+  * Mark automatic derefs inside the operator's AST node. (Robin Sommer, Corelight)
+
+    This allows to differentiate between explicit `deref` operations part
+    of the source code and implicit `deref` operations inserted by the
+    coercer. A subsequent commit will leverage this information, but I've
+    been meaning to do this anyways because it could be hard to track
+    where a particular `deref` was coming from.
+
+  * Unify code generation for `new`. (Robin Sommer, Corelight)
+
+    There's no functional change (afaict) but for consistency of
+    implementation and results, `new` should go through
+    `compileCallArguments()`.
+
+  * GH-1655: Reject joint usage of filters and look-ahead. (Robin Sommer, Corelight)
+
+    We cannot retrieve look-ahead information from units to which a filter
+    is connected, because parsing for outer and inner layers will be
+    operating on separate streams. While we could pass the lahead token
+    number upwards, we would also need the stream position for the end of
+    the lahead symbol, but we cannot tie an iterator on the filtered
+    stream back to a position on the original stream. So we now reject
+    this.
+
+    This shouldn't cause any actual backwards-incompatibility because this
+    wasn't working in the first place: it  would reliably abort with an
+    invalid stream iterator exception during parsing.
+
+  * Add test confirming that `&parse-{at,from}` don't interfere with outer look-ahead parsing. (Robin Sommer, Corelight)
+
+    This makes sure fields with these attributes are ignored for
+    look-ahead computation of the unit containing them. We actually have a
+    related test for `&parse-from` already, but can't hurt to have it
+    covered further here.
+
 1.11.0-dev.114 | 2024-04-16 09:38:38 +0200
 
   * Bump baselines. (Benjamin Bannier, Corelight)

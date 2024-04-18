@@ -4,4 +4,4 @@ done, [$xs=b"\x01\x00"]
 error, [$xs=(not set)]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: parsing not done within &max-size bytes (<...>/field-max-size.spicy:16:40-16:56)
 error, [$xs=b"\x01\x01\x01"]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: end-of-data reached before &until-including expression found (<...>/field-max-size.spicy:16:32-16:38)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: end-of-data reached before &until-including expression found (0 bytes available) (<...>/field-max-size.spicy:16:32-16:38)

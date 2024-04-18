@@ -2,5 +2,5 @@
 Test::X {
   x: 3
 }
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: expecting 1 bytes for unpacking value (<...>/void.spicy:14:8-14:12)
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: not enough bytes for skipping (<...>/void.spicy:13:5-13:19)
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: expecting 1 bytes for unpacking value (0 bytes available) (<...>/void.spicy:14:8-14:12)
+[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: not enough bytes for skipping (0 bytes available) (<...>/void.spicy:13:5-13:19)
