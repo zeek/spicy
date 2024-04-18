@@ -1,0 +1,15 @@
+# @TEST-EXEC: printf foofoofoobar | spicy-dump %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    headers: Y[];
+    : b"bar";
+};
+
+type Y = unit {
+    a: bytes &size=1 &parse-from=b"X";
+    b: bytes &size=1 &parse-at=self.input();
+    : b"foo";
+};
