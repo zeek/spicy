@@ -2658,6 +2658,12 @@ void ParserBuilder::saveParsePosition() {
 }
 
 void ParserBuilder::consumeLookAhead(Expression* dst) {
+    if ( state().unit->mayHaveFilter() )
+        hilti::logger().error(
+            fmt("look-ahead required when parsing unit '%s', to which a filter might get connected during runtime; "
+                "those two features cannot be combined",
+                state().unit->typeID()));
+
     builder()->addDebugMsg("spicy-verbose", "- consuming look-ahead token");
 
     if ( dst )

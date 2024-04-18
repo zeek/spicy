@@ -1,0 +1,25 @@
+# @TEST-EXEC-FAIL: spicyc -j -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Must not attach filters to a unit that needs to provide look-ahead symbols
+
+module foo;
+
+public type X = unit {
+    headers: Y[];
+};
+
+type Y = unit {
+    on %init {
+        self.connect_filter(new F);
+    }
+
+    : b"foo";
+};
+
+type F = unit {
+    %filter;
+    : bytes &eod {
+        self.forward($$);
+    }
+};

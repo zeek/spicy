@@ -338,6 +338,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(operator_::unit::ConnectFilter* n) final {
+        auto unit = n->op0()->type()->type()->as<type::Unit>();
+        unit->setMayHaveFilter(true);
+    }
+
     void operator()(operator_::unit::HasMember* n) final {
         auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
         auto id = n->op1()->tryAs<hilti::expression::Member>()->id();
