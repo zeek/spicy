@@ -22,7 +22,11 @@ public:
         : Production(symbol, l),
           _field(field),
           _ctor(std::move(ctor)),
-          _void(QualifiedType::create(ctx, hilti::type::Void::create(ctx), hilti::Constness::Const)) {}
+          _void(QualifiedType::create(ctx, hilti::type::Void::create(ctx), hilti::Constness::Const)) {
+        auto m = meta();
+        m.setField(field, true);
+        setMeta(m);
+    }
 
     const auto& field() const { return _field; }
     const auto& ctor() const { return _ctor; }

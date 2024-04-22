@@ -169,7 +169,7 @@ struct ProductionVisitor : public production::Visitor {
             builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(ncur, "offset"));
         auto insufficient = builder()->addIf(missing);
         pushBuilder(insufficient, [&]() {
-            if ( field && ! field->isAnonymous() )
+            if ( field && ! field->isAnonymous() && ! field->isSkip() )
                 // Clear the field in case the type parsing has started
                 // to fill it.
                 builder()->addExpression(builder()->unset(state().self, field->id()));
@@ -831,7 +831,7 @@ struct ProductionVisitor : public production::Visitor {
             auto exceeded = builder()->addIf(cond);
             pushBuilder(exceeded, [&]() {
                 // We didn't finish parsing the data, which is an error.
-                if ( ! field->isAnonymous() )
+                if ( ! field->isAnonymous() && ! field->isSkip() )
                     // Clear the field in case the type parsing has started to fill it.
                     builder()->addExpression(builder()->unset(state().self, field->id()));
 
@@ -1841,13 +1841,6 @@ struct ProductionVisitor : public production::Visitor {
 
         else
             hilti::logger().internalError("unexpected skip production");
-
-        if ( p->field()->emitHook() ) {
-            pb->beforeHook();
-            builder()->addMemberCall(state().self, ID(fmt("__on_%s", p->field()->id().local())), {},
-                                     p->field()->meta());
-            pb->afterHook();
-        }
 
         if ( p->field()->condition() )
             popBuilder();
