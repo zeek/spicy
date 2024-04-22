@@ -2,8 +2,6 @@
 
 #include <cstring>
 
-#include <hilti/rt/json.h>
-
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/cxx/elements.h>
@@ -13,7 +11,6 @@ using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::cxx::formatter;
 
-using nlohmann::json;
 using util::fmt;
 
 namespace flags {
@@ -821,56 +818,4 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Const
     f << eos();
 
     return f;
-}
-
-void cxx::to_json(json& j, const cxx::ID& id) { j = std::string(id); }
-
-void cxx::from_json(const json& j, cxx::ID& id) { id = cxx::ID(j.get<std::string>()); }
-
-void cxx::declaration::to_json(json& j, const cxx::declaration::Argument& a) {
-    j = json{{"id", a.id}, {"type", a.type}};
-}
-
-void cxx::declaration::from_json(const json& j, cxx::declaration::Argument& a) {
-    a.id = cxx::ID::fromNormalized(j.at("id").get<std::string>());
-    a.type = j.at("type").get<std::string>();
-}
-
-void cxx::declaration::to_json(json& j, const cxx::declaration::Constant& c) {
-    j = json{{"id", c.id}, {"type", c.type}, {"init", c.init ? *c.init : ""}, {"linkage", c.linkage}};
-}
-
-void cxx::declaration::from_json(const json& j, cxx::declaration::Constant& c) {
-    c.id = j.at("id").get<cxx::ID>();
-    c.type = j.at("type").get<std::string>();
-    c.init = j.at("init").get<std::string>();
-    c.linkage = j.at("linkage").get<std::string>();
-}
-
-void cxx::declaration::to_json(json& j, const cxx::declaration::Type& t) {
-    j = json{{"id", t.id},
-             {"type", t.type},
-             {"forward_decl", t.forward_decl},
-             {"forward_decl_prio", t.forward_decl_prio}};
-}
-
-void cxx::declaration::from_json(const json& j, cxx::declaration::Type& t) {
-    t.id = j.at("id").get<cxx::ID>();
-    t.type = j.at("type").get<std::string>();
-    t.forward_decl = j.at("forward_decl").get<bool>();
-    t.forward_decl_prio = j.at("forward_decl_prio").get<bool>();
-}
-
-void cxx::declaration::to_json(json& j, const cxx::declaration::Function& f) {
-    j = json{{"result", f.result}, {"id", f.id},           {"args", f.args},
-             {"const", f.const_},  {"linkage", f.linkage}, {"attribute", f.attribute}};
-}
-
-void cxx::declaration::from_json(const json& j, cxx::declaration::Function& f) {
-    f.result = j.at("result").get<std::string>();
-    f.id = j.at("id").get<cxx::ID>();
-    f.args = j.at("args").get<std::vector<Argument>>();
-    f.const_ = j.at("const").get<bool>();
-    f.linkage = j.at("linkage").get<std::string>();
-    f.attribute = j.at("attribute").get<std::string>();
 }

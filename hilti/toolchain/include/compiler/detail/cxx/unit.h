@@ -13,7 +13,6 @@
 #include <vector>
 
 #include <hilti/rt/filesystem.h>
-#include <hilti/rt/json-fwd.h>
 #include <hilti/rt/types/reference.h>
 
 #include <hilti/ast/ctor.h>
@@ -33,8 +32,6 @@ namespace hilti::detail::cxx {
 class Linker;
 
 namespace linker {
-
-using MetaData = hilti::rt::ValueReference<nlohmann::json>;
 
 /**
  * Function joined by the linker.
@@ -56,8 +53,13 @@ struct Join {
     }
 };
 
-extern void to_json(nlohmann::json& j, const Join& x);   // NOLINT
-extern void from_json(const nlohmann::json& j, Join& x); // NOLINT
+struct MetaData {
+    ID module;
+    ID namespace_;
+    hilti::rt::filesystem::path path;
+    std::set<Join> joins;
+    cxx::declaration::Constant globals_index;
+};
 
 } // namespace linker
 
@@ -103,8 +105,6 @@ public:
     cxx::ID cxxNamespace() const;
 
     std::shared_ptr<Context> context() const { return _context.lock(); }
-
-    static std::pair<bool, std::optional<linker::MetaData>> readLinkerMetaData(std::istream& input);
 
 protected:
     friend class Linker;

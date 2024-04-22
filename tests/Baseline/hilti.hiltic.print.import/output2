@@ -38,11 +38,6 @@ extern void __hlt::Bar::__init_module() {
 }
 
 extern void __hlt::Bar::__register_module() { ::hilti::rt::detail::registerModule({ "Bar", __hlt_hlto_scope, &__init_module, &__init_globals, &__destroy_globals, nullptr}); }
-
-/* __HILTI_LINKER_V1__
-{"module":"Bar","namespace":"__hlt::Bar","path":"<...>/bar.hlt","version":1}
-*/
-
 // Begin of Foo (from "foo.hlt")
 // Compiled by HILTI version X.X.X
 
@@ -84,11 +79,6 @@ extern void __hlt::Foo::__init_module() {
 }
 
 extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, &__init_globals, &__destroy_globals, nullptr}); }
-
-/* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"<...>/foo.hlt","version":1}
-*/
-
 // Begin of __linker__
 // Compiled by HILTI version X.X.X
 

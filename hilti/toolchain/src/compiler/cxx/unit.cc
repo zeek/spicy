@@ -3,8 +3,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include <hilti/rt/json.h>
-
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
@@ -14,7 +12,6 @@
 using namespace hilti::detail::cxx;
 using namespace hilti::detail::cxx::formatter;
 using hilti::util::fmt;
-using nlohmann::json;
 
 Unit::Unit(const std::shared_ptr<Context>& context) : _context(context) {}
 
@@ -318,15 +315,6 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
 
     for ( const auto& i : _function_implementations )
         f << separator() << i.second;
-
-    if ( auto meta = linkerMetaData() ) {
-        std::stringstream json;
-        json << **meta;
-        f << separator();
-        f << "/* __HILTI_LINKER_V1__" << eol();
-        f << json.str() << eol();
-        f << "*/" << eol() << separator();
-    }
 }
 
 hilti::Result<hilti::Nothing> Unit::finalize() {
@@ -426,72 +414,11 @@ hilti::Result<linker::MetaData> Unit::linkerMetaData() const {
     if ( _no_linker_meta_data )
         return result::Error("module does not have meta data");
 
-    auto joins = json::object();
+    linker::MetaData md;
+    md.module = _module_id;
+    md.path = util::normalizePath(_module_path);
+    md.namespace_ = cxxNamespace();
+    md.joins = _linker_joins;
 
-    for ( const auto& f : _linker_joins )
-        joins[f.id].push_back(f);
-
-    json j;
-    j["version"] = 1;
-    j["module"] = _module_id;
-    j["path"] = util::normalizePath(_module_path);
-    j["namespace"] = cxxNamespace();
-
-    if ( ! joins.empty() )
-        j["joins"] = joins;
-
-    return linker::MetaData(j);
-}
-
-std::pair<bool, std::optional<linker::MetaData>> Unit::readLinkerMetaData(std::istream& input) {
-    std::string line;
-
-    bool in_md = false;
-    std::string data;
-
-    while ( std::getline(input, line) ) {
-        if ( in_md ) {
-            if ( util::startsWith(util::trim(line), "*/") )
-                in_md = false;
-        }
-
-        if ( in_md )
-            data += line;
-
-        if ( ! in_md ) {
-            if ( util::trim(line) == "/* __HILTI_LINKER_V1__" )
-                in_md = true;
-        }
-    }
-
-    if ( input.bad() )
-        return std::make_pair(false, std::nullopt);
-
-    if ( data.empty() )
-        return std::make_pair(true, std::nullopt);
-
-    try {
-        auto md = nlohmann::json::parse(data);
-        return std::make_pair(true, md);
-    } catch ( nlohmann::json::parse_error& e ) {
-        return std::make_pair(false, std::nullopt);
-    }
-}
-
-void linker::to_json(nlohmann::json& j, const linker::Join& x) {
-    j = json{
-        {"id", x.id},
-        {"callee", x.callee},
-        {"aux_types", x.aux_types},
-        {"priority", x.priority},
-        {"declare_only", x.declare_only},
-    };
-}
-
-void linker::from_json(const nlohmann::json& j, linker::Join& x) {
-    x.id = j.at("id").get<ID>();
-    x.callee = j.at("callee").get<declaration::Function>();
-    x.aux_types = j.at("aux_types").get<std::list<declaration::Type>>();
-    x.priority = j.at("priority").get<int>();
-    x.declare_only = j.at("declare_only").get<bool>();
+    return md;
 }

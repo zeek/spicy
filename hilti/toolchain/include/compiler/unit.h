@@ -185,25 +185,6 @@ public:
     static Result<std::shared_ptr<Unit>> link(const std::shared_ptr<Context>& context,
                                               const std::vector<linker::MetaData>& mds);
 
-    /**
-     * Reads linker meta from a file. This expects the file to contain linker
-     * meta somewhere inside a appropriately marked block bracketed by
-     * C-style comments. When printing the generated C++ code for a compiled
-     * HILTI module, it will include that block. In other words, you can just
-     * save the C++ and reread the meta data with this method.
-     *
-     * @param input stream to read from
-     * @param path file associated with the stream, for logging and error reporting
-     *
-     * @return If the input had valid meta data, the 1st element is true and
-     * the second contains it. If the input was valid but had no meta data
-     * included, the 1st element is true while the 2nd remains unset. If
-     * there was an error reading the input, the 1st element is false and the
-     * 2nd undefined.
-     */
-    static std::pair<bool, std::optional<linker::MetaData>> readLinkerMetaData(
-        std::istream& input, const hilti::rt::filesystem::path& path = "<input stream>");
-
 private:
     // Private constructor initializing the unit's meta data. Use the public
     // `from*()` factory functions instead to instantiate a unit.

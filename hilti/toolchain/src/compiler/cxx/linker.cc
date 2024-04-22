@@ -1,7 +1,6 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/rt/autogen/version.h>
-#include <hilti/rt/json.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/util.h>
 
@@ -9,8 +8,6 @@
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/cxx/linker.h>
 #include <hilti/compiler/plugin.h>
-
-using nlohmann::json;
 
 using namespace hilti;
 using namespace hilti::detail;
@@ -22,22 +19,17 @@ inline const DebugStream Compiler("compiler");
 } // namespace hilti::logging::debug
 
 void cxx::Linker::add(const linker::MetaData& md) {
-    auto id = md->at("module").get<std::string>();
-    auto path = md->at("path").get<std::string>();
-    auto ns = md->at("namespace").get<std::string>();
-    _modules.emplace(id, path);
+    _modules.emplace(md.module, md.path);
 
     // Continues logging from CodeGen::linkUnits.
-    HILTI_DEBUG(logging::debug::Compiler, fmt("  - module %s (%s)", id, path));
+    HILTI_DEBUG(logging::debug::Compiler, fmt("  - module %s (%s)", md.module, md.path));
 
-    for ( const auto& j : md->value("joins", json::object_t()) ) {
-        for ( auto& s : j.second ) {
-            auto& joins = _joins[j.first];
-            joins.push_back(s.get<cxx::linker::Join>());
-        }
+    for ( const auto& j : md.joins ) {
+        auto& joins = _joins[j.id];
+        joins.push_back(j);
     }
 
-    if ( auto idx = md->value("globals-index", cxx::declaration::Constant()); ! idx.id.empty() )
+    if ( auto idx = md.globals_index; ! idx.id.empty() )
         _globals.insert(std::move(idx));
 }
 

@@ -8,7 +8,6 @@
 #include <iostream>
 #include <utility>
 
-#include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
 
 #include <hilti/ast/ast-context.h>
@@ -566,12 +565,15 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
             // which might become optimized away. We can detect generated code by
             // checking whether the input file has any linker metadata which we
             // always include when emitting C++.
-            std::fstream file(path);
-            auto [_, md] = Unit::readLinkerMetaData(file, path);
-            if ( md ) {
-                return result::Error(
-                    "Loading generated C++ files is not supported with transformations enabled, rerun with '-g'");
-            }
+            // TODO: Do this differently
+            /*
+             * std::fstream file(path);
+             * auto [_, md] = Unit::readLinkerMetaData(file, path);
+             * if ( md ) {
+             *     return result::Error(
+             *         "Loading generated C++ files is not supported with transformations enabled, rerun with '-g'");
+             * }
+             */
         }
 
         HILTI_DEBUG(logging::debug::Driver, fmt("adding external C++ file %s", path));
@@ -771,28 +773,12 @@ Result<Nothing> Driver::linkUnits() {
 
     _stage = Stage::LINKED;
 
-    for ( const auto& cxx : _external_cxxs ) {
-        std::ifstream in;
-
-        if ( auto x = openInput(in, cxx); ! x )
-            return x.error();
-
-        auto md = Unit::readLinkerMetaData(in, cxx);
-
-        if ( ! md.first )
-            return error(fmt("cannot read linker data from %s", cxx));
-
-        if ( md.second )
-            _mds.push_back(*md.second);
-    }
-
     if ( _mds.empty() && _external_cxxs.empty() )
         return Nothing();
 
     HILTI_DEBUG(logging::debug::Driver, "linking modules");
     for ( const auto& md : _mds ) {
-        auto id = md->at("module").template get<std::string>();
-        HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", id));
+        HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", md.module));
     }
 
     auto linker_unit = Unit::link(_ctx, _mds);

@@ -55,7 +55,3 @@ extern auto hlt::Foo::test(const std::string& x) -> ::hilti::rt::Resumable {
     return std::move(*r);
 }
 
-/* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"<...>/yield.hlt","version":1}
-*/
-

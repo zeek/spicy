@@ -169,9 +169,3 @@ Result<std::shared_ptr<Unit>> Unit::link(const std::shared_ptr<Context>& context
 
     return fromCXX(context, *cxx_unit, "<linker>");
 }
-
-std::pair<bool, std::optional<linker::MetaData>> Unit::readLinkerMetaData(std::istream& input,
-                                                                          const hilti::rt::filesystem::path& path) {
-    HILTI_DEBUG(logging::debug::Compiler, fmt("reading linker data from %s", path));
-    return detail::cxx::Unit::readLinkerMetaData(input);
-}

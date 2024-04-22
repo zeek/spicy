@@ -9,8 +9,6 @@
 #include <variant>
 #include <vector>
 
-#include <hilti/rt/json-fwd.h>
-
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
 #include <hilti/base/id-base.h>
@@ -103,9 +101,6 @@ public:
     static ID fromNormalized(std::string_view id) { return ID(id, Base::AlreadyNormalized()); }
 };
 
-extern void to_json(nlohmann::json& j, const cxx::ID& id);   // NOLINT
-extern void from_json(const nlohmann::json& j, cxx::ID& id); // NOLINT
-
 namespace declaration {
 
 /** A C++ `@include` specific ation. */
@@ -176,9 +171,6 @@ struct Constant {
     }
 };
 
-extern void to_json(nlohmann::json& j, const Constant& c);   // NOLINT
-extern void from_json(const nlohmann::json& j, Constant& c); // NOLINT
-
 /** Declaration of a C++ type. */
 struct Type {
     cxx::ID id;
@@ -204,9 +196,6 @@ struct Type {
     }
 };
 
-extern void to_json(nlohmann::json& j, const Type& t);   // NOLINT
-extern void from_json(const nlohmann::json& j, Type& t); // NOLINT
-
 /** Declaration of a C++ function argument. */
 struct Argument {
     cxx::ID id;
@@ -217,9 +206,6 @@ struct Argument {
 
     bool operator==(const Argument& other) const { return type == other.type && id == other.id; }
 };
-
-extern void to_json(nlohmann::json& j, const Argument& a);   // NOLINT
-extern void from_json(const nlohmann::json& j, Argument& a); // NOLINT
 
 } // namespace declaration
 
@@ -283,7 +269,7 @@ struct Function {
     bool const_ = false;
     Linkage linkage = "static";
     Attribute attribute = "";
-    std::optional<Block> inline_body; // TODO(robin): Not serialized to JSON yet.
+    std::optional<Block> inline_body;
 
     std::string prototype(bool qualify) const;
     std::string parameters() const;
@@ -293,9 +279,6 @@ struct Function {
                attribute == other.attribute && inline_body == other.inline_body;
     }
 };
-
-extern void to_json(nlohmann::json& j, const Function& f);   // NOLINT
-extern void from_json(const nlohmann::json& j, Function& f); // NOLINT
 
 } // namespace declaration
 
