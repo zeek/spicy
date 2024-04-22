@@ -2561,7 +2561,7 @@ void ParserBuilder::skip(Expression* size, const Meta& location) {
     auto loop = builder()->addWhile(builder()->greater(n, builder()->integer(0U)));
     pushBuilder(loop, [&]() {
         waitForInput(builder()->integer(1U), "not enough bytes for skipping", location);
-        auto consume = builder()->addTmp("consume", builder()->min(builder()->size(state().cur), size));
+        auto consume = builder()->addTmp("consume", builder()->min(builder()->size(state().cur), n));
         advanceInput(consume);
         builder()->addAssign(n, builder()->difference(n, consume));
         builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});
