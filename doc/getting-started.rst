@@ -43,7 +43,7 @@ To compile Spicy code into an actual executable on disk, use
     # ./a.out
     Hello, world!
 
-``spicy-build`` is a small shell script that wraps ``spicyc -c`` and
+``spicy-build`` is a small shell script that wraps ``spicyc -x`` and
 runs the resulting code through the system's C++ compiler to produce
 an executable.
 
@@ -78,9 +78,9 @@ parsing as the corresponding pieces are extracted.
 
 Here's an example of a Spicy script for parsing HTTP request lines:
 
-.. literalinclude:: examples/my-http.spicy
+.. literalinclude:: examples/my_http.spicy
    :lines: 4-
-   :caption: my-http.spicy
+   :caption: my_http.spicy
    :language: spicy
 
 In this example, you can see a number of things that are typical for
@@ -145,10 +145,10 @@ to parse. Internally, ``spicy-driver`` uses much of the same machinery
 as ``spicyc``, but provides additional code kicking off the actual
 parsing as well.
 
-With the above Spicy script in a file ``my-http.spicy``, we can use
+With the above Spicy script in a file ``my_http.spicy``, we can use
 ``spicy-driver`` on it like this::
 
-    # echo "GET /index.html HTTP/1.0" | spicy-driver my-http.spicy
+    # echo "GET /index.html HTTP/1.0" | spicy-driver my_http.spicy
     GET, /index.html, 1.0
 
 As you see, the ``print`` statement inside the ``%done`` hook wrote
@@ -157,8 +157,8 @@ separates its arguments with commas).  If we pass something into the
 driver that's malformed according to our grammar, the parser will
 complain::
 
-    # echo "GET XXX/1.0" | spicy-driver my-http.spicy
-    [fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (my-http.spicy:7)
+    # echo "GET XXX/1.0" | spicy-driver my_http.spicy
+    [fatal error] terminating with uncaught exception of type spicy::rt::ParseError: parse error: failed to match regular expression (my_http.spicy:7)
 
 Using ``spicy-driver`` in this way relies on Spicy's support for
 just-in-time compilation, just like ``spicyc -j``. In the background,
@@ -167,13 +167,13 @@ Just like in the earlier example, we can also either use ``spicyc`` to
 precompile the C++ code into an object file that ``spicy-driver`` can
 then load, or use ``spicy-build`` to give us an actual executable::
 
-    # spicyc -j -o my-http.hlto  my-http.spicy
-    # echo "GET /index.html HTTP/1.0" | spicy-driver my-http.hlto
+    # spicyc -j -o my_http.hlto my_http.spicy
+    # echo "GET /index.html HTTP/1.0" | spicy-driver my_http.hlto
     GET, /index.html, 1.0
 
 ::
 
-    # spicy-build -o a.out my-http.spicy
+    # spicy-build -o a.out my_http.spicy
     # echo "GET /index.html HTTP/1.0" | ./a.out
     GET, /index.html, 1.0
 
@@ -181,7 +181,7 @@ Spicy also comes with another tool :ref:`spicy-dump <spicy-dump>` that
 works similar to ``spicy-driver``, but prints out the parsed fields at
 the end, either in a custom ASCII representation or as JSON::
 
-    # echo "GET /index.html HTTP/1.0" | spicy-dump my-http.hlto
+    # echo "GET /index.html HTTP/1.0" | spicy-dump my_http.hlto
     MyHTTP::RequestLine {
         method: GET
         uri: /index.html
@@ -190,12 +190,12 @@ the end, either in a custom ASCII representation or as JSON::
         }
     }
 
-    # echo "GET /index.html HTTP/1.0" | spicy-dump -J my-http.hlto
+    # echo "GET /index.html HTTP/1.0" | spicy-dump -J my_http.hlto
     {"method":"GET","uri":"/index.html","version":{"number":"1.0"}}
 
 If you want to see the actual parsing code that Spicy generates, use
-``spicyc`` again: ``spicyc -c my-http.spicy`` will show the C++ code,
-and ``spicyc -p my-http.spicy`` will show the intermediary HILTI code.
+``spicyc`` again: ``spicyc -c my_http.spicy`` will show the C++ code,
+and ``spicyc -p my_http.spicy`` will show the intermediary HILTI code.
 
 .. note::
 
@@ -218,21 +218,21 @@ most basic use case is quite straight-forward: feeding data into a
 specific parser. Here's a small C++ program that parses input with our
 ``RequestLine`` parser:
 
-.. literalinclude:: examples/my-http.cc
-    :caption: my-http.cc
+.. literalinclude:: examples/my_http.cc
+    :caption: my_http.cc
     :language: c++
 
 .. code::
 
-    # spicy-build -S -o a.out my-http.cc my-http.spicy
+    # spicy-build -S -o a.out my_http.cc my_http.spicy
     # echo "GET /index.html HTTP/1.0" | ./a.out
     GET, /index.html, 1.0
     # echo 'Hello, World!' | ./a.out
-    parse error: failed to match regular expression (my-http.spicy:7)
+    parse error: failed to match regular expression (my_http.spicy:7)
 
 We are using ``-S`` with ``spicy-build`` because we're providing our
 own ``main`` function.
 
-The code in ``my-http.cc`` is the core of what ``spicy-driver`` does
+The code in ``my_http.cc`` is the core of what ``spicy-driver`` does
 if we ignore the dynamic JIT compilation. See :ref:`host_applications`
 for more.

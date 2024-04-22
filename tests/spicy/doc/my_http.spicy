@@ -22,5 +22,5 @@ public type RequestLine = unit {
 
     on %done {
         print self.method, self.uri, self.version.number;
-        }
+    }
 };

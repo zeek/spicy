@@ -1,7 +1,7 @@
 # @TEST-GROUP: no-jit
 # @TEST-EXEC: ${HILTIC} -g -c %INPUT >output
 # @TEST-EXEC: btest-diff output
-# @TEST-EXEC: ${HILTIC} -P %INPUT >prototypes
+# @TEST-EXEC: ${HILTIC} -P "" %INPUT >prototypes
 # @TEST-EXEC: btest-diff prototypes
 
 module Foo {

@@ -1,6 +1,6 @@
-// @TEST-EXEC: spicyc -j my-http.spicy -o my-http.hlto
-// @TEST-EXEC: $(spicy-config --cxx) -o my-http %INPUT $(spicy-config --cxxflags --ldflags --dynamic-loading --debug)
-// @TEST-EXEC: ./my-http my-http.hlto MyHTTP::RequestLine "$(cat data)" >output
+// @TEST-EXEC: spicyc -x my_http my_http.spicy
+// @TEST-EXEC: $(spicy-config --cxx) -o my_http my_http___linker__.cc my_http_MyHTTP.cc %INPUT $(spicy-config --cxxflags --ldflags)
+// @TEST-EXEC: ./my_http "$(cat data)" >output
 // @TEST-EXEC: btest-diff output
 //
 // Note: We reference this content by line numbers in the Sphinx docs, will need updating
@@ -29,14 +29,7 @@ void print(const hilti::rt::type_info::Value& v) {
 }
 
 int main(int argc, char** argv) {
-    // Usage now: "my-driver <hlto> <name-of-parser> <data>"
-    assert(argc == 4);
-
-    // Load pre-compiled parser. This must come before initializing the
-    // runtime libraries.
-    auto library = hilti::rt::Library(argv[1]);
-    auto rc = library.open();
-    assert(rc);
+    assert(argc == 2);
 
     // Initialize runtime libraries.
     hilti::rt::init();
@@ -49,11 +42,11 @@ int main(int argc, char** argv) {
     driver.listParsers(std::cout);
 
     // Retrieve meta object describing parser.
-    auto parser = driver.lookupParser(argv[2]);
+    auto parser = driver.lookupParser("MyHTTP::RequestLine");
     assert(parser);
 
     // Fill string stream with $1 as data to parse.
-    std::stringstream data(argv[3]);
+    std::stringstream data(argv[1]);
 
     // Feed data.
     auto unit = driver.processInput(**parser, data);
@@ -69,7 +62,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-// @TEST-START-FILE my-http.spicy
+// @TEST-START-FILE my_http.spicy
 module MyHTTP;
 
 const Token      = /[^ \t\r\n]+/;

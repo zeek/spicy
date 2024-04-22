@@ -22,16 +22,16 @@ We discuss both approaches in the following.
 
     Internally, Spicy is a layer on top of an intermediary framework
     called HILTI. It is the HILTI runtime library that implements most
-    of the functionality we'll look at in this section, so you'll see
+    of the functionality which we'll look at in this section, so you'll see
     quite a bit of HILTI-side functionality. Spicy comes with a small
     additional runtime library of its own that adds anythings that's
     specific to the parsers it generates.
 
 .. note::
 
-    The API for host applications is still in flux, and some parts
-    aren't the prettiest yet. Specifics of this may change in future
-    versions of HILTI/Spicy.
+    The API for host applications isn't considered stable at this time
+    and specifics may change in future versions of HILTI/Spicy without
+    any migration/deprecation process.
 
 .. _host_applications_specific:
 
@@ -42,47 +42,39 @@ We'll use our simple HTTP example from the :ref:`getting_started`
 section as a running example for a parser we want to leverage from a
 C++ application.
 
-.. literalinclude:: examples/my-http.spicy
+.. literalinclude:: examples/my_http.spicy
    :lines: 4-
-   :caption: my-http.spicy
+   :caption: my_http.spicy
    :language: spicy
 
 First, we'll use :ref:`spicyc` to generate a C++ parser from the Spicy
 source code::
 
-    # spicyc -c -g my-http.spicy -o my-http.cc
+    # spicyc -x my_http my_http.spicy
 
-Option ``-c`` (aka ``--output-c++``) tells ``spicyc`` that we want it
-to generate C++ code (rather than compiling everything down into
-executable code).
+The option ``-x`` (aka ``--output-c++-files``) tells ``spicyc`` that
+we want it to generate C++ code for external compilation, rather than
+directly turning the Spicy module into executable code. This generates
+two C++ files that have their names prefixed with ``my_http_``::
 
-Option ``-g`` (aka ``--disable-optimizations``) tells ``spicyc`` to not perform
-global optimizations. Optimizations are performed on all modules passed to a
-invocation of ``spicyc`` and can remove e.g., unused code. Since we generate
-output files with multiple invocations, optimizations could lead to incomplete
-code.
+    # ls my_http_*.cc
+    my_http___linker__.cc  my_http_MyHTTP.cc
 
-We also need ``spicyc`` to generate some additional
-"linker" code implementing internal plumbing necessary for
-cross-module functionality. That's what ``-l`` (aka
-``--output-linker``) does::
+We don't need to worry further what's in these files.
 
-    # spicyc -l -g my-http.cc -o my-http-linker.cc
+Next, ``spicyc`` can generate C++ prototypes for us that declare (1) a
+set of parsing functions for feeding input into our parser, and (2) a
+``struct`` type providing access to the parsed fields. That's done
+through option ``-P`` (aka ``--output-prototypes``)::
 
-We'll compile this linker code along with the ``my-http.cc``.
+    # spicyc -P my_http my_http.spicy -o my_http.h
 
-Next, ``spicyc`` can also generate C++ prototypes for us that declare
-(1) a set of parsing functions for feeding in data, and (2) a
-``struct`` type providing access to the parsed fields::
+That'll leave the prototypes in ``my_http.h``. The content of that
+generated header file tends to be a bit convoluted because it
+(necessarily) also contains a bunch of Spicy internals. But stripped
+down to the interesting parts, it looks like this for our example:
 
-    # spicyc -P -g my-http.spicy -o my-http.h
-
-The output of ``-P`` (aka ``--output-prototypes``) is a bit convoluted
-because it (necessarily) also contains a bunch of Spicy internals.
-Stripped down to the interesting parts, it looks like this for our
-example:
-
-.. literalinclude:: examples/my-http-excerpt.h
+.. literalinclude:: examples/my_http-excerpt.h
 
 .. todo:: The ``struct`` declarations should move into the public
    namespace.
@@ -112,10 +104,15 @@ signatures:
     the data requires use of HILTI's reflection API, which we will
     discuss in :ref:`host_applications_generic`.
 
+Spicy puts all these declarations into a namespace ``hlt_PREFIX``,
+where ``PREFIX`` is the argument we specified to ``-P``. (If you leave
+the ``PREFIX`` empty (``spicyc -P ''``), you get a namespace of just
+``hlt::*``.)
+
 Let's start by using ``parse1()``:
 
-.. literalinclude:: examples/my-http-host-parse1.cc
-   :caption: my-http-host.cc
+.. literalinclude:: examples/my_http-host-parse1.cc
+   :caption: my_http-host.cc
    :lines: 10-36
    :language: c++
 
@@ -128,42 +125,56 @@ We can now use the standard C++ compiler to build all this into an
 executable, leveraging ``spicy-config`` to add the necessary flags
 for finding includes and libraries::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
-    # ./my-http $'GET index.html HTTP/1.0\n'
+    # clang++ -o my_http my_http-host.cc my_http___linker__.cc my_http_MyHTTP.cc $(spicy-config --cxxflags --ldflags)
+    # ./my_http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
 
 The output comes from the execution of the ``print`` statement inside
 the Spicy grammar, demonstrating that the parsing proceeded as
 expected.
 
+.. note::
+
+    Above, when building the executable, we used ``clang++`` assuming
+    that that's the C++ compiler in use on the system. Generally, you
+    need to use the same compiler here as the one that Spicy itself
+    got build with, to ensure that libraries and C++ ABI match. To
+    ensure that you're using the the right compiler (e.g., if there
+    are multiple on the system, or if it's not in ``PATH``),
+    :ref:`spicy-config` can print out the full path to the expected
+    one through its ``--cxx`` option. You can even put that directly
+    into the build command line::
+
+        # $(spicy-config --cxx --cxxflags --ldflags) -o my_http my_http-host.cc my_http___linker__.cc my_http_MyHTTP.cc
+
 When using ``parse1()`` we don't get access to the parsed information.
 If we want that, we can use ``parse2()`` instead and provide it with a
 ``struct`` to fill in:
 
-.. literalinclude:: examples/my-http-host-parse2.cc
-   :caption: my-http-host.cc
+.. literalinclude:: examples/my_http-host-parse2.cc
+   :caption: my_http-host.cc
    :lines: 10-45
    :emphasize-lines: 19-28
    :language: c++
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
-    # ./my-http $'GET index.html HTTP/1.0\n'
+    # clang++ -o my_http my_http-host.cc my_http___linker__.cc my_http_MyHTTP.cc $(spicy-config --cxxflags --ldflags)
+    # ./my_http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
     method : GET
     uri    : /index.html
     version: 1.0
 
 Another approach to retrieving field values goes through Spicy hooks
-calling back into the host application. That's how the Zeek's Spicy support
+calling back into the host application. That's how Zeek's Spicy support
 operates. Let's say we want to execute a custom C++ function every
 time a ``RequestList`` has been parsed. By adding the following code
-to ``my-http.spicy``, we (1) declare that function on the Spicy-side,
+to ``my_http.spicy``, we (1) declare that function on the Spicy-side,
 and (2) implement a Spicy hook that calls it:
 
-.. literalinclude:: examples/my-http-host-callback.cc
-   :caption: my-http.spicy
+.. literalinclude:: examples/my_http-host-callback.cc
+   :caption: my_http.spicy
    :start-after: doc-start-callback-spicy
    :end-before: doc-end-callback-spicy
    :language: spicy
@@ -173,21 +184,19 @@ that this is a function implemented externally inside custom C++ code,
 accessible through the given name. Now we need to implement that
 function:
 
-.. literalinclude:: examples/my-http-host-callback.cc
-   :caption: my-http-callback.cc
+.. literalinclude:: examples/my_http-host-callback.cc
+   :caption: my_http-callback.cc
    :start-after: doc-start-callback-cc
    :end-before: doc-end-callback-cc
    :language: c++
 
-Finally, we compile it altogether:
+Finally, we compile it altogether like before, but now including our
+additional custom C++ file::
 
-::
-
-    # spicyc -c -g my-http.spicy -o my-http.cc
-    # spicyc -l -g my-http.cc -o my-http-linker.cc
-    # spicyc -P -g my-http.spicy -o my-http.h
-    # clang++ -o my-http my-http.cc my-http-linker.cc my-http-callback.cc my-http-host.cc $(spicy-config --cxxflags --ldflags)
-    # ./my-http $'GET index.html HTTP/1.0\n'
+    # spicyc -x my_http my_http.spicy
+    # spicyc -P my_http my_http.spicy -o my_http.h
+    # clang++ -o my_http my_http-callback.cc my_http-host.cc my_http___linker__.cc my_http_MyHTTP.cc $(spicy-config --cxxflags --ldflags)
+    # ./my_http $'GET index.html HTTP/1.0\n'
     In C++ land: GET, index.html, 1.0
     GET, index.html, 1.0
 
@@ -196,25 +205,6 @@ expects, based on the Spicy-side prototype. If you are unsure how
 Spicy arguments translate into C++ arguments, look at the C++
 prototype that's included for the callback function in the output of
 ``-P``.
-
-A couple more notes on the compilation process for integrating
-Spicy-generated code into custom host applications:
-
-    - Above we used ``spicyc -l`` to link our Spicy code from just a
-      single Spicy source file. If you have more than one source file,
-      you need to link them altogether in a single step. For example,
-      if we had ``A.spicy``, ``B.spicy`` and ``C.spicy``, we'd do::
-
-        # spicyc -c -g A.spicy -o A.cc
-        # spicyc -c -g B.spicy -o B.cc
-        # spicyc -c -g C.spicy -o C.cc
-        # spicyc -l -g A.cc B.cc C.cc -o linker.cc
-        # clang++ A.cc B.cc C.cc linker.cc -o a.out ...
-
-    - If your Spicy code is importing any library modules (e.g., the
-      standard ``filter`` module), you'll need to compile those as
-      well in the same fashion.
-
 
 .. _host_applications_generic:
 
@@ -235,18 +225,18 @@ Retrieving Available Parsers
 The first challenge for a generic host application is that it cannot
 know what parsers are even available. Spicy's runtime library provides
 an API to get a list of all parsers that are compiled into the current
-process. Continuing to use the ``my-http.spicy`` example, this code
+process. Continuing to use the ``my_http.spicy`` example, this code
 prints out our one available parser:
 
-.. literalinclude:: examples/my-http-host-driver.cc
-   :caption: my-http-host.cc
-   :lines:   9-12,31-44,59-64
+.. literalinclude:: examples/my_http-host-driver.cc
+   :caption: my_http-host.cc
+   :lines:   9-14,31-44,59-64
    :language: c++
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
-    # ./my-http
+    # clang++ -o my_http my_http-host.cc my_http___linker__.cc  my_http_MyHTTP.cc $(spicy-config --cxxflags --ldflags)
+    # ./my_http
     Available parsers:
 
         MyHTTP::RequestLine
@@ -254,14 +244,14 @@ prints out our one available parser:
 Using the name of the parser (``MyHTTP::RequestLine``) we can
 instantiate it from C++, and then feed it data:
 
-.. literalinclude:: examples/my-http-host-driver.cc
+.. literalinclude:: examples/my_http-host-driver.cc
    :lines:   44-53
    :language: c++
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
-    # ./my-http $'GET index.html HTTP/1.0\n'
+    # clang++ -o my_http my_http-host.cc my_http___linker__.cc  my_http_MyHTTP.cc $(spicy-config --cxxflags --ldflags)
+    # ./my_http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
 
 That's the output of the ``print`` statement once more.
@@ -273,7 +263,7 @@ the ``parse3()`` function that we have encountered in the previous
 section. To access the parsed fields, there's a visitor API to iterate
 generically over HILTI types like this unit:
 
-.. literalinclude:: examples/my-http-host-driver.cc
+.. literalinclude:: examples/my_http-host-driver.cc
    :lines: 15-30
    :language: c++
 
@@ -282,8 +272,8 @@ then gives us this output:
 
 ::
 
-    # clang++ -o my-http my-http-host.cc my-http.cc my-http-linker.cc $(spicy-config --cxxflags --ldflags)
-    # ./my-http $'GET index.html HTTP/1.0\n'
+    # clang++ -o my_http my_http-host.cc my_http___linker__.cc  my_http_MyHTTP.cc $(spicy-config --cxxflags --ldflags)
+    # ./my_http $'GET index.html HTTP/1.0\n'
     GET, /index.html, 1.0
     method: GET
     uri: /index.html
@@ -299,18 +289,18 @@ dynamically as well from pre-compiled ``HLTO`` files through the class
 ``hilti::rt::Library``. Here's the full example leveraging that,
 taking the file to load from the command line:
 
-.. literalinclude:: examples/my-http-host-driver-hlto.cc
-    :caption: my-driver
-    :lines: 31-70
+.. literalinclude:: examples/my_http-host-driver-hlto.cc
+    :caption: my-driver.cc
+    :lines: 9-70
     :emphasize-lines: 5-8
     :language: c++
 
 ::
 
-    # $(spicy-config --cxx) -o my-driver my-driver.cc $(spicy-config --cxxflags --ldflags --dynamic-loading)
-    # spicyc -j -o my-http.hlto my-http.spicy
-    # echo "GET /index.html HTTP/1.0\n\n<dummy>" > data
-    # ./my-driver my-http.hlto MyHTTP::RequestLine "$(cat data)"
+    # clang++ -o my-driver my-driver.cc $(spicy-config --cxxflags --ldflags --dynamic-loading)
+    # spicyc -j -o my_http.hlto my_http.spicy
+    # printf "GET /index.html HTTP/1.0\n\n<dummy>" > data
+    # ./my-driver my_http.hlto MyHTTP::RequestLine "$(cat data)"
     Available parsers:
 
         MyHTTP::RequestLine

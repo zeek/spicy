@@ -179,7 +179,7 @@ public function tuple<strong_ref<TestOptionals>, TypeInfo> makeTestOptionals() {
 using namespace hilti::rt;
 
 namespace __hlt::Test {
-// Prototypes extracted from the output of "hiltic -P type-info.hlt"
+// Prototypes extracted from the output of "hiltic -P '' type-info.hlt"
 struct TestTypes;
 struct TestOptionals;
 
