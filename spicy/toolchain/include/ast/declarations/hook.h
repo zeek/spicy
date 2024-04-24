@@ -49,7 +49,7 @@ public:
     auto unitFieldIndex() { return _unit_field_index; }
 
     hilti::Expression* priority() const {
-        if ( auto attr = attributes()->find("priority") )
+        if ( auto attr = attributes()->find("&priority") )
             return *attr->valueAsExpression();
         else
             return nullptr;
