@@ -14,7 +14,6 @@
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/parameter.h>
-#include <hilti/ast/expressions/deferred.h>
 #include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/list-comprehension.h>
 #include <hilti/ast/expressions/name.h>
@@ -1141,13 +1140,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( auto coerced = coerceCallArguments(n->arguments(), n->parameters()); coerced && *coerced ) {
             recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
             n->setArguments(context(), **coerced);
-        }
-    }
-
-    void operator()(expression::Deferred* n) final {
-        if ( ! n->type()->isResolved() && n->expression()->isResolved() ) {
-            recordChange(n, n->expression()->type());
-            n->setType(context(), n->expression()->type());
         }
     }
 

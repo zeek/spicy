@@ -6,7 +6,6 @@
 #include <hilti/ast/expressions/builtin-function.h>
 #include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/ctor.h>
-#include <hilti/ast/expressions/deferred.h>
 #include <hilti/ast/expressions/grouping.h>
 #include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/list-comprehension.h>
