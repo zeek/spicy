@@ -884,7 +884,7 @@ unit_hook_id: { driver->enableHookIDMode(); }
 
 unit_hook_attribute
               : FOREACH                          { $$ = builder->attribute("foreach", __loc__); }
-              | PRIORITY '=' expr                { $$ = builder->attribute("priority", std::move($3), __loc__); }
+              | PRIORITY '=' expr                { $$ = builder->attribute("&priority", std::move($3), __loc__); }
               | PROPERTY                         { if ( $1 != "%debug" ) error(@$, "unexpected hook property, only %debug permitted");
                                                    $$ = builder->attribute("%debug", __loc__);
                                                  }

@@ -1,3 +1,21 @@
+1.11.0-dev.137 | 2024-04-25 13:38:42 +0200
+
+  * Remove Spicy parser support for unsupported `&priority` attribute. (Benjamin Bannier, Corelight)
+
+  * Make spelling of hook `priority` consistent across Spicy and HILTI. (Benjamin Bannier, Corelight)
+
+    We were naming the priority attribute differently in Spicy (`priority`)
+    and HILTI (`&priority`). While e.g., a Spicy `Hook` could correct
+    extract its priority, this still could have lead to potential issues if
+    we were attempting to access the priority of a Spicy hook from HILTI as
+    we do not perform any adjustment of this attribute when lowering to
+    HILTI. This distinction also made it hard to generate intended code from
+    the outside using our API (e.g., from Zeek) since one needed to be aware
+    at which level the attribute was injected (Spicy or HILTI).
+
+    With this patch we internally translate a Spicy `priority` attribute to
+    `&attribute` syntax.
+
 1.11.0-dev.134 | 2024-04-25 13:36:59 +0200
 
   * Fix incremental skipping. (Benjamin Bannier, Corelight)
