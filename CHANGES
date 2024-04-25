@@ -1,3 +1,35 @@
+1.11.0-dev.131 | 2024-04-25 09:27:48 +0200
+
+  * Fix potential internal error in port string conversion. (Robin Sommer)
+
+  * GH-1284: GH-1693: Promote use of `-x` over `-c`, clean up `-P`. (Robin Sommer)
+
+    This includes these pieces:
+
+    - `-P` now requires a prefix argument that set's the C++ namespace, so
+      that generated prototypes match that of `-x`. Like with `-x`, the
+      prefix may be empty (`-P ""`) to get back to the old `hlt::`.
+
+    - For both `-P` and `-x` the prefix now must be a valid C++ identifier,
+      because we use it as such.
+
+    - `spicyc` usage message now refers to `-c` and `-l` as for debugging
+      use.
+
+    - Update documentation on host applications, switching to using `-x`
+      instead of `-{cl}`.
+
+    - Scanned for other use of `-c` and `-l` in the docs as well, the
+      remaining ones seem fine.
+
+  * Remove generated, in-code linker JSON meta data. (Robin Sommer)
+
+    This was originally to allow for compiling multiple Spicy modules
+    separately, with the meta data providing what's the necessary to add
+    any cross-module functionality. However, we've moved away from that
+    approach and now already require the compiler to always see all code,
+    so this is no longer needed/possible.
+
 1.11.0-dev.125 | 2024-04-18 15:53:48 +0200
 
   * GH-1501: Improve some error messages for runtime parse errors. (Robin Sommer, Corelight)

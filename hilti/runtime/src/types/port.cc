@@ -72,7 +72,7 @@ std::string hilti::rt::detail::adl::to_string(const Protocol& x, adl::tag /*unus
         case Protocol::ICMP: return "ICMP";
         case Protocol::TCP: return "TCP";
         case Protocol::UDP: return "UDP";
-        case Protocol::Undef: return "<unknown protocol>";
+        default: return "<unknown protocol>";
     }
 
     cannot_be_reached();
