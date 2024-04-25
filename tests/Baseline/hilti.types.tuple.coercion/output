@@ -29,7 +29,3 @@ static auto __hlt::Foo::f() -> std::tuple<::hilti::rt::integer::safe<uint64_t>, 
     return std::make_tuple(::hilti::rt::integer::safe<std::uint64_t>{123U}, std::string("abc"));
 }
 
-/* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"<...>/coercion.hlt","version":1}
-*/
-

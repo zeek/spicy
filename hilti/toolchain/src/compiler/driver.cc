@@ -8,7 +8,6 @@
 #include <iostream>
 #include <utility>
 
-#include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
 
 #include <hilti/ast/ast-context.h>
@@ -53,7 +52,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"output-hilti", no_argument, nullptr, 'p'},
                                               {"execute-code", no_argument, nullptr, 'j'},
                                               {"output-linker", no_argument, nullptr, 'l'},
-                                              {"output-prototypes", no_argument, nullptr, 'P'},
+                                              {"output-prototypes", required_argument, nullptr, 'P'},
                                               {"output-all-dependencies", no_argument, nullptr, 'e'},
                                               {"output-code-dependencies", no_argument, nullptr, 'E'},
                                               {"report-times", required_argument, nullptr, 'R'},
@@ -92,17 +91,20 @@ void Driver::usage() {
            "\n"
            "Options controlling code generation:\n"
            "\n"
-           "  -c | --output-c++                Print out all generated C++ code (including linker glue by default).\n"
+           "  -c | --output-c++                Print out C++ code generated for module (for debugging; use -x to "
+           "generate code for external compilation).\n"
            "  -d | --debug                     Include debug instrumentation into generated code.\n"
            "  -e | --output-all-dependencies   Output list of dependencies for all compiled modules.\n"
            "  -g | --disable-optimizations     Disable HILTI-side optimizations of the generated code.\n"
            "  -j | --jit-code                  Fully compile all code, and then execute it unless --output-to gives a "
            "file to store it\n"
-           "  -l | --output-linker             Print out only generated HILTI linker glue code.\n"
+           "  -l | --output-linker             Print out only generated HILTI linker glue code (for debugging; use -x "
+           "to generate code for external compilation).\n"
            "  -o | --output-to <path>          Path for saving output.\n"
            "  -p | --output-hilti              Just output parsed HILTI code again.\n"
            "  -v | --version                   Print version information.\n"
-           "  -x | --output-c++-files <prefix> Output generated C++ code into set of files.\n"
+           "  -x | --output-c++-files <prefix> Output generated all C++ code into set of files for external "
+           "compilation.\n"
            "  -A | --abort-on-exceptions       When executing compiled code, abort() instead of throwing HILTI "
            "exceptions.\n"
            "  -B | --show-backtraces           Include backtraces when reporting unhandled exceptions.\n"
@@ -112,7 +114,7 @@ void Driver::usage() {
            "  -E | --output-code-dependencies  Output list of dependencies for all compiled modules that require "
            "separate compilation of their own.\n"
            "  -L | --library-path <path>       Add path to list of directories to search when importing modules.\n"
-           "  -P | --output-prototypes         Output C++ header with prototypes for public functionality.\n"
+           "  -P | --output-prototypes <prefix> Output C++ header with prototypes for public functionality.\n"
            "  -R | --report-times              Report a break-down of compiler's execution time.\n"
            "  -S | --skip-dependencies         Do not automatically compile dependencies during JIT.\n"
            "  -T | --keep-tmps                 Do not delete any temporary files created.\n"
@@ -246,11 +248,25 @@ void Driver::dumpUnit(const Unit& unit) {
     }
 }
 
+Result<Nothing> Driver::_setCxxNamespacesFromPrefix(const char* prefix) {
+    auto s = hilti::rt::filesystem::path(prefix).stem().string();
+    if ( s.empty() )
+        return Nothing();
+
+    if ( ! isdigit(s[0]) && std::all_of(s.begin(), s.end(), [](auto c) { return std::isalnum(c) || c == '_'; }) ) {
+        _compiler_options.cxx_namespace_extern = hilti::util::fmt("hlt_%s", s);
+        _compiler_options.cxx_namespace_intern = hilti::util::fmt("__hlt_%s", s);
+        return Nothing();
+    }
+
+    return error("C++ prefix must be a valid identifier");
+}
+
 Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     int num_output_types = 0;
 
     opterr = 0; // don't print errors
-    std::string option_string = "ABlL:cCpPvjhvx:VdX:o:D:TUEeSRgZ" + hookAddCommandLineOptions();
+    std::string option_string = "ABlL:cCpP:vjhvx:VdX:o:D:TUEeSRgZ" + hookAddCommandLineOptions();
 
     while ( true ) {
         int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
@@ -275,10 +291,8 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 _driver_options.execute_code = false;
                 _driver_options.include_linker = true;
 
-                if ( auto s = hilti::rt::filesystem::path(optarg).stem().string(); ! s.empty() ) {
-                    _compiler_options.cxx_namespace_extern = hilti::util::fmt("hlt_%s", s);
-                    _compiler_options.cxx_namespace_intern = hilti::util::fmt("__hlt_%s", s);
-                }
+                if ( auto rc = _setCxxNamespacesFromPrefix(optarg); ! rc )
+                    return rc;
 
                 ++num_output_types;
                 break;
@@ -374,6 +388,11 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
             case 'P':
                 _driver_options.output_prototypes = true;
                 _driver_options.skip_dependencies = true;
+                _driver_options.output_cxx_prefix = optarg;
+
+                if ( auto rc = _setCxxNamespacesFromPrefix(optarg); ! rc )
+                    return rc;
+
                 ++num_output_types;
                 break;
 
@@ -566,12 +585,15 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
             // which might become optimized away. We can detect generated code by
             // checking whether the input file has any linker metadata which we
             // always include when emitting C++.
-            std::fstream file(path);
-            auto [_, md] = Unit::readLinkerMetaData(file, path);
-            if ( md ) {
-                return result::Error(
-                    "Loading generated C++ files is not supported with transformations enabled, rerun with '-g'");
-            }
+            // TODO: Do this differently
+            /*
+             * std::fstream file(path);
+             * auto [_, md] = Unit::readLinkerMetaData(file, path);
+             * if ( md ) {
+             *     return result::Error(
+             *         "Loading generated C++ files is not supported with transformations enabled, rerun with '-g'");
+             * }
+             */
         }
 
         HILTI_DEBUG(logging::debug::Driver, fmt("adding external C++ file %s", path));
@@ -771,28 +793,12 @@ Result<Nothing> Driver::linkUnits() {
 
     _stage = Stage::LINKED;
 
-    for ( const auto& cxx : _external_cxxs ) {
-        std::ifstream in;
-
-        if ( auto x = openInput(in, cxx); ! x )
-            return x.error();
-
-        auto md = Unit::readLinkerMetaData(in, cxx);
-
-        if ( ! md.first )
-            return error(fmt("cannot read linker data from %s", cxx));
-
-        if ( md.second )
-            _mds.push_back(*md.second);
-    }
-
     if ( _mds.empty() && _external_cxxs.empty() )
         return Nothing();
 
     HILTI_DEBUG(logging::debug::Driver, "linking modules");
     for ( const auto& md : _mds ) {
-        auto id = md->at("module").template get<std::string>();
-        HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", id));
+        HILTI_DEBUG(logging::debug::Driver, fmt("  - %s", md.module));
     }
 
     auto linker_unit = Unit::link(_ctx, _mds);

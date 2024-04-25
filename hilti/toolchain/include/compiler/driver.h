@@ -515,6 +515,9 @@ private:
     void _saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
                            const std::string& tag);
 
+    // Sets the C++ namespaces for generated code from -x/-P prefix options.
+    Result<Nothing> _setCxxNamespacesFromPrefix(const char* prefix);
+
     /**
      * Look up a symbol in the global namespace.
      *

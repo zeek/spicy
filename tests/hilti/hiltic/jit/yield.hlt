@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${HILTIC} -P -o Foo.h %INPUT
+# @TEST-EXEC: ${HILTIC} -P "" -o Foo.h %INPUT
 # @TEST-EXEC: ${HILTIC} -j -D compiler,jit %INPUT driver.cc >output
 # @TEST-EXEC: btest-diff output
 

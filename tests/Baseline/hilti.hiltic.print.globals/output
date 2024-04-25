@@ -34,11 +34,6 @@ extern void __hlt::Foo::__init_module() {
 }
 
 extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, &__init_globals, nullptr, &__globals_index}); }
-
-/* __HILTI_LINKER_V1__
-{"module":"Foo","namespace":"__hlt::Foo","path":"<...>/globals.hlt","version":1}
-*/
-
 // Begin of __linker__
 // Compiled by HILTI version X.X.X
 
