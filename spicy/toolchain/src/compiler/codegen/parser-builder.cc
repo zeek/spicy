@@ -169,7 +169,7 @@ struct ProductionVisitor : public production::Visitor {
             builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(ncur, "offset"));
         auto insufficient = builder()->addIf(missing);
         pushBuilder(insufficient, [&]() {
-            if ( field && ! field->isAnonymous() )
+            if ( field && ! field->isAnonymous() && ! field->isSkip() )
                 // Clear the field in case the type parsing has started
                 // to fill it.
                 builder()->addExpression(builder()->unset(state().self, field->id()));
@@ -831,7 +831,7 @@ struct ProductionVisitor : public production::Visitor {
             auto exceeded = builder()->addIf(cond);
             pushBuilder(exceeded, [&]() {
                 // We didn't finish parsing the data, which is an error.
-                if ( ! field->isAnonymous() )
+                if ( ! field->isAnonymous() && ! field->isSkip() )
                     // Clear the field in case the type parsing has started to fill it.
                     builder()->addExpression(builder()->unset(state().self, field->id()));
 
@@ -1842,13 +1842,6 @@ struct ProductionVisitor : public production::Visitor {
         else
             hilti::logger().internalError("unexpected skip production");
 
-        if ( p->field()->emitHook() ) {
-            pb->beforeHook();
-            builder()->addMemberCall(state().self, ID(fmt("__on_%s", p->field()->id().local())), {},
-                                     p->field()->meta());
-            pb->afterHook();
-        }
-
         if ( p->field()->condition() )
             popBuilder();
     }
@@ -2568,7 +2561,7 @@ void ParserBuilder::skip(Expression* size, const Meta& location) {
     auto loop = builder()->addWhile(builder()->greater(n, builder()->integer(0U)));
     pushBuilder(loop, [&]() {
         waitForInput(builder()->integer(1U), "not enough bytes for skipping", location);
-        auto consume = builder()->addTmp("consume", builder()->min(builder()->size(state().cur), size));
+        auto consume = builder()->addTmp("consume", builder()->min(builder()->size(state().cur), n));
         advanceInput(consume);
         builder()->addAssign(n, builder()->difference(n, consume));
         builder()->addDebugMsg("spicy-verbose", "- skipped %u bytes (%u left to skip)", {consume, n});

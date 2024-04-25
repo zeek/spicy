@@ -1,0 +1,21 @@
+# @TEST-DOC: Tests correct behavior of skip fields in sized units.
+#
+# @TEST-EXEC: ${SCRIPTS}/printf "\x01\x02\x03\x04\x05\x06" | spicy-driver -d %INPUT >>output
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+type X = unit {
+    a: bytes &size=2;
+    b: skip bytes &size=1;
+    c: bytes &size=1;
+    d: skip bytes &eod;
+
+    on %done {
+        print self;
+    }
+} &size=6;
+
+public type Y = unit {
+    xs: X;
+};

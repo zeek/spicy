@@ -130,7 +130,7 @@ struct Visitor : public visitor::PreOrder {
             if ( const auto& ctor = n->ctor() ) {
                 auto prod = productionForCtor(ctor, n->id());
                 auto m = prod->meta();
-                m.setField(pf->currentField(), true);
+                m.setField(pf->currentField(), false);
                 prod->setMeta(m);
                 skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n,
                                                           std::move(prod), n->meta().location());

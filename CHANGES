@@ -1,3 +1,21 @@
+1.11.0-dev.134 | 2024-04-25 13:36:59 +0200
+
+  * Fix incremental skipping. (Benjamin Bannier, Corelight)
+
+    We previously would incorrectly compute the amount of data to skip which
+    could have potentially lead to the parser consuming more data than
+    available. With this patch we correctly use the actually consumed amount
+    to compute what the trim from the input.
+
+  * GH-1724: Fix skipping in size-constrained units. (Benjamin Bannier, Corelight)
+
+    We previously could skip too much data if `skip` was used in a unit with
+    a global `&size`. This was due to the machinery moving the input forward
+    believing that `skip` units were that really field productions. While
+    this is true in a sense in this particular case it still lead to
+    incorrect behavior, in particular as far is input handling is concerned
+    `skip` productions largely behave like any other unit.
+
 1.11.0-dev.131 | 2024-04-25 09:27:48 +0200
 
   * Fix potential internal error in port string conversion. (Robin Sommer)
