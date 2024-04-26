@@ -103,8 +103,8 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( auto c = n->condition() )
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(c));
 
-        result = fmt("::hilti::rt::vector::make<%s, %s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator,
-                     itype, otype, input, id, otype, output, pred);
+        result = fmt("::hilti::rt::vector::make<%s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator, input, id,
+                     otype, output, pred);
     }
 
     void operator()(expression::Member* n) final {

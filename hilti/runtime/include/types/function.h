@@ -9,11 +9,6 @@
 namespace hilti::rt::detail::adl {
 
 template<typename R, typename... Args>
-inline std::string to_string(std::function<R(Args...)>, adl::tag /*unused*/) {
-    return "<function>";
-}
-
-template<typename R, typename... Args>
 inline std::string to_string(R (*)(Args...), adl::tag /*unused*/) {
     return "<function>";
 }
