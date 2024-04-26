@@ -66,6 +66,8 @@ Checks: '
   -readability-qualified-auto,
   -readability-simplify-boolean-expr,
   -readability-use-anyofallof,
+  -readability-identifier-length,
+  -readability-implicit-bool-conversion,
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'
