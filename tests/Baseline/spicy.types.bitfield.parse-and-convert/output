@@ -15,4 +15,7 @@ mini::Y {
   d: {
     d: foo
   }
+  e: {
+    d: True
+  }
 }

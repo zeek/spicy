@@ -1,6 +1,6 @@
 # @TEST-EXEC: spicyc -dj %INPUT -o mini.hlto >>output
-# @TEST-EXEC: printf '\377\377\377\377' | spicy-dump -p mini::X mini.hlto >>output
-# @TEST-EXEC: printf '\377\377\377\377' | spicy-dump -p mini::Y mini.hlto >>output
+# @TEST-EXEC: printf '\377\377\377\377\377' | spicy-dump -p mini::X mini.hlto >>output
+# @TEST-EXEC: printf '\377\377\377\377\377' | spicy-dump -p mini::Y mini.hlto >>output
 # @TEST-EXEC: btest-diff output
 
 module mini;
@@ -29,6 +29,10 @@ public type Y = unit {
 
     d: bitfield(8) {
         d: 0..7 &convert="foo";
+    };
+
+    e: bitfield(8) {
+        d: 0..7 &convert=($$ == 255); # regression test for #1664
     };
 };
 
