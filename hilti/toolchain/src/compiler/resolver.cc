@@ -1213,12 +1213,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     void operator()(expression::Name* n) final {
         if ( ! n->resolvedDeclarationIndex() ) {
             // If the expression has received a fully qualified ID, we look
-            // that up, otherwise the original ID.
+            // that up directly at the root if it's scoped, otherwise the
+            // original ID at the current location.
+            Node* scope_node = n;
             auto id = n->fullyQualifiedID();
-            if ( ! id )
+            if ( id && id.namespace_() )
+                scope_node = builder()->context()->root();
+            else
                 id = n->id();
 
-            auto resolved = scope::lookupID<Declaration>(id, n, "declaration");
+            auto resolved = scope::lookupID<Declaration>(id, scope_node, "declaration");
             if ( resolved ) {
                 auto index = context()->register_(resolved->first);
                 n->setResolvedDeclarationIndex(context(), index);
