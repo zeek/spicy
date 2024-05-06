@@ -1,3 +1,25 @@
+1.11.0-dev.142 | 2024-05-06 15:14:40 +0200
+
+  * GH-1664: Fix `&convert` typing issue with bit ranges. (Robin Sommer, Corelight)
+
+    Turns out #1664 was only indirectly related to the `&convert` itself;
+    the real issue was that we couldn't assign one bitfield struct to
+    another if their field types didn't match exactly, even in cases where
+    at the C++ level there was no meaningful difference. In this case we
+    ended up with a field that had a C++ type `rt::Bool` in one type and
+    `bool` in another, leading to errors when assigning the latter to the
+    former. We now allow to creating instances of the former from the
+    latter through standard C++ type conversions on a per field basis.
+
+  * Suppress new `clang-tidy` warnings. (Robin Sommer, Corelight)
+
+  * Fix a Spicy scoping issue across imports. (Robin Sommer)
+
+    We could get a bogus "unknown ID" error for default arguments of
+    functions defined in an imported module if that default argument was
+    itself referring to an identifier inside yet another imported module.
+    The test case shows the exact situation that was broken.
+
 1.11.0-dev.137 | 2024-04-25 13:38:42 +0200
 
   * Remove Spicy parser support for unsupported `&priority` attribute. (Benjamin Bannier, Corelight)

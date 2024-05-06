@@ -39,8 +39,7 @@ struct Visitor : hilti::visitor::PreOrder {
                 values.emplace_back("std::nullopt");
         }
 
-        result =
-            fmt("hilti::rt::Bitfield<%s>{{}, std::make_tuple(%s)}", util::join(types, ", "), util::join(values, ", "));
+        result = fmt("hilti::rt::Bitfield<%s>(std::make_tuple(%s))", util::join(types, ", "), util::join(values, ", "));
     }
     void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool(%s)", n->value() ? "true" : "false"); }
 
