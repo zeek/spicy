@@ -404,7 +404,9 @@ struct VisitorPass3 : public visitor::MutatingPostOrder {
             // subsequent HILTI pass, so we clear out the current resolution.
             // Because these IDs may now reside in a different context than
             // originally, we record their fully qualified name for subsequent
-            // resolutions.
+            // resolutions. If it's a scoped ID, that subsequent lookup will be
+            // relative to the AST root, so that we get around any visibility
+            // restrictions due to indirect imports.
             if ( ! n->parent()->isA<hilti::operator_::function::Call>() ) {
                 recordChange(n, "reverted to unresolved");
                 n->setFullyQualifiedID(d->fullyQualifiedID());

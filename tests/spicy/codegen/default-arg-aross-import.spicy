@@ -1,0 +1,20 @@
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Pull in a enum value defined in an indirect dsependency through a default argument.
+
+module Foo;
+
+import Bar;
+
+Bar::xxx();
+
+@TEST-START-FILE bar.spicy
+module Bar;
+
+import spicy;
+
+public function xxx(protocol: spicy::Protocol = spicy::Protocol::TCP) {
+    print protocol;
+}
+@TEST-END-FILE
