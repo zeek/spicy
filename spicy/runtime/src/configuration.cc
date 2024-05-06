@@ -15,5 +15,5 @@ void configuration::set(Configuration cfg) {
     if ( isInitialized() )
         hilti::rt::fatalError("attempt to change configuration after library has already been initialized");
 
-    globalState()->configuration = std::make_unique<spicy::rt::Configuration>(std::move(cfg));
+    globalState()->configuration = std::make_unique<spicy::rt::Configuration>(cfg);
 }
