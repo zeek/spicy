@@ -62,7 +62,7 @@ struct State {
  * a sink.
  */
 template<typename U>
-auto _connectUnit(UnitRef<U>& unit) {
+auto connectUnit(UnitRef<U>& unit) {
     auto parse2 = hilti::rt::any_cast<spicy::rt::Parse2Function<U>>(U::__parser.parse2);
 
     auto self = hilti::rt::ValueReference<U>::self(&*unit);
@@ -72,36 +72,6 @@ auto _connectUnit(UnitRef<U>& unit) {
     state->resumable = (*parse2)(self, state->data, {}, {}); // Kick-off parsing with empty data.
     state->parser = &U::__parser;
     return state;
-}
-
-/**
- * Helper function that produces a function that, when called, kicks of
- * parsing for a freshly instantiated unit going to be connected to a sink.
- * This function will be stored in the `parser` object for the unit.
- */
-template<typename U>
-::spicy::rt::detail::ParseSinkFunction parseFunction() {
-    return []() {
-        auto unit = UnitRef<U>(U());
-        return std::make_pair(std::move(unit), _connectUnit(unit));
-    };
-}
-
-/**
- * Returns a function for storing in a unit's `Parser` instance that enables
- * the runtime library to run a specific hook, given a generic unit pointer.
- *
- * @tparam Unit unit type that the hook belongs to
- * @tparam Member function pointer to hook
- * @tparam Args hook parameters
- * @return function of type `void (hilti::rt::StrongReferenceGeneric, <args>`
- */
-template<typename Unit, auto Hook, typename... Args>
-auto hookFunction() {
-    return [](const hilti::rt::StrongReferenceGeneric& u, Args&&... args) -> void {
-        auto unit = u.as<Unit>();
-        ((*unit).*Hook)(std::forward<Args>(args)...);
-    };
 }
 
 // Name used as template parameter for sink's filter state. */
@@ -140,7 +110,7 @@ public:
     template<typename T>
     void connect(spicy::rt::UnitRef<T> unit) {
         SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("connecting parser %s [%p] to sink %p", T::__parser.name, &*unit, this));
-        auto state = spicy::rt::sink::detail::_connectUnit(unit);
+        auto state = spicy::rt::sink::detail::connectUnit(unit);
         _units.emplace_back(std::move(unit));
         _states.emplace_back(std::move(state));
     }

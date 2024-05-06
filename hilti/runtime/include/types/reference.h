@@ -716,6 +716,23 @@ public:
         }
     }
 
+    /**
+     * Returns a value reference that is linked to the referred value. If the
+     * strong reference is null or expired, the returned reference will be
+     * null.
+     */
+    template<typename T>
+    ValueReference<T> derefAsValue() const {
+        if ( _ptr.empty() )
+            return {};
+
+        try {
+            return hilti::rt::any_cast<StrongReference<T>>(_ptr).derefAsValue();
+        } catch ( const hilti::rt::bad_any_cast& ) {
+            throw IllegalReference("invalid target type");
+        }
+    }
+
     /** Releases the bound reference. */
     void reset() { _ptr.clear(); }
 

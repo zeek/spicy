@@ -2,7 +2,6 @@
 
 #include <doctest/doctest.h>
 
-#include <functional>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -109,10 +108,17 @@ struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     static Parser __parser;
     sink::detail::State* __sink = nullptr;
     std::optional<hilti::rt::RecoverableFailure> __error;
-    std::function<void(uint64_t, uint64_t)> __on_0x25_gap = nullptr;
-    std::function<void(uint64_t)> __on_0x25_skipped = nullptr;
-    std::function<void(uint64_t, const Bytes&, const Bytes&)> __on_0x25_overlap = nullptr;
-    std::function<void(uint64_t, const Bytes&)> __on_0x25_undelivered = nullptr;
+
+    void (*__on_0x25_gap)(uint64_t, uint64_t) = nullptr;
+    void (*__on_0x25_skipped)(uint64_t) = nullptr;
+    void (*__on_0x25_overlap)(uint64_t, const Bytes&, const Bytes&) = nullptr;
+    void (*__on_0x25_undelivered)(uint64_t, const Bytes&) = nullptr;
+
+    void (*__hook_gap)(hilti::rt::StrongReferenceGeneric, uint64_t, uint64_t);
+    void (*__hook_overlap)(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&,
+                           const hilti::rt::Bytes&) = nullptr;
+    void (*__hook_skipped)(hilti::rt::StrongReferenceGeneric, uint64_t) = nullptr;
+    void (*__hook_undelivered)(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&) = nullptr;
 
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment, cert-oop54-cpp)
     UnitWithSinkSupport& operator=(const UnitWithSinkSupport&) {
@@ -377,14 +383,14 @@ TEST_CASE("waitForInputOrEod with min") {
             // yield, so that we can resume them later when
             // waitForInputOrEod() flushes all filters.
 
-            filters->push_back(filter::detail::OneFilter({}, {}, [&](hilti::rt::resumable::Handle* h) {
+            filters->push_back(filter::detail::OneFilter({}, {}, {}, [&](hilti::rt::resumable::Handle* h) {
                 if ( ++called1 == 1 )
                     h->yield();
                 ++called1;
                 return Nothing();
             }));
 
-            filters->push_back(filter::detail::OneFilter({}, {}, [&](hilti::rt::resumable::Handle* h) {
+            filters->push_back(filter::detail::OneFilter({}, {}, {}, [&](hilti::rt::resumable::Handle* h) {
                 if ( ++called2 == 1 )
                     h->yield();
                 ++called2;

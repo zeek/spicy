@@ -52,8 +52,7 @@ namespace detail {
  * Defines the type of a unit's parse function used when connected to a sink.
  * This is for internal use only.
  */
-using ParseSinkFunction =
-    std::function<std::pair<hilti::rt::StrongReferenceGeneric, spicy::rt::sink::detail::State*>()>;
+using ParseSinkFunction = std::pair<hilti::rt::StrongReferenceGeneric, spicy::rt::sink::detail::State*> (*)();
 } // namespace detail
 
 } // namespace spicy::rt
