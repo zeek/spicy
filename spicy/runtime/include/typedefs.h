@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <string>
 #include <utility>
 
 #include <hilti/rt/fiber.h>

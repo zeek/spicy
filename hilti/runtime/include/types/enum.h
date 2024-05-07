@@ -4,9 +4,7 @@
 
 #include <algorithm>
 #include <limits>
-#include <string>
 #include <type_traits>
-#include <variant>
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/logging.h>

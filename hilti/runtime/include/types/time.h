@@ -6,7 +6,6 @@
 
 #include <limits>
 #include <string>
-#include <variant>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/interval.h>

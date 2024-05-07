@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <iostream>
 #include <type_traits>
 
 #include <hilti/rt/configuration.h>

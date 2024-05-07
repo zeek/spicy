@@ -4,7 +4,6 @@
 
 #include <cassert>
 #include <memory>
-#include <optional>
 #include <string>
 
 #include <spicy/rt/global-state.h>

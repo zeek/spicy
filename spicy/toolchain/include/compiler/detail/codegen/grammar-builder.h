@@ -3,7 +3,6 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <string>
 
 #include <hilti/base/logger.h>
