@@ -3,7 +3,6 @@
 #pragma once
 
 #include <algorithm>
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -53,7 +52,7 @@ class Unifier;
 struct Plugin {
     /** Helper template to define the type of hook methods. */
     template<typename Result, typename... Args>
-    using Hook = std::optional<std::function<Result(Args...)>>;
+    using Hook = Result (*)(Args...);
 
     /** Name of the plugin. */
     std::string component;
@@ -101,7 +100,7 @@ struct Plugin {
      * @param arg3 file associated with the input stream
      * @return module AST if parsing succeeded
      */
-    Hook<Result<declaration::Module*>, hilti::Builder*, std::istream&, hilti::rt::filesystem::path> parse;
+    Hook<Result<declaration::Module*>, hilti::Builder*, std::istream&, const hilti::rt::filesystem::path&> parse;
 
     /**
      * Hook called to perform coercion of a `Ctor` into another of a given target type.

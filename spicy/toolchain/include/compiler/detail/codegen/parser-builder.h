@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -263,7 +262,8 @@ public:
     ScopeGuard makeScopeGuard() { return ScopeGuard(this); }
 
     /** Activates a statement builder for subsequent code. */
-    auto pushBuilder(std::shared_ptr<Builder> b, const std::function<void()>& func) {
+    template<typename Func>
+    auto pushBuilder(std::shared_ptr<Builder> b, const Func& func) {
         pushBuilder(b);
         func();
         popBuilder();
@@ -516,8 +516,16 @@ public:
      * @param features identifiers of the feature, will be combined with OR.
      * @param f callback building the feature-dependent code.
      */
-    void guardFeatureCode(const type::Unit* unit, const std::vector<std::string_view>& features,
-                          const std::function<void()>& f);
+    template<typename Func>
+    void guardFeatureCode(const type::Unit* unit, const std::vector<std::string_view>& features, const Func& f) {
+        if ( ! features.empty() )
+            pushBuilder(_featureCodeIf(unit, features));
+
+        f();
+
+        if ( ! features.empty() )
+            popBuilder();
+    }
 
     QualifiedType* lookAheadType() const;
     hilti::Expression* featureConstant(const type::Unit* unit, std::string_view feature);
@@ -529,6 +537,7 @@ private:
     Expression* _parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, bool is_try);
 
     Expression* _filters(const ParserState& state);
+    std::shared_ptr<Builder> _featureCodeIf(const type::Unit* unit, const std::vector<std::string_view>& features);
 
     std::vector<ParserState> _states;
     std::vector<std::shared_ptr<Builder>> _builders;

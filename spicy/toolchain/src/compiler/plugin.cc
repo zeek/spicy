@@ -24,7 +24,7 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
         .extension = ".spicy",
         .cxx_includes = {"spicy/rt/libspicy.h"},
 
-        .library_paths = [](const hilti::Context* /* ctx */) { return spicy::configuration().spicy_library_paths; },
+        .library_paths = [](hilti::Context* /* ctx */) { return spicy::configuration().spicy_library_paths; },
 
         .unify_type = type_unifier::detail::unifyType,
 

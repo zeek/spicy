@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <exception>
-#include <functional>
 
 #include <hilti/ast/types/tuple.h>
 

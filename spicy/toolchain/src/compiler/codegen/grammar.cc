@@ -135,29 +135,29 @@ void Grammar::_simplify() {
     }
 }
 
+void Grammar::_closureRecurse(production::Set* c, Production* p) {
+    if ( auto r = p->template tryAs<production::Deferred>() ) {
+        assert(r->resolved());
+        _closureRecurse(c, r->resolved());
+        return;
+    }
+
+    if ( p->symbol().empty() || c->find(p) != c->end() )
+        return;
+
+    c->insert(p);
+
+    if ( p->isTerminal() )
+        return;
+
+    for ( const auto& rhss : _rhss(p) )
+        for ( const auto& rhs : rhss )
+            _closureRecurse(c, rhs);
+};
+
 production::Set Grammar::_computeClosure(Production* p) {
-    std::function<void(production::Set&, Production*)> closure = [&](auto& c, const auto& p) -> void {
-        if ( auto r = p->template tryAs<production::Deferred>() ) {
-            assert(r->resolved());
-            closure(c, r->resolved());
-            return;
-        }
-
-        if ( p->symbol().empty() || c.find(p) != c.end() )
-            return;
-
-        c.insert(p);
-
-        if ( p->isTerminal() )
-            return;
-
-        for ( const auto& rhss : _rhss(p) )
-            for ( const auto& rhs : rhss )
-                closure(c, rhs);
-    };
-
     production::Set c;
-    closure(c, p->as<Production>());
+    _closureRecurse(&c, p->as<Production>());
     return c;
 }
 
