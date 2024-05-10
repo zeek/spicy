@@ -750,6 +750,8 @@ TEST_CASE("as") {
     CHECK_EQ(*StrongReferenceGeneric(StrongReference<int>(42)).as<int>(), 42);
     CHECK_THROWS_WITH_AS(StrongReferenceGeneric(StrongReference<int>(42)).as<double>(), "invalid target type",
                          const IllegalReference&);
+
+    CHECK_EQ(StrongReferenceGeneric().as<int>(), nullptr);
 }
 
 TEST_CASE("reset") {
@@ -758,6 +760,15 @@ TEST_CASE("reset") {
 
     ref.reset();
     CHECK_EQ(ref.as<int>(), nullptr);
+}
+
+TEST_CASE("derefAsValue") {
+    auto sgref = StrongReferenceGeneric(StrongReference<int>(42));
+    REQUIRE_EQ(*sgref.as<int>(), 42);
+
+    auto vref = sgref.derefAsValue<int>();
+    CHECK_EQ(*vref, 42);
+    CHECK_EQ(vref.get(), sgref.as<int>());
 }
 
 TEST_SUITE_END();

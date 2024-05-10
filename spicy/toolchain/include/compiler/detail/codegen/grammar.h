@@ -132,6 +132,7 @@ private:
     std::set<std::string> _getFirstOfRhs(const std::vector<Production*>& rhs) const;
     std::string _productionLocation(const Production* p) const;
     std::vector<std::vector<Production*>> _rhss(const Production* p);
+    void _closureRecurse(production::Set* c, Production* p);
 
     std::string _name;
     hilti::Location _location;

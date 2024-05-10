@@ -2,13 +2,8 @@
 
 #pragma once
 
-#include <algorithm>
-#include <functional>
-#include <memory>
 #include <string>
 #include <utility>
-#include <variant>
-#include <vector>
 
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>

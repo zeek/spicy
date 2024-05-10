@@ -3,9 +3,7 @@
 #pragma once
 
 #include <cassert>
-#include <functional>
 #include <memory>
-#include <optional>
 #include <string>
 
 #include <spicy/rt/global-state.h>
@@ -16,18 +14,22 @@ namespace spicy::rt {
 struct Configuration {
     Configuration() {}
 
+    using HookAcceptInput = void (*)();
+
     /**
      * Optional callback to execute when a Spicy parser calls
      * `spicy::accept_input()`.
      **/
-    std::optional<std::function<void()>> hook_accept_input;
+    HookAcceptInput hook_accept_input;
+
+    using HookDeclineInput = void (*)(const std::string&);
 
     /**
      * Optional callback to execute when a Spicy parser calls
      * `spicy::decline_input()`. This string argument is the reason provided by
      * the caller.
      */
-    std::optional<std::function<void(const std::string&)>> hook_decline_input;
+    HookDeclineInput hook_decline_input;
 };
 
 namespace configuration {

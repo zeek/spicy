@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <utility>
-
 #include <hilti/rt/logging.h>
 
 #include <spicy/rt/configuration.h>
@@ -15,5 +13,5 @@ void configuration::set(Configuration cfg) {
     if ( isInitialized() )
         hilti::rt::fatalError("attempt to change configuration after library has already been initialized");
 
-    globalState()->configuration = std::make_unique<spicy::rt::Configuration>(std::move(cfg));
+    globalState()->configuration = std::make_unique<spicy::rt::Configuration>(cfg);
 }

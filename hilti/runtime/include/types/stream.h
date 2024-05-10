@@ -5,16 +5,13 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cinttypes>
 #include <cstddef>
 #include <cstring>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include <hilti/rt/any.h>

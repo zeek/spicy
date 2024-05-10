@@ -64,21 +64,6 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(expression::Ctor* n) final { result = cg->compile(n->ctor(), lhs); }
 
-    void operator()(expression::Deferred* n) final {
-        auto type = cg->compile(n->type(), codegen::TypeUsage::Storage);
-        auto value = cg->compile(n->expression());
-
-        if ( n->catchException() )
-            // We can't pass the exception through here, so we just return a
-            // default constructed return value.
-            result =
-                fmt("::hilti::rt::DeferredExpression<%s>([=]() -> %s { try { return %s; } catch ( ... ) { return "
-                    "{}; } })",
-                    type, type, value);
-        else
-            result = fmt("::hilti::rt::DeferredExpression<%s>([=]() -> %s { return %s; })", type, type, value);
-    }
-
     void operator()(expression::Grouping* n) final { result = fmt("(%s)", cg->compile(n->expression(), lhs)); }
 
     void operator()(expression::Keyword* n) final {
@@ -118,8 +103,8 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( auto c = n->condition() )
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(c));
 
-        result = fmt("::hilti::rt::vector::make<%s, %s, %s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator,
-                     itype, otype, input, id, otype, output, pred);
+        result = fmt("::hilti::rt::vector::make<%s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator, input, id,
+                     otype, output, pred);
     }
 
     void operator()(expression::Member* n) final {

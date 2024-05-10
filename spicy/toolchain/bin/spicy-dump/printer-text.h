@@ -40,7 +40,8 @@ private:
     void outputIndent() { out() << std::string(static_cast<std::basic_string<char>::size_type>(_level) * 2, ' '); }
 
     // Increase indentation level while executing callback function.
-    void indent(const std::function<void()>& func) {
+    template<typename Func>
+    void indent(Func&& func) {
         ++_level;
         func();
         --_level;

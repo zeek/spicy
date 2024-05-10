@@ -127,8 +127,8 @@ TEST_CASE("sub") {
 }
 
 TEST_CASE("make") {
-    const auto fn = std::function<int(int)>([](auto&& x) { return x * 2; });
-    const auto pred = std::function<bool(int)>([](auto&& x) { return x % 2 == 0; });
+    const auto fn = [](int x) { return x * 2; };
+    const auto pred = [](int x) { return x % 2 == 0; };
 
     SUBCASE("w/o predicate") {
         CHECK_EQ(vector::make<std::allocator<int>>(std::vector<int>(), fn), Vector<int>());

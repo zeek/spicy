@@ -16,7 +16,6 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
@@ -546,17 +545,20 @@ inline bool operator!=(const Empty& /*unused*/, const Vector<T, Allocator>& v) {
     return ! v.empty();
 }
 
-template<typename Allocator, typename I, typename O, typename C>
-Vector<O, Allocator> make(const C& input, std::function<O(I)> func) {
+template<typename Allocator, typename C, typename Func>
+auto make(const C& input, Func&& func) {
+    using O = typename std::result_of_t<Func(typename C::value_type)>;
     Vector<O, Allocator> output;
+    output.reserve(input.size());
     for ( auto&& i : input )
         output.emplace_back(func(i));
 
     return output;
 }
 
-template<typename Allocator, typename I, typename O, typename C>
-Vector<O, Allocator> make(const C& input, std::function<O(I)> func, std::function<bool(I)> pred) {
+template<typename Allocator, typename C, typename Func, typename Pred>
+auto make(const C& input, Func&& func, Pred&& pred) {
+    using O = typename std::result_of_t<Func(typename C::value_type)>;
     Vector<O, Allocator> output;
     for ( auto&& i : input )
         if ( pred(i) )

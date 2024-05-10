@@ -3,9 +3,7 @@
 #pragma once
 
 #include <cassert>
-#include <iostream>
 #include <memory>
-#include <optional>
 #include <utility>
 #include <vector>
 

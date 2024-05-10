@@ -7,7 +7,6 @@
 #include <optional>
 #include <ostream>
 #include <string>
-#include <variant>
 
 #include <hilti/rt/extension-points.h>
 

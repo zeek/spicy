@@ -2,14 +2,12 @@
 
 #pragma once
 
-#include <iostream>
 #include <optional>
 #include <ostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/extension-points.h>

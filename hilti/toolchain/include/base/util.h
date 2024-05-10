@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
-#include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <list>
@@ -458,7 +457,7 @@ std::vector<std::pair<A, B>> zip2(const std::vector<A>& lhs, const std::vector<B
 }
 
 /** Returns the difference of two sets. This is a convenience wrapper around std::setDifference. */
-template<typename A, typename Compare = std::less<A>>
+template<typename A, typename Compare = std::less<A>> // NOLINT(build/include_what_you_use)
 std::set<A, Compare> setDifference(const std::set<A, Compare>& a, const std::set<A, Compare>& b) {
     std::set<A, Compare> r;
     std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(r, r.end()), Compare());
@@ -466,7 +465,7 @@ std::set<A, Compare> setDifference(const std::set<A, Compare>& a, const std::set
 }
 
 /** Returns the intersection of two sets. This is a convenience wrapper around std::set_intersection. */
-template<typename A, typename Compare = std::less<A>>
+template<typename A, typename Compare = std::less<A>> // NOLINT(build/include_what_you_use)
 std::set<A, Compare> setIntersection(std::set<A, Compare>& a, std::set<A, Compare>& b) {
     std::set<A, Compare> r;
     std::set_intersection(a.begin(), a.end(), b.begin(), b.end(), std::inserter(r, r.end()), Compare());
@@ -474,7 +473,7 @@ std::set<A, Compare> setIntersection(std::set<A, Compare>& a, std::set<A, Compar
 }
 
 /** Returns the union of two sets. This is a convenience wrapper around std::set_union. */
-template<typename A, typename Compare = std::less<A>>
+template<typename A, typename Compare = std::less<A>> // NOLINT(build/include_what_you_use)
 std::set<A, Compare> setUnion(const std::set<A, Compare>& a, const std::set<A, Compare>& b) {
     std::set<A, Compare> r;
     std::set_union(a.begin(), a.end(), b.begin(), b.end(), std::inserter(r, r.end()), Compare());

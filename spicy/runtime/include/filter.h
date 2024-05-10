@@ -22,17 +22,19 @@ template<typename T>
 struct is_filter<T, decltype((void)T::__forward, 0)> : std::true_type {};
 
 struct OneFilter {
-    using Parse1Function = std::function<hilti::rt::Resumable(hilti::rt::ValueReference<hilti::rt::Stream>&,
-                                                              const std::optional<hilti::rt::stream::View>&)>;
+    using Parse1Function = hilti::rt::Resumable (*)(const hilti::rt::StrongReferenceGeneric&,
+                                                    hilti::rt::ValueReference<hilti::rt::Stream>&,
+                                                    const std::optional<hilti::rt::stream::View>&);
 
     OneFilter() = default;
     OneFilter(OneFilter&&) = default;
     OneFilter(const OneFilter&) = delete;
-    OneFilter(Parse1Function _parse, hilti::rt::ValueReference<hilti::rt::Stream> _input,
-              hilti::rt::Resumable _resumable)
-        : parse(std::move(_parse)), input(std::move(_input)), resumable(std::move(_resumable)) {}
+    OneFilter(Parse1Function _parse, hilti::rt::StrongReferenceGeneric unit,
+              hilti::rt::ValueReference<hilti::rt::Stream> _input, hilti::rt::Resumable _resumable)
+        : parse(_parse), unit(std::move(unit)), input(std::move(_input)), resumable(std::move(_resumable)) {}
 
-    Parse1Function parse;
+    Parse1Function parse = nullptr;
+    hilti::rt::StrongReferenceGeneric unit;
     hilti::rt::ValueReference<hilti::rt::Stream> input;
     hilti::rt::Resumable resumable;
 };
@@ -145,16 +147,17 @@ void connect(S& state, UnitRef<F> filter_unit) {
     if ( ! state.__filters )
         state.__filters = hilti::rt::reference::make_strong<::spicy::rt::filter::detail::Filters>();
 
-    auto filter = detail::OneFilter{[filter_unit](hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                                                  const std::optional<hilti::rt::stream::View>& cur) mutable
-                                    -> hilti::rt::Resumable {
-                                        auto lhs_filter_unit = filter_unit.derefAsValue();
+    auto filter = detail::OneFilter{[](const hilti::rt::StrongReferenceGeneric& filter_unit,
+                                       hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                                       const std::optional<hilti::rt::stream::View>& cur) -> hilti::rt::Resumable {
+                                        auto lhs_filter_unit = filter_unit.derefAsValue<F>();
                                         auto parse2 = hilti::rt::any_cast<Parse2Function<F>>(F::__parser.parse2);
                                         SPICY_RT_DEBUG_VERBOSE(
                                             hilti::rt::fmt("  + parsing from stream %p, forwarding to stream %p",
                                                            data.get(), lhs_filter_unit->__forward.get()));
                                         return (*parse2)(lhs_filter_unit, data, cur, {});
                                     },
+                                    filter_unit,
                                     hilti::rt::Stream(),
                                     {}};
 
@@ -188,9 +191,9 @@ hilti::rt::StrongReference<hilti::rt::Stream> init(
             hilti::rt::fmt("- beginning to filter input for unit %s [%p]", S::__parser.name, &state));
 
         if ( ! previous )
-            f.resumable = f.parse(data, cur);
+            f.resumable = f.parse(f.unit, data, cur);
         else
-            f.resumable = f.parse(previous->input, previous->input->view());
+            f.resumable = f.parse(f.unit, previous->input, previous->input->view());
 
         previous = &f;
     }

@@ -383,8 +383,6 @@ public:
         return expressionUnresolvedOperator(operator_::Kind::SumAssign, {op1, op2}, m);
     }
 
-    auto deferred(Expression* e, const Meta& m = Meta()) { return expressionDeferred(e, m); }
-
     auto differenceAssign(Expression* op1, Expression* op2, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::DifferenceAssign, {op1, op2}, m);
     }

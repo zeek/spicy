@@ -90,7 +90,6 @@ public:
     virtual void operator()(hilti::expression::BuiltInFunction*) {}
     virtual void operator()(hilti::expression::Coerced*) {}
     virtual void operator()(hilti::expression::Ctor*) {}
-    virtual void operator()(hilti::expression::Deferred*) {}
     virtual void operator()(hilti::expression::Grouping*) {}
     virtual void operator()(hilti::expression::Keyword*) {}
     virtual void operator()(hilti::expression::ListComprehension*) {}

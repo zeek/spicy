@@ -279,22 +279,20 @@ struct Parser {
      * For internal use only. Set by `registerParser()` for units that's don't
      * receive arguments.
      */
-    std::optional<detail::ParseSinkFunction> __parse_sink;
+    detail::ParseSinkFunction __parse_sink = nullptr;
 
     /** For internal use only. Dispatcher for the corresponding unit hook. */
-    std::optional<std::function<void(hilti::rt::StrongReferenceGeneric, uint64_t, uint64_t)>> __hook_gap;
+    void (*__hook_gap)(const hilti::rt::StrongReferenceGeneric&, uint64_t, uint64_t) = nullptr;
 
     /** For internal use only. Dispatcher for the corresponding unit hook. */
-    std::optional<std::function<void(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&,
-                                     const hilti::rt::Bytes&)>>
-        __hook_overlap;
+    void (*__hook_overlap)(const hilti::rt::StrongReferenceGeneric&, uint64_t, const hilti::rt::Bytes&,
+                           const hilti::rt::Bytes&) = nullptr;
 
     /** For internal use only. Dispatcher for the corresponding unit hook. */
-    std::optional<std::function<void(hilti::rt::StrongReferenceGeneric, uint64_t)>> __hook_skipped;
+    void (*__hook_skipped)(const hilti::rt::StrongReferenceGeneric&, uint64_t) = nullptr;
 
     /** For internal use only. Dispatcher for the corresponding unit hook. */
-    std::optional<std::function<void(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&)>>
-        __hook_undelivered;
+    void (*__hook_undelivered)(const hilti::rt::StrongReferenceGeneric&, uint64_t, const hilti::rt::Bytes&) = nullptr;
 
 private:
     void _initProfiling();
@@ -384,21 +382,32 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
 
     if constexpr ( sink::detail::supports_sinks<unit_type>::value &&
                    ! std::is_base_of_v<hilti::rt::trait::hasParameters, unit_type> )
-        p.__parse_sink = sink::detail::parseFunction<unit_type>();
+        p.__parse_sink = []() {
+            auto unit = spicy::rt::UnitRef<unit_type>(unit_type());
+            return std::make_pair(hilti::rt::StrongReferenceGeneric(unit), spicy::rt::sink::detail::connectUnit(unit));
+        };
 
     if constexpr ( detail::has_on_gap<unit_type>::value )
-        p.__hook_gap = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_gap, uint64_t, uint64_t>();
+        p.__hook_gap = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq, uint64_t len) -> void {
+            (u.as<unit_type>()->__on_0x25_gap)(seq, len);
+        };
 
     if constexpr ( detail::has_on_skipped<unit_type>::value )
-        p.__hook_skipped = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_skipped, uint64_t>();
+        p.__hook_skipped = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq) -> void {
+            (u.as<unit_type>()->__on_0x25_skipped)(seq);
+        };
 
     if constexpr ( detail::has_on_overlap<unit_type>::value )
-        p.__hook_overlap = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_overlap, uint64_t,
-                                                      const hilti::rt::Bytes&, const hilti::rt::Bytes&>();
+        p.__hook_overlap = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq, const hilti::rt::Bytes& old,
+                              const hilti::rt::Bytes& new_) -> void {
+            (u.as<unit_type>()->__on_0x25_overlap)(seq, old, new_);
+        };
 
     if constexpr ( detail::has_on_undelivered<unit_type>::value )
-        p.__hook_undelivered = sink::detail::hookFunction<unit_type, &unit_type::__on_0x25_undelivered, uint64_t,
-                                                          const hilti::rt::Bytes&>();
+        p.__hook_undelivered = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq,
+                                  const hilti::rt::Bytes& bytes) -> void {
+            (u.as<unit_type>()->__on_0x25_undelivered)(seq, bytes);
+        };
 }
 
 /**

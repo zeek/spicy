@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <functional>
 #include <map>
 #include <optional>
 #include <string>
@@ -14,9 +13,6 @@ namespace hilti::util {
 template<typename Key, typename Value>
 class Cache {
 public:
-    using Callback1 = std::function<Value()>;
-    using Callback2 = std::function<Value(Value& v)>;
-
     Cache() = default;
 
     /** Returns true if the cache has an entry for a given key. */
@@ -38,7 +34,8 @@ public:
      * callback to compute a value. In the latter case the computed value
      * will be inserted into the cache before it's returned.
      */
-    const Value& getOrCreate(const Key& key, const Callback1& cb) {
+    template<typename Callback>
+    const Value& getOrCreate(const Key& key, Callback&& cb) {
         if ( auto i = _cache.find(key); i != _cache.end() )
             return i->second;
 
@@ -57,7 +54,8 @@ public:
      * it will probably just return *v* again to stay consistent.
      *
      */
-    const Value& getOrCreate(const Key& key, const Callback1& cb1, const Callback2& cb2) {
+    template<typename Callback1, typename Callback2>
+    const Value& getOrCreate(const Key& key, Callback1&& cb1, Callback2&& cb2) {
         if ( auto i = _cache.find(key); i != _cache.end() )
             return i->second;
 

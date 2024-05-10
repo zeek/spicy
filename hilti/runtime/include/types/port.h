@@ -5,7 +5,6 @@
 #include <arpa/inet.h>
 
 #include <string>
-#include <variant>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/address.h>

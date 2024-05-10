@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
     auto config = spicy::rt::configuration::get();
     config.hook_accept_input = hookAcceptInput;
     config.hook_decline_input = hookDeclineInput;
-    spicy::rt::configuration::set(std::move(config));
+    spicy::rt::configuration::set(config);
 
     SpicyDriver driver;
 

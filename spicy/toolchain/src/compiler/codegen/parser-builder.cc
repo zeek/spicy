@@ -85,7 +85,8 @@ struct ProductionVisitor : public production::Visitor {
 
     auto builder() { return pb->builder(); }
     auto pushBuilder() { return pb->pushBuilder(); }
-    auto pushBuilder(std::shared_ptr<Builder> b, const std::function<void()>& func) {
+    template<typename Func>
+    auto pushBuilder(std::shared_ptr<Builder> b, Func&& func) {
         return pb->pushBuilder(std::move(b), func);
     }
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb->pushBuilder(std::move(b)); }
@@ -2691,22 +2692,14 @@ void ParserBuilder::finishLoopBody(Expression* cookie, const Location& l) {
                 [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
 }
 
-void ParserBuilder::guardFeatureCode(const type::Unit* unit, const std::vector<std::string_view>& features,
-                                     const std::function<void()>& f) {
-    if ( features.empty() ) {
-        f();
-        return;
-    }
-
+std::shared_ptr<Builder> ParserBuilder::_featureCodeIf(const type::Unit* unit,
+                                                       const std::vector<std::string_view>& features) {
     auto flags = hilti::util::transform(features, [&](const auto& feature) { return featureConstant(unit, feature); });
 
     auto cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
                                 [this](const auto& a, const auto& b) { return builder()->expressionLogicalOr(a, b); });
 
-    auto if_ = builder()->addIf(cond);
-    pushBuilder(if_);
-    f();
-    popBuilder();
+    return builder()->addIf(cond);
 }
 
 QualifiedType* ParserBuilder::lookAheadType() const {

@@ -36,8 +36,9 @@ struct TypeParser {
     auto context() { return pb->context(); }
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb->pushBuilder(std::move(b)); }
     auto pushBuilder() { return pb->pushBuilder(); }
-    auto pushBuilder(std::shared_ptr<Builder> b, const std::function<void()>& func) {
-        return pb->pushBuilder(std::move(b), func);
+    template<typename Func>
+    auto pushBuilder(std::shared_ptr<Builder> b, Func&& func) {
+        return pb->pushBuilder(std::move(b), std::forward(func));
     }
     auto popBuilder() { return pb->popBuilder(); }
 
@@ -115,7 +116,8 @@ struct Visitor : public visitor::PreOrder {
     auto context() { return pb()->context(); }
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb()->pushBuilder(std::move(b)); }
     auto pushBuilder() { return pb()->pushBuilder(); }
-    auto pushBuilder(std::shared_ptr<Builder> b, const std::function<void()>& func) {
+    template<typename Function>
+    auto pushBuilder(std::shared_ptr<Builder> b, Function&& func) {
         return pb()->pushBuilder(std::move(b), func);
     }
     auto popBuilder() { return tp->popBuilder(); }

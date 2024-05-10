@@ -1410,14 +1410,22 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         v.transform(root);
     }
 
-    const std::map<std::string, std::function<std::unique_ptr<OptimizerVisitor>()>> creators =
+    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder)> creators =
         {{"constant_folding",
-          [&builder]() { return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer); }},
+          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer);
+          }},
          {"functions",
-          [&builder]() { return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer); }},
+          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer);
+          }},
          {"members",
-          [&builder]() { return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer); }},
-         {"types", [&builder]() { return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer); }}};
+          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer);
+          }},
+         {"types", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer);
+          }}};
 
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {
@@ -1435,7 +1443,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         vs.reserve(passes->size());
         for ( const auto& pass : *passes )
             if ( creators.count(pass) )
-                vs.push_back(creators.at(pass)());
+                vs.push_back(creators.at(pass)(builder));
 
         for ( auto& v : vs ) {
             HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("processing AST, round=%d", round));

@@ -5,7 +5,6 @@
 #include <fstream>
 #include <map>
 #include <memory>
-#include <optional>
 #include <string_view>
 
 #include <hilti/rt/filesystem.h>

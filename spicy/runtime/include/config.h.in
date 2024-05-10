@@ -2,7 +2,5 @@
 
 #pragma once
 
-#include <string>
-
 namespace spicy::rt::configuration {
 } // namespace spicy::rt::configuration
