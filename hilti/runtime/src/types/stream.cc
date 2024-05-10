@@ -16,7 +16,7 @@ namespace {
 const Byte* EmptyData = reinterpret_cast<const Byte*>("<empty>");
 } // namespace
 
-Chunk::~Chunk() {
+void Chunk::destroy() {
     if ( _allocated > 0 )
         delete[] _data;
 
@@ -26,6 +26,8 @@ Chunk::~Chunk() {
     // https://stackoverflow.com/questions/35535312/stack-overflow-with-unique-ptr-linked-list#answer-35535907.
     for ( auto current = std::move(_next); current; current = std::move(current->_next) )
         ; // Nothing.
+
+    _next = nullptr;
 }
 
 Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset), _size(d.size()), _allocated(_size) {
@@ -34,20 +36,20 @@ Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset), _size(d.siz
         return;
     }
 
-    auto data = new Byte[_size];
-    d.copyRaw(data);
-    _data = data;
+    auto data = std::make_unique<Byte[]>(_size);
+    d.copyRaw(data.get());
+    _data = data.release();
 }
 
-Chunk::Chunk(const Offset& offset, std::string s) : _offset(offset), _size(s.size()), _allocated(_size) {
+Chunk::Chunk(const Offset& offset, std::string_view s) : _offset(offset), _size(s.size()), _allocated(_size) {
     if ( _size == 0 ) {
         _data = EmptyData;
         return;
     }
 
-    auto data = new Byte[_size];
-    memcpy(data, s.data(), _size);
-    _data = data;
+    auto data = std::make_unique<Byte[]>(_size);
+    memcpy(data.get(), s.data(), _size);
+    _data = data.release();
 }
 
 Chunk::Chunk(const Offset& offset, const Byte* b, size_t size) : _offset(offset), _size(size), _allocated(_size) {
@@ -56,9 +58,9 @@ Chunk::Chunk(const Offset& offset, const Byte* b, size_t size) : _offset(offset)
         return;
     }
 
-    auto data = new Byte[_size];
-    memcpy(data, b, _size);
-    _data = data;
+    auto data = std::make_unique<Byte[]>(_size);
+    memcpy(data.get(), b, _size);
+    _data = data.release();
 }
 
 void Chain::append(const Byte* data, size_t size) {
@@ -67,7 +69,7 @@ void Chain::append(const Byte* data, size_t size) {
 
     if ( _cached && _cached->allocated() >= size ) {
         // Reuse cached chunk instead of allocating new one.
-        memcpy(_cached->data(), data, size);
+        memcpy(const_cast<Byte*>(_cached->data()), data, size); // cast is safe because it's allocated
         _cached->_size = size;
         append(std::move(_cached));
     }
@@ -95,7 +97,7 @@ void Chain::append(Bytes&& data) {
 
     if ( _cached && _cached->allocated() >= data.size() ) {
         // Reuse cached chunk instead of allocating new one.
-        memcpy(_cached->data(), data.data(), data.size());
+        memcpy(const_cast<Byte*>(_cached->data()), data.data(), data.size()); // cast is safe because it's allocated
         _cached->_size = data.size();
         append(std::move(_cached));
     }

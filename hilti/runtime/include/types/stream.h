@@ -86,7 +86,7 @@ struct Gap {
 class Chunk {
 public:
     Chunk(const Offset& o, const View& d);
-    Chunk(const Offset& o, std::string s);
+    Chunk(const Offset& o, std::string_view s);
 
     // Constructs a chunk that own its data by copying what's passed in.
     Chunk(const Offset& o, const Byte* b, size_t size);
@@ -115,7 +115,24 @@ public:
         other._data = nullptr;
     }
 
-    Chunk& operator=(const Chunk& other) = delete;
+    Chunk& operator=(const Chunk& other) {
+        if ( &other == this )
+            return *this;
+
+        destroy();
+
+        _offset = other._offset;
+        _size = other._size;
+        _data = other._data;
+        _allocated = 0;
+        _chain = other._chain;
+        _next = nullptr;
+
+        if ( other.isOwning() )
+            makeOwning();
+
+        return *this;
+    }
 
     Chunk& operator=(Chunk&& other) noexcept {
         if ( _allocated > 0 )
@@ -135,7 +152,7 @@ public:
         return *this;
     }
 
-    ~Chunk();
+    ~Chunk() { destroy(); }
 
     Offset offset() const { return _offset; }
     Offset endOffset() const { return _offset + size(); }
@@ -159,7 +176,7 @@ public:
         if ( isGap() )
             throw MissingData("data is missing");
 
-        return reinterpret_cast<const Byte*>(data() + _size);
+        return data() + _size;
     }
 
     Size size() const { return _size; }
@@ -188,10 +205,10 @@ public:
         if ( _size == 0 || _allocated > 0 || ! _data )
             return;
 
-        auto* data = new Byte[_size];
-        memcpy(data, _data, _size);
+        auto data = std::make_unique<Byte[]>(_size);
+        memcpy(data.get(), _data, _size);
         _allocated = _size;
-        _data = data;
+        _data = data.release();
     }
 
     void debugPrint(std::ostream& out) const;
@@ -200,11 +217,6 @@ protected:
     // All mutating functions are protected and are expected to be called
     // only from chain so that it can track any changes.
     friend class Chain;
-
-    Byte* data() {
-        assert(! isGap());
-        return const_cast<Byte*>(_data);
-    }
 
     // Update offset for current chunk and all others linked from it.
     void setOffset(Offset o) {
@@ -256,6 +268,11 @@ protected:
 
 private:
     Chunk() {}
+
+    // Deletes all allocated/owned data, safely. Members will be left in
+    // undefined state afterwards and need re-initialization if instance
+    // remains in use.
+    void destroy();
 
     Offset _offset = 0;            // global offset of 1st byte
     size_t _size = 0;              // size of payload or gap
@@ -1589,7 +1606,7 @@ public:
      * Creates an instance from an existing memory block. The data
      * will be copied if set, otherwise a gap will be recorded.
      */
-    Stream(const char* d, const Size& n) : Stream() { append(d, n); }
+    Stream(const char* d, Size n) : Stream() { append(d, n); }
 
     /**
      * Creates an instance from an existing memory block. The data will not be
@@ -1597,7 +1614,7 @@ public:
      * or `makeOwning()` gets called, whatever comes first. Passing a nullptr
      * for the data records a gap.
      */
-    Stream(const char* d, const Size& n, stream::NonOwning) : Stream() { append(d, n, stream::NonOwning()); }
+    Stream(const char* d, Size n, stream::NonOwning) : Stream() { append(d, n, stream::NonOwning()); }
 
     /**
      * Creates an instance from an existing stream view.
