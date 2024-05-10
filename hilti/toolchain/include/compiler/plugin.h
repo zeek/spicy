@@ -79,7 +79,7 @@ struct Plugin {
      * @param arg1 AST context that's in use
      * @return directories to search
      */
-    Hook<std::vector<hilti::rt::filesystem::path>, Context*> library_paths;
+    Hook<std::vector<hilti::rt::filesystem::path>, Context*> library_paths = nullptr;
 
     /**
      * Hook called to compute the unification string for a type. Plugins will
@@ -90,7 +90,7 @@ struct Plugin {
      * @param arg2 type to unify; plugin must call it's `setUnififcation()` if it handles the type
      * @return true if the plugin handled the type
      */
-    Hook<bool, type_unifier::Unifier*, UnqualifiedType*> unify_type;
+    Hook<bool, type_unifier::Unifier*, UnqualifiedType*> unify_type = nullptr;
 
     /**
      * Hook called to parse input file that this plugin handles.
@@ -100,7 +100,8 @@ struct Plugin {
      * @param arg3 file associated with the input stream
      * @return module AST if parsing succeeded
      */
-    Hook<Result<declaration::Module*>, hilti::Builder*, std::istream&, const hilti::rt::filesystem::path&> parse;
+    Hook<Result<declaration::Module*>, hilti::Builder*, std::istream&, const hilti::rt::filesystem::path&> parse =
+        nullptr;
 
     /**
      * Hook called to perform coercion of a `Ctor` into another of a given target type.
@@ -114,7 +115,7 @@ struct Plugin {
      * @param arg4 coercion style to use
      * @return new ctor if plugin performed coercion, or nullptr otherwise
      */
-    Hook<Ctor*, Builder*, Ctor*, QualifiedType*, bitmask<CoercionStyle>> coerce_ctor;
+    Hook<Ctor*, Builder*, Ctor*, QualifiedType*, bitmask<CoercionStyle>> coerce_ctor = nullptr;
 
     /**
      * Hook called to approved coercion of an expression into a different
@@ -131,7 +132,7 @@ struct Plugin {
      * @param arg4 coercion style to use
      * @return new type if plugin can handle this coercion
      */
-    Hook<QualifiedType*, Builder*, QualifiedType*, QualifiedType*, bitmask<CoercionStyle>> coerce_type;
+    Hook<QualifiedType*, Builder*, QualifiedType*, QualifiedType*, bitmask<CoercionStyle>> coerce_type = nullptr;
 
     /**
      * Hook called once before any other AST processing takes place.
@@ -139,7 +140,7 @@ struct Plugin {
      * @param arg1 builder to use
      * @param arg2 root node of AST; the hook may modify the AST
      */
-    Hook<void, Builder*, ASTRoot*> ast_init;
+    Hook<void, Builder*, ASTRoot*> ast_init = nullptr;
 
     /**
      * Hook called to build the scopes in a module's AST.
@@ -148,7 +149,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may modify the AST
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, Builder*, ASTRoot*> ast_build_scopes;
+    Hook<bool, Builder*, ASTRoot*> ast_build_scopes = nullptr;
 
     /**
      * Hook called to resolve unknown types and other entities.
@@ -157,7 +158,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may modify the AST
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, Builder*, Node*> ast_resolve;
+    Hook<bool, Builder*, Node*> ast_resolve = nullptr;
 
     /**
      * Hook called to validate correctness of an AST before resolving starts
@@ -167,7 +168,7 @@ struct Plugin {
      * @param arg1 builder to use
      * @param arg2 root node of AST; the hook may not modify the AST
      */
-    Hook<bool, Builder*, ASTRoot*> ast_validate_pre;
+    Hook<bool, Builder*, ASTRoot*> ast_validate_pre = nullptr;
 
     /**
      * Hook called to validate correctness of an AST once fully resolved. Any
@@ -176,7 +177,7 @@ struct Plugin {
      * @param arg1 builder to use
      * @param arg2 root node of AST; the hook may not modify the AST
      */
-    Hook<bool, Builder*, ASTRoot*> ast_validate_post;
+    Hook<bool, Builder*, ASTRoot*> ast_validate_post = nullptr;
 
     /**
      * Hook called to print an AST back as source code. The hook gets to choose
@@ -187,7 +188,7 @@ struct Plugin {
      * @param arg2 stream to print to
      * @return true if the hook printed the AST, false to fall back to default
      */
-    Hook<bool, Node*, printer::Stream&> ast_print;
+    Hook<bool, Node*, printer::Stream&> ast_print = nullptr;
 
     /**
      * Hook called to replace AST nodes of one language (plugin) with nodes
@@ -197,7 +198,7 @@ struct Plugin {
      * @param arg2 root node of AST; the hook may modify the AST
      * @return true if the hook modified the AST in a substantial way
      */
-    Hook<bool, Builder*, ASTRoot*> ast_transform;
+    Hook<bool, Builder*, ASTRoot*> ast_transform = nullptr;
 };
 
 class PluginRegistry;

@@ -35,7 +35,7 @@ public:
      * will be inserted into the cache before it's returned.
      */
     template<typename Callback>
-    const Value& getOrCreate(const Key& key, const Callback& cb) {
+    const Value& getOrCreate(const Key& key, Callback&& cb) {
         if ( auto i = _cache.find(key); i != _cache.end() )
             return i->second;
 
@@ -55,7 +55,7 @@ public:
      *
      */
     template<typename Callback1, typename Callback2>
-    const Value& getOrCreate(const Key& key, const Callback1& cb1, const Callback2& cb2) {
+    const Value& getOrCreate(const Key& key, Callback1&& cb1, Callback2&& cb2) {
         if ( auto i = _cache.find(key); i != _cache.end() )
             return i->second;
 

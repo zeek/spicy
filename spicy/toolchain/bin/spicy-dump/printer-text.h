@@ -41,7 +41,7 @@ private:
 
     // Increase indentation level while executing callback function.
     template<typename Func>
-    void indent(const Func& func) {
+    void indent(Func&& func) {
         ++_level;
         func();
         --_level;

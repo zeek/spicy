@@ -262,7 +262,7 @@ public:
 
     /** Activates a statement builder for subsequent code. */
     template<typename Func>
-    auto pushBuilder(std::shared_ptr<Builder> b, const Func& func) {
+    auto pushBuilder(std::shared_ptr<Builder> b, Func&& func) {
         pushBuilder(b);
         func();
         popBuilder();
@@ -516,7 +516,7 @@ public:
      * @param f callback building the feature-dependent code.
      */
     template<typename Func>
-    void guardFeatureCode(const type::Unit* unit, const std::vector<std::string_view>& features, const Func& f) {
+    void guardFeatureCode(const type::Unit* unit, const std::vector<std::string_view>& features, Func&& f) {
         if ( ! features.empty() )
             pushBuilder(_featureCodeIf(unit, features));
 

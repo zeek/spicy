@@ -546,7 +546,7 @@ inline bool operator!=(const Empty& /*unused*/, const Vector<T, Allocator>& v) {
 }
 
 template<typename Allocator, typename C, typename Func>
-auto make(const C& input, const Func& func) {
+auto make(const C& input, Func&& func) {
     using O = typename std::result_of_t<Func(typename C::value_type)>;
     Vector<O, Allocator> output;
     output.reserve(input.size());
@@ -557,7 +557,7 @@ auto make(const C& input, const Func& func) {
 }
 
 template<typename Allocator, typename C, typename Func, typename Pred>
-auto make(const C& input, const Func& func, const Pred& pred) {
+auto make(const C& input, Func&& func, Pred&& pred) {
     using O = typename std::result_of_t<Func(typename C::value_type)>;
     Vector<O, Allocator> output;
     for ( auto&& i : input )

@@ -86,7 +86,7 @@ struct ProductionVisitor : public production::Visitor {
     auto builder() { return pb->builder(); }
     auto pushBuilder() { return pb->pushBuilder(); }
     template<typename Func>
-    auto pushBuilder(std::shared_ptr<Builder> b, const Func& func) {
+    auto pushBuilder(std::shared_ptr<Builder> b, Func&& func) {
         return pb->pushBuilder(std::move(b), func);
     }
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb->pushBuilder(std::move(b)); }
