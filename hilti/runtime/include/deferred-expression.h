@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <functional>
 #include <string>
 #include <utility>
 
@@ -19,10 +18,10 @@ namespace hilti::rt {
  * The function should be stateless as it might be invoked an unspecified
  * number of times.
  */
-template<typename Result>
+template<typename Result, typename Expr>
 class DeferredExpression {
 public:
-    DeferredExpression(std::function<Result()> expr) : _expr(std::move(expr)) {}
+    DeferredExpression(Expr&& expr) : _expr(std::move(expr)) {}
     DeferredExpression() = delete;
     DeferredExpression(const DeferredExpression&) = default;
     DeferredExpression(DeferredExpression&&) noexcept = default;
@@ -35,25 +34,30 @@ public:
     Result operator()() const { return _expr(); }
 
 private:
-    std::function<Result()> _expr;
+    Expr _expr;
 };
 
+template<typename Result, typename Expr>
+auto make_deferred(Expr&& expr) {
+    return DeferredExpression<Result, Expr>(std::forward<Expr>(expr));
+}
+
 namespace detail::adl {
-template<typename Result>
-inline std::string to_string(const DeferredExpression<Result>& x, adl::tag /*unused*/) {
+template<typename Result, typename Expr>
+inline std::string to_string(const DeferredExpression<Result, Expr>& x, adl::tag /*unused*/) {
     return hilti::rt::to_string(x());
 }
 } // namespace detail::adl
 
 // This function is declared as an overload since we cannot partially specialize
-// `hilti::detail::to_string_for_print` for `DeferredExpression<T>`.
-template<typename Result>
-inline std::string to_string_for_print(const DeferredExpression<Result>& x) {
+// `hilti::detail::to_string_for_print` for `DeferredExpression<T, Expr>`.
+template<typename Result, typename Expr>
+inline std::string to_string_for_print(const DeferredExpression<Result, Expr>& x) {
     return hilti::rt::to_string_for_print(x());
 }
 
-template<typename Result>
-inline std::ostream& operator<<(std::ostream& out, const DeferredExpression<Result>& x) {
+template<typename Result, typename Expr>
+inline std::ostream& operator<<(std::ostream& out, const DeferredExpression<Result, Expr>& x) {
     return out << to_string_for_print(x);
 }
 

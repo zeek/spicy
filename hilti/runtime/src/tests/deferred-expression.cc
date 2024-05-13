@@ -13,21 +13,14 @@ TEST_SUITE_BEGIN("DeferredExpression");
 
 TEST_CASE("assign") {
     int i = 0;
-    auto expr = DeferredExpression<int32_t>([&]() { return ++i; });
+    auto expr = make_deferred<int32_t>([&]() { return ++i; });
     REQUIRE_EQ(i, 0);
 
     CHECK_EQ(expr(), 1);
     CHECK_EQ(i, 1);
 
     SUBCASE("rvalue") {
-        expr = DeferredExpression<int32_t>([]() { return 0; });
-        CHECK_EQ(expr(), 0);
-        CHECK_EQ(i, 1); // Not incrementing anymore.
-    }
-
-    SUBCASE("lvalue") {
-        const auto expr2 = DeferredExpression<int32_t>([]() { return 0; });
-        expr = expr2;
+        auto expr = make_deferred<int32_t>([]() { return 0; });
         CHECK_EQ(expr(), 0);
         CHECK_EQ(i, 1); // Not incrementing anymore.
     }
@@ -35,7 +28,7 @@ TEST_CASE("assign") {
 
 TEST_CASE("construct") {
     int i = 0;
-    auto expr = DeferredExpression<int>([&i]() { return ++i; });
+    auto expr = make_deferred<int>([&i]() { return ++i; });
 
     SUBCASE("default") {
         // Construction does not evaluate passed function.
@@ -67,7 +60,7 @@ TEST_CASE("construct") {
 
 TEST_CASE("evaluate") {
     int i = 0;
-    auto expr = DeferredExpression<int>([&i]() { return ++i; });
+    auto expr = make_deferred<int>([&i]() { return ++i; });
 
     CHECK_EQ(expr(), 1);
     CHECK_EQ(expr(), 2);
@@ -75,7 +68,7 @@ TEST_CASE("evaluate") {
 
 TEST_CASE("fmt") {
     int i = 0;
-    auto expr = DeferredExpression<int>([&i]() { return ++i; });
+    auto expr = make_deferred<int>([&i]() { return ++i; });
 
     // Stringification evaluates the expression.
     CHECK_EQ(fmt("%s", expr), "1");
@@ -84,7 +77,7 @@ TEST_CASE("fmt") {
 
 TEST_CASE("to_string") {
     int i = 0;
-    auto expr = DeferredExpression<int>([&i]() { return ++i; });
+    auto expr = make_deferred<int>([&i]() { return ++i; });
 
     // Stringification evaluates the expression.
     CHECK_EQ(to_string(expr), "1");
@@ -93,7 +86,7 @@ TEST_CASE("to_string") {
 
 TEST_CASE("to_string_for_print") {
     int i = 0;
-    auto expr = DeferredExpression<Bytes>([&i]() { return Bytes(fmt("\\x0%d", ++i)); });
+    auto expr = make_deferred<Bytes>([&i]() { return Bytes(fmt("\\x0%d", ++i)); });
 
     // Stringification evaluates the expression.
     CHECK_EQ(to_string_for_print(expr), R"#(\\x01)#");
