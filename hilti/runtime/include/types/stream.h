@@ -32,6 +32,7 @@ class Stream;
 namespace stream {
 class View;
 class SafeConstIterator;
+struct NonOwning {};
 
 namespace detail {
 class UnsafeConstIterator;
@@ -74,9 +75,10 @@ struct Gap {
  * stream's *Chain* links multiple of these chunks to represent all of its
  * content.
  *
- * A chunk internally employs small-buffer optimization for very small
- * amounts of data, storing it directly inside the instance instead of using
- * heap-allocated memory.
+ * A chunk may or may not own its data. The former is the default for
+ * construction and extension, unless specified explicitly otherwise. When
+ * non-owning, the creator needs to ensure the data stays around as long as the
+ * chunk does.
  *
  * All public methods of Chunk are constant. Modifications can be done only
  * be through the owning Chain (so that we can track changes there).
@@ -84,37 +86,85 @@ struct Gap {
 class Chunk {
 public:
     Chunk(const Offset& o, const View& d);
-    Chunk(const Offset& o, std::string s);
+    Chunk(const Offset& o, std::string_view s);
+
+    // Constructs a chunk that own its data by copying what's passed in.
+    Chunk(const Offset& o, const Byte* b, size_t size);
+
+    // Constructs a chunk that does not own its data.
+    Chunk(const Offset& o, const Byte* b, size_t size, NonOwning) : _offset(o), _size(size), _data(b) {}
 
     // Constructs a gap chunk which signifies empty data.
-    Chunk(const Offset& o, size_t len) : _offset(o), _gap_size(len) { assert(_gap_size > 0); }
+    Chunk(const Offset& o, size_t len) : _offset(o), _size(len) { assert(_size > 0); }
 
-    Chunk(const Chunk& other) : _offset(other._offset), _data(other._data) {}
+    Chunk(const Chunk& other)
+        : _offset(other._offset), _size(other._size), _data(other._data), _chain(other._chain), _next(nullptr) {
+        if ( other.isOwning() )
+            makeOwning();
+    }
+
     Chunk(Chunk&& other) noexcept
-        : _offset(other._offset), _data(std::move(other._data)), _next(std::move(other._next)) {}
+        : _offset(other._offset),
+          _size(other._size),
+          _allocated(other._allocated),
+          _data(other._data),
+          _chain(other._chain),
+          _next(std::move(other._next)) {
+        other._size = 0;
+        other._allocated = 0;
+        other._data = nullptr;
+    }
 
-    Chunk& operator=(const Chunk& other) = delete;
+    Chunk& operator=(const Chunk& other) {
+        if ( &other == this )
+            return *this;
 
-    Chunk& operator=(Chunk&& other) noexcept {
+        destroy();
+
         _offset = other._offset;
-        _data = std::move(other._data);
-        _next = std::move(other._next);
+        _size = other._size;
+        _data = other._data;
+        _allocated = 0;
         _chain = other._chain;
+        _next = nullptr;
+
+        if ( other.isOwning() )
+            makeOwning();
+
         return *this;
     }
 
-    ~Chunk();
+    Chunk& operator=(Chunk&& other) noexcept {
+        if ( _allocated > 0 )
+            delete[] _data;
+
+        _offset = other._offset;
+        _size = other._size;
+        _allocated = other._allocated;
+        _data = other._data;
+        _chain = other._chain;
+        _next = std::move(other._next);
+
+        other._size = 0;
+        other._allocated = 0;
+        other._data = nullptr;
+
+        return *this;
+    }
+
+    ~Chunk() { destroy(); }
 
     Offset offset() const { return _offset; }
     Offset endOffset() const { return _offset + size(); }
-    bool isGap() const { return _gap_size > 0; };
+    bool isGap() const { return _data == nullptr; };
+    bool isOwning() const { return _allocated > 0; }
     bool inRange(const Offset& offset) const { return offset >= _offset && offset < endOffset(); }
 
     const Byte* data() const {
         if ( isGap() )
             throw MissingData("data is missing");
 
-        return reinterpret_cast<const Byte*>(_data.data());
+        return _data;
     }
 
     const Byte* data(const Offset& offset) const {
@@ -126,15 +176,11 @@ public:
         if ( isGap() )
             throw MissingData("data is missing");
 
-        return reinterpret_cast<const Byte*>(data() + _data.size());
+        return data() + _size;
     }
 
-    Size size() const {
-        if ( isGap() )
-            return _gap_size;
-
-        return _data.size();
-    }
+    Size size() const { return _size; }
+    Size allocated() const { return _allocated; }
 
     bool isLast() const { return ! _next; }
     const Chunk* next() const { return _next.get(); }
@@ -151,6 +197,18 @@ public:
         while ( i && i->_next )
             i = i->_next.get();
         return i;
+    }
+
+    // Creates a new copy of the data internally if the chunk is currently not
+    // owning it. On return, is guaranteed to now own the data.
+    void makeOwning() {
+        if ( _size == 0 || _allocated > 0 || ! _data )
+            return;
+
+        auto data = std::make_unique<Byte[]>(_size);
+        memcpy(data.get(), _data, _size);
+        _allocated = _size;
+        _data = data.release();
     }
 
     void debugPrint(std::ostream& out) const;
@@ -181,11 +239,13 @@ protected:
 
     Chunk* next() { return _next.get(); }
 
-    // Link in chunk as successor of current one. Updates offset/chain for
-    // the appended chunk and all its successors.
+    // Link in chunk as successor of current one. Updates offset/chain for the
+    // appended chunk and all its successors. Makes the current chunk owning,
+    // so that at most the last chunk in a chain can be non-owning.
     void setNext(std::unique_ptr<Chunk> next) {
         assert(_chain);
 
+        makeOwning();
         Offset offset = endOffset();
         _next = std::move(next);
 
@@ -198,12 +258,26 @@ protected:
         }
     }
 
-    void clearNext() { _next = nullptr; }
+    // Reset chunk state to no longer reference a chain. Note that this does
+    // not update its predecessor inside the chain if that exists.
+    void detach() {
+        _offset = 0;
+        _chain = nullptr;
+        _next = nullptr;
+    }
 
 private:
+    Chunk() {}
+
+    // Deletes all allocated/owned data, safely. Members will be left in
+    // undefined state afterwards and need re-initialization if instance
+    // remains in use.
+    void destroy();
+
     Offset _offset = 0;            // global offset of 1st byte
-    std::string _data;             // content of this chunk
-    size_t _gap_size = 0;          // non-zero if this is a gap in which case _data is irrelevant
+    size_t _size = 0;              // size of payload or gap
+    size_t _allocated = 0;         // size of memory allocated for data, which can be more than its size
+    const Byte* _data = nullptr;   // chunk's payload, or null for gap chunks
     const Chain* _chain = nullptr; // chain this chunk is part of, or null if not linked to a chain yet (non-owning;
                                    // will stay valid at least as long as the current chunk does)
     std::unique_ptr<Chunk> _next = nullptr; // next chunk in chain, or null if last
@@ -233,6 +307,7 @@ public:
 
     const Chunk* head() const { return _head.get(); }
     const Chunk* tail() const { return _tail; }
+    Chunk* tail() { return _tail; }
     Size size() const { return (endOffset() - offset()).Ref(); }
     bool isFrozen() const { return _state == State::Frozen; }
     bool isValid() const { return _state != State::Invalid; }
@@ -262,9 +337,23 @@ public:
     // Returns a newly allocated chain with the same content.
     ChainPtr copy() const;
 
-    /** Appends a new chunk to the end. */
-    void append(std::unique_ptr<Chunk> chunk);
+    // Appends a new chunk to the end, copying the data.
+    void append(const Byte* data, size_t size);
+
+    // Appends a new chunk to the end, not copying the data.
+    void append(const Byte* data, size_t size, stream::NonOwning);
+
+    // Appends a new chunk to the end, moving the data.
+    void append(Bytes&& data);
+
+    // Appends another chain to the end.
     void append(Chain&& other);
+
+    // Appends a new chunk to the end.
+    void append(std::unique_ptr<Chunk> chunk);
+
+    // Appends a gap to the end.
+    void appendGap(size_t size);
 
     void trim(const Offset& offset);
     void trim(const SafeConstIterator& i);
@@ -291,6 +380,7 @@ public:
         if ( isValid() )
             _state = State::Frozen;
     }
+
     void unfreeze() {
         if ( isValid() )
             _state = State::Mutable;
@@ -331,6 +421,8 @@ private:
     // Always pointing to last chunk reachable from *head*, or null if chain
     // is empty; non-owning
     Chunk* _tail = nullptr;
+
+    std::unique_ptr<Chunk> _cached; // previously freed chunk for reuse
 };
 
 } // namespace detail
@@ -1514,7 +1606,15 @@ public:
      * Creates an instance from an existing memory block. The data
      * will be copied if set, otherwise a gap will be recorded.
      */
-    Stream(const char* d, const Size& n);
+    Stream(const char* d, Size n) : Stream() { append(d, n); }
+
+    /**
+     * Creates an instance from an existing memory block. The data will not be
+     * copied and hence must remain valid until the stream ether is destroyed
+     * or `makeOwning()` gets called, whatever comes first. Passing a nullptr
+     * for the data records a gap.
+     */
+    Stream(const char* d, Size n, stream::NonOwning) : Stream() { append(d, n, stream::NonOwning()); }
 
     /**
      * Creates an instance from an existing stream view.
@@ -1598,11 +1698,25 @@ public:
      */
     void append(std::unique_ptr<const Byte*> data);
 
-    /** Appends the content of a raw memory area, copying the data. This function does not invalidate iterators.
+    /**
+     * Appends the content of a raw memory area, copying the data. This
+     * function does not invalidate iterators.
      * @param data pointer to the data to append. If this is nullptr and gap will be appended instead.
      * @param len length of the data to append
      */
     void append(const char* data, size_t len);
+
+
+    /**
+     * Appends the content of a raw memory area, *not* copying the data. This
+     * function does not invalidate iterators. Because the data will not be
+     * copied, it must remain valid until the stream is either destroyed or
+     * `makeOwning()` gets called.
+     *
+     * @param data pointer to the data to append. If this is nullptr and gap will be appended instead.
+     * @param len length of the data to append
+     */
+    void append(const char* data, size_t len, stream::NonOwning);
 
     /**
      * Cuts off the beginning of the data up to, but excluding, a given
@@ -1622,6 +1736,21 @@ public:
 
     /** Returns true if the instance is currently frozen. */
     bool isFrozen() const { return _chain->isFrozen(); }
+
+    /**
+     * Returns the stream into a freshly initialized state, as if it was just
+     * created. (This concerns only externally visible state, it retains any
+     * potentially cached resources for reuse.)
+     */
+    void reset() { _chain->reset(); }
+
+    /** Ensure the stream fully owns all its data. */
+    void makeOwning() {
+        // Only the final chunk can be non-owning, that's guaranteed by
+        // `Chunk::setNext()`.
+        if ( auto* t = _chain->tail() )
+            t->makeOwning();
+    }
 
     /** Returns a safe iterator representing the first byte of the instance. */
     SafeConstIterator begin() const { return _chain->begin(); }

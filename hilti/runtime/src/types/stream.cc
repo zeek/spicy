@@ -10,21 +10,100 @@ using namespace hilti::rt;
 using namespace hilti::rt::stream;
 using namespace hilti::rt::stream::detail;
 
-Chunk::~Chunk() {
+namespace {
+// Provide a valid non-null pointer for zero-size data. We initialize it to an
+// actual string for easier debugging.
+const Byte* EmptyData = reinterpret_cast<const Byte*>("<empty>");
+} // namespace
+
+void Chunk::destroy() {
+    if ( _allocated > 0 )
+        delete[] _data;
+
     // The default dtr would turn deletion the list behind `_next` into a
     // recursive list traversal. For very long lists this could lead to stack
     // overflows. Traverse the list in a loop instead. This is adapted from
     // https://stackoverflow.com/questions/35535312/stack-overflow-with-unique-ptr-linked-list#answer-35535907.
     for ( auto current = std::move(_next); current; current = std::move(current->_next) )
         ; // Nothing.
+
+    _next = nullptr;
 }
 
-Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset) {
-    _data.resize(d.size());
-    d.copyRaw(reinterpret_cast<Byte*>(_data.data()));
+Chunk::Chunk(const Offset& offset, const View& d) : _offset(offset), _size(d.size()), _allocated(_size) {
+    if ( _size == 0 ) {
+        _data = EmptyData;
+        return;
+    }
+
+    auto data = std::make_unique<Byte[]>(_size);
+    d.copyRaw(data.get());
+    _data = data.release();
 }
 
-Chunk::Chunk(const Offset& offset, std::string s) : _offset(offset), _data(std::move(s)) {}
+Chunk::Chunk(const Offset& offset, std::string_view s) : _offset(offset), _size(s.size()), _allocated(_size) {
+    if ( _size == 0 ) {
+        _data = EmptyData;
+        return;
+    }
+
+    auto data = std::make_unique<Byte[]>(_size);
+    memcpy(data.get(), s.data(), _size);
+    _data = data.release();
+}
+
+Chunk::Chunk(const Offset& offset, const Byte* b, size_t size) : _offset(offset), _size(size), _allocated(_size) {
+    if ( _size == 0 ) {
+        _data = EmptyData;
+        return;
+    }
+
+    auto data = std::make_unique<Byte[]>(_size);
+    memcpy(data.get(), b, _size);
+    _data = data.release();
+}
+
+void Chain::append(const Byte* data, size_t size) {
+    if ( size == 0 )
+        return;
+
+    if ( _cached && _cached->allocated() >= size ) {
+        // Reuse cached chunk instead of allocating new one.
+        memcpy(const_cast<Byte*>(_cached->data()), data, size); // cast is safe because it's allocated
+        _cached->_size = size;
+        append(std::move(_cached));
+    }
+    else
+        append(std::make_unique<Chunk>(0, data, size));
+}
+
+void Chain::append(const Byte* data, size_t size, stream::NonOwning) {
+    if ( size == 0 )
+        return;
+
+    if ( _cached && ! _cached->isOwning() ) {
+        // Reuse cached chunk instead of allocating new one.
+        _cached->_data = data;
+        _cached->_size = size;
+        append(std::move(_cached));
+    }
+    else
+        append(std::make_unique<Chunk>(0, data, size, stream::NonOwning()));
+}
+
+void Chain::append(Bytes&& data) {
+    if ( data.size() == 0 )
+        return;
+
+    if ( _cached && _cached->allocated() >= data.size() ) {
+        // Reuse cached chunk instead of allocating new one.
+        memcpy(const_cast<Byte*>(_cached->data()), data.data(), data.size()); // cast is safe because it's allocated
+        _cached->_size = data.size();
+        append(std::move(_cached));
+    }
+    else
+        append(std::make_unique<Chunk>(0, std::move(data).str()));
+}
 
 void Chain::append(std::unique_ptr<Chunk> chunk) {
     _ensureValid();
@@ -56,6 +135,13 @@ void Chain::append(Chain&& other) {
     other.reset();
 }
 
+void Chain::appendGap(size_t size) {
+    if ( size == 0 )
+        return;
+
+    append(std::make_unique<Chunk>(0, size));
+}
+
 void Chain::trim(const Offset& offset) {
     _ensureValid();
 
@@ -72,8 +158,20 @@ void Chain::trim(const Offset& offset) {
             // Chain should be in order and we progress forward in offset.
             assert(! _head->next() || _head->offset() < _head->next()->offset());
 
-            // Delete chunk.
-            _head = std::move(_head->_next);
+            auto next = std::move(_head->_next);
+
+            if ( ! _head->isGap() &&
+                 (! _cached || (! _head->isOwning() || _head->allocated() > _cached->allocated())) ) {
+                // Cache chunk for later reuse. If we already have cached one,
+                // we prefer the one that's larger. Note that the chunk may be
+                // non-owning, we account for that when checking if we can
+                // reuse.
+                _cached = std::move(_head);
+                _cached->detach();
+            }
+
+            _head = std::move(next); // deletes chunk if not cached
+
             if ( ! _head || _head->isLast() )
                 _tail = _head.get();
         }
@@ -380,30 +478,25 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
 
 Stream::Stream(Bytes d) : Stream(Chunk(0, std::move(d).str())) {}
 
-Stream::Stream(const char* d, const Size& n) : Stream() { append(d, n); }
+void Stream::append(const Bytes& data) { _chain->append(reinterpret_cast<const Byte*>(data.data()), data.size()); }
 
-void Stream::append(Bytes&& data) {
-    if ( data.isEmpty() )
-        return;
-
-    _chain->append(std::make_unique<Chunk>(0, std::move(data).str()));
-}
-
-void Stream::append(const Bytes& data) {
-    if ( data.isEmpty() )
-        return;
-
-    _chain->append(std::make_unique<Chunk>(0, data.str()));
-}
+void Stream::append(Bytes&& data) { _chain->append(std::move(data)); }
 
 void Stream::append(const char* data, size_t len) {
+    if ( data )
+        _chain->append(reinterpret_cast<const Byte*>(data), len);
+    else
+        _chain->appendGap(len);
+}
+
+void Stream::append(const char* data, size_t len, NonOwning) {
     if ( len == 0 )
         return;
 
     if ( data )
-        _chain->append(std::make_unique<Chunk>(0, std::string{data, len}));
+        _chain->append(reinterpret_cast<const Byte*>(data), len, stream::NonOwning());
     else
-        _chain->append(std::make_unique<Chunk>(0, len));
+        _chain->appendGap(len);
 }
 
 std::string stream::View::dataForPrint() const {
@@ -590,5 +683,5 @@ void Stream::debugPrint(std::ostream& out) const { debugPrint(out, _chain.get())
 void Chunk::debugPrint(std::ostream& out) const {
     auto x = std::string(reinterpret_cast<const char*>(data()), size());
     x = escapeBytes(x);
-    out << fmt("offset %lu  data=|%s|", _offset, x) << '\n';
+    out << fmt("offset %lu  data=|%s| (%s)", _offset, x, (isOwning() ? "owning" : "non-owning")) << '\n';
 }
