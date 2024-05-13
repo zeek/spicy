@@ -288,6 +288,12 @@ public:
     auto expressionCtor(Ctor* ctor, Meta meta = {}) {
         return hilti::expression::Ctor::create(context(), ctor, std::move(meta));
     }
+    auto expressionDeferred(Expression* expr, bool catch_exception, const Meta& meta = {}) {
+        return hilti::expression::Deferred::create(context(), expr, catch_exception, meta);
+    }
+    auto expressionDeferred(Expression* expr, const Meta& meta = {}) {
+        return hilti::expression::Deferred::create(context(), expr, meta);
+    }
     auto expressionGrouping(Expression* expr, Meta meta = {}) {
         return hilti::expression::Grouping::create(context(), expr, std::move(meta));
     }

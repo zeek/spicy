@@ -139,6 +139,7 @@ add_executable(
     src/tests/bytes.cc
     src/tests/context.cc
     src/tests/debug-logger.cc
+    src/tests/deferred-expression.cc
     src/tests/enum.cc
     src/tests/exception.cc
     src/tests/fiber.cc

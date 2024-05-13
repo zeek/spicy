@@ -1,3 +1,60 @@
+1.11.0-dev.160 | 2024-05-13 11:45:04 +0200
+
+  * GH-1657: Update Spicy runtime driver to use new stream features for improved performance. (Robin Sommer, Corelight)
+
+    This does two things:
+
+    - When adding data to a stream, we now do that without copying
+      anything initially. For block input (e.g., UDP) that's always fine
+      because the parser will never suspend before it's fully done
+      parsing; hence we can safely delete it once the parser returns. For
+      stream input (e.g., TCP), we make the stream own its data later
+      if (and only if) the parser suspends.
+
+    - For block input (e.g., UDP) we now keep reusing the same stream for
+      subsequent blocks, instead of creating a new one each time. This
+      allows the stream to reuse an allocated chunk that it may have still
+      cached internally.
+
+    The result of this, plus the new chunk caching introduced earlier, is
+    that for a UDP flow, we never need to allocate more than one chunk,
+    and never need to copy any data; and for TCP it's the same as long as
+    parsing consumes all data before suspending (which should be a common
+    case), plus, when we allocate new storage we only copy data that didn't
+    get trimmed immediately anyways.
+
+  * Give stream a method to reset it into freshly initialized state. (Robin Sommer, Corelight)
+
+    This does not clear the internal chunk cache.
+
+  * Cache previously trimmed chunks inside stream for reuse. (Robin Sommer, Corelight)
+
+    A chain now retains one previously used but no longer needed chunk for
+    reuse, so that we can avoid constant cycles of creating/destructing
+    chunks (and their paylaod memory) in the common case of a parser
+    consuming full chunks without yielding. The caching is also geared
+    towards owning/non-owning semantics staying consistent across
+    subsequent append operations.
+
+  * Extend stream API to allow for chunks that don't own their data. (Robin Sommer, Corelight)
+
+    By default, we still copy data when creating chunks but we add a
+    parallel API that just stores pointers, assuming the data will stay
+    around as long as needed. If the stream owner cannot guarantee that,
+    they may at any point convert all not-owned data into owned data
+    through a corresponding `makeOwning()` stream method. To make that
+    method efficient even with long chains of chunks, we internally
+    maintain an invariant that only the last chunk of chain can be
+    non-owning: whenever we add a new chunk to a chain, we ensure that the
+    previous tail become owning at that point. In other words, we amortize
+    the work across all newly added chunks.
+
+  * Remove `std::functional` from `DeferredExpression`. (Robin Sommer)
+
+  * Revert "Remove support for deferred expressions." (Robin Sommer)
+    Turns out this is actually still being used by the Zeek
+    integration.
+
 1.11.0-dev.151 | 2024-05-10 16:35:50 +0200
 
   * Remove unused include headers. (Robin Sommer, Corelight)
