@@ -1,3 +1,7 @@
+1.11.0-dev.162 | 2024-05-13 14:42:08 +0200
+
+  * Update types.rst (Smoot)
+
 1.11.0-dev.160 | 2024-05-13 11:45:04 +0200
 
   * GH-1657: Update Spicy runtime driver to use new stream features for improved performance. (Robin Sommer, Corelight)

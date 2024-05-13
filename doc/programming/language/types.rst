@@ -652,6 +652,7 @@ Vector
 
 Vectors are homogeneous containers, holding a set of elements of a
 given element type. They provide iterators to traverse their content.
+Indexes begin at 0.
 
 .. rubric:: Types
 
