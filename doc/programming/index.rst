@@ -23,5 +23,6 @@ that Spicy grammars can leverage.
     language/index
     library
     examples
+    guidelines
     debugging
     extending
