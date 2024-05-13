@@ -95,9 +95,7 @@ like to hear from you!
 
 - Ask the `#spicy` channel [on Zeek's Slack](https://zeek.org/connect).
 
-- Propose ideas, and show what you're doing, on GitHub's [Discussions](https://github.com/zeek/spicy/discussions).
-
-- Visit the [Zeek community](https://community.zeek.org) to discuss Spicy under
+- Check out the [Zeek community](https://community.zeek.org) and discuss Spicy under
   the [Spicy tag](https://community.zeek.org/c/spicy/).
 
 - To follow development, subscribe to the [commits mailing
