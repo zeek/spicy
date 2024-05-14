@@ -20,7 +20,7 @@ struct Configuration {
      * Optional callback to execute when a Spicy parser calls
      * `spicy::accept_input()`.
      **/
-    HookAcceptInput hook_accept_input;
+    HookAcceptInput hook_accept_input = nullptr;
 
     using HookDeclineInput = void (*)(const std::string&);
 
@@ -29,7 +29,7 @@ struct Configuration {
      * `spicy::decline_input()`. This string argument is the reason provided by
      * the caller.
      */
-    HookDeclineInput hook_decline_input;
+    HookDeclineInput hook_decline_input = nullptr;
 };
 
 namespace configuration {
