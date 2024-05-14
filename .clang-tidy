@@ -49,6 +49,8 @@ Checks: '
   -modernize-macro-to-enum,
 
   performance-*,
+  -performance-enum-size,
+
   portability-*,
 
   readability-*,
