@@ -1,3 +1,13 @@
+1.9.1 | 2024-04-04 13:09:36 +0200
+
+  * Drop `;` after `#pragma`. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 98030ad6cd7e1cba8ab5300f3cd1163990c6e4fa)
+
+  * Update CI setups. (Benjamin Bannier, Corelight)
+
+    This bumps all CI setups to b465b010e7c56ec62152e75d96fad4e761e49360.
+
 1.9.0-4 | 2024-04-03 15:20:51 +0200
 
   * Fix repeated evaluations of `&parse-at` expression. (Robin Sommer, Corelight)
