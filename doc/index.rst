@@ -55,6 +55,7 @@ History
     <https://www.corelight.com>`_, which has contributed the new
     implementation to the Zeek Project.
 
+.. _feedback:
 
 Getting in Touch
 ----------------
@@ -66,10 +67,9 @@ like to hear from you!
 
     - Ask the ``#spicy`` channel on `Zeek's Slack <https://zeek.org/connect>`_.
 
-    - Propose ideas, and show what you're doing, on GitHub's `Discussions <https://github.com/zeek/spicy/discussions>`_.
-
-    - Visit the [Zeek community](https://community.zeek.org) to discuss Spicy under
-      the [Spicy tag](https://community.zeek.org/c/spicy/).
+    - Check out the `Zeek community Discourse
+      <https://community.zeek.org>`_ and discuss Spicy under the
+      `Spicy tag <https://community.zeek.org/c/spicy>`_.
 
     - To follow development, subscribe to the `commits mailing list
       <https://groups.google.com/a/zeek.org/g/spicy-commits/>`_ (it can be

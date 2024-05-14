@@ -1,3 +1,18 @@
+1.11.0-dev.166 | 2024-05-14 11:54:16 +0200
+
+  * Docs: Add new section with guidelines and best practices. (Robin Sommer, Corelight)
+
+    This focuses on performance for now, but may be extended with other
+    areas alter.
+
+    Much of the content was contributed by Corelight Labs.
+
+  * Docs: Update Custom Extensions section. (Robin Sommer, Corelight)
+
+    The usage of `-P` wasn't up to date.
+
+  * Docs: Update feedback section. (Robin Sommer, Corelight)
+
 1.11.0-dev.162 | 2024-05-13 14:42:08 +0200
 
   * Update types.rst (Smoot)

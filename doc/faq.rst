@@ -41,18 +41,7 @@ Toolchain
 
 .. rubric:: Is there a way to speed up compilation of Spicy code?
 
-Depending on the complexity of the Spicy code, processing through
-``spicyc``/``spicyz``/``spicy-driver`` may take a bit. The bulk of the
-time time tends to be spent on compiling the generated C++ code; often
-about 80-90%. Make sure to run :ref:`spicy-precompile-headers
-<parser-development-setup>` to speed that up a little. During
-development of new parsers, it also helps quite a bit to build
-non-optimized debug versions by adding ``--debug`` to the
-command-line.
-
-If you want to see a break-down of where Spicy spends its time, run
-the tools with ``--report-times``. (In the output at the end, ``jit``
-refers to compiling generated C++ code).
+Please see :ref:`performance_toolchain`.
 
 Zeek
 ----

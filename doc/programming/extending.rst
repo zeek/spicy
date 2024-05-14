@@ -68,22 +68,17 @@ sides. Internally, Spicy automatically creates a C++ function
 prototype for any function declaration coming with a ``&cxxname``
 attribute. To do so, Spicy maps its own types to corresponding C++
 types. We can see how that looks in  our example by running ``spicyc
--gP`` to print out the generated function prototype (plus a bit of
+-P <prefix>`` to print out the generated function prototype (plus a bit of
 boilerplate to produce a complete C++ ``#include`` header):
 
 .. spicy-output:: mylibrary.spicy
-    :exec: spicyc -gP programming/examples/mylibrary.spicy
-    :show-as: spicyc -gP mylibrary.spicy
+    :exec: spicyc -P mylib programming/examples/mylibrary.spicy
+    :show-as: spicyc -P mylib mylibrary.spicy
 
 As you can see, Spicy maps ``rot13``'s string argument and result into
 ``std::string``, which happens to be exactly what we need in our
-simple example.
-
-.. todo::
-
-    We should tweak ``-P`` so that it disables optimization
-    automatically (because that just removes the supposedly unused
-    function). (:issue:`1284`)
+simple example. (The prefix ``mylib`` goes into some internal IDs to
+avoid nameclashes with other generated code.)
 
 Advanced Usage
 ==============
