@@ -35,12 +35,12 @@ lint_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    LD_LIBRARY_PATH: /usr/lib/llvm-17/lib/clang/17/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-18/lib/clang/18/lib/linux/
 
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-18 --clang-format `which clang-format-18` --clang-tidy `which clang-tidy-18`
   build_script:       ./ci/run-ci -b build build
   test_code_script:   ./ci/run-ci -b build test-code
 
@@ -54,7 +54,7 @@ lint_task:
     clang_artifacts:
         path: build/ci
 
-clang17_ubuntu_debug_task:
+clang18_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -70,12 +70,12 @@ clang17_ubuntu_debug_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    LD_LIBRARY_PATH: /usr/lib/llvm-17/lib/clang/17/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-18/lib/clang/18/lib/linux/
 
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-18 --clang-format `which clang-format-18` --clang-tidy `which clang-tidy-18`
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   install_script:     ./ci/run-ci -b build install
@@ -96,7 +96,7 @@ clang17_ubuntu_debug_task:
     clang_artifacts:
         path: build/ci
 
-clang17_lts_ubuntu_release_task:
+clang18_lts_ubuntu_release_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -116,7 +116,7 @@ clang17_lts_ubuntu_release_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17`
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-18 --clang-format `which clang-format-18` --clang-tidy `which clang-tidy-18`
   build_script:          ./ci/run-ci -b build build
   test_build_script:     ./ci/run-ci -b build test-build
   install_script:        ./ci/run-ci -b build install
@@ -137,7 +137,7 @@ clang17_lts_ubuntu_release_task:
       type: text/xml
       format: junit
 
-clang17_lts_ubuntu_release_static_task:
+clang18_lts_ubuntu_release_static_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -157,7 +157,7 @@ clang17_lts_ubuntu_release_static_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-17 --clang-format `which clang-format-17` --clang-tidy `which clang-tidy-17` --build-static-libs
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-18 --clang-format `which clang-format-18` --clang-tidy `which clang-tidy-18` --build-static-libs
   build_script:          ./ci/run-ci -b build build
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup
