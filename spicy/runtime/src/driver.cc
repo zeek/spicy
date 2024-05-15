@@ -3,7 +3,6 @@
 #include <getopt.h>
 
 #include <algorithm>
-#include <fstream>
 #include <ios>
 #include <iostream>
 #include <map>
@@ -489,8 +488,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             auto id = std::string(m[1]);
             auto size = std::stoul(std::string(m[2]));
 
-            char data[size];
-            in.read(data, static_cast<std::streamsize>(size));
+            std::string data(size, {});
+            in.read(data.data(), static_cast<std::streamsize>(size));
             in.get(); // Eat newline.
 
             if ( in.eof() || in.fail() )
@@ -499,7 +498,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             auto s = flows.find(id);
             if ( s != flows.end() ) {
                 try {
-                    s->second.process(size, data);
+                    s->second.process(size, data.data());
                 } catch ( const hilti::rt::Exception& e ) {
                     std::cout << hilti::rt::fmt("error for ID %s: %s\n", id, e.what());
                 }

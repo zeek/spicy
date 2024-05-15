@@ -206,8 +206,8 @@ regexp::Captures regexp::MatchState::captures(const Stream& data) const {
     Captures captures = {};
 
     auto num_groups = jrx_num_groups(_pimpl->_re->jrx());
-    jrx_regmatch_t groups[num_groups];
-    if ( jrx_reggroups(_pimpl->_re->jrx(), &_pimpl->_ms, num_groups, groups) == REG_OK ) {
+    std::vector<jrx_regmatch_t> groups(num_groups);
+    if ( jrx_reggroups(_pimpl->_re->jrx(), &_pimpl->_ms, num_groups, groups.data()) == REG_OK ) {
         for ( auto i = 0; i < num_groups; i++ ) {
             // The following condition follows what JRX does
             // internally as well: if not both are set, just skip (and
@@ -313,8 +313,8 @@ Vector<Bytes> RegExp::matchGroups(const Bytes& data) const {
         groups.emplace_back(_subslice(data, so, eo));
 
         if ( auto num_groups = jrx_num_groups(jrx()); num_groups > 1 ) {
-            jrx_regmatch_t pmatch[num_groups];
-            jrx_reggroups(jrx(), &ms, num_groups, pmatch);
+            std::vector<jrx_regmatch_t> pmatch(num_groups);
+            jrx_reggroups(jrx(), &ms, num_groups, pmatch.data());
 
             for ( int i = 1; i < num_groups; i++ ) {
                 if ( pmatch[i].rm_so >= 0 )
