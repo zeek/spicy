@@ -17,6 +17,11 @@ using hilti::rt::fmt;
 
 namespace {
 
+// The container size threshold over which we unroll container ctrs. This is to
+// avoid running into C++ compilation performance edge cases for container
+// construction when passing huge initializer lists.
+constexpr auto ThresholdBigContainerCtrUnroll = 10U;
+
 struct Visitor : hilti::visitor::PreOrder {
     explicit Visitor(CodeGen* cg) : cg(cg) {}
 
@@ -103,13 +108,25 @@ struct Visitor : hilti::visitor::PreOrder {
         auto k = cg->compile(n->keyType(), codegen::TypeUsage::Storage);
         auto v = cg->compile(n->valueType(), codegen::TypeUsage::Storage);
 
-        result =
-            fmt("::hilti::rt::Map<%s, %s>({%s})", k, v,
-                util::join(node::transform(n->value(),
-                                           [this](const auto& e) {
-                                               return fmt("{%s, %s}", cg->compile(e->key()), cg->compile(e->value()));
-                                           }),
-                           ", "));
+        if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
+            auto elems = util::join(node::transform(n->value(),
+                                                    [this](const auto& e) {
+                                                        return fmt("__xs.index_assign(%s, %s);", cg->compile(e->key()),
+                                                                   cg->compile(e->value()));
+                                                    }),
+                                    " ");
+
+            result = fmt("[&]() { auto __xs = ::hilti::rt::Map<%s, %s>(); %s return __xs; }()", k, v, elems);
+        }
+
+        else
+            result = fmt("::hilti::rt::Map<%s, %s>({%s})", k, v,
+                         util::join(node::transform(n->value(),
+                                                    [this](const auto& e) {
+                                                        return fmt("{%s, %s}", cg->compile(e->key()),
+                                                                   cg->compile(e->value()));
+                                                    }),
+                                    ", "));
     }
 
     void operator()(ctor::Network* n) final {
@@ -176,9 +193,20 @@ struct Visitor : hilti::visitor::PreOrder {
 
         const auto k = cg->compile(n->elementType(), codegen::TypeUsage::Storage);
 
-        result =
-            fmt("::hilti::rt::Set<%s>({%s})", k,
-                util::join(node::transform(n->value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
+        if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
+            auto elems =
+                util::join(node::transform(n->value(),
+                                           [this](const auto& e) { return fmt("__xs.insert(%s);", cg->compile(e)); }),
+                           " ");
+
+            result = fmt("[&]() { auto __xs = ::hilti::rt::Set<%s>(); %s return __xs; }()", k, elems);
+        }
+
+        else
+            result =
+                fmt("::hilti::rt::Set<%s>({%s})", k,
+                    util::join(node::transform(n->value(), [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
+                               ", "));
     }
 
     void operator()(ctor::SignedInteger* n) final {
@@ -252,9 +280,22 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( auto def = cg->typeDefaultValue(n->elementType()) )
             allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
-        result =
-            fmt("::hilti::rt::Vector<%s%s>({%s})", x, allocator,
-                util::join(node::transform(n->value(), [this](auto e) { return fmt("%s", cg->compile(e)); }), ", "));
+        if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
+            auto elems = util::join(node::transform(n->value(),
+                                                    [this](const auto& e) {
+                                                        return fmt("__xs.push_back(%s);", cg->compile(e));
+                                                    }),
+                                    " ");
+
+            result = fmt("[&]() { auto __xs = ::hilti::rt::Vector<%s%s>(); __xs.reserve(%d); %s return __xs; }()", x,
+                         allocator, size, elems);
+        }
+
+        else
+            result =
+                fmt("::hilti::rt::Vector<%s%s>({%s})", x, allocator,
+                    util::join(node::transform(n->value(), [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
+                               ", "));
     }
 
     void operator()(ctor::UnsignedInteger* n) final {

@@ -45,4 +45,8 @@ hilti::print(l6);
 global value_ref<string> x = "foo"; # type that coerces to string
 assert vector("foo", "bar") == vector<string>(x, "bar");
 
+# Test unrolling of ctor for big vector ctrs.
+global x10 = vector(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+hilti::print(x10);
+
 }
