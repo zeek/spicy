@@ -1,3 +1,13 @@
+1.11.0-dev.168 | 2024-05-15 10:19:54 +0200
+
+  * Fix behavior for unset accept and decline hooks. (Benjamin Bannier, Corelight)
+
+    We did not properly initialize pointer values for accept and decline
+    hooks. In downstream code they then appeared to be set when they were in
+    fact not.
+
+    With this patch we initialize them with proper defaults.
+
 1.11.0-dev.166 | 2024-05-14 11:54:16 +0200
 
   * Docs: Add new section with guidelines and best practices. (Robin Sommer, Corelight)
