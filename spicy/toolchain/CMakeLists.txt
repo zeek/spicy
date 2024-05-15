@@ -61,6 +61,7 @@ target_include_directories(spicy-objects BEFORE
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(spicy-objects BEFORE
                            PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+target_include_directories(spicy-objects BEFORE PUBLIC ${FLEX_INCLUDE_DIRS})
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
