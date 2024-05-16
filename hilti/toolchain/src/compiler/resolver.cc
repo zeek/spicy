@@ -1398,7 +1398,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     // passed `map` and perform the coercion automatically when resolving the
     // function call.
     void operator()(operator_::map::In* n) final {
-        if ( auto x = coerceTo(n, n->op0(), n->op1()->type()->type()->as<type::Map>()->keyType(), true, false) ) {
+        auto op0 = n->op0()->type()->type()->tryAs<type::Map>();
+        if ( ! op0 )
+            return;
+
+        if ( auto x = coerceTo(n, n->op0(), op0->keyType(), true, false) ) {
             recordChange(n, x, "call argument");
             n->setOp0(context(), x);
         }
