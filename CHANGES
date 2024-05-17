@@ -1,3 +1,7 @@
+1.11.0-dev.170 | 2024-05-17 12:51:06 +0200
+
+  * GH-1743: Use a checked cast for `map`'s `in` operator. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.168 | 2024-05-15 10:19:54 +0200
 
   * Fix behavior for unset accept and decline hooks. (Benjamin Bannier, Corelight)
