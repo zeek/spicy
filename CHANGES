@@ -1,3 +1,20 @@
+1.11.0-dev.172 | 2024-05-17 12:51:34 +0200
+
+  * GH-1742: Unroll ctrs of big containers. (Benjamin Bannier, Corelight)
+
+    When generating C++ code for container ctrs we previously would directly
+    invoke the respective C++ ctrs taking an initializer list. For very big
+    initializer lists this causes very bad C++ compiler performance, e.g.,
+    compiling code constructing a vector with 10,000 elements could take
+    minutes.
+
+    With this patch we unroll such ctrs calls by calling a dedicated
+    initialization function. For huge containers this causes creating of big
+    functions instead of big initializer lists, but compiling functions
+    seems to behave more predictively.
+
+    Closes #1742.
+
 1.11.0-dev.170 | 2024-05-17 12:51:06 +0200
 
   * GH-1743: Use a checked cast for `map`'s `in` operator. (Benjamin Bannier, Corelight)

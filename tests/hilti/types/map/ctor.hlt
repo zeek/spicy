@@ -3,6 +3,8 @@
 
 module Test {
 
+import hilti;
+
 global value_ref<string> x = "foo"; # type that coerces to string
 
 assert map("foo": "1", "2": "foo") == map<string, string>(x: "1", "2": x);
@@ -11,4 +13,30 @@ global auto i = 1;
 global auto j = -1;
 assert map(i: j) == map(1:-1);
 assert map<uint<64>, int<64>>(i: j) == map(1:-1);
+
+# Test unrolling of ctor for big map ctrs.
+global m = map(
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    10: 10,
+    11: 11,
+    12: 12,
+    13: 13,
+    14: 14,
+    15: 15,
+    16: 16,
+    17: 17,
+    18: 18,
+    19: 19
+);
+hilti::print(m);
+
 }
