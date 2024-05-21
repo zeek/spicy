@@ -132,7 +132,7 @@ those mappings:
       - ``hilti::rt::Exception``
 
     * - ``(u)int8/16/32/64``
-      - ``(u)int_8/16/32/64_t``
+      - ``hilti::rt::integer::safe<(u)int_8/16/32/64_t>``
 
     * - ``interval``
       - ``hilti::rt::Interval``
