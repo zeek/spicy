@@ -27,11 +27,11 @@
                                         hilti::detail::parser::Driver* driver)
 
 #ifndef __FLEX_LEXER_H
+
 // NOLINTNEXTLINE
 #define yyFlexLexer HiltiFlexLexer
 #include <FlexLexer.h>
 
-#undef yyFlexLexer
 #endif
 
 namespace hilti {
