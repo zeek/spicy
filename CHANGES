@@ -1,3 +1,14 @@
+1.11.0-dev.178 | 2024-06-03 09:50:53 +0200
+
+  * Fix a typo in packing.rst (Tanner Kvarfordt)
+
+    Fix a typo in packing.rst where the template argument to unpack was (u)int
+    instead of real.
+
+  * Expand guidelines on improving compilation performance. [skip CI] (Benjamin Bannier, Corelight)
+
+  * Fix documented type mapping for integers. [skip CI] (Benjamin Bannier, Corelight)
+
 1.11.0-dev.172 | 2024-05-17 12:51:34 +0200
 
   * GH-1742: Unroll ctrs of big containers. (Benjamin Bannier, Corelight)

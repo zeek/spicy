@@ -53,7 +53,7 @@ operators expect for each:
 
     * - :ref:`type_real`
       - ``pack(VALUE, spicy::RealType, spicy::ByteOrder)``
-      - ``unpack<uintX|intX>(DATA, spicy::RealType, spicy::ByteOrder)``
+      - ``unpack<real>(DATA, spicy::RealType, spicy::ByteOrder)``
       - :ref:`Real Type <spicy_realtype>` [1], :ref:`Byte Order <spicy_byteorder>`
 
 .. note::
