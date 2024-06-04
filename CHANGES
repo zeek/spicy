@@ -1,3 +1,23 @@
+1.11.0-dev.181 | 2024-06-04 10:18:25 +0200
+
+  * Clean up includes. (Benjamin Bannier, Corelight)
+
+  * Fix Flex linker error when building as part of Zeek. (Benjamin Bannier, Corelight)
+
+    When building Spicy as part of Zeek against the Homebrew flex-2.6.4 I
+    saw linker errors after f52325693aad8bd7931d51c4658027a8b7d7adae,
+
+    ```
+    ld: Undefined symbols:
+      HiltiFlexLexer::LexerInput(char*, unsigned long), referenced from:
+          vtable for hilti::detail::parser::Scanner in driver.cc.o
+      HiltiFlexLexer::LexerOutput(char const*, unsigned long), referenced from:
+          vtable for hilti::detail::parser::Scanner in driver.cc.o
+    ```
+
+    It is still not clear to me how this error comes about, but the change in
+    this patch seems to address the issue.
+
 1.11.0-dev.178 | 2024-06-03 09:50:53 +0200
 
   * Fix a typo in packing.rst (Tanner Kvarfordt)

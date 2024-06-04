@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <utility>
-#include <vector>
 #ifdef yylex
 #undef yylex
 // Work-around for bison messing up the function name by adding the local namespace.
@@ -27,11 +25,11 @@
                                         hilti::detail::parser::Driver* driver)
 
 #ifndef __FLEX_LEXER_H
+
 // NOLINTNEXTLINE
 #define yyFlexLexer HiltiFlexLexer
 #include <FlexLexer.h>
 
-#undef yyFlexLexer
 #endif
 
 namespace hilti {
