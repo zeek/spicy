@@ -2,6 +2,8 @@
 
 #include <utf8proc/utf8proc.h>
 
+#include <cstdlib>
+
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
@@ -203,6 +205,24 @@ uint64_t Bytes::toUInt(ByteOrder byte_order) const {
         i = integer::flip(i, size());
 
     return i;
+}
+
+double Bytes::toReal() const {
+    // Ensure there are no null bytes inside our data, so that we can call strtod().
+    if ( Base::find('\0') != Base::npos )
+        throw InvalidValue("cannot parse real value: null byte in data");
+
+    const char* cstr = Base::c_str();
+    char* endp = nullptr;
+
+    errno = 0;
+    auto d = strtod_l(cstr, &endp, *detail::globalState()->c_locale);
+    if ( endp == cstr || *endp != '\0' || (d == HUGE_VAL && errno == ERANGE) ) {
+        errno = 0;
+        throw InvalidValue(fmt("cannot parse real value: '%s'", cstr));
+    }
+
+    return d;
 }
 
 Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {

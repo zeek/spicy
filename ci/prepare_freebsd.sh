@@ -17,3 +17,5 @@ pkg install -y bash git cmake flex bison python3 ninja base64 ccache
 pyver=$(python3 -c 'import sys; print(f"py{sys.version_info[0]}{sys.version_info[1]}")')
 pkg install -y "$pyver"-pip
 pip install btest
+
+locale -a

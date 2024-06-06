@@ -192,6 +192,7 @@ class ToIntAscii;
 class ToUIntAscii;
 class ToIntBinary;
 class ToUIntBinary;
+class ToRealAscii;
 class ToTimeAscii;
 class ToTimeBinary;
 class Decode;

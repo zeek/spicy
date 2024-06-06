@@ -74,6 +74,9 @@ struct GlobalState {
 
     /** Cache of already compiled regular expressions. */
     std::unordered_map<std::string, std::shared_ptr<regexp::detail::CompiledRegExp>> regexp_cache;
+
+    /** Cached C locale for use with C library functions. */
+    std::optional<locale_t> c_locale;
 };
 
 /**

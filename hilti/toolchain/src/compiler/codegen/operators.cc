@@ -247,6 +247,11 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s.toUInt(%s)", self, optionalArgument(args, 0));
     }
 
+    void operator()(operator_::bytes::ToRealAscii* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("%s.toReal()", self);
+    }
+
     void operator()(operator_::bytes::ToTimeAscii* n) final {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.toTime(%s)", self, optionalArgument(args, 0));

@@ -1,0 +1,13 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+
+module Test {
+
+assert(b"3.14".to_real() == 3.14);
+assert(b"314e5".to_real() == 314e5);
+assert(b"0X1.BC70A3D70A3D7P+6".to_real() == 111.11);
+
+assert-exception(b"3.14XYZ".to_real());
+assert-exception(b"XXX".to_real());
+assert-exception(b"\03.14".to_real());
+
+}

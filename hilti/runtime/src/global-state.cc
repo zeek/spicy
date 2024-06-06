@@ -14,7 +14,17 @@ GlobalState* detail::__global_state = nullptr;
 
 GlobalState* detail::createGlobalState() {
     __global_state = new GlobalState(); // NOLINT (cppcoreguidelines-owning-memory)
+    __global_state->c_locale = newlocale(LC_ALL_MASK, "C", nullptr);
+
+    if ( ! __global_state->c_locale )
+        fatalError("failed to create C locale");
+
     return __global_state;
 }
 
-GlobalState::~GlobalState() { HILTI_RT_DEBUG("libhilti", "destroying global state"); }
+GlobalState::~GlobalState() {
+    HILTI_RT_DEBUG("libhilti", "destroying global state");
+
+    if ( c_locale )
+        freelocale(*c_locale);
+}
