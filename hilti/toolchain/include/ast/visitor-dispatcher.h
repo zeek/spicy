@@ -222,6 +222,7 @@ public:
     virtual void operator()(hilti::operator_::map::IndexNonConst* n) {}
     virtual void operator()(hilti::operator_::map::IndexAssign* n) {}
     virtual void operator()(hilti::operator_::map::Get* n) {}
+    virtual void operator()(hilti::operator_::map::GetOptional* n) {}
     virtual void operator()(hilti::operator_::map::Clear* n) {}
     virtual void operator()(hilti::operator_::network::Equal* n) {}
     virtual void operator()(hilti::operator_::network::Unequal* n) {}

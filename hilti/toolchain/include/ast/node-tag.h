@@ -296,6 +296,7 @@ constexpr Tag IndexConst = 1906;
 constexpr Tag IndexNonConst = 1907;
 constexpr Tag Size = 1908;
 constexpr Tag Unequal = 1909;
+constexpr Tag GetOptional = 1910;
 
 namespace iterator {
 constexpr Tag Deref = 2000;

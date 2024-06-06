@@ -283,6 +283,7 @@ class IndexConst;
 class IndexNonConst;
 class IndexAssign;
 class Get;
+class GetOptional;
 class Clear;
 
 } // namespace map
