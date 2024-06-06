@@ -8,16 +8,16 @@
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
 [debug/compiler]       -> modified
-[debug/ast-stats] garbage collected 514 nodes in 12 rounds, 5184 left retained
+[debug/ast-stats] garbage collected 514 nodes in 12 rounds, 5223 left retained
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
 [debug/compiler]       -> modified
-[debug/ast-stats] garbage collected 205 nodes in 9 rounds, 5440 left retained
+[debug/ast-stats] garbage collected 205 nodes in 9 rounds, 5479 left retained
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
-[debug/ast-stats] garbage collected 29 nodes in 2 rounds, 5468 left retained
+[debug/ast-stats] garbage collected 29 nodes in 2 rounds, 5507 left retained
 [debug/ast-final] # [HILTI] Final AST (round 3)
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
 [debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
@@ -936,23 +936,23 @@
 [debug/ast-stats]   - # context types: 15
 [debug/ast-stats]   - # context modules: 2
 [debug/ast-stats]   - # nodes reachable in AST: 674
-[debug/ast-stats]   - # nodes live: 5468
-[debug/ast-stats]   - # nodes retained: 5468
+[debug/ast-stats]   - # nodes live: 5507
+[debug/ast-stats]   - # nodes retained: 5507
 [debug/ast-stats]   - # nodes live > 1%:
 [debug/ast-stats]     - AttributeSet: 58
-[debug/ast-stats]     - QualifiedType: 1915
+[debug/ast-stats]     - QualifiedType: 1929
 [debug/ast-stats]     - expression::Ctor: 68
 [debug/ast-stats]     - type::Bool: 140
-[debug/ast-stats]     - type::Bytes: 79
-[debug/ast-stats]     - type::Member: 113
-[debug/ast-stats]     - type::OperandList: 488
-[debug/ast-stats]     - type::Real: 59
+[debug/ast-stats]     - type::Bytes: 80
+[debug/ast-stats]     - type::Member: 115
+[debug/ast-stats]     - type::OperandList: 492
+[debug/ast-stats]     - type::Real: 60
 [debug/ast-stats]     - type::SignedInteger: 78
 [debug/ast-stats]     - type::String: 66
-[debug/ast-stats]     - type::Unknown: 116
-[debug/ast-stats]     - type::UnsignedInteger: 332
-[debug/ast-stats]     - type::bytes::Iterator: 107
-[debug/ast-stats]     - type::operand_list::Operand: 883
+[debug/ast-stats]     - type::Unknown: 118
+[debug/ast-stats]     - type::UnsignedInteger: 333
+[debug/ast-stats]     - type::bytes::Iterator: 108
+[debug/ast-stats]     - type::operand_list::Operand: 890
 [debug/ast-stats]     - type::stream::Iterator: 80
 [debug/compiler]   finalized AST
 [debug/compiler] [HILTI] validating (post)
@@ -961,4 +961,4 @@
 [debug/compiler] codegen module Foo to C++
 [debug/compiler]   generating C++ for module Foo
 [debug/compiler]   finalizing module Foo
-[debug/ast-stats] garbage collected 5469 nodes in 17 rounds, 0 left retained
+[debug/ast-stats] garbage collected 5508 nodes in 17 rounds, 0 left retained
