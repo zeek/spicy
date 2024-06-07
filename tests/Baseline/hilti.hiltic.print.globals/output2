@@ -9,11 +9,11 @@
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    static std::optional<std::string> X = {};
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
     extern void __register_module();
+    static std::optional<std::string> X = {};
 }
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)

@@ -1,3 +1,11 @@
+1.11.0-dev.183 | 2024-06-07 10:35:53 +0200
+
+  * GH-1745: Fix C++ initialization of global constants through global functions. (Robin Sommer, Corelight)
+
+    The changes ordering of the emitted global declarations so that
+    functions now come first, allowing them be used inside subsequent
+    constant initializations.
+
 1.11.0-dev.181 | 2024-06-04 10:18:25 +0200
 
   * Clean up includes. (Benjamin Bannier, Corelight)

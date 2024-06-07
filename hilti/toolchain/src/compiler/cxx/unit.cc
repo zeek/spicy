@@ -249,6 +249,21 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
                 f << t.second;
         }
 
+        for ( const auto& i : _function_declarations ) {
+            if ( i.second.id.namespace_() != ns )
+                continue;
+
+            auto needs_separator = (i.second.inline_body && i.second.inline_body->size() > 1);
+
+            if ( needs_separator )
+                f << separator();
+
+            f << i.second;
+
+            if ( needs_separator )
+                f << separator();
+        }
+
         if ( ! prototypes_only || ! util::endsWith(ns, "::") ) { // skip anonymous namespace
             if ( ID(ns) == cxx::ID(context()->options().cxx_namespace_intern, "type_info::") )
                 // We force this to come last later below because creating the type information needs access to all
@@ -264,21 +279,6 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
                 if ( i.second.id.namespace_() == ns )
                     f << i.second;
             }
-        }
-
-        for ( const auto& i : _function_declarations ) {
-            if ( i.second.id.namespace_() != ns )
-                continue;
-
-            auto needs_separator = (i.second.inline_body && i.second.inline_body->size() > 1);
-
-            if ( needs_separator )
-                f << separator();
-
-            f << i.second;
-
-            if ( needs_separator )
-                f << separator();
         }
     }
 
