@@ -1,0 +1,19 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+#
+# @TEST-DOC: Test the special-case of `result<void>`.
+
+module Foo {
+
+import hilti;
+
+function result<void> x(bool b) {
+    if ( b )
+        return Null;
+    else
+        return error("trouble...");
+}
+
+assert x(True);
+assert x(False).error() == error("trouble...");
+
+}

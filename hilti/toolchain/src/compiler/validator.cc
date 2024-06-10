@@ -643,7 +643,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( n->isWildcard() )
             return;
 
-        if ( const auto& t = n->dereferencedType(); ! t->type()->isAllocable() )
+        if ( const auto& t = n->dereferencedType(); ! t->type()->isAllocable() && ! t->type()->isA<type::Void>() )
             error(fmt("type %s cannot be used inside result", *t), n);
     }
 
