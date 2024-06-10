@@ -34,8 +34,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 108
-%expect-rr 164
+%expect 111
+%expect-rr 168
 
 %{
 
@@ -131,6 +131,7 @@ static std::vector<hilti::DocString> _docs;
 %token <std::string> PREPROCESSOR   "preprocessor directive"
 %token <std::string> CSTRING        "string value"
 %token <std::string> CBYTES         "bytes value"
+%token <std::string> CERROR         "error value"
 %token <std::string> CREGEXP        "regular expression value"
 %token <std::string> CADDRESS       "address value"
 %token <std::string> CPORT          "port value"
@@ -174,6 +175,7 @@ static std::vector<hilti::DocString> _docs;
 %token END_
 %token ENUM
 %token EQ
+%token __ERROR
 %token EXCEPTION
 %token EXPORT
 %token FILE
@@ -230,6 +232,7 @@ static std::vector<hilti::DocString> _docs;
 %token PRIVATE
 %token PUBLIC
 %token REGEXP
+%token RESULT
 %token RETURN
 %token SET
 %token SHIFTLEFT
@@ -605,6 +608,7 @@ base_type_no_ref
               | ADDRESS                          { $$ = builder->typeAddress(__loc__); }
               | BOOL                             { $$ = builder->typeBool(__loc__); }
               | BYTES                            { $$ = builder->typeBytes(__loc__); }
+              | __ERROR                          { $$ = builder->typeError(__loc__); }
               | INTERVAL                         { $$ = builder->typeInterval(__loc__); }
               | NETWORK                          { $$ = builder->typeNetwork(__loc__); }
               | PORT                             { $$ = builder->typePort(__loc__); }
@@ -627,6 +631,7 @@ base_type_no_ref
               | CONST_ITERATOR type_param_begin qtype type_param_end      { $$ = iteratorForType(builder, std::move($3), __loc__)->type(); }
               | ITERATOR type_param_begin qtype type_param_end            { $$ = iteratorForType(builder, std::move($3), __loc__)->type(); }
               | OPTIONAL type_param_begin qtype type_param_end            { $$ = builder->typeOptional($3, __loc__); }
+              | RESULT type_param_begin qtype type_param_end              { $$ = builder->typeResult($3, __loc__); }
               | VIEW type_param_begin qtype type_param_end                { $$ = viewForType(builder, std::move($3), __loc__)->type(); }
 
               | MAP type_param_begin qtype ',' qtype type_param_end        { $$ = builder->typeMap(std::move($3), std::move($5), __loc__); }
@@ -1036,6 +1041,7 @@ ctor          : CADDRESS                         { $$ = builder->ctorAddress(hil
               | CADDRESS '/' CUINTEGER           { $$ = builder->ctorNetwork(hilti::rt::Network($1, $3), __loc__); }
               | CBOOL                            { $$ = builder->ctorBool($1, __loc__); }
               | CBYTES                           { $$ = builder->ctorBytes(std::move($1), __loc__); }
+              | CERROR                           { $$ = builder->ctorError(std::move($1), __loc__); }
               | CPORT                            { $$ = builder->ctorPort(hilti::rt::Port($1), __loc__); }
               | CNULL                            { $$ = builder->ctorNull(__loc__); }
               | CSTRING                          { $$ = builder->ctorString($1, false, __loc__); }
@@ -1052,6 +1058,8 @@ ctor          : CADDRESS                         { $$ = builder->ctorAddress(hil
                  But not sure if that'd change much so leaving here for now.
               */
               | OPTIONAL '(' expr ')'            { $$ = builder->ctorOptional(std::move($3), __loc__); }
+              | RESULT '(' expr ')'              { $$ = builder->ctorResult(std::move($3), __loc__); }
+
               | list                             { $$ = std::move($1); }
               | map                              { $$ = std::move($1); }
               | regexp                           { $$ = std::move($1); }

@@ -120,6 +120,26 @@ Enum types associate labels with numerical values.
 
 .. include:: /autogen/types/enum.rst
 
+.. _type_error:
+
+spicy::Error
+------------
+
+``spicy::Error`` captures an error message. It's primarily meant for
+use with the :ref:`result\<T\> <type_result>` type; see there for
+more.
+
+.. rubric:: Type
+
+- ``spicy::Error`` (note that you need to ``import spicy`` to use this)
+
+.. rubric:: Constants
+
+- ``error"MSG"`` creates a value of type ``spicy::Error`` capturing the
+  error message ``MSG``.
+
+.. include:: /autogen/types/error.rst
+
 .. _type_exception:
 
 Exception
@@ -307,6 +327,50 @@ Real
 This type supports the :ref:`pack/unpack operators <packing>`.
 
 .. include:: /autogen/types/real.rst
+
+.. _type_result:
+
+Result
+------
+
+A ``result<T>`` is a type facilitating error handling by holding
+either a value of type ``T`` or an error message. It's most useful
+when used as the return value of a function that would normally produce
+a computed value of some kind, but may fail doing so. Typical example:
+
+.. spicy-code::
+
+  function compute_value() : result<int64> {
+
+      local value: int64;
+
+      [... Try to compute value ...]
+
+      if ( everything_went_ok )
+          return value;
+      else
+          return error"Something went wrong.";
+  }
+
+  if ( local x = compute_value() )
+      print "result: %d " % *x;
+  else
+      print "error: %s " % x.error();
+
+.. **
+
+As you can see, the ``result<int64>`` return value of
+``compute_value()`` can be set from either a corresponding integer or
+an appropriate error message. In the latter case, ``error"MSG"``
+instantiates an error value of type :ref:`type_error`. As the ``if``
+statements shows, ``result<T>`` coerces to a boolean value depending
+on whether it holds a value or an error.
+
+.. rubric:: Type
+
+- ``result<TYPE>``
+
+.. include:: /autogen/types/result.rst
 
 .. _type_reference:
 

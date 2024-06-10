@@ -2,6 +2,7 @@ False
 None
 Null
 True
+__error
 __library_type
 add
 addr
@@ -70,6 +71,7 @@ public
 real
 regexp
 reject
+result
 return
 set
 sink

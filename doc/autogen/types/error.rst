@@ -6,7 +6,11 @@
 
 .. rubric:: Operators
 
-.. spicy:operator:: error::Call error error(string)
+.. spicy:operator:: error::Equal bool t:error <sp> op:== <sp> t:error
 
-    Creates an error with the given message.
+    Compares two error descriptions lexicographically.
+
+.. spicy:operator:: error::Unequal bool t:error <sp> op:!= <sp> t:error
+
+    Compares two error descriptions lexicographically.
 

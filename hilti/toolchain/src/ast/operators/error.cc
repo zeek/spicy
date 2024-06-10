@@ -23,6 +23,7 @@ public:
             .result = {Constness::Const, builder->typeError()},
             .ns = "error",
             .doc = "Creates an error with the given message.",
+            .skip_doc = true, // not available in Spicy source code
         };
     }
 
