@@ -311,6 +311,10 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::result::Error(%s)", args[0]);
     }
 
+    void operator()(operator_::error::Equal* n) final { result = binary(n, "=="); }
+
+    void operator()(operator_::error::Unequal* n) final { result = binary(n, "!="); }
+
     // Exception
 
     void operator()(operator_::exception::Ctor* n) final {

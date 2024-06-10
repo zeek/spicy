@@ -229,6 +229,8 @@ constexpr Tag Unequal = 1106;
 namespace error {
 constexpr Tag Ctor = 1200;
 constexpr Tag Description = 1201;
+constexpr Tag Equal = 2702;
+constexpr Tag Unequal = 2703;
 } // namespace error
 
 namespace exception {

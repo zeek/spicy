@@ -30,6 +30,40 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Ctor);
 
+class Equal : public Operator {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::Equal,
+            .op0 = {parameter::Kind::In, builder->typeError()},
+            .op1 = {parameter::Kind::In, builder->typeError()},
+            .result = {Constness::Const, builder->typeBool()},
+            .ns = "error",
+            .doc = "Compares two error descriptions lexicographically.",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, error::Equal)
+};
+HILTI_OPERATOR_IMPLEMENTATION(Equal);
+
+class Unequal : public Operator {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::Unequal,
+            .op0 = {parameter::Kind::In, builder->typeError()},
+            .op1 = {parameter::Kind::In, builder->typeError()},
+            .result = {Constness::Const, builder->typeBool()},
+            .ns = "error",
+            .doc = "Compares two error descriptions lexicographically.",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, error::Unequal)
+};
+HILTI_OPERATOR_IMPLEMENTATION(Unequal);
+
 class Description : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {

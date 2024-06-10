@@ -210,6 +210,8 @@ class HasLabel;
 
 namespace error {
 class Ctor;
+class Equal;
+class Unequal;
 class Description;
 } // namespace error
 

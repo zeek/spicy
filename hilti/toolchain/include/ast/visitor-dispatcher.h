@@ -173,6 +173,8 @@ public:
     virtual void operator()(hilti::operator_::enum_::CtorUnsigned* n) {}
     virtual void operator()(hilti::operator_::enum_::HasLabel* n) {}
     virtual void operator()(hilti::operator_::error::Ctor* n) {}
+    virtual void operator()(hilti::operator_::error::Equal* n) {}
+    virtual void operator()(hilti::operator_::error::Unequal* n) {}
     virtual void operator()(hilti::operator_::error::Description* n) {}
     virtual void operator()(hilti::operator_::exception::Ctor* n) {}
     virtual void operator()(hilti::operator_::exception::Description* n) {}
