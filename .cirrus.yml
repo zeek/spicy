@@ -318,9 +318,9 @@ docker_alpine_3_18_task:
     path: build/spicy*.tar.gz
     type: application/gzip
 
-docker_centos_stream_8_task:
+docker_centos_stream_9_task:
   container:
-    dockerfile: docker/Dockerfile.centos-stream-8
+    dockerfile: docker/Dockerfile.centos-stream-9
     cpu: 4
     memory: 14G
 
@@ -339,9 +339,7 @@ docker_centos_stream_8_task:
     - git submodule update --recursive --init
 
   configure_script:
-    # TODO(bbannier): We do not enable -Werror on centos8 since it ships with
-    # flex-2.6.1 which generates code which triggers sign-compare diagnostics.
-    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build check all package
     - cp build/spicy*.rpm .
