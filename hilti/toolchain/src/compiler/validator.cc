@@ -743,6 +743,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 checkStructArguments(args, t->typeValue()->type()->parameters(), n);
             }
         }
+        else if ( ! n->operands()[0]->isA<expression::Ctor>() )
+            error("new operator expects a type or constant as its argument", n);
     }
 };
 

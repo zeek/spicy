@@ -1,3 +1,67 @@
+1.11.0-dev.191 | 2024-06-13 09:59:22 +0200
+
+  * GH-1598: Enforce that the argument `new` is either a type or a
+    ctor. (Robin Sommer, Corelight)
+
+    So far we allowed some more generic expressions as well, but it's hard
+    for the parser to support arbitrary expressions here due to parsing
+    ambiguities, leaving things inconsistent. So we now limit it to what
+    was pretty much the intent originally anyways.
+
+    Note that the error message for #1598 stays the same: it's not great,
+    but seems good enough. However, we now actually disallow the
+    workaround shown in the ticket as well for consistency. The new
+    work-around is shown in the changes to `hilti.codegen.type-info`.
+
+  * GH-90/GH-1733: Add `result` and `spicy::Error` types to Spicy to
+    facilitate error handling. (Robin Sommer, Corelight)
+
+    The `result` and `error` types were already implemented internally
+    HILTI-side, but not yet available to Spicy users. This exposes them to
+    Spicy as well. To avoid name clashes with existing code, we don't
+    introduce `error` as a new type keyword, but instead make it available
+    as a library type ``spicy::Error``.
+
+    Typical usage is something like this:
+
+    ```
+    function foo() : result<int64> {
+        ...
+        if ( everything_is_ok )
+            return 42;
+        else
+            return error"Something went wrong.";
+    }
+
+    if ( local x = foo() )
+        print "result: %d " % *x;
+    else
+        print "error: %s " % x.error();
+    ```
+
+    The documentation has more specifics.
+
+  * Support `result<void>` to HILTI. (Robin Sommer, Corelight)
+
+    This allows to capture errors even if there's no actual result
+    otherwise. Example (HILTI syntax):
+
+    ```
+    function result<void> x(bool b) {
+         if ( b )
+             return Null; # coerces to a successful result<void>
+         else
+             return error("trouble...");
+     }
+
+    assert x(True);
+    assert x(False).error() == error("trouble...");
+
+    ```
+
+  * Add `==`/`!=` operators for HILTI `error` instances. (Robin
+    Sommer, Corelight)
+
 1.11.0-dev.185 | 2024-06-11 18:47:19 +0200
 
   * Bump centos-stream in CI. (Benjamin Bannier, Corelight)

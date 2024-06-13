@@ -156,7 +156,9 @@ public function tuple<strong_ref<TestTypes>, strong_ref<TestTypes>, TypeInfo> ma
         $wr = S
     ];
 
-    return (new (x), new TestTypes, typeinfo(TestTypes));
+    local x_ = new TestTypes;
+    *x_ = x;
+    return (x_, new TestTypes, typeinfo(TestTypes));
 }
 
 public function tuple<strong_ref<TestOptionals>, TypeInfo> makeTestOptionals() {
@@ -164,7 +166,9 @@ public function tuple<strong_ref<TestOptionals>, TypeInfo> makeTestOptionals() {
         $opt_set = "yes"
     ];
 
-    return (new (x), typeinfo(TestOptionals));
+    local x_ = new TestOptionals;
+    *x_ = x;
+    return (x_, typeinfo(TestOptionals));
 }
 
 }
