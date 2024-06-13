@@ -161,6 +161,7 @@ public:
     virtual void operator()(hilti::operator_::bytes::ToUIntAscii* n) {}
     virtual void operator()(hilti::operator_::bytes::ToIntBinary* n) {}
     virtual void operator()(hilti::operator_::bytes::ToUIntBinary* n) {}
+    virtual void operator()(hilti::operator_::bytes::ToRealAscii* n) {}
     virtual void operator()(hilti::operator_::bytes::ToTimeAscii* n) {}
     virtual void operator()(hilti::operator_::bytes::ToTimeBinary* n) {}
     virtual void operator()(hilti::operator_::bytes::Decode* n) {}
@@ -222,6 +223,7 @@ public:
     virtual void operator()(hilti::operator_::map::IndexNonConst* n) {}
     virtual void operator()(hilti::operator_::map::IndexAssign* n) {}
     virtual void operator()(hilti::operator_::map::Get* n) {}
+    virtual void operator()(hilti::operator_::map::GetOptional* n) {}
     virtual void operator()(hilti::operator_::map::Clear* n) {}
     virtual void operator()(hilti::operator_::network::Equal* n) {}
     virtual void operator()(hilti::operator_::network::Unequal* n) {}

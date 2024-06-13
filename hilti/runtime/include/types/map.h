@@ -222,6 +222,19 @@ public:
         }
     }
 
+    /**
+     * Attempts to get the value for a key.
+     *
+     * @param k key to retrieve
+     * @return the value, or an unset optional if the key is not set in the map
+     */
+    std::optional<V> get_optional(const K& k) const& {
+        if ( auto it = this->find(k); it != M::end() )
+            return it->second;
+        else
+            return {};
+    }
+
     /** Access an element by key
      *
      * @param k key of the element

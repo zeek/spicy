@@ -355,6 +355,36 @@ the default value if provided; otherwise throws a runtime error.
 };
 HILTI_OPERATOR_IMPLEMENTATION(Get);
 
+class GetOptional : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
+            .member = "get_optional",
+            .param0 =
+                {
+                    .name = "key",
+                    .type = {parameter::Kind::In, builder->typeAny()},
+                },
+            .result_doc = "optional<type of element>",
+            .ns = "map",
+            .doc = R"(
+Returns an optional either containing the map's element for the given key if
+that entry exists, or an unset optional if it does not.
+)",
+        };
+    }
+
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+        return builder->qualifiedType(builder->typeOptional(operands[0]->type()->type()->as<type::Map>()->valueType()),
+                                      Constness::Const);
+    }
+
+    HILTI_OPERATOR(hilti, map::GetOptional);
+};
+HILTI_OPERATOR_IMPLEMENTATION(GetOptional);
+
 class Clear : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {

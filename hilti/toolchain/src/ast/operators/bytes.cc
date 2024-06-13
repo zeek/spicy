@@ -876,6 +876,30 @@ byte order, and converts it into an unsigned integer.
 };
 HILTI_OPERATOR_IMPLEMENTATION(ToUIntBinary);
 
+class ToRealAscii : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeBytes()},
+            .member = "to_real",
+            .result = {Constness::Const, builder->typeReal()},
+            .ns = "bytes",
+            .doc =
+                R"(
+Interprets the ``bytes`` as representing an ASCII-encoded floating point number
+and converts that into a ``real``. The data can be in either decimal or
+hexadecimal format, and the conversion assumes a C/POSIX locale (i.e., using
+``.`` as the decimal separator). If the conversion fails, throws an
+`InvalidValue` exception.
+)",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, bytes::ToRealAscii);
+};
+HILTI_OPERATOR_IMPLEMENTATION(ToRealAscii);
+
 class ToTimeAscii : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {

@@ -36,3 +36,6 @@ u.i = 42;
 global m2 = map<string, U>("foo": u);
 m2["foo"].i = 43;
 print m2["foo"].i;
+
+print m2.get_optional("foo");
+print m2.get_optional("bar");

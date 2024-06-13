@@ -489,6 +489,14 @@ public:
     uint64_t toUInt(hilti::rt::ByteOrder byte_order) const;
 
     /**
+     * Interprets the data as an ASCII representation of a floating point value
+     * and extracts that. The data must be in a format that `strtod` can handle.
+     *
+     * @return converted real value
+     */
+    double toReal() const;
+
+    /**
      * Interprets the data as an ASCII representation of a integer value
      * representing seconds since the UNIX epoch, and extracts that.
      *

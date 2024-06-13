@@ -192,6 +192,7 @@ class ToIntAscii;
 class ToUIntAscii;
 class ToIntBinary;
 class ToUIntBinary;
+class ToRealAscii;
 class ToTimeAscii;
 class ToTimeBinary;
 class Decode;
@@ -283,6 +284,7 @@ class IndexConst;
 class IndexNonConst;
 class IndexAssign;
 class Get;
+class GetOptional;
 class Clear;
 
 } // namespace map

@@ -193,12 +193,13 @@ constexpr Tag SumAssignStreamView = 922;
 constexpr Tag SumAssignUInt8 = 923;
 constexpr Tag ToIntAscii = 924;
 constexpr Tag ToIntBinary = 925;
-constexpr Tag ToTimeAscii = 926;
-constexpr Tag ToTimeBinary = 927;
-constexpr Tag ToUIntAscii = 928;
-constexpr Tag ToUIntBinary = 929;
-constexpr Tag Unequal = 930;
-constexpr Tag UpperCase = 931;
+constexpr Tag ToRealAscii = 926;
+constexpr Tag ToTimeAscii = 927;
+constexpr Tag ToTimeBinary = 928;
+constexpr Tag ToUIntAscii = 929;
+constexpr Tag ToUIntBinary = 930;
+constexpr Tag Unequal = 931;
+constexpr Tag UpperCase = 932;
 
 namespace iterator {
 constexpr Tag Deref = 1000;
@@ -296,6 +297,7 @@ constexpr Tag IndexConst = 1906;
 constexpr Tag IndexNonConst = 1907;
 constexpr Tag Size = 1908;
 constexpr Tag Unequal = 1909;
+constexpr Tag GetOptional = 1910;
 
 namespace iterator {
 constexpr Tag Deref = 2000;

@@ -96,6 +96,14 @@
     Interprets the ``bytes`` as representing an binary number encoded with
     the given byte order, and converts it into signed integer.
 
+.. spicy:method:: bytes::to_real bytes to_real False real ()
+
+    Interprets the ``bytes`` as representing an ASCII-encoded floating
+    point number and converts that into a ``real``. The data can be in
+    either decimal or hexadecimal format, and the conversion assumes a
+    C/POSIX locale (i.e., using ``.`` as the decimal separator). If the
+    conversion fails, throws an `InvalidValue` exception.
+
 .. spicy:method:: bytes::to_time bytes to_time False time ([ base: uint<64> ])
 
     Interprets the ``bytes`` as representing a number of seconds since the

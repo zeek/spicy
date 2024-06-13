@@ -1,3 +1,19 @@
+1.11.0-dev.197 | 2024-06-13 12:43:33 +0200
+
+  * GH-1750: Add `to_real` method to `bytes`. (Robin Sommer, Corelight)
+
+    This interprets the data as representing an ASCII-encoded floating
+    point number and converts that into a ``real``. The data can be in
+    either decimal or hexadecimal format. If it cannot be parsed as
+    either, throws an `InvalidValue` exception.
+
+  * GH-1608: Add `get_optional` method to maps. (Robin Sommer, Corelight)
+
+    This returns an optional either containing the map's element for the
+    given key if that entry exists, or an unset optional if it does not.
+
+  * Update some debug baselines. (Robin Sommer, Corelight)
+
 1.11.0-dev.193 | 2024-06-13 12:10:22 +0200
 
   * GH-1760: Fix generated code for huge `const` collections. (Benjamin Bannier, Corelight)

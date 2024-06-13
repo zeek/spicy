@@ -23,6 +23,7 @@ HILTI_NODE_OPERATOR(map, IndexConst)
 HILTI_NODE_OPERATOR(map, IndexNonConst)
 HILTI_NODE_OPERATOR(map, IndexAssign)
 HILTI_NODE_OPERATOR(map, Get)
+HILTI_NODE_OPERATOR(map, GetOptional)
 HILTI_NODE_OPERATOR(map, Clear)
 
 } // namespace hilti::operator_

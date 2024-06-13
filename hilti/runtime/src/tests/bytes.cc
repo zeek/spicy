@@ -410,6 +410,47 @@ TEST_CASE("toUInt") {
     }
 }
 
+TEST_CASE("toReal") {
+    CHECK_EQ("100"_b.toReal(), 100);
+    CHECK_EQ("0."_b.toReal(), 0.);
+
+    CHECK_EQ("0.5"_b.toReal(), 0.5);
+    CHECK_EQ("-0.5"_b.toReal(), -0.5);
+    CHECK_EQ("+0.5"_b.toReal(), +0.5);
+    CHECK_EQ(".5"_b.toReal(), 0.5);
+    CHECK_EQ("-.5"_b.toReal(), -0.5);
+
+    CHECK_EQ("1e42"_b.toReal(), 1e42);
+    CHECK_EQ("+1e42"_b.toReal(), 1e42);
+    CHECK_EQ("-1e42"_b.toReal(), -1e42);
+
+    CHECK_EQ("1e+42"_b.toReal(), 1e42);
+    CHECK_EQ("1e-42"_b.toReal(), 1e-42);
+
+    CHECK_EQ("inf"_b.toReal(), std::numeric_limits<double>::infinity());
+    CHECK_EQ("-inf"_b.toReal(), -std::numeric_limits<double>::infinity());
+
+    CHECK(std::isnan("nan"_b.toReal()));
+    CHECK(std::isnan("-nan"_b.toReal()));
+
+    CHECK_THROWS_WITH_AS(""_b.toReal(), "cannot parse real value: ''", const InvalidValue&);
+    CHECK_THROWS_WITH_AS("abc"_b.toReal(), "cannot parse real value: 'abc'", const InvalidValue&);
+    CHECK_THROWS_WITH_AS("a.2"_b.toReal(), "cannot parse real value: 'a.2'", const InvalidValue&);
+    CHECK_THROWS_WITH_AS("2.a"_b.toReal(), "cannot parse real value: '2.a'", const InvalidValue&);
+
+    // The next test should fail independent of the locale, so let's set one.
+
+    auto de_locale = newlocale(LC_ALL_MASK, "de_DE.UTF-8", nullptr);
+    if ( ! de_locale )
+        FAIL("failed to create de_DE locale; locales not installed?");
+
+    auto old_locale = uselocale(de_locale);
+    CHECK_THROWS_WITH_AS("1,0"_b.toReal(), "cannot parse real value: '1,0'", const InvalidValue&);
+    uselocale(old_locale);
+
+    freelocale(de_locale);
+}
+
 TEST_CASE("toTime") {
     CHECK_EQ("10"_b.toTime(), Time(10, Time::SecondTag()));
     CHECK_EQ("10"_b.toTime(2), Time(2, Time::SecondTag()));

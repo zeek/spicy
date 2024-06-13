@@ -10,6 +10,11 @@
     exist, returns the default value if provided; otherwise throws a
     runtime error.
 
+.. spicy:method:: map::get_optional map get_optional False optional<type~of~element> (key: <any>)
+
+    Returns an optional either containing the map's element for the given
+    key if that entry exists, or an unset optional if it does not.
+
 .. rubric:: Operators
 
 .. spicy:operator:: map::Begin <iterator> begin(<container>)

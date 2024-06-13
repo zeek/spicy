@@ -247,6 +247,11 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s.toUInt(%s)", self, optionalArgument(args, 0));
     }
 
+    void operator()(operator_::bytes::ToRealAscii* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("%s.toReal()", self);
+    }
+
     void operator()(operator_::bytes::ToTimeAscii* n) final {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.toTime(%s)", self, optionalArgument(args, 0));
@@ -427,10 +432,15 @@ struct Visitor : hilti::visitor::PreOrder {
 
         if ( auto default_ = optionalArgument(args, 1); ! default_.empty() )
             result = fmt(
-                "[](auto&& m, auto&& k, auto&& default_) { return m.contains(k)? m.get(k) : default_; }(%s, %s, %s)",
+                "[](auto&& m, auto&& k, auto&& default_) { return m.contains(k) ? m.get(k) : default_; }(%s, %s, %s)",
                 self, k, default_);
         else
             result = fmt("%s.get(%s)", self, k);
+    }
+
+    void operator()(operator_::map::GetOptional* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("%s.get_optional(%s)", self, args[0]);
     }
 
     void operator()(operator_::map::IndexAssign* n) final {
