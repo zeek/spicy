@@ -116,7 +116,13 @@ struct Visitor : hilti::visitor::PreOrder {
                                                     }),
                                     " ");
 
-            result = fmt("[&]() { auto __xs = ::hilti::rt::Map<%s, %s>(); %s return __xs; }()", k, v, elems);
+            // If we are at block scope capture other variables so they can be
+            // used in the ctr. Outside of block scope we are emitting a
+            // non-local `const` (into a namespace) which can reference only
+            // other `const` variables which since they are non-locals as well
+            // can be referenced without capturing.
+            auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
+            result = fmt("[%s]() { auto __xs = ::hilti::rt::Map<%s, %s>(); %s return __xs; }()", captures, k, v, elems);
         }
 
         else
@@ -201,7 +207,13 @@ struct Visitor : hilti::visitor::PreOrder {
                                            [this](const auto& e) { return fmt("__xs.insert(%s);", cg->compile(e)); }),
                            " ");
 
-            result = fmt("[&]() { auto __xs = ::hilti::rt::Set<%s>(); %s return __xs; }()", k, elems);
+            // If we are at block scope capture other variables so they can be
+            // used in the ctr. Outside of block scope we are emitting a
+            // non-local `const` (into a namespace) which can reference only
+            // other `const` variables which since they are non-locals as well
+            // can be referenced without capturing.
+            auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
+            result = fmt("[%s]() { auto __xs = ::hilti::rt::Set<%s>(); %s return __xs; }()", captures, k, elems);
         }
 
         else
@@ -289,8 +301,14 @@ struct Visitor : hilti::visitor::PreOrder {
                                                     }),
                                     " ");
 
-            result = fmt("[&]() { auto __xs = ::hilti::rt::Vector<%s%s>(); __xs.reserve(%d); %s return __xs; }()", x,
-                         allocator, size, elems);
+            // If we are at block scope capture other variables so they can be
+            // used in the ctr. Outside of block scope we are emitting a
+            // non-local `const` (into a namespace) which can reference only
+            // other `const` variables which since they are non-locals as well
+            // can be referenced without capturing.
+            auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
+            result = fmt("[%s]() { auto __xs = ::hilti::rt::Vector<%s%s>(); __xs.reserve(%d); %s return __xs; }()",
+                         captures, x, allocator, size, elems);
         }
 
         else

@@ -1,3 +1,7 @@
+1.11.0-dev.193 | 2024-06-13 12:10:22 +0200
+
+  * GH-1760: Fix generated code for huge `const` collections. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.191 | 2024-06-13 09:59:22 +0200
 
   * GH-1598: Enforce that the argument `new` is either a type or a
