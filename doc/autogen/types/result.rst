@@ -7,8 +7,8 @@
 
 .. rubric:: Operators
 
-.. spicy:operator:: result::Deref <dereferenced~type> op:* t:result op:
+.. spicy:operator:: result::Deref <type~of~stored~value> op:* t:result op:
 
-    Retrieves value stored inside the result instance. Will throw a
+    Retrieves the value stored inside the result instance. Will throw a
     ``NoResult`` exception if the result is in an error state.
 

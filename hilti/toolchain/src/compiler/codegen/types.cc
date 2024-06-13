@@ -706,8 +706,12 @@ struct VisitorStorage : hilti::visitor::PreOrder {
     void operator()(type::Result* n) final {
         std::string t;
 
-        if ( const auto& ct = n->dereferencedType(); ! ct->isWildcard() )
-            t = fmt("::hilti::rt::Result<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
+        if ( const auto& ct = n->dereferencedType(); ! ct->isWildcard() ) {
+            if ( ct->type()->isA<type::Void>() )
+                t = "::hilti::rt::Result<::hilti::rt::Nothing>";
+            else
+                t = fmt("::hilti::rt::Result<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
+        }
         else
             t = "*";
 

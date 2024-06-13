@@ -15,10 +15,10 @@ public:
         return Signature{
             .kind = Kind::Deref,
             .op0 = {parameter::Kind::In, builder->typeResult(type::Wildcard())},
-            .result_doc = "<dereferenced type>",
+            .result_doc = "<type of stored value>",
             .ns = "result",
             .doc =
-                "Retrieves value stored inside the result instance. Will throw a ``NoResult`` exception if the "
+                "Retrieves the value stored inside the result instance. Will throw a ``NoResult`` exception if the "
                 "result is in an error state.",
         };
     }

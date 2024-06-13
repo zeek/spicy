@@ -39,7 +39,7 @@ SPICY_TYPES=address,bitfield,bool,bytes,enum,exception,integer,interval,list,map
 # Create list of reserved keywords.
 cat ${ROOTDIR}/spicy/toolchain/src/compiler/parser/scanner.ll \
     | grep "return.*token::" \
-    | grep '^[a-zA-Z_]\{2,\}' \
+    | grep '^[a-zA-Z_]\{2,\}[^{}]* ' \
     | awk '{print $1}' \
     | sort >${AUTOGEN_STAGE}/reserved-keywords.txt
 

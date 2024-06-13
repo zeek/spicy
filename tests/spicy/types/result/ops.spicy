@@ -1,0 +1,33 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEST-DOC: Exercise `result` and `error` types.
+#
+# This is testing primarily Spicy-side syntax for result/error. Functionality
+# is tested HILTI-side.
+
+module Test;
+
+global ok: result<int64> = 42;
+assert ok;
+assert *ok == 42;
+assert-exception ok.error();
+
+global fail: result<int64> = error"oops";
+assert ! fail;
+assert fail.error() == error"oops";
+assert fail.error().description() == "oops";
+assert "%s" % fail.error() == "oops";
+assert-exception *fail;
+
+global error = "XXX"; # ensure we can still use `error` as a variable name.
+
+global ok_void: result<void> = Null;
+assert ok_void;
+
+global fail_void: result<void> = error"oops";
+assert !fail_void;
+
+import spicy;
+global err: spicy::Error;
+err = error"abc";
+assert err.description() == "abc";

@@ -43,6 +43,10 @@ public type DecodeErrorStrategy = enum {
     STRICT   # runtime error is triggered
 } &cxxname="hilti::rt::bytes::DecodeErrorStrategy";
 
+## Represents the error value of ``result<T>`` instances. Use ``error"My error message"``
+## to create an error value of this type.
+public type Error = __error;
+
 ## Captures state for incremental regular expression matching.
 public type MatchState = struct {
 } &cxxname="hilti::rt::regexp::MatchState";

@@ -70,6 +70,11 @@ struct VisitorCtor : visitor::PreOrder {
             return;
         }
 
+        if ( auto t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() ) {
+            result = builder->ctorResult(builder->expressionCtor(builder->ctorNull()));
+            return;
+        }
+
         if ( auto t = dst->type()->tryAs<type::StrongReference>() ) {
             result = builder->ctorStrongReference(t->dereferencedType());
             return;
@@ -461,6 +466,8 @@ struct VisitorType : visitor::PreOrder {
 
     void operator()(type::Null* n) final {
         if ( dst->type()->isA<type::Optional>() )
+            result = dst;
+        else if ( auto t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() )
             result = dst;
         else if ( dst->type()->isA<type::StrongReference>() )
             result = dst;
