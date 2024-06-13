@@ -22,13 +22,16 @@ public:
     using Cases = std::vector<std::pair<std::vector<Expression*>, std::unique_ptr<Production>>>;
 
     Switch(ASTContext* /* ctx */, const std::string& symbol, Expression* expr, Cases cases,
-           std::unique_ptr<Production> default_, AttributeSet* attributes, const Location& l = location::None)
+           std::unique_ptr<Production> default_, AttributeSet* attributes, Expression* condition,
+           const Location& l = location::None)
         : Production(symbol, l),
           _expression(expr),
           _cases(std::move(cases)),
           _default(std::move(default_)),
-          _attributes(attributes) {}
+          _attributes(attributes),
+          _condition(condition) {}
 
+    const auto& condition() const { return _condition; }
     const auto& cases() const { return _cases; }
     const auto* default_() const { return _default.get(); }
     const auto& attributes() const { return _attributes; }
@@ -54,6 +57,7 @@ private:
     Cases _cases;
     std::unique_ptr<Production> _default;
     AttributeSet* _attributes = nullptr;
+    Expression* _condition = nullptr;
 };
 
 } // namespace spicy::detail::codegen::production

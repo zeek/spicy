@@ -1,0 +1,19 @@
+# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: echo x1Y | spicy-dump %INPUT.hlto >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+type X = unit(cond: bool) {
+    switch {
+        -> a: b"x1";
+        -> b: b"x2";
+        -> c: b"x3";
+    } if ( cond ) ;
+};
+
+public type Foo = unit {
+    x1: X(True);
+    x2: X(False);
+    y: b"Y";
+};
