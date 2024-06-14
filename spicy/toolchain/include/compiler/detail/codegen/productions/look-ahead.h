@@ -3,7 +3,6 @@
 #pragma once
 
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,12 +23,16 @@ enum class Default { First, Second, None };
 class LookAhead : public Production {
 public:
     LookAhead(ASTContext* /* ctx */, const std::string& symbol, std::unique_ptr<Production> alt1,
-              std::unique_ptr<Production> alt2, look_ahead::Default def, const Location& l = location::None)
-        : Production(symbol, l), _alternatives(std::make_pair(std::move(alt1), std::move(alt2))), _default(def) {}
+              std::unique_ptr<Production> alt2, look_ahead::Default def, Expression* condition,
+              const Location& l = location::None)
+        : Production(symbol, l),
+          _alternatives(std::make_pair(std::move(alt1), std::move(alt2))),
+          _default(def),
+          _condition(condition) {}
 
     LookAhead(ASTContext* ctx, const std::string& symbol, std::unique_ptr<Production> alt1,
-              std::unique_ptr<Production> alt2, const Location& l = location::None)
-        : LookAhead(ctx, symbol, std::move(alt1), std::move(alt2), look_ahead::Default::None, l) {}
+              std::unique_ptr<Production> alt2, Expression* condition, const Location& l = location::None)
+        : LookAhead(ctx, symbol, std::move(alt1), std::move(alt2), look_ahead::Default::None, condition, l) {}
 
     /** Returns the two alternatives. */
     std::pair<Production*, Production*> alternatives() const {
@@ -38,6 +41,9 @@ public:
 
     /** Returns what's the default alternative. */
     const auto& default_() const { return _default; }
+
+    /** Returns the boolean condition associated with the production, if any. */
+    auto condition() const { return _condition; }
 
     bool isAtomic() const final { return false; };
     bool isEodOk() const final { return isNullable(); };
@@ -70,6 +76,7 @@ private:
     std::pair<std::unique_ptr<Production>, std::unique_ptr<Production>> _alternatives;
 
     look_ahead::Default _default;
+    Expression* _condition = nullptr;
 
     std::pair<production::Set, production::Set> _lahs;
 };

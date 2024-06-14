@@ -55,10 +55,11 @@ static auto reference(hilti::ASTContext* ctx, const std::unique_ptr<T>& p) {
 
 static auto lookAhead(hilti::ASTContext* ctx, const std::string& symbol,
                       std::unique_ptr<spicy::detail::codegen::Production> a1,
-                      std::unique_ptr<spicy::detail::codegen::Production> a2) {
+                      std::unique_ptr<spicy::detail::codegen::Production> a2, hilti::Expression* condition = nullptr) {
     return std::make_unique<
         spicy::detail::codegen::production::LookAhead>(ctx, symbol, std::move(a1), std::move(a2),
-                                                       spicy::detail::codegen::production::look_ahead::Default::None);
+                                                       spicy::detail::codegen::production::look_ahead::Default::None,
+                                                       condition);
 }
 
 static auto epsilon(hilti::ASTContext* ctx) {

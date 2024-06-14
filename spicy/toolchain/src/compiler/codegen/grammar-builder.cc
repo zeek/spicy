@@ -230,7 +230,8 @@ struct Visitor : public visitor::PreOrder {
             }
 
             result = std::make_unique<production::Switch>(context(), switch_sym, n->expression(), std::move(cases),
-                                                          std::move(default_), n->attributes(), n->meta().location());
+                                                          std::move(default_), n->attributes(), n->condition(),
+                                                          n->meta().location());
             return;
         }
 
@@ -263,7 +264,7 @@ struct Visitor : public visitor::PreOrder {
 
                 auto lah_sym = fmt("%s_lha_%d", switch_sym, i);
                 auto lah = std::make_unique<production::LookAhead>(context(), lah_sym, std::move(prev), std::move(prod),
-                                                                   d, c->meta().location());
+                                                                   d, n->condition(), c->meta().location());
                 prev = std::move(lah);
             }
 

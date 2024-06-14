@@ -1,6 +1,6 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
-# @TEST-EXEC: echo 1234567890 | spicy-driver %INPUT.hlto >output
-# @TEST-EXEC: echo 2234567890 | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: echo 1234567890 | spicy-dump %INPUT.hlto >output
+# @TEST-EXEC: echo 2234567890 | spicy-dump %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output
 
 module Mini;
@@ -13,6 +13,4 @@ public type test = unit {
     b"1" -> b1: bytes &size=4;
     b"2" -> b2: bytes &size=4;
   } if ( self.a == b"1" );
-
-  on %done { print self; }
 };

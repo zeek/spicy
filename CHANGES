@@ -1,3 +1,15 @@
+1.11.0-dev.200 | 2024-06-14 10:56:04 +0200
+
+  * GH-1759: Fix `if`-condition with `switch` parsing. (Robin Sommer, Corelight)
+
+    The parser generator was ignoring `if` conditions attached to `switch`
+    constructs. While we actually had a test for this already, turns out
+    we had recorded a broken baseline. Plus, we were testing only one
+    variant of `switch` (expression-based, not look-ahead-based). This
+    implements and tests both variants now.
+
+  * Fix clang-tidy. (Robin Sommer, Corelight)
+
 1.11.0-dev.197 | 2024-06-13 12:43:33 +0200
 
   * GH-1750: Add `to_real` method to `bytes`. (Robin Sommer, Corelight)

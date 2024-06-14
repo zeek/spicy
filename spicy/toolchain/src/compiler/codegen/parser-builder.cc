@@ -1494,6 +1494,9 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Switch* p) final {
+        if ( auto c = p->condition() )
+            pushBuilder(builder()->addIf(c));
+
         builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
 
         if ( const auto& a = p->attributes()->find("&parse-from") )
@@ -1545,6 +1548,9 @@ struct ProductionVisitor : public production::Visitor {
             popState();
 
         builder()->addCall("hilti::debugDedent", {builder()->stringLiteral("spicy")});
+
+        if ( p->condition() )
+            popBuilder();
     }
 
     void operator()(const production::Unit* p) final {
@@ -1702,6 +1708,9 @@ struct ProductionVisitor : public production::Visitor {
     auto parseLookAhead(const production::LookAhead& p) {
         assert(state().needs_look_ahead);
 
+        if ( auto c = p.condition() )
+            pushBuilder(builder()->addIf(c));
+
         // If we don't have a look-ahead symbol pending, get one.
         auto true_ = builder()->addIf(builder()->not_(state().lahead));
         pushBuilder(true_);
@@ -1760,6 +1769,9 @@ struct ProductionVisitor : public production::Visitor {
         pushBuilder(builder_default);
         pb->parseError("no expected look-ahead token found", p.location());
         popBuilder();
+
+        if ( p.condition() )
+            popBuilder();
 
         return std::make_pair(builder_alt1, builder_alt2);
     }
