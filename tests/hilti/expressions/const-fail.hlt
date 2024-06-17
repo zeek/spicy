@@ -1,0 +1,28 @@
+# @TEST-EXEC-FAIL: hiltic -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Validate that `const` values can only be initialized with literals.
+module Foo {
+
+function uint<64> f1() {
+    return 4711;
+}
+
+const x1 = 1;
+const x2 = x1;                    # Rejected.
+const x3 = 1 + (x1*2);            # Rejected.
+const x4 = set(1, 2, 3, 4, 5);
+const x5 = set(1, 2, x1, 4, 5);   # Rejected.
+const x6 = set(1, 2, f1(), 4, 5); # Rejected.
+
+# We accept struct literals if they are initialized from literals.
+type X = struct {
+    bool b;
+    string s;
+};
+const X x7 = [$b = True, $s = "Foo!"];
+
+const x8 = True;
+const X x9 = [$b = x8, $s = "Foo!"]; # Rejected.
+
+}

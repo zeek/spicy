@@ -4,6 +4,7 @@
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/type.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/plugin.h>
@@ -13,9 +14,6 @@
 #include <spicy/ast/forward.h>
 #include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/validator.h>
-
-#include "ast/node.h"
-#include "ast/type.h"
 
 using namespace spicy;
 using hilti::util::fmt;

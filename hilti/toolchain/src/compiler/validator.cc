@@ -190,6 +190,15 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(declaration::Constant* n) final {
         if ( n->value()->type()->isWildcard() )
             error("cannot use wildcard type for constants", n);
+
+        struct VisitExpressions : visitor::PreOrder {
+            VisitorPost* outer_ = nullptr;
+            VisitExpressions(VisitorPost* outer) : outer_(outer) {}
+            void operator()(hilti::expression::Name* x) override {
+                outer_->error("'const' initialization cannot refer to other IDs", x);
+            }
+        };
+        hilti::visitor::visit(VisitExpressions(this), n);
     }
 
     void operator()(declaration::Function* n) final {
