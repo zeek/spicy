@@ -506,7 +506,7 @@ void detail::Fiber::yield() {
 
 void detail::Fiber::resume() {
     assert(_state == State::Yielded);
-    return run();
+    run();
 }
 
 void detail::Fiber::abort() {
@@ -516,7 +516,7 @@ void detail::Fiber::abort() {
     if ( ! context::detail::get(true) )
         return;
 
-    return run();
+    run();
 }
 
 std::unique_ptr<detail::Fiber> detail::Fiber::create() {
