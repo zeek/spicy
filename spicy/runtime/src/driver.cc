@@ -38,6 +38,7 @@ using namespace spicy::rt;
 
 HILTI_EXCEPTION_IMPL(InvalidUnitType);
 
+#ifndef NDEBUG
 inline static auto pretty_print_number(uint64_t n) {
     if ( n > 1024ULL * 1024 * 1024 )
         return fmt("%" PRIu64 "G", n / 1024 / 1024 / 1024);
@@ -47,45 +48,54 @@ inline static auto pretty_print_number(uint64_t n) {
         return fmt("%" PRIu64 "K", n / 1024);
     return fmt("%" PRIu64, n);
 }
+#endif
 
 inline void Driver::debug(const std::string& msg) { HILTI_RT_DEBUG("spicy-driver", msg); }
 
 void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data) {
+#ifndef NDEBUG
     auto data_begin = data->begin().offset();
     auto data_end = data_begin + data->size();
     auto data_chunks = pretty_print_number(data->numberOfChunks());
     auto data_size_cur = pretty_print_number(data->size());
     auto data_size_total = pretty_print_number(data_end);
+#endif
 
     DRIVER_DEBUG(fmt("input : size-current=%s size-total=%s chunks-cur=%s offset-head=%" PRIu64 " offset-tail=%" PRIu64,
                      data_size_cur, data_size_total, data_chunks, data_begin, data_end));
 
+#ifndef NDEBUG
     auto ru = hilti::rt::resource_usage();
     auto memory_heap = pretty_print_number(ru.memory_heap);
     auto num_stacks = pretty_print_number(ru.num_fibers);
     auto max_stacks = pretty_print_number(ru.max_fibers);
     auto max_stack_size = pretty_print_number(ru.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(ru.cached_fibers);
+#endif
 
     DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
                      num_stacks, cached_stacks, max_stacks, max_stack_size));
 }
 
 void Driver::_debugStats(size_t current_flows, size_t current_connections) {
+#ifndef NDEBUG
     auto num_flows = pretty_print_number(current_flows);
     auto total_flows = pretty_print_number(_total_flows);
     auto num_connections = pretty_print_number(current_connections);
     auto total_connections = pretty_print_number(_total_connections);
+#endif
 
     DRIVER_DEBUG(fmt("state: current_flows=%s total_flows=%s current_connections=%s total_connections=%s", num_flows,
                      total_flows, num_connections, total_connections));
 
+#ifndef NDEBUG
     auto stats = hilti::rt::resource_usage();
     auto memory_heap = pretty_print_number(stats.memory_heap);
     auto num_stacks = pretty_print_number(stats.num_fibers);
     auto max_stacks = pretty_print_number(stats.max_fibers);
     auto max_stack_size = pretty_print_number(stats.max_fiber_stack_size);
     auto cached_stacks = pretty_print_number(stats.cached_fibers);
+#endif
 
     DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
                      num_stacks, cached_stacks, max_stacks, max_stack_size));

@@ -797,8 +797,6 @@ struct VisitorStorage : hilti::visitor::PreOrder {
     }
 
     void operator()(type::ValueReference* n) final {
-        std::string t;
-
         if ( const auto& ct = n->dereferencedType(); ! ct->isWildcard() ) {
             auto element_type = cg->compile(ct, codegen::TypeUsage::Ctor);
             result = CxxTypes{.base_type = fmt("::hilti::rt::ValueReference<%s>", element_type), .ctor = element_type};
