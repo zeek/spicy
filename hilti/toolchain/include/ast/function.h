@@ -35,7 +35,7 @@ constexpr util::enum_::Value<CallingConvention> Conventions[] = {
 constexpr auto to_string(CallingConvention cc) { return util::enum_::to_string(cc, detail::Conventions); }
 
 namespace calling_convention {
-constexpr inline auto from_string(const std::string_view& s) {
+constexpr auto from_string(const std::string_view& s) {
     return util::enum_::from_string<CallingConvention>(s, detail::Conventions);
 }
 } // namespace calling_convention

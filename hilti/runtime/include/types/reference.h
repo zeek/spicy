@@ -317,7 +317,7 @@ private:
         assert(t);
     }
 
-    inline const T* _get() const noexcept {
+    const T* _get() const noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
@@ -325,7 +325,7 @@ private:
         return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
     }
 
-    inline T* _get() noexcept {
+    T* _get() noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
@@ -333,7 +333,7 @@ private:
         return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
     }
 
-    inline const T* _safeGet() const {
+    const T* _safeGet() const {
         assert(_ptr.index() != std::variant_npos);
 
         // If the reference contains a raw pointer it is never null.
@@ -346,7 +346,7 @@ private:
         reference::detail::throw_null();
     }
 
-    inline T* _safeGet() {
+    T* _safeGet() {
         assert(_ptr.index() != std::variant_npos);
 
         // If the reference contains a raw pointer it is never null.
