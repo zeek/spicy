@@ -111,7 +111,7 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
             std::string s;
             for ( auto c : str() ) {
                 if ( c >= 32 && c < 0x7f )
-                    s += static_cast<char>(c);
+                    s += c;
                 else {
                     switch ( errors.value() ) {
                         case DecodeErrorStrategy::IGNORE: break;
