@@ -106,6 +106,8 @@ Version 1.10
   specified in a ``&size`` attribute this also allows to skip over unit
   fields.
 
+- GH-1763: Restrict initialization of ``const`` values to literals
+
 .. rubric:: Bug fixes
 
 - GH-1605: Allow for unresolved types for set ``in`` operator.

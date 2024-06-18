@@ -9,9 +9,7 @@ function uint<16> bar() {
 }
 
 global x = bar();
-const y = bar();
 
 assert x == 4711;
-assert y == 4711;
 
 }

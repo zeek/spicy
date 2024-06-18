@@ -1,3 +1,13 @@
+1.11.0-dev.202 | 2024-06-18 12:31:36 +0200
+
+  * GH-1763: Only allow creation of `const` variables from literals. (Benjamin Bannier, Corelight)
+
+    Since it is hard to enforce that `const` variables are initialized in
+    correct order (order of decls usually is not significant in Spicy/HILTI
+    and works e.g., for `global`s, but this is not the case for `const`s due
+    to codegen), this patch disallows creating `const` values from anything
+    but literals. This completely removes the ordering issue.
+
 1.11.0-dev.200 | 2024-06-14 10:56:04 +0200
 
   * GH-1759: Fix `if`-condition with `switch` parsing. (Robin Sommer, Corelight)
