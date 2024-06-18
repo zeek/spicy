@@ -89,9 +89,9 @@ Sink::ChunkList::iterator Sink::_addAndCheck(std::optional<hilti::rt::Bytes> dat
         rseq += overlap_len;
 
         if ( new_c == c )
-            new_c = _addAndCheck(std::move(*data), rseq, rupper, c);
+            new_c = _addAndCheck(std::move(data), rseq, rupper, c);
         else
-            _addAndCheck(std::move(*data), rseq, rupper, c);
+            _addAndCheck(std::move(data), rseq, rupper, c);
     }
 
     return new_c;

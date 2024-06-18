@@ -926,7 +926,7 @@ private:
             end = _children.size();
 
         if ( end > begin )
-            return *end;
+            return end;
         else {
             // Some versions of GCC diagnose a maybe uninitialized variable
             // here. Since we just return an unset optional, this should not be
