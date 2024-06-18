@@ -138,7 +138,7 @@ private:
     ID _scope_path;
     std::set<declaration::module::UID> _dependencies;
     bool _skip_implementation = true;
-    std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit = {};
+    std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit;
 };
 
 } // namespace declaration

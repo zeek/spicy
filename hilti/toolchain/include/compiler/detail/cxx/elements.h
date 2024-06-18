@@ -160,7 +160,7 @@ struct Global {
 /** Declaration of a C++ constant. */
 struct Constant {
     cxx::ID id;
-    cxx::Type type = Type();
+    cxx::Type type;
     std::optional<cxx::Expression> init;
     Linkage linkage;
     bool forward_decl = false;
