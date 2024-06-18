@@ -23,7 +23,7 @@ void TextPrinter::print(const type_info::Value& v) {
             indent([&]() {
                 outputIndent();
 
-                for ( auto [key, value] : type.bitfield->iterate(v) ) {
+                for ( const auto& [key, value] : type.bitfield->iterate(v) ) {
                     if ( ! first ) {
                         out() << '\n';
                         outputIndent();
