@@ -23,6 +23,7 @@ Checks: '
 
   clang*,
   -clang-analyzer-cplusplus.NewDeleteLeaks,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
   -clang-diagnostic-c++2a-designator,
   -clang-diagnostic-deprecated-copy,
   -clang-diagnostic-range-loop-analysis,
