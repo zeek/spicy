@@ -153,7 +153,7 @@ map                   return token::MAP;
 mark                  return token::MARK;
 mod                   return token::MOD;
 module                return token::MODULE;
-net                   return token::NET;
+network               return token::NETWORK;
 new                   return token::NEW;
 object                return token::OBJECT;
 on                    return token::ON;

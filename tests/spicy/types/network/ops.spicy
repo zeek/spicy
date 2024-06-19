@@ -8,7 +8,7 @@ module Test;
 import spicy;
 
 global n1 = [2001:0db8::1428:57ab]/48;
-global n2 = 192.168.1.0/24;
+global n2: network = 192.168.1.0/24;
 global n3 = [::192.168.1.0]/24;
 
 print n1;

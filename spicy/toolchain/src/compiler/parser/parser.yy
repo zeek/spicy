@@ -213,7 +213,6 @@ static std::vector<hilti::DocString> _docs;
 %token MOD
 %token MODULE
 %token NEQ
-%token NET
 %token NETWORK
 %token NEW
 %token NONE
