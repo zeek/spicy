@@ -294,7 +294,7 @@ size_t detail::StackBuffer::liveRemainingSize() const {
 #endif
 }
 
-size_t detail::StackBuffer::activeSize() const { return static_cast<size_t>(::fiber_stack_used_size(_fiber)); }
+size_t detail::StackBuffer::activeSize() const { return ::fiber_stack_used_size(_fiber); }
 
 void detail::StackBuffer::save() {
     auto want_buffer_size = std::max(activeSize(), configuration::get().fiber_shared_stack_swap_size_min);
@@ -506,7 +506,7 @@ void detail::Fiber::yield() {
 
 void detail::Fiber::resume() {
     assert(_state == State::Yielded);
-    return run();
+    run();
 }
 
 void detail::Fiber::abort() {
@@ -516,7 +516,7 @@ void detail::Fiber::abort() {
     if ( ! context::detail::get(true) )
         return;
 
-    return run();
+    run();
 }
 
 std::unique_ptr<detail::Fiber> detail::Fiber::create() {

@@ -23,6 +23,7 @@ Checks: '
 
   clang*,
   -clang-analyzer-cplusplus.NewDeleteLeaks,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
   -clang-diagnostic-c++2a-designator,
   -clang-diagnostic-deprecated-copy,
   -clang-diagnostic-range-loop-analysis,
@@ -49,6 +50,8 @@ Checks: '
   -modernize-macro-to-enum,
 
   performance-*,
+  -performance-enum-size,
+
   portability-*,
 
   readability-*,
@@ -58,7 +61,7 @@ Checks: '
   -readability-else-after-return,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
-  -readability-identifier-naming
+  -readability-identifier-naming,
   -readability-implicit-bool-conversion,
   -readability-magic-numbers,
   -readability-make-member-function-const,

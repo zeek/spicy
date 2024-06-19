@@ -69,9 +69,6 @@ void cxx::Linker::finalize() {
     auto scope = hilti::rt::fmt("%" PRIx64, hash);
     unit->add(fmt("const char HILTI_WEAK * %s_hlto_scope = \"%s\";", cxx_namespace, scope));
 
-    std::string init_modules = "nullptr";
-    std::string init_globals = "nullptr";
-
     for ( const auto& j : _joins ) {
         for ( const auto& c : j.second ) {
             if ( ! c.declare_only )

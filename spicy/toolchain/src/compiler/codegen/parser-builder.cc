@@ -81,7 +81,7 @@ struct ProductionVisitor : public production::Visitor {
     auto state() { return pb->state(); }
 
     void pushState(ParserState p) { pb->pushState(std::move(p)); }
-    auto popState() { return pb->popState(); }
+    void popState() { pb->popState(); }
 
     auto builder() { return pb->builder(); }
     auto pushBuilder() { return pb->pushBuilder(); }

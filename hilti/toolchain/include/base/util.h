@@ -11,7 +11,6 @@
 #include <iostream>
 #include <list>
 #include <map>
-#include <memory>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -523,7 +522,6 @@ std::string uniqueIndex(const T& c, std::string hint) {
     if ( c.find(hint) == c.end() )
         return hint;
 
-    std::string idx;
     int cnt = 1;
 
     while ( true ) {

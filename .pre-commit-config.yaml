@@ -89,7 +89,7 @@ repos:
   rev: v1.19.0
   hooks:
   - id: typos
-    exclude: 'tests/.*/regexp/.*'
+    exclude: 'tests/.*/regexp/.*|.clang-tidy'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.

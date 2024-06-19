@@ -1182,8 +1182,8 @@ public:
         }
     }
 
-    void operator()(operator_::struct_::MemberConst* n) final { return handleMemberAccess(n); }
-    void operator()(operator_::struct_::MemberNonConst* n) final { return handleMemberAccess(n); }
+    void operator()(operator_::struct_::MemberConst* n) final { handleMemberAccess(n); }
+    void operator()(operator_::struct_::MemberNonConst* n) final { handleMemberAccess(n); }
 
     void operator()(declaration::Type* n) final {
         switch ( _stage ) {

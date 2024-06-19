@@ -123,7 +123,7 @@ struct CoercedExpression {
      * even if the coerced expression ends up being identical to the source
      * expression.
      */
-    Result<Expression*> coerced = {};
+    Result<Expression*> coerced;
 
     /**
      * Coerced expression if successful and the coerced expression is not

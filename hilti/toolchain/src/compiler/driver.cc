@@ -203,9 +203,8 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
 Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
                                                         const std::string& extension) {
     auto template_ = fmt("%s.XXXXXX.%s", name_hint, extension);
-    char name[template_.size() + 1];
-    strcpy(name, template_.c_str()); // NOLINT
-    auto fd = mkstemp(name);
+    auto name = template_;
+    auto fd = mkstemp(name.data());
 
     if ( fd < 0 )
         return error("Cannot open temporary file");

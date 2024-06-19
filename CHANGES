@@ -1,3 +1,7 @@
+1.11.0-dev.217 | 2024-06-19 09:29:16 +0200
+
+  * Fix lints reported by clang-tidy-18 (Benjamin Bannier, Corelight)
+
 1.11.0-dev.202 | 2024-06-18 12:31:36 +0200
 
   * GH-1763: Only allow creation of `const` variables from literals. (Benjamin Bannier, Corelight)
