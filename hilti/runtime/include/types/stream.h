@@ -37,27 +37,6 @@ struct NonOwning {};
 namespace detail {
 class UnsafeConstIterator;
 }
-} // namespace stream
-
-namespace detail::adl {
-std::string to_string(const Stream& x, adl::tag /*unused*/);
-std::string to_string(const stream::View& x, adl::tag /*unused*/);
-std::string to_string(const stream::SafeConstIterator& x, adl::tag /*unused*/);
-std::string to_string(const stream::detail::UnsafeConstIterator& x, adl::tag /*unused*/);
-} // namespace detail::adl
-
-namespace stream {
-/** A single element inside a stream instance. */
-using Byte = uint8_t;
-
-/** Offset within a stream instance. */
-using Offset = integer::safe<uint64_t>;
-
-/** Size of a stream instance in number of elements stores. */
-using Size = integer::safe<uint64_t>;
-
-/** Direction of a search. */
-enum class Direction : int64_t { Forward, Backward };
 
 /**
  * Accumulates statistics about a stream's data over its lifetime. Empty chunks
@@ -84,6 +63,29 @@ struct Statistics {
         return *this;
     }
 };
+
+} // namespace stream
+
+namespace detail::adl {
+std::string to_string(const Stream& x, adl::tag /*unused*/);
+std::string to_string(const stream::View& x, adl::tag /*unused*/);
+std::string to_string(const stream::SafeConstIterator& x, adl::tag /*unused*/);
+std::string to_string(const stream::detail::UnsafeConstIterator& x, adl::tag /*unused*/);
+std::string to_string(const stream::Statistics& x, adl::tag /*unused*/);
+} // namespace detail::adl
+
+namespace stream {
+/** A single element inside a stream instance. */
+using Byte = uint8_t;
+
+/** Offset within a stream instance. */
+using Offset = integer::safe<uint64_t>;
+
+/** Size of a stream instance in number of elements stores. */
+using Size = integer::safe<uint64_t>;
+
+/** Direction of a search. */
+enum class Direction : int64_t { Forward, Backward };
 
 namespace detail {
 
@@ -1877,6 +1879,9 @@ inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Stream& x) { return out << to_string_for_print(x); }
+inline std::ostream& operator<<(std::ostream& out, const stream::Statistics& x) {
+    return out << to_string_for_print(x);
+}
 
 namespace detail::adl {
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
@@ -1884,6 +1889,12 @@ inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
 }
 
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) { return hilti::rt::to_string(x.view()); }
-} // namespace detail::adl
+inline std::string to_string(const stream::Statistics& x, adl::tag /*unused*/) {
+    // Render like a struct.
+    return fmt("[$num_data_bytes=%" PRIu64 ", $num_data_chunks=%" PRIu64 ", $num_gap_bytes=%" PRIu64
+               ", $num_gap_chunks=%" PRIu64 "]",
+               x.num_data_bytes, x.num_data_chunks, x.num_gap_bytes, x.num_gap_chunks);
+}
 
+} // namespace detail::adl
 } // namespace hilti::rt

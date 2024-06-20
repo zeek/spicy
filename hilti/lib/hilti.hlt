@@ -20,6 +20,13 @@ public type MatchState = struct {
     method Captures captures(stream data);
 } &cxxname="hilti::rt::regexp::MatchState";
 
+public type StreamStatistics = struct {
+    uint<64> num_data_bytes;
+    uint<64> num_data_chunks;
+    uint<64> num_gap_bytes;
+    uint<64> num_gap_chunks;
+} &cxxname = "hilti::rt::stream::Statistics";
+
 declare public void print(any obj, bool newline = True) &cxxname="hilti::rt::print" &have_prototype;
 declare public void printValues(tuple<*> t, bool newline = True) &cxxname="hilti::rt::printValues" &have_prototype;
 

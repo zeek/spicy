@@ -754,6 +754,11 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s.at(%s)", self, args[0]);
     }
 
+    void operator()(operator_::stream::Statistics* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("%s.statistics()", self);
+    }
+
     void operator()(operator_::stream::Trim* n) final {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.trim(%s)", self, args[0]);

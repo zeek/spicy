@@ -363,6 +363,7 @@ public:
     virtual void operator()(hilti::operator_::stream::IsFrozen* n) {}
     virtual void operator()(hilti::operator_::stream::At* n) {}
     virtual void operator()(hilti::operator_::stream::Trim* n) {}
+    virtual void operator()(hilti::operator_::stream::Statistics* n) {}
     virtual void operator()(hilti::operator_::string::Equal* n) {}
     virtual void operator()(hilti::operator_::string::Unequal* n) {}
     virtual void operator()(hilti::operator_::string::Size* n) {}

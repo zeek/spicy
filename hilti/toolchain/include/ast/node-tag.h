@@ -431,11 +431,12 @@ constexpr Tag Ctor = 3101;
 constexpr Tag Freeze = 3102;
 constexpr Tag IsFrozen = 3103;
 constexpr Tag Size = 3104;
-constexpr Tag SumAssignBytes = 3105;
-constexpr Tag SumAssignView = 3106;
-constexpr Tag Trim = 3107;
-constexpr Tag Unequal = 3108;
-constexpr Tag Unfreeze = 3109;
+constexpr Tag Statistics = 3105;
+constexpr Tag SumAssignBytes = 3106;
+constexpr Tag SumAssignView = 3107;
+constexpr Tag Trim = 3108;
+constexpr Tag Unequal = 3109;
+constexpr Tag Unfreeze = 3110;
 
 namespace iterator {
 constexpr Tag Deref = 3200;
