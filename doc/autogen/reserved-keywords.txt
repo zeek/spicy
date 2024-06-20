@@ -56,7 +56,7 @@ map
 mark
 mod
 module
-net
+network
 new
 object
 on

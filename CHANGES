@@ -1,3 +1,8 @@
+1.11.0-dev.219 | 2024-06-20 10:32:09 +0200
+
+  * Fix Spicy's support for `network` type. `network` was not
+    recognized by the scanner. (Robin Sommer, Corelight)
+
 1.11.0-dev.217 | 2024-06-19 09:29:16 +0200
 
   * Fix lints reported by clang-tidy-18 (Benjamin Bannier, Corelight)
