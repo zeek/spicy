@@ -241,6 +241,10 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         replaceNode(n, x);
     }
 
+    void operator()(operator_::unit::Stream* n) final {
+        replaceNode(n, builder()->deref(builder()->member(n->op0(), ID("__stream"))));
+    }
+
     void operator()(operator_::sink::Close* n) final {
         auto x = builder()->memberCall(n->op0(), "close");
         replaceNode(n, x);

@@ -61,6 +61,14 @@
 [debug/optimizer] [<no location>] declaration::Field "uint<64> __offset &internal &needed-by-feature="uses_offset";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "uint<64> __offset &internal &needed-by-feature="uses_offset";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "uint<64> __offset &internal &needed-by-feature="uses_offset";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<spicy_rt::Forward> __forward &internal &needed-by-feature="is_filter";" -> null (removing unused member)
 [debug/optimizer] [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
 [debug/optimizer] [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
@@ -169,6 +177,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X0%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X0%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X0%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X0%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X1%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X1%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X1%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -205,6 +214,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X1%uses_random_access" -> expression::Ctor "True" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X1%uses_random_access" -> expression::Ctor "True" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X1%uses_random_access" -> expression::Ctor "True" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X1%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X2%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X2%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X2%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -241,6 +251,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X2%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X2%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X2%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X2%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X3%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X3%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X3%is_filter" -> expression::Ctor "False" (inlining constant)
@@ -279,6 +290,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X3%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X3%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X3%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X3%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X4%is_filter" -> expression::Ctor "True" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X4%is_filter" -> expression::Ctor "True" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X4%is_filter" -> expression::Ctor "True" (inlining constant)
@@ -317,6 +329,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X4%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X4%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X4%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X4%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X5%supports_filters" -> expression::Ctor "True" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X5%supports_filters" -> expression::Ctor "True" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X5%supports_filters" -> expression::Ctor "True" (inlining constant)
@@ -351,6 +364,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X5%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X5%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X5%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X5%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X6%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X6%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X6%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -387,6 +401,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X6%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X6%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X6%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X6%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -423,6 +438,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*(*self).data).close(); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*(*self).data).close(); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
@@ -533,6 +549,14 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { __trim = False; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { __trim = False; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { __trim = False; }" -> null
@@ -646,39 +670,47 @@
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X0%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X0' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X0%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X0' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X0%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::X0' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X0%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X0' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X1%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::X1' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X1%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X1' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X1%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X1' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X1%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::X1' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X1%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X1' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X2%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::X2' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X2%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X2' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X2%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X2' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X2%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::X2' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X2%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::X2' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X2%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X2' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X3%is_filter = False;" -> disabled feature 'is_filter' of type 'foo::X3' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X3%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::X3' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X3%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X3' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X3%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X3' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X3%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::X3' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X3%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::X3' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X3%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X3' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X4%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::X4' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X4%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X4' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X4%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X4' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X4%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::X4' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X4%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::X4' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X4%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X4' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X5%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X5' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X5%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X5' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X5%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::X5' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X5%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::X5' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X5%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X5' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X6%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::X6' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X6%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X6' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X6%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::X6' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X6%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::X6' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X6%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X6' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X7%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::X7' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X7%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X7' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X7%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X7' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X7%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::X7' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X7%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::X7' since it is not used
+[debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X7%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::X7' since it is not used
 [debug/optimizer] [feature_requirements.spicy:13:11-15:1] declaration::Field "hook optional<string> __str__();" -> null
 [debug/optimizer] [feature_requirements.spicy:13:11-15:1] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [feature_requirements.spicy:13:11-15:1] declaration::Field "hook void __on_0x25_done();" -> null

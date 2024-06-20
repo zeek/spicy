@@ -5,6 +5,7 @@ import hilti;
 import spicy_rt;
 
 type A = struct {
+    weak_ref<stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -31,6 +32,7 @@ type A = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__A_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 public type B = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -57,6 +59,7 @@ public type B = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__B_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type C = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -84,6 +87,7 @@ type C = struct {
 } &on-heap;
 public type D = struct {
     value_ref<C> _anon &optional &anonymous &no-emit;
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -110,6 +114,7 @@ public type D = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__D_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type F = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -139,30 +144,35 @@ type F = struct {
 
 const bool __feat%foo@@A%uses_offset = True;
 const bool __feat%foo@@A%uses_random_access = True;
+const bool __feat%foo@@A%uses_stream = True;
 const bool __feat%foo@@A%is_filter = False;
 const bool __feat%foo@@A%supports_filters = True;
 const bool __feat%foo@@A%supports_sinks = True;
 const bool __feat%foo@@A%synchronization = True;
 const bool __feat%foo@@B%uses_offset = True;
 const bool __feat%foo@@B%uses_random_access = True;
+const bool __feat%foo@@B%uses_stream = True;
 const bool __feat%foo@@B%is_filter = False;
 const bool __feat%foo@@B%supports_filters = True;
 const bool __feat%foo@@B%supports_sinks = True;
 const bool __feat%foo@@B%synchronization = True;
 const bool __feat%foo@@C%uses_offset = True;
 const bool __feat%foo@@C%uses_random_access = True;
+const bool __feat%foo@@C%uses_stream = True;
 const bool __feat%foo@@C%is_filter = False;
 const bool __feat%foo@@C%supports_filters = True;
 const bool __feat%foo@@C%supports_sinks = True;
 const bool __feat%foo@@C%synchronization = True;
 const bool __feat%foo@@D%uses_offset = True;
 const bool __feat%foo@@D%uses_random_access = True;
+const bool __feat%foo@@D%uses_stream = True;
 const bool __feat%foo@@D%is_filter = False;
 const bool __feat%foo@@D%supports_filters = True;
 const bool __feat%foo@@D%supports_sinks = True;
 const bool __feat%foo@@D%synchronization = True;
 const bool __feat%foo@@F%uses_offset = True;
 const bool __feat%foo@@F%uses_random_access = True;
+const bool __feat%foo@@F%uses_stream = True;
 const bool __feat%foo@@F%is_filter = True;
 const bool __feat%foo@@F%supports_filters = True;
 const bool __feat%foo@@F%supports_sinks = True;
@@ -184,6 +194,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@A%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@A%uses_random_access ) 
             (*self).__begin = __begin;
@@ -427,6 +441,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
 
+        if ( ::__feat%foo@@B%uses_stream ) 
+            (*self).__stream = __data;
+
+
         if ( ::__feat%foo@@B%uses_random_access ) 
             (*self).__begin = __begin;
 
@@ -664,6 +682,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@C%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@C%uses_random_access ) 
             (*self).__begin = __begin;
@@ -906,6 +928,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@D%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@D%uses_random_access ) 
             (*self).__begin = __begin;
@@ -1159,6 +1185,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@F%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@F%uses_random_access ) 
             (*self).__begin = __begin;

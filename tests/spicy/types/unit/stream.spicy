@@ -1,0 +1,25 @@
+# @TEST-EXEC: ${SCRIPTS}/printf 1234567890 | spicy-driver -d %INPUT
+# @TEST-EXEC: spicyc -p %INPUT | (grep __stream.*internal; true) >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure `self.stream()` yields the current input stream, and it's optimization of its state is working correctly.
+
+module Mini;
+
+public type Foo = unit {
+    x: b"12345";
+    on %done {
+        assert |self.stream()| == 5; # 5 characters left
+    }
+};
+
+@TEST-START-NEXT
+
+module Mini;
+
+public type Foo = unit {
+    x: b"12345";
+    on %done {
+        assert self.x == b"12345"; # no access to $stream, should not emit any __stream state
+    }
+};

@@ -38,6 +38,11 @@
 [debug/optimizer] [<no location>] declaration::Field "uint<64> __offset &internal &needed-by-feature="uses_offset";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "uint<64> __offset &internal &needed-by-feature="uses_offset";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "uint<64> __offset &internal &needed-by-feature="uses_offset";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<spicy_rt::Forward> __forward &internal &needed-by-feature="is_filter";" -> null (removing unused member)
 [debug/optimizer] [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
 [debug/optimizer] [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
@@ -118,6 +123,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@A%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@B%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@B%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@B%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -152,6 +158,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@B%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@C%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@C%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@C%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -188,6 +195,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@C%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@D%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@D%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@D%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -224,6 +232,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@D%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%is_filter" -> expression::Ctor "False" (inlining constant)
@@ -262,6 +271,7 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
@@ -344,6 +354,11 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { __trim = False; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { __trim = False; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { __trim = False; }" -> null
@@ -406,27 +421,32 @@
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@A%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::A' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@A%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::A' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@A%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::A' since it is not used
+[debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@A%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::A' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@B%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::B' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@B%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::B' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@B%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::B' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@B%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::B' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@B%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::B' since it is not used
+[debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@B%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::B' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@C%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::C' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@C%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::C' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@C%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::C' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@C%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::C' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@C%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::C' since it is not used
+[debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@C%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::C' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@D%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::D' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@D%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::D' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@D%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::D' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@D%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::D' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@D%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::D' since it is not used
+[debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@D%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::D' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%is_filter = False;" -> disabled feature 'is_filter' of type 'foo::F' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::F' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::F' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::F' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%uses_offset = False;" -> disabled feature 'uses_offset' of type 'foo::F' since it is not used
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%uses_random_access = False;" -> disabled feature 'uses_random_access' of type 'foo::F' since it is not used
+[debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::F' since it is not used
 [debug/optimizer] [unused-functions.spicy:13:1-13:16] declaration::Function "function void f1() { }" -> null (removing declaration for unused function)
 [debug/optimizer] [unused-functions.spicy:18:1-18:17] declaration::Type "type A = struct { optional<hilti::RecoverableFailure> __error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__A_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error); } &on-heap;" -> null (removing unused type)
 [debug/optimizer] [unused-functions.spicy:18:10-18:16] declaration::Field "hook optional<string> __str__();" -> null

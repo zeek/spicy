@@ -1,0 +1,12 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEXT-EXEC: Access to `stream()` outside of parsing triggers exception.
+
+module Test;
+
+public type X = unit {
+};
+
+global x: X;
+
+assert-exception x.stream();

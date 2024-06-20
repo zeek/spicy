@@ -2459,6 +2459,9 @@ void ParserBuilder::trimInput(bool force) {
 }
 
 void ParserBuilder::initializeUnit(const Location& l) {
+    guardFeatureCode(state().unit, {"uses_stream"},
+                     [&]() { builder()->addAssign(builder()->member(state().self, ID("__stream")), state().data); });
+
     saveParsePosition();
 
     beforeHook();

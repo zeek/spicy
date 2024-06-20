@@ -5,6 +5,7 @@ import hilti;
 import spicy_rt;
 
 type Priv1 = struct {
+    weak_ref<stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -31,6 +32,7 @@ type Priv1 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 public type Pub2 = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -57,6 +59,7 @@ public type Pub2 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Pub2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv2 = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -83,6 +86,7 @@ type Priv2 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv3 = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -111,6 +115,7 @@ type Priv3 = struct {
 type Priv4 = struct {
     value_ref<Priv2> _anon &optional &anonymous &no-emit;
     value_ref<Priv3> x &optional;
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -138,6 +143,7 @@ type Priv4 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv5 = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -164,6 +170,7 @@ type Priv5 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv6 = struct {
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -192,6 +199,7 @@ type Priv6 = struct {
 public type Pub3 = struct {
     value_ref<Priv5> _anon_2 &optional &anonymous &no-emit;
     value_ref<Priv6> x &optional;
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -225,6 +233,7 @@ type Priv9 = enum { A = 0, B = 1, C = 2 };
 public type Priv10 = struct {
     Priv8 en &default=Priv8::A;
     Priv9 em;
+    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
     iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
     optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
     uint<64> __offset &internal &needed-by-feature="uses_offset";
@@ -255,54 +264,63 @@ type Priv12 = enum { A = 0, B = 1, C = 2 };
 
 const bool __feat%foo@@Priv1%uses_offset = True;
 const bool __feat%foo@@Priv1%uses_random_access = True;
+const bool __feat%foo@@Priv1%uses_stream = True;
 const bool __feat%foo@@Priv1%is_filter = False;
 const bool __feat%foo@@Priv1%supports_filters = True;
 const bool __feat%foo@@Priv1%supports_sinks = True;
 const bool __feat%foo@@Priv1%synchronization = True;
 const bool __feat%foo@@Pub2%uses_offset = True;
 const bool __feat%foo@@Pub2%uses_random_access = True;
+const bool __feat%foo@@Pub2%uses_stream = True;
 const bool __feat%foo@@Pub2%is_filter = False;
 const bool __feat%foo@@Pub2%supports_filters = True;
 const bool __feat%foo@@Pub2%supports_sinks = True;
 const bool __feat%foo@@Pub2%synchronization = True;
 const bool __feat%foo@@Priv2%uses_offset = True;
 const bool __feat%foo@@Priv2%uses_random_access = True;
+const bool __feat%foo@@Priv2%uses_stream = True;
 const bool __feat%foo@@Priv2%is_filter = False;
 const bool __feat%foo@@Priv2%supports_filters = True;
 const bool __feat%foo@@Priv2%supports_sinks = True;
 const bool __feat%foo@@Priv2%synchronization = True;
 const bool __feat%foo@@Priv3%uses_offset = True;
 const bool __feat%foo@@Priv3%uses_random_access = True;
+const bool __feat%foo@@Priv3%uses_stream = True;
 const bool __feat%foo@@Priv3%is_filter = False;
 const bool __feat%foo@@Priv3%supports_filters = True;
 const bool __feat%foo@@Priv3%supports_sinks = True;
 const bool __feat%foo@@Priv3%synchronization = True;
 const bool __feat%foo@@Priv4%uses_offset = True;
 const bool __feat%foo@@Priv4%uses_random_access = True;
+const bool __feat%foo@@Priv4%uses_stream = True;
 const bool __feat%foo@@Priv4%is_filter = False;
 const bool __feat%foo@@Priv4%supports_filters = True;
 const bool __feat%foo@@Priv4%supports_sinks = True;
 const bool __feat%foo@@Priv4%synchronization = True;
 const bool __feat%foo@@Priv5%uses_offset = True;
 const bool __feat%foo@@Priv5%uses_random_access = True;
+const bool __feat%foo@@Priv5%uses_stream = True;
 const bool __feat%foo@@Priv5%is_filter = False;
 const bool __feat%foo@@Priv5%supports_filters = True;
 const bool __feat%foo@@Priv5%supports_sinks = True;
 const bool __feat%foo@@Priv5%synchronization = True;
 const bool __feat%foo@@Priv6%uses_offset = True;
 const bool __feat%foo@@Priv6%uses_random_access = True;
+const bool __feat%foo@@Priv6%uses_stream = True;
 const bool __feat%foo@@Priv6%is_filter = False;
 const bool __feat%foo@@Priv6%supports_filters = True;
 const bool __feat%foo@@Priv6%supports_sinks = True;
 const bool __feat%foo@@Priv6%synchronization = True;
 const bool __feat%foo@@Pub3%uses_offset = True;
 const bool __feat%foo@@Pub3%uses_random_access = True;
+const bool __feat%foo@@Pub3%uses_stream = True;
 const bool __feat%foo@@Pub3%is_filter = False;
 const bool __feat%foo@@Pub3%supports_filters = True;
 const bool __feat%foo@@Pub3%supports_sinks = True;
 const bool __feat%foo@@Pub3%synchronization = True;
 const bool __feat%foo@@Priv10%uses_offset = True;
 const bool __feat%foo@@Priv10%uses_random_access = True;
+const bool __feat%foo@@Priv10%uses_stream = True;
 const bool __feat%foo@@Priv10%is_filter = False;
 const bool __feat%foo@@Priv10%supports_filters = True;
 const bool __feat%foo@@Priv10%supports_sinks = True;
@@ -321,6 +339,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@Priv1%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@Priv1%uses_random_access ) 
             (*self).__begin = __begin;
@@ -564,6 +586,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
 
+        if ( ::__feat%foo@@Pub2%uses_stream ) 
+            (*self).__stream = __data;
+
+
         if ( ::__feat%foo@@Pub2%uses_random_access ) 
             (*self).__begin = __begin;
 
@@ -801,6 +827,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@Priv2%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@Priv2%uses_random_access ) 
             (*self).__begin = __begin;
@@ -1044,6 +1074,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
 
+        if ( ::__feat%foo@@Priv3%uses_stream ) 
+            (*self).__stream = __data;
+
+
         if ( ::__feat%foo@@Priv3%uses_random_access ) 
             (*self).__begin = __begin;
 
@@ -1285,6 +1319,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@Priv4%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@Priv4%uses_random_access ) 
             (*self).__begin = __begin;
@@ -1574,6 +1612,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
 
+        if ( ::__feat%foo@@Priv5%uses_stream ) 
+            (*self).__stream = __data;
+
+
         if ( ::__feat%foo@@Priv5%uses_random_access ) 
             (*self).__begin = __begin;
 
@@ -1816,6 +1858,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
 
+        if ( ::__feat%foo@@Priv6%uses_stream ) 
+            (*self).__stream = __data;
+
+
         if ( ::__feat%foo@@Priv6%uses_random_access ) 
             (*self).__begin = __begin;
 
@@ -2057,6 +2103,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@Pub3%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@Pub3%uses_random_access ) 
             (*self).__begin = __begin;
@@ -2341,6 +2391,10 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
+
+        if ( ::__feat%foo@@Priv10%uses_stream ) 
+            (*self).__stream = __data;
+
 
         if ( ::__feat%foo@@Priv10%uses_random_access ) 
             (*self).__begin = __begin;
