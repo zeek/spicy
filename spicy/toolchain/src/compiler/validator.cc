@@ -325,6 +325,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             }
         }
 
+        else if ( n->id().str() == "%sync-advance-block-size" ) {
+            if ( auto e = n->expression(); ! e || ! e->type()->type()->isA<hilti::type::UnsignedInteger>() ) {
+                error("%sync-advance-block-size requires an argument of type uint64", n);
+                return;
+            }
+        }
+
         else
             error(fmt("unknown property '%s'", n->id().str()), n);
     }
@@ -427,6 +434,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         else if ( const auto& prop = n->id().str(); prop == "%synchronize-at" || prop == "%synchronize-after" ) {
             if ( ! n->expression() ) {
                 error(fmt("%s requires an argument", prop), n);
+                return;
+            }
+        }
+
+        else if ( n->id().str() == "%sync-advance-block-size" ) {
+            if ( auto e = n->expression(); ! e || ! e->type()->type()->isA<hilti::type::UnsignedInteger>() ) {
+                error("%sync-advance-block-size requires an argument of type uint64", n);
                 return;
             }
         }
@@ -950,6 +964,12 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                      ! hilti::type::same(params[0]->type()->type(), builder()->typeUnsignedInteger(64)) ||
                      ! hilti::type::same(params[1]->type()->type(), builder()->typeBytes()) )
                     error("signature for hook must be: %undelivered(seq: uint64, data: bytes)", n, location);
+            }
+
+            else if ( id == "0x25_sync_advance" ) {
+                if ( params.size() != 1 ||
+                     ! hilti::type::same(params[0]->type()->type(), builder()->typeUnsignedInteger(64)) )
+                    error("signature for hook must be: %sync_advance(offset: uint64)", n, location);
             }
 
             else

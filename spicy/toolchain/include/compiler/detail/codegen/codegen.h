@@ -26,6 +26,7 @@ namespace spicy::detail {
 namespace codegen {
 class GrammarBuilder;
 class ParserBuilder;
+struct ASTInfo;
 } // namespace codegen
 
 /**
@@ -94,7 +95,7 @@ public:
     bool haveAddedDeclaration(const ID& id) { return _decls_added.find(id) != _decls_added.end(); }
 
 private:
-    bool _compileModule(hilti::declaration::Module* module, int pass);
+    bool _compileModule(hilti::declaration::Module* module, int pass, codegen::ASTInfo* info);
     void _updateDeclarations(visitor::MutatingPostOrder* v, hilti::declaration::Module* module);
     void _compileParserRegistration(const ID& public_id, const ID& struct_id, type::Unit* unit);
 

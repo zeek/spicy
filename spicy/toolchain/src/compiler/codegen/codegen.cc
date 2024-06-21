@@ -37,17 +37,50 @@ namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream CodeGen("spicy-codegen");
 } // namespace spicy::logging::debug
 
+namespace spicy::detail::codegen {
+
+// Information collected from the AST in an initial pass for any code generation.
+struct ASTInfo {
+    std::set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
+};
+
+} // namespace spicy::detail::codegen
+
 namespace {
+
+// Read-only visitor collecting information from the AST that's needed for
+// subsequent code generation.
+struct VisitorASTInfo : public visitor::PreOrder {
+    VisitorASTInfo(ASTContext* ctx, ASTInfo* info) : context(ctx), info(info) {}
+
+    ASTContext* context;
+    ASTInfo* info;
+
+    void operator()(declaration::UnitHook* n) final {
+        if ( n->id().local() == ID("0x25_sync_advance") ) {
+            const auto& unit = context->lookup(n->hook()->unitTypeIndex());
+            info->uses_sync_advance.insert(unit->typeID());
+        }
+    }
+
+    void operator()(type::unit::item::UnitHook* n) final {
+        if ( n->id() == ID("0x25_sync_advance") ) {
+            const auto& unit = context->lookup(n->hook()->unitTypeIndex());
+            info->uses_sync_advance.insert(unit->typeID());
+        }
+    }
+};
 
 // Visitor that runs over each module's AST at the beginning of their
 // transformations. All module will be processed by this visitor before the
 // subsequent passes execute.
 struct VisitorPass1 : public visitor::MutatingPostOrder {
-    VisitorPass1(CodeGen* cg, hilti::declaration::Module* module)
-        : visitor::MutatingPostOrder(cg->builder(), logging::debug::CodeGen), cg(cg), module(module) {}
+    VisitorPass1(CodeGen* cg, hilti::declaration::Module* module, ASTInfo* info)
+        : visitor::MutatingPostOrder(cg->builder(), logging::debug::CodeGen), cg(cg), module(module), info(info) {}
 
     CodeGen* cg;
     hilti::declaration::Module* module = nullptr;
+    ASTInfo* info;
 
     void operator()(hilti::declaration::Type* n) final {
         auto u = n->type()->type()->tryAs<type::Unit>();
@@ -82,6 +115,14 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
 
         n->setType(context(), qstruct);
         n->addAttribute(context(), builder()->attribute("&on-heap"));
+
+        if ( info->uses_sync_advance.find(u->typeID()) != info->uses_sync_advance.end() )
+            // Unit has an implementation of `%sync_advance`, so add feature
+            // requirement for %sync_advance to the struct's type
+            // declaration.
+            n->addAttribute(context(), builder()->attribute("&requires-type-feature",
+                                                            builder()->stringLiteral("uses_sync_advance")));
+
         cg->recordTypeMapping(u, struct_);
 
         recordChange(n, "replaced unit type with struct");
@@ -422,10 +463,10 @@ struct VisitorPass3 : public visitor::MutatingPostOrder {
 
 } // anonymous namespace
 
-bool CodeGen::_compileModule(hilti::declaration::Module* module, int pass) {
+bool CodeGen::_compileModule(hilti::declaration::Module* module, int pass, ASTInfo* info) {
     switch ( pass ) {
         case 1: {
-            auto v1 = VisitorPass1(this, module);
+            auto v1 = VisitorPass1(this, module, info);
             visitor::visit(v1, module, ".spicy");
             _updateDeclarations(&v1, module);
             return v1.isModified();
@@ -493,10 +534,12 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
     // two passes, each going over all modules one time. That way the 1st pass
     // can work cross-module before any changes done by the 2nd pass.
     struct VisitorModule : public visitor::PostOrder {
-        VisitorModule(CodeGen* cg, int pass) : cg(cg), pass(pass) {}
+        VisitorModule(CodeGen* cg, int pass, ASTInfo* info) : cg(cg), pass(pass), info(info) {}
 
         CodeGen* cg;
         int pass;
+        ASTInfo* info;
+
         bool modified = false;
 
         void operator()(hilti::declaration::Module* n) final {
@@ -507,15 +550,19 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
                 hilti::logging::DebugPushIndent _(logging::debug::CodeGen);
 
                 cg->_hilti_module = module;
-                modified = modified | cg->_compileModule(module, pass);
+                modified = modified | cg->_compileModule(module, pass, info);
                 cg->_hilti_module = nullptr;
             }
         }
     };
 
-    auto modified = visitor::visit(VisitorModule(this, 1), root, ".spicy", [](const auto& v) { return v.modified; });
-    modified |= visitor::visit(VisitorModule(this, 2), root, ".spicy", [](const auto& v) { return v.modified; });
-    modified |= visitor::visit(VisitorModule(this, 3), root, ".spicy", [](const auto& v) { return v.modified; });
+    ASTInfo info;
+    visitor::visit(VisitorASTInfo(context(), &info), root, ".spicy");
+
+    auto modified =
+        visitor::visit(VisitorModule(this, 1, &info), root, ".spicy", [](const auto& v) { return v.modified; });
+    modified |= visitor::visit(VisitorModule(this, 2, &info), root, ".spicy", [](const auto& v) { return v.modified; });
+    modified |= visitor::visit(VisitorModule(this, 3, &info), root, ".spicy", [](const auto& v) { return v.modified; });
 
     // Update the context with type changes record by any of the passes.
     for ( auto [old, new_] : _type_mappings )

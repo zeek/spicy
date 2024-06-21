@@ -15,6 +15,12 @@
 
     Returns true if the stream value has been frozen.
 
+.. spicy:method:: stream::statistics stream statistics False spicy::StreamStatistics ()
+
+    Returns statistics about the stream input received so far. Note that
+    during parsing, this reflects all input that has already been sent to
+    the stream, which may include data that has not been processed yet.
+
 .. spicy:method:: stream::trim stream trim False void (i: iterator<stream>)
 
     Trims the stream value by removing all data from its beginning up to

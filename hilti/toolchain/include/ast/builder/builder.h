@@ -427,6 +427,10 @@ public:
                                             m);
     }
 
+    auto division(Expression* op1, Expression* op2, const Meta& m = Meta()) {
+        return expressionUnresolvedOperator(operator_::Kind::Division, {op1, op2}, m);
+    }
+
     // Other expressions
 
     auto expression(Ctor* c, const Meta& m = Meta()) { return expressionCtor(c, m); }
