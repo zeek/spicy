@@ -14,6 +14,8 @@ assert x == b"12";
 assert x != b"";
 assert x != b"123";
 
+hilti::print(x.statistics());
+
 assert ! x.is_frozen();
 x.freeze();
 assert x.is_frozen();

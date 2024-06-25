@@ -1,0 +1,16 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Illegal block sizes for %sync-advance-block-size.
+
+module Test;
+
+public type X1 = unit {
+    %sync-advance-block-size = -3;
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+%sync-advance-block-size = "string";

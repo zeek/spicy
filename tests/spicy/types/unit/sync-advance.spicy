@@ -1,0 +1,99 @@
+# @TEST-EXEC: spicyc -dj -o test.hlto %INPUT
+# @TEST-EXEC: spicyc -c %INPUT | (grep '__feat%Test@@X1%sync_advance'; true) >output 2>&1
+# @TEST-EXEC: spicy-driver -F trace.dat test.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Exercises %sync_advance.
+
+# Case 1: Inline %sync_advance
+
+module Test;
+
+public type X1 = unit {
+    %port = 80/tcp;
+    %sync-advance-block-size = 3;
+
+    xs: (/(A|B|C)/ &synchronize)[];
+
+    on %synced {
+        confirm;
+    }
+
+    on %sync_advance(offset: uint64) {
+        print offset, self.stream().statistics();
+    }
+};
+
+# @TEST-START-NEXT
+
+# Case 2: Out of line %sync_advance
+
+module Test;
+
+%sync-advance-block-size = 3; # Try in global scope
+
+public type X1 = unit {
+    %port = 80/tcp;
+
+    xs: (/(A|B|C)/ &synchronize)[];
+
+    on %synced {
+        confirm;
+    }
+};
+
+on X1::%sync_advance(offset: uint64) {
+    print offset, self.stream().statistics();
+}
+
+# @TEST-START-NEXT
+
+# Case 3: No %sync_advance
+
+module Test;
+
+public type X1 = unit {
+    %port = 80/tcp;
+    %sync-advance-block-size = 3;
+
+    xs: (/(A|B|C)/ &synchronize)[];
+
+    on %synced {
+        confirm;
+    }
+};
+
+# @TEST-START-NEXT
+
+# Case 4: Default block size
+
+module Test;
+
+public type X1 = unit {
+    %port = 80/tcp;
+
+    xs: (/(A|B|C)/ &synchronize)[];
+
+    on %synced {
+        confirm;
+    }
+
+    on %sync_advance(offset: uint64) {
+        print offset, self.stream().statistics();
+    }
+};
+
+# @TEST-START-FILE trace.dat
+!spicy-batch v2
+@begin-flow id1 stream 80/tcp
+@data id1 1
+A
+@gap id1 1024
+@gap id1 2048
+@data id1 4
+XXXB
+@gap id1 1024
+@data id1 4
+YYYC
+@end-flow id1
+# @TEST-END-FILE

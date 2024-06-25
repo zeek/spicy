@@ -880,5 +880,26 @@ even on frozen values.
 };
 HILTI_OPERATOR_IMPLEMENTATION(Trim);
 
+class Statistics : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeStream()},
+            .member = "statistics",
+            .result = {Constness::Const, builder->typeName("hilti::StreamStatistics")},
+            .ns = "stream",
+            .doc = R"(
+Returns statistics about the stream input received so far. Note that
+during parsing, this reflects all input that has already been sent to
+the stream, which may include data that has not been processed yet.
+)",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, stream::Statistics);
+};
+HILTI_OPERATOR_IMPLEMENTATION(Statistics);
+
 } // namespace stream
 } // namespace

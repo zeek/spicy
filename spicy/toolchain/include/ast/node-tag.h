@@ -51,9 +51,10 @@ constexpr unsigned int MemberConst = 10326;
 constexpr unsigned int MemberNonConst = 10327;
 constexpr unsigned int Offset = 10328;
 constexpr unsigned int Position = 10329;
-constexpr unsigned int SetInput = 1033;
-constexpr unsigned int TryMember = 10331;
-constexpr unsigned int Unset = 10332;
+constexpr unsigned int SetInput = 10330;
+constexpr unsigned int Stream = 10331;
+constexpr unsigned int TryMember = 10332;
+constexpr unsigned int Unset = 10333;
 } // namespace operator_::unit
 
 namespace statement {

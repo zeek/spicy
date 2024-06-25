@@ -84,6 +84,7 @@ class ForwardEod;
 class Backtrack;
 class ContextConst;
 class ContextNonConst;
+class Stream;
 } // namespace unit
 
 } // namespace operator_

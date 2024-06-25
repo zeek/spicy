@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace hilti {
@@ -476,6 +475,7 @@ class Unfreeze;
 class IsFrozen;
 class At;
 class Trim;
+class Statistics;
 
 } // namespace stream
 

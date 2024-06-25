@@ -1033,6 +1033,7 @@ expr_g        : '(' expr ')'                     { $$ = builder->expressionGroup
                                                  }
 
 member_expr   : local_id                         { $$ = builder->expressionMember(std::move($1), __loc__); }
+              | STREAM                           { $$ = builder->expressionMember(ID("stream"), __loc__); } // allow methods of that name even though reserved keyword
 
 /* Constants */
 

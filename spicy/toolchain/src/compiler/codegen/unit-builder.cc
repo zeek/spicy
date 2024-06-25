@@ -203,6 +203,8 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
 
         addDeclaration(builder()->constant(ID(fmt("__feat%%%s%%uses_offset", type_id)), builder()->bool_(true)));
         addDeclaration(builder()->constant(ID(fmt("__feat%%%s%%uses_random_access", type_id)), builder()->bool_(true)));
+        addDeclaration(builder()->constant(ID(fmt("__feat%%%s%%uses_stream", type_id)), builder()->bool_(true)));
+        addDeclaration(builder()->constant(ID(fmt("__feat%%%s%%uses_sync_advance", type_id)), builder()->bool_(true)));
         addDeclaration(
             builder()->constant(ID(fmt("__feat%%%s%%is_filter", type_id)), builder()->bool_(unit->isFilter())));
         addDeclaration(builder()->constant(ID(fmt("__feat%%%s%%supports_filters", type_id)), builder()->bool_(true)));
@@ -218,6 +220,23 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     add_hook("0x25_skipped", {builder()->parameter("seq", builder()->typeUnsignedInteger(64))});
     add_hook("0x25_undelivered", {builder()->parameter("seq", builder()->typeUnsignedInteger(64)),
                                   builder()->parameter("data", builder()->typeBytes())});
+
+    auto attr_uses_stream = builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_stream"));
+    auto stream =
+        builder()->declarationField(ID("__stream"),
+                                    builder()->qualifiedType(builder()->typeWeakReference(
+                                                                 builder()->qualifiedType(builder()->typeStream(),
+                                                                                          hilti::Constness::Const)),
+                                                             hilti::Constness::Const),
+                                    builder()->attributeSet({builder()->attribute("&internal"), attr_uses_stream}));
+
+    v.addField(stream);
+
+    auto attr_sync_advance = builder()->attributeSet(
+        {builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_sync_advance"))});
+
+    add_hook("0x25_sync_advance", {builder()->parameter("offset", builder()->typeUnsignedInteger(64))},
+             attr_sync_advance);
 
     // Fields related to random-access functionality.
     auto attr_uses_random_access =

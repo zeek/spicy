@@ -26,6 +26,7 @@ SPICY_NODE_OPERATOR(unit, MemberNonConst)
 SPICY_NODE_OPERATOR(unit, Offset)
 SPICY_NODE_OPERATOR(unit, Position)
 SPICY_NODE_OPERATOR(unit, SetInput)
+SPICY_NODE_OPERATOR(unit, Stream)
 SPICY_NODE_OPERATOR(unit, TryMember)
 SPICY_NODE_OPERATOR(unit, Unset)
 } // namespace spicy::operator_

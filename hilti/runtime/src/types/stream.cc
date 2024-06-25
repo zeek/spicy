@@ -109,6 +109,15 @@ void Chain::append(std::unique_ptr<Chunk> chunk) {
     _ensureValid();
     _ensureMutable();
 
+    if ( chunk->isGap() ) {
+        _statistics.num_gap_bytes += chunk->size();
+        _statistics.num_gap_chunks++;
+    }
+    else {
+        _statistics.num_data_bytes += chunk->size();
+        _statistics.num_data_chunks++;
+    }
+
     if ( _tail ) {
         _tail->setNext(std::move(chunk));
         _tail = _tail->last();
@@ -129,6 +138,8 @@ void Chain::append(Chain&& other) {
 
     if ( ! other._head )
         return;
+
+    _statistics += other._statistics;
 
     _tail->setNext(std::move(other._head));
     _tail = other._tail;
@@ -200,6 +211,7 @@ ChainPtr Chain::copy() const {
         c = c->next();
     }
 
+    nchain->_statistics = _statistics;
     return nchain;
 }
 

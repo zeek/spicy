@@ -1187,9 +1187,11 @@ public:
 
     void operator()(declaration::Type* n) final {
         switch ( _stage ) {
-            case Stage::COLLECT:
-                // Nothing.
-                break;
+            case Stage::COLLECT: {
+                // Collect feature requirements associated with type.
+                for ( const auto& requirement : n->attributes()->findAll("&requires-type-feature") )
+                    _features[n->typeID()][*requirement->valueAsString()] = true;
+            }
 
             case Stage::TRANSFORM: {
                 if ( ! _features.count(n->fullyQualifiedID()) )

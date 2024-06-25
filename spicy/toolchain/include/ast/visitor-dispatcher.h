@@ -48,6 +48,7 @@ public:
     virtual void operator()(spicy::operator_::unit::Backtrack* n) {}
     virtual void operator()(spicy::operator_::unit::ContextConst* n) {}
     virtual void operator()(spicy::operator_::unit::ContextNonConst* n) {}
+    virtual void operator()(spicy::operator_::unit::Stream* n) {}
     virtual void operator()(spicy::declaration::Hook*) {}
     virtual void operator()(spicy::ctor::Unit*) {}
     virtual void operator()(spicy::declaration::UnitHook*) {}

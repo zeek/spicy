@@ -1,3 +1,55 @@
+1.11.0-dev.224 | 2024-06-25 08:50:58 +0200
+
+  * GH-3779: Add `%sync_advance` hook. (Robin Sommer, Corelight)
+
+    This adds support for a new unit hook:
+
+    ```
+    on %sync_advance(offset: uint64) {
+        ...
+    }
+    ```
+
+    This hook is called regularly (see below) during error recovery when
+    synchronization skips over data or gaps while searching for a valid
+    synchronization point. It can be used to check in on the
+    synchronization to, e.g., abort further processing if it just keeps
+    failing. `offset` is the current position inside the input stream that
+    synchronization just skipped to.
+
+    By default, "called regularly" means that it's called every 4KB of
+    input skipped over while searching for a synchronization point. That
+    value can be changed by setting a unit property
+    `%sync-advance-block-size = <number of bytes>`.
+
+    As an additional minor tweak, this also changes the name of what used
+    to be the `__gap__` profiler to now be called `__sync_advance` because
+    it's profiling the time spent in skipping data, not just gaps.
+
+  * Add stream method `statistics()` to retrieve input statistics. (Robin Sommer, Corelight)
+
+    This returns a struct of the following type, reflecting the input
+    seen so far:
+
+    ```
+    type StreamStatistics = struct {
+        num_data_bytes: uint64;     ## number of data bytes processed
+        num_data_chunks: uint64;    ## number of data chunks processed, excluding empty chunks
+        num_gap_bytes: uint64;      ## number of gap bytes processed
+        num_gap_chunks: uint64;     ## number of gap chunks processed, excluding empty chunks
+    };
+    ```
+
+  * Extend HILTI's stream implementation to track data statistics. (Robin Sommer, Corelight)
+
+  * Add unit method `stream()` to access current input stream. (Robin Sommer, Corelight)
+
+    We implement this by storing the current input stream inside the
+    internal parse struct as a new field `__stream`. Using `stream()` then
+    turns into an access to that field (i.e,  `*(self.__stream)`). If that
+    field never gets accessed, the optimizer will remove it, so there's no
+    overhead if nobody ever uses `stream()` with a unit.
+
 1.11.0-dev.219 | 2024-06-20 10:32:09 +0200
 
   * Fix Spicy's support for `network` type. `network` was not

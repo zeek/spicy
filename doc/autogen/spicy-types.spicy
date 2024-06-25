@@ -78,6 +78,12 @@ Specifies how data is handled that's not representable in a specified character 
 
 Captures state for incremental regular expression matching.
 
+.. _spicy_streamstatistics:
+
+.. rubric:: ``spicy::StreamStatistics``
+
+Captures stream statistics.
+
 .. _spicy_protocol:
 
 .. rubric:: ``spicy::Protocol``

@@ -72,6 +72,11 @@
     into the input of the current unit, or the method will throw a runtime
     exception.
 
+.. spicy:method:: unit::stream unit stream False stream ()
+
+    Returns the current input stream. This will return a valid value only
+    while parsing is in progress, otherwise it will throw an exception.
+
 .. rubric:: Operators
 
 .. spicy:operator:: unit::HasMember <field~type> t:<unit> <sp> op:?. <sp> t:<field>

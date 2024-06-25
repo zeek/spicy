@@ -460,5 +460,26 @@ Returns a reference to the ``%context`` instance associated with the unit.
 };
 HILTI_OPERATOR_IMPLEMENTATION(ContextNonConst);
 
+class Stream : public hilti::BuiltInMemberCall {
+public:
+    Signature signature(hilti::Builder* builder_) const final {
+        auto builder = Builder(builder_);
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .member = "stream",
+            .result = {hilti::Constness::Const, builder.typeStream()},
+            .ns = "unit",
+            .doc = R"(
+Returns the current input stream. This will return a valid value only while
+parsing is in progress, otherwise it will throw an exception.
+ )",
+        };
+    }
+
+    HILTI_OPERATOR(spicy, unit::Stream);
+};
+HILTI_OPERATOR_IMPLEMENTATION(Stream);
+
 } // namespace unit
 } // namespace

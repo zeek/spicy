@@ -37,6 +37,33 @@ struct NonOwning {};
 namespace detail {
 class UnsafeConstIterator;
 }
+
+/**
+ * Accumulates statistics about a stream's data over its lifetime. Empty chunks
+ * are not counted.
+ */
+struct Statistics {
+    uint64_t num_data_bytes = 0;
+    uint64_t num_data_chunks = 0;
+    uint64_t num_gap_bytes = 0;
+    uint64_t num_gap_chunks = 0;
+
+    friend bool operator==(const Statistics& a, const Statistics& b) {
+        return a.num_data_bytes == b.num_data_bytes && a.num_data_chunks == b.num_data_chunks &&
+               a.num_gap_bytes == b.num_gap_bytes && a.num_gap_chunks == b.num_gap_chunks;
+    }
+
+    friend bool operator!=(const Statistics& a, const Statistics& b) { return ! (a == b); }
+
+    Statistics& operator+=(Statistics& other) {
+        num_data_bytes += other.num_data_bytes;
+        num_data_chunks += other.num_data_chunks;
+        num_gap_bytes += other.num_gap_bytes;
+        num_gap_chunks += other.num_gap_chunks;
+        return *this;
+    }
+};
+
 } // namespace stream
 
 namespace detail::adl {
@@ -44,6 +71,7 @@ std::string to_string(const Stream& x, adl::tag /*unused*/);
 std::string to_string(const stream::View& x, adl::tag /*unused*/);
 std::string to_string(const stream::SafeConstIterator& x, adl::tag /*unused*/);
 std::string to_string(const stream::detail::UnsafeConstIterator& x, adl::tag /*unused*/);
+std::string to_string(const stream::Statistics& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
 namespace stream {
@@ -298,7 +326,20 @@ public:
     Chain() {}
 
     /** Moves a chunk and all its successors into a new chain. */
-    Chain(std::unique_ptr<Chunk> head) : _head(std::move(head)), _tail(_head->last()) { _head->setChain(this); }
+    Chain(std::unique_ptr<Chunk> head) : _head(std::move(head)), _tail(_head->last()) {
+        _head->setChain(this);
+
+        if ( auto size = _head->size() ) {
+            if ( _head->isGap() ) {
+                _statistics.num_gap_bytes = _head->size();
+                _statistics.num_gap_chunks = 1;
+            }
+            else {
+                _statistics.num_data_bytes = _head->size();
+                _statistics.num_data_chunks = 1;
+            }
+        }
+    }
 
     Chain(Chain&& other) = delete;
     Chain(const Chain& other) = delete;
@@ -334,7 +375,7 @@ public:
     UnsafeConstIterator unsafeBegin() const;
     UnsafeConstIterator unsafeEnd() const;
 
-    // Returns a newly allocated chain with the same content.
+    // Returns a newly allocated chain with the same content and statistics.
     ChainPtr copy() const;
 
     // Appends a new chunk to the end, copying the data.
@@ -366,6 +407,7 @@ public:
         _head.reset();
         _head_offset = 0;
         _tail = nullptr;
+        _statistics = {};
     }
 
     // Turns the chain into a freshly initialized state.
@@ -374,6 +416,7 @@ public:
         _head.reset();
         _head_offset = 0;
         _tail = nullptr;
+        _statistics = {};
     }
 
     void freeze() {
@@ -388,6 +431,10 @@ public:
 
     // Returns the number of dynamic chunks allocated.
     int numberOfChunks() const;
+
+    // Returns statistics for the chain. These are accumulative over the whole
+    // lifetime of the chain.
+    const auto& statistics() const { return _statistics; }
 
 private:
     void _ensureValid() const {
@@ -421,6 +468,9 @@ private:
     // Always pointing to last chunk reachable from *head*, or null if chain
     // is empty; non-owning
     Chunk* _tail = nullptr;
+
+    // Tracks statistics as new data comes in.
+    stream::Statistics _statistics;
 
     std::unique_ptr<Chunk> _cached; // previously freed chunk for reuse
 };
@@ -1796,6 +1846,12 @@ public:
      */
     int numberOfChunks() const { return _chain->numberOfChunks(); }
 
+    /*
+     * Returns statistics for the chain. These are accumulative over the whole
+     * lifetime of the chain.
+     */
+    const auto& statistics() const { return _chain->statistics(); }
+
     /**
      * Prints out a debug rendering to the stream's internal representation.
      */
@@ -1823,6 +1879,9 @@ inline std::string detail::to_string_for_print<Stream>(const Stream& x) {
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Stream& x) { return out << to_string_for_print(x); }
+inline std::ostream& operator<<(std::ostream& out, const stream::Statistics& x) {
+    return out << to_string_for_print(x);
+}
 
 namespace detail::adl {
 inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
@@ -1830,6 +1889,12 @@ inline std::string to_string(const stream::View& x, adl::tag /*unused*/) {
 }
 
 inline std::string to_string(const Stream& x, adl::tag /*unused*/) { return hilti::rt::to_string(x.view()); }
-} // namespace detail::adl
+inline std::string to_string(const stream::Statistics& x, adl::tag /*unused*/) {
+    // Render like a struct.
+    return fmt("[$num_data_bytes=%" PRIu64 ", $num_data_chunks=%" PRIu64 ", $num_gap_bytes=%" PRIu64
+               ", $num_gap_chunks=%" PRIu64 "]",
+               x.num_data_bytes, x.num_data_chunks, x.num_gap_bytes, x.num_gap_chunks);
+}
 
+} // namespace detail::adl
 } // namespace hilti::rt

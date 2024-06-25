@@ -2459,6 +2459,9 @@ void ParserBuilder::trimInput(bool force) {
 }
 
 void ParserBuilder::initializeUnit(const Location& l) {
+    guardFeatureCode(state().unit, {"uses_stream"},
+                     [&]() { builder()->addAssign(builder()->member(state().self, ID("__stream")), state().data); });
+
     saveParsePosition();
 
     beforeHook();
@@ -2582,16 +2585,35 @@ void ParserBuilder::skip(Expression* size, const Meta& location) {
 }
 
 void ParserBuilder::advanceToNextData() {
-    auto offset = builder()->memberCall(state().cur, "offset");
-    auto profiler = builder()->startProfiler(hilti::util::fmt("spicy/unit/%s/__gap__", state().unit_id), offset);
+    auto old_offset = builder()->addTmp("old_offset", builder()->memberCall(state().cur, "offset"));
+
+    auto profiler =
+        builder()->startProfiler(hilti::util::fmt("spicy/unit/%s/__sync_advance__", state().unit_id), old_offset);
 
     builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance_to_next_data"));
 
-    if ( profiler ) {
-        auto offset = builder()->memberCall(state().cur, "offset");
+    auto new_offset = builder()->memberCall(state().cur, "offset");
+
+    guardFeatureCode(state().unit, {"uses_sync_advance"}, [&]() {
+        Expression* sync_advance_block_size = nullptr;
+        if ( auto p = state().unit->propertyItem("%sync-advance-block-size"); p && p->expression() )
+            sync_advance_block_size = p->expression();
+        else
+            sync_advance_block_size = builder()->integer(4096); // 4KB default
+
+        auto old_block = builder()->division(old_offset, sync_advance_block_size);
+        auto new_block = builder()->division(new_offset, sync_advance_block_size);
+        auto run_hook = builder()->addIf(builder()->unequal(old_block, new_block));
+        pushBuilder(run_hook, [&]() {
+            beforeHook();
+            builder()->addMemberCall(state().self, "__on_0x25_sync_advance", {new_offset});
+            afterHook();
+        });
+    });
+
+    if ( profiler )
         // advance_to_next_data() always moves one byte ahead, so we subtract that
-        builder()->stopProfiler(profiler, builder()->difference(offset, builder()->integer(1)));
-    }
+        builder()->stopProfiler(profiler, builder()->difference(new_offset, builder()->integer(1)));
 
     trimInput();
 }

@@ -59,6 +59,7 @@ TEST_CASE("construct") {
         CHECK_EQ(to_string(x), R"(b"")");
         CHECK(x.isEmpty());
         CHECK_EQ(x.size().Ref(), 0);
+        CHECK(x.statistics() == stream::Statistics());
     }
 
     SUBCASE("from small") {
@@ -67,6 +68,8 @@ TEST_CASE("construct") {
         CHECK_EQ(to_string(z), R"(b"xyz")");
         CHECK_FALSE(z.isEmpty());
         CHECK_EQ(z.size().Ref(), 3);
+        CHECK_EQ(x.statistics().num_data_bytes, 3);
+        CHECK_EQ(x.statistics().num_data_chunks, 1);
     }
 
     SUBCASE("from big") {
@@ -75,6 +78,8 @@ TEST_CASE("construct") {
         CHECK_EQ(to_string(z), R"(b"123456789012345678901234567890123")");
         CHECK_FALSE(z.isEmpty());
         CHECK_EQ(z.size().Ref(), 33);
+        CHECK_EQ(y.statistics().num_data_bytes, 33);
+        CHECK_EQ(y.statistics().num_data_chunks, 1);
     }
 
     SUBCASE("from empty") {
@@ -83,6 +88,8 @@ TEST_CASE("construct") {
         CHECK_EQ(to_string(m), R"(b"")");
         CHECK(m.isEmpty());
         CHECK_EQ(m.size().Ref(), 0);
+        CHECK_EQ(m.statistics().num_data_bytes, 0);
+        CHECK_EQ(m.statistics().num_data_chunks, 0);
     }
 
     SUBCASE("unfrozen") {
@@ -117,7 +124,7 @@ TEST_CASE("construct") {
 
 TEST_CASE("assign") {
     SUBCASE("from lvalue") {
-        auto x = Stream("123"_b);
+        auto x = Stream("1234"_b);
         auto y = Stream("abc"_b);
         auto it = y.begin();
         REQUIRE_NOTHROW(*it);
@@ -125,6 +132,7 @@ TEST_CASE("assign") {
         y = x;
         CHECK_EQ(y, x);
         CHECK_THROWS_WITH_AS(*it, "stream object no longer available", const InvalidIterator&);
+        CHECK_EQ(y.statistics().num_data_bytes, 4);
     }
 
     SUBCASE("multiple chunks") {
@@ -135,6 +143,9 @@ TEST_CASE("assign") {
         SUBCASE("both chunked") {
             x = make_stream({"12"_b, "34"_b});
             y = make_stream({"ab"_b, "cd"_b});
+
+            CHECK_EQ(x.statistics().num_data_bytes, 4);
+            CHECK_EQ(x.statistics().num_data_bytes, 4);
         }
 
         SUBCASE("LHS chunked") {
@@ -231,6 +242,9 @@ TEST_CASE("append") {
         s.freeze();
         CHECK_NOTHROW(s.append(empty));
         CHECK_THROWS_WITH_AS(s.append(xs), "stream object can no longer be modified", const Frozen&);
+
+        CHECK_EQ(s.statistics().num_data_bytes, 6);
+        CHECK_EQ(s.statistics().num_data_chunks, 2);
     }
 
     SUBCASE("rvalue Bytes") {
@@ -247,6 +261,9 @@ TEST_CASE("append") {
         s.freeze();
         CHECK_NOTHROW(s.append(""_b));
         CHECK_THROWS_WITH_AS(s.append("456"_b), "stream object can no longer be modified", const Frozen&);
+
+        CHECK_EQ(s.statistics().num_data_bytes, 6);
+        CHECK_EQ(s.statistics().num_data_chunks, 2);
     }
 
     SUBCASE("raw memory") {
@@ -265,6 +282,9 @@ TEST_CASE("append") {
         s.freeze();
         CHECK_NOTHROW(s.append(data, 0));
         CHECK_THROWS_WITH_AS(s.append(data, strlen(data)), "stream object can no longer be modified", const Frozen&);
+
+        CHECK_EQ(s.statistics().num_data_bytes, 6);
+        CHECK_EQ(s.statistics().num_data_chunks, 2);
     }
 }
 
@@ -635,6 +655,9 @@ TEST_CASE("convert view to stream") {
     CHECK_EQ(v, "2345ABCDEFG"_b);
     y = Stream(v);
     CHECK_EQ(y, "2345ABCDEFG"_b);
+
+    CHECK_EQ(y.statistics().num_data_bytes, 11);
+    CHECK_EQ(y.statistics().num_data_chunks, 1);
 }
 
 TEST_CASE("Expanding vs non-expanding views") {
@@ -696,6 +719,10 @@ TEST_CASE("Trim") {
     z.trim(z.at(5));
     CHECK_EQ(z, ""_b);
     CHECK_EQ(z.size().Ref(), 0);
+
+    // Statistics aren't affected by trimming.
+    CHECK_EQ(x.statistics().num_data_bytes, 72);
+    CHECK_EQ(x.statistics().num_data_chunks, 5);
 }
 
 TEST_CASE("Trim with existing iterator and append") {
@@ -928,6 +955,11 @@ TEST_CASE("View") {
         s.append("CCC");
         REQUIRE_EQ(s.numberOfChunks(), 3);
 
+        CHECK_EQ(s.statistics().num_data_bytes, 6);
+        CHECK_EQ(s.statistics().num_data_chunks, 2);
+        CHECK_EQ(s.statistics().num_gap_bytes, 3);
+        CHECK_EQ(s.statistics().num_gap_chunks, 1);
+
         auto v = s.view();
         CHECK_EQ(v.dataForPrint(), "AAA<gap>CCC");
 
@@ -1010,6 +1042,11 @@ TEST_CASE("View") {
                 Byte dst[3] = {};
                 REQUIRE_EQ(sizeof(dst), s.size());
                 CHECK_THROWS_WITH_AS(s.view().extract(dst, sizeof(dst)), "data is missing", const MissingData&);
+
+                CHECK_EQ(s.statistics().num_data_bytes, 0);
+                CHECK_EQ(s.statistics().num_data_chunks, 0);
+                CHECK_EQ(s.statistics().num_gap_bytes, 3);
+                CHECK_EQ(s.statistics().num_gap_chunks, 1);
             }
 
             SUBCASE("begin in gap") {
@@ -1018,6 +1055,11 @@ TEST_CASE("View") {
                 Byte dst[3] = {};
                 REQUIRE_EQ(sizeof(dst), s.size());
                 CHECK_THROWS_WITH_AS(s.view().extract(dst, sizeof(dst)), "data is missing", const MissingData&);
+
+                CHECK_EQ(s.statistics().num_data_bytes, 1);
+                CHECK_EQ(s.statistics().num_data_chunks, 1);
+                CHECK_EQ(s.statistics().num_gap_bytes, 2);
+                CHECK_EQ(s.statistics().num_gap_chunks, 1);
             }
 
             SUBCASE("end in gap") {
@@ -1026,6 +1068,11 @@ TEST_CASE("View") {
                 Byte dst[3] = {};
                 REQUIRE_EQ(sizeof(dst), s.size());
                 CHECK_THROWS_WITH_AS(s.view().extract(dst, sizeof(dst)), "data is missing", const MissingData&);
+
+                CHECK_EQ(s.statistics().num_data_bytes, 1);
+                CHECK_EQ(s.statistics().num_data_chunks, 1);
+                CHECK_EQ(s.statistics().num_gap_bytes, 2);
+                CHECK_EQ(s.statistics().num_gap_chunks, 1);
             }
         }
 

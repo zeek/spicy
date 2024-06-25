@@ -51,5 +51,6 @@ HILTI_NODE_OPERATOR(stream, Unfreeze)
 HILTI_NODE_OPERATOR(stream, IsFrozen)
 HILTI_NODE_OPERATOR(stream, At)
 HILTI_NODE_OPERATOR(stream, Trim)
+HILTI_NODE_OPERATOR(stream, Statistics)
 
 } // namespace hilti::operator_

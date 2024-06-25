@@ -2342,6 +2342,27 @@ different points during the synchronization process:
 ``on %rejected { ...}``
     Executes when trial mode fails with :ref:`statement_reject`.
 
+``on %sync_advance(offset: uint64)``
+    Executes regularly (see below) while the parser is searching for a
+    synchronization point. The `offset` is given the current position
+    inside the input stream.
+
+    This hook can be used check if the parser is skipping too much
+    data for the analysis to remain useful. For example, a protocol
+    analyzer could decide to bail out if the input stream consists
+    mainly of gaps, as reported by
+    :spicy:method:`self.stream().statistics() <stream::statistics>`.
+
+    By default, the hook executes every 4KB of input data skipped
+    while searching for a synchronization point. It may not
+    necessarily trigger immediately at the 4KB mark, but soon after
+    when parsing gets a chance to check the input stream's position.
+
+    You may change the trigger volume by defining a unit property
+    ``%sync-advance-block-size = <VALUE>`` where ``<VALUE>`` is an
+    alternative  size value in bytes. As usual, this property can also
+    be set at the module level to apply to all units.
+
 .. rubric:: Example Synchronization Process
 
 As an example, let's consider a grammar consisting of two sections

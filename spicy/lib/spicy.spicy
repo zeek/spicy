@@ -51,6 +51,14 @@ public type Error = __error;
 public type MatchState = struct {
 } &cxxname="hilti::rt::regexp::MatchState";
 
+## Captures stream statistics.
+public type StreamStatistics = struct {
+    num_data_bytes: uint64;     ## number of data bytes processed
+    num_data_chunks: uint64;    ## number of data chunks processed, excluding empty chunks
+    num_gap_bytes: uint64;      ## number of gap bytes processed
+    num_gap_chunks: uint64;     ## number of gap chunks processed, excluding empty chunks
+} &cxxname = "hilti::rt::stream::Statistics";
+
 ## Specifies a transport-layer protocol.
 public type Protocol = enum {
     TCP,

@@ -529,6 +529,24 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
         }
     }
+
+    void operator()(type::unit::item::Property* n) final {
+        if ( n->id() == "%sync-advance-block-size" ) {
+            if ( auto expr = n->expression() ) {
+                auto t = expr->type()->type()->tryAs<hilti::type::UnsignedInteger>();
+                if ( ! t || t->width() != 64 ) {
+                    if ( auto x = hilti::coerceExpression(builder(), expr,
+                                                          builder()->qualifiedType(builder()->typeUnsignedInteger(64),
+                                                                                   hilti::Constness::Const),
+                                                          hilti::CoercionStyle::TryAllForMatching) ) {
+                        n->setExpression(context(), *x.coerced);
+                        recordChange(n, "coerced property to uint64");
+                    }
+                }
+            }
+        }
+    }
+
     void operator()(type::unit::item::UnresolvedField* n) final {
         if ( n->type() && n->type()->type()->isA<hilti::type::Void>() && n->attributes() ) {
             // Transparently map void fields that aim to parse data into

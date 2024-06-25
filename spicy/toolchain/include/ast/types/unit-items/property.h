@@ -29,6 +29,8 @@ public:
 
     std::string_view displayName() const final { return "unit property"; }
 
+    void setExpression(ASTContext* ctx, Expression* e) { setChild(ctx, 0, e); }
+
     static auto create(ASTContext* ctx, ID id, AttributeSet* attrs, bool inherited = false, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
