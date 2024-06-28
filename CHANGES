@@ -1,3 +1,9 @@
+1.11.0-dev.227 | 2024-06-28 13:20:55 +0200
+
+  * Improve doc wrt. `%error` hook in sync mode. (Jan Grashoefer, Corelight)
+
+  * Add draft release notes for spicy-1.11.0. [skip CI] (Benjamin Bannier, Corelight)
+
 1.11.0-dev.224 | 2024-06-25 08:50:58 +0200
 
   * GH-3779: Add `%sync_advance` hook. (Robin Sommer, Corelight)

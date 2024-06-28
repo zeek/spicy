@@ -2316,13 +2316,12 @@ the synchronization point onwards, until one of the following occurs:
   ``reject`` already called. In this case, the parser will abort with a fatal
   parse error.
 
-Note that during trial mode, any fields between the synchronization
-point and the eventual ``confirm``/``reject`` location will already be
-processed as usual, including any hooks executing. This may leave the
-unit's state in a partially initialized state if trial parsing
-eventually fails. Trial mode will also consume any input along the
-way, with any further synchronization attempts proceeding only on
-subsequent, not yet seen, data.
+Note that during trial mode, any fields between the synchronization point and
+the eventual ``confirm``/``reject`` location will already be processed as
+usual, including any hooks executing except ``%error``. This may leave the
+unit's state in a partially initialized state if trial parsing eventually
+fails. Trial mode will also consume any input along the way, with any further
+synchronization attempts proceeding only on subsequent, not yet seen, data.
 
 .. _error_recovery_hooks:
 
