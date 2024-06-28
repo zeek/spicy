@@ -36,8 +36,6 @@
 #include <spicy/compiler/detail/codegen/productions/all.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
 
-#include "base/util.h"
-
 using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
@@ -1225,6 +1223,7 @@ struct ProductionVisitor : public production::Visitor {
             unit_type = unit->unitType();
 
         auto offset = builder()->memberCall(state().cur, "offset");
+
         profiler = builder()->startProfiler(hilti::util::fmt("spicy/unit/%s/__synchronize__", state().unit_id), offset);
 
         if ( unit_type ) {
@@ -1290,6 +1289,15 @@ struct ProductionVisitor : public production::Visitor {
         pushBuilder(builder()->addWhile(search_start, builder()->bool_(true)), [&]() {
             // Generate code which synchronizes the input. This will throw a parse error
             // if we hit EOD which will implicitly break from the loop.
+
+            // Call any `%sync_advance` hook as we enter sync mode.
+            pb->guardFeatureCode(state().unit, {"uses_sync_advance"}, [&]() {
+                pb->beforeHook();
+                auto offset = builder()->memberCall(state().cur, "offset");
+                builder()->addMemberCall(state().self, "__on_0x25_sync_advance", {offset});
+                pb->afterHook();
+            });
+
 
             // The current input has failed, either since it does not match or since
             // data was missing. Advance the input to go to the next data.
@@ -1382,6 +1390,15 @@ struct ProductionVisitor : public production::Visitor {
 
         pushBuilder(builder()->addIf(state().error), [&]() {
             builder()->addComment("Synchronize input");
+
+            // Call any `%sync_advance` hook as we enter sync mode.
+            pb->guardFeatureCode(state().unit, {"uses_sync_advance"}, [&]() {
+                pb->beforeHook();
+                auto offset = builder()->memberCall(state().cur, "offset");
+                builder()->addMemberCall(state().self, "__on_0x25_sync_advance", {offset});
+                pb->afterHook();
+            });
+
             syncProduction(sync);
 
             builder()->addAssign(is_trial_mode, builder()->bool_(true));
