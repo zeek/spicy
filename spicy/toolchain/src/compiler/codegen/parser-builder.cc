@@ -36,8 +36,6 @@
 #include <spicy/compiler/detail/codegen/productions/all.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
 
-#include "base/util.h"
-
 using namespace spicy;
 using namespace spicy::detail;
 using namespace spicy::detail::codegen;
@@ -1225,6 +1223,7 @@ struct ProductionVisitor : public production::Visitor {
             unit_type = unit->unitType();
 
         auto offset = builder()->memberCall(state().cur, "offset");
+
         profiler = builder()->startProfiler(hilti::util::fmt("spicy/unit/%s/__synchronize__", state().unit_id), offset);
 
         if ( unit_type ) {
@@ -1290,6 +1289,9 @@ struct ProductionVisitor : public production::Visitor {
         pushBuilder(builder()->addWhile(search_start, builder()->bool_(true)), [&]() {
             // Generate code which synchronizes the input. This will throw a parse error
             // if we hit EOD which will implicitly break from the loop.
+
+            // Call any `%sync_advance` hook as we enter sync mode.
+            pb->syncAdvanceHook();
 
             // The current input has failed, either since it does not match or since
             // data was missing. Advance the input to go to the next data.
@@ -1382,6 +1384,10 @@ struct ProductionVisitor : public production::Visitor {
 
         pushBuilder(builder()->addIf(state().error), [&]() {
             builder()->addComment("Synchronize input");
+
+            // Call any `%sync_advance` hook as we enter sync mode.
+            pb->syncAdvanceHook();
+
             syncProduction(sync);
 
             builder()->addAssign(is_trial_mode, builder()->bool_(true));
@@ -2594,7 +2600,7 @@ void ParserBuilder::advanceToNextData() {
 
     auto new_offset = builder()->memberCall(state().cur, "offset");
 
-    guardFeatureCode(state().unit, {"uses_sync_advance"}, [&]() {
+    {
         Expression* sync_advance_block_size = nullptr;
         if ( auto p = state().unit->propertyItem("%sync-advance-block-size"); p && p->expression() )
             sync_advance_block_size = p->expression();
@@ -2604,12 +2610,9 @@ void ParserBuilder::advanceToNextData() {
         auto old_block = builder()->division(old_offset, sync_advance_block_size);
         auto new_block = builder()->division(new_offset, sync_advance_block_size);
         auto run_hook = builder()->addIf(builder()->unequal(old_block, new_block));
-        pushBuilder(run_hook, [&]() {
-            beforeHook();
-            builder()->addMemberCall(state().self, "__on_0x25_sync_advance", {new_offset});
-            afterHook();
-        });
-    });
+
+        syncAdvanceHook(std::move(run_hook));
+    }
 
     if ( profiler )
         // advance_to_next_data() always moves one byte ahead, so we subtract that
@@ -2724,6 +2727,22 @@ void ParserBuilder::finishLoopBody(Expression* cookie, const Location& l) {
     auto body = builder()->addIf(not_moved);
     pushBuilder(std::move(body),
                 [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
+}
+
+void ParserBuilder::syncAdvanceHook(std::shared_ptr<Builder> cond) {
+    auto body = [&]() {
+        beforeHook();
+        auto offset = builder()->memberCall(state().cur, "offset");
+        builder()->addMemberCall(state().self, "__on_0x25_sync_advance", {offset});
+        afterHook();
+    };
+
+    guardFeatureCode(state().unit, {"uses_sync_advance"}, [&]() {
+        if ( cond )
+            pushBuilder(std::move(cond), body);
+        else
+            body();
+    });
 }
 
 std::shared_ptr<Builder> ParserBuilder::_featureCodeIf(const type::Unit* unit,
