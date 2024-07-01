@@ -526,6 +526,16 @@ public:
             popBuilder();
     }
 
+    /**
+     * Call the `%sync_advance` hook with the invocation wrapped in a feature
+     * guard. The parameter allows injecting an additional condition which will
+     * be checked inside the guard.
+     *
+     * @param cond an additional, optional condition to check before invoking
+     *             the hook.
+     */
+    void syncAdvanceHook(std::shared_ptr<Builder> cond = {});
+
     QualifiedType* lookAheadType() const;
     hilti::Expression* featureConstant(const type::Unit* unit, std::string_view feature);
 
