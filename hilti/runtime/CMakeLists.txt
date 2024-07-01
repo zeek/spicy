@@ -50,9 +50,17 @@ set(SOURCES
     src/version.cc
     ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c)
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported)
+
 foreach (lib hilti-rt hilti-rt-debug)
     add_library(${lib}-objects OBJECT ${SOURCES})
     target_compile_options(${lib}-objects PRIVATE "-fPIC")
+
+    if (ipo_supported)
+        set_property(TARGET ${lib}-objects PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
+    endif ()
+
     target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
     target_include_directories(${lib}-objects BEFORE
                                PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -74,6 +82,9 @@ foreach (lib hilti-rt hilti-rt-debug)
     target_link_libraries(${lib} ${lib}-objects)
     target_link_libraries(${lib} jrx-objects)
     target_link_libraries(${lib} fiber)
+    if (ipo_supported)
+        set_property(TARGET ${lib} PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
+    endif ()
 endforeach ()
 
 # Build hilti-rt with release flags.
