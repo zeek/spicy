@@ -1147,6 +1147,8 @@ struct ProductionVisitor : public production::Visitor {
 
                 if ( guardedSearch )
                     popBuilder();
+
+                pb->state().printDebug(builder());
             };
         };
 
