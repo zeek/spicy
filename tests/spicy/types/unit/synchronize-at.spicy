@@ -1,6 +1,6 @@
 # @TEST-DOC: Validates synchronization via `%synchronize-at` property.
 #
-# @TEST-EXEC: spicyc -d -j %INPUT -o foo.hlto
+# @TEST-EXEC: spicyc -d -j %INPUT -o foo.hlto >>output 2>&1
 
 # @TEST-EXEC: ${SCRIPTS}/printf 'foobar123' | spicy-dump -d foo.hlto -p foo::Test1 >>output 2>&1
 # @TEST-EXEC-FAIL: ${SCRIPTS}/printf '1234567' | spicy-dump -d foo.hlto -p foo::Test1 >>output 2>&1
@@ -10,6 +10,9 @@
 # @TEST-EXEC: ${SCRIPTS}/printf '\xFF\xFF\xFF' | spicy-dump -d foo.hlto -p foo::Test2 >>output2 2>&1
 # @TEST-EXEC: ${SCRIPTS}/printf '\xCC\xFF\xFF' | spicy-dump -d foo.hlto -p foo::Test2 >>output2 2>&1
 # @TEST-EXEC: btest-diff output2
+
+# @TEST-EXEC: ${SCRIPTS}/printf 'ABBAAA' | spicy-dump -d foo.hlto -p foo::Test3 >>output3 2>&1
+# @TEST-EXEC: btest-diff output3
 
 module foo;
 
@@ -41,4 +44,22 @@ type X = unit {
     # Use a `&requires` here to avoid us generating a lookahead parse for
     # `Test2::xs` above. Due to this we also need an explicit `stop` there.
     x: bytes &size=1 &requires=(|$$| == 0 || $$==b"\xFF");
+};
+
+###########################################
+
+public type Test3 = unit {
+    xs: (A &synchronize)[] foreach {
+        print $$;
+    }
+
+    on %synced {
+        print "confirmed";
+        confirm;
+    }
+};
+
+type A = unit {
+    %synchronize-at = /A/;
+    a: b"A";
 };
