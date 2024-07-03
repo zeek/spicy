@@ -1,3 +1,12 @@
+1.11.0-dev.229 | 2024-07-03 12:00:00 +0200
+
+  * Call `%sync_advance` hook also when entering sync mode. (Benjamin Bannier, Corelight)
+
+    This allows users to control the full synchronization lifecycle, from
+    entering it, to regular checks during the search (both via
+    `%sync_advance`, until it is left (via their explicit `confirm`, e.g.,
+    from a `%synced` hook).
+
 1.11.0-dev.227 | 2024-06-28 13:20:55 +0200
 
   * Improve doc wrt. `%error` hook in sync mode. (Jan Grashoefer, Corelight)
