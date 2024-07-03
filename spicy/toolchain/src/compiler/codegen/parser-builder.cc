@@ -1241,7 +1241,7 @@ struct ProductionVisitor : public production::Visitor {
                 e = synchronize_after->expression();
 
             if ( e ) {
-                const auto id = "synchronize";
+                const auto id = cg()->uniquer()->get("synchronize");
                 const auto ctor_ = e->tryAs<hilti::expression::Ctor>();
                 assert(ctor_);
                 auto ctor = std::make_unique<production::Ctor>(context(), cg()->uniquer()->get(id), ctor_->ctor(),
