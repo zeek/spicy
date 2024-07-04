@@ -911,15 +911,17 @@ struct ProductionVisitor : public production::Visitor {
             return;
 
         // Compute a unique name and store the regexp as a constant to avoid
-        // recomputing the regexp on each runtime pass through the calling context.
+        // recomputing the regexp on each runtime pass through the calling
+        // context. We pick a unique stem to not clash with general regexp
+        // interning in the literals visitor.
         //
         // TODO(bbannier): We should instead use a builder methods which (1)
         // compute a unique name, and (2) check whether an identical constant
         // has already been declared and can be reused.
-        auto re = ID("__re");
+        auto re = ID(fmt("__re_skip"));
         int i = 0;
         while ( pb->cg()->haveAddedDeclaration(re) )
-            re = ID(fmt("__re_%" PRId64, ++i));
+            re = ID(fmt("__re_skip_%" PRId64, ++i));
 
         auto d = builder()->constant(re, builder()->regexp(c->value(),
                                                            builder()->attributeSet({builder()->attribute("&anchor")})));
