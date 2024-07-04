@@ -1,3 +1,20 @@
+1.11.0-dev.242 | 2024-07-04 12:19:21 +0200
+
+  * Fix copy-n-paste error in GH action name. (Benjamin Bannier, Corelight)
+
+  * Fix when GH `email-failure` action sends notification. (Benjamin Bannier, Corelight)
+
+    In order to detect whether to send out a failure email we previously
+    would check that the action conclusion contained certain statuses. This
+    check seems to have been nonsensical as we only notified for benign
+    failure reasons (the check would have made a little more sense if
+    negated, but would have then also notified on successes).
+
+    With this patch we instead explicitly enumerate the failure conclusions
+    to trigger on, see
+    https://docs.github.com/en/webhooks/webhook-events-and-payloads#check_suite--check_suite-object
+    for the full list of conclusions.
+
 1.11.0-dev.239 | 2024-07-04 12:13:40 +0200
 
   * Drop macos versions unsupported by Cirrus. (Benjamin Bannier, Corelight)
