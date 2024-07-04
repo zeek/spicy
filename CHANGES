@@ -1,3 +1,31 @@
+1.11.0-dev.233 | 2024-07-04 12:08:15 +0200
+
+  * GH-1774: Fix synchronization with symbol different from last lookahead token. (Benjamin Bannier, Corelight)
+
+    If `synchronize-[at|after]` used a lookahead symbol different from the
+    last lookahead symbol (e.g., normal parsing used a
+    literal, recovery a regexp), synchronization would clobber the lookahead
+    symbol so that after successful synchronization normal parsing could
+    still not succeed.
+
+    This patch sets up dedicated parser state for synchronization to prevent
+    the clobbering.
+
+  * Use symbol unique for each error recovery. (Benjamin Bannier, Corelight)
+
+    By using a constant symbol name we could run into situations where
+    different error recoveries on different regexps (e.g., in unrelated
+    units) could accidentally use the same symbol. This is due to regexps
+    being automatically interned.
+
+    With this patch we generate unique symbols for each position where we
+    recover.
+
+  * Add debug log of parser state during synchronization. (Benjamin Bannier, Corelight)
+
+    We have a similar debug log already when synchronizing on regexps, but
+    where missing it for other literals.
+
 1.11.0-dev.229 | 2024-07-03 12:00:00 +0200
 
   * Call `%sync_advance` hook also when entering sync mode. (Benjamin Bannier, Corelight)

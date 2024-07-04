@@ -37,18 +37,23 @@ Done: [$a=b"A", $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
 [spicy-verbose]     failed to parse, will try to synchronize at 'b'
 [spicy-verbose]     - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - state: type=test::A input="1" stream=0xXXXXXXXX offsets=1/0/1/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - state: type=test::A input="1" stream=0xXXXXXXXX offsets=2/0/2/3 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - state: type=test::A input="A" stream=0xXXXXXXXX offsets=3/0/3/4 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - state: type=test::A input="B" stream=0xXXXXXXXX offsets=4/0/4/5 chunks=1 frozen=no mode=default trim=yes lah=2 lah_token="B" recovering=yes
 [spicy-verbose]     successfully synchronized
 Synced: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
@@ -117,6 +122,7 @@ Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
 [spicy-verbose]     failed to parse, will try to synchronize at 'b'
 [spicy-verbose]     - state: type=test::A input="B" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="B" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=2 lah_token="B" recovering=yes
 [spicy-verbose]     successfully synchronized
 Synced: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
@@ -212,13 +218,17 @@ Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
 [spicy-verbose]     failed to parse, will try to synchronize at 'b'
 [spicy-verbose]     - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - state: type=test::A input="2" stream=0xXXXXXXXX offsets=1/0/1/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - state: type=test::A input="3" stream=0xXXXXXXXX offsets=2/0/2/3 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
+[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=3/0/3/3 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 Error: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize.spicy:38:8-38:10)
 [spicy-verbose] - state: type=test::E input="B" stream=0xXXXXXXXX offsets=0/0/0/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no

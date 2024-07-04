@@ -1147,6 +1147,8 @@ struct ProductionVisitor : public production::Visitor {
 
                 if ( guardedSearch )
                     popBuilder();
+
+                pb->state().printDebug(builder());
             };
         };
 
@@ -1239,16 +1241,26 @@ struct ProductionVisitor : public production::Visitor {
                 e = synchronize_after->expression();
 
             if ( e ) {
-                const auto id = "synchronize";
+                const auto id = cg()->uniquer()->get("synchronize");
                 const auto ctor_ = e->tryAs<hilti::expression::Ctor>();
                 assert(ctor_);
                 auto ctor = std::make_unique<production::Ctor>(context(), cg()->uniquer()->get(id), ctor_->ctor(),
                                                                ctor_->meta().location());
+
+                // We might use a different look-ahead for synchronization that
+                // for regular parsing at this position, e.g., due to
+                // `%synchronize-[at|after]`, so temporarily set a new value.
+                auto pstate = state();
+                pstate.lahead = builder()->addTmp("sync_lahead", builder()->id("__lah"));
+                pushState(pstate);
+
                 getLookAhead({ctor.get()}, id, ctor->location(), LiteralMode::Search);
                 validateSearchResult();
 
                 if ( synchronize_after )
                     pb->consumeLookAhead();
+
+                popState(); // Look-ahead for synchronization.
 
                 return;
             }

@@ -1050,6 +1050,7 @@ Version 1.1
 - Make sure container sizes are runtime integers.
 - Fix missing operator<< for enums when generating debug code.
 - GH-917: Default-initialize forwarding fields without type arguments.
+- GH-1774: Fix synchronization with symbol different from last lookahead token.
 
 .. rubric:: Documentation
 
