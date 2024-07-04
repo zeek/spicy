@@ -6,8 +6,10 @@ environment:
     # Enforce sequential JIT'ing of files for controlled memory usage.
     HILTI_JIT_SEQUENTIAL: 1
 
-    # Images for macOS
-    IMAGE_MACOS_VENTURA: ghcr.io/cirruslabs/macos-ventura-base:latest
+    # Images for macOS. Currently Cirrus supports only macos Sonoma and would
+    # automatically and silently upgrade any other macos image (e.g., historic
+    # ones) to Sonoma.
+    IMAGE_MACOS_SONOMA: ghcr.io/cirruslabs/macos-runner:sonoma
 
     # Branches to use for spicy-plugin and spicy-analyzers tests.
     ZEEK_SPICY_BRANCH:      main
@@ -246,10 +248,10 @@ validate_release_tarball_task:
     - cd /tmp/spicy-tarball/spicy-*
     - make -C tests
 
-ventura_task:
+sonoma_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
   macos_instance:
-    image: $IMAGE_MACOS_VENTURA
+    image: $IMAGE_MACOS_SONOMA
 
   timeout_in: 120m
 
@@ -274,11 +276,11 @@ ventura_task:
   test_script:
     - (source /tmp/btest.venv/bin/activate && btest -djc tests/btest.cfg)
 
-homebrew_ventura_task:
+homebrew_sonoma_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   macos_instance:
-    image: $IMAGE_MACOS_VENTURA
+    image: $IMAGE_MACOS_SONOMA
 
   script:
     - brew tap zeek/zeek

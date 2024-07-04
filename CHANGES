@@ -1,3 +1,7 @@
+1.11.0-dev.239 | 2024-07-04 12:13:40 +0200
+
+  * Drop macos versions unsupported by Cirrus. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.237 | 2024-07-04 12:13:03 +0200
 
   * GH-1775: Extend validation of synchronization properties. (Robin Sommer, Corelight)
