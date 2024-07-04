@@ -319,8 +319,19 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( const auto& prop = n->id().str(); prop == "%synchronize-at" || prop == "%synchronize-after" ) {
-            if ( auto e = n->expression(); ! e ) {
+            auto e = n->expression();
+            if ( ! e ) {
                 error(fmt("%s requires an argument", prop), n);
+                return;
+            }
+
+            if ( ! e->isA<hilti::expression::Ctor>() ) {
+                error(fmt("%s requires a constant as its argument", prop), n);
+                return;
+            }
+
+            if ( ! supportsLiterals(e->type()) ) {
+                error(fmt("%s requires a constant of a parseable type as its argument", prop), n);
                 return;
             }
         }
@@ -432,8 +443,19 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( const auto& prop = n->id().str(); prop == "%synchronize-at" || prop == "%synchronize-after" ) {
-            if ( ! n->expression() ) {
+            auto e = n->expression();
+            if ( ! e ) {
                 error(fmt("%s requires an argument", prop), n);
+                return;
+            }
+
+            if ( ! e->isA<hilti::expression::Ctor>() ) {
+                error(fmt("%s requires a constant as its argument", prop), n);
+                return;
+            }
+
+            if ( ! supportsLiterals(e->type()) ) {
+                error(fmt("%s requires a constant of a parseable type as its argument", prop), n);
                 return;
             }
         }
