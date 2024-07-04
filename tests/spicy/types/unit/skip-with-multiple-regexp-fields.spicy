@@ -1,0 +1,16 @@
+# @TEST-DOC: Validate interning of regexps for `%skip*`, regression test for #1777.
+#
+# @TEST-EXEC: spicyc -dp %INPUT | grep 'const regexp' >>output
+# @TEST-EXEC: ${SCRIPTS}/printf "a b" | spicy-dump -d %INPUT >>output
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type A = unit {
+    %skip-pre = /skip-pre/;
+    %skip = / /;
+    %skip-post = /skip-post/;
+
+    x: /a/;
+    y: /b/;
+};

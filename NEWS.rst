@@ -1051,6 +1051,7 @@ Version 1.1
 - Fix missing operator<< for enums when generating debug code.
 - GH-917: Default-initialize forwarding fields without type arguments.
 - GH-1774: Fix synchronization with symbol different from last lookahead token.
+- GH-1777: Fix interning of regexps for ``%skip*``.
 
 .. rubric:: Documentation
 

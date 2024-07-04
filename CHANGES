@@ -1,3 +1,16 @@
+1.11.0-dev.235 | 2024-07-04 12:09:41 +0200
+
+  * GH-1777: Fix interning of regexps for `%skip*`. (Benjamin Bannier, Corelight)
+
+    If we used regexps for `%skip`, `%skip-pre` or `%skip-post` we would
+    previously compute unique identifiers in a way which clashed with
+    general regexp interning elsewhere[^1].
+
+    With this patch we now pick a unique stem for `%skip*`-related regexps
+    so they do not clash anymore.
+
+    [^1]: https://github.com/zeek/spicy/blob/90751715212c7268ebb86276d4365dfaedd94882/spicy/toolchain/src/compiler/codegen/parsers/literals.cc#L115
+
 1.11.0-dev.233 | 2024-07-04 12:08:15 +0200
 
   * GH-1774: Fix synchronization with symbol different from last lookahead token. (Benjamin Bannier, Corelight)
