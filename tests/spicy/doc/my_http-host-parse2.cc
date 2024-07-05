@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     // Access fields.
     std::cout << "method : " << *request->method << std::endl;
     std::cout << "uri    : " << *request->uri << std::endl;
-    std::cout << "version: " << *(*request->version)->number << std::endl;
+    std::cout << "version: " << *request->version->number << std::endl;
 
     // Wrap up runtime libraries.
     spicy::rt::done();
