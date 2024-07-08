@@ -71,7 +71,8 @@ struct ProductionVisitor : public production::Visitor {
     const Grammar& grammar;
     hilti::util::Cache<std::string, ID> parse_functions;
     std::vector<hilti::declaration::Field*> new_fields;
-    Expressions _destinations;
+    std::vector<std::pair<Expression*, Expression*>>
+        _destinations;     // .first is the value, .second is target for assignment
     std::vector<ID> _path; // paths of IDs followed to get to current unit/field
 
     auto cg() { return pb->cg(); }
@@ -90,13 +91,25 @@ struct ProductionVisitor : public production::Visitor {
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb->pushBuilder(std::move(b)); }
     auto popBuilder() { return pb->popBuilder(); }
 
-    auto destination() { return _destinations.back(); }
-
-    auto pushDestination(Expression* e) {
-        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- push destination: %s", *e));
-        _destinations.emplace_back(e);
+    // Return the current destination from the top of the stack. If
+    // `assign_target` is true, returns a value that can be assigned to;
+    // otherwise a value that can be read or modified.
+    auto destination(bool assign_target = false) {
+        return assign_target ? _destinations.back().second : _destinations.back().first;
     }
 
+    // Pushes a new destination onto the stack. If assign_target is set, a
+    // separate target is recorded for assigning values. If not set, the same
+    // expression is used for reading/modification and assignment.
+    auto pushDestination(Expression* e, Expression* assign_target = nullptr) {
+        if ( ! assign_target )
+            assign_target = e;
+
+        HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- push destination: %s / %s", *e, assign_target));
+        _destinations.emplace_back(e, assign_target);
+    }
+
+    // Pops the most recent destination from the stack.
     auto popDestination() {
         auto back = _destinations.back();
         _destinations.pop_back();
@@ -107,7 +120,23 @@ struct ProductionVisitor : public production::Visitor {
         else
             HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- pop destination, now: none"));
 
-        return back;
+        return back.first;
+    }
+
+    // Creates a new temporary variable of a give type and pushes that onto the
+    // destination stack. If the types takes parameters, we wrap the type into
+    // an unset optional because we wouldn't be able default instantiate it. In
+    // the case, we push a deref operation to the stack for accessing the
+    // value, so that usage remains transparent.
+    void pushTmpDestination(const std::string& prefix, QualifiedType* t) {
+        if ( ! t->type()->parameters().empty() ) {
+            auto dst = builder()->addTmp(prefix, builder()->typeOptional(t));
+            pushDestination(builder()->deref(dst), dst);
+        }
+        else {
+            auto dst = builder()->addTmp(prefix, t);
+            pushDestination(dst);
+        }
     }
 
     // RAII helper to update the visitor's `_path` as we descend the parse tree.
@@ -516,7 +545,7 @@ struct ProductionVisitor : public production::Visitor {
                             state().lahead, state().lahead_end, state().error};
 
         if ( ! unit && p.meta().field() )
-            args.push_back(destination());
+            args.push_back(destination(true));
 
         auto call = builder()->memberCall(state().self, id, args);
         builder()->addAssign(builder()->tuple({state().cur, state().lahead, state().lahead_end, state().error}), call);
@@ -545,11 +574,8 @@ struct ProductionVisitor : public production::Visitor {
 
         // Push destination for parsed value onto stack.
 
-        if ( auto c = meta.container() ) {
-            auto etype = c->parseType()->type()->elementType();
-            auto container_element = builder()->addTmp("elem", etype);
-            pushDestination(container_element);
-        }
+        if ( auto c = meta.container() )
+            pushTmpDestination("elem", c->parseType()->type()->elementType());
 
         else if ( ! meta.isFieldProduction() )
             pushDestination(destination());
@@ -558,18 +584,15 @@ struct ProductionVisitor : public production::Visitor {
             // No value to store.
             pushDestination(builder()->void_());
 
-        else if ( field->isForwarding() ) {
+        else if ( field->isForwarding() )
             // No need for a new destination, but we need to initialize the one
             // we have.
-            builder()->addAssign(destination(), builder()->default_(field->itemType()->type()));
-        }
+            builder()->addAssign(destination(true), builder()->default_(field->itemType()->type()));
 
         else if ( (field->isAnonymous() || field->isSkip()) &&
-                  ! field->itemType()->type()->isA<hilti::type::Bitfield>() ) {
+                  ! field->itemType()->type()->isA<hilti::type::Bitfield>() )
             // We won't have a field to store the value in, create a temporary.
-            auto dst = builder()->addTmp(fmt("transient_%s", field->id()), field->itemType());
-            pushDestination(dst);
-        }
+            pushTmpDestination(fmt("transient_%s", field->id()), field->itemType());
 
         else {
             // Can store parsed value directly in struct field.
@@ -619,7 +642,7 @@ struct ProductionVisitor : public production::Visitor {
             if ( meta.field() && ! meta.field()->isSkip() ) {
                 Expression* default_ =
                     builder()->default_(builder()->typeName(unit->unitType()->typeID()), type_args, location);
-                builder()->addAssign(destination(), default_);
+                builder()->addAssign(destination(true), default_);
             }
 
             auto call = builder()->memberCall(destination(), "__parse_stage1", args);
@@ -700,11 +723,9 @@ struct ProductionVisitor : public production::Visitor {
                                                      builder()->member(state().self, "__offset"),
                                                      builder()->integer(0)));
 
-        if ( field && field->convertExpression() ) {
+        if ( field && field->convertExpression() )
             // Need an additional temporary for the parsed field.
-            auto dst = builder()->addTmp(fmt("parsed_%s", field->id()), field->parseType());
-            pushDestination(dst);
-        }
+            pushTmpDestination(fmt("parsed_%s", field->id()), field->parseType());
 
         pb->enableDefaultNewValueForField(true);
 
@@ -851,7 +872,7 @@ struct ProductionVisitor : public production::Visitor {
             // Value was stored in temporary. Apply expression and store result
             // at destination.
             popDestination();
-            pb->applyConvertExpression(*field, val, destination());
+            pb->applyConvertExpression(*field, val, destination(true));
         }
 
         popState(); // From &size (pushed even if absent).
@@ -1722,7 +1743,7 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Ctor* p) final {
-        pb->parseLiteral(*p, destination());
+        pb->parseLiteral(*p, destination(true));
         pb->trimInput();
     }
 
@@ -1880,7 +1901,9 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
-    void operator()(const production::Variable* p) final { pb->parseType(p->type()->type(), p->meta(), destination()); }
+    void operator()(const production::Variable* p) final {
+        pb->parseType(p->type()->type(), p->meta(), destination(true));
+    }
 
     void operator()(const production::While* p) final {
         if ( p->expression() )
