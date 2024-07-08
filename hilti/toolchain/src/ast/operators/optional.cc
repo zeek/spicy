@@ -21,7 +21,10 @@ public:
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return operands[0]->type()->type()->as<type::Optional>()->dereferencedType();
+        if ( auto t = operands[0]->type()->type()->as<type::Optional>()->dereferencedType(); t->side() == Side::LHS )
+            return t->recreateAsLhs(builder->context());
+        else
+            return t;
     }
 
     HILTI_OPERATOR(hilti, optional::Deref)
