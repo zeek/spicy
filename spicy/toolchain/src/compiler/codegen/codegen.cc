@@ -41,7 +41,7 @@ namespace spicy::detail::codegen {
 
 // Information collected from the AST in an initial pass for any code generation.
 struct ASTInfo {
-    std::set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
+    std::unordered_set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
     std::unordered_set<ID>
         units_with_references; // type IDs if any unit types that are wrapped into a reference somewhere
 };
