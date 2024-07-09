@@ -378,9 +378,6 @@ void Unit::importDeclarations(const Unit& other) {
     for ( const auto& i : other._constants )
         add(i.second, m);
 
-    for ( const auto& i : other._types )
-        add(i.second, m);
-
     for ( const auto& i : other._types_forward )
         add(i.second, m);
 
