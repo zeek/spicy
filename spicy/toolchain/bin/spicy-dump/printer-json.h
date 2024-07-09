@@ -20,7 +20,7 @@ public:
      * @param output stream to send output to
      * @param options output controlling specifics of the output
      */
-    JSONPrinter(std::ostream& output, OutputOptions options) : _output(output), _options(options){};
+    JSONPrinter(std::ostream& output, OutputOptions options) : _output(output), _options(options) {}
 
     /**
      * Render one parsed value into JSON.

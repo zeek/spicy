@@ -3,6 +3,7 @@
 #pragma once
 #include <sys/resource.h>
 
+#include <clocale>
 #include <memory>
 #include <string>
 #include <unordered_map>
