@@ -124,19 +124,13 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     // Creates a new temporary variable of a give type and pushes that onto the
-    // destination stack. If the types takes parameters, we wrap the type into
-    // an unset optional because we wouldn't be able default instantiate it. In
-    // the case, we push a deref operation to the stack for accessing the
-    // value, so that usage remains transparent.
+    // destination stack. TODO: Update comment.
     void pushTmpDestination(const std::string& prefix, QualifiedType* t) {
-        if ( ! t->type()->parameters().empty() ) {
-            auto dst = builder()->addTmp(prefix, builder()->typeOptional(t));
-            pushDestination(builder()->deref(dst), dst);
-        }
-        else {
-            auto dst = builder()->addTmp(prefix, t);
-            pushDestination(dst);
-        }
+        if ( t->type()->isA<type::Unit>() )
+            t = builder()->qualifiedType(builder()->typeValueReference(t), t->constness());
+
+        auto dst = builder()->addTmp(prefix, t);
+        pushDestination(dst);
     }
 
     // RAII helper to update the visitor's `_path` as we descend the parse tree.
