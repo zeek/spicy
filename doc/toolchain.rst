@@ -210,6 +210,14 @@ following commands are supported:
     corresponding ``@begin-*`` and ``@end-*`` commands bracketing the
     flow ID.
 
+``@gap FID SIZE<NL>``
+    A gap of size ``SIZE``. This inserts a gap into the input stream
+    that will trigger a parse error once the parser reaches it. If the
+    parser supports error recovery, it will then attempt to continue
+    processing after the gap. ``@gap`` is similar to how a host
+    application like Zeek would report TCP reassembly gaps caused by
+    missing packets.
+
 ``@end-flow FID<NL>``
     Finalizes parsing of the input flow associated with ``FID``,
     releasing all state. This must come only after a corresponding
