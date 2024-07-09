@@ -1,3 +1,23 @@
+1.11.0-dev.251 | 2024-07-09 18:16:15 +0200
+
+  * Drop unused include. (Benjamin Bannier, Corelight)
+
+  * GH-1785: Prevent defining already forwarded constants. (Benjamin Bannier, Corelight)
+
+    We previously would add both forward declarations as well as full
+    definitions for any constant in an imported module, i.e. we emitted
+    the same constant in multiple C++ files which the linker seems to have
+    cleaned up for us.
+
+    With this path we only emit a definition if we are not already emitting
+    a forward declaration.
+
+    Closes #1785.
+
+  * Remove duplicate emission of types. (Benjamin Bannier, Corelight)
+
+    This was a noop but still useless work.
+
 1.11.0-dev.247 | 2024-07-09 10:38:23 +0200
 
   * Add missing include. (Benjamin Bannier, Corelight)

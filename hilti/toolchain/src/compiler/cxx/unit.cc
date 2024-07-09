@@ -375,11 +375,11 @@ void Unit::importDeclarations(const Unit& other) {
     for ( const auto& i : other._constants_forward )
         add(i.second, m);
 
-    for ( const auto& i : other._constants )
-        add(i.second, m);
-
-    for ( const auto& i : other._types )
-        add(i.second, m);
+    for ( const auto& i : other._constants ) {
+        // If we added a forward declaration for a constant do not add a definition as well.
+        if ( ! other._constants_forward.count(i.first) )
+            add(i.second, m);
+    }
 
     for ( const auto& i : other._types_forward )
         add(i.second, m);
