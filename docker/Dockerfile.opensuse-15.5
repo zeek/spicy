@@ -19,7 +19,7 @@ RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.2
       zlib-devel \
  && zypper clean
 
-RUN pip3 install "btest>=0.66" sphinx-rtd-theme
+RUN pip3 install "btest>=0.66" sphinx-rtd-theme diagrams
 
 ENV CXX g++-9
 ENV CC gcc-9

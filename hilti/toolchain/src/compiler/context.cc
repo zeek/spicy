@@ -11,7 +11,6 @@ using namespace hilti::context;
 
 namespace hilti::logging::debug {
 inline const DebugStream Compiler("compiler");
-inline const DebugStream AstCache("ast-cache");
 } // namespace hilti::logging::debug
 
 Result<Nothing> Options::parseDebugAddl(const std::string& flags) {

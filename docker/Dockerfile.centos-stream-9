@@ -28,7 +28,7 @@ ENV PATH=/opt/rh/gcc-toolset-13/root/usr/bin:$PATH
 
 # Install Spicy dependencies.
 RUN yum install -y flex python3-sphinx
-RUN pip3 install "btest>=0.66" sphinx-rtd-theme
+RUN pip3 install "btest>=0.66" sphinx-rtd-theme diagrams
 
 # Install rpmdevtools for packaging RPM files.
 RUN yum install -y rpmdevtools

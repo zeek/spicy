@@ -7,12 +7,11 @@ Testing
 Spicy's testing & CI setup includes several pieces that we discuss in
 the following.
 
-TLDR; If you make changes, make sure that ``make check`` runs through.
+TLDR: If you make changes, make sure that ``make check`` runs through.
 You need the right ``clang-format`` (see :ref:`clang_format`) and
 ``clang-tidy`` (see :ref:`clang_tidy`) versions for that (from Clang
 >=10). If you don't have them (or want to save time), run at least
-``make test``. If that still takes too long for you, run ``make
-test-core``.
+``make test``.
 
 BTest
 -----
