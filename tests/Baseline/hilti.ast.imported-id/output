@@ -1376,7 +1376,7 @@
 [debug/driver] codegen for input unit Foo
 [debug/compiler] codegen module Foo to C++
 [debug/compiler]   generating C++ for module Foo
-[debug/compiler]   importing declarations from module Bar
+[debug/compiler]   importing declarations from module Bar (".hlt")
 [debug/compiler]     generating C++ for module Bar
 [debug/compiler]   finalizing module Foo
 [debug/driver] saving C++ code for module Foo to /dev/stdout

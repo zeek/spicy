@@ -35,6 +35,7 @@ public:
 
     auto uid() const { return _uid; }
     void setUID(declaration::module::UID uid) { _uid = std::move(uid); }
+    void clearUID() { _uid.reset(); }
     void setSearchDirectories(std::vector<hilti::rt::filesystem::path> dirs) { _dirs = std::move(dirs); }
 
     std::string_view displayName() const final { return "imported module"; }

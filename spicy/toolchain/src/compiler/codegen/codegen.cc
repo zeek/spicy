@@ -82,6 +82,17 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
     hilti::declaration::Module* module = nullptr;
     ASTInfo* info;
 
+    void operator()(hilti::declaration::ImportedModule* n) final {
+        // Trigger a fresh import because we'll want the *.hlt version now.
+        n->clearUID();
+    }
+
+    void operator()(hilti::declaration::Module* n) final {
+        // Clear out any dependencies recorded so far because we'll recompute
+        // the set.
+        n->clearDependencies();
+    }
+
     void operator()(hilti::declaration::Type* n) final {
         auto u = n->type()->type()->tryAs<type::Unit>();
         if ( ! u )
@@ -504,7 +515,7 @@ bool CodeGen::_compileModule(hilti::declaration::Module* module, int pass, ASTIn
             else {
                 auto new_uid = module->uid();
                 new_uid.process_extension = ".hlt";
-                module->setUID(std::move(new_uid));
+                context()->updateModuleUID(module->uid(), new_uid);
             }
 
             return v3.isModified();

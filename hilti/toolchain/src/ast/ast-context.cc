@@ -770,7 +770,7 @@ static void _recursiveDependencies(const ASTContext* ctx, declaration::Module* m
     for ( const auto& uid : module->dependencies() ) {
         seen->insert(uid);
         auto dep = ctx->module(uid);
-        assert(dep);
+        assert(dep && dep->uid() == uid);
         _recursiveDependencies(ctx, dep, seen);
     }
 }
