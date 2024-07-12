@@ -277,37 +277,8 @@ there's no matching case.
 
     throw EXPR;
 
-
 Triggers a parse error exception with the message indicated by ``EXPR``. ``EXPR`` needs
 to be a :ref:`type_string`. ``throw`` aborts parsing.
-
-.. _statement_try:
-
-``try/catch``
--------------
-
-.. todo:: This isn't available in Spicy yet (:issue:`89`).
-
-::
-
-    try
-        BLOCK
-
-    catch [(TYPE IDENT)]
-        BLOCK
-
-    ...
-
-    catch [(TYPE IDENT)]
-        BLOCK
-
-Catches any exception thrown in the ``try`` block that match one of
-the types in any of ``catch`` headers, which must be
-:ref:`type_exception` types. A ``catch`` without a type matches any
-exception. If no ``catch`` matches an exception thrown in the ``try``
-block, it'll be propagated further up the stack. A bare ``throw``
-statement can be used inside a ``catch`` block to rethrow the current
-exception.
 
 .. _operator_unpack:
 

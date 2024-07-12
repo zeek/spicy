@@ -24,11 +24,6 @@ and handling exceptions remains minimal at the moment. For now, only
 :ref:`%on_error <on_error>` unit hook, which internally is nothing
 else than a hook into parser teardown on exceptions.
 
-.. todo::
-
-    Support for catching other exception throughs :ref:`statement_try`
-    needs to be added still (:issue:`89`).
-
 .. rubric:: ``result<T>`` / ``error``
 
 .. todo:: Spicy doesn't have ``result``/``error`` yet (:issue:`90`).
