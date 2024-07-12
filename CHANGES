@@ -1,3 +1,15 @@
+1.11.0-dev.255 | 2024-07-12 13:46:57 +0200
+
+  * Update lists of releases in docs [skip CI]. (Benjamin Bannier, Corelight)
+
+  * Bump latest release in docs [skip CI]. (Benjamin Bannier, Corelight)
+
+  * Drop docs around `try`/`catch` [skip CI]. (Benjamin Bannier, Corelight)
+
+    This feature is not on the horizon and having it documented prominently
+    painted an incorrect picture for users. Drop its docs for now until we
+    actually provide it.
+
 1.11.0-dev.251 | 2024-07-09 18:16:15 +0200
 
   * Drop unused include. (Benjamin Bannier, Corelight)

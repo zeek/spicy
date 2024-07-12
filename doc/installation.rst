@@ -81,25 +81,25 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-rpm:`RPM <docker_centos_stream_8>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-stream-8>`
 
-    * - Debian 10
-      - :package-release-deb:`DEB <linux_debian10>`
-      - :package-dev-deb:`DEB <docker_debian10>`
-      - :repo:`Dockerfile <docker/Dockerfile.debian-10>`
-
     * - Debian 11
       - :package-release-deb:`DEB <linux_debian11>`
       - :package-dev-deb:`DEB <docker_debian11>`
       - :repo:`Dockerfile <docker/Dockerfile.debian-11>`
 
-    * - Fedora 37
-      - :package-release-rpm:`RPM <linux_fedora37>`
-      - :package-dev-rpm:`RPM <docker_fedora37>`
-      - :repo:`Dockerfile <docker/Dockerfile.fedora-37>`
+    * - Debian 12
+      - :package-release-deb:`DEB <linux_debian12>`
+      - :package-dev-deb:`DEB <docker_debian12>`
+      - :repo:`Dockerfile <docker/Dockerfile.debian-12>`
 
     * - Fedora 38
       - :package-release-rpm:`RPM <linux_fedora38>`
       - :package-dev-rpm:`RPM <docker_fedora38>`
       - :repo:`Dockerfile <docker/Dockerfile.fedora-38>`
+
+    * - Fedora 39
+      - :package-release-rpm:`RPM <linux_fedora39>`
+      - :package-dev-rpm:`RPM <docker_fedora39>`
+      - :repo:`Dockerfile <docker/Dockerfile.fedora-39>`
 
     * - Ubuntu 20
       - :package-release-deb:`DEB <linux_ubuntu20>`
