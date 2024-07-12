@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc -j f1.spicy f2.spicy
+#
+# @TEST-DOC: Two modules importing each other
+
+@TEST-START-FILE f1.spicy
+module f1;
+import f2;
+@TEST-END-FILE
+
+@TEST-START-FILE f2.spicy
+module f2;
+import f1;
+@TEST-END-FILE

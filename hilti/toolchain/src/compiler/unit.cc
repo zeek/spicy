@@ -102,7 +102,8 @@ Result<Nothing> Unit::codegen() {
     // TODO(robin): Would be nice if we had a "cheap" compilation mode that
     // only generated declarations.
     for ( const auto& d : dependencies(true) ) {
-        HILTI_DEBUG(logging::debug::Compiler, fmt("importing declarations from module %s", d));
+        HILTI_DEBUG(logging::debug::Compiler,
+                    fmt("importing declarations from module %s (%s)", d, d.process_extension));
         logging::DebugPushIndent _(logging::debug::Compiler);
 
         if ( auto other_cxx = _codegenModule(d) )

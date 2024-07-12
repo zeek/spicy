@@ -88,6 +88,7 @@ public:
     void add(ASTContext* ctx, Statement* s) { child<statement::Block>(0)->add(ctx, s); }
 
     void addDependency(declaration::module::UID uid) { _dependencies.insert(std::move(uid)); }
+    void clearDependencies() { _dependencies.clear(); }
     void setScopePath(const ID& scope) { _scope_path = scope; }
     void setUID(declaration::module::UID uid) { _uid = std::move(uid); }
 

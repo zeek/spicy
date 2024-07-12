@@ -1,3 +1,10 @@
+1.11.0-dev.258 | 2024-07-12 16:34:16 +0200
+
+  * GH-1784: Fix import HILTI vs Spicy confusion. (Robin Sommer, Corelight)
+
+    Our tracking of module dependencies could end up mixing `.spicy`
+    and `.hlt` modules when the former transitioned into the latter.
+
 1.11.0-dev.255 | 2024-07-12 13:46:57 +0200
 
   * Update lists of releases in docs [skip CI]. (Benjamin Bannier, Corelight)
