@@ -13,7 +13,6 @@
 #include <hilti/ast/types/auto.h>
 
 #include <spicy/ast/declarations/hook.h>
-#include <spicy/ast/engine.h>
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/types/unit-item.h>
 
@@ -41,7 +40,6 @@ public:
     auto sinks() const { return children<Expression>(_sinks_start, _sinks_end); }
     auto hooks() const { return children<declaration::Hook>(_hooks_start, _hooks_end); }
     auto isSkip() const { return _is_skip; }
-    Engine engine() const { return _engine; }
 
     void setIndex(uint64_t index) { _index = index; }
     void setSkip(bool skip) { _is_skip = skip; }
@@ -54,7 +52,7 @@ public:
     std::string_view displayName() const final { return "unresolved unit field"; }
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"engine", to_string(_engine)}, {"index", _index}};
+        auto p = node::Properties{{"index", _index}};
         return unit::Item::properties() + p;
     }
 
@@ -125,7 +123,6 @@ private:
 
     ID _unresolved_id;
     bool _is_skip;
-    Engine _engine;
     std::optional<uint64_t> _index;
     const int args_start;
     const int _args_end;

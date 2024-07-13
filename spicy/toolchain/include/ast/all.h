@@ -4,7 +4,6 @@
 
 #include <spicy/ast/ctors/all.h>
 #include <spicy/ast/declarations/all.h>
-#include <spicy/ast/engine.h>
 #include <spicy/ast/forward.h>
 #include <spicy/ast/node-tag.h>
 #include <spicy/ast/operators/all.h>

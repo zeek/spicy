@@ -9,8 +9,6 @@ using namespace spicy;
 declaration::Hook::~Hook() {}
 
 node::Properties declaration::Hook::properties() const {
-    auto p = node::Properties{{"engine", to_string(_engine)},
-                              {"unit_type", to_string(_unit_type_index)},
-                              {"unit_field", to_string(_unit_field_index)}};
+    auto p = node::Properties{{"unit_type", to_string(_unit_type_index)}, {"unit_field", to_string(_unit_field_index)}};
     return Declaration::properties() + p;
 }

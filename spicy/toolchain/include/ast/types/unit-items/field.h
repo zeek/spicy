@@ -16,7 +16,6 @@
 #include <hilti/base/uniquer.h>
 
 #include <spicy/ast/declarations/hook.h>
-#include <spicy/ast/engine.h>
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/unit-hook.h>
@@ -39,8 +38,6 @@ public:
     auto arguments() const { return children<Expression>(_args_start, _args_end); }
     auto sinks() const { return children<Expression>(_sinks_start, _sinks_end); }
     auto hooks() const { return children<declaration::Hook>(_hooks_start, _hooks_end); }
-
-    Engine engine() const { return _engine; }
 
     auto isSkip() const { return _is_skip; }
     auto isContainer() const { return repeatCount() != nullptr; }
@@ -104,8 +101,7 @@ public:
     std::string_view displayName() const final { return "unit field"; }
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"engine", to_string(_engine)},
-                                  {"anonymous", _is_anonymous},
+        auto p = node::Properties{{"anonymous", _is_anonymous},
                                   {"transient", _is_transient},
                                   {"forwarding", _is_forwarding},
                                   {"index", _index},
@@ -172,7 +168,6 @@ private:
     bool _is_transient = false;
     bool _is_anonymous;
     bool _is_skip;
-    Engine _engine;
     std::optional<uint64_t> _index;
     const int _args_start;
     const int _args_end;

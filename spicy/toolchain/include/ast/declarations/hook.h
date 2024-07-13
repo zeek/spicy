@@ -13,7 +13,6 @@
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/void.h>
 
-#include <spicy/ast/engine.h>
 #include <spicy/ast/forward.h>
 #include <spicy/ast/node.h>
 
@@ -44,7 +43,6 @@ public:
     auto ftype() const { return function()->ftype(); }
     auto type() const { return function()->type(); }
 
-    Engine engine() const { return _engine; }
     auto unitTypeIndex() { return _unit_type_index; }
     auto unitFieldIndex() { return _unit_field_index; }
 
@@ -102,7 +100,6 @@ protected:
     SPICY_NODE_1(declaration::Hook, Declaration, final);
 
 private:
-    Engine _engine = {};
     hilti::ast::TypeIndex _unit_type_index;
     hilti::ast::DeclarationIndex _unit_field_index;
 };
