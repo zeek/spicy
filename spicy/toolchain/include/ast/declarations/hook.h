@@ -81,7 +81,7 @@ public:
     node::Properties properties() const final;
 
     static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, Statement* body,
-                       Engine engine, AttributeSet* attrs, const Meta& m = Meta()) {
+                       AttributeSet* attrs, const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -91,14 +91,13 @@ public:
                                                    parameters, hilti::type::function::Flavor::Hook, m);
         auto func = hilti::Function::create(ctx, hilti::ID(), ftype, body, hilti::function::CallingConvention::Standard,
                                             attrs, m);
-        return ctx->make<Hook>(ctx, {func, nullptr}, engine, m);
+        return ctx->make<Hook>(ctx, {func, nullptr}, m);
     }
 
 protected:
-    Hook(ASTContext* ctx, Nodes children, Engine engine, Meta m = Meta())
+    Hook(ASTContext* ctx, Nodes children, Meta m = Meta())
         : Declaration(ctx, NodeTags, std::move(children), hilti::ID(), hilti::declaration::Linkage::Private,
-                      std::move(m)),
-          _engine(engine) {}
+                      std::move(m)) {}
 
     SPICY_NODE_1(declaration::Hook, Declaration, final);
 

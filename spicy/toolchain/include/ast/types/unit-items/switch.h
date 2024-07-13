@@ -114,8 +114,8 @@ public:
         return unit::Item::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, Expression* expr, type::unit::item::switch_::Cases cases, Engine engine,
-                       Expression* cond, spicy::declaration::Hooks hooks, AttributeSet* attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, Expression* expr, type::unit::item::switch_::Cases cases, Expression* cond,
+                       spicy::declaration::Hooks hooks, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -124,12 +124,12 @@ public:
                                                QualifiedType::create(ctx, hilti::type::Void::create(ctx),
                                                                      hilti::Constness::Const),
                                                std::move(cases), std::move(hooks)),
-                                 engine, std::move(meta));
+                                 std::move(meta));
     }
 
 protected:
-    Switch(ASTContext* ctx, Nodes children, Engine engine, Meta meta)
-        : unit::Item(ctx, NodeTags, std::move(children), ID(), std::move(meta)), _engine(engine) {}
+    Switch(ASTContext* ctx, Nodes children, Meta meta)
+        : unit::Item(ctx, NodeTags, std::move(children), ID(), std::move(meta)) {}
 
     SPICY_NODE_2(type::unit::item::Switch, type::unit::Item, Declaration, final);
 

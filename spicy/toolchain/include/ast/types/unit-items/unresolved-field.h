@@ -58,32 +58,32 @@ public:
         return unit::Item::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Engine engine, bool skip, Expressions args,
-                       Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
-                       spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return _create(ctx, std::move(id), type, engine, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+    static auto create(ASTContext* ctx, ID id, QualifiedType* type, bool skip, Expressions args, Expression* repeat,
+                       Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                       Meta meta = {}) {
+        return _create(ctx, std::move(id), type, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
                        std::move(hooks), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, Ctor* ctor, Engine engine, bool skip, Expressions args,
-                       Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
-                       spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return _create(ctx, std::move(id), ctor, engine, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+    static auto create(ASTContext* ctx, ID id, Ctor* ctor, bool skip, Expressions args, Expression* repeat,
+                       Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                       Meta meta = {}) {
+        return _create(ctx, std::move(id), ctor, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
                        std::move(hooks), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, type::unit::Item* item, Engine engine, bool skip, Expressions args,
-                       Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
-                       spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return _create(ctx, std::move(id), item, engine, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+    static auto create(ASTContext* ctx, ID id, type::unit::Item* item, bool skip, Expressions args, Expression* repeat,
+                       Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                       Meta meta = {}) {
+        return _create(ctx, std::move(id), item, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
                        std::move(hooks), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, ID unresolved_id, Engine engine, bool skip, Expressions args,
-                       Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
-                       spicy::declaration::Hooks hooks, Meta meta = {}) {
-        auto f = _create(ctx, std::move(id), nullptr, engine, skip, std::move(args), repeat, std::move(sinks), attrs,
-                         cond, std::move(hooks), std::move(meta));
+    static auto create(ASTContext* ctx, ID id, ID unresolved_id, bool skip, Expressions args, Expression* repeat,
+                       Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                       Meta meta = {}) {
+        auto f = _create(ctx, std::move(id), nullptr, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+                         std::move(hooks), std::move(meta));
         f->_unresolved_id = std::move(unresolved_id);
         return f;
     }
@@ -91,10 +91,9 @@ public:
 
 protected:
     UnresolvedField(ASTContext* ctx, Nodes children, size_t args_start, size_t args_end, size_t sinks_start,
-                    size_t sinks_end, size_t hooks_start, size_t hooks_end, ID id, Engine engine, bool skip, Meta meta)
+                    size_t sinks_end, size_t hooks_start, size_t hooks_end, ID id, bool skip, Meta meta)
         : unit::Item(ctx, NodeTags, std::move(children), std::move(id), std::move(meta)),
           _is_skip(skip),
-          _engine(engine),
           args_start(static_cast<int>(args_start)),
           _args_end(static_cast<int>(args_end)),
           _sinks_start(static_cast<int>(sinks_start)),
@@ -105,8 +104,8 @@ protected:
     SPICY_NODE_2(type::unit::item::UnresolvedField, type::unit::Item, Declaration, final);
 
 private:
-    static UnresolvedField* _create(ASTContext* ctx, ID id, Node* node, Engine engine, bool skip, Expressions args,
-                                    Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
+    static UnresolvedField* _create(ASTContext* ctx, ID id, Node* node, bool skip, Expressions args, Expression* repeat,
+                                    Expressions sinks, AttributeSet* attrs, Expression* cond,
                                     spicy::declaration::Hooks hooks, Meta meta) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
@@ -121,7 +120,7 @@ private:
                                                         std::move(sinks), std::move(hooks)),
                                           5U, 5U + num_args, 5U + num_args, 5U + num_args + num_sinks,
                                           5U + num_args + num_sinks, 5U + num_args + num_sinks + num_hooks,
-                                          std::move(id), engine, skip, std::move(meta));
+                                          std::move(id), skip, std::move(meta));
     }
 
     ID _unresolved_id;

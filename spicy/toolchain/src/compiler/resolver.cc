@@ -47,8 +47,8 @@ auto resolveField(Builder* builder, type::unit::item::UnresolvedField* u, T t) {
 
     u->removeChildren(0, {});
 
-    auto field = builder->typeUnitItemField(u->fieldID(), std::move(t), u->engine(), u->isSkip(), arguments,
-                                            repeat_count, sinks, attributes, condition, std::move(hooks), u->meta());
+    auto field = builder->typeUnitItemField(u->fieldID(), std::move(t), u->isSkip(), arguments, repeat_count, sinks,
+                                            attributes, condition, std::move(hooks), u->meta());
     assert(u->index());
     field->setIndex(*u->index());
     return field;
@@ -585,12 +585,12 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // (which we don't have for pure types).
                 if ( auto unit_type = t->type()->type()->tryAs<type::Unit>();
                      unit_type && unit_type->attributes()->has("&convert") ) {
-                    auto inner_field = builder()->typeUnitItemField({}, tt, spicy::Engine::All, false, n->arguments(),
-                                                                    {}, {}, {}, {}, {}, n->meta());
+                    auto inner_field =
+                        builder()->typeUnitItemField({}, tt, false, n->arguments(), {}, {}, {}, {}, {}, n->meta());
                     inner_field->setIndex(*n->index());
 
-                    auto outer_field = builder()->typeUnitItemField(n->fieldID(), inner_field, n->engine(), n->isSkip(),
-                                                                    {}, n->repeatCount(), n->sinks(), n->attributes(),
+                    auto outer_field = builder()->typeUnitItemField(n->fieldID(), inner_field, n->isSkip(), {},
+                                                                    n->repeatCount(), n->sinks(), n->attributes(),
                                                                     n->condition(), n->hooks(), n->meta());
 
                     outer_field->setIndex(*n->index());
