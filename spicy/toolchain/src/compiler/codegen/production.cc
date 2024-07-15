@@ -62,7 +62,7 @@ std::string codegen::to_string(const Production& p) {
                                                                              }),
                                                       ", "));
 
-            field = hilti::util::fmt(" (field '%s', id %s, %s%s)", f->id(), id, to_string(f->engine()), args);
+            field = hilti::util::fmt(" (field '%s', id %s, parser%s)", f->id(), id, args);
         }
     }
 

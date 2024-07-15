@@ -1,3 +1,11 @@
+1.11.0-dev.262 | 2024-07-15 11:49:46 +0200
+
+  * Remove unused `Engine` type and tracking. (Benjamin Bannier, Corelight)
+
+  * Remove API customization points for `spicy::Engine`. (Benjamin Bannier, Corelight)
+
+  * Remove support for customizable Spicy hook and field engine. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.258 | 2024-07-12 16:34:16 +0200
 
   * GH-1784: Fix import HILTI vs Spicy confusion. (Robin Sommer, Corelight)

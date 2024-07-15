@@ -12,7 +12,6 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/void.h>
 
-#include <spicy/ast/engine.h>
 #include <spicy/ast/forward.h>
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/field.h>
@@ -79,7 +78,6 @@ using Cases = NodeVector<Case>;
 
 class Switch : public unit::Item {
 public:
-    Engine engine() const { return _engine; }
     auto expression() const { return child<Expression>(0); }
     auto condition() const { return child<Expression>(1); }
     auto attributes() const { return child<AttributeSet>(2); }
@@ -109,13 +107,8 @@ public:
 
     std::string_view displayName() const final { return "unit switch"; }
 
-    node::Properties properties() const final {
-        auto p = node::Properties{{"engine", to_string(_engine)}};
-        return unit::Item::properties() + p;
-    }
-
-    static auto create(ASTContext* ctx, Expression* expr, type::unit::item::switch_::Cases cases, Engine engine,
-                       Expression* cond, spicy::declaration::Hooks hooks, AttributeSet* attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, Expression* expr, type::unit::item::switch_::Cases cases, Expression* cond,
+                       spicy::declaration::Hooks hooks, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -124,17 +117,14 @@ public:
                                                QualifiedType::create(ctx, hilti::type::Void::create(ctx),
                                                                      hilti::Constness::Const),
                                                std::move(cases), std::move(hooks)),
-                                 engine, std::move(meta));
+                                 std::move(meta));
     }
 
 protected:
-    Switch(ASTContext* ctx, Nodes children, Engine engine, Meta meta)
-        : unit::Item(ctx, NodeTags, std::move(children), ID(), std::move(meta)), _engine(engine) {}
+    Switch(ASTContext* ctx, Nodes children, Meta meta)
+        : unit::Item(ctx, NodeTags, std::move(children), ID(), std::move(meta)) {}
 
     SPICY_NODE_2(type::unit::item::Switch, type::unit::Item, Declaration, final);
-
-private:
-    Engine _engine;
 };
 
 } // namespace spicy::type::unit::item

@@ -6,9 +6,6 @@
 #include <spicy/ast/types/unit-items/switch.h>
 #include <spicy/ast/visitor.h>
 
-using namespace spicy;
-using namespace spicy::detail;
-
 bool spicy::type::unit::item::Switch::hasNoFields() const {
     for ( const auto& c : cases() ) {
         for ( const auto& f : c->items() ) {

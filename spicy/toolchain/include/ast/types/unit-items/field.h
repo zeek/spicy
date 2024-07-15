@@ -16,7 +16,6 @@
 #include <hilti/base/uniquer.h>
 
 #include <spicy/ast/declarations/hook.h>
-#include <spicy/ast/engine.h>
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/types/unit-item.h>
 #include <spicy/ast/types/unit-items/unit-hook.h>
@@ -39,8 +38,6 @@ public:
     auto arguments() const { return children<Expression>(_args_start, _args_end); }
     auto sinks() const { return children<Expression>(_sinks_start, _sinks_end); }
     auto hooks() const { return children<declaration::Hook>(_hooks_start, _hooks_end); }
-
-    Engine engine() const { return _engine; }
 
     auto isSkip() const { return _is_skip; }
     auto isContainer() const { return repeatCount() != nullptr; }
@@ -104,8 +101,7 @@ public:
     std::string_view displayName() const final { return "unit field"; }
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"engine", to_string(_engine)},
-                                  {"anonymous", _is_anonymous},
+        auto p = node::Properties{{"anonymous", _is_anonymous},
                                   {"transient", _is_transient},
                                   {"forwarding", _is_forwarding},
                                   {"index", _index},
@@ -113,34 +109,33 @@ public:
         return unit::Item::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const ID& id, QualifiedType* type, Engine engine, bool skip, Expressions args,
+    static auto create(ASTContext* ctx, const ID& id, QualifiedType* type, bool skip, Expressions args,
                        Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
                        spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return _create(ctx, id, type, type, engine, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+        return _create(ctx, id, type, type, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
                        std::move(hooks), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ID& id, Ctor* ctor, Engine engine, bool skip, Expressions args,
-                       Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
-                       spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return _create(ctx, id, nullptr, ctor, engine, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+    static auto create(ASTContext* ctx, const ID& id, Ctor* ctor, bool skip, Expressions args, Expression* repeat,
+                       Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                       Meta meta = {}) {
+        return _create(ctx, id, nullptr, ctor, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
                        std::move(hooks), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ID& id, type::unit::Item* item, Engine engine, bool skip,
-                       Expressions args, Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
+    static auto create(ASTContext* ctx, const ID& id, type::unit::Item* item, bool skip, Expressions args,
+                       Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
                        spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return _create(ctx, id, nullptr, item, engine, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+        return _create(ctx, id, nullptr, item, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
                        std::move(hooks), std::move(meta));
     }
 
 protected:
     Field(ASTContext* ctx, Nodes children, size_t args_start, size_t args_end, size_t sinks_start, size_t sinks_end,
-          size_t hooks_start, size_t hooks_end, const ID& id, Engine engine, bool skip, Meta meta)
+          size_t hooks_start, size_t hooks_end, const ID& id, bool skip, Meta meta)
         : unit::Item(ctx, NodeTags, std::move(children), (id ? id : _uniquer.get("_anon", false)), std::move(meta)),
           _is_anonymous(! id),
           _is_skip(skip),
-          _engine(engine),
           _args_start(static_cast<int>(args_start)),
           _args_end(static_cast<int>(args_end)),
           _sinks_start(static_cast<int>(sinks_start)),
@@ -151,7 +146,7 @@ protected:
     SPICY_NODE_2(type::unit::item::Field, type::unit::Item, Declaration, final);
 
 private:
-    static Field* _create(ASTContext* ctx, const ID& id, QualifiedType* org_type, Node* node, Engine engine, bool skip,
+    static Field* _create(ASTContext* ctx, const ID& id, QualifiedType* org_type, Node* node, bool skip,
                           Expressions args, Expression* repeat, Expressions sinks, AttributeSet* attrs,
                           Expression* cond, spicy::declaration::Hooks hooks, Meta meta) {
         if ( ! attrs )
@@ -166,14 +161,13 @@ private:
                                 node::flatten(auto_, org_type, auto_, auto_, node, repeat, attrs, cond, std::move(args),
                                               std::move(sinks), std::move(hooks)),
                                 8U, 8U + num_args, 8U + num_args, 8U + num_args + num_sinks, 8U + num_args + num_sinks,
-                                8U + num_args + num_sinks + num_hooks, id, engine, skip, std::move(meta));
+                                8U + num_args + num_sinks + num_hooks, id, skip, std::move(meta));
     }
 
     bool _is_forwarding = false;
     bool _is_transient = false;
     bool _is_anonymous;
     bool _is_skip;
-    Engine _engine;
     std::optional<uint64_t> _index;
     const int _args_start;
     const int _args_end;

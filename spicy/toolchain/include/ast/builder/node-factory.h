@@ -31,9 +31,9 @@ public:
     auto ctorUnit(ctor::unit::Fields fields, Meta meta = {}) {
         return spicy::ctor::Unit::create(context(), std::move(fields), std::move(meta));
     }
-    auto declarationHook(const hilti::declaration::Parameters& parameters, Statement* body, Engine engine,
-                         AttributeSet* attrs, const Meta& m = Meta()) {
-        return spicy::declaration::Hook::create(context(), parameters, body, engine, attrs, m);
+    auto declarationHook(const hilti::declaration::Parameters& parameters, Statement* body, AttributeSet* attrs,
+                         const Meta& m = Meta()) {
+        return spicy::declaration::Hook::create(context(), parameters, body, attrs, m);
     }
     auto declarationUnitHook(const ID& id, declaration::Hook* hook, Meta meta = {}) {
         return spicy::declaration::UnitHook::create(context(), id, hook, std::move(meta));
@@ -52,22 +52,21 @@ public:
     auto typeUnit(hilti::type::Wildcard _, Meta meta = {}) {
         return spicy::type::Unit::create(context(), _, std::move(meta));
     }
-    auto typeUnitItemField(const ID& id, Ctor* ctor, Engine engine, bool skip, Expressions args, Expression* repeat,
+    auto typeUnitItemField(const ID& id, Ctor* ctor, bool skip, Expressions args, Expression* repeat, Expressions sinks,
+                           AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks, Meta meta = {}) {
+        return spicy::type::unit::item::Field::create(context(), id, ctor, skip, std::move(args), repeat,
+                                                      std::move(sinks), attrs, cond, std::move(hooks), std::move(meta));
+    }
+    auto typeUnitItemField(const ID& id, QualifiedType* type, bool skip, Expressions args, Expression* repeat,
                            Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
                            Meta meta = {}) {
-        return spicy::type::unit::item::Field::create(context(), id, ctor, engine, skip, std::move(args), repeat,
+        return spicy::type::unit::item::Field::create(context(), id, type, skip, std::move(args), repeat,
                                                       std::move(sinks), attrs, cond, std::move(hooks), std::move(meta));
     }
-    auto typeUnitItemField(const ID& id, QualifiedType* type, Engine engine, bool skip, Expressions args,
-                           Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
-                           spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return spicy::type::unit::item::Field::create(context(), id, type, engine, skip, std::move(args), repeat,
-                                                      std::move(sinks), attrs, cond, std::move(hooks), std::move(meta));
-    }
-    auto typeUnitItemField(const ID& id, type::unit::Item* item, Engine engine, bool skip, Expressions args,
-                           Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
-                           spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return spicy::type::unit::item::Field::create(context(), id, item, engine, skip, std::move(args), repeat,
+    auto typeUnitItemField(const ID& id, type::unit::Item* item, bool skip, Expressions args, Expression* repeat,
+                           Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                           Meta meta = {}) {
+        return spicy::type::unit::item::Field::create(context(), id, item, skip, std::move(args), repeat,
                                                       std::move(sinks), attrs, cond, std::move(hooks), std::move(meta));
     }
     auto typeUnitItemProperty(ID id, AttributeSet* attrs, bool inherited = false, Meta meta = {}) {
@@ -80,10 +79,10 @@ public:
     auto typeUnitItemSink(ID id, AttributeSet* attrs, Meta meta = {}) {
         return spicy::type::unit::item::Sink::create(context(), std::move(id), attrs, std::move(meta));
     }
-    auto typeUnitItemSwitch(Expression* expr, type::unit::item::switch_::Cases cases, Engine engine, Expression* cond,
+    auto typeUnitItemSwitch(Expression* expr, type::unit::item::switch_::Cases cases, Expression* cond,
                             spicy::declaration::Hooks hooks, AttributeSet* attrs, Meta meta = {}) {
-        return spicy::type::unit::item::Switch::create(context(), expr, std::move(cases), engine, cond,
-                                                       std::move(hooks), attrs, std::move(meta));
+        return spicy::type::unit::item::Switch::create(context(), expr, std::move(cases), cond, std::move(hooks), attrs,
+                                                       std::move(meta));
     }
     auto typeUnitItemSwitchCase(const Expressions& exprs, const type::unit::Items& items, const Meta& m = Meta()) {
         return spicy::type::unit::item::switch_::Case::create(context(), exprs, items, m);
@@ -97,33 +96,33 @@ public:
     auto typeUnitItemUnitHook(const ID& id, spicy::declaration::Hook* hook, Meta meta = {}) {
         return spicy::type::unit::item::UnitHook::create(context(), id, hook, std::move(meta));
     }
-    auto typeUnitItemUnresolvedField(ID id, Ctor* ctor, Engine engine, bool skip, Expressions args, Expression* repeat,
+    auto typeUnitItemUnresolvedField(ID id, Ctor* ctor, bool skip, Expressions args, Expression* repeat,
                                      Expressions sinks, AttributeSet* attrs, Expression* cond,
                                      spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), ctor, engine, skip,
-                                                                std::move(args), repeat, std::move(sinks), attrs, cond,
-                                                                std::move(hooks), std::move(meta));
+        return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), ctor, skip, std::move(args),
+                                                                repeat, std::move(sinks), attrs, cond, std::move(hooks),
+                                                                std::move(meta));
     }
-    auto typeUnitItemUnresolvedField(ID id, ID unresolved_id, Engine engine, bool skip, Expressions args,
-                                     Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
+    auto typeUnitItemUnresolvedField(ID id, ID unresolved_id, bool skip, Expressions args, Expression* repeat,
+                                     Expressions sinks, AttributeSet* attrs, Expression* cond,
                                      spicy::declaration::Hooks hooks, Meta meta = {}) {
         return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), std::move(unresolved_id),
-                                                                engine, skip, std::move(args), repeat, std::move(sinks),
-                                                                attrs, cond, std::move(hooks), std::move(meta));
+                                                                skip, std::move(args), repeat, std::move(sinks), attrs,
+                                                                cond, std::move(hooks), std::move(meta));
     }
-    auto typeUnitItemUnresolvedField(ID id, QualifiedType* type, Engine engine, bool skip, Expressions args,
-                                     Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
+    auto typeUnitItemUnresolvedField(ID id, QualifiedType* type, bool skip, Expressions args, Expression* repeat,
+                                     Expressions sinks, AttributeSet* attrs, Expression* cond,
                                      spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), type, engine, skip,
-                                                                std::move(args), repeat, std::move(sinks), attrs, cond,
-                                                                std::move(hooks), std::move(meta));
+        return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), type, skip, std::move(args),
+                                                                repeat, std::move(sinks), attrs, cond, std::move(hooks),
+                                                                std::move(meta));
     }
-    auto typeUnitItemUnresolvedField(ID id, type::unit::Item* item, Engine engine, bool skip, Expressions args,
-                                     Expression* repeat, Expressions sinks, AttributeSet* attrs, Expression* cond,
+    auto typeUnitItemUnresolvedField(ID id, type::unit::Item* item, bool skip, Expressions args, Expression* repeat,
+                                     Expressions sinks, AttributeSet* attrs, Expression* cond,
                                      spicy::declaration::Hooks hooks, Meta meta = {}) {
-        return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), item, engine, skip,
-                                                                std::move(args), repeat, std::move(sinks), attrs, cond,
-                                                                std::move(hooks), std::move(meta));
+        return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), item, skip, std::move(args),
+                                                                repeat, std::move(sinks), attrs, cond, std::move(hooks),
+                                                                std::move(meta));
     }
     auto typeUnitItemVariable(ID id, QualifiedType* type, Expression* default_, AttributeSet* attrs, Meta meta = {}) {
         return spicy::type::unit::item::Variable::create(context(), std::move(id), type, default_, attrs,

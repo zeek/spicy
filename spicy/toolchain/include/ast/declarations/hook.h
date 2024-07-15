@@ -13,7 +13,6 @@
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/void.h>
 
-#include <spicy/ast/engine.h>
 #include <spicy/ast/forward.h>
 #include <spicy/ast/node.h>
 
@@ -44,7 +43,6 @@ public:
     auto ftype() const { return function()->ftype(); }
     auto type() const { return function()->type(); }
 
-    Engine engine() const { return _engine; }
     auto unitTypeIndex() { return _unit_type_index; }
     auto unitFieldIndex() { return _unit_field_index; }
 
@@ -81,7 +79,7 @@ public:
     node::Properties properties() const final;
 
     static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, Statement* body,
-                       Engine engine, AttributeSet* attrs, const Meta& m = Meta()) {
+                       AttributeSet* attrs, const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -91,19 +89,17 @@ public:
                                                    parameters, hilti::type::function::Flavor::Hook, m);
         auto func = hilti::Function::create(ctx, hilti::ID(), ftype, body, hilti::function::CallingConvention::Standard,
                                             attrs, m);
-        return ctx->make<Hook>(ctx, {func, nullptr}, engine, m);
+        return ctx->make<Hook>(ctx, {func, nullptr}, m);
     }
 
 protected:
-    Hook(ASTContext* ctx, Nodes children, Engine engine, Meta m = Meta())
+    Hook(ASTContext* ctx, Nodes children, Meta m = Meta())
         : Declaration(ctx, NodeTags, std::move(children), hilti::ID(), hilti::declaration::Linkage::Private,
-                      std::move(m)),
-          _engine(engine) {}
+                      std::move(m)) {}
 
     SPICY_NODE_1(declaration::Hook, Declaration, final);
 
 private:
-    Engine _engine = {};
     hilti::ast::TypeIndex _unit_type_index;
     hilti::ast::DeclarationIndex _unit_field_index;
 };
