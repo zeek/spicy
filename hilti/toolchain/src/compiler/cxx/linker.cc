@@ -121,7 +121,7 @@ void cxx::Linker::finalize() {
         unit->add(g);
     }
 
-    unit->finalize();
+    unit->finalize(true);
     _linker_unit = std::move(unit);
 }
 

@@ -74,6 +74,8 @@ public:
     };
 
     const auto& cxxModuleID() const { return _module_id; }
+    cxx::ID cxxInternalNamespace() const;
+    cxx::ID cxxExternalNamespace() const;
 
     void setUsesGlobals() { _uses_globals = true; }
 
@@ -87,12 +89,13 @@ public:
     void addInitialization(cxx::Block block) { _init_module.appendFromBlock(std::move(block)); }
     void addPreInitialization(cxx::Block block) { _preinit_module.appendFromBlock(std::move(block)); }
 
-    Result<Nothing> finalize();
+    // @param include_all_implementations if true, do not filter out function
+    // implementations that aren't within the module's own namespace.
+    Result<Nothing> finalize(bool include_all_implementations = false);
 
     Result<Nothing> print(std::ostream& out) const;      // only after finalize
     Result<Nothing> createPrototypes(std::ostream& out); // only after finalize
     Result<linker::MetaData> linkerMetaData() const;     // only after finalize
-    cxx::ID cxxNamespace() const;
 
     std::shared_ptr<Context> context() const { return _context.lock(); }
 
@@ -105,8 +108,8 @@ private:
     using cxxDeclaration = std::variant<declaration::IncludeFile, declaration::Global, declaration::Constant,
                                         declaration::Type, declaration::Function>;
 
-    void _generateCode(Formatter& f, bool prototypes_only);
-    void _emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase);
+    void _generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations);
+    void _emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool include_all_implementations);
     void _addHeader(Formatter& f);
     void _addModuleInitFunction();
 

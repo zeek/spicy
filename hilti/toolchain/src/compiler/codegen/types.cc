@@ -44,7 +44,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     }
 
     void operator()(type::Struct* n) final {
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
@@ -273,7 +273,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     void operator()(type::Union* n) final {
         assert(n->typeID());
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
@@ -300,7 +300,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     void operator()(type::Enum* n) final {
         assert(n->typeID());
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
@@ -317,7 +317,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     void operator()(type::Exception* n) final {
         assert(n->typeID());
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
@@ -388,7 +388,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         auto tid = n->typeID();
         assert(tid);
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{tid};
 
         if ( sid.namespace_() )
@@ -576,7 +576,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             return;
         }
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace().namespace_()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace().namespace_()};
         auto sid = cxx::ID{scope, n->typeID()};
         auto ns = sid.namespace_();
 
@@ -693,7 +693,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             return;
         }
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace().namespace_()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace().namespace_()};
         auto sid = cxx::ID{scope, type_id};
         auto ns = sid.namespace_();
 

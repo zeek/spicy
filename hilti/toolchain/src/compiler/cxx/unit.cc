@@ -48,7 +48,7 @@ void Unit::_addHeader(Formatter& f) {
 
 void Unit::_addModuleInitFunction() {
     auto addInitFunction = [&](Context* ctx, auto f, const std::string& id_) {
-        auto id = cxx::ID{cxxNamespace(), id_};
+        auto id = cxx::ID{cxxInternalNamespace(), id_};
 
         cxx::Block body;
         body.appendFromBlock(std::move(f));
@@ -88,13 +88,16 @@ void Unit::_addModuleInitFunction() {
     }
 }
 
-void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase) {
+void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool include_all_implementations) {
     struct Visitor {
-        Visitor(Context* ctx, Formatter& f, Phase phase) : ctx(ctx), f(f), phase(phase) {}
+        Visitor(Context* ctx, Unit* unit, Formatter& f, Phase phase, bool include_all_implementations)
+            : ctx(ctx), unit(unit), f(f), phase(phase), include_all_implementations(include_all_implementations) {}
 
         Context* ctx;
+        Unit* unit;
         Formatter& f;
         Phase phase;
+        bool include_all_implementations;
 
         bool isTypeInfo(const cxx::ID& id) {
             return id.namespace_() == cxx::ID(ctx->options().cxx_namespace_intern, "type_info::");
@@ -158,23 +161,27 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
                 f << x;
             }
             else if ( phase == Phase::Implementations ) {
-                if ( d.body )
+                if ( ! d.body )
+                    return;
+
+                if ( include_all_implementations || d.id.sub(0, 2) == unit->cxxInternalNamespace() ||
+                     d.id.sub(0, 2) == unit->cxxExternalNamespace() || d.linkage == "inline" )
                     f << separator() << d;
             }
         }
     };
 
-    std::visit(Visitor(context().get(), f, phase), decl);
+    std::visit(Visitor(context().get(), this, f, phase, include_all_implementations), decl);
 }
 
-void Unit::_generateCode(Formatter& f, bool prototypes_only) {
+void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
     _namespaces.insert("");
 
     const Phase phases[] = {Phase::Forwards, Phase::Enums,     Phase::Types,    Phase::Constants,
                             Phase::Globals,  Phase::Functions, Phase::TypeInfos};
 
     for ( const auto& [_, decl] : _declarations )
-        _emitDeclarations(decl, f, Phase::Includes);
+        _emitDeclarations(decl, f, Phase::Includes, include_all_implementations);
 
     f << separator();
 
@@ -185,7 +192,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
 
             for ( const auto& [id, decl] : _declarations ) {
                 if ( id.namespace_() == ns || id.empty() )
-                    _emitDeclarations(decl, f, phase);
+                    _emitDeclarations(decl, f, phase, include_all_implementations);
             }
         }
     }
@@ -201,11 +208,11 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
     if ( _statements.size() )
         f << separator();
 
-    for ( const auto& [_, decl] : _declarations_by_id ) // by ID to sort them alphabetically
-        _emitDeclarations(decl, f, Phase::Implementations);
+    for ( const auto& [id_, decl] : _declarations_by_id ) // iterate by ID to sort them alphabetically
+        _emitDeclarations(decl, f, Phase::Implementations, include_all_implementations);
 }
 
-hilti::Result<hilti::Nothing> Unit::finalize() {
+hilti::Result<hilti::Nothing> Unit::finalize(bool include_all_implementations) {
     if ( ! _module_id )
         return result::Error("no module set");
 
@@ -224,7 +231,7 @@ hilti::Result<hilti::Nothing> Unit::finalize() {
         f << separator();
     }
 
-    _generateCode(f, false);
+    _generateCode(f, false, include_all_implementations);
     _cxx_code = f.str();
     return Nothing();
 }
@@ -249,7 +256,7 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
     f << fmt("#ifndef HILTI_PROTOTYPES_%s_H", util::toupper(_module_id)) << eol();
     f << separator();
 
-    _generateCode(f, true);
+    _generateCode(f, true, false);
 
     f << "#endif" << eol();
 
@@ -257,8 +264,12 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
     return Nothing();
 }
 
-hilti::detail::cxx::ID Unit::cxxNamespace() const {
+hilti::detail::cxx::ID Unit::cxxInternalNamespace() const {
     return cxx::ID(context()->options().cxx_namespace_intern, cxxModuleID());
+}
+
+hilti::detail::cxx::ID Unit::cxxExternalNamespace() const {
+    return cxx::ID(context()->options().cxx_namespace_extern, cxxModuleID());
 }
 
 hilti::Result<linker::MetaData> Unit::linkerMetaData() const {
@@ -268,7 +279,7 @@ hilti::Result<linker::MetaData> Unit::linkerMetaData() const {
     linker::MetaData md;
     md.module = _module_id;
     md.path = util::normalizePath(_module_path);
-    md.namespace_ = cxxNamespace();
+    md.namespace_ = cxxInternalNamespace();
     md.joins = _linker_joins;
 
     return md;
