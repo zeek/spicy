@@ -748,7 +748,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             sid, [&]() { return CxxTypes{.base_type = std::string(sid)}; },
             [&](auto& cxx_types) {
                 auto render_body = cxx::Block();
-                render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
+                render_body.addStatement("return o << ::hilti::rt::to_string(x);");
 
                 auto render_decl =
                     cxx::declaration::Function{.result = "std::ostream&",
