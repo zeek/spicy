@@ -292,12 +292,14 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
 
     f.leaveNamespace();
 
-    // Add any inline code that types may have defined.
-    for ( const auto& ns : _namespaces ) {
-        for ( const auto& t : _types ) {
-            if ( t.second.id.namespace_() == ns && t.second.inline_code.size() ) {
-                f.enterNamespace(t.second.id.namespace_());
-                f << t.second.inline_code << eol();
+    if ( ! prototypes_only ) {
+        // Add any inline code that types may have defined.
+        for ( const auto& ns : _namespaces ) {
+            for ( const auto& t : _types ) {
+                if ( t.second.id.namespace_() == ns && t.second.inline_code.size() ) {
+                    f.enterNamespace(t.second.id.namespace_());
+                    f << t.second.inline_code << eol();
+                }
             }
         }
     }
@@ -384,19 +386,9 @@ void Unit::importDeclarations(const Unit& other) {
     for ( const auto& i : other._types_forward )
         add(i.second, m);
 
-    for ( const auto& i : other._types )
-        add(i.second, m);
-
     for ( const auto& i : other._function_declarations ) {
         if ( std::string(i.second.linkage).find("extern") == std::string::npos &&
              std::string(i.second.linkage).find("inline") == std::string::npos )
-            continue;
-
-        add(i.second, m);
-    }
-
-    for ( const auto& i : other._function_implementations ) {
-        if ( std::string(i.second.declaration.linkage).find("inline") == std::string::npos )
             continue;
 
         add(i.second, m);

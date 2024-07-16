@@ -5,6 +5,9 @@
 #
 # We do not emit any `operator<<` for non-local types.
 # @TEST-EXEC-FAIL: grep -q 'operator<<.*X1.*{' foo_x2.cc
+#
+# We do not emit any ctors for non-local types.
+# @TEST-EXEC-FAIL: grep -q 'X1::X1(.*) {' foo_x2.cc
 
 # @TEST-START-FILE x1.spicy
 module x1;

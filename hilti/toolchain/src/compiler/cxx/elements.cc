@@ -425,7 +425,7 @@ std::string cxx::type::Struct::str() const {
     util::append(struct_fields, util::transform(args, fmt_argument));
 
     if ( add_ctors ) {
-        auto dctor = fmt("inline %s();", type_name);
+        auto dctor = fmt("%s();", type_name);
         auto cctor = fmt("%s(const %s&) = default;", type_name, type_name);
         auto mctor = fmt("%s(%s&&) = default;", type_name, type_name);
         auto cassign = fmt("%s& operator=(const %s&) = default;", type_name, type_name);
@@ -446,7 +446,7 @@ std::string cxx::type::Struct::str() const {
                                                                    return fmt("std::optional<%s> %s", l.type, l.id);
                                                                }),
                                                ", ");
-            auto locals_ctor = fmt("inline %s(%s);", type_name, locals_ctor_args);
+            auto locals_ctor = fmt("%s(%s);", type_name, locals_ctor_args);
             struct_fields.emplace_back(std::move(locals_ctor));
         }
 
@@ -454,7 +454,7 @@ std::string cxx::type::Struct::str() const {
             // Add dedicated constructor to initialize the struct's arguments.
             auto params_ctor_args =
                 util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
-            auto params_ctor = fmt("inline %s(%s);", type_name, params_ctor_args);
+            auto params_ctor = fmt("%s(%s);", type_name, params_ctor_args);
             struct_fields.emplace_back(params_ctor);
         }
     }
@@ -528,11 +528,10 @@ std::string cxx::type::Struct::inlineCode() const {
     // parameter-based constructors normally anyways, so don't need this
     // here.
     if ( args.size() )
-        inline_code +=
-            fmt("inline %s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
+        inline_code += fmt("%s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
     else
-        inline_code += fmt("inline %s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(),
-                           init_locals_user(), init_locals_non_user());
+        inline_code += fmt("%s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_user(),
+                           init_locals_non_user());
 
     if ( args.size() ) {
         // Create constructor taking the struct's parameters.
@@ -543,7 +542,7 @@ std::string cxx::type::Struct::inlineCode() const {
             util::join(util::transform(args, [&](const auto& x) { return fmt("%s(std::move(%s))", x.id, x.id); }),
                        ", ");
 
-        inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
+        inline_code += fmt("%s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
                            init_locals_user(), init_locals_non_user());
     }
 
@@ -564,8 +563,7 @@ std::string cxx::type::Struct::inlineCode() const {
                                        }),
                        "");
 
-        inline_code +=
-            fmt("inline %s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
+        inline_code += fmt("%s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
     }
 
     return inline_code;
