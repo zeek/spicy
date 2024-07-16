@@ -1,0 +1,25 @@
+# @TEST-DOC: Validates that we do not emit too many function bodies, regression test for #1800.
+#
+# @TEST-EXEC: spicyc x?.spicy -x foo
+# @TEST-EXEC: test -e foo_x2.cc
+#
+# We do not emit any `operator<<` for non-local types.
+# @TEST-EXEC-FAIL: grep -q 'operator<<.*X1.*{' foo_x2.cc
+
+# @TEST-START-FILE x1.spicy
+module x1;
+
+public type X1 = unit {
+    x1: uint8;
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE x2.spicy
+module x2;
+
+import x1;
+
+public type X2 = unit {
+    x2: uint8;
+};
+# @TEST-END-FILE

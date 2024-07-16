@@ -757,12 +757,17 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                                                         cxx::declaration::Argument{
                                                             .id = "x",
                                                             .type = fmt("const %s&", sid),
-                                                        }}};
+                                                        }},
+                                               .linkage = "extern"};
 
                 auto render_impl = cxx::Function{.declaration = render_decl, .body = std::move(render_body)};
 
                 cg->unit()->add(render_decl);
-                cg->unit()->add(render_impl);
+
+                // Only emit the render impl once, in the module which declared the type.
+                if ( type_id.namespace_() == cg->hiltiModule()->id() )
+                    cg->unit()->add(render_impl);
+
                 cg->addDeclarationFor(type);
 
                 return cxx_types;
