@@ -69,9 +69,10 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
             begin_ = hilti::rt::fmt("%" PRId64, begin->offset());
 
         return hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%s/%" PRId64 "/%" PRId64
-                              " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64 " lah_token=\"%s%s\" recovering=%s",
+                              "/%" PRId64 " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64
+                              " lah_token=\"%s%s\" recovering=%s",
                               unit_id, input_data, input_dots, data.get(), data->begin().offset(), begin_,
-                              cur.begin().offset(), data->end().offset(), data->numberOfChunks(),
+                              cur.begin().offset(), data->end().offset(), cur.end().offset(), data->numberOfChunks(),
                               (data->isFrozen() ? "yes" : "no"), literal_mode, (trim ? "yes" : "no"), lah_str, lah_data,
                               lah_dots, (error.has_value() ? "yes" : "no"));
     };

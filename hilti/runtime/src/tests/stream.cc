@@ -1009,7 +1009,7 @@ TEST_CASE("View") {
     }
 
     SUBCASE("extract") {
-        const auto s = Stream("1234567890"_b);
+        auto s = Stream("1234567890"_b);
         const auto v = s.view();
 
         SUBCASE("1") {
@@ -1033,6 +1033,19 @@ TEST_CASE("View") {
         SUBCASE("empty") {
             Byte dst[1] = {'0'};
             CHECK_THROWS_WITH_AS(Stream().view().extract(dst, sizeof(dst)), "end of stream view", const WouldBlock&);
+        }
+
+        SUBCASE("trimmed too much") {
+            s.trim(s.begin() + 5);
+            Byte dst[1] = {'0'};
+            CHECK_THROWS_WITH_AS(v.extract(dst, sizeof(dst)), "view starts before available range",
+                                 const InvalidIterator&);
+        }
+
+        SUBCASE("beginning invalid") {
+            s = Stream(); // let view expire
+            Byte dst[1] = {'0'};
+            CHECK_THROWS_WITH_AS(v.extract(dst, sizeof(dst)), "view has invalid beginning", const InvalidIterator&);
         }
 
         SUBCASE("gaps") {

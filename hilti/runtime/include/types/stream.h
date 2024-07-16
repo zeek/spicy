@@ -1366,9 +1366,9 @@ public:
     }
 
     /**
-     * Advances the view's starting position by a given number of stream.
+     * Advances the view's starting position by a given number of stream bytes.
      *
-     * @param i the number of stream to advance.
+     * @param i the number of stream bytes to advance.
      */
     View advance(const integer::safe<uint64_t>& i) const { return View(begin() + i, _end); }
 
@@ -1568,11 +1568,11 @@ private:
     }
 
     void _ensureValid() const {
-        //        if ( ! _begin.chain() )
-        //            throw InvalidIterator("view has invalid beginning");
+        if ( ! _begin.isValid() )
+            throw InvalidIterator("view has invalid beginning");
 
-        //        if ( ! _begin.isValid() )
-        //            throw InvalidIterator("view has invalid beginning");
+        if ( (! _begin.isUnset()) && _begin.offset() < _begin.chain()->offset() )
+            throw InvalidIterator("view starts before available range");
 
         if ( _end && ! _end->isValid() )
             throw InvalidIterator("view has invalid end");

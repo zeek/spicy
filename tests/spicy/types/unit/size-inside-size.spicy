@@ -1,0 +1,27 @@
+# @TEST-EXEC-FAIL: echo CJ2RXS7YIm4Lb+s5Y3nb0v2MVYgrmvRzZPBPQNTS4zE= | base64 -d | HILTI_DEBUG=spicy spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #1795: an inside &size is outside an outside &size.
+
+module Test;
+
+type Inner = unit {
+  len: uint8;
+  magic: bytes &size=self.len % 3; # This will eventually exceed bytes made available by the outer layer.
+};
+
+type TryInner = unit {
+  : Inner;
+};
+
+type Message = unit {
+  len: uint8;
+
+  switch ( True ) {
+    True -> : TryInner[] &eod;
+  } &size=self.len;
+};
+
+public type Messages = unit {
+  : Message[];
+};
