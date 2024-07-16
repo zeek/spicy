@@ -997,6 +997,7 @@
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] performing global transformations
 [debug/compiler] [HILTI] validating (post)
+[debug/compiler] computing AST dependencies
 [debug/compiler] codegen module Foo to C++
 [debug/compiler]   generating C++ for module Foo
 [debug/compiler]   finalizing module Foo

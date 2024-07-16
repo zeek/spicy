@@ -33,6 +33,168 @@ inline const DebugStream Compiler("compiler");
 inline const DebugStream Resolver("resolver");
 } // namespace hilti::logging::debug
 
+namespace hilti::ast::detail {
+
+// Visitor computing global declaration dependencies.
+class DependencyTracker : hilti::visitor::PreOrder {
+public:
+    DependencyTracker(ASTContext* context) : context(context) {}
+
+    // Entry point for computing all of an AST's global dependencies.
+    void computeAllDependencies(ASTRoot* root);
+
+    // Returns recorded dependencies for a given global declaration.
+    // Returns an empty set if the given declaration is not known as having any
+    // dependencies.
+    const std::unordered_set<Declaration*>& dependentDeclarations(Declaration* n);
+
+private:
+    ASTContext* context;
+
+    // State maintained while computing a single declaration's dependencies.
+    bool in_progress;                        // helper to avoid unexpected recursion
+    node::CycleDetector cd;                  // state to detect dependency cycles
+    std::unordered_set<Declaration*> result; // receives the result of a single dependency computation
+
+    // Records discovered dependencies. If a set contains the index itself,
+    // that means a cyclic dependency.
+    std::unordered_map<const Declaration*, std::unordered_set<Declaration*>> dependencies;
+
+    // Compute and store the dependencies of a single declaration. Backend for
+    // computeAllDependencies().
+    void computeSingleDependency(Declaration* d);
+
+    // Add a single dependency to the current result set if it's deemed of
+    // interest.
+    void insert(Declaration* d) {
+        if ( d->pathLength() <= 2 ) // top-level declaration only
+            result.insert(d);
+    }
+
+    // Recursively trace all children of a given node for further
+    // dependencies.
+    void follow(Node* d) {
+        if ( cd.haveSeen(d) )
+            return;
+
+        cd.recordSeen(d);
+
+        for ( auto child : d->children() ) {
+            for ( auto n : visitor::range(hilti::visitor::PreOrder(), child) )
+                if ( n )
+                    dispatch(n);
+        }
+    }
+
+    void operator()(declaration::Constant* n) final {
+        if ( auto t = n->type()->type()->tryAs<type::Enum>() )
+            // Special-case: For enum constants, insert a dependency on the
+            // enum type instead, because that's the one that will declare it.
+            insert(t->typeDeclaration());
+        else
+            insert(n);
+    }
+
+    void operator()(declaration::Function* n) final {
+        insert(n);
+
+        if ( auto decl_index = n->linkedDeclarationIndex() ) {
+            // Insert dependency on the linked type's declaration.
+            auto decl = context->lookup(decl_index);
+            insert(decl);
+            follow(decl);
+        }
+    }
+
+    void operator()(declaration::GlobalVariable* n) final { insert(n); }
+
+    void operator()(declaration::Module* n) final { insert(n); }
+
+    void operator()(declaration::Type* n) final { insert(n); }
+
+    void operator()(expression::Name* n) final {
+        auto d = n->resolvedDeclaration();
+        assert(d);
+        dispatch(d);
+        follow(d);
+    }
+
+    void operator()(type::Name* n) final {
+        auto d = n->resolvedDeclaration();
+        assert(d);
+        dispatch(d);
+        follow(d);
+    }
+};
+
+void DependencyTracker::computeAllDependencies(ASTRoot* root) {
+    for ( auto module : root->childrenOfType<Declaration>() ) {
+        computeSingleDependency(module);
+
+        for ( auto d : module->childrenOfType<Declaration>() )
+            computeSingleDependency(d->as<Declaration>());
+    }
+
+    if ( logger().isEnabled(logging::debug::AstDeclarations) ) {
+        // Output all computed dependencies in a deterministic order.
+        HILTI_DEBUG(logging::debug::AstDeclarations, "Declaration dependencies:");
+
+        std::map<std::string, std::string> sorted;
+
+        for ( const auto& [decl, deps] : dependencies ) {
+            if ( deps.empty() )
+                continue;
+
+            auto decl_ = fmt("[%s] %s", decl->displayName(), decl->canonicalID());
+            std::set<std::string> deps_;
+            std::transform(std::begin(deps), std::end(deps), std::inserter(deps_, std::end(deps_)),
+                           [](const auto* d) { return d->canonicalID(); });
+
+            sorted[decl_] = util::join(deps_, ", ");
+        }
+
+        for ( const auto& [decl, deps] : sorted )
+            HILTI_DEBUG(logging::debug::AstDeclarations, fmt("- %s -> %s", decl, deps));
+    }
+}
+
+void DependencyTracker::computeSingleDependency(Declaration* d) {
+    assert(d && d->pathLength() <= 2); // top-level declaration only
+    assert(! in_progress);             // assure we don't recurse into this
+                                       // method; that's what follow() is for instead
+
+    if ( auto i = dependencies.find(d); i != dependencies.end() ) {
+        // Dependencies are already fully computed.
+        result.insert(i->second.begin(), i->second.end());
+        return;
+    }
+
+    in_progress = true;
+    cd.clear();
+    result.clear();
+    follow(d);
+    in_progress = false;
+
+    if ( auto* t = d->tryAs<declaration::Type>(); t && t->type()->type()->isA<type::Enum>() )
+        // Special-case: For enum types, remove the type itself from the
+        // set. It will have gotten in there because we're special-casing
+        // enum constants to insert the type instead. However, an enum type
+        // can never be cyclic, so we don't want it in there.
+        result.erase(d);
+
+    dependencies.emplace(d, result);
+}
+
+const std::unordered_set<Declaration*>& DependencyTracker::dependentDeclarations(Declaration* n) {
+    if ( auto x = dependencies.find(n); x != dependencies.end() )
+        return x->second;
+    else {
+        static const std::unordered_set<Declaration*> empty;
+        return empty;
+    }
+}
+
+} // namespace hilti::ast::detail
 
 std::string ASTRoot::_dump() const { return ""; }
 
@@ -440,6 +602,9 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
             return rc;
     }
 
+    if ( auto rc = _computeDependencies(); ! rc )
+        return rc;
+
     _driver = nullptr;
     return Nothing();
 }
@@ -616,6 +781,15 @@ Result<Nothing> ASTContext::_validate(Builder* builder, const Plugin& plugin, bo
     return _collectErrors();
 }
 
+Result<Nothing> ASTContext::_computeDependencies() {
+    util::timing::Collector _("hilti/compiler/ast/compute-dependencies");
+    HILTI_DEBUG(logging::debug::Compiler, "computing AST dependencies");
+
+    _dependency_tracker = std::make_unique<ast::detail::DependencyTracker>(this);
+    _dependency_tracker->computeAllDependencies(_root.get());
+    return Nothing();
+}
+
 void ASTContext::_dumpAST(const logging::DebugStream& stream, const Plugin& plugin, const std::string& prefix,
                           int round) {
     if ( ! logger().isEnabled(stream) )
@@ -785,6 +959,13 @@ std::set<declaration::module::UID> ASTContext::dependencies(const declaration::m
     }
     else
         return m->dependencies();
+}
+
+const std::unordered_set<Declaration*>& ASTContext::dependentDeclarations(Declaration* n) {
+    if ( _dependency_tracker )
+        return _dependency_tracker->dependentDeclarations(n);
+    else
+        logger().internalError("dependencies not computed yet");
 }
 
 static node::ErrorPriority _recursiveValidateAST(Node* n, Location closest_location, node::ErrorPriority prio,
