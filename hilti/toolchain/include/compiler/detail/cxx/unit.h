@@ -109,7 +109,8 @@ private:
                                         declaration::Type, declaration::Function>;
 
     void _generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations);
-    void _emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool include_all_implementations);
+    void _emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool prototypes_only,
+                           bool include_all_implementations);
     void _addHeader(Formatter& f);
     void _addModuleInitFunction();
 

@@ -88,15 +88,23 @@ void Unit::_addModuleInitFunction() {
     }
 }
 
-void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool include_all_implementations) {
+void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool prototypes_only,
+                             bool include_all_implementations) {
     struct Visitor {
-        Visitor(Context* ctx, Unit* unit, Formatter& f, Phase phase, bool include_all_implementations)
-            : ctx(ctx), unit(unit), f(f), phase(phase), include_all_implementations(include_all_implementations) {}
+        Visitor(Context* ctx, Unit* unit, Formatter& f, Phase phase, bool prototypes_only,
+                bool include_all_implementations)
+            : ctx(ctx),
+              unit(unit),
+              f(f),
+              phase(phase),
+              prototypes_only(prototypes_only),
+              include_all_implementations(include_all_implementations) {}
 
         Context* ctx;
         Unit* unit;
         Formatter& f;
         Phase phase;
+        bool prototypes_only;
         bool include_all_implementations;
 
         bool isTypeInfo(const cxx::ID& id) {
@@ -144,7 +152,7 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
                 f << d;
 
             else if ( phase == Phase::Functions ) {
-                if ( d.inline_code.size() ) {
+                if ( d.inline_code.size() && ! prototypes_only ) {
                     f << d.inline_code << eol();
                 }
             }
@@ -171,7 +179,7 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
         }
     };
 
-    std::visit(Visitor(context().get(), this, f, phase, include_all_implementations), decl);
+    std::visit(Visitor(context().get(), this, f, phase, prototypes_only, include_all_implementations), decl);
 }
 
 void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
@@ -181,7 +189,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_im
                             Phase::Globals,  Phase::Functions, Phase::TypeInfos};
 
     for ( const auto& [_, decl] : _declarations )
-        _emitDeclarations(decl, f, Phase::Includes, include_all_implementations);
+        _emitDeclarations(decl, f, Phase::Includes, prototypes_only, include_all_implementations);
 
     f << separator();
 
@@ -192,7 +200,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_im
 
             for ( const auto& [id, decl] : _declarations ) {
                 if ( id.namespace_() == ns || id.empty() )
-                    _emitDeclarations(decl, f, phase, include_all_implementations);
+                    _emitDeclarations(decl, f, phase, prototypes_only, include_all_implementations);
             }
         }
     }
@@ -209,7 +217,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_im
         f << separator();
 
     for ( const auto& [id_, decl] : _declarations_by_id ) // iterate by ID to sort them alphabetically
-        _emitDeclarations(decl, f, Phase::Implementations, include_all_implementations);
+        _emitDeclarations(decl, f, Phase::Implementations, prototypes_only, include_all_implementations);
 }
 
 hilti::Result<hilti::Nothing> Unit::finalize(bool include_all_implementations) {
