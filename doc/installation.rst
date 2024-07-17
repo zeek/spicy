@@ -211,16 +211,17 @@ To build Spicy from source, you will need:
         * `CMake <https://cmake.org>`_  >= 3.15
         * `Bison <https://www.gnu.org/software/bison>`_  >= 3.0
         * `Flex <https://www.gnu.org/software/flex>`_  >= 2.6
-        * `Python <https://www.python.org/downloads/>`_ >= 3.4
         * `Zlib <https://www.zlib.net>`_ (no particular version)
 
     - For testing:
 
+        * `Python <https://www.python.org/downloads/>`_ >= 3.4
         * `BTest <https://github.com/zeek/btest>`_  >= 0.66 (``pip install btest``)
         * Bash (for BTest)
 
     - For building the documentation:
 
+        * `Python <https://www.python.org/downloads/>`_ >= 3.4
         * `Sphinx <https://www.sphinx-doc.org/en/master>`_  >= 1.8
         * `Pygments <https://pygments.org/>`_  >= 2.5
         * `Read the Docs Sphinx Theme <https://sphinx-rtd-theme.readthedocs.io/en/stable/>`_  (``pip install sphinx_rtd_theme``)

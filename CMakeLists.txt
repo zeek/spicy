@@ -6,7 +6,6 @@ project(spicy LANGUAGES C CXX)
 
 set(flex_minimum_version "2.5.37")
 set(bison_minimum_version "3.0")
-set(python_minimum_version "3.2")
 set(macos_minimum_version "19.0.0") # macOS 10.15.0 (Catalina)
 
 ## Initialize defaults & global options
@@ -136,7 +135,6 @@ if (BISON_ROOT)
         NO_DEFAULT_PATH)
 endif ()
 
-find_package(Python ${python_minimum_version} COMPONENTS Interpreter)
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -163,7 +161,6 @@ if (APPLE)
     require_version("macOS" MACOS_FOUND ${CMAKE_SYSTEM_VERSION} "${macos_minimum_version}" true)
 endif ()
 
-require_version("Python" Python_FOUND Python_VERSION "${python_minimum_version}" true)
 require_version("Flex" FLEX_FOUND FLEX_VERSION "${flex_minimum_version}" true)
 require_version("Bison" BISON_FOUND BISON_VERSION "${bison_minimum_version}" true)
 
@@ -340,7 +337,6 @@ message(
     "\nBison version:         ${BISON_VERSION}"
     "\nCMake version:         ${CMAKE_VERSION}"
     "\nFlex version:          ${FLEX_VERSION}"
-    "\nPython version:        ${Python_VERSION}"
     "\nzlib version:          ${ZLIB_VERSION_STRING}"
     "\n"
     "\n================================================================\n")
