@@ -218,19 +218,16 @@ struct Constant : public DeclarationBase {
 /** Declaration of a C++ type. */
 struct Type : public DeclarationBase {
     cxx::Type type;
-    std::string inline_code;
+    std::string code;
     bool no_using = false; // turned on automatically for types starting with "struct"
 
-    Type(cxx::ID id = {}, cxx::Type type = {}, std::string inline_code = {}, bool no_using = false)
-        : DeclarationBase(std::move(id)),
-          type(std::move(type)),
-          inline_code(std::move(inline_code)),
-          no_using(no_using) {}
+    Type(cxx::ID id = {}, cxx::Type type = {}, std::string code = {}, bool no_using = false)
+        : DeclarationBase(std::move(id)), type(std::move(type)), code(std::move(code)), no_using(no_using) {}
 
     void emit(Formatter& f) const final;
 
     bool operator==(const Type& other) const {
-        return type == other.type && inline_code == other.inline_code && no_using == other.no_using &&
+        return type == other.type && code == other.code && no_using == other.no_using &&
                DeclarationBase::operator==(other);
     }
 
@@ -397,7 +394,7 @@ struct Struct {
     cxx::Block ctor;
     bool add_ctors = false;
     std::string str() const;
-    std::string inlineCode() const;
+    std::string code() const;
 
     operator std::string() const { return str(); }
     operator cxx::Type() const { return str(); }

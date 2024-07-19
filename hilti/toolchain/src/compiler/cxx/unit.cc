@@ -152,8 +152,8 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
                 f << d;
 
             else if ( phase == Phase::Functions ) {
-                if ( d.inline_code.size() && ! prototypes_only ) {
-                    f << d.inline_code << eol();
+                if ( d.code.size() && ! prototypes_only ) {
+                    f << d.code << eol();
                 }
             }
         }
