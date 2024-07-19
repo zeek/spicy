@@ -280,9 +280,9 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                            .ctor = std::move(ctor),
                                            .add_ctors = true};
 
-                // Only emit full inline code if we are generating the unit declaring this type.
+                // Only emit full code if we are generating the unit declaring this type.
                 if ( n->typeID().namespace_().str() == cg->unit()->moduleID().str() )
-                    return cxx::declaration::Type{id, t, t.inlineCode()};
+                    return cxx::declaration::Type{id, t, t.code()};
                 else
                     return cxx::declaration::Type{id, t, {}};
             });

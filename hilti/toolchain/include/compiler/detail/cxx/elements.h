@@ -175,24 +175,23 @@ struct Constant {
 struct Type {
     cxx::ID id;
     cxx::Type type;
-    std::string inline_code;
+    std::string code;
     bool forward_decl = false;
     bool forward_decl_prio = false;
     bool no_using = false; // turned on automatically for types starting with "struct"
 
-    Type(cxx::ID id = {}, cxx::Type type = {}, std::string inline_code = {}, bool forward_decl = false,
+    Type(cxx::ID id = {}, cxx::Type type = {}, std::string code = {}, bool forward_decl = false,
          bool forward_decl_prio = false, bool no_using = false)
         : id(std::move(id)),
           type(std::move(type)),
-          inline_code(std::move(inline_code)),
+          code(std::move(code)),
           forward_decl(forward_decl),
           forward_decl_prio(forward_decl_prio),
           no_using(no_using) {}
 
     bool operator==(const Type& other) const {
-        return id == other.id && type == other.type && inline_code == other.inline_code &&
-               forward_decl == other.forward_decl && forward_decl_prio == other.forward_decl_prio &&
-               no_using == other.no_using;
+        return id == other.id && type == other.type && code == other.code && forward_decl == other.forward_decl &&
+               forward_decl_prio == other.forward_decl_prio && no_using == other.no_using;
     }
 };
 
@@ -320,7 +319,7 @@ struct Struct {
     cxx::Block ctor;
     bool add_ctors = false;
     std::string str() const;
-    std::string inlineCode() const;
+    std::string code() const;
 
     operator std::string() const { return str(); }
     operator cxx::Type() const { return str(); }

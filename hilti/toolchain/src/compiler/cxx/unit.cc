@@ -293,12 +293,12 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
     f.leaveNamespace();
 
     if ( ! prototypes_only ) {
-        // Add any inline code that types may have defined.
+        // Add any code that types may have defined.
         for ( const auto& ns : _namespaces ) {
             for ( const auto& t : _types ) {
-                if ( t.second.id.namespace_() == ns && t.second.inline_code.size() ) {
+                if ( t.second.id.namespace_() == ns && ! t.second.code.empty() ) {
                     f.enterNamespace(t.second.id.namespace_());
-                    f << t.second.inline_code << eol();
+                    f << t.second.code << eol();
                 }
             }
         }

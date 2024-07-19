@@ -472,7 +472,7 @@ std::string cxx::type::Struct::str() const {
                has_params, type_name, struct_fields_as_str);
 }
 
-std::string cxx::type::Struct::inlineCode() const {
+std::string cxx::type::Struct::code() const {
     if ( ! add_ctors )
         return "";
 
@@ -519,7 +519,7 @@ std::string cxx::type::Struct::inlineCode() const {
                           "");
     };
 
-    std::string inline_code;
+    std::string code;
 
     // Create default constructor. This initializes user-controlled members
     // only if there are no struct parameters. If there are, we wouldn't have
@@ -528,10 +528,10 @@ std::string cxx::type::Struct::inlineCode() const {
     // parameter-based constructors normally anyways, so don't need this
     // here.
     if ( args.size() )
-        inline_code += fmt("%s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
+        code += fmt("%s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
     else
-        inline_code += fmt("%s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_user(),
-                           init_locals_non_user());
+        code += fmt("%s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_user(),
+                    init_locals_non_user());
 
     if ( args.size() ) {
         // Create constructor taking the struct's parameters.
@@ -542,8 +542,8 @@ std::string cxx::type::Struct::inlineCode() const {
             util::join(util::transform(args, [&](const auto& x) { return fmt("%s(std::move(%s))", x.id, x.id); }),
                        ", ");
 
-        inline_code += fmt("%s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
-                           init_locals_user(), init_locals_non_user());
+        code += fmt("%s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits, init_locals_user(),
+                    init_locals_non_user());
     }
 
     if ( locals_user.size() ) {
@@ -563,10 +563,10 @@ std::string cxx::type::Struct::inlineCode() const {
                                        }),
                        "");
 
-        inline_code += fmt("%s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
+        code += fmt("%s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
     }
 
-    return inline_code;
+    return code;
 }
 
 std::string cxx::type::Union::str() const {
