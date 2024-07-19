@@ -279,6 +279,24 @@ struct Visitor : hilti::visitor::PreOrder {
 
         module = n->id();
         unit->addInitialization(cg->compile(n->statements()));
+
+        // Non-recursively add imported types.
+        for ( auto* import : n->childrenOfType<declaration::ImportedModule>() ) {
+            auto uid = import->uid();
+            assert(uid);
+
+            auto* m = cg->context()->astContext()->module(*uid);
+
+            // Do not import types builtin modules. We use `%skip-implementation` as a proxy.
+            if ( m->skipImplementation() )
+                continue;
+
+            for ( auto* decl : m->declarations() ) {
+                // Only import declarations defined directly in the imported module.
+                if ( auto t = decl->tryAs<declaration::Type>(); t && t->typeID().namespace_() == m->id() )
+                    n->add(cg->context()->astContext(), decl);
+            }
+        }
     }
 
     void operator()(declaration::ImportedModule* n) final {

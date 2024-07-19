@@ -8,6 +8,11 @@
 #
 # We do not emit any ctors for non-local types.
 # @TEST-EXEC-FAIL: grep -q 'X1::X1(.*) {' foo_x2.cc
+# @TEST-EXEC-FAIL: grep -q 'X1::X1(.*) {' foo_x3.cc
+#
+# We still emit full declarations, also for transitively imported types.
+# @TEST-EXEC: grep -q 'struct X1.*{' foo_x2.cc
+# @TEST-EXEC: grep -q 'struct X1.*{' foo_x3.cc
 
 # @TEST-START-FILE x1.spicy
 module x1;
@@ -24,5 +29,15 @@ import x1;
 
 public type X2 = unit {
     x2: uint8;
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE x3.spicy
+module x3;
+
+import x2;
+
+public type X3 = unit {
+    x3: uint8;
 };
 # @TEST-END-FILE
