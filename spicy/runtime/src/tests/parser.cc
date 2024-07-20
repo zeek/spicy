@@ -140,6 +140,7 @@ TEST_CASE("registerParser") {
         parser.mime_types = {MIMEType("foo/bar"), MIMEType("foo/*")};
         REQUIRE_FALSE(parser.__parse_sink);
         REQUIRE_FALSE(parser.__hook_gap);
+        REQUIRE_FALSE(parser.__hook_overlap);
         REQUIRE_FALSE(parser.__hook_skipped);
         REQUIRE_FALSE(parser.__hook_undelivered);
 
@@ -151,6 +152,7 @@ TEST_CASE("registerParser") {
         CHECK_EQ(parser.linker_scope, "xyz");
         CHECK_FALSE(parser.__parse_sink);
         CHECK_FALSE(parser.__hook_gap);
+        CHECK_FALSE(parser.__hook_overlap);
         CHECK_FALSE(parser.__hook_skipped);
         CHECK_FALSE(parser.__hook_undelivered);
     }
@@ -163,6 +165,7 @@ TEST_CASE("registerParser") {
         parser.mime_types = {MIMEType("foo/bar"), MIMEType("foo/*")};
         REQUIRE_FALSE(parser.__parse_sink);
         REQUIRE_FALSE(parser.__hook_gap);
+        CHECK_FALSE(parser.__hook_overlap);
         REQUIRE_FALSE(parser.__hook_skipped);
         REQUIRE_FALSE(parser.__hook_undelivered);
 
@@ -174,6 +177,7 @@ TEST_CASE("registerParser") {
         CHECK_EQ(parser.linker_scope, "xyz");
         CHECK(parser.__parse_sink);
         CHECK(parser.__hook_gap);
+        CHECK(parser.__hook_overlap);
         CHECK(parser.__hook_skipped);
         CHECK(parser.__hook_undelivered);
     }
