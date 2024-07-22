@@ -1,3 +1,10 @@
+1.11.0-dev.269 | 2024-07-22 10:53:15 +0200
+
+  * Do not search for Python in CMake setup. (Benjamin Bannier, Corelight)
+
+    We previously needed this since during the build we were generating
+    files with Python. This is not the case anymore.
+
 1.11.0-dev.267 | 2024-07-22 10:50:22 +0200
 
   * GH-1462: Defer start of feature-dependent transformations to a later point. (Benjamin Bannier, Corelight)
