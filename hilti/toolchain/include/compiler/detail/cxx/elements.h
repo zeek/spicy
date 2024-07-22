@@ -103,14 +103,19 @@ public:
 
 namespace declaration {
 
-/** A C++ `@include` specific ation. */
-struct IncludeFile {
+class DeclarationBase {}; // TODO: We will expand this later
+
+/** A C++ `@include` specific action. */
+struct IncludeFile : public DeclarationBase {
     std::string file;
+
+    IncludeFile(std::string file) : file(std::move(file)) {}
+
     bool operator<(const IncludeFile& o) const { return file < o.file; }
 };
 
 /** Declaration of a local C++ variable. */
-struct Local {
+struct Local : public DeclarationBase {
     Local(Local&&) = default;
     Local(const Local&) = default;
     Local& operator=(Local&&) = default;
@@ -142,12 +147,20 @@ struct Local {
 };
 
 /** Declaration of a global C++ variable. */
-struct Global {
+struct Global : public DeclarationBase {
     cxx::ID id;
     cxx::Type type;
     std::vector<cxx::Expression> args;
     std::optional<cxx::Expression> init;
     Linkage linkage;
+
+    Global(cxx::ID id = {}, cxx::Type type = {}, std::vector<cxx::Expression> args = {},
+           std::optional<cxx::Expression> init = {}, Linkage linkage = {})
+        : id(std::move(id)),
+          type(std::move(type)),
+          args(std::move(args)),
+          init(std::move(init)),
+          linkage(std::move(linkage)) {}
 
     bool operator==(const Global& other) const {
         return id == other.id && type == other.type && init == other.init && linkage == other.linkage;
@@ -158,12 +171,20 @@ struct Global {
 };
 
 /** Declaration of a C++ constant. */
-struct Constant {
+struct Constant : public DeclarationBase {
     cxx::ID id;
     cxx::Type type;
     std::optional<cxx::Expression> init;
     Linkage linkage;
     bool forward_decl = false;
+
+    Constant(cxx::ID id = {}, cxx::Type type = {}, std::optional<cxx::Expression> init = {}, Linkage linkage = {},
+             bool forward_decl = false)
+        : id(std::move(id)),
+          type(std::move(type)),
+          init(std::move(init)),
+          linkage(std::move(linkage)),
+          forward_decl(forward_decl) {}
 
     bool operator<(const Constant& s) const { return id < s.id; }
     bool operator==(const Constant& other) const {
@@ -172,7 +193,7 @@ struct Constant {
 };
 
 /** Declaration of a C++ type. */
-struct Type {
+struct Type : public DeclarationBase {
     cxx::ID id;
     cxx::Type type;
     std::string inline_code;
@@ -197,12 +218,19 @@ struct Type {
 };
 
 /** Declaration of a C++ function argument. */
-struct Argument {
+struct Argument : public DeclarationBase {
     cxx::ID id;
     cxx::Type type;
     std::optional<cxx::Expression> default_;
     cxx::Type internal_type = "";
     operator std::string() const { return id ? util::fmt("%s %s", type, id) : std::string(type); }
+
+    Argument(cxx::ID id = {}, cxx::Type type = {}, std::optional<cxx::Expression> default_ = {},
+             cxx::Type internal_type = "")
+        : id(std::move(id)),
+          type(std::move(type)),
+          default_(std::move(default_)),
+          internal_type(std::move(internal_type)) {}
 
     bool operator==(const Argument& other) const { return type == other.type && id == other.id; }
 };
@@ -262,7 +290,7 @@ private:
 namespace declaration {
 
 /** Declaration of a C++ function. */
-struct Function {
+struct Function : public DeclarationBase {
     cxx::Type result;
     cxx::ID id;
     std::vector<Argument> args;
@@ -273,6 +301,16 @@ struct Function {
 
     std::string prototype(bool qualify) const;
     std::string parameters() const;
+
+    Function(cxx::Type result = {}, cxx::ID id = {}, std::vector<Argument> args = {}, bool const_ = false,
+             Linkage linkage = "static", Attribute attribute = "", std::optional<Block> inline_body = {})
+        : result(std::move(result)),
+          id(std::move(id)),
+          args(std::move(args)),
+          const_(const_),
+          linkage(std::move(linkage)),
+          attribute(std::move(attribute)),
+          inline_body(std::move(inline_body)) {}
 
     bool operator==(const Function& other) const {
         return result == other.result && id == other.id && args == other.args && linkage == other.linkage &&

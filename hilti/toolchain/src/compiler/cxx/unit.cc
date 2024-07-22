@@ -144,14 +144,14 @@ void Unit::_addHeader(Formatter& f) {
 
     f << separator() << comment(fmt("Begin %s", c))
       << comment(fmt("Compiled by HILTI version %s", hilti::configuration().version_string)) << separator()
-      << declaration::IncludeFile{.file = "hilti/rt/compiler-setup.h"} << separator();
+      << declaration::IncludeFile("hilti/rt/compiler-setup.h") << separator();
 }
 
 void Unit::_addModuleInitFunction() {
     auto addInitFunction = [&](Context* ctx, auto f, const std::string& id_) {
         auto id = cxx::ID{cxxNamespace(), id_};
 
-        auto body_decl = cxx::declaration::Function{.result = "void", .id = id, .args = {}, .linkage = "extern"};
+        auto body_decl = cxx::declaration::Function("void", id, {}, {}, "extern");
 
         cxx::Block body;
         body.appendFromBlock(std::move(f));
@@ -174,7 +174,7 @@ void Unit::_addModuleInitFunction() {
 
     if ( moduleID() != cxx::ID("__linker__") ) {
         auto scope = fmt("%s_hlto_scope", context()->options().cxx_namespace_intern);
-        auto extern_scope = cxx::declaration::Global{.id = cxx::ID(scope), .type = "const char*", .linkage = "extern"};
+        auto extern_scope = cxx::declaration::Global(cxx::ID(scope), "const char*", {}, {}, "extern");
         add(extern_scope);
 
         cxx::Block register_;

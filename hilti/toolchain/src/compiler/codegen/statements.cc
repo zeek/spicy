@@ -68,7 +68,7 @@ struct Visitor : hilti::visitor::PreOrder {
                 logger().internalError("not support currently for testing for specific exception in assertion", n);
 
             cxx::Block try_body;
-            try_body.addTmp(cxx::declaration::Local{"_", "::hilti::rt::exception::DisableAbortOnExceptions"});
+            try_body.addTmp(cxx::declaration::Local("_", "::hilti::rt::exception::DisableAbortOnExceptions"));
             try_body.addStatement(fmt("%s", cg->compile(n->expression())));
 
             if ( cg->options().debug_flow )
@@ -142,8 +142,8 @@ struct Visitor : hilti::visitor::PreOrder {
             init = cg->typeDefaultValue(d->type());
         }
 
-        auto l = cxx::declaration::Local{cxx::ID(d->id()), cg->compile(d->type(), codegen::TypeUsage::Storage),
-                                         std::move(args), init};
+        auto l = cxx::declaration::Local(cxx::ID(d->id()), cg->compile(d->type(), codegen::TypeUsage::Storage),
+                                         std::move(args), init);
 
         block->addLocal(l);
     }
@@ -197,7 +197,7 @@ struct Visitor : hilti::visitor::PreOrder {
         else {
             cxx::Block b;
             b.setEnsureBracesforBlock();
-            b.addTmp(cxx::declaration::Local{"__seq", "auto", {}, seq});
+            b.addTmp(cxx::declaration::Local("__seq", "auto", {}, seq));
             b.addForRange(true, id, fmt("::hilti::rt::range(__seq)"), body);
             block->addBlock(std::move(b));
         }

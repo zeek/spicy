@@ -53,9 +53,9 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
             return;
 
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
-        auto t = cxx::declaration::Type{{ns, "__globals_t"}, cxxGlobalsType()};
+        auto t = cxx::declaration::Type({ns, "__globals_t"}, cxxGlobalsType());
 
-        auto idx = cxx::declaration::Global{.id = {ns, "__globals_index"}, .type = "unsigned int", .linkage = "inline"};
+        auto idx = cxx::declaration::Global({ns, "__globals_index"}, "unsigned int", {}, {}, "inline");
 
         unit->add(idx);
         unit->add(t);
@@ -63,13 +63,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
         auto body = cxx::Block();
         body.addStatement("return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
 
-        auto body_decl = cxx::declaration::Function{
-            .result = "auto",
-            .id = {ns, "__globals"},
-            .args = {},
-            .linkage = "static",
-            .inline_body = body,
-        };
+        auto body_decl = cxx::declaration::Function("auto", {ns, "__globals"}, {}, false, "static", {}, body);
 
         unit->add(body_decl);
     }
@@ -100,10 +94,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
         auto id = cxx::ID{ns, "__init_globals"};
 
-        auto body_decl = cxx::declaration::Function{.result = "void",
-                                                    .id = id,
-                                                    .args = {{.id = "ctx", .type = "::hilti::rt::Context*"}},
-                                                    .linkage = "extern"};
+        auto body_decl = cxx::declaration::Function("void", id, {{"ctx", "::hilti::rt::Context*"}}, false, "extern");
 
         auto body = cxx::Block();
         cg->pushCxxBlock(&body);
@@ -151,10 +142,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
         auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
         auto id = cxx::ID{ns, "__destroy_globals"};
 
-        auto body_decl = cxx::declaration::Function{.result = "void",
-                                                    .id = id,
-                                                    .args = {{.id = "ctx", .type = "::hilti::rt::Context*"}},
-                                                    .linkage = "extern"};
+        auto body_decl = cxx::declaration::Function("void", id, {{"ctx", "::hilti::rt::Context*"}}, false, "extern");
 
         auto body = cxx::Block();
         cg->pushCxxBlock(&body);
@@ -197,7 +185,7 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
         std::vector<cxx::type::struct_::Member> fields;
 
         for ( const auto& g : globals ) {
-            auto f = cxx::declaration::Local{g.id.local(), g.type};
+            auto f = cxx::declaration::Local(g.id.local(), g.type);
             fields.emplace_back(f);
         }
 
@@ -207,19 +195,18 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
     void operator()(declaration::GlobalVariable* n) final {
         auto args = node::transform(n->typeArguments(), [this](auto a) { return cg->compile(a); });
         auto init = n->init() ? cg->compile(n->init()) : cg->typeDefaultValue(n->type());
-        auto x = cxx::declaration::Global{.id = {cg->unit()->cxxNamespace(), n->id()},
-                                          .type = cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                          .args = std::move(args),
-                                          .init = std::move(init),
-                                          .linkage = (n->linkage() == declaration::Linkage::Public ? "" : "static")};
+        auto x =
+            cxx::declaration::Global({cg->unit()->cxxNamespace(), n->id()},
+                                     cg->compile(n->type(), codegen::TypeUsage::Storage), std::move(args),
+                                     std::move(init), (n->linkage() == declaration::Linkage::Public ? "" : "static"));
 
         globals.push_back(x);
     }
 
     void operator()(declaration::Constant* n) final {
-        auto x = cxx::declaration::Constant{.id = {cg->unit()->cxxNamespace(), n->id()},
-                                            .type = cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                            .init = cg->compile(n->value())};
+        auto x =
+            cxx::declaration::Constant({cg->unit()->cxxNamespace(), n->id()},
+                                       cg->compile(n->type(), codegen::TypeUsage::Storage), cg->compile(n->value()));
 
         constants.push_back(x);
     }
@@ -253,7 +240,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         for ( const auto& p : plugin::registry().plugins() ) {
             for ( const auto& i : p.cxx_includes ) {
-                auto include = cxx::declaration::IncludeFile{i};
+                auto include = cxx::declaration::IncludeFile(i);
                 unit->add(include);
             }
         }
@@ -262,7 +249,7 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( auto expr = i->expression() ) {
                 if ( auto ctor = expr->tryAs<expression::Ctor>() ) {
                     if ( auto str = ctor->ctor()->tryAs<ctor::String>() ) {
-                        auto include = cxx::declaration::IncludeFile{str->value()};
+                        auto include = cxx::declaration::IncludeFile(str->value());
                         unit->add(include);
                         continue;
                     }
@@ -381,17 +368,13 @@ struct Visitor : hilti::visitor::PreOrder {
             // the runtime representation. However, we don't have access to
             // the type currently.
             // NOLINTNEXTLINE(modernize-use-emplace)
-            d.args.push_back(cxx::declaration::Argument{
-                .id = "__self",
-                .type = fmt("::hilti::rt::ValueReference<%s>&", id_struct_type),
-            });
+            d.args.push_back(
+                cxx::declaration::Argument("__self", fmt("::hilti::rt::ValueReference<%s>&", id_struct_type)));
 
             // Make any additional types the hook needs known to local unit and linker.
             std::list<cxx::declaration::Type> aux_types{
-                cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                       fmt("struct %s", id_class),
-                                       {},
-                                       true}};
+                cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                       fmt("struct %s", id_class), {}, true)};
 
             for ( const auto& p : ft->parameters() ) {
                 auto type = p->type();
@@ -417,10 +400,8 @@ struct Visitor : hilti::visitor::PreOrder {
                     id_module = cg->hiltiModule()->scopeID(); // XXX
 
                 aux_types.push_back(
-                    cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           fmt("struct %s", id_class),
-                                           {},
-                                           true});
+                    cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           fmt("struct %s", id_class), {}, true));
             }
 
             for ( const auto& t : aux_types )
@@ -474,10 +455,8 @@ struct Visitor : hilti::visitor::PreOrder {
                     id_module = cg->hiltiModule()->uid().unique;
 
                 aux_types.push_back(
-                    cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           fmt("struct %s", id_class),
-                                           {},
-                                           true});
+                    cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           fmt("struct %s", id_class), {}, true));
             }
 
             for ( const auto& t : aux_types )
@@ -512,7 +491,7 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->linkage() == declaration::Linkage::Struct && ! f->isStatic() ) {
             if ( ! is_hook && ! f->isStatic() ) {
                 // Need a LHS value for __self.
-                auto self = cxx::declaration::Local{"__self", "auto", {}, fmt("%s::__self()", id_struct_type)};
+                auto self = cxx::declaration::Local("__self", "auto", {}, fmt("%s::__self()", id_struct_type));
                 body.addStatementAtFront(std::move(self));
             }
 
@@ -682,7 +661,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, de
 
     auto param_ = [&](const auto& p) {
         auto t = compile(p->type(), parameterKindToTypeUsage(p->kind()));
-        return cxx::declaration::Argument{.id = cxx::ID(p->id()), .type = std::move(t)};
+        return cxx::declaration::Argument(cxx::ID(p->id()), std::move(t));
     };
 
     auto linkage_ = [&]() {
@@ -715,10 +694,8 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, de
     else
         ns += _hilti_module->uid().str();
 
-    return cxx::declaration::Function{.result = result_(),
-                                      .id = {ns, cxx_id},
-                                      .args = node::transform(ft->parameters(), param_),
-                                      .linkage = linkage_()};
+    return cxx::declaration::Function(result_(), {ns, cxx_id}, node::transform(ft->parameters(), param_), false,
+                                      linkage_());
 }
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,

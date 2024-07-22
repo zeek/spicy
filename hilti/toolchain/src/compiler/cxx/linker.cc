@@ -49,7 +49,7 @@ void cxx::Linker::finalize() {
 
     for ( const auto& p : plugin::registry().plugins() )
         for ( const auto& i : p.cxx_includes )
-            unit->add(cxx::declaration::IncludeFile{i});
+            unit->add(cxx::declaration::IncludeFile(i));
 
     // Note we don't qualify the two subsequent globals with
     // `cxx_namespace_intern` because we need these exact names; that's what
