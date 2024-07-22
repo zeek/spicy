@@ -1,0 +1,20 @@
+# @TEST-DOC: Checks that the order in which modules are compiled is irrelevant for optimizations, regression test for #1789.
+#
+# @TEST-EXEC: spicyc -dj y.spicy x.spicy
+# @TEST-EXEC: spicyc -dj x.spicy y.spicy
+
+# @TEST-START-FILE x.spicy
+module x;
+
+public type X = unit {
+    on %synced {
+        confirm;
+    }
+};
+# @TEST-END-FILE
+
+# @TEST-START-FILE y.spicy
+module y;
+
+type Y = unit {};
+# @TEST-END-FILE

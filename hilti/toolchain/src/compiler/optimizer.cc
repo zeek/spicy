@@ -2,7 +2,6 @@
 
 #include "hilti/compiler/detail/optimizer.h"
 
-#include <algorithm>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -200,7 +199,8 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 if ( auto type = type_ ) {
                     for ( const auto& requirement : n->attributes()->findAll("&needed-by-feature") ) {
-                        auto feature = *requirement->valueAsString();
+                        const auto& requirement_ = requirement->valueAsString();
+                        const auto& feature = *requirement_;
 
                         // If no feature constants were collected yet, reschedule us for the next collection pass.
                         //
@@ -212,9 +212,11 @@ struct FunctionVisitor : OptimizerVisitor {
                         }
 
                         auto it = _features.find(type->type()->type()->typeID());
-                        if ( it == _features.end() )
-                            // No feature requirements known for type.
+                        if ( it == _features.end() || ! it->second.count(feature) ) {
+                            // This feature requirement has not yet been collected.
+                            _collect_again = true;
                             continue;
+                        }
 
                         function.referenced = function.referenced || it->second.at(feature);
                     }
@@ -277,7 +279,8 @@ struct FunctionVisitor : OptimizerVisitor {
                 // should only be emitted when certain features are active.
                 if ( auto decl = context()->lookup(n->linkedDeclarationIndex()) ) {
                     for ( const auto& requirement : fn->attributes()->findAll("&needed-by-feature") ) {
-                        auto feature = *requirement->valueAsString();
+                        const auto& requirement_ = requirement->valueAsString();
+                        const auto& feature = *requirement_;
 
                         // If no feature constants were collected yet, reschedule us for the next collection pass.
                         //
@@ -289,9 +292,11 @@ struct FunctionVisitor : OptimizerVisitor {
                         }
 
                         auto it = _features.find(decl->fullyQualifiedID());
-                        if ( it == _features.end() )
-                            // No feature requirements known for type.
+                        if ( it == _features.end() || ! it->second.count(feature) ) {
+                            // This feature requirement has not yet been collected.
+                            _collect_again = true;
                             continue;
+                        }
 
                         // Mark the function as referenced if it is needed by an active feature.
                         function.referenced = function.referenced || it->second.at(feature);

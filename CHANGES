@@ -1,3 +1,16 @@
+1.11.0-dev.267 | 2024-07-22 10:50:22 +0200
+
+  * GH-1462: Defer start of feature-dependent transformations to a later point. (Benjamin Bannier, Corelight)
+
+    We previously would evaluate whether a unit field or method was required
+    by an optional feature before we had finished collecting all feature
+    requirements. This behavior was fine when we were visiting individual
+    modules' AST one by one, but breaks with #1462 were we changed using a
+    single AST to hold all modules.
+
+    This patch defers transformations until all feature requirements have
+    been collected.
+
 1.11.0-dev.264 | 2024-07-22 09:27:15 +0200
 
   * Update developer's documentation. (Robin Sommer, Corelight)
