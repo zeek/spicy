@@ -1,4 +1,11 @@
-# @TEST-EXEC: spicy-driver -p Mini::Main %INPUT >output </dev/null
+# @TEST-DOC: Check that sink hooks are correctly set up.
+#
+# @TEST-EXEC: spicy-driver -d -p Mini::Main %INPUT hooks.spicy -f /dev/zero >>output
+#
+# @TEST-EXEC: echo "Without hooks" >>output
+# Running without hooks defined behaves as expected, regression test for #1804.
+# @TEST-EXEC: spicy-driver -d -p Mini::Main %INPUT -f /dev/zero >>output
+#
 # @TEST-EXEC: btest-diff output
 
 module Mini;
@@ -48,25 +55,33 @@ public type Main = unit {
 
 public type Sub = unit {
     s: bytes &eod;
-
-    on %done {
-        print self.s;
-    }
-
-    on %gap(seq: uint64, len: uint64)  {
-        print "Gap at input position %u, length %u" % (seq, len);
-        }
-
-    on %skipped(seq: uint64){
-        print "Skipped to position %u" % seq;
-        }
-
-    on %undelivered(seq: uint64, data: bytes) {
-        print "Undelivered data at position %u: %s" % (seq, data);
-        }
-
-    # Intentionally using custom parameter names here
-    on %overlap(seq: uint64, b1: bytes, b2: bytes) {
-        print "Overlap at %u: %s vs %s" % (seq, b1, b2);
-        }
 };
+
+# @TEST-START-FILE hooks.spicy
+
+module Hooks;
+
+import Mini;
+
+on Mini::Sub::%done {
+    print self.s;
+}
+
+on Mini::Sub::%gap(seq: uint64, len: uint64) {
+    print "Gap at input position %u, length %u" % (seq, len);
+}
+
+on Mini::Sub::%skipped(seq: uint64) {
+    print "Skipped to position %u" % seq;
+}
+
+on Mini::Sub::%undelivered(seq: uint64, data: bytes) {
+    print "Undelivered data at position %u: %s" % (seq, data);
+}
+
+# Intentionally using custom parameter names here
+on Mini::Sub::%overlap(seq: uint64, b1: bytes, b2: bytes) {
+    print "Overlap at %u: %s vs %s" % (seq, b1, b2);
+}
+
+# @TEST-END-FILE
