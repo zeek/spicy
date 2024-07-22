@@ -1,3 +1,12 @@
+1.11.0-dev.274 | 2024-07-22 12:01:04 +0200
+
+  * GH-1795: Fix illegal stream content access through invalid view. (Robin Sommer, Corelight)
+
+    When a view's beginning ended up outside of the stream's valid range
+    (e.g., because the stream has been trimmed in the meantime), we
+    wouldn't catch that on access and attempt to access data that was no
+    longer valid. This commit extends the safety checks accordingly.
+
 1.11.0-dev.272 | 2024-07-22 10:53:56 +0200
 
   * GH-1800: Add test for invoked but unimplemented sink hooks. (Benjamin Bannier, Corelight)
