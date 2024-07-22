@@ -1,3 +1,17 @@
+1.11.0-dev.272 | 2024-07-22 10:53:56 +0200
+
+  * GH-1800: Add test for invoked but unimplemented sink hooks. (Benjamin Bannier, Corelight)
+
+    This is a regression test for #1800.
+
+  * GH-1800: Guard access to sink hooks. (Benjamin Bannier, Corelight)
+
+    If no sink hooks were specified by the user trying to invoke them would
+    raise a `std::bad_function_call` previously since we did not have
+    explicitly guard the code. With #1736 we us infrastructure with less
+    implicit checks so we need to handle the absence of a value ourself
+    since otherwise we might end up dereferencing a nullptr.
+
 1.11.0-dev.269 | 2024-07-22 10:53:15 +0200
 
   * Do not search for Python in CMake setup. (Benjamin Bannier, Corelight)

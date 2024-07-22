@@ -291,29 +291,34 @@ void Sink::_tryDeliver(ChunkList::iterator c) {
 void Sink::_reportGap(uint64_t rseq, uint64_t len) const {
     SPICY_RT_DEBUG_VERBOSE(fmt("reporting gap in sink %p at rseq %" PRIu64, this, rseq));
 
-    for ( size_t i = 0; i < _states.size(); i++ )
-        (*_states[i]->parser->__hook_gap)(_units[i], _aseq(rseq), len);
+    for ( size_t i = 0; i < _states.size(); i++ ) {
+        if ( auto h = *_states[i]->parser->__hook_gap )
+            h(_units[i], _aseq(rseq), len);
+    }
 }
 
 void Sink::_reportOverlap(uint64_t rseq, const hilti::rt::Bytes& old, const hilti::rt::Bytes& new_) const {
     SPICY_RT_DEBUG_VERBOSE(fmt("reporting overlap in sink %p at rseq %" PRIu64, this, rseq));
 
     for ( size_t i = 0; i < _states.size(); i++ )
-        (*_states[i]->parser->__hook_overlap)(_units[i], _aseq(rseq), old, new_);
+        if ( auto h = (*_states[i]->parser->__hook_overlap) )
+            h(_units[i], _aseq(rseq), old, new_);
 }
 
 void Sink::_reportSkipped(uint64_t rseq) const {
     SPICY_RT_DEBUG_VERBOSE(fmt("reporting skipped in sink %p to rseq %" PRIu64, this, rseq));
 
     for ( size_t i = 0; i < _states.size(); i++ )
-        (*_states[i]->parser->__hook_skipped)(_units[i], _aseq(rseq));
+        if ( auto h = (*_states[i]->parser->__hook_skipped) )
+            h(_units[i], _aseq(rseq));
 }
 
 void Sink::_reportUndelivered(uint64_t rseq, const hilti::rt::Bytes& data) const {
     SPICY_RT_DEBUG_VERBOSE(fmt("reporting undelivered in sink %p at rseq %" PRIu64, this, rseq));
 
     for ( size_t i = 0; i < _states.size(); i++ )
-        (*_states[i]->parser->__hook_undelivered)(_units[i], _aseq(rseq), data);
+        if ( auto h = (*_states[i]->parser->__hook_undelivered) )
+            h(_units[i], _aseq(rseq), data);
 }
 
 void Sink::_reportUndeliveredUpTo(uint64_t rupper) const {
@@ -383,13 +388,15 @@ void Sink::connect_mime_type(const MIMEType& mt, std::string_view scope) {
                 if ( ! p->is_public && p->linker_scope != scope )
                     continue;
 
-                auto m = (*p->__parse_sink)(); // using a structured binding here triggers what seems to be a clang-tidy
-                                               // false positive
+                if ( auto h = *p->__parse_sink ) {
+                    auto m = (*p->__parse_sink)(); // using a structured binding here triggers what seems to be a
+                                                   // clang-tidy false positive
 
-                SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s", p->name, &m.first,
-                                           this, std::string(mt)));
-                _units.emplace_back(std::move(m.first));
-                _states.emplace_back(m.second);
+                    SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s", p->name,
+                                               &m.first, this, std::string(mt)));
+                    _units.emplace_back(std::move(m.first));
+                    _states.emplace_back(m.second);
+                }
             }
         }
     };
