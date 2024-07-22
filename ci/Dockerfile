@@ -31,6 +31,7 @@ RUN apt-get update \
     python3-sphinx \
     python3-sphinx-rtd-theme \
     python3-wheel \
+    rsync \
     zlib1g-dev \
  && pip3 install --no-cache-dir "btest>=0.66" pre-commit \
  # Spicy doc dependencies.

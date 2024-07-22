@@ -1,3 +1,18 @@
+1.11.0-dev.277 | 2024-07-22 14:44:40 +0200
+
+  * Add rsync to CI Docker image. (Benjamin Bannier, Corelight)
+
+    `rsync` is used by `doc/scripts/autogen-docs` and without it the script
+    cannot run.
+
+  * Fix running of `autogen-docs` pre-commit hook. (Benjamin Bannier, Corelight)
+
+    If the `diagrams` package was not installed this hook would now fails.
+    Since it runs for changes to any type of file this was not ideal.
+
+    This patch adds a check for that dependency and stops the docs update
+    script if it is missing.
+
 1.11.0-dev.274 | 2024-07-22 12:01:04 +0200
 
   * GH-1795: Fix illegal stream content access through invalid view. (Robin Sommer, Corelight)

@@ -20,6 +20,12 @@ if ! command -v rsync >/dev/null 2>&1; then
     exit 0
 fi
 
+# autogen-architecture-diagram needs the diagrams package
+if ! command -v python -c 'import diagrams' >/dev/null 2>&1; then
+    >&2 echo "Warning: Need Python diagrams to run autogen-docs, aborting"
+    exit 0
+fi
+
 if [[ ! -x ${BUILDDIR}/bin/spicy-doc ]]; then
     >&2 echo "Warning: Could not find required executable ${BUILDDIR}/bin/spicy-doc, aborting"
     exit 0
