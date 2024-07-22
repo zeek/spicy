@@ -11,6 +11,5 @@ Developer's Manual
    architecture
    testing
    debugging
-   benchmarking
    coding-style
    doxygen

@@ -17,46 +17,54 @@ that output, both ``spicyc`` and ``spicy-driver`` (and ``hiltic`` as
 well) take a ``-D`` option accepting a comma-separated list of stream
 tags. The following choices are available:
 
+``ast-codegen``
+    Prints out the AST used for C++ code generation. These is the final AST
+    with possibly additional global optimizations applied to them.
+
+``ast-declarations``
+    Prints out all declaration nodes once AST is fully resolved (same
+    time as `ast-final`).
+
 ``ast-dump-iterations``
-    The compiler internally rewrites ASTs in multiple rounds until
-    they stabilize. Activating this stream will print the ASTs into
+    The compiler internally rewrites the AST in multiple rounds until
+    it stabilizes. Activating this stream will print the AST into
     files ``dbg.*`` on disk after each round. This is pretty noisy,
     and maybe most helpful as a last resort when it's otherwise hard
     to understand some aspects of AST processing without seeing really
     *all* the changes.
 
 ``ast-final``
-    Prints out all the final ASTs, with all transformations, ID &
-    operator resolving, etc fully applied (and just *before* final
-    validation).
+    Prints out all the final AST after resolving has finished, with
+    all transformations, ID & operator resolving, etc fully applied
+    (and just *before* final validation). Note the optimizer will not
+    have run yet, use `ast-codegen` to get the *really* final AST.
 
 ``ast-orig``
-    Prints out all the original ASTs, before any changes are
-    applied.
-
-``ast-pre-transformed``
-    Prints out ASTs just before the AST transformation passes kick in.
-    Note that "transformation" here refers to a specific pass in the
-    pipeline that's primarily used for Spicy-to-HILTI AST rewriting.
+    Prints out the original AST, before any changes are applied.
 
 ``ast-resolved``
-    Prints out ASTs just after the pass that resolves IDs and operators has
-    concluded. Note that this happens once per round, with
-    progressively more nodes being resolved.
+    Prints out AST just after the pass that resolves all the AST's
+    nodes has concluded. has concluded. Note that this happens once
+    per round, with progressively more nodes being resolved. Use
+    `ast-final` to just see the end result.
 
-``ast-scopes``
-    Prints out ASTs just after scopes have been built for all nodes,
-    with the output including the scopes. Note that this happens
-    once per round, with progressively more nodes being resolved.
+``ast-stats``
+    Prints out various statistics about the AST after resolving once
+    the AST is fully resolved (same time as `ast-final`).
 
 ``ast-transformed``
-    Prints out ASTs just after the AST transformation passes kick in.
-    Note that "transformation" here refers to a specific pass in the
-    pipeline that's primarily used for Spicy-to-HILTI AST rewriting.
+    Prints out AST just after the AST transformation pass has
+    completed,"transformation" here refers to a specific pass in the
+    pipeline that's primarily for Spicy-to-HILTI AST rewriting. So you
+    would use this see the pure HILTI AST resulting from the Spicy
+    AST.
 
-``ast-codegen``
-    Prints out the ASTs used for C++ code generation. These are the final ASTs
-    with possibly additional global optimizations applied to them.
+``codegen``
+    Records activity during HILTI-to-C++ code generation.
+
+``coercer``
+    Records activity related to type and value coercion during AST
+    resolving.
 
 ``compiler``
     Prints out a various progress updates about the compiler's
@@ -74,11 +82,31 @@ tags. The following choices are available:
     creates before code generation.
 
 ``jit``
-    Prints out details about the JIT process.
+    Prints out details about the JIT process, which these days is
+    primarily C++ compilation through, e.g.,  Clang or GCC.
+
+``operator``
+    Records activity related to operator resolution during AST
+    resolving.
+
+``optimizer``
+    Records changes performed by the global optimizer.
+
+``optimizer-collect``
+    Records state collected from the AST by the global optimizer.
 
 ``parser``
     Prints out details about flex/bison processing.
 
+``parser-builder``
+    Records activity related to generating Spicy parsing code.
+
 ``resolver``
-    Prints out a detailed record of how, and why, IDs and operators
-    are resolved (or not) during AST rewriting.
+    Prints out a record of changes to the AST performed by the
+    resolver pass.
+
+``spicy-codegen``
+    Records activity during lowering of Spicy code to HILTI code.
+
+``type-unifier``
+    Records activity related to type unification during AST resolving.

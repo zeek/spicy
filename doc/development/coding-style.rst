@@ -49,7 +49,7 @@ Commit Messages
   commit message.
 
 - Aim to make commits self-containing chunks of functionality. Rebase
-  and squash before pushing upstream.
+  and squash before filing a PR.
 
 - Formatting aspects of commit messages are linted with `gitlint
   <https://jorisroovers.com/gitlint/>`__ via pre-commit hooks, see
@@ -62,11 +62,10 @@ Commit Messages
 Formatting
 ----------
 
-Spicy comes with a ``clang-format`` configuration that enforces a canonical
-style. We require ``clang-format`` version >= 10 because we need a style option
-that wasn't available earlier. Formatting is checked by a ``clang-format``
-linter which automatically pulls in a suitable ``clang-format`` binary, see the
-:ref:`tooling` section.
+Spicy comes with a ``clang-format`` configuration that enforces a
+canonical style. Formatting is checked by a ``clang-format`` linter
+which automatically pulls in a suitable ``clang-format`` binary, see
+the :ref:`tooling` section.
 
 Spicy's CI runs ``pre-commit run clang-format`` as part of its code checks and will
 abort if there's anything not formatted as expected.

@@ -43,6 +43,16 @@ cat ${ROOTDIR}/spicy/toolchain/src/compiler/parser/scanner.ll \
     | awk '{print $1}' \
     | sort >${AUTOGEN_STAGE}/reserved-keywords.txt
 
+# Render architecture diagram.
+"${ROOTDIR}/doc/scripts/autogen-architecture-diagram" "${AUTOGEN_STAGE}/architecture" || exit 1
+
+# Remove comments and titles from SVG to make content stable.
+gsed -i"" -e '/<!--/d' -e '/-->/d' "${AUTOGEN_STAGE}/architecture.svg"
+gsed -i"" -e '/<title/d' -e '/title>/d' "${AUTOGEN_STAGE}/architecture.svg"
+
+# Delete unstable DOT and PDF outputs.
+rm -f "${AUTOGEN_STAGE}/architecture.dot" "${AUTOGEN_STAGE}/architecture.pdf"
+
 # All done, move staged files to final location where changed.
     # "-rlpgo" is "-a" minus "-tD".
 mkdir -p "${AUTOGEN_FINAL}" && \

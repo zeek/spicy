@@ -7,7 +7,7 @@ Architecture
 Components & Data Flow
 ----------------------
 
-.. image:: /_static/architecture.svg
+.. image:: /autogen/architecture.svg
 
 Runtime Libraries
 -----------------
@@ -15,8 +15,7 @@ Runtime Libraries
 HILTI and Spicy each come with their own runtime libraries providing
 functionality that the execution of compiled code requires. The bulk
 of the functionality here resides with the HILTI side, with the Spicy
-runtime adding pieces that are specific to its use case (i.e.,
-parsing).
+runtime adding pieces that are specific to its functionality.
 
 Conceptually, there are a few different categories of functionality
 going into these runtime libraries, per the following summary.

@@ -27,7 +27,6 @@ inline const DebugStream AstDumpIterations("ast-dump-iterations");
 inline const DebugStream AstFinal("ast-final");
 inline const DebugStream AstStats("ast-stats");
 inline const DebugStream AstOrig("ast-orig");
-inline const DebugStream AstPrintTransformed("ast-print-transformed");
 inline const DebugStream AstResolved("ast-resolved");
 inline const DebugStream AstTransformed("ast-transformed");
 inline const DebugStream Compiler("compiler");

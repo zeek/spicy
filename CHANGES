@@ -1,3 +1,18 @@
+1.11.0-dev.264 | 2024-07-22 09:27:15 +0200
+
+  * Update developer's documentation. (Robin Sommer, Corelight)
+
+    Includes:
+
+    - Rework and update developer documentation's architecture diagram.
+    This is now generated through Python's `diagrams` package (i.e.,
+    graphviz). Because the layout is automatically determined by `dot`,
+    it's not perfect; but seems good enough.
+
+    - Update debugging streams.
+
+    - Remove benchmarking section, as this was completely outdated.
+
 1.11.0-dev.262 | 2024-07-15 11:49:46 +0200
 
   * Remove unused `Engine` type and tracking. (Benjamin Bannier, Corelight)

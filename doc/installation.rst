@@ -243,12 +243,15 @@ Make sure you have Xcode installed, including its command-line tools
 If you are using `Homebrew <https://brew.sh>`_::
 
     # brew install bison flex cmake ninja python@3.8 sphinx-doc
-    # pip3 install btest sphinx_rtd_theme
+    # pip3 install btest
 
 If you are using `MacPorts <https://www.macports.org>`_::
 
-    # port install flex bison cmake ninja python38 py38-pip py38-sphinx py38-sphinx_rtd_theme
+    # port install flex bison cmake ninja python38 py38-pip
     # pip install btest
+
+If you want to build the documentation as well, also install
+``sphinx_rtd_theme`` and ``diagrams`` through *pip*.
 
 FreeBSD
 ^^^^^^^

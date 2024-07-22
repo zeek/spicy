@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="1213pt" height="3126pt"
+ viewBox="0.00 0.00 1213.00 3125.90" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(144 2981.9)">
+<polygon fill="white" stroke="none" points="-144,144 -144,-2981.9 1069,-2981.9 1069,144 -144,144"/>
+<g id="clust1" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M482,-986.6C482,-986.6 736,-986.6 736,-986.6 742,-986.6 748,-992.6 748,-998.6 748,-998.6 748,-2515.2 748,-2515.2 748,-2521.2 742,-2527.2 736,-2527.2 736,-2527.2 482,-2527.2 482,-2527.2 476,-2527.2 470,-2521.2 470,-2515.2 470,-2515.2 470,-998.6 470,-998.6 470,-992.6 476,-986.6 482,-986.6"/>
+<text text-anchor="start" x="489.38" y="-2510.9" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">hilti::Driver::compileUnits()</text>
+</g>
+<g id="clust2" class="cluster">
+<path fill="#ebf3e7" stroke="#aeb6be" d="M490,-1849.3C490,-1849.3 728,-1849.3 728,-1849.3 734,-1849.3 740,-1855.3 740,-1861.3 740,-1861.3 740,-2482.7 740,-2482.7 740,-2488.7 734,-2494.7 728,-2494.7 728,-2494.7 490,-2494.7 490,-2494.7 484,-2494.7 478,-2488.7 478,-2482.7 478,-2482.7 478,-1861.3 478,-1861.3 478,-1855.3 484,-1849.3 490,-1849.3"/>
+<text text-anchor="start" x="507.75" y="-2480.3" font-family="Sans-Serif" font-style="italic" font-size="12.00" fill="#2d3436">Process all Spicy modules inside AST</text>
+</g>
+<g id="clust3" class="cluster">
+<path fill="#ece8f6" stroke="#aeb6be" d="M498,-2081.6C498,-2081.6 720,-2081.6 720,-2081.6 726,-2081.6 732,-2087.6 732,-2093.6 732,-2093.6 732,-2367.55 732,-2367.55 732,-2373.55 726,-2379.55 720,-2379.55 720,-2379.55 498,-2379.55 498,-2379.55 492,-2379.55 486,-2373.55 486,-2367.55 486,-2367.55 486,-2093.6 486,-2093.6 486,-2087.6 492,-2081.6 498,-2081.6"/>
+<text text-anchor="start" x="573.75" y="-2364.15" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Resolve AST</text>
+</g>
+<g id="clust4" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M530,-1857.3C530,-1857.3 688,-1857.3 688,-1857.3 694,-1857.3 700,-1863.3 700,-1869.3 700,-1869.3 700,-1936.2 700,-1936.2 700,-1942.2 694,-1948.2 688,-1948.2 688,-1948.2 530,-1948.2 530,-1948.2 524,-1948.2 518,-1942.2 518,-1936.2 518,-1936.2 518,-1869.3 518,-1869.3 518,-1863.3 524,-1857.3 530,-1857.3"/>
+<text text-anchor="start" x="555.38" y="-1931.9" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">Spicy CodeGen</text>
+</g>
+<g id="clust5" class="cluster">
+<path fill="#ebf3e7" stroke="#aeb6be" d="M490,-994.6C490,-994.6 728,-994.6 728,-994.6 734,-994.6 740,-1000.6 740,-1006.6 740,-1006.6 740,-1711.9 740,-1711.9 740,-1717.9 734,-1723.9 728,-1723.9 728,-1723.9 490,-1723.9 490,-1723.9 484,-1723.9 478,-1717.9 478,-1711.9 478,-1711.9 478,-1006.6 478,-1006.6 478,-1000.6 484,-994.6 490,-994.6"/>
+<text text-anchor="start" x="508.88" y="-1709.5" font-family="Sans-Serif" font-style="italic" font-size="12.00" fill="#2d3436">Process all HILTI modules inside AST</text>
+</g>
+<g id="clust6" class="cluster">
+<path fill="#ece8f6" stroke="#aeb6be" d="M498,-1310.8C498,-1310.8 720,-1310.8 720,-1310.8 726,-1310.8 732,-1316.8 732,-1322.8 732,-1322.8 732,-1596.75 732,-1596.75 732,-1602.75 726,-1608.75 720,-1608.75 720,-1608.75 498,-1608.75 498,-1608.75 492,-1608.75 486,-1602.75 486,-1596.75 486,-1596.75 486,-1322.8 486,-1322.8 486,-1316.8 492,-1310.8 498,-1310.8"/>
+<text text-anchor="start" x="573.75" y="-1593.35" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Resolve AST</text>
+</g>
+<g id="clust7" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M319,-2660.6C319,-2660.6 865,-2660.6 865,-2660.6 871,-2660.6 877,-2666.6 877,-2672.6 877,-2672.6 877,-2739.5 877,-2739.5 877,-2745.5 871,-2751.5 865,-2751.5 865,-2751.5 319,-2751.5 319,-2751.5 313,-2751.5 307,-2745.5 307,-2739.5 307,-2739.5 307,-2672.6 307,-2672.6 307,-2666.6 313,-2660.6 319,-2660.6"/>
+<text text-anchor="start" x="402.25" y="-2735.2" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">{hilti,spicy}/include/compiler/detail/parser/*</text>
+</g>
+<g id="clust8" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M560,-770.3C560,-770.3 750,-770.3 750,-770.3 756,-770.3 762,-776.3 762,-782.3 762,-782.3 762,-849.2 762,-849.2 762,-855.2 756,-861.2 750,-861.2 750,-861.2 560,-861.2 560,-861.2 554,-861.2 548,-855.2 548,-849.2 548,-849.2 548,-782.3 548,-782.3 548,-776.3 554,-770.3 560,-770.3"/>
+<text text-anchor="start" x="601.38" y="-844.9" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">HILTI CodeGen</text>
+</g>
+<g id="clust9" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M550,-321.7C550,-321.7 773,-321.7 773,-321.7 779,-321.7 785,-327.7 785,-333.7 785,-333.7 785,-400.6 785,-400.6 785,-406.6 779,-412.6 773,-412.6 773,-412.6 550,-412.6 550,-412.6 544,-412.6 538,-406.6 538,-400.6 538,-400.6 538,-333.7 538,-333.7 538,-327.7 544,-321.7 550,-321.7"/>
+<text text-anchor="start" x="546" y="-396.3" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">hilti/include/compiler/jit.h</text>
+</g>
+<g id="clust10" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M549,-651.4C549,-651.4 822,-651.4 822,-651.4 828,-651.4 834,-657.4 834,-663.4 834,-663.4 834,-730.3 834,-730.3 834,-736.3 828,-742.3 822,-742.3 822,-742.3 549,-742.3 549,-742.3 543,-742.3 537,-736.3 537,-730.3 537,-730.3 537,-663.4 537,-663.4 537,-657.4 543,-651.4 549,-651.4"/>
+<text text-anchor="start" x="652.5" y="-726" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">C++ Code</text>
+</g>
+<g id="clust11" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M20,-202.8C20,-202.8 210,-202.8 210,-202.8 216,-202.8 222,-208.8 222,-214.8 222,-214.8 222,-281.7 222,-281.7 222,-287.7 216,-293.7 210,-293.7 210,-293.7 20,-293.7 20,-293.7 14,-293.7 8,-287.7 8,-281.7 8,-281.7 8,-214.8 8,-214.8 8,-208.8 14,-202.8 20,-202.8"/>
+<text text-anchor="start" x="16" y="-277.4" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">hilti/{include,src}/rt/*</text>
+</g>
+<g id="clust12" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M252,-202.8C252,-202.8 442,-202.8 442,-202.8 448,-202.8 454,-208.8 454,-214.8 454,-214.8 454,-281.7 454,-281.7 454,-287.7 448,-293.7 442,-293.7 442,-293.7 252,-293.7 252,-293.7 246,-293.7 240,-287.7 240,-281.7 240,-281.7 240,-214.8 240,-214.8 240,-208.8 246,-202.8 252,-202.8"/>
+<text text-anchor="start" x="248" y="-277.4" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">spicy/{include,src}/rt/*</text>
+</g>
+<g id="clust13" class="cluster">
+<path fill="none" stroke="#aeb6be" d="M488,-202.8C488,-202.8 905,-202.8 905,-202.8 911,-202.8 917,-208.8 917,-214.8 917,-214.8 917,-281.7 917,-281.7 917,-287.7 911,-293.7 905,-293.7 905,-293.7 488,-293.7 488,-293.7 482,-293.7 476,-287.7 476,-281.7 476,-281.7 476,-214.8 476,-214.8 476,-208.8 482,-202.8 488,-202.8"/>
+<text text-anchor="start" x="626.38" y="-277.4" font-family="Courier,monospace" font-weight="bold" font-size="14.00" fill="#2d3436">Compiled C++ Code</text>
+</g>
+<g id="node1" class="node">
+<polygon fill="lightyellow" stroke="black" points="623.5,-2350.8 508.5,-2350.8 508.5,-2300.4 623.5,-2300.4 623.5,-2350.8"/>
+<text text-anchor="start" x="516.5" y="-2320.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Build scopes</text>
+<text text-anchor="start" x="334.5" y="-2365.45" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="338.25" y="-2365.45" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::scope_builder::build()</text>
+<text text-anchor="start" x="504.75" y="-2365.45" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="334.5" y="-2352.45" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="338.25" y="-2352.45" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::scope_builder::build()</text>
+<text text-anchor="start" x="504.75" y="-2352.45" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+</g>
+<g id="node2" class="node">
+<polygon fill="lightyellow" stroke="black" points="600.38,-2245.4 493.62,-2245.4 493.62,-2195 600.38,-2195 600.38,-2245.4"/>
+<text text-anchor="start" x="501.62" y="-2215.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Unify Types</text>
+<text text-anchor="start" x="306.12" y="-2260.05" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="309.88" y="-2260.05" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::type_unifier::detail::unifyType()</text>
+<text text-anchor="start" x="489.88" y="-2260.05" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="306.12" y="-2247.05" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="309.88" y="-2247.05" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::type_unifier::detail::unifyType()</text>
+<text text-anchor="start" x="489.88" y="-2247.05" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+</g>
+<g id="edge1" class="edge">
+<path fill="none" stroke="#7b8894" d="M554.44,-2300.09C554.44,-2300.09 554.44,-2257.36 554.44,-2257.36"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="557.94,-2257.36 554.44,-2247.36 550.94,-2257.36 557.94,-2257.36"/>
+</g>
+<g id="node3" class="node">
+<polygon fill="lightyellow" stroke="black" points="670.62,-2140 547.38,-2140 547.38,-2089.6 670.62,-2089.6 670.62,-2140"/>
+<text text-anchor="start" x="555.38" y="-2109.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Resolve Nodes</text>
+<text text-anchor="start" x="386.88" y="-2154.65" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="390.62" y="-2154.65" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::resolver::resolve()</text>
+<text text-anchor="start" x="543.62" y="-2154.65" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="386.88" y="-2141.65" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="390.62" y="-2141.65" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::resolver::resolve()</text>
+<text text-anchor="start" x="543.62" y="-2141.65" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+</g>
+<g id="edge2" class="edge">
+<path fill="none" stroke="#7b8894" d="M573.88,-2194.69C573.88,-2194.69 573.88,-2151.96 573.88,-2151.96"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="577.38,-2151.96 573.88,-2141.96 570.38,-2151.96 577.38,-2151.96"/>
+</g>
+<g id="edge3" class="edge">
+<path fill="none" stroke="#7b8894" d="M611.94,-2140.23C611.94,-2140.23 611.94,-2288.57 611.94,-2288.57"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="608.44,-2288.57 611.94,-2298.57 615.44,-2288.57 608.44,-2288.57"/>
+<text text-anchor="middle" x="705.12" y="-2228.1" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Iterate</text>
+<text text-anchor="middle" x="705.12" y="-2214.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">until</text>
+<text text-anchor="middle" x="705.12" y="-2201.1" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">stable</text>
+</g>
+<g id="node5" class="node">
+<polygon fill="lightyellow" stroke="black" points="666.5,-2034.6 551.5,-2034.6 551.5,-1984.2 666.5,-1984.2 666.5,-2034.6"/>
+<text text-anchor="start" x="559.5" y="-2004.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text text-anchor="start" x="364" y="-2049.25" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="367.75" y="-2049.25" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::validator::validatePost()</text>
+<text text-anchor="start" x="547.75" y="-2049.25" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="364" y="-2036.25" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="367.75" y="-2036.25" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePost()</text>
+<text text-anchor="start" x="547.75" y="-2036.25" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+</g>
+<g id="edge5" class="edge">
+<path fill="none" stroke="#7b8894" d="M609,-2089.29C609,-2089.29 609,-2046.56 609,-2046.56"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="612.5,-2046.56 609,-2036.56 605.5,-2046.56 612.5,-2046.56"/>
+</g>
+<g id="node4" class="node">
+<polygon fill="lightyellow" stroke="black" points="623.5,-2465.95 508.5,-2465.95 508.5,-2415.55 623.5,-2415.55 623.5,-2465.95"/>
+<text text-anchor="start" x="516.5" y="-2435.7" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text text-anchor="start" x="325.5" y="-2430.2" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="329.25" y="-2430.2" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::validator::validatePre()</text>
+<text text-anchor="start" x="504.75" y="-2430.2" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="325.5" y="-2417.2" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="329.25" y="-2417.2" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePre()</text>
+<text text-anchor="start" x="504.75" y="-2417.2" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
+</g>
+<g id="edge4" class="edge">
+<path fill="none" stroke="#7b8894" d="M566,-2415.19C566,-2415.19 566,-2362.6 566,-2362.6"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="569.5,-2362.6 566,-2352.6 562.5,-2362.6 569.5,-2362.6"/>
+</g>
+<g id="node6" class="node">
+<polygon fill="lightyellow" stroke="black" points="691.62,-1915.7 526.38,-1915.7 526.38,-1865.3 691.62,-1865.3 691.62,-1915.7"/>
+<text text-anchor="start" x="547.12" y="-1892.2" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> Transform AST </text>
+<text text-anchor="start" x="534.38" y="-1878.2" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="542.62" y="-1878.2" font-family="Helvetica,sans-Serif" font-style="italic" font-size="8.00" fill="#2d3436">Translates Spicy code into HILTI code</text>
+<text text-anchor="start" x="675.38" y="-1878.2" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="364.38" y="-1917.85" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::CodeGen::compileAST()</text>
+</g>
+<g id="edge6" class="edge">
+<path fill="none" stroke="#7b8894" d="M609,-1983.89C609,-1983.89 609,-1927.48 609,-1927.48"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="612.5,-1927.48 609,-1917.48 605.5,-1927.48 612.5,-1927.48"/>
+</g>
+<g id="node14" class="node">
+<polygon fill="lightblue" stroke="black" points="690.5,-1810.3 527.5,-1810.3 527.5,-1759.9 690.5,-1759.9 690.5,-1810.3"/>
+<text text-anchor="start" x="538.88" y="-1786.8" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> Transformed AST </text>
+<text text-anchor="start" x="535.5" y="-1772.8" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="543.75" y="-1772.8" font-family="Helvetica,sans-Serif" font-style="italic" font-size="8.00" fill="#2d3436">Pure HILTI AST, no more Spicy code</text>
+<text text-anchor="start" x="674.25" y="-1772.8" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
+</g>
+<g id="edge14" class="edge">
+<path fill="none" stroke="#7b8894" d="M609,-1864.99C609,-1864.99 609,-1822.26 609,-1822.26"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="612.5,-1822.26 609,-1812.26 605.5,-1822.26 612.5,-1822.26"/>
+</g>
+<g id="node7" class="node">
+<polygon fill="lightyellow" stroke="black" points="666.5,-1580 551.5,-1580 551.5,-1529.6 666.5,-1529.6 666.5,-1580"/>
+<text text-anchor="start" x="559.5" y="-1549.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Build scopes</text>
+<text text-anchor="start" x="385" y="-1582.15" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::scope_builder::build()</text>
+</g>
+<g id="node8" class="node">
+<polygon fill="lightyellow" stroke="black" points="600.38,-1474.6 493.62,-1474.6 493.62,-1424.2 600.38,-1424.2 600.38,-1474.6"/>
+<text text-anchor="start" x="501.62" y="-1444.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Unify Types</text>
+<text text-anchor="start" x="313.62" y="-1476.75" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::type_unifier::detail::unifyType()</text>
+</g>
+<g id="edge7" class="edge">
+<path fill="none" stroke="#7b8894" d="M575.94,-1529.29C575.94,-1529.29 575.94,-1486.56 575.94,-1486.56"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="579.44,-1486.56 575.94,-1476.56 572.44,-1486.56 579.44,-1486.56"/>
+</g>
+<g id="node9" class="node">
+<polygon fill="lightyellow" stroke="black" points="716.62,-1369.2 593.38,-1369.2 593.38,-1318.8 716.62,-1318.8 716.62,-1369.2"/>
+<text text-anchor="start" x="601.38" y="-1338.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Resolve Nodes</text>
+<text text-anchor="start" x="440.38" y="-1371.35" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::resolver::resolve()</text>
+</g>
+<g id="edge8" class="edge">
+<path fill="none" stroke="#7b8894" d="M596.88,-1423.89C596.88,-1423.89 596.88,-1381.16 596.88,-1381.16"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="600.38,-1381.16 596.88,-1371.16 593.38,-1381.16 600.38,-1381.16"/>
+</g>
+<g id="edge9" class="edge">
+<path fill="none" stroke="#7b8894" d="M633.44,-1369.43C633.44,-1369.43 633.44,-1517.77 633.44,-1517.77"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="629.94,-1517.77 633.44,-1527.77 636.94,-1517.77 629.94,-1517.77"/>
+<text text-anchor="middle" x="705.12" y="-1457.3" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Iterate</text>
+<text text-anchor="middle" x="705.12" y="-1443.8" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">until</text>
+<text text-anchor="middle" x="705.12" y="-1430.3" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">stable</text>
+</g>
+<g id="node11" class="node">
+<polygon fill="lightyellow" stroke="black" points="712.5,-1263.8 597.5,-1263.8 597.5,-1213.4 712.5,-1213.4 712.5,-1263.8"/>
+<text text-anchor="start" x="605.5" y="-1233.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text text-anchor="start" x="417.5" y="-1265.95" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePost()</text>
+</g>
+<g id="edge11" class="edge">
+<path fill="none" stroke="#7b8894" d="M655,-1318.49C655,-1318.49 655,-1275.76 655,-1275.76"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="658.5,-1275.76 655,-1265.76 651.5,-1275.76 658.5,-1275.76"/>
+</g>
+<g id="node10" class="node">
+<polygon fill="lightyellow" stroke="black" points="666.5,-1695.15 551.5,-1695.15 551.5,-1644.75 666.5,-1644.75 666.5,-1695.15"/>
+<text text-anchor="start" x="559.5" y="-1664.9" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text text-anchor="start" x="376" y="-1697.3" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePre()</text>
+</g>
+<g id="edge10" class="edge">
+<path fill="none" stroke="#7b8894" d="M609,-1644.39C609,-1644.39 609,-1591.8 609,-1591.8"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="612.5,-1591.8 609,-1581.8 605.5,-1591.8 612.5,-1591.8"/>
+</g>
+<g id="node12" class="node">
+<polygon fill="lightyellow" stroke="black" points="712.5,-1158.4 597.5,-1158.4 597.5,-1108 712.5,-1108 712.5,-1158.4"/>
+<text text-anchor="start" x="605.5" y="-1128.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Optimize AST</text>
+<text text-anchor="start" x="435.5" y="-1160.55" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::optimizer::optimize()</text>
+</g>
+<g id="edge12" class="edge">
+<path fill="none" stroke="#7b8894" d="M655,-1213.09C655,-1213.09 655,-1170.36 655,-1170.36"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="658.5,-1170.36 655,-1160.36 651.5,-1170.36 658.5,-1170.36"/>
+</g>
+<g id="node13" class="node">
+<polygon fill="lightyellow" stroke="black" points="712.5,-1053 597.5,-1053 597.5,-1002.6 712.5,-1002.6 712.5,-1053"/>
+<text text-anchor="start" x="605.5" y="-1022.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text text-anchor="start" x="417.5" y="-1055.15" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePost()</text>
+</g>
+<g id="edge13" class="edge">
+<path fill="none" stroke="#7b8894" d="M655,-1107.69C655,-1107.69 655,-1064.96 655,-1064.96"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="658.5,-1064.96 655,-1054.96 651.5,-1064.96 658.5,-1064.96"/>
+</g>
+<g id="node28" class="node">
+<polygon fill="lightblue" stroke="black" points="700.12,-947.6 609.88,-947.6 609.88,-897.2 700.12,-897.2 700.12,-947.6"/>
+<text text-anchor="start" x="617.88" y="-917.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Final AST</text>
+</g>
+<g id="edge23" class="edge">
+<path fill="none" stroke="#7b8894" d="M655,-1002.29C655,-1002.29 655,-959.56 655,-959.56"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="658.5,-959.56 655,-949.56 651.5,-959.56 658.5,-959.56"/>
+</g>
+<g id="edge15" class="edge">
+<path fill="none" stroke="#7b8894" d="M609,-1759.54C609,-1759.54 609,-1706.95 609,-1706.95"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="612.5,-1706.95 609,-1696.95 605.5,-1706.95 612.5,-1706.95"/>
+</g>
+<g id="node15" class="node">
+<polygon fill="lightgreen" stroke="black" points="570.62,-2719 315.38,-2719 315.38,-2668.6 570.62,-2668.6 570.62,-2719"/>
+<text text-anchor="start" x="323.38" y="-2688.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::detail::parser::Driver</text>
+</g>
+<g id="node27" class="node">
+<polygon fill="lightblue" stroke="black" points="623.5,-2613.6 508.5,-2613.6 508.5,-2563.2 623.5,-2563.2 623.5,-2613.6"/>
+<text text-anchor="start" x="516.5" y="-2583.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Original AST</text>
+</g>
+<g id="edge20" class="edge">
+<path fill="none" stroke="#7b8894" d="M539.56,-2668.29C539.56,-2668.29 539.56,-2625.56 539.56,-2625.56"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="543.06,-2625.56 539.56,-2615.56 536.06,-2625.56 543.06,-2625.56"/>
+</g>
+<g id="node16" class="node">
+<polygon fill="lightgreen" stroke="black" points="868.62,-2719 613.38,-2719 613.38,-2668.6 868.62,-2668.6 868.62,-2719"/>
+<text text-anchor="start" x="621.38" y="-2688.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">spicy::detail::parser::Driver</text>
+</g>
+<g id="edge21" class="edge">
+<path fill="none" stroke="#7b8894" d="M618.44,-2668.29C618.44,-2668.29 618.44,-2625.56 618.44,-2625.56"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="621.94,-2625.56 618.44,-2615.56 614.94,-2625.56 621.94,-2625.56"/>
+</g>
+<g id="node17" class="node">
+<polygon fill="lightgreen" stroke="black" points="753.75,-828.7 556.25,-828.7 556.25,-778.3 753.75,-778.3 753.75,-828.7"/>
+<text text-anchor="start" x="564.25" y="-798.45" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::detail::CodeGen</text>
+</g>
+<g id="node19" class="node">
+<polygon fill="lightblue" stroke="black" points="642.5,-709.8 545.5,-709.8 545.5,-659.4 642.5,-659.4 642.5,-709.8"/>
+<text text-anchor="start" x="553.5" y="-680.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">cxx::Unit</text>
+<text text-anchor="start" x="627.75" y="-680.55" font-family="Courier,monospace" baseline-shift="sub" font-size="14.00" fill="#2d3436">1</text>
+</g>
+<g id="edge29" class="edge">
+<path fill="none" stroke="#7b8894" d="M599.38,-777.99C599.38,-777.99 599.38,-721.58 599.38,-721.58"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="602.88,-721.58 599.38,-711.58 595.88,-721.58 602.88,-721.58"/>
+</g>
+<g id="node20" class="node">
+<polygon fill="lightblue" stroke="black" points="825.5,-709.8 728.5,-709.8 728.5,-659.4 825.5,-659.4 825.5,-709.8"/>
+<text text-anchor="start" x="736.5" y="-680.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">cxx::Unit</text>
+<text text-anchor="start" x="810.75" y="-680.55" font-family="Courier,monospace" baseline-shift="sub" font-size="14.00" fill="#2d3436">n</text>
+</g>
+<g id="edge30" class="edge">
+<path fill="none" stroke="#7b8894" d="M741.12,-777.99C741.12,-777.99 741.12,-721.58 741.12,-721.58"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="744.63,-721.58 741.13,-711.58 737.63,-721.58 744.63,-721.58"/>
+</g>
+<g id="node18" class="node">
+<polygon fill="lightgreen" stroke="black" points="749.62,-380.1 572.38,-380.1 572.38,-329.7 749.62,-329.7 749.62,-380.1"/>
+<text text-anchor="start" x="611.5" y="-356.6" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> hilti::JIT </text>
+<text text-anchor="start" x="580.38" y="-342.6" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
+<text text-anchor="start" x="588.62" y="-342.6" font-family="Helvetica,sans-Serif" font-style="italic" font-size="8.00" fill="#2d3436">Spawns clang/GCC to compile C++ code</text>
+<text text-anchor="start" x="733.38" y="-342.6" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
+</g>
+<g id="node23" class="node">
+<polygon fill="lightblue" stroke="black" points="647.5,-261.2 484.5,-261.2 484.5,-210.8 647.5,-210.8 647.5,-261.2"/>
+<text text-anchor="start" x="492.5" y="-231.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">cxx::CompiledUnit</text>
+<text text-anchor="start" x="632.75" y="-231.95" font-family="Courier,monospace" baseline-shift="sub" font-size="14.00" fill="#2d3436">1</text>
+</g>
+<g id="edge33" class="edge">
+<path fill="none" stroke="#7b8894" d="M609.94,-329.39C609.94,-329.39 609.94,-272.98 609.94,-272.98"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="613.44,-272.98 609.94,-262.98 606.44,-272.98 613.44,-272.98"/>
+</g>
+<g id="node24" class="node">
+<polygon fill="lightblue" stroke="black" points="909.25,-261.2 732.75,-261.2 732.75,-210.8 909.25,-210.8 909.25,-261.2"/>
+<text text-anchor="start" x="740.75" y="-231.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">cxx::CompiledUnit</text>
+<text text-anchor="start" x="881" y="-231.95" font-family="Courier,monospace" baseline-shift="sub" font-size="14.00" fill="#2d3436">n+1</text>
+</g>
+<g id="edge34" class="edge">
+<path fill="none" stroke="#7b8894" d="M741.19,-329.39C741.19,-329.39 741.19,-272.98 741.19,-272.98"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="744.69,-272.98 741.19,-262.98 737.69,-272.98 744.69,-272.98"/>
+</g>
+<g id="edge31" class="edge">
+<path fill="none" stroke="#7b8894" d="M558.94,-659C558.94,-581.54 558.94,-354.9 558.94,-354.9 558.94,-354.9 560.77,-354.9 560.77,-354.9"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="560.77,-358.4 570.77,-354.9 560.77,-351.4 560.77,-358.4"/>
+</g>
+<g id="edge16" class="edge">
+<path fill="none" stroke="none" d="M642.56,-684.6C669.03,-684.6 701.71,-684.6 728.21,-684.6"/>
+<text text-anchor="middle" x="679.76" y="-685.75" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">...</text>
+</g>
+<g id="node29" class="node">
+<polygon fill="lightgreen" stroke="black" points="747.38,-604.4 574.62,-604.4 574.62,-554 747.38,-554 747.38,-604.4"/>
+<text text-anchor="start" x="582.62" y="-574.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::Unit::link()</text>
+</g>
+<g id="edge25" class="edge">
+<path fill="none" stroke="#7b8894" d="M608.56,-659.09C608.56,-659.09 608.56,-616.36 608.56,-616.36"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="612.06,-616.36 608.56,-606.36 605.06,-616.36 612.06,-616.36"/>
+</g>
+<g id="edge32" class="edge">
+<path fill="none" stroke="#7b8894" d="M787.56,-659C787.56,-581.54 787.56,-354.9 787.56,-354.9 787.56,-354.9 761.45,-354.9 761.45,-354.9"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="761.45,-351.4 751.45,-354.9 761.45,-358.4 761.45,-351.4"/>
+</g>
+<g id="edge26" class="edge">
+<path fill="none" stroke="#7b8894" d="M737.94,-659.09C737.94,-659.09 737.94,-616.36 737.94,-616.36"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="741.44,-616.36 737.94,-606.36 734.44,-616.36 741.44,-616.36"/>
+</g>
+<g id="node21" class="node">
+<polygon fill="orange" stroke="black" points="209.62,-261.2 20.38,-261.2 20.38,-210.8 209.62,-210.8 209.62,-261.2"/>
+<text text-anchor="start" x="28.38" y="-230.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">HILTI Runtime Library</text>
+</g>
+<g id="node31" class="node">
+<polygon fill="lightgreen" stroke="black" points="517.62,-155.8 394.38,-155.8 394.38,-105.4 517.62,-105.4 517.62,-155.8"/>
+<text text-anchor="start" x="402.38" y="-125.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">System Linker</text>
+</g>
+<g id="edge38" class="edge">
+<path fill="none" stroke="#7b8894" d="M115,-210.49C115,-179.29 115,-130.6 115,-130.6 115,-130.6 382.73,-130.6 382.73,-130.6"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="382.73,-134.1 392.73,-130.6 382.73,-127.1 382.73,-134.1"/>
+</g>
+<g id="node22" class="node">
+<polygon fill="orange" stroke="black" points="441.62,-261.2 252.38,-261.2 252.38,-210.8 441.62,-210.8 441.62,-261.2"/>
+<text text-anchor="start" x="260.38" y="-230.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Spicy Runtime Library</text>
+</g>
+<g id="edge39" class="edge">
+<path fill="none" stroke="#7b8894" d="M418,-210.49C418,-210.49 418,-167.76 418,-167.76"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="421.5,-167.76 418,-157.76 414.5,-167.76 421.5,-167.76"/>
+</g>
+<g id="edge17" class="edge">
+<path fill="none" stroke="none" d="M647.74,-236C674.83,-236 705.11,-236 732.68,-236"/>
+<text text-anchor="middle" x="684.58" y="-237.15" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">...</text>
+</g>
+<g id="edge35" class="edge">
+<path fill="none" stroke="#7b8894" d="M501.06,-210.49C501.06,-210.49 501.06,-167.76 501.06,-167.76"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="504.56,-167.76 501.06,-157.76 497.56,-167.76 504.56,-167.76"/>
+</g>
+<g id="edge36" class="edge">
+<path fill="none" stroke="#7b8894" d="M821,-210.49C821,-179.29 821,-130.6 821,-130.6 821,-130.6 529.43,-130.6 529.43,-130.6"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="529.43,-127.1 519.43,-130.6 529.43,-134.1 529.43,-127.1"/>
+</g>
+<g id="node25" class="node">
+<polygon fill="lightblue" stroke="black" points="479,-2837.9 407,-2837.9 407,-2787.5 479,-2787.5 479,-2837.9"/>
+<text text-anchor="start" x="422.38" y="-2807.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">*.hlt</text>
+</g>
+<g id="edge18" class="edge">
+<path fill="none" stroke="#7b8894" d="M443,-2787.19C443,-2787.19 443,-2730.78 443,-2730.78"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="446.5,-2730.78 443,-2720.78 439.5,-2730.78 446.5,-2730.78"/>
+</g>
+<g id="node26" class="node">
+<polygon fill="lightblue" stroke="black" points="777.88,-2837.9 704.12,-2837.9 704.12,-2787.5 777.88,-2787.5 777.88,-2837.9"/>
+<text text-anchor="start" x="712.12" y="-2807.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">*.spicy</text>
+</g>
+<g id="edge19" class="edge">
+<path fill="none" stroke="#7b8894" d="M741,-2787.19C741,-2787.19 741,-2730.78 741,-2730.78"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="744.5,-2730.78 741,-2720.78 737.5,-2730.78 744.5,-2730.78"/>
+</g>
+<g id="edge22" class="edge">
+<path fill="none" stroke="#7b8894" d="M566,-2563.02C566,-2563.02 566,-2477.81 566,-2477.81"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="569.5,-2477.81 566,-2467.81 562.5,-2477.81 569.5,-2477.81"/>
+</g>
+<g id="edge24" class="edge">
+<path fill="none" stroke="#7b8894" d="M655,-896.89C655,-896.89 655,-840.48 655,-840.48"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="658.5,-840.48 655,-830.48 651.5,-840.48 658.5,-840.48"/>
+</g>
+<g id="node30" class="node">
+<polygon fill="lightblue" stroke="black" points="726.38,-499 595.62,-499 595.62,-448.6 726.38,-448.6 726.38,-499"/>
+<text text-anchor="start" x="603.62" y="-469.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">cxx::Unit</text>
+<text text-anchor="start" x="677.88" y="-469.75" font-family="Courier,monospace" baseline-shift="sub" font-size="14.00" fill="#2d3436">linker</text>
+</g>
+<g id="edge27" class="edge">
+<path fill="none" stroke="#7b8894" d="M661,-553.69C661,-553.69 661,-510.96 661,-510.96"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="664.5,-510.96 661,-500.96 657.5,-510.96 664.5,-510.96"/>
+</g>
+<g id="edge28" class="edge">
+<path fill="none" stroke="#7b8894" d="M661,-448.29C661,-448.29 661,-391.88 661,-391.88"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="664.5,-391.88 661,-381.88 657.5,-391.88 664.5,-391.88"/>
+</g>
+<g id="node32" class="node">
+<polygon fill="lightblue" stroke="black" points="550.62,-50.4 361.38,-50.4 361.38,0 550.62,0 550.62,-50.4"/>
+<text text-anchor="start" x="369.38" y="-20.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Final executable code</text>
+</g>
+<g id="edge37" class="edge">
+<path fill="none" stroke="#7b8894" d="M456,-105.09C456,-105.09 456,-62.36 456,-62.36"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="459.5,-62.36 456,-52.36 452.5,-62.36 459.5,-62.36"/>
+</g>
+</g>
+</svg>
