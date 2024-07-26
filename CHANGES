@@ -1,3 +1,7 @@
+1.11.0-dev.279 | 2024-07-26 12:47:30 +0200
+
+  * GH-1808: Fix non-converging optimizer pass for used functions. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.277 | 2024-07-22 14:44:40 +0200
 
   * Add rsync to CI Docker image. (Benjamin Bannier, Corelight)

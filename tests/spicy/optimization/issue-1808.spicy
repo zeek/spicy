@@ -1,0 +1,12 @@
+# @TEST-DOC: Regression test for #1808.
+# We expect this call to terminate.
+# @TEST-EXEC: spicyc -dj %INPUT
+
+module test;
+
+type X = unit {
+    # Field with name identical to type name below.
+    foo: uint8;
+};
+
+type foo = unit {};
