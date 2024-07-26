@@ -2,6 +2,7 @@
 
 #include "hilti/compiler/detail/optimizer.h"
 
+#include <numeric>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -100,8 +101,6 @@ struct FunctionVisitor : OptimizerVisitor {
         bool referenced = false;
     };
 
-    bool _collect_again = false;
-
     // Lookup table for feature name -> required.
     using Features = std::map<std::string, bool>;
 
@@ -113,8 +112,17 @@ struct FunctionVisitor : OptimizerVisitor {
     void collect(Node* node) override {
         _stage = Stage::COLLECT;
 
+        // Helper to compute the total number of collected features over all types.
+        auto num_features = [&]() {
+            return std::accumulate(_features.begin(), _features.end(), 0U,
+                                   [](auto acc, auto&& f) { return acc + f.second.size(); });
+        };
+
+        // Whether a function can be elided depends on which features are active. Since we discover features as we visit
+        // the AST (which likely contains multiple modules), we need to iterate until we have collected all features.
         while ( true ) {
-            _collect_again = false;
+            const auto numFeatures0 = num_features();
+
             visitor::visit(*this, node);
 
             if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
@@ -125,7 +133,10 @@ struct FunctionVisitor : OptimizerVisitor {
                                           uses.hook));
             }
 
-            if ( ! _collect_again )
+            const auto numFeatures1 = num_features();
+
+            // We have seen everything since no new features were found.
+            if ( numFeatures0 == numFeatures1 )
                 break;
         }
     }
@@ -207,14 +218,12 @@ struct FunctionVisitor : OptimizerVisitor {
                         // NOTE: If we emit a `&needed-by-feature` attribute we also always emit a matching feature
                         // constant, so eventually at this point we will see at least one feature constant.
                         if ( _features.empty() ) {
-                            _collect_again = true;
                             return;
                         }
 
                         auto it = _features.find(type->type()->type()->typeID());
                         if ( it == _features.end() || ! it->second.count(feature) ) {
                             // This feature requirement has not yet been collected.
-                            _collect_again = true;
                             continue;
                         }
 
@@ -287,14 +296,12 @@ struct FunctionVisitor : OptimizerVisitor {
                         // NOTE: If we emit a `&needed-by-feature` attribute we also always emit a matching feature
                         // constant, so eventually at this point we will see at least one feature constant.
                         if ( _features.empty() ) {
-                            _collect_again = true;
                             return;
                         }
 
                         auto it = _features.find(decl->fullyQualifiedID());
                         if ( it == _features.end() || ! it->second.count(feature) ) {
                             // This feature requirement has not yet been collected.
-                            _collect_again = true;
                             continue;
                         }
 
@@ -526,8 +533,6 @@ struct TypeVisitor : OptimizerVisitor {
 
         return isModified();
     }
-
-    // XXX
 
     void operator()(declaration::Field* n) final {
         switch ( _stage ) {
