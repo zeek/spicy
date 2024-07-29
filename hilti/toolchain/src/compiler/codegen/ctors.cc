@@ -44,7 +44,8 @@ struct Visitor : hilti::visitor::PreOrder {
                 values.emplace_back("std::nullopt");
         }
 
-        result = fmt("hilti::rt::Bitfield<%s>(std::make_tuple(%s))", util::join(types, ", "), util::join(values, ", "));
+        result =
+            fmt("::hilti::rt::Bitfield<%s>(std::make_tuple(%s))", util::join(types, ", "), util::join(values, ", "));
     }
     void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool(%s)", n->value() ? "true" : "false"); }
 
@@ -80,8 +81,8 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::Interval* n) final {
-        result = fmt("::hilti::rt::Interval(hilti::rt::integer::safe<int64_t>(%" PRId64
-                     "), hilti::rt::Interval::NanosecondTag())",
+        result = fmt("::hilti::rt::Interval(::hilti::rt::integer::safe<int64_t>(%" PRId64
+                     "), ::hilti::rt::Interval::NanosecondTag())",
                      n->value().nanoseconds());
     }
 
@@ -268,7 +269,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::Time* n) final {
-        result = fmt("::hilti::rt::Time(%" PRId64 ", hilti::rt::Time::NanosecondTag())", n->value().nanoseconds());
+        result = fmt("::hilti::rt::Time(%" PRId64 ", ::hilti::rt::Time::NanosecondTag())", n->value().nanoseconds());
     }
 
     void operator()(ctor::Enum* n) final {
@@ -292,7 +293,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n->elementType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
             auto elems = util::join(node::transform(n->value(),

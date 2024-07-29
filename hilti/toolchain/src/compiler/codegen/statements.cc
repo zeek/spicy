@@ -46,7 +46,7 @@ struct Visitor : hilti::visitor::PreOrder {
         std::string throw_;
 
         if ( n->message() )
-            throw_ = fmt("throw ::hilti::rt::AssertionFailure(hilti::rt::to_string_for_print(%s), \"%s\")",
+            throw_ = fmt("throw ::hilti::rt::AssertionFailure(::hilti::rt::to_string_for_print(%s), \"%s\")",
                          cg->compile(n->message()), n->meta().location());
         else {
             auto msg = std::string(*n->expression());
@@ -84,8 +84,8 @@ struct Visitor : hilti::visitor::PreOrder {
             catch_cont.addStatement(""); // dummy to  make it non-empty;
 
             block->addTry(std::move(try_body), {
-                                                   {{{}, "const hilti::rt::AssertionFailure&"}, catch_rethrow},
-                                                   {{{}, "const hilti::rt::Exception&"}, catch_cont},
+                                                   {{{}, "const ::hilti::rt::AssertionFailure&"}, catch_rethrow},
+                                                   {{{}, "const ::hilti::rt::Exception&"}, catch_cont},
                                                });
         }
     }
@@ -261,7 +261,7 @@ struct Visitor : hilti::visitor::PreOrder {
             default_ = cg->compile(d->body());
         else
             default_.addStatement(
-                fmt("throw hilti::rt::UnhandledSwitchCase(hilti::rt::to_string_for_print(%s), \"%s\")",
+                fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")",
                     (first ? cxx_init : cxx_id), n->meta().location()));
 
         if ( first )

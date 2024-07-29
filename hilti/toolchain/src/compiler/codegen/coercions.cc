@@ -68,7 +68,7 @@ struct Visitor : public hilti::visitor::PreOrder {
     void operator()(type::Interval* n) final {
         if ( dst->type()->isA<type::Bool>() ) {
             auto id = cg->compile(src, codegen::TypeUsage::Storage);
-            result = fmt("(%s != hilti::rt::Interval())", expr);
+            result = fmt("(%s != ::hilti::rt::Interval())", expr);
         }
 
         else
@@ -85,7 +85,7 @@ struct Visitor : public hilti::visitor::PreOrder {
 
             std::string allocator;
             if ( auto def = cg->typeDefaultValue(x->elementType()) )
-                allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", y, *def);
+                allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", y, *def);
 
             result = fmt("::hilti::rt::Vector<%s%s>(%s)", y, allocator, expr);
         }
@@ -137,7 +137,7 @@ struct Visitor : public hilti::visitor::PreOrder {
     void operator()(type::Time* n) final {
         if ( dst->type()->isA<type::Bool>() ) {
             auto id = cg->compile(src, codegen::TypeUsage::Storage);
-            result = fmt("(%s != hilti::rt::Time())", expr);
+            result = fmt("(%s != ::hilti::rt::Time())", expr);
         }
 
         else
@@ -246,7 +246,7 @@ struct Visitor : public hilti::visitor::PreOrder {
             result = fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", x->width(), expr);
 
         else if ( auto t = dst->type()->tryAs<type::Bitfield>() )
-            result = cg->unsignedIntegerToBitfield(t, expr, cxx::Expression("hilti::rt::integer::BitOrder::LSB0"));
+            result = cg->unsignedIntegerToBitfield(t, expr, cxx::Expression("::hilti::rt::integer::BitOrder::LSB0"));
         else
             logger().internalError(
                 fmt("codegen: unexpected type coercion from unsigned integer to %s", dst->type()->typename_()));

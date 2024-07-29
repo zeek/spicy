@@ -530,7 +530,7 @@ struct Visitor : hilti::visitor::PreOrder {
                 fmts.emplace_back("%s");
             }
 
-            auto dbg = fmt("HILTI_RT_DEBUG(\"hilti-flow\", hilti::rt::fmt(\"%s: %s(%s)\"%s))", f->meta().location(),
+            auto dbg = fmt("HILTI_RT_DEBUG(\"hilti-flow\", ::hilti::rt::fmt(\"%s: %s(%s)\"%s))", f->meta().location(),
                            d.id, util::join(fmts, ", "), util::join(args, ""));
 
             cxx_func.body.addStatementAtFront(std::move(dbg));
@@ -577,8 +577,9 @@ struct Visitor : hilti::visitor::PreOrder {
                 cb.addReturn("::hilti::rt::Nothing()");
             }
 
-            body.addLambda("cb", "[args_on_heap](hilti::rt::resumable::Handle* r) -> hilti::rt::any", std::move(cb));
-            body.addLocal({"r", "auto", {}, "std::make_unique<hilti::rt::Resumable>(std::move(cb))"});
+            body.addLambda("cb", "[args_on_heap](::hilti::rt::resumable::Handle* r) -> ::hilti::rt::any",
+                           std::move(cb));
+            body.addLocal({"r", "auto", {}, "std::make_unique<::hilti::rt::Resumable>(std::move(cb))"});
             body.addStatement("r->run()");
             body.addReturn("std::move(*r)");
 
@@ -835,8 +836,8 @@ cxx::Expression CodeGen::startProfiler(const std::string& name, cxx::Block* bloc
 
     assert(block);
     pushCxxBlock(block);
-    auto id = addTmp("profiler", cxx::Type("std::optional<hilti::rt::Profiler>"));
-    auto stmt = cxx::Expression(fmt("%s = hilti::rt::profiler::start(\"%s\")", id, name));
+    auto id = addTmp("profiler", cxx::Type("std::optional<::hilti::rt::Profiler>"));
+    auto stmt = cxx::Expression(fmt("%s = ::hilti::rt::profiler::start(\"%s\")", id, name));
 
     if ( insert_at_front )
         cxxBlock()->addStatementAtFront(stmt);
@@ -855,14 +856,14 @@ void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
         block = cxxBlock();
 
     assert(block);
-    block->addStatement(cxx::Expression(fmt("hilti::rt::profiler::stop(%s)", profiler)));
+    block->addStatement(cxx::Expression(fmt("::hilti::rt::profiler::stop(%s)", profiler)));
 }
 
 cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx::Expression& value,
                                                    const cxx::Expression& bitorder) {
     std::vector<cxx::Expression> bits;
     for ( const auto& b : t->bits(false) ) {
-        auto x = fmt("hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
+        auto x = fmt("::hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
 
         if ( auto a = b->attributes()->find("&convert") ) {
             pushDollarDollar(x);
@@ -875,9 +876,9 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
 
     // `noop()` just returns the same value passed in. Without it, the compiler
     // doesn't like the expression we are building, not sure why.
-    bits.emplace_back(fmt("hilti::rt::integer::noop(%s)", value));
+    bits.emplace_back(fmt("::hilti::rt::integer::noop(%s)", value));
 
-    return fmt("hilti::rt::make_bitfield(%s)", util::join(bits, ", "));
+    return fmt("::hilti::rt::make_bitfield(%s)", util::join(bits, ", "));
 }
 
 

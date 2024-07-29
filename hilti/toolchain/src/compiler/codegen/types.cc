@@ -396,7 +396,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             return cg->compile(b->itemType(), codegen::TypeUsage::Storage);
         });
 
-        auto t = fmt("hilti::rt::Bitfield<%s>", util::join(x, ", "));
+        auto t = fmt("::hilti::rt::Bitfield<%s>", util::join(x, ", "));
         result = CxxTypes{.base_type = t};
     }
 
@@ -431,7 +431,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         });
 
         auto default_ = cxx::Block();
-        default_.addReturn(fmt(R"(hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", x.value()))", id.local()));
+        default_.addReturn(fmt(R"(::hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", x.value()))", id.local()));
 
         auto body = cxx::Block();
         body.addSwitch("x.value()", cases, std::move(default_));
@@ -524,7 +524,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n->dereferencedType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         auto t = fmt("::hilti::rt::Vector<%s%s>::%s", x, allocator, i);
         result = CxxTypes{.base_type = fmt("%s", t)};
@@ -653,7 +653,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
             std::string allocator;
             if ( auto def = cg->typeDefaultValue(n->elementType()) )
-                allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+                allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
             t = fmt("::hilti::rt::Vector<%s%s>", x, allocator);
         }
@@ -857,7 +857,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
         auto i = 0;
         for ( const auto&& b : n->bits() )
             elems.push_back(fmt(
-                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, hilti::rt::bitfield::elementOffset<%s, %d>() }",
+                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, ::hilti::rt::bitfield::elementOffset<%s, %d>() }",
                 b->id(), cg->typeInfo(b->itemType()), ttype, i++));
 
         result = fmt("::hilti::rt::type_info::Bitfield(std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
@@ -956,7 +956,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
         int i = 0;
         for ( const auto& e : n->elements() ) {
             elems.push_back(
-                fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, hilti::rt::tuple::elementOffset<%s, %d>() }",
+                fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, ::hilti::rt::tuple::elementOffset<%s, %d>() }",
                     e->id() ? e->id() : ID(), cg->typeInfo(e->type()), ttype, i));
             ++i;
         }
@@ -1000,7 +1000,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n->elementType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         result = fmt("::hilti::rt::type_info::Vector(%s, ::hilti::rt::type_info::Vector::accessor<%s%s>())",
                      cg->typeInfo(n->elementType()), x, allocator);
@@ -1011,7 +1011,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n->dereferencedType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         result =
             fmt("::hilti::rt::type_info::VectorIterator(%s, ::hilti::rt::type_info::VectorIterator::accessor<%s%s>())",
