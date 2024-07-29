@@ -903,6 +903,7 @@ unit_switch_case
               | exprs ARROW unit_item            { $$ = builder->typeUnitItemSwitchCase($1, {$3}, __loc__); }
               | '*'   ARROW unit_item            { $$ = builder->typeUnitItemSwitchCase(type::unit::Items{$3}, __loc__); }
               | ARROW unit_field                 { $$ = builder->typeUnitItemSwitchCase($2, __loc__); }
+              | ARROW unit_switch                { $$ = builder->typeUnitItemSwitchCase($2, __loc__); }
 
 /* --- End of Spicy units --- */
 
