@@ -6,6 +6,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <system_error>
 #include <utility>
 
 #include <hilti/rt/libhilti.h>
@@ -552,7 +553,15 @@ Result<void*> Driver::_symbol(const std::string& symbol) {
 }
 
 Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
-    if ( _processed_paths.find(path.native()) != _processed_paths.end() )
+    auto path_normalized = path.lexically_normal();
+    if ( path_normalized.is_relative() ) {
+        std::error_code ec;
+        path_normalized = rt::filesystem::absolute(path_normalized, ec);
+        if ( ec )
+            return result::Error(fmt("could not compute absolute path for %s", path_normalized));
+    }
+
+    if ( _processed_paths.count(path_normalized.native()) )
         return Nothing();
 
     // Calling hook before stage check so that it can execute initialize()
@@ -595,7 +604,6 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
 
         HILTI_DEBUG(logging::debug::Driver, fmt("adding external C++ file %s", path));
         _external_cxxs.push_back(path);
-        return Nothing();
     }
 
     else if ( path.extension() == ".hlto" ) {
@@ -612,9 +620,10 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         }
     }
 
-    _processed_paths.insert(path);
+    else
+        return error("unsupported file type", path);
 
-    _processed_paths.insert(path.native());
+    _processed_paths.insert(path_normalized.native());
 
     return Nothing();
 }
