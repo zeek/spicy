@@ -573,8 +573,6 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
 
         (*unit)->setRequiresCompilation();
         _addUnit(*unit);
-
-        return Nothing();
     }
 
     else if ( path.extension() == ".cc" || path.extension() == ".cxx" ) {
@@ -612,11 +610,13 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         } catch ( const hilti::rt::EnvironmentError& e ) {
             hilti::rt::fatalError(e.what());
         }
-
-        return Nothing();
     }
 
-    return error("unsupported file type", path);
+    _processed_paths.insert(path);
+
+    _processed_paths.insert(path.native());
+
+    return Nothing();
 }
 
 Result<Nothing> Driver::addInput(declaration::module::UID uid) {
