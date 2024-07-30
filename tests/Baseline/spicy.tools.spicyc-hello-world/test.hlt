@@ -4,8 +4,8 @@
 
 #include <hilti/rt/compiler-setup.h>
 
-#include <hilti/rt/libhilti.h>
 #include <spicy/rt/libspicy.h>
+#include <hilti/rt/libhilti.h>
 
 extern const char* __hlt_hlto_scope;
 

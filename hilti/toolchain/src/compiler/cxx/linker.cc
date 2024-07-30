@@ -80,40 +80,38 @@ void cxx::Linker::finalize() {
     }
 
     for ( const auto& j : _joins ) {
-        auto impl = cxx::Function();
-        auto body = cxx::Block();
+        std::optional<cxx::declaration::Function> impl;
 
         auto sorted_joins = j.second;
         std::sort(sorted_joins.begin(), sorted_joins.end(),
                   [](const auto& x, const auto& y) { return x.priority > y.priority; });
 
-        bool first = true;
         for ( const auto& c : sorted_joins ) {
-            if ( first ) {
-                impl.declaration = c.callee;
-                impl.declaration.id = c.id;
-                first = false;
+            if ( ! impl ) {
+                impl = c.callee;
+                impl->id = c.id;
+                impl->body = cxx::Block();
+                impl->ftype = cxx::declaration::Function::Free;
             }
 
             if ( c.declare_only )
                 continue;
 
-            auto args = util::transform(impl.declaration.args, [](auto& a) { return a.id; });
+            auto args = util::transform(impl->args, [](auto& a) { return a.id; });
 
             if ( std::string(c.callee.result) != "void" ) {
                 cxx::Block done_body;
                 done_body.addStatement("return x;");
-                impl.body.addIf(fmt("auto x = %s(%s)", c.callee.id, util::join(args, ", ")), std::move(done_body));
+                impl->body->addIf(fmt("auto x = %s(%s)", c.callee.id, util::join(args, ", ")), std::move(done_body));
             }
             else
-                impl.body.addStatement(fmt("%s(%s)", c.callee.id, util::join(args, ", ")));
+                impl->body->addStatement(fmt("%s(%s)", c.callee.id, util::join(args, ", ")));
         }
 
-        if ( std::string(impl.declaration.result) != "void" )
-            impl.body.addStatement("return {}");
+        if ( std::string(impl->result) != "void" )
+            impl->body->addStatement("return {}");
 
-        unit->add(impl.declaration);
-        unit->add(impl);
+        unit->add(*impl);
     }
 
     unsigned int cnt = 0;

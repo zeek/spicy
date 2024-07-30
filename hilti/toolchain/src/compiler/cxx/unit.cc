@@ -1,6 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <unordered_set>
 #include <utility>
 
 #include <hilti/base/logger.h>
@@ -13,118 +12,20 @@ using namespace hilti::detail::cxx;
 using namespace hilti::detail::cxx::formatter;
 using hilti::util::fmt;
 
-Unit::Unit(const std::shared_ptr<Context>& context) : _context(context) {}
+Unit::Unit(const std::shared_ptr<Context>& context, ::hilti::declaration::Module* module)
+    : _context(context), _module(module) {
+    _module_id = cxx::ID(module->uid().unique);
+    _module_path = module->meta().location().file();
+}
 
 Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code)
     : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true), _cxx_code(cxx_code) {}
 
-Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id)
-    : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true) {}
-
-void Unit::setModule(const hilti::declaration::Module& m) {
-    _module_id = cxx::ID(m.uid().unique);
-    _module_path = m.meta().location().file();
-}
-
-void Unit::add(const declaration::IncludeFile& i, const Meta& m) { _includes.insert(i); }
-
-void Unit::add(const declaration::Global& g, const Meta& m) {
-    if ( auto i = _globals.find(g.id); i != _globals.end() ) {
-        if ( i->second == g )
-            return;
-
-        logger().internalError(fmt("global '%s' already exists differnently in C++ translation unitn", g.id),
-                               m.location());
-    }
-
-    _globals.emplace(g.id, g);
-    _ids.insert(g.id);
-
-    if ( g.id.namespace_() )
-        _namespaces.insert(g.id.namespace_());
-}
-
-void Unit::add(const declaration::Constant& c, const Meta& m) {
-    if ( c.forward_decl )
-        _constants_forward.insert_or_assign(c.id, c);
-
-    else {
-        if ( auto i = _constants.find(c.id); i != _constants.end() ) {
-            if ( i->second == c )
-                return;
-
-            logger().internalError(fmt("constant '%s' already exists differently in C++ translation unit", c.id),
-                                   m.location());
-        }
-
-        _constants.emplace(c.id, c);
-    }
-
-    _ids.insert(c.id);
-
-    if ( c.id.namespace_() )
-        _namespaces.insert(c.id.namespace_());
-}
-
-void Unit::add(const declaration::Type& t, const Meta& m) {
-    if ( t.forward_decl )
-        _types_forward.insert_or_assign(t.id, t);
-
-    else {
-        if ( auto i = _types.find(t.id); i != _types.end() ) {
-            if ( i->second == t )
-                return;
-
-            logger().internalError(fmt("type '%s' already exists with different definition in C++ translation unit",
-                                       t.id),
-                                   m.location());
-        }
-
-        _types.insert_or_assign(t.id, t);
-    }
-
-    _ids.insert(t.id);
-
-    if ( t.id.namespace_() )
-        _namespaces.insert(t.id.namespace_());
-}
-
-std::optional<declaration::Type> Unit::lookup(const ID& id) const {
-    if ( auto t = _types.find(id); t != _types.end() )
-        return t->second;
-
-    return {};
-}
-
-void Unit::add(const declaration::Function& f, const Meta& m) {
-    auto current = _function_declarations.equal_range(f.id);
-
-    for ( auto i = current.first; i != current.second; i++ ) {
-        if ( i->second == f )
-            return;
-    }
-
-    _function_declarations.emplace(f.id, f);
-    _ids.insert(f.id);
-
-    if ( f.id.namespace_() )
-        _namespaces.insert(f.id.namespace_());
-}
-
-void Unit::add(const Function& f, const Meta& m) {
-    auto current = _function_implementations.equal_range(f.declaration.id);
-
-    for ( auto i = current.first; i != current.second; i++ ) {
-        if ( i->second == f )
-            return;
-    }
-
-    _function_implementations.emplace(f.declaration.id, f);
-}
-
-void Unit::add(const std::string& stmt, const Meta& m) { _statements.emplace_back(stmt); }
+void Unit::add(std::string_view stmt, const Meta& m) { _statements.emplace_back(stmt); }
 
 void Unit::add(const linker::Join& f) {
+    assert(f.callee.ftype == cxx::declaration::Function::Free);
+
     auto d = f.callee;
     d.id = f.id;
     d.linkage = "extern";
@@ -133,9 +34,7 @@ void Unit::add(const linker::Join& f) {
     _linker_joins.insert(f);
 }
 
-void Unit::addComment(const std::string& comment) { _comments.push_back(comment); }
-
-bool Unit::hasDeclarationFor(const cxx::ID& id) { return _ids.find(id) != _ids.end(); }
+void Unit::addComment(std::string_view comment) { _comments.emplace_back(comment); }
 
 void Unit::_addHeader(Formatter& f) {
     auto c = fmt("of %s", _module_id);
@@ -151,15 +50,12 @@ void Unit::_addModuleInitFunction() {
     auto addInitFunction = [&](Context* ctx, auto f, const std::string& id_) {
         auto id = cxx::ID{cxxNamespace(), id_};
 
-        auto body_decl = cxx::declaration::Function("void", id, {}, {}, "extern");
-
         cxx::Block body;
         body.appendFromBlock(std::move(f));
 
-        auto body_impl = cxx::Function{.declaration = body_decl, .body = std::move(body)};
-
+        auto body_decl =
+            cxx::declaration::Function(cxx::declaration::Function::Free, "void", id, {}, "extern", std::move(body));
         add(body_decl);
-        add(body_impl);
         return id;
     };
 
@@ -172,14 +68,14 @@ void Unit::_addModuleInitFunction() {
     if ( _preinit_module )
         addInitFunction(context().get(), _preinit_module, "__preinit_module");
 
-    if ( moduleID() != cxx::ID("__linker__") ) {
+    if ( cxxModuleID() != cxx::ID("__linker__") ) {
         auto scope = fmt("%s_hlto_scope", context()->options().cxx_namespace_intern);
         auto extern_scope = cxx::declaration::Global(cxx::ID(scope), "const char*", {}, {}, "extern");
         add(extern_scope);
 
         cxx::Block register_;
         register_.addStatement(
-            fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})", moduleID(), scope,
+            fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})", cxxModuleID(), scope,
                 _init_module ? "&__init_module" : "nullptr", _uses_globals ? "&__init_globals" : "nullptr",
                 _uses_globals && ! context()->options().cxx_enable_dynamic_globals ? "&__destroy_globals" : "nullptr",
                 _uses_globals && context()->options().cxx_enable_dynamic_globals ? "&__globals_index" : "nullptr"));
@@ -192,119 +88,111 @@ void Unit::_addModuleInitFunction() {
     }
 }
 
+void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase) {
+    struct Visitor {
+        Visitor(Context* ctx, Formatter& f, Phase phase) : ctx(ctx), f(f), phase(phase) {}
+
+        Context* ctx;
+        Formatter& f;
+        Phase phase;
+
+        bool isTypeInfo(const cxx::ID& id) {
+            return id.namespace_() == cxx::ID(ctx->options().cxx_namespace_intern, "type_info::");
+        }
+
+        void operator()(const declaration::IncludeFile& d) {
+            if ( phase == Phase::Includes )
+                f << d;
+        }
+
+        void operator()(const declaration::Global& d) {
+            if ( phase == Phase::Globals ) {
+                f << d;
+            }
+        }
+
+        void operator()(const declaration::Constant& d) {
+            if ( isTypeInfo(d.id) ) {
+                if ( phase == Phase::TypeInfos ) {
+                    // We split these out because creating the type information
+                    // needs access to all other types.
+                    f << d;
+                    return;
+                }
+            }
+
+            else if ( phase == Phase::Constants ) {
+                f << d;
+            }
+        }
+
+        void operator()(const declaration::Type& d) {
+            if ( phase == Phase::Forwards ) {
+                if ( auto base_type = util::split1(d.type).first; base_type == "struct" || base_type == "union" ) {
+                    f.enterNamespace(d.id.namespace_());
+                    f << base_type << " " << d.id << ";" << eol();
+                }
+            }
+
+            else if ( phase == Phase::Enums && util::startsWith(d.type, "HILTI_RT_ENUM_WITH_DEFAULT") )
+                f << d;
+
+            else if ( phase == Phase::Types && ! util::startsWith(d.type, "HILTI_RT_ENUM_WITH_DEFAULT") )
+                f << d;
+
+            else if ( phase == Phase::Functions ) {
+                if ( d.inline_code.size() ) {
+                    f << d.inline_code << eol();
+                }
+            }
+        }
+
+        void operator()(const declaration::Function& d) {
+            if ( phase == Phase::Functions ) {
+                if ( d.ftype == declaration::Function::Type::Method )
+                    // Struct type provides the prototype.
+                    return;
+
+                auto x = d;
+                x.body.reset(); // just output the header
+                f << x;
+            }
+            else if ( phase == Phase::Implementations ) {
+                if ( d.body )
+                    f << separator() << d;
+            }
+        }
+    };
+
+    std::visit(Visitor(context().get(), f, phase), decl);
+}
+
 void Unit::_generateCode(Formatter& f, bool prototypes_only) {
     _namespaces.insert("");
 
-    for ( const auto& i : _includes )
-        f << i;
+    const Phase phases[] = {Phase::Forwards, Phase::Enums,     Phase::Types,    Phase::Constants,
+                            Phase::Globals,  Phase::Functions, Phase::TypeInfos};
+
+    for ( const auto& [_, decl] : _declarations )
+        _emitDeclarations(decl, f, Phase::Includes);
 
     f << separator();
 
-    for ( const auto& ns : _namespaces ) {
-        for ( const auto& i : _types_forward ) {
-            if ( i.second.id.namespace_() == ns && i.second.forward_decl && i.second.forward_decl_prio )
-                f << i.second;
-        }
-    }
-
-    for ( const auto& ns : _namespaces ) {
-        for ( const auto& i : _types_forward ) {
-            if ( i.second.id.namespace_() == ns && i.second.forward_decl && ! i.second.forward_decl_prio )
-                f << i.second;
-        }
-    }
-
-    for ( const auto& ns : _namespaces ) {
-        if ( prototypes_only && util::endsWith(ns, "::") ) // skip anonymous namespace
-            continue;
-
-        for ( const auto& i : _constants_forward ) {
-            if ( i.second.id.namespace_() == ns )
-                f << i.second;
-        }
-    }
-
-    for ( const auto& ns : _namespaces ) {
-        std::unordered_set<std::string> done;
-
-        // Write out those types first that we have in _types_in_order.
-        for ( const auto& id : _types_in_order ) {
-            auto i = _types.find(id);
-            if ( i == _types.end() )
+    for ( auto phase : phases ) {
+        for ( const auto& ns : _namespaces ) {
+            if ( prototypes_only && util::endsWith(ns, "::") ) // skip anonymous namespace
                 continue;
 
-            auto& t = i->second;
-            if ( t.id.namespace_() == ns && ! t.forward_decl )
-                f << t;
-
-            done.insert(std::string(id));
-        }
-
-        // Now write the remaining types.
-        for ( const auto& t : _types ) {
-            if ( done.find(t.first) != done.end() )
-                continue;
-
-            if ( t.second.id.namespace_() == ns && ! t.second.forward_decl )
-                f << t.second;
-        }
-
-        for ( const auto& i : _function_declarations ) {
-            if ( i.second.id.namespace_() != ns )
-                continue;
-
-            auto needs_separator = (i.second.inline_body && i.second.inline_body->size() > 1);
-
-            if ( needs_separator )
-                f << separator();
-
-            f << i.second;
-
-            if ( needs_separator )
-                f << separator();
-        }
-
-        if ( ! prototypes_only || ! util::endsWith(ns, "::") ) { // skip anonymous namespace
-            if ( ID(ns) == cxx::ID(context()->options().cxx_namespace_intern, "type_info::") )
-                // We force this to come last later below because creating the type information needs access to all
-                // other types.
-                continue;
-
-            for ( const auto& i : _constants ) {
-                if ( i.second.id.namespace_() == ns )
-                    f << i.second;
-            }
-
-            for ( const auto& i : _globals ) {
-                if ( i.second.id.namespace_() == ns )
-                    f << i.second;
-            }
-        }
-    }
-
-    // Add the contents of the type information namespace. We know that there are only constants in there.
-    if ( ! prototypes_only ) {
-        for ( const auto& i : _constants ) {
-            if ( i.second.id.namespace_() == cxx::ID(context()->options().cxx_namespace_intern, "type_info::") )
-                f << i.second;
-        }
-    }
-
-    f.leaveNamespace();
-
-    // Add any inline code that types may have defined.
-    for ( const auto& ns : _namespaces ) {
-        for ( const auto& t : _types ) {
-            if ( t.second.id.namespace_() == ns && t.second.inline_code.size() ) {
-                f.enterNamespace(t.second.id.namespace_());
-                f << t.second.inline_code << eol();
+            for ( const auto& [id, decl] : _declarations ) {
+                if ( id.namespace_() == ns || id.empty() )
+                    _emitDeclarations(decl, f, phase);
             }
         }
     }
 
     f.leaveNamespace();
 
-    if ( prototypes_only )
+    if ( prototypes_only ) // skip anonymous namespace
         return;
 
     for ( const auto& s : _statements )
@@ -313,8 +201,8 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only) {
     if ( _statements.size() )
         f << separator();
 
-    for ( const auto& i : _function_implementations )
-        f << separator() << i.second;
+    for ( const auto& [_, decl] : _declarations_by_id ) // by ID to sort them alphabetically
+        _emitDeclarations(decl, f, Phase::Implementations);
 }
 
 hilti::Result<hilti::Nothing> Unit::finalize() {
@@ -369,45 +257,8 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
     return Nothing();
 }
 
-void Unit::importDeclarations(const Unit& other) {
-    const auto m = Meta(Location("<import>"));
-
-    for ( const auto& i : other._constants_forward )
-        add(i.second, m);
-
-    for ( const auto& i : other._constants ) {
-        // If we added a forward declaration for a constant do not add a definition as well.
-        if ( ! other._constants_forward.count(i.first) )
-            add(i.second, m);
-    }
-
-    for ( const auto& i : other._types_forward )
-        add(i.second, m);
-
-    for ( const auto& i : other._types )
-        add(i.second, m);
-
-    for ( const auto& i : other._function_declarations ) {
-        if ( std::string(i.second.linkage).find("extern") == std::string::npos &&
-             std::string(i.second.linkage).find("inline") == std::string::npos )
-            continue;
-
-        add(i.second, m);
-    }
-
-    for ( const auto& i : other._function_implementations ) {
-        if ( std::string(i.second.declaration.linkage).find("inline") == std::string::npos )
-            continue;
-
-        add(i.second, m);
-    }
-
-    for ( const auto& i : other._includes )
-        add(i, m);
-}
-
 hilti::detail::cxx::ID Unit::cxxNamespace() const {
-    return cxx::ID(context()->options().cxx_namespace_intern, moduleID());
+    return cxx::ID(context()->options().cxx_namespace_intern, cxxModuleID());
 }
 
 hilti::Result<linker::MetaData> Unit::linkerMetaData() const {

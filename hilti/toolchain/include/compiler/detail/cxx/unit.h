@@ -66,33 +66,24 @@ struct MetaData {
 /** One C++ code unit. */
 class Unit {
 public:
-    Unit(const std::shared_ptr<Context>& context);
+    Unit(const std::shared_ptr<Context>& context, hilti::declaration::Module* module);
 
-    void setModule(const ::hilti::declaration::Module& m);
-    cxx::ID moduleID() const { return _module_id; }
+    auto* module() const {
+        assert(_module); // available only if module was passed to constructor
+        return _module;
+    };
+
+    const auto& cxxModuleID() const { return _module_id; }
 
     void setUsesGlobals() { _uses_globals = true; }
 
-    void add(const declaration::IncludeFile& i, const Meta& m = Meta());
-    void add(const declaration::Global& g, const Meta& m = Meta());
-    void add(const declaration::Constant& c, const Meta& m = Meta());
-    void add(const declaration::Type& t, const Meta& m = Meta());
-    void add(const declaration::Function& f, const Meta& m = Meta());
-    void add(const Function& f, const Meta& m = Meta());
-    void add(const std::string& stmt, const Meta& m = Meta()); // add generic top-level item
-    void add(const linker::Join& f);
+    template<typename Declaration,
+             typename std::enable_if_t<std::is_base_of_v<declaration::DeclarationBase, Declaration>>* = nullptr>
+    void add(const Declaration& d, const Meta& m = Meta());  // add C++ declaration
+    void add(std::string_view stmt, const Meta& m = Meta()); // add generic top-level item
+    void add(const linker::Join& f);                         // add linker joined function
 
-    // Prioritize type with given ID to be written out so that others
-    // depending on it will have it available.
-    void prioritizeType(const cxx::ID& id) {
-        if ( std::find(_types_in_order.begin(), _types_in_order.end(), id) == _types_in_order.end() )
-            _types_in_order.push_back(id);
-    }
-
-    bool hasDeclarationFor(const cxx::ID& id);
-    std::optional<cxx::declaration::Type> lookup(const cxx::ID& id) const;
-
-    void addComment(const std::string& comment);
+    void addComment(std::string_view comment);
     void addInitialization(cxx::Block block) { _init_module.appendFromBlock(std::move(block)); }
     void addPreInitialization(cxx::Block block) { _preinit_module.appendFromBlock(std::move(block)); }
 
@@ -100,7 +91,6 @@ public:
 
     Result<Nothing> print(std::ostream& out) const;      // only after finalize
     Result<Nothing> createPrototypes(std::ostream& out); // only after finalize
-    void importDeclarations(const Unit& other);          // only after finalize
     Result<linker::MetaData> linkerMetaData() const;     // only after finalize
     cxx::ID cxxNamespace() const;
 
@@ -108,16 +98,21 @@ public:
 
 protected:
     friend class Linker;
-    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id);
-    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code);
+    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code = {});
 
 private:
+    enum class Phase { Includes, Forwards, Enums, Types, Constants, Globals, Functions, TypeInfos, Implementations };
+    using cxxDeclaration = std::variant<declaration::IncludeFile, declaration::Global, declaration::Constant,
+                                        declaration::Type, declaration::Function>;
+
     void _generateCode(Formatter& f, bool prototypes_only);
+    void _emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase);
     void _addHeader(Formatter& f);
     void _addModuleInitFunction();
 
     std::weak_ptr<Context> _context;
 
+    hilti::declaration::Module* _module = nullptr;
     cxx::ID _module_id;
     hilti::rt::filesystem::path _module_path;
     bool _no_linker_meta_data = false;
@@ -125,24 +120,46 @@ private:
 
     std::optional<std::string> _cxx_code;
 
-    std::vector<std::string> _comments;
-    std::set<declaration::IncludeFile> _includes;
-    std::map<ID, declaration::Type> _types;
-    std::vector<ID> _types_in_order;
-    std::map<ID, declaration::Type> _types_forward;
-    std::map<ID, declaration::Global> _globals;
-    std::map<ID, declaration::Constant> _constants;
-    std::map<ID, declaration::Constant> _constants_forward;
-    std::multimap<ID, declaration::Function> _function_declarations;
-    std::multimap<ID, Function> _function_implementations;
-    std::vector<std::string> _statements;
-    std::set<linker::Join> _linker_joins; // set to keep sorted.
-    std::set<cxx::ID> _namespaces;        // set to keep sorted.
-    std::set<ID> _ids;
+    std::vector<std::pair<ID, cxxDeclaration>> _declarations; // maintains order of insertion
+    std::multimap<ID, cxxDeclaration> _declarations_by_id;    // index into declarations by their ID
 
+    std::vector<std::string> _comments;
+    std::vector<std::string> _statements;
+    std::set<cxx::ID> _namespaces;        // set to keep sorted.
+    std::set<linker::Join> _linker_joins; // set to keep sorted.
     cxx::Block _init_module;
     cxx::Block _preinit_module;
     cxx::Block _init_globals;
 };
+
+template<typename Declaration, typename std::enable_if_t<std::is_base_of_v<declaration::DeclarationBase, Declaration>>*>
+void Unit::add(const Declaration& d, const Meta& m) {
+    static_assert(std::is_base_of_v<declaration::DeclarationBase, Declaration>,
+                  "Declaration must be derived from DeclarationBase");
+
+    // Check if the same declaration has already been added.
+    auto decls = _declarations_by_id.equal_range(d.id);
+    for ( auto i = decls.first; i != decls.second; i++ ) {
+        auto* other = std::get_if<Declaration>(&i->second);
+        if ( ! other ) {
+            logger().internalError(
+                util::fmt("mismatched declaration types in cxx::Unit::add for ID %s: got a %s, but already have a %s",
+                          d.id, typeid(d).name(), typeid(i->second).name()));
+        }
+
+        if ( *other == d )
+            // Have it already, nothing to do.
+            return;
+    }
+
+    _declarations.emplace_back(d.id, d);
+
+    if ( d.id ) {
+        _declarations_by_id.emplace(d.id, d);
+
+        if ( d.id.namespace_() )
+            _namespaces.insert(d.id.namespace_());
+    }
+}
 
 } // namespace hilti::detail::cxx

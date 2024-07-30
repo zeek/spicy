@@ -9,8 +9,8 @@
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    extern void __register_module();
     extern auto test(const std::string& x) -> std::string;
+    extern void __register_module();
 }
 
 namespace hlt::Foo {

@@ -6,19 +6,23 @@
 
 #include <hilti/rt/libhilti.h>
 
-extern const char* __hlt_hlto_scope;
-
 namespace __hlt::Foo {
+    struct __globals_t;
     struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         std::string X{};
         template<typename F> void __visit(F _) const { _("X", X); }
     };
 
+}
+
+extern const char* __hlt_hlto_scope;
+
+namespace __hlt::Foo {
+    inline unsigned int __globals_index;
     static inline auto __globals() { return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
     extern void __register_module();
-    inline unsigned int __globals_index;
 }
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)

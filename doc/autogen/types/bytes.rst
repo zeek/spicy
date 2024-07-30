@@ -90,11 +90,15 @@
     Interprets the data as representing an ASCII-encoded number and
     converts that into a signed integer, using a base of *base*. *base*
     must be between 2 and 36. If *base* is not given, the default is 10.
+    If the conversion fails, throws a `RuntimeError` exception, this
+    includes calling `to_int()` on empty ``bytes``.
 
 .. spicy:method:: bytes::to_int bytes to_int False int<64> (byte_order: spicy::ByteOrder)
 
     Interprets the ``bytes`` as representing an binary number encoded with
-    the given byte order, and converts it into signed integer.
+    the given byte order, and converts it into signed integer. If the
+    conversion fails, throws a `RuntimeError` exception, this can happen
+    when ``bytes`` is empty or its size is larger than 8 bytes.
 
 .. spicy:method:: bytes::to_real bytes to_real False real ()
 
@@ -122,11 +126,15 @@
     Interprets the data as representing an ASCII-encoded number and
     converts that into an unsigned integer, using a base of *base*. *base*
     must be between 2 and 36. If *base* is not given, the default is 10.
+    If the conversion fails, throws a `RuntimeError` exception, this
+    includes calling `to_uint()` on empty ``bytes``.
 
 .. spicy:method:: bytes::to_uint bytes to_uint False uint<64> (byte_order: spicy::ByteOrder)
 
     Interprets the ``bytes`` as representing an binary number encoded with
-    the given byte order, and converts it into an unsigned integer.
+    the given byte order, and converts it into an unsigned integer. If the
+    conversion fails, throws a `RuntimeError` exception, this can happen
+    when ``bytes`` is empty or its size is larger than 8 bytes.
 
 .. spicy:method:: bytes::upper bytes upper False bytes ([ charset: spicy::Charset = hilti::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = hilti::DecodeErrorStrategy::REPLACE ])
 
