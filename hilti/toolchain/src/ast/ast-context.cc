@@ -128,9 +128,9 @@ Result<declaration::module::UID> ASTContext::importModule(
     return uid;
 }
 
-declaration::Module* ASTContext::newModule(Builder* builder, const ID& id,
+declaration::Module* ASTContext::newModule(Builder* builder, ID id,
                                            const hilti::rt::filesystem::path& process_extension) {
-    auto uid = declaration::module::UID(id, process_extension, process_extension);
+    auto uid = declaration::module::UID(std::move(id), process_extension, process_extension);
     auto m = builder->declarationModule(uid);
     _addModuleToAST(m);
     return module(uid);

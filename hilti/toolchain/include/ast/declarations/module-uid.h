@@ -55,12 +55,11 @@ struct UID {
      * @param parse_extension language extension determining how to *parse* this module
      * @param process_extension language extension determining how to process this module *after* parsing
      **/
-    UID(const ID& id, const hilti::rt::filesystem::path& parse_extension,
-        const hilti::rt::filesystem::path& process_extension)
-        : id(id),
+    UID(ID id, hilti::rt::filesystem::path parse_extension, hilti::rt::filesystem::path process_extension)
+        : id(std::move(id)),
           unique(_makeUnique(this->id)),
-          parse_extension(parse_extension),
-          process_extension(process_extension),
+          parse_extension(std::move(parse_extension)),
+          process_extension(std::move(process_extension)),
           in_memory(true) {
         assert(this->id && ! parse_extension.empty() && ! process_extension.empty());
         //  just make up a path
