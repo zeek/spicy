@@ -674,9 +674,9 @@ public:
      * necessary.
      */
     template<typename T>
-    const T* tryAs_() {
-        if ( isA<T>() )
-            return static_cast<const T*>(this);
+    T* tryAs_() {
+        if ( isA_<T>() )
+            return static_cast<T*>(this);
         else
             return nullptr;
     }
