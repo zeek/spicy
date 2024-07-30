@@ -1,0 +1,20 @@
+# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf a | spicy-dump %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf b | spicy-dump %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf c | spicy-dump %INPUT.hlto >>output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf d | spicy-dump %INPUT.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check nested switch constructs both using look-ahead.
+
+module foo;
+
+public type X = unit {
+     switch {
+         -> switch {
+             -> a: b"a";
+             -> b: b"b";
+         };
+         -> c: b"c";
+     };
+ };

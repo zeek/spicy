@@ -1,3 +1,7 @@
+1.11.0-dev.282 | 2024-07-30 17:02:31 +0200
+
+  * GH-1810: Fix nested look-ahead switches. (Robin Sommer, Corelight)
+
 1.11.0-dev.279 | 2024-07-26 12:47:30 +0200
 
   * GH-1808: Fix non-converging optimizer pass for used functions. (Benjamin Bannier, Corelight)
