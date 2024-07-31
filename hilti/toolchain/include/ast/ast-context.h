@@ -168,8 +168,7 @@ public:
                                                   std::vector<hilti::rt::filesystem::path> search_dirs);
 
     /** Adds a new, empty module to the AST. */
-    declaration::Module* newModule(Builder* builder, const ID& id,
-                                   const hilti::rt::filesystem::path& process_extension);
+    declaration::Module* newModule(Builder* builder, ID id, const hilti::rt::filesystem::path& process_extension);
 
     /**
      * Retrieves a module node from the AST given its UID. Returns null if no
