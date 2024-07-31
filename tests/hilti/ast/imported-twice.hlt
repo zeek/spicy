@@ -1,0 +1,7 @@
+# @TEST-DOC: Test that we handle the same module declared twice fine, regression test for #1813.
+#
+# @TEST-EXEC: hiltic -dj %INPUT %INPUT
+# @TEST-EXEC: hiltic -dj %INPUT $(basename %INPUT)
+# @TEST-EXEC: hiltic -dj $(basename %INPUT) %INPUT
+
+module foo {}

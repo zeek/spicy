@@ -55,16 +55,16 @@ struct UID {
      * @param parse_extension language extension determining how to *parse* this module
      * @param process_extension language extension determining how to process this module *after* parsing
      **/
-    UID(const ID& id, const hilti::rt::filesystem::path& parse_extension,
-        const hilti::rt::filesystem::path& process_extension)
-        : id(id),
+    UID(ID id, hilti::rt::filesystem::path parse_extension, hilti::rt::filesystem::path process_extension)
+        : id(std::move(id)),
           unique(_makeUnique(this->id)),
-          parse_extension(parse_extension),
-          process_extension(process_extension),
+          parse_extension(std::move(parse_extension)),
+          process_extension(std::move(process_extension)),
           in_memory(true) {
         assert(this->id && ! parse_extension.empty() && ! process_extension.empty());
         //  just make up a path
-        path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s", id, ++_no_file_counter, process_extension, parse_extension);
+        path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s", unique, ++_no_file_counter, process_extension,
+                         parse_extension);
     }
 
     UID(const UID& other) = default;
@@ -73,7 +73,8 @@ struct UID {
 
     /** Hashes the UID. */
     size_t hash() const {
-        return rt::hashCombine(std::hash<std::string_view>{}(id.str()), std::hash<std::string>{}(path.native()),
+        return rt::hashCombine(std::hash<std::string>{}(id.str()), std::hash<std::string_view>{}(unique.str()),
+                               std::hash<std::string>{}(path.native()),
                                std::hash<std::string>{}(parse_extension.native()),
                                std::hash<std::string>{}(process_extension.native()));
     }
@@ -82,14 +83,14 @@ struct UID {
     UID& operator=(UID&& other) = default;
 
     bool operator==(const UID& other) const {
-        return id == other.id && path == other.path && parse_extension == other.parse_extension &&
-               process_extension == other.process_extension;
+        return std::tie(id, unique, path, parse_extension, process_extension) ==
+               std::tie(other.id, other.unique, other.path, other.parse_extension, other.process_extension);
     }
 
     bool operator!=(const UID& other) const { return ! (*this == other); }
     bool operator<(const UID& other) const {
-        return std::make_tuple(id, path, parse_extension, process_extension) <
-               std::make_tuple(other.id, other.path, other.parse_extension, other.process_extension);
+        return std::tie(id, unique, path, parse_extension, process_extension) <
+               std::tie(other.id, other.unique, other.path, other.parse_extension, other.process_extension);
     }
 
     /** Returns the module's globally uniqued name. */

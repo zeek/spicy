@@ -1,3 +1,11 @@
+1.11.0-dev.287 | 2024-07-31 11:15:49 +0200
+
+  * Remember normalized paths when checking for duplicate files in driver. (Benjamin Bannier, Corelight)
+
+  * Remember files processed by the driver. (Benjamin Bannier, Corelight)
+
+  * GH-1813: Fix equality implementation of module UID. (Benjamin Bannier, Corelight)
+
 1.11.0-dev.282 | 2024-07-30 17:02:31 +0200
 
   * GH-1810: Fix nested look-ahead switches. (Robin Sommer, Corelight)
