@@ -1441,7 +1441,15 @@ public:
      * at a specified offset from that beginning. The returned view will not
      * be able to expand any further.
      */
-    View limit(const Offset& incr) const { return View(begin(), begin() + incr); }
+    View limit(Offset offset) const {
+        // We cannot increase the size of an already limited view.
+        if ( _end ) {
+            const auto size = _end->offset().Ref() - _begin.offset().Ref();
+            offset = std::min(offset.Ref(), size);
+        }
+
+        return View(begin(), begin() + offset);
+    }
 
     /**
      * Extracts a fixed number of stream bytes from the view.

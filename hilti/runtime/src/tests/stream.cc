@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <exception>
-#include <sstream>
 
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
@@ -1140,6 +1138,23 @@ TEST_CASE("View") {
         stream.append("123"_b);
         CHECK_EQ(trimmed.size(), input.size() - 3 + 3);
         CHECK(trimmed.startsWith("4567890123"_b));
+    }
+
+    SUBCASE("limited view inherits limit") {
+        auto input = "1234567890"_b;
+        auto stream = Stream(input);
+
+        // Create a limited view.
+        auto limited = stream.view().limit(input.size() / 2);
+        REQUIRE_LT(limited.size(), input.size());
+
+        // Trying to increase the limit has no effect.
+        auto limit1 = limited.limit(input.size());
+        CHECK_EQ(limit1.size(), limited.size());
+
+        // We can still limit a limited view further.
+        auto limit2 = limited.limit(limited.size() / 2);
+        CHECK_LT(limit2.size(), limited.size());
     }
 
     SUBCASE("trimmed view inherits limit") {

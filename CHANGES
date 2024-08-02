@@ -1,3 +1,30 @@
+1.12.0-dev.9 | 2024-08-02 12:30:03 +0200
+
+  * Simplify test. (Benjamin Bannier, Corelight)
+
+    This test was using complicated input data and parsing it in a
+    hard to follow way. This patch simplifies the test data and its
+    handling.
+
+  * GH-1815: Disallow expanding limited `View`s again with `limit`. (Benjamin Bannier, Corelight)
+
+    The documented semantics of `View::limit` are that it creates a new view
+    with equal or smaller size. In contrast to that we would still have
+    allowed to expand views with more calls `limit` again as well.
+
+    This patch changes the implementation of `View::limit` so it can only
+    ever make a `View` smaller.
+
+    We also tweak the implementation of the check for consumed `&size` when
+    used together with `&eod`: if the `&size` was already nested in a
+    limited view a larger `&size` value could previously extend the view so
+    the `&eod` effectively was ignored. Since we now do not extend the
+    `View` anymore we need to only activate the check for consumed `&size`
+    if `&eod` was not specified since in this case the user communicated that
+    they are fine with consuming less data.
+
+    Closes #1815.
+
 1.12.0-dev.6 | 2024-07-31 14:24:26 +0200
 
   * Start v1.12.0 development. (Benjamin Bannier, Corelight)
