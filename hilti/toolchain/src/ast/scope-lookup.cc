@@ -11,6 +11,13 @@
 using namespace hilti;
 
 std::pair<bool, Result<std::pair<Declaration*, ID>>> hilti::scope::detail::lookupID(const ID& id, const Node* n) {
+    assert(n);
+
+    if ( ! n->scope() ) {
+        auto err = result::Error(util::fmt("unknown ID '%s'", id));
+        return std::make_pair(false, std::move(err));
+    }
+
     auto resolved = n->scope()->lookupAll(id);
 
     if ( resolved.empty() ) {
