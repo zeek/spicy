@@ -103,10 +103,6 @@ Result<Nothing> Unit::codegen() {
     return Nothing();
 }
 
-std::set<declaration::module::UID> Unit::dependencies(bool recursive) const {
-    return context()->astContext()->dependencies(_uid, recursive);
-}
-
 Result<CxxCode> Unit::cxxCode() const {
     if ( ! _cxx_unit )
         return result::Error("no C++ code available for unit");

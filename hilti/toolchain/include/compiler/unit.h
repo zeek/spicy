@@ -97,14 +97,6 @@ public:
     Result<CxxCode> cxxCode() const;
 
     /**
-     * Returns the list of dependencies registered for the unit so far.
-     *
-     * @param recursive if true, return the transitive closure of all
-     * dependent units, vs just direct dependencies of the current unit
-     */
-    std::set<declaration::module::UID> dependencies(bool recursive = false) const;
-
-    /**
      * Returns the unit's meta data for the internal HILTI linker.
      *
      * @return meta data, or an error if no code has been compiled yet
