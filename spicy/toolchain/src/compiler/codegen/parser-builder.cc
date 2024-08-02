@@ -842,7 +842,7 @@ struct ProductionVisitor : public production::Visitor {
             ncur_max_size = state().cur;
         }
 
-        else if ( auto a = field->attributes()->find("&size") )
+        else if ( auto a = field->attributes()->find("&size"); a && ! field->attributes()->find("&eod") )
             _checkSizeAmount(a, *ncur, field);
 
         auto val = destination();
@@ -1558,7 +1558,7 @@ struct ProductionVisitor : public production::Visitor {
             });
         }
 
-        if ( auto a = p->attributes()->find("&size") ) {
+        if ( auto a = p->attributes()->find("&size"); a && ! p->attributes()->find("&eod") ) {
             _checkSizeAmount(a, *ncur);
             popState();
             builder()->addAssign(state().cur, *ncur);
@@ -1710,7 +1710,8 @@ struct ProductionVisitor : public production::Visitor {
             builder()->addAssign(state().cur, *ncur);
         }
 
-        else if ( auto a = p->unitType()->attributes()->find("&size") ) {
+        else if ( auto a = p->unitType()->attributes()->find("&size");
+                  a && ! p->unitType()->attributes()->find("&eod") ) {
             auto ncur = state().ncur;
             _checkSizeAmount(a, *ncur);
             popState();

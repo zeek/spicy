@@ -1,0 +1,17 @@
+# @TEST-DOC: Check that &max-size constrains how much data a lower unit can see; regression test for #1815.
+#
+# @TEST-EXEC-FAIL: echo XXXX | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Top = unit {
+    innerdata: Inner &max-size=2;
+};
+
+type Inner = unit {
+    data: bytes &size=4;
+    on %done {
+        throw "UNREACHABLE: we should never finish parsing";
+    }
+};

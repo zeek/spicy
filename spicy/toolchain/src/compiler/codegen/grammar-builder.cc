@@ -99,8 +99,7 @@ struct Visitor : public visitor::PreOrder {
                                                          loc);
 
         if ( size )
-            // When parsing, our view will be limited to the specified input
-            // size, so just iterate until EOD.
+            // When parsing, our view will be limited to the specified input size, so just iterate until EOD.
             return std::make_unique<production::ForEach>(context(), id, std::move(sub), true, loc);
 
         if ( parse_at || parse_from )
