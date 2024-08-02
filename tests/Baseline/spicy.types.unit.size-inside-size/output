@@ -25,8 +25,4 @@
 [spicy]       Test::TryInner
 [spicy]         Test::Inner
 [spicy]           len = 11
-[spicy]           magic = o\\xeb
-[spicy]         _anon = [$len=11, $magic=b"o\\xeb"]
-[spicy]       _anon_2 = [[], [], [], [], []]
-[spicy]   Test::Message
-[error] terminating with uncaught exception of type hilti::rt::InvalidIterator: view starts before available range (<...>/size-inside-size.spicy:18:8-18:12)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: &size amount not consumed: expected 2 bytes, but got 0 bytes (<...>/size-inside-size.spicy:10:16-10:33)
