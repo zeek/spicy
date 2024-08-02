@@ -5,6 +5,10 @@
     Converts the string into a binary representation encoded with the
     given character set.
 
+.. spicy:method:: string::starts_with string starts_with False bool (prefix: string)
+
+    Returns true if the string value starts with *prefix*.
+
 .. rubric:: Operators
 
 .. spicy:operator:: string::Equal bool t:string <sp> op:== <sp> t:string

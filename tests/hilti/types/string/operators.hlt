@@ -24,4 +24,9 @@ assert |"𝔘𝔫𝔦𝔠𝔬𝔡𝔢"| == 7; # 7 codepoints but 28 bytes long.
 assert |"abc"| == 3;
 hilti::print(|"abc"|); # Validates that size operator returns a valid, printable runtime type.
 
+assert x1.starts_with("abc");
+assert ! x1.starts_with("123");
+assert "hi there".starts_with("hi");
+assert "𝔘𝔫𝔦𝔠𝔬𝔡𝔢".starts_with("𝔘𝔫𝔦");
+
 }

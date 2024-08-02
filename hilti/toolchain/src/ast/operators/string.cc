@@ -126,5 +126,27 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Encode);
 
+class StartsWith : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeString()},
+            .member = "starts_with",
+            .param0 =
+                {
+                    .name = "prefix",
+                    .type = {parameter::Kind::In, builder->typeString()},
+                },
+            .result = {Constness::Const, builder->typeBool()},
+            .ns = "string",
+            .doc = "Returns true if the string value starts with *prefix*.",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, string::StartsWith);
+};
+HILTI_OPERATOR_IMPLEMENTATION(StartsWith);
+
 } // namespace string
 } // namespace

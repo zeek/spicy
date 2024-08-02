@@ -487,6 +487,7 @@ class Sum;
 class SumAssign;
 class Modulo;
 class Encode;
+class StartsWith;
 } // namespace string
 
 namespace struct_ {

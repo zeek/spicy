@@ -486,6 +486,7 @@ constexpr Tag Size = 3403;
 constexpr Tag Sum = 3404;
 constexpr Tag SumAssign = 3405;
 constexpr Tag Unequal = 3406;
+constexpr Tag StartsWith = 3407;
 } // namespace string
 
 namespace strong_reference {

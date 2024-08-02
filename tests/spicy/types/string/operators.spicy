@@ -17,3 +17,7 @@ assert y == "Sp\u00efcy";
 assert "a" + "b" == "ab";
 assert "|%s|" % "Spicy" == "|Spicy|";
 assert "|%s%s|" % ("Spi", "cy") == "|Spicy|";
+
+assert "abc".starts_with("a");
+assert ! "abc".starts_with("b");
+assert y.starts_with("Spï");
