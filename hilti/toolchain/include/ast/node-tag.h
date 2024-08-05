@@ -489,6 +489,8 @@ constexpr Tag Unequal = 3406;
 constexpr Tag Split = 3407;
 constexpr Tag Split1 = 3408;
 constexpr Tag StartsWith = 3409;
+constexpr Tag LowerCase = 3410;
+constexpr Tag UpperCase = 3411;
 } // namespace string
 
 namespace strong_reference {

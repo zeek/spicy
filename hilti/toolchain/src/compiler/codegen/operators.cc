@@ -815,6 +815,10 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::startsWith(%s, %s)", self, args[0]);
     }
 
+    void operator()(operator_::string::LowerCase* n) final { result = fmt("::hilti::rt::string::lower(%s)", op0(n)); }
+
+    void operator()(operator_::string::UpperCase* n) final { result = fmt("::hilti::rt::string::upper(%s)", op0(n)); }
+
     // Strong reference
     void operator()(operator_::strong_reference::Deref* n) final { result = {fmt("(*%s)", op0(n)), Side::LHS}; }
     void operator()(operator_::strong_reference::Equal* n) final { result = fmt("%s == %s", op0(n), op1(n)); }

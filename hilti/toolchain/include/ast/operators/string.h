@@ -19,5 +19,7 @@ HILTI_NODE_OPERATOR(string, Encode)
 HILTI_NODE_OPERATOR(string, Split)
 HILTI_NODE_OPERATOR(string, Split1)
 HILTI_NODE_OPERATOR(string, StartsWith)
+HILTI_NODE_OPERATOR(string, LowerCase)
+HILTI_NODE_OPERATOR(string, UpperCase)
 
 } // namespace hilti::operator_

@@ -40,7 +40,7 @@ integer::safe<uint64_t> size(const std::string& s, DecodeErrorStrategy errors = 
  * @return a lower-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string lower(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+std::string lower(std::string_view s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
 
 /**
  * Computes a upper-case version of an UTF8 string.
@@ -50,7 +50,7 @@ std::string lower(const std::string& s, DecodeErrorStrategy errors = DecodeError
  * @return a upper-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string upper(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+std::string upper(std::string_view s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
 
 /**
  * Splits the string at sequences of whitespace.

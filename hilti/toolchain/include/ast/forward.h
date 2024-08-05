@@ -490,6 +490,8 @@ class Encode;
 class Split;
 class Split1;
 class StartsWith;
+class LowerCase;
+class UpperCase;
 } // namespace string
 
 namespace struct_ {

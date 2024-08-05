@@ -212,5 +212,39 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(StartsWith);
 
+class LowerCase : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeString()},
+            .member = "lower",
+            .result = {Constness::Const, builder->typeString()},
+            .ns = "string",
+            .doc = "Returns a lower-case version of the string value.",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, string::LowerCase);
+};
+HILTI_OPERATOR_IMPLEMENTATION(LowerCase);
+
+class UpperCase : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeString()},
+            .member = "upper",
+            .result = {Constness::Const, builder->typeString()},
+            .ns = "string",
+            .doc = "Returns an upper-case version of the string value.",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, string::UpperCase);
+};
+HILTI_OPERATOR_IMPLEMENTATION(UpperCase);
+
 } // namespace string
 } // namespace

@@ -5,6 +5,10 @@
     Converts the string into a binary representation encoded with the
     given character set.
 
+.. spicy:method:: string::lower string lower False string ()
+
+    Returns a lower-case version of the string value.
+
 .. spicy:method:: string::split string split False vector<string> ([ sep: string ])
 
     Splits the string value at each occurrence of *sep* and returns a
@@ -28,6 +32,10 @@
 .. spicy:method:: string::starts_with string starts_with False bool (prefix: string)
 
     Returns true if the string value starts with *prefix*.
+
+.. spicy:method:: string::upper string upper False string ()
+
+    Returns an upper-case version of the string value.
 
 .. rubric:: Operators
 

@@ -25,3 +25,5 @@ assert x.split("i") == ["Sp", "cy"];
 assert "123 456 789".split() == ["123", "456", "789"];
 assert x.split1("i") == ("Sp", "cy");
 assert "123 456 789".split1() == ("123", "456 789");
+assert "abc123DEF".lower() == "abc123def";
+assert "abc123DEF".upper() == "ABC123DEF";
