@@ -16,6 +16,8 @@ HILTI_NODE_OPERATOR(string, Sum)
 HILTI_NODE_OPERATOR(string, SumAssign)
 HILTI_NODE_OPERATOR(string, Modulo)
 HILTI_NODE_OPERATOR(string, Encode)
+HILTI_NODE_OPERATOR(string, Split)
+HILTI_NODE_OPERATOR(string, Split1)
 HILTI_NODE_OPERATOR(string, StartsWith)
 
 } // namespace hilti::operator_

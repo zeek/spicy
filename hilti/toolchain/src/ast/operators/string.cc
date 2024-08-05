@@ -126,6 +126,68 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Encode);
 
+class Split : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeString()},
+            .member = "split",
+            .param0 =
+                {
+                    .name = "sep",
+                    .type = {parameter::Kind::In, builder->typeString()},
+                    .optional = true,
+                },
+            .result = {Constness::Const,
+                       builder->typeVector(builder->qualifiedType(builder->typeString(), Constness::Mutable))},
+            .ns = "string",
+            .doc = R"(
+Splits the string value at each occurrence of *sep* and returns a vector
+containing the individual pieces, with all separators removed. If the separator
+is not found, the returned vector will have the whole string value as its single
+element. If the separator is not given, or empty, the split will take place at
+sequences of white spaces.
+)",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, string::Split);
+};
+HILTI_OPERATOR_IMPLEMENTATION(Split);
+
+class Split1 : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeString()},
+            .member = "split1",
+            .param0 =
+                {
+                    .name = "sep",
+                    .type = {parameter::Kind::In, builder->typeString()},
+                    .optional = true,
+                },
+            .result = {Constness::Const,
+                       builder->typeTuple(
+                           QualifiedTypes{builder->qualifiedType(builder->typeString(), Constness::Const),
+                                          builder->qualifiedType(builder->typeString(), Constness::Const)})},
+            .ns = "string",
+            .doc = R"(
+Splits the string value at the first occurrence of *sep* and returns the two parts
+as a 2-tuple, with the separator removed. If the separator is not found, the
+returned tuple will have the whole string value as its first element and an empty value
+as its second element. If the separator is not given, or empty, the split will
+take place at the first sequence of white spaces.
+)",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, string::Split1);
+};
+HILTI_OPERATOR_IMPLEMENTATION(Split1);
+
 class StartsWith : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {

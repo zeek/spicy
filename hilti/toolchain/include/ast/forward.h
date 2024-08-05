@@ -487,6 +487,8 @@ class Sum;
 class SumAssign;
 class Modulo;
 class Encode;
+class Split;
+class Split1;
 class StartsWith;
 } // namespace string
 

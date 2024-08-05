@@ -5,6 +5,23 @@
     Converts the string into a binary representation encoded with the
     given character set.
 
+.. spicy:method:: string::split string split False vector<string> ([ sep: string ])
+
+    Splits the string value at each occurrence of *sep* and returns a
+    vector containing the individual pieces, with all separators removed.
+    If the separator is not found, the returned vector will have the whole
+    string value as its single element. If the separator is not given, or
+    empty, the split will take place at sequences of white spaces.
+
+.. spicy:method:: string::split1 string split1 False tuple<string,~string> ([ sep: string ])
+
+    Splits the string value at the first occurrence of *sep* and returns
+    the two parts as a 2-tuple, with the separator removed. If the
+    separator is not found, the returned tuple will have the whole string
+    value as its first element and an empty value as its second element.
+    If the separator is not given, or empty, the split will take place at
+    the first sequence of white spaces.
+
 .. spicy:method:: string::starts_with string starts_with False bool (prefix: string)
 
     Returns true if the string value starts with *prefix*.

@@ -371,6 +371,8 @@ public:
     virtual void operator()(hilti::operator_::string::SumAssign* n) {}
     virtual void operator()(hilti::operator_::string::Modulo* n) {}
     virtual void operator()(hilti::operator_::string::Encode* n) {}
+    virtual void operator()(hilti::operator_::string::Split* n) {}
+    virtual void operator()(hilti::operator_::string::Split1* n) {}
     virtual void operator()(hilti::operator_::string::StartsWith* n) {}
     virtual void operator()(hilti::operator_::struct_::Unset* n) {}
     virtual void operator()(hilti::operator_::struct_::MemberNonConst* n) {}

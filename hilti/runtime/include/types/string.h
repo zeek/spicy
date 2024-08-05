@@ -4,9 +4,11 @@
 
 #include <string>
 #include <string_view>
+#include <tuple>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/vector.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -49,6 +51,42 @@ std::string lower(const std::string& s, DecodeErrorStrategy errors = DecodeError
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
 std::string upper(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+
+/**
+ * Splits the string at sequences of whitespace.
+ *
+ * @param s the string to split
+ * @return a vector with elements split at whitespace
+ */
+Vector<std::string> split(std::string_view s);
+
+/**
+ * Splits the string at occurrences of a separator.
+ *
+ * @param s the string to split
+ * @param sep the string to split at
+ * @return a vector with elements split at the separator
+ */
+Vector<std::string> split(std::string_view s, std::string_view sep);
+
+/**
+ * Splits the string (only) at the first sequence of whitespace, returning exactly two parts.
+ * If whitespace does not occur, then only the first part will be populated.
+ *
+ * @param s the string to split
+ * @return a tuple with elements before and after the separator
+ */
+std::tuple<std::string, std::string> split1(const std::string& s);
+
+/**
+ * Splits the string (only) at the first sequence of a separator, returning exactly two parts.
+ * If the separator does not occur, then only the first part will be populated.
+ *
+ * @param s the string to split
+ * @param sep the string to split at the first occurrence
+ * @return a tuple with elements before and after the separator
+ */
+std::tuple<std::string, std::string> split1(const std::string& s, const std::string& sep);
 
 } // namespace string
 

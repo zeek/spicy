@@ -21,3 +21,7 @@ assert "|%s%s|" % ("Spi", "cy") == "|Spicy|";
 assert "abc".starts_with("a");
 assert ! "abc".starts_with("b");
 assert y.starts_with("Spï");
+assert x.split("i") == ["Sp", "cy"];
+assert "123 456 789".split() == ["123", "456", "789"];
+assert x.split1("i") == ("Sp", "cy");
+assert "123 456 789".split1() == ("123", "456 789");

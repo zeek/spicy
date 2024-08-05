@@ -29,4 +29,14 @@ assert ! x1.starts_with("123");
 assert "hi there".starts_with("hi");
 assert "𝔘𝔫𝔦𝔠𝔬𝔡𝔢".starts_with("𝔘𝔫𝔦");
 
+assert x1.split("b") == ["a", "c123"];
+assert "123xyz45xyz6".split("xyz") == ["123", "45", "6"];
+assert "123 456 789".split() == ["123", "456", "789"];
+assert "abc  def ghi     jkl".split() == ["abc", "def", "ghi", "jkl"];
+
+assert x1.split1("b") == ("a", "c123");
+assert "123xyz45xyz6".split1("xyz") == ("123", "45xyz6");
+assert "123 456".split1() == ("123", "456");
+assert "a b c d e".split1() == ("a", "b c d e");
+
 }
