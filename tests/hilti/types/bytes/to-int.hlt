@@ -16,6 +16,9 @@ assert-exception(b"0".to_int(1));
 assert(b"\x01\x02\x03\x04".to_int(hilti::ByteOrder::Big) == 0x1020304);
 assert(b"\x01\x02\x03\x04".to_int(hilti::ByteOrder::Little) == 0x4030201);
 
+assert-exception(b"".to_int(hilti::ByteOrder::Big));
+assert-exception(b"\x01\x02\x03\x04\x05\x06\x07\x08\x09".to_int(hilti::ByteOrder::Little));
+
 # TODO: Some problems with the escaping & typing here.
 # assert(b"\x81".to_int(hilti::ByteOrder::Big) == 0x81);
 # assert(b"\x81".to_int(hilti::ByteOrder::Big) == 0xffffffffffffff81);
