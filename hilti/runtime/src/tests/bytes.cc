@@ -240,9 +240,7 @@ TEST_CASE("split") {
         CHECK_EQ("12345"_b.split("34"), Vector({"12"_b, "5"_b}));
         CHECK_EQ(" 2345"_b.split(" "), Vector({""_b, "2345"_b}));
         CHECK_EQ("12345"_b.split(""), Vector({"12345"_b}));
-        // TODO: This is different from documentation, same with string (emphasis mine):
-        // "If the separator is not given, ***or empty***, the split will take place at sequences
-        // of whitespace"
+        CHECK_EQ("12345"_b.split("6"), Vector({"12345"_b}));
         CHECK_EQ("12 34 5"_b.split(""), Vector({"12 34 5"_b}));
         CHECK_EQ(" "_b.split(" "), Vector({""_b, ""_b}));
         CHECK_EQ(""_b.split(" "), Vector({""_b}));
@@ -273,6 +271,8 @@ TEST_CASE("split1") {
         CHECK_EQ("12345"_b.split1("34"), std::make_tuple("12"_b, "5"_b));
         CHECK_EQ(" 2345"_b.split1(" "), std::make_tuple(""_b, "2345"_b));
         CHECK_EQ("12345"_b.split1(""), std::make_tuple(""_b, "12345"_b));
+        CHECK_EQ("12345"_b.split1("6"), std::make_tuple("12345"_b, ""_b));
+        CHECK_EQ("12 34 5"_b.split1(""), std::make_tuple(""_b, "12 34 5"_b));
         CHECK_EQ("1"_b.split1(" "), std::make_tuple("1"_b, ""_b));
         CHECK_EQ(""_b.split1("1"), std::make_tuple(""_b, ""_b));
         CHECK_EQ(""_b.split1(""), std::make_tuple(""_b, ""_b));

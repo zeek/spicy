@@ -47,9 +47,10 @@
 
     Splits the bytes value at each occurrence of *sep* and returns a
     vector containing the individual pieces, with all separators removed.
-    If the separator is not found, the returned vector will have the whole
-    bytes value as its single element. If the separator is not given, or
-    empty, the split will take place at sequences of white spaces.
+    If the separator is not found, or if the separator is empty, the
+    returned vector will have the whole bytes value as its single element.
+    If the separator is not given, the split will occur at sequences of
+    white spaces.
 
 .. spicy:method:: bytes::split1 bytes split1 False tuple<bytes,~bytes> ([ sep: bytes ])
 
@@ -57,8 +58,10 @@
     the two parts as a 2-tuple, with the separator removed. If the
     separator is not found, the returned tuple will have the whole bytes
     value as its first element and an empty value as its second element.
-    If the separator is not given, or empty, the split will take place at
-    the first sequence of white spaces.
+    If the separator is empty, the returned tuple will have an empty first
+    element and the whole bytes value as its second element. If the
+    separator is not provided, the split will occur at the first sequence
+    of white spaces.
 
 .. spicy:method:: bytes::starts_with bytes starts_with False bool (b: bytes)
 

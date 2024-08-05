@@ -81,9 +81,7 @@ TEST_CASE("split") {
         CHECK_EQ(string::split("12345", "34"), Vector<std::string>({"12", "5"}));
         CHECK_EQ(string::split(" 2345", " "), Vector<std::string>({"", "2345"}));
         CHECK_EQ(string::split("12345", ""), Vector<std::string>({"12345"}));
-        // TODO: This is different from documentation, same with bytes (emphasis mine):
-        // "If the separator is not given, ***or empty***, the split will take place at sequences
-        // of whitespace"
+        CHECK_EQ(string::split("12345", "6"), Vector<std::string>({"12345"}));
         CHECK_EQ(string::split("12 34 5", ""), Vector<std::string>({"12 34 5"}));
         CHECK_EQ(string::split(" ", " "), Vector<std::string>({"", ""}));
         CHECK_EQ(string::split("", " "), Vector<std::string>({""}));
@@ -116,6 +114,7 @@ TEST_CASE("split1") {
         CHECK_EQ(string::split1(" 2345", " "), std::make_tuple("", "2345"));
         CHECK_EQ(string::split1("12345", ""), std::make_tuple("", "12345"));
         CHECK_EQ(string::split1("12345", "6"), std::make_tuple("12345", ""));
+        CHECK_EQ(string::split1("12 34 5", ""), std::make_tuple("", "12 34 5"));
         CHECK_EQ(string::split1("1", " "), std::make_tuple("1", ""));
         CHECK_EQ(string::split1("", "1"), std::make_tuple("", ""));
         CHECK_EQ(string::split1("", ""), std::make_tuple("", ""));
