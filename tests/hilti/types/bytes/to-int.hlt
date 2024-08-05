@@ -16,6 +16,13 @@ assert-exception(b"0".to_int(1));
 assert(b"\x01\x02\x03\x04".to_int(hilti::ByteOrder::Big) == 0x1020304);
 assert(b"\x01\x02\x03\x04".to_int(hilti::ByteOrder::Little) == 0x4030201);
 
+assert(b"\xff\xff".to_int(hilti::ByteOrder::Big) == -1);
+assert(b"\xff\xff".to_int(hilti::ByteOrder::Little) == -1);
+assert(b"\xff\xff\xff\xff".to_int(hilti::ByteOrder::Big) == -1);
+assert(b"\xff\xff\xff\xff".to_int(hilti::ByteOrder::Little) == -1);
+assert(b"\x80\x00\x00\x01".to_int(hilti::ByteOrder::Big) == -2147483647);
+assert(b"\x01\x00\x00\x80".to_int(hilti::ByteOrder::Little) == -2147483647);
+
 assert-exception(b"".to_int(hilti::ByteOrder::Big));
 assert-exception(b"\x01\x02\x03\x04\x05\x06\x07\x08\x09".to_int(hilti::ByteOrder::Little));
 
