@@ -186,15 +186,18 @@ int64_t Bytes::toInt(ByteOrder byte_order) const {
 
 uint64_t Bytes::toUInt(ByteOrder byte_order) const {
     switch ( byte_order.value() ) {
-        case ByteOrder::Undef: throw RuntimeError("cannot convert value to undefined byte order");
+        case ByteOrder::Undef: throw InvalidArgument("cannot convert value to undefined byte order");
         case ByteOrder::Host: return toInt(systemByteOrder());
         case ByteOrder::Little: [[fallthrough]];
         case ByteOrder::Network: [[fallthrough]];
         case ByteOrder::Big: break;
     }
 
+    if ( isEmpty() )
+        throw InvalidValue("not enough bytes for conversion to integer");
+
     if ( auto size_ = size(); size_ > 8 )
-        throw RuntimeError(fmt("more than max of 8 bytes for conversion to integer (have %" PRIu64 ")", size_));
+        throw InvalidValue(fmt("more than max of 8 bytes for conversion to integer (have %" PRIu64 ")", size_));
 
     uint64_t i = 0;
 
