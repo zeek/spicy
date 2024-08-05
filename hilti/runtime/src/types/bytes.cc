@@ -2,6 +2,7 @@
 
 #include <utf8proc/utf8proc.h>
 
+#include <cstdint>
 #include <cstdlib>
 
 #include <hilti/rt/types/bytes.h>
@@ -171,14 +172,14 @@ integer::safe<uint64_t> Bytes::toUInt(uint64_t base) const {
 }
 
 int64_t Bytes::toInt(ByteOrder byte_order) const {
-    auto i = toUInt(byte_order);
+    auto i = toUInt(byte_order); // throws on size == 0 or size > 8
     auto size_ = static_cast<uint64_t>(size());
 
-    if ( i & (1U << (size_ * 8 - 1)) ) {
+    if ( i & (UINT64_C(1) << (size_ * 8 - 1)) ) {
         if ( size() == 8 )
             return static_cast<int64_t>(-(~i + 1));
 
-        return static_cast<int64_t>(-(i ^ ((1U << (size_ * 8)) - 1)) - 1);
+        return static_cast<int64_t>(-(i ^ ((UINT64_C(1) << (size_ * 8)) - 1)) - 1);
     }
 
     return static_cast<int64_t>(i);
