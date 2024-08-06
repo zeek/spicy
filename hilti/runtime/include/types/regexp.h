@@ -30,10 +30,7 @@ struct Flags {
         false; /**< if true, always use the standard matcher (for testing purposes; ignored if `no_sub` is set) */
 
     /** Returns a string uniquely identifying the set of flags. */
-    std::string cacheKey() const {
-        char key[2] = {no_sub ? '1' : '0', use_std ? '1' : '0'};
-        return std::string(key, 2);
-    }
+    std::string cacheKey() const;
 };
 
 /* Type for passing around the content of extracted capture groups. */
@@ -137,10 +134,7 @@ public:
     CompiledRegExp& operator=(const CompiledRegExp& other) = delete;
     CompiledRegExp& operator=(CompiledRegExp&& other) = delete;
 
-    jrx_regex_t* jrx() const {
-        assert(_jrx && "regexp not compiled");
-        return _jrx.get();
-    }
+    jrx_regex_t* jrx() const;
 
 private:
     friend class rt::RegExp;
@@ -191,8 +185,8 @@ public:
      */
     RegExp();
 
-    const auto& patterns() const { return _re->_patterns; }
-    const auto& flags() const { return _re->_flags; }
+    const std::vector<std::string>& patterns() const;
+    const regexp::Flags& flags() const;
 
     /**
      * Searches a pattern within a bytes view. The expression is considered
@@ -243,12 +237,9 @@ public:
     regexp::MatchState tokenMatcher() const;
 
     /** Accessor to underlying JRX state. Intended for internal use and testing. */
-    jrx_regex_t* jrx() const { return _re->jrx(); }
+    jrx_regex_t* jrx() const;
 
-    bool operator==(const RegExp& other) const {
-        // Due to caching uniqueing instances, we can just compare the pointers.
-        return _re == other._re;
-    }
+    bool operator==(const RegExp& other) const;
 
 private:
     friend class regexp::MatchState;
@@ -260,17 +251,11 @@ private:
 };
 
 namespace detail::adl {
-extern std::string to_string(const RegExp& x, adl::tag /*unused*/);
-
-inline std::string to_string(const regexp::MatchState& /*unused*/, adl::tag /*unused*/) {
-    return "<regexp-match-state>";
-}
+std::string to_string(const RegExp& x, adl::tag /*unused*/);
+std::string to_string(const regexp::MatchState& /*unused*/, adl::tag /*unused*/);
 
 } // namespace detail::adl
 
-inline std::ostream& operator<<(std::ostream& out, const RegExp& x) {
-    out << to_string(x);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const RegExp& x);
 
 } // namespace hilti::rt

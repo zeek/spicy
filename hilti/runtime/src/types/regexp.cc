@@ -447,3 +447,25 @@ std::string hilti::rt::detail::adl::to_string(const RegExp& x, adl::tag /*unused
 
     return fmt("%s %s", p, join(f, " "));
 }
+std::string hilti::rt::regexp::Flags::cacheKey() const {
+    char key[2] = {no_sub ? '1' : '0', use_std ? '1' : '0'};
+    return std::string(key, 2);
+}
+jrx_regex_t* hilti::rt::regexp::detail::CompiledRegExp::jrx() const {
+    assert(_jrx && "regexp not compiled");
+    return _jrx.get();
+}
+const std::vector<std::string>& hilti::rt::RegExp::patterns() const { return _re->_patterns; }
+const regexp::Flags& hilti::rt::RegExp::flags() const { return _re->_flags; }
+jrx_regex_t* hilti::rt::RegExp::jrx() const { return _re->jrx(); }
+bool hilti::rt::RegExp::operator==(const RegExp& other) const {
+    // Due to caching uniqueing instances, we can just compare the pointers.
+    return _re == other._re;
+}
+std::string hilti::rt::detail::adl::to_string(const regexp::MatchState& /*unused*/, adl::tag /*unused*/) {
+    return "<regexp-match-state>";
+}
+std::ostream& hilti::rt::operator<<(std::ostream& out, const RegExp& x) {
+    out << to_string(x);
+    return out;
+}
