@@ -61,7 +61,7 @@ struct UID {
           parse_extension(std::move(parse_extension)),
           process_extension(std::move(process_extension)),
           in_memory(true) {
-        assert(this->id && ! parse_extension.empty() && ! process_extension.empty());
+        assert(this->id && ! this->parse_extension.empty() && ! this->process_extension.empty());
         //  just make up a path
         path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s", unique, ++_no_file_counter, process_extension,
                          parse_extension);
