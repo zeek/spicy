@@ -159,9 +159,9 @@ public:
      */
     Bytes(std::string s, bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE);
 
-    Bytes(Base&& str) : Base(std::move(str)) {}
-    Bytes(const Bytes& xs) : Base(xs) {}
-    Bytes(Bytes&& xs) noexcept : Base(std::move(xs)) {}
+    Bytes(Base&& str);
+    Bytes(const Bytes& xs);
+    Bytes(Bytes&& xs) noexcept;
 
     /** Replaces the contents of this `Bytes` with another `Bytes`.
      *
@@ -170,14 +170,7 @@ public:
      * @param b the `Bytes` to assign
      * @return a reference to the changed `Bytes`
      */
-    Bytes& operator=(const Bytes& b) {
-        if ( &b == this )
-            return *this;
-
-        invalidateIterators();
-        this->Base::operator=(b);
-        return *this;
-    }
+    Bytes& operator=(const Bytes& b);
 
     /** Replaces the contents of this `Bytes` with another `Bytes`.
      *
@@ -186,47 +179,43 @@ public:
      * @param b the `Bytes` to assign
      * @return a reference to the changed `Bytes`
      */
-    Bytes& operator=(Bytes&& b) noexcept {
-        invalidateIterators();
-        this->Base::operator=(std::move(b));
-        return *this;
-    }
+    Bytes& operator=(Bytes&& b) noexcept;
 
     /** Appends the contents of a stream view to the data. */
-    void append(const Bytes& d) { Base::append(d.str()); }
+    void append(const Bytes& d);
 
     /** Appends the contents of a stream view to the data. */
     void append(const stream::View& view);
 
     /** Appends a single byte the data. */
-    void append(const uint8_t x) { Base::append(1, static_cast<Base::value_type>(x)); }
+    void append(uint8_t x);
 
     /** Returns the bytes' data as a string instance. */
-    const std::string& str() const& { return *this; }
+    const std::string& str() const&;
 
     /** Returns the bytes' data as a string instance. */
-    std::string str() && { return std::move(*this); }
+    std::string str() &&;
 
     /** Returns an iterator representing the first byte of the instance. */
-    const_iterator begin() const { return const_iterator(0U, getControl()); }
+    const_iterator begin() const;
 
     /** Same as `begin()`, just for compatibility with std types. */
-    const_iterator cbegin() const { return const_iterator(0U, getControl()); }
+    const_iterator cbegin() const;
 
     /** Returns an iterator representing the end of the instance. */
-    const_iterator end() const { return const_iterator(size(), getControl()); }
+    const_iterator end() const;
 
     /** Same as `end()`, just for compatibility with std types. */
-    const_iterator cend() const { return const_iterator(size(), getControl()); }
+    const_iterator cend() const;
 
     /** Returns an iterator referring to the given offset. */
-    const_iterator at(Offset o) const { return begin() + o; }
+    const_iterator at(Offset o) const;
 
     /** Returns true if the data's size is zero. */
-    bool isEmpty() const { return empty(); }
+    bool isEmpty() const;
 
     /** Returns the size of instance in bytes. */
-    size_type size() const { return static_cast<int64_t>(std::string::size()); }
+    size_type size() const;
 
     /**
      * Returns the position of the first occurrence of a byte.
@@ -234,13 +223,7 @@ public:
      * @param b byte to search
      * @param n optional starting point, which must be inside the same instance
      */
-    const_iterator find(value_type b, const const_iterator& n = const_iterator()) const {
-        auto beg = begin();
-        if ( auto i = Base::find(b, (n ? n - beg : 0)); i != Base::npos )
-            return beg + i;
-        else
-            return end();
-    }
+    const_iterator find(value_type b, const const_iterator& n = const_iterator()) const;
 
     /**
      * Returns the position of the first occurrence of a range of bytes
@@ -261,12 +244,7 @@ public:
      * @param to iterator pointing to just beyond subrange
      * @return a `Bytes` instance for the subrange
      */
-    Bytes sub(const const_iterator& from, const const_iterator& to) const {
-        if ( from._control.lock() != to._control.lock() )
-            throw InvalidArgument("start and end iterator cannot belong to different bytes");
-
-        return sub(Offset(from - begin()), to._index);
-    }
+    Bytes sub(const const_iterator& from, const const_iterator& to) const;
 
     /**
      * Extracts a subrange of bytes from the beginning.
@@ -274,7 +252,7 @@ public:
      * @param to iterator pointing to just beyond subrange
      * @return a `Bytes` instance for the subrange
      */
-    Bytes sub(const const_iterator& to) const { return sub(begin(), to); }
+    Bytes sub(const const_iterator& to) const;
 
     /**
      * Extracts a subrange of bytes.
@@ -283,13 +261,7 @@ public:
      * @param offset of one byeond end of subrage
      * @return a `Bytes` instance for the subrange
      */
-    Bytes sub(Offset from, Offset to) const {
-        try {
-            return {substr(from, to - from)};
-        } catch ( const std::out_of_range& ) {
-            throw OutOfRange(fmt("start index %s out of range for bytes with length %d", from, size()));
-        }
-    }
+    Bytes sub(Offset from, Offset to) const;
 
     /**
      * Extracts a subrange of bytes from the beginning.
@@ -297,7 +269,7 @@ public:
      * @param to offset of one beyond end of subrange
      * @return a `Bytes` instance for the subrange
      */
-    Bytes sub(Offset to) const { return sub(0, to); }
+    Bytes sub(Offset to) const;
 
     /**
      * Extracts a fixed number of bytes from the data
@@ -306,13 +278,7 @@ public:
      * @param n number of bytes to extract
      * @return new bytes instance that has the first *N* bytes removed.
      */
-    Bytes extract(unsigned char* dst, uint64_t n) const {
-        if ( n > size() )
-            throw InvalidArgument("insufficient data in source");
-
-        memcpy(dst, data(), n);
-        return sub(n, std::string::npos);
-    }
+    Bytes extract(unsigned char* dst, uint64_t n) const;
 
     /**
      * Decodes the binary data into a string assuming its encoded in a
@@ -326,7 +292,7 @@ public:
                        bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const;
 
     /** Returns true if the data begins with a given, other bytes instance. */
-    bool startsWith(const Bytes& b) const { return hilti::rt::startsWith(*this, b); }
+    bool startsWith(const Bytes& b) const;
 
     /**
      * Returns an upper-case version of the instance. This internally first
@@ -337,9 +303,7 @@ public:
      * @param errors how to handle errors when decoding/encoding the data
      * @return an upper case version of the instance
      */
-    Bytes upper(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const {
-        return Bytes(hilti::rt::string::upper(decode(cs, errors), errors), cs, errors);
-    }
+    Bytes upper(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const;
 
     /**
      * Returns an upper-case version of the instance.
@@ -348,9 +312,7 @@ public:
      * @param errors how to handle errors when decoding/encoding the data
      * @return a lower case version of the instance
      */
-    Bytes lower(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const {
-        return Bytes(hilti::rt::string::lower(decode(cs, errors), errors), cs, errors);
-    }
+    Bytes lower(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const;
 
     /**
      * Removes leading and/or trailing sequences of all characters of a set
@@ -372,29 +334,16 @@ public:
     Bytes strip(bytes::Side side = bytes::Side::Both) const;
 
     /** Splits the data at sequences of whitespace, returning the parts. */
-    Vector<Bytes> split() const {
-        Vector<Bytes> x;
-        for ( auto& v : hilti::rt::split(*this) )
-            x.emplace_back(Bytes::Base(v));
-        return x;
-    }
+    Vector<Bytes> split() const;
 
     /**
      * Splits the data (only) at the first sequence of whitespace, returning
      * the two parts.
      */
-    std::tuple<Bytes, Bytes> split1() const {
-        auto p = hilti::rt::split1(str());
-        return std::make_tuple(p.first, p.second);
-    }
+    std::tuple<Bytes, Bytes> split1() const;
 
     /** Splits the data at occurrences of a separator, returning the parts. */
-    Vector<Bytes> split(const Bytes& sep) const {
-        Vector<Bytes> x;
-        for ( auto& v : hilti::rt::split(*this, sep) )
-            x.push_back(Bytes::Base(v));
-        return x;
-    }
+    Vector<Bytes> split(const Bytes& sep) const;
 
     /**
      * Splits the data (only) at the first occurrence of a separator,
@@ -403,10 +352,7 @@ public:
      * @param sep `Bytes` sequence to split at
      * @return a tuple of head and tail of the split instance
      */
-    std::tuple<Bytes, Bytes> split1(const Bytes& sep) const {
-        auto p = hilti::rt::split1(str(), sep);
-        return std::make_tuple(p.first, p.second);
-    }
+    std::tuple<Bytes, Bytes> split1(const Bytes& sep) const;
 
     /**
      * Returns the concatenation of all elements in the *parts* list rendered
@@ -478,10 +424,7 @@ public:
      * @param base base to use for conversion
      * @return converted time value
      */
-    Time toTime(uint64_t base = 10) const {
-        auto ns = ! isEmpty() ? toUInt(base) * integer::safe<uint64_t>(1'000'000'000) : integer::safe<uint64_t>(0);
-        return Time(ns, Time::NanosecondTag());
-    }
+    Time toTime(uint64_t base = 10) const;
 
     /**
      * Interprets the data as an binary representation of a integer value
@@ -490,9 +433,7 @@ public:
      * @param base base to use for conversion
      * @return converted time value
      */
-    Time toTime(hilti::rt::ByteOrder byte_order) const {
-        return Time(toUInt(byte_order) * integer::safe<uint64_t>(1'000'000'000), Time::NanosecondTag());
-    }
+    Time toTime(hilti::rt::ByteOrder byte_order) const;
 
     /**
      * Matches the data against a regular expression.
@@ -534,22 +475,14 @@ public:
 private:
     friend bytes::Iterator;
 
-    const C& getControl() const {
-        if ( ! _control )
-            _control = std::make_shared<const Base*>(static_cast<const Base*>(this));
+    const C& getControl() const;
 
-        return _control;
-    }
-
-    void invalidateIterators() { _control.reset(); }
+    void invalidateIterators();
 
     mutable C _control;
 };
 
-inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
-    out << escapeBytes(x.str(), false);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Bytes& x);
 
 namespace bytes {
 inline namespace literals {

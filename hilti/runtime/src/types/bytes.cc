@@ -309,3 +309,104 @@ std::ostream& hilti::rt::bytes::operator<<(std::ostream& out, const Iterator& /*
     out << "<bytes iterator>";
     return out;
 }
+hilti::rt::Bytes::Bytes(Base&& str) : Base(std::move(str)) {}
+hilti::rt::Bytes::Bytes(const Bytes& xs) : Base(xs) {}
+hilti::rt::Bytes::Bytes(Bytes&& xs) noexcept : Base(std::move(xs)) {}
+hilti::rt::Bytes& hilti::rt::Bytes::operator=(const Bytes& b) {
+    if ( &b == this )
+        return *this;
+
+    invalidateIterators();
+    this->Base::operator=(b);
+    return *this;
+}
+hilti::rt::Bytes& hilti::rt::Bytes::operator=(Bytes&& b) noexcept {
+    invalidateIterators();
+    this->Base::operator=(std::move(b));
+    return *this;
+}
+void hilti::rt::Bytes::append(const Bytes& d) { Base::append(d.str()); }
+void hilti::rt::Bytes::append(const uint8_t x) { Base::append(1, static_cast<Base::value_type>(x)); }
+const std::string& hilti::rt::Bytes::str() const& { return *this; }
+std::string hilti::rt::Bytes::str() && { return std::move(*this); }
+hilti::rt::Bytes::const_iterator hilti::rt::Bytes::begin() const { return const_iterator(0U, getControl()); }
+hilti::rt::Bytes::const_iterator hilti::rt::Bytes::cbegin() const { return const_iterator(0U, getControl()); }
+hilti::rt::Bytes::const_iterator hilti::rt::Bytes::end() const { return const_iterator(size(), getControl()); }
+hilti::rt::Bytes::const_iterator hilti::rt::Bytes::cend() const { return const_iterator(size(), getControl()); }
+hilti::rt::Bytes::const_iterator hilti::rt::Bytes::at(Offset o) const { return begin() + o; }
+bool hilti::rt::Bytes::isEmpty() const { return empty(); }
+hilti::rt::Bytes::size_type hilti::rt::Bytes::size() const { return static_cast<int64_t>(std::string::size()); }
+hilti::rt::Bytes::const_iterator hilti::rt::Bytes::find(value_type b, const const_iterator& n) const {
+    auto beg = begin();
+    if ( auto i = Base::find(b, (n ? n - beg : 0)); i != Base::npos )
+        return beg + i;
+    else
+        return end();
+}
+hilti::rt::Bytes hilti::rt::Bytes::sub(const const_iterator& from, const const_iterator& to) const {
+    if ( from._control.lock() != to._control.lock() )
+        throw InvalidArgument("start and end iterator cannot belong to different bytes");
+
+    return sub(Offset(from - begin()), to._index);
+}
+hilti::rt::Bytes hilti::rt::Bytes::sub(const const_iterator& to) const { return sub(begin(), to); }
+hilti::rt::Bytes hilti::rt::Bytes::sub(Offset from, Offset to) const {
+    try {
+        return {substr(from, to - from)};
+    } catch ( const std::out_of_range& ) {
+        throw OutOfRange(fmt("start index %s out of range for bytes with length %d", from, size()));
+    }
+}
+hilti::rt::Bytes hilti::rt::Bytes::sub(Offset to) const { return sub(0, to); }
+hilti::rt::Bytes hilti::rt::Bytes::extract(unsigned char* dst, uint64_t n) const {
+    if ( n > size() )
+        throw InvalidArgument("insufficient data in source");
+
+    memcpy(dst, data(), n);
+    return sub(n, std::string::npos);
+}
+bool hilti::rt::Bytes::startsWith(const Bytes& b) const { return hilti::rt::startsWith(*this, b); }
+hilti::rt::Bytes hilti::rt::Bytes::upper(bytes::Charset cs, bytes::DecodeErrorStrategy errors) const {
+    return Bytes(hilti::rt::string::upper(decode(cs, errors), errors), cs, errors);
+}
+hilti::rt::Bytes hilti::rt::Bytes::lower(bytes::Charset cs, bytes::DecodeErrorStrategy errors) const {
+    return Bytes(hilti::rt::string::lower(decode(cs, errors), errors), cs, errors);
+}
+hilti::rt::Vector<Bytes> hilti::rt::Bytes::split() const {
+    Vector<Bytes> x;
+    for ( auto& v : hilti::rt::split(*this) )
+        x.emplace_back(Bytes::Base(v));
+    return x;
+}
+std::tuple<Bytes, Bytes> hilti::rt::Bytes::split1() const {
+    auto p = hilti::rt::split1(str());
+    return std::make_tuple(p.first, p.second);
+}
+hilti::rt::Vector<Bytes> hilti::rt::Bytes::split(const Bytes& sep) const {
+    Vector<Bytes> x;
+    for ( auto& v : hilti::rt::split(*this, sep) )
+        x.push_back(Bytes::Base(v));
+    return x;
+}
+std::tuple<Bytes, Bytes> hilti::rt::Bytes::split1(const Bytes& sep) const {
+    auto p = hilti::rt::split1(str(), sep);
+    return std::make_tuple(p.first, p.second);
+}
+hilti::rt::Time hilti::rt::Bytes::toTime(uint64_t base) const {
+    auto ns = ! isEmpty() ? toUInt(base) * integer::safe<uint64_t>(1'000'000'000) : integer::safe<uint64_t>(0);
+    return Time(ns, Time::NanosecondTag());
+}
+hilti::rt::Time hilti::rt::Bytes::toTime(hilti::rt::ByteOrder byte_order) const {
+    return Time(toUInt(byte_order) * integer::safe<uint64_t>(1'000'000'000), Time::NanosecondTag());
+}
+const hilti::rt::Bytes::C& hilti::rt::Bytes::getControl() const {
+    if ( ! _control )
+        _control = std::make_shared<const Base*>(static_cast<const Base*>(this));
+
+    return _control;
+}
+void hilti::rt::Bytes::invalidateIterators() { _control.reset(); }
+std::ostream& hilti::rt::operator<<(std::ostream& out, const Bytes& x) {
+    out << escapeBytes(x.str(), false);
+    return out;
+}
