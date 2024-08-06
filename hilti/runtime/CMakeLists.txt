@@ -38,6 +38,7 @@ set(SOURCES
     src/types/address.cc
     src/types/bytes.cc
     src/types/integer.cc
+    src/types/interval.cc
     src/types/port.cc
     src/types/optional.cc
     src/types/real.cc

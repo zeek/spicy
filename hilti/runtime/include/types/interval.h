@@ -4,7 +4,6 @@
 
 #include <arpa/inet.h>
 
-#include <limits>
 #include <string>
 
 #include <hilti/rt/extension-points.h>
@@ -29,7 +28,7 @@ public:
      *
      * @param nsecs interval in nanoseconds.
      */
-    explicit Interval(const hilti::rt::integer::safe<int64_t>& nsecs, NanosecondTag /*unused*/) : _nsecs(nsecs) {}
+    explicit Interval(const hilti::rt::integer::safe<int64_t>& nsecs, NanosecondTag /*unused*/);
 
     /**
      * Constructs an interval from a double value.
@@ -37,16 +36,7 @@ public:
      * @param secs interval in seconds.
      * @throws OutOfRange if *secs* cannot be represented with the internal resolution
      */
-    explicit Interval(double secs, SecondTag /*unused*/)
-        : _nsecs([&]() {
-              auto x = secs * 1'000'000'000;
-
-              using limits = std::numeric_limits<int64_t>;
-              if ( x < static_cast<double>(limits::min()) || static_cast<double>(limits::max()) < x )
-                  throw OutOfRange("value cannot be represented as an interval");
-
-              return integer::safe<int64_t>(x);
-          }()) {}
+    explicit Interval(double secs, SecondTag /*unused*/);
 
     Interval(const Interval&) = default;
     Interval(Interval&&) noexcept = default;
@@ -56,56 +46,42 @@ public:
     Interval& operator=(Interval&&) noexcept = default;
 
     /** Returns interval as seconds. */
-    double seconds() const { return static_cast<double>(_nsecs.Ref()) / 1e9; }
+    double seconds() const;
 
     /** Returns interval as nanoseconds. */
-    int64_t nanoseconds() const { return _nsecs.Ref(); }
+    int64_t nanoseconds() const;
 
-    bool operator==(const Interval& other) const { return _nsecs == other._nsecs; }
-    bool operator!=(const Interval& other) const { return _nsecs != other._nsecs; }
-    bool operator<(const Interval& other) const { return _nsecs < other._nsecs; }
-    bool operator<=(const Interval& other) const { return _nsecs <= other._nsecs; }
-    bool operator>(const Interval& other) const { return _nsecs > other._nsecs; }
-    bool operator>=(const Interval& other) const { return _nsecs >= other._nsecs; }
+    bool operator==(const Interval& other) const;
+    bool operator!=(const Interval& other) const;
+    bool operator<(const Interval& other) const;
+    bool operator<=(const Interval& other) const;
+    bool operator>(const Interval& other) const;
+    bool operator>=(const Interval& other) const;
 
-    Interval operator+(const Interval& other) const { return Interval(_nsecs + other._nsecs, NanosecondTag()); }
-    Interval operator-(const Interval& other) const { return Interval(_nsecs - other._nsecs, NanosecondTag()); }
+    Interval operator+(const Interval& other) const;
+    Interval operator-(const Interval& other) const;
 
-    Interval operator*(const hilti::rt::integer::safe<std::int64_t>& i) const {
-        return Interval(_nsecs * i, NanosecondTag());
-    }
+    Interval operator*(const hilti::rt::integer::safe<std::int64_t>& i) const;
 
-    Interval operator*(const hilti::rt::integer::safe<std::uint64_t>& i) const {
-        return Interval(_nsecs * i.Ref(), NanosecondTag());
-    }
+    Interval operator*(const hilti::rt::integer::safe<std::uint64_t>& i) const;
 
-    Interval operator*(double i) const {
-        return Interval(integer::safe<int64_t>(static_cast<double>(_nsecs.Ref()) * i), NanosecondTag());
-    }
+    Interval operator*(double i) const;
 
     /** Returns true if the interval is non-zero. */
-    explicit operator bool() const { return _nsecs.Ref() != 0; }
+    explicit operator bool() const;
 
     /** Returns a humand-readable representation of the interval. */
-    operator std::string() const {
-        int64_t secs = _nsecs / 1'000'000'000;
-        // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
-        double frac = (_nsecs.Ref() % 1'000'000'000) / 1e9;
-        return fmt("%.6fs", static_cast<double>(secs) + frac);
-    }
+    operator std::string() const;
 
 private:
     integer::safe<int64_t> _nsecs = 0;
 };
 
 namespace detail::adl {
-inline std::string to_string(const Interval& x, adl::tag /*unused*/) { return x; }
+std::string to_string(const Interval& x, adl::tag /*unused*/);
 
 } // namespace detail::adl
 
-inline std::ostream& operator<<(std::ostream& out, const Interval& x) {
-    out << to_string(x);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Interval& x);
 
 } // namespace hilti::rt
