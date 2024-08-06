@@ -18,55 +18,23 @@
 namespace hilti::rt {
 
 namespace detail::adl {
-inline std::string to_string(hilti::rt::integer::safe<uint64_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRIu64, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<int64_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRId64, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<uint32_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRIu32, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<int32_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRId32, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<uint16_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRIu16, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<int16_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRId16, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<uint8_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRIu8, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<int8_t> x, adl::tag /*unused*/) {
-    return fmt("%" PRId8, *x.Ptr());
-}
-
-inline std::string to_string(hilti::rt::integer::safe<char> x, adl::tag /*unused*/) { return fmt("%" PRId8, *x.Ptr()); }
-
-inline std::string to_string(uint64_t x, adl::tag /*unused*/) { return fmt("%" PRIu64, x); }
-
-inline std::string to_string(int64_t x, adl::tag /*unused*/) { return fmt("%" PRId64, x); }
-
-inline std::string to_string(uint32_t x, adl::tag /*unused*/) { return fmt("%" PRIu32, x); }
-
-inline std::string to_string(int32_t x, adl::tag /*unused*/) { return fmt("%" PRId32, x); }
-
-inline std::string to_string(uint16_t x, adl::tag /*unused*/) { return fmt("%" PRIu16, x); }
-
-inline std::string to_string(int16_t x, adl::tag /*unused*/) { return fmt("%" PRId16, x); }
-
-inline std::string to_string(uint8_t x, adl::tag /*unused*/) { return fmt("%" PRIu8, x); }
-
-inline std::string to_string(int8_t x, adl::tag /*unused*/) { return fmt("%" PRId8, x); }
+std::string to_string(hilti::rt::integer::safe<uint64_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<int64_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<uint32_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<int32_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<uint16_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<int16_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<uint8_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<int8_t> x, adl::tag /*unused*/);
+std::string to_string(hilti::rt::integer::safe<char> x, adl::tag /*unused*/);
+std::string to_string(uint64_t x, adl::tag /*unused*/);
+std::string to_string(int64_t x, adl::tag /*unused*/);
+std::string to_string(uint32_t x, adl::tag /*unused*/);
+std::string to_string(int32_t x, adl::tag /*unused*/);
+std::string to_string(uint16_t x, adl::tag /*unused*/);
+std::string to_string(int16_t x, adl::tag /*unused*/);
+std::string to_string(uint8_t x, adl::tag /*unused*/);
+std::string to_string(int8_t x, adl::tag /*unused*/);
 
 } // namespace detail::adl
 
@@ -282,13 +250,7 @@ extern uint64_t flip64(uint64_t v);
  * @param n number of valid bytes in *v*
  * @return value with *n* bits of *v* flipped in their byte order
  */
-inline int64_t flip(int64_t v, uint64_t n) {
-    if ( n == 0 )
-        return v;
-    auto i = static_cast<uint64_t>(v);
-    i = flip64(i) >> (64 - n * 8);
-    return static_cast<int64_t>(i);
-}
+int64_t flip(int64_t v, uint64_t n);
 
 /**
  * Flips an unsigned integer's byte order.
@@ -297,11 +259,7 @@ inline int64_t flip(int64_t v, uint64_t n) {
  * @param n number of valid bytes in *v*
  * @return value with *n* bits of *v* flipped in their byte order
  */
-inline uint64_t flip(uint64_t v, uint64_t n) {
-    if ( n == 0 )
-        return v;
-    return (flip64(v) >> (64 - n * 8));
-}
+uint64_t flip(uint64_t v, uint64_t n);
 
 /** Available bit orders. */
 HILTI_RT_ENUM(BitOrder, LSB0, MSB0, Undef);

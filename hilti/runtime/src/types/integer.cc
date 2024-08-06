@@ -66,3 +66,50 @@ std::string detail::adl::to_string(const integer::BitOrder& x, tag /*unused*/) {
 
     cannot_be_reached();
 }
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<uint64_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRIu64, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<int64_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRId64, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<uint32_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRIu32, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<int32_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRId32, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<uint16_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRIu16, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<int16_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRId16, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<uint8_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRIu8, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<int8_t> x, adl::tag /*unused*/) {
+    return fmt("%" PRId8, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(hilti::rt::integer::safe<char> x, adl::tag /*unused*/) {
+    return fmt("%" PRId8, *x.Ptr());
+}
+std::string hilti::rt::detail::adl::to_string(uint64_t x, adl::tag /*unused*/) { return fmt("%" PRIu64, x); }
+std::string hilti::rt::detail::adl::to_string(int64_t x, adl::tag /*unused*/) { return fmt("%" PRId64, x); }
+std::string hilti::rt::detail::adl::to_string(uint32_t x, adl::tag /*unused*/) { return fmt("%" PRIu32, x); }
+std::string hilti::rt::detail::adl::to_string(int32_t x, adl::tag /*unused*/) { return fmt("%" PRId32, x); }
+std::string hilti::rt::detail::adl::to_string(uint16_t x, adl::tag /*unused*/) { return fmt("%" PRIu16, x); }
+std::string hilti::rt::detail::adl::to_string(int16_t x, adl::tag /*unused*/) { return fmt("%" PRId16, x); }
+std::string hilti::rt::detail::adl::to_string(uint8_t x, adl::tag /*unused*/) { return fmt("%" PRIu8, x); }
+std::string hilti::rt::detail::adl::to_string(int8_t x, adl::tag /*unused*/) { return fmt("%" PRId8, x); }
+int64_t hilti::rt::integer::flip(int64_t v, uint64_t n) {
+    if ( n == 0 )
+        return v;
+    auto i = static_cast<uint64_t>(v);
+    i = flip64(i) >> (64 - n * 8);
+    return static_cast<int64_t>(i);
+}
+uint64_t hilti::rt::integer::flip(uint64_t v, uint64_t n) {
+    if ( n == 0 )
+        return v;
+    return (flip64(v) >> (64 - n * 8));
+}
