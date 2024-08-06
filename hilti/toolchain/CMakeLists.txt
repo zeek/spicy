@@ -189,10 +189,14 @@ set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS
                "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
 # LD flags
-set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG
-               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
-set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE
-               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+set_config_val(
+    HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG
+    "${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS} ${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}"
+)
+set_config_val(
+    HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE
+    "${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS} ${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}"
+)
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)

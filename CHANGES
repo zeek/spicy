@@ -1,3 +1,28 @@
+1.12.0-dev.15 | 2024-08-06 13:21:57 +0200
+
+  * GH-3865: Add CMAKE_CXX_FLAGS to HILTI_CONFIG_RUNTIME_LD_FLAGS. (Arne Welzel, Corelight)
+
+    When building Spicy with CXXFLAGS='--coverage', a subsequent
+    spicy-driver invocation fails with:
+
+        $ ./build/bin/spicy-driver ./x.spicy
+        [error] failed to load library "/tmp/__library__c2d0d689ca0dbabb.hlto":
+        /tmp/__library__c2d0d689ca0dbabb.hlto: undefined symbol: __gcov_merge_add
+
+    Similarly for `spicyz` and Zeek.
+
+    CMake adds CMAKE_CXX_FLAGS to all its linker invocations [1] which is why
+    building Spicy's executables itself works out. Prepend EXTRA_CXX_FLAGS
+    and CMAKE_CXX_FLAGS to HILTI_CONFIG_RUNTIME_LD_FLAGS as a fix.
+
+    Unclear if building Spicy with `--coverage` should imply building produced
+    `.hlto` files with coverage, too, but that's what is done with other CXXFLAGS
+    already today.
+
+    Relates to zeek/zeek#3865.
+
+    [1] https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html
+
 1.12.0-dev.13 | 2024-08-06 12:51:46 +0200
 
   * Updates <bytes>.to_int() <bytes>.to_uint() documentation. (Arne Welzel, Corelight)
