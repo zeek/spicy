@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 
+#include <cstdint>
 #include <string>
 
 #include <hilti/rt/extension-points.h>
@@ -23,7 +24,7 @@ public:
     /**
      * Constructs a port value. from port number and protocol.
      */
-    Port(uint16_t port, Protocol protocol) : _port(port), _protocol(protocol) {}
+    Port(uint16_t port, Protocol protocol);
 
     /**
      * Constructs a port from a textual representation of the form `<port
@@ -35,7 +36,7 @@ public:
      * (whereby, however, an unsupported protocol doesn't count as an error;
      * it'll be left as `Undef`)
      */
-    explicit Port(const std::string& port) { _parse(port); }
+    explicit Port(const std::string& port);
 
     Port() = default;
     Port(const Port&) = default;
@@ -46,16 +47,14 @@ public:
     Port& operator=(Port&&) noexcept = default;
 
     /** Returns the port's number. */
-    auto port() const { return _port; }
+    uint16_t port() const;
 
     /** Returns the port's protocol. */
-    auto protocol() const { return _protocol; }
+    Protocol protocol() const;
 
-    bool operator==(const Port& other) const { return _port == other._port && _protocol == other._protocol; }
-    bool operator!=(const Port& other) const { return ! (*this == other); }
-    bool operator<(const Port& other) const {
-        return std::tie(_port, _protocol) < std::tie(other._port, other._protocol);
-    };
+    bool operator==(const Port& other) const;
+    bool operator!=(const Port& other) const;
+    bool operator<(const Port& other) const;
 
     /**
      * Returns a human-readable representation of the port, using the same
@@ -73,17 +72,11 @@ private:
 
 namespace detail::adl {
 extern std::string to_string(const Protocol& x, adl::tag /*unused*/);
-inline std::string to_string(const Port& x, adl::tag /*unused*/) { return x; };
+std::string to_string(const Port& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
-inline std::ostream& operator<<(std::ostream& out, const Protocol& x) {
-    out << to_string(x);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Protocol& x);
 
-inline std::ostream& operator<<(std::ostream& out, const Port& x) {
-    out << to_string(x);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Port& x);
 
 } // namespace hilti::rt
