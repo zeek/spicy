@@ -54,31 +54,16 @@ class Iterator {
 public:
     Iterator() = default;
 
-    Iterator(typename B::size_type index, std::weak_ptr<const B*> control)
-        : _control(std::move(control)), _index(index) {}
+    Iterator(typename B::size_type index, std::weak_ptr<const B*> control);
 
-    uint8_t operator*() const {
-        if ( auto&& l = _control.lock() ) {
-            auto&& data = static_cast<const B&>(**l);
-
-            if ( _index >= data.size() )
-                throw IndexError(fmt("index %s out of bounds", _index));
-
-            return data[_index];
-        }
-
-        throw InvalidIterator("bound object has expired");
-    }
+    uint8_t operator*() const;
 
     template<typename T>
     auto& operator+=(const hilti::rt::integer::safe<T>& n) {
         return *this += n.Ref();
     }
 
-    auto& operator+=(uint64_t n) {
-        _index += n;
-        return *this;
-    }
+    Iterator& operator+=(uint64_t n);
 
     template<typename T>
     auto operator+(const hilti::rt::integer::safe<T>& n) const {
@@ -90,18 +75,11 @@ public:
         return Iterator{_index + n, _control};
     }
 
-    explicit operator bool() const { return static_cast<bool>(_control.lock()); }
+    explicit operator bool() const;
 
-    auto& operator++() {
-        ++_index;
-        return *this;
-    }
+    Iterator& operator++();
 
-    auto operator++(int) {
-        auto result = *this;
-        ++_index;
-        return result;
-    }
+    Iterator operator++(int);
 
     friend auto operator==(const Iterator& a, const Iterator& b) {
         if ( a._control.lock() != b._control.lock() )
@@ -144,12 +122,9 @@ public:
     friend class ::hilti::rt::Bytes;
 };
 
-inline std::string to_string(const Iterator& /* i */, rt::detail::adl::tag /*unused*/) { return "<bytes iterator>"; }
+std::string to_string(const Iterator& /* i */, rt::detail::adl::tag /*unused*/);
 
-inline std::ostream& operator<<(std::ostream& out, const Iterator& /* x */) {
-    out << "<bytes iterator>";
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Iterator& /* x */);
 
 } // namespace bytes
 

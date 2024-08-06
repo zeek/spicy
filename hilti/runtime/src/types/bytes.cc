@@ -274,3 +274,38 @@ std::string to_string(const bytes::Side& x, tag /*unused*/) {
 }
 
 } // namespace hilti::rt::detail::adl
+hilti::rt::bytes::Iterator::Iterator(typename B::size_type index, std::weak_ptr<const B*> control)
+    : _control(std::move(control)), _index(index) {}
+uint8_t hilti::rt::bytes::Iterator::operator*() const {
+    if ( auto&& l = _control.lock() ) {
+        auto&& data = static_cast<const B&>(**l);
+
+        if ( _index >= data.size() )
+            throw IndexError(fmt("index %s out of bounds", _index));
+
+        return data[_index];
+    }
+
+    throw InvalidIterator("bound object has expired");
+}
+hilti::rt::bytes::Iterator& hilti::rt::bytes::Iterator::operator+=(uint64_t n) {
+    _index += n;
+    return *this;
+}
+hilti::rt::bytes::Iterator::operator bool() const { return static_cast<bool>(_control.lock()); }
+hilti::rt::bytes::Iterator& hilti::rt::bytes::Iterator::operator++() {
+    ++_index;
+    return *this;
+}
+hilti::rt::bytes::Iterator hilti::rt::bytes::Iterator::operator++(int) {
+    auto result = *this;
+    ++_index;
+    return result;
+}
+std::string hilti::rt::bytes::to_string(const Iterator& /* i */, rt::detail::adl::tag /*unused*/) {
+    return "<bytes iterator>";
+}
+std::ostream& hilti::rt::bytes::operator<<(std::ostream& out, const Iterator& /* x */) {
+    out << "<bytes iterator>";
+    return out;
+}
