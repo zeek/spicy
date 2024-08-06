@@ -697,3 +697,887 @@ void Chunk::debugPrint(std::ostream& out) const {
     x = escapeBytes(x);
     out << fmt("offset %lu  data=|%s| (%s)", _offset, x, (isOwning() ? "owning" : "non-owning")) << '\n';
 }
+
+hilti::rt::stream::detail::Chunk& hilti::rt::stream::detail::Chunk::operator=(const Chunk& other) {
+    if ( &other == this )
+        return *this;
+
+    destroy();
+
+    _offset = other._offset;
+    _size = other._size;
+    _data = other._data;
+    _allocated = 0;
+    _chain = other._chain;
+    _next = nullptr;
+
+    if ( other.isOwning() )
+        makeOwning();
+
+    return *this;
+}
+
+hilti::rt::stream::detail::Chunk& hilti::rt::stream::detail::Chunk::operator=(Chunk&& other) noexcept {
+    if ( _allocated > 0 )
+        delete[] _data;
+
+    _offset = other._offset;
+    _size = other._size;
+    _allocated = other._allocated;
+    _data = other._data;
+    _chain = other._chain;
+    _next = std::move(other._next);
+
+    other._size = 0;
+    other._allocated = 0;
+    other._data = nullptr;
+
+    return *this;
+}
+hilti::rt::stream::detail::Chunk::Chunk(const Offset& o, const Byte* b, size_t size, NonOwning)
+    : _offset(o), _size(size), _data(b) {}
+hilti::rt::stream::detail::Chunk::Chunk(const Offset& o, size_t len) : _offset(o), _size(len) { assert(_size > 0); }
+hilti::rt::stream::detail::Chunk::Chunk(const Chunk& other)
+    : _offset(other._offset), _size(other._size), _data(other._data), _chain(other._chain), _next(nullptr) {
+    if ( other.isOwning() )
+        makeOwning();
+}
+hilti::rt::stream::detail::Chunk::Chunk(Chunk&& other) noexcept
+    : _offset(other._offset),
+      _size(other._size),
+      _allocated(other._allocated),
+      _data(other._data),
+      _chain(other._chain),
+      _next(std::move(other._next)) {
+    other._size = 0;
+    other._allocated = 0;
+    other._data = nullptr;
+}
+hilti::rt::stream::detail::Chunk::~Chunk() { destroy(); }
+hilti::rt::stream::Offset hilti::rt::stream::detail::Chunk::offset() const { return _offset; }
+hilti::rt::stream::Offset hilti::rt::stream::detail::Chunk::endOffset() const { return _offset + size(); }
+bool hilti::rt::stream::detail::Chunk::isGap() const { return _data == nullptr; };
+bool hilti::rt::stream::detail::Chunk::isOwning() const { return _allocated > 0; }
+bool hilti::rt::stream::detail::Chunk::inRange(const Offset& offset) const {
+    return offset >= _offset && offset < endOffset();
+}
+const hilti::rt::stream::Byte* hilti::rt::stream::detail::Chunk::data() const {
+    if ( isGap() )
+        throw MissingData("data is missing");
+
+    return _data;
+}
+const hilti::rt::stream::Byte* hilti::rt::stream::detail::Chunk::data(const Offset& offset) const {
+    assert(inRange(offset));
+    return data() + (offset - _offset).Ref();
+}
+const hilti::rt::stream::Byte* hilti::rt::stream::detail::Chunk::endData() const {
+    if ( isGap() )
+        throw MissingData("data is missing");
+
+    return data() + _size;
+}
+hilti::rt::stream::Size hilti::rt::stream::detail::Chunk::size() const { return _size; }
+hilti::rt::stream::Size hilti::rt::stream::detail::Chunk::allocated() const { return _allocated; }
+bool hilti::rt::stream::detail::Chunk::isLast() const { return ! _next; }
+const hilti::rt::stream::detail::Chunk* hilti::rt::stream::detail::Chunk::next() const { return _next.get(); }
+const Chunk* hilti::rt::stream::detail::Chunk::last() const {
+    const Chunk* i = this;
+    while ( i && i->_next )
+        i = i->_next.get();
+    return i;
+}
+Chunk* hilti::rt::stream::detail::Chunk::last() {
+    Chunk* i = this;
+    while ( i && i->_next )
+        i = i->_next.get();
+    return i;
+}
+void hilti::rt::stream::detail::Chunk::makeOwning() {
+    if ( _size == 0 || _allocated > 0 || ! _data )
+        return;
+
+    auto data = std::make_unique<Byte[]>(_size);
+    memcpy(data.get(), _data, _size);
+    _allocated = _size;
+    _data = data.release();
+}
+void hilti::rt::stream::detail::Chunk::setOffset(Offset o) {
+    auto c = this;
+    while ( c ) {
+        c->_offset = o;
+        o += c->size();
+        c = c->next();
+    }
+}
+void hilti::rt::stream::detail::Chunk::setChain(const Chain* chain) {
+    auto x = this;
+    while ( x ) {
+        x->_chain = chain;
+        x = x->_next.get();
+    }
+}
+hilti::rt::stream::detail::Chunk* hilti::rt::stream::detail::Chunk::next() { return _next.get(); }
+void hilti::rt::stream::detail::Chunk::setNext(std::unique_ptr<Chunk> next) {
+    assert(_chain);
+
+    makeOwning();
+    Offset offset = endOffset();
+    _next = std::move(next);
+
+    auto c = _next.get();
+    while ( c ) {
+        c->_offset = offset;
+        c->_chain = _chain;
+        offset += c->size();
+        c = c->_next.get();
+    }
+}
+void hilti::rt::stream::detail::Chunk::detach() {
+    _offset = 0;
+    _chain = nullptr;
+    _next = nullptr;
+}
+hilti::rt::stream::detail::Chunk::Chunk() {}
+hilti::rt::stream::detail::Chain::Chain() {}
+hilti::rt::stream::detail::Chain::Chain(std::unique_ptr<Chunk> head) : _head(std::move(head)), _tail(_head->last()) {
+    _head->setChain(this);
+
+    if ( auto size = _head->size() ) {
+        if ( _head->isGap() ) {
+            _statistics.num_gap_bytes = _head->size();
+            _statistics.num_gap_chunks = 1;
+        }
+        else {
+            _statistics.num_data_bytes = _head->size();
+            _statistics.num_data_chunks = 1;
+        }
+    }
+}
+const hilti::rt::stream::detail::Chunk* hilti::rt::stream::detail::Chain::head() const { return _head.get(); }
+const hilti::rt::stream::detail::Chunk* hilti::rt::stream::detail::Chain::tail() const { return _tail; }
+hilti::rt::stream::detail::Chunk* hilti::rt::stream::detail::Chain::tail() { return _tail; }
+hilti::rt::stream::detail::Chain::Size hilti::rt::stream::detail::Chain::size() const {
+    return (endOffset() - offset()).Ref();
+}
+bool hilti::rt::stream::detail::Chain::isFrozen() const { return _state == State::Frozen; }
+bool hilti::rt::stream::detail::Chain::isValid() const { return _state != State::Invalid; }
+bool hilti::rt::stream::detail::Chain::inRange(const Offset& o) const { return o >= offset() && o < endOffset(); }
+hilti::rt::stream::Offset hilti::rt::stream::detail::Chain::offset() const { return _head_offset; }
+hilti::rt::stream::Offset hilti::rt::stream::detail::Chain::endOffset() const {
+    return _tail ? _tail->endOffset() : _head_offset;
+}
+void hilti::rt::stream::detail::Chain::invalidate() {
+    _state = State::Invalid;
+    _head.reset();
+    _head_offset = 0;
+    _tail = nullptr;
+    _statistics = {};
+}
+void hilti::rt::stream::detail::Chain::reset() {
+    _state = State::Mutable;
+    _head.reset();
+    _head_offset = 0;
+    _tail = nullptr;
+    _statistics = {};
+}
+void hilti::rt::stream::detail::Chain::freeze() {
+    if ( isValid() )
+        _state = State::Frozen;
+}
+void hilti::rt::stream::detail::Chain::unfreeze() {
+    if ( isValid() )
+        _state = State::Mutable;
+}
+const Statistics& hilti::rt::stream::detail::Chain::statistics() const { return _statistics; }
+void hilti::rt::stream::detail::Chain::_ensureValid() const {
+    if ( ! isValid() )
+        throw InvalidIterator("stream object no longer available");
+}
+void hilti::rt::stream::detail::Chain::_ensureMutable() const {
+    if ( isFrozen() )
+        throw Frozen("stream object can no longer be modified");
+}
+hilti::rt::stream::SafeConstIterator::Offset hilti::rt::stream::SafeConstIterator::offset() const { return _offset; }
+bool hilti::rt::stream::SafeConstIterator::isFrozen() const { return ! _chain || _chain->isFrozen(); }
+hilti::rt::stream::SafeConstIterator& hilti::rt::stream::SafeConstIterator::operator++() {
+    _increment(1);
+    return *this;
+}
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::SafeConstIterator::operator++(int) {
+    auto x = *this;
+    _increment(1);
+    return x;
+}
+hilti::rt::stream::SafeConstIterator& hilti::rt::stream::SafeConstIterator::operator+=(
+    const integer::safe<uint64_t>& i) {
+    _increment(i);
+    return *this;
+}
+hilti::rt::stream::SafeConstIterator& hilti::rt::stream::SafeConstIterator::operator--() {
+    _decrement(1);
+    return *this;
+}
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::SafeConstIterator::operator--(int) {
+    auto x = *this;
+    _decrement(1);
+    return x;
+}
+hilti::rt::stream::SafeConstIterator& hilti::rt::stream::SafeConstIterator::operator-=(
+    const integer::safe<uint64_t>& i) {
+    _decrement(i);
+    return *this;
+}
+hilti::rt::stream::SafeConstIterator::Byte hilti::rt::stream::SafeConstIterator::operator*() const {
+    return _dereference();
+}
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::SafeConstIterator::operator+(
+    const integer::safe<uint64_t>& i) const {
+    auto x = *this;
+    x._increment(i);
+    return x;
+}
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::SafeConstIterator::operator-(
+    const integer::safe<uint64_t>& i) const {
+    auto x = *this;
+    x._decrement(i);
+    return x;
+}
+hilti::rt::integer::safe<int64_t> hilti::rt::stream::SafeConstIterator::operator-(
+    const SafeConstIterator& other) const {
+    _ensureSameChain(other);
+    return static_cast<int64_t>(_offset) - static_cast<int64_t>(other._offset);
+}
+bool hilti::rt::stream::SafeConstIterator::operator==(const SafeConstIterator& other) const {
+    _ensureSameChain(other);
+    return (_offset == other._offset) || (isEnd() && other.isEnd());
+}
+bool hilti::rt::stream::SafeConstIterator::operator!=(const SafeConstIterator& other) const {
+    _ensureSameChain(other);
+    return ! (*this == other);
+}
+bool hilti::rt::stream::SafeConstIterator::operator<(const SafeConstIterator& other) const {
+    _ensureSameChain(other);
+    return offset() < other.offset();
+}
+bool hilti::rt::stream::SafeConstIterator::operator<=(const SafeConstIterator& other) const {
+    _ensureSameChain(other);
+    return offset() <= other.offset();
+}
+bool hilti::rt::stream::SafeConstIterator::operator>(const SafeConstIterator& other) const {
+    _ensureSameChain(other);
+    return offset() > other.offset();
+}
+bool hilti::rt::stream::SafeConstIterator::operator>=(const SafeConstIterator& other) const {
+    _ensureSameChain(other);
+    return offset() >= other.offset();
+}
+hilti::rt::stream::SafeConstIterator::operator bool() const { return ! isUnset(); }
+std::ostream& hilti::rt::stream::SafeConstIterator::operator<<(std::ostream& out) const {
+    out << to_string(*this);
+    return out;
+}
+bool hilti::rt::stream::SafeConstIterator::isUnset() const { return ! _chain; }
+bool hilti::rt::stream::SafeConstIterator::isExpired() const {
+    if ( ! _chain )
+        return false;
+
+    return ! _chain->isValid();
+}
+bool hilti::rt::stream::SafeConstIterator::isValid() const { return ! isUnset() && ! isExpired(); }
+bool hilti::rt::stream::SafeConstIterator::isEnd() const {
+    if ( ! _chain )
+        return true;
+
+    _ensureValidChain();
+    return _offset >= _chain->endOffset();
+}
+const hilti::rt::stream::SafeConstIterator::Chunk* hilti::rt::stream::SafeConstIterator::chunk() const {
+    return _chain && _chain->isValid() && _chain->inRange(_offset) ? _chunk : nullptr;
+}
+const hilti::rt::stream::SafeConstIterator::Chain* hilti::rt::stream::SafeConstIterator::chain() const {
+    return _chain.get();
+}
+hilti::rt::stream::SafeConstIterator::SafeConstIterator(ChainPtr chain, const Offset& offset, const Chunk* chunk)
+    : _chain(std::move(chain)), _offset(offset), _chunk(chunk) {
+    assert(! isUnset());
+}
+void hilti::rt::stream::SafeConstIterator::_ensureValidChain() const {
+    // This must have been checked at this point already.
+    assert(_chain);
+
+    if ( ! _chain->isValid() )
+        throw InvalidIterator("stream object no longer available");
+}
+void hilti::rt::stream::SafeConstIterator::_ensureSameChain(const SafeConstIterator& other) const {
+    if ( ! (_chain && other._chain) )
+        // One is the default constructed end iterator; that's ok.
+        return;
+
+    if ( ! other.isValid() )
+        throw InvalidIterator("stream object no longer available");
+
+    if ( _chain != other._chain )
+        throw InvalidIterator("incompatible iterators");
+}
+void hilti::rt::stream::SafeConstIterator::_increment(const integer::safe<uint64_t>& n) {
+    if ( ! _chain )
+        throw InvalidIterator("unbound stream iterator");
+
+    if ( ! n )
+        return;
+
+    _offset += n;
+
+    if ( ! (_chain && _chain->isValid()) )
+        return; // will be caught when dereferenced
+
+    _chunk = _chain->findChunk(_offset, chunk());
+    // chunk will be null if we're pointing beyond the end.
+}
+void hilti::rt::stream::SafeConstIterator::_decrement(const integer::safe<uint64_t>& n) {
+    if ( ! _chain )
+        throw InvalidIterator("unbound stream iterator");
+
+    if ( n > _offset )
+        throw InvalidIterator("attempt to move before beginning of stream");
+
+    if ( ! n )
+        return;
+
+    _offset -= n;
+
+    if ( _chunk && _offset > _chunk->offset() )
+        return; // fast-path, chunk still valid
+
+    if ( ! (_chain && _chain->isValid()) )
+        return; // will be caught when dereferenced
+
+    _chunk = _chain->findChunk(_offset, _chunk);
+    // chunk will be null if we're pointing beyond the beginning.
+}
+hilti::rt::stream::SafeConstIterator::Byte hilti::rt::stream::SafeConstIterator::_dereference() const {
+    if ( ! _chain )
+        throw InvalidIterator("unbound stream iterator");
+
+    _ensureValidChain();
+
+    if ( ! _chain->inRange(_offset) )
+        throw InvalidIterator("stream iterator outside of valid range");
+
+    auto c = _chain->findChunk(_offset, chunk());
+    assert(c);
+
+    if ( c->isGap() )
+        throw MissingData("data is missing");
+
+    return *c->data(_offset);
+}
+std::ostream& hilti::rt::stream::operator<<(std::ostream& out, const SafeConstIterator& x) {
+    out << to_string(x);
+    return out;
+}
+hilti::rt::stream::detail::UnsafeConstIterator::Offset hilti::rt::stream::detail::UnsafeConstIterator::offset() const {
+    return _offset;
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::isFrozen() const { return ! _chain || _chain->isFrozen(); }
+hilti::rt::stream::detail::UnsafeConstIterator& hilti::rt::stream::detail::UnsafeConstIterator::operator++() {
+    _increment(1);
+    return *this;
+}
+hilti::rt::stream::detail::UnsafeConstIterator hilti::rt::stream::detail::UnsafeConstIterator::operator++(int) {
+    auto x = *this;
+    _increment(1);
+    return x;
+}
+hilti::rt::stream::detail::UnsafeConstIterator& hilti::rt::stream::detail::UnsafeConstIterator::operator--() {
+    _decrement(1);
+    return *this;
+}
+hilti::rt::stream::detail::UnsafeConstIterator hilti::rt::stream::detail::UnsafeConstIterator::operator--(int) {
+    auto x = *this;
+    _decrement(1);
+    return x;
+}
+hilti::rt::stream::detail::UnsafeConstIterator& hilti::rt::stream::detail::UnsafeConstIterator::operator-=(
+    const integer::safe<uint64_t>& i) {
+    _decrement(i);
+    return *this;
+}
+hilti::rt::stream::detail::UnsafeConstIterator::Byte hilti::rt::stream::detail::UnsafeConstIterator::operator*() const {
+    return _dereference();
+}
+hilti::rt::stream::detail::UnsafeConstIterator hilti::rt::stream::detail::UnsafeConstIterator::operator+(
+    const integer::safe<uint64_t>& i) const {
+    auto x = *this;
+    x._increment(i);
+    return x;
+}
+hilti::rt::stream::detail::UnsafeConstIterator hilti::rt::stream::detail::UnsafeConstIterator::operator-(
+    const integer::safe<uint64_t>& i) const {
+    auto x = *this;
+    x._decrement(i);
+    return x;
+}
+hilti::rt::integer::safe<int64_t> hilti::rt::stream::detail::UnsafeConstIterator::operator-(
+    const UnsafeConstIterator& other) const {
+    return static_cast<int64_t>(_offset) - static_cast<int64_t>(other._offset);
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::operator==(const UnsafeConstIterator& other) const {
+    return (_offset == other._offset) || (isEnd() && other.isEnd());
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::operator!=(const UnsafeConstIterator& other) const {
+    return ! (*this == other);
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::operator<(const UnsafeConstIterator& other) const {
+    return offset() < other.offset();
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::operator<=(const UnsafeConstIterator& other) const {
+    return offset() <= other.offset();
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::operator>(const UnsafeConstIterator& other) const {
+    return offset() > other.offset();
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::operator>=(const UnsafeConstIterator& other) const {
+    return offset() >= other.offset();
+}
+hilti::rt::stream::detail::UnsafeConstIterator::operator bool() const { return ! isUnset(); }
+bool hilti::rt::stream::detail::UnsafeConstIterator::isUnset() const { return ! _chain; }
+bool hilti::rt::stream::detail::UnsafeConstIterator::isExpired() const {
+    if ( ! _chain )
+        return false;
+
+    return ! _chain->isValid();
+}
+bool hilti::rt::stream::detail::UnsafeConstIterator::isValid() const { return ! isUnset() && ! isExpired(); }
+bool hilti::rt::stream::detail::UnsafeConstIterator::isEnd() const {
+    if ( ! _chain )
+        return true;
+
+    return _offset >= _chain->endOffset();
+}
+std::ostream& hilti::rt::stream::detail::UnsafeConstIterator::operator<<(std::ostream& out) const {
+    out << to_string(*this);
+    return out;
+}
+const hilti::rt::stream::detail::UnsafeConstIterator::Chunk* hilti::rt::stream::detail::UnsafeConstIterator::chunk()
+    const {
+    return _chunk;
+}
+const hilti::rt::stream::detail::UnsafeConstIterator::Chain* hilti::rt::stream::detail::UnsafeConstIterator::chain()
+    const {
+    return _chain;
+}
+hilti::rt::stream::detail::UnsafeConstIterator::UnsafeConstIterator(const ChainPtr& chain, const Offset& offset,
+                                                                    const Chunk* chunk)
+    : _chain(chain.get()), _offset(offset), _chunk(chunk) {
+    assert(! isUnset());
+}
+hilti::rt::stream::detail::UnsafeConstIterator::UnsafeConstIterator(const Chain* chain, const Offset& offset,
+                                                                    const Chunk* chunk)
+    : _chain(chain), _offset(offset), _chunk(chunk) {
+    assert(! isUnset());
+}
+void hilti::rt::stream::detail::UnsafeConstIterator::_increment(const integer::safe<uint64_t>& n) {
+    if ( n == 0 )
+        return;
+
+    _offset += n;
+
+    if ( _chunk && _offset < _chunk->endOffset() )
+        return; // fast-path, chunk still valid
+
+    _chunk = _chain->findChunk(_offset, _chunk);
+}
+void hilti::rt::stream::detail::UnsafeConstIterator::_decrement(const integer::safe<uint64_t>& n) {
+    if ( n == 0 )
+        return;
+
+    _offset -= n;
+
+    if ( _chunk && _offset > _chunk->offset() )
+        return; // fast-path, chunk still valid
+
+    _chunk = _chain->findChunk(_offset, _chunk);
+}
+hilti::rt::stream::detail::UnsafeConstIterator::Byte hilti::rt::stream::detail::UnsafeConstIterator::_dereference()
+    const {
+    assert(_chunk);
+
+    auto* byte = _chunk->data(_offset);
+
+    if ( ! byte )
+        throw MissingData("data is missing");
+
+    return *byte;
+}
+hilti::rt::stream::detail::UnsafeConstIterator::UnsafeConstIterator(const SafeConstIterator& i)
+    : _chain(i.chain()), _offset(i.offset()), _chunk(i.chain() ? i.chain()->findChunk(_offset, i.chunk()) : nullptr) {}
+std::ostream& hilti::rt::stream::detail::operator<<(std::ostream& out, const UnsafeConstIterator& x) {
+    out << to_string(x);
+    return out;
+}
+hilti::rt::stream::detail::Chain::SafeConstIterator hilti::rt::stream::detail::Chain::begin() const {
+    _ensureValid();
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), offset(), _head.get()};
+}
+hilti::rt::stream::detail::Chain::SafeConstIterator hilti::rt::stream::detail::Chain::end() const {
+    _ensureValid();
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), endOffset(), _tail};
+}
+hilti::rt::stream::detail::Chain::SafeConstIterator hilti::rt::stream::detail::Chain::at(const Offset& offset) const {
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), offset, findChunk(offset)};
+}
+hilti::rt::stream::detail::Chain::UnsafeConstIterator hilti::rt::stream::detail::Chain::unsafeBegin() const {
+    _ensureValid();
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), offset(), _tail};
+}
+hilti::rt::stream::detail::Chain::UnsafeConstIterator hilti::rt::stream::detail::Chain::unsafeEnd() const {
+    _ensureValid();
+    return {ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(this)), endOffset(), _tail};
+}
+void hilti::rt::stream::detail::Chain::trim(const SafeConstIterator& i) {
+    if ( ! i.chain() ) {
+        // Unbound end operator, trim all content off.
+        trim(endOffset());
+        return;
+    }
+
+    if ( i.chain() != this )
+        throw InvalidIterator("incompatible iterator");
+
+    if ( ! i.isValid() )
+        throw InvalidIterator("stream object no longer available");
+
+    trim(i.offset());
+}
+void hilti::rt::stream::detail::Chain::trim(const UnsafeConstIterator& i) { trim(i.offset()); }
+const hilti::rt::stream::Byte* hilti::rt::stream::detail::Chain::data(const Offset& offset, Chunk* hint_prev) const {
+    auto c = findChunk(offset, hint_prev);
+    if ( ! c )
+        throw InvalidIterator("stream iterator outside of valid range");
+
+    return c->data(offset);
+}
+hilti::rt::stream::detail::Chunk* hilti::rt::stream::detail::Chain::findChunk(const Offset& offset, Chunk* hint_prev) {
+    _ensureValid();
+
+    Chunk* c = _head.get();
+
+    // See comment above.
+    if ( ! hint_prev )
+        hint_prev = _tail;
+
+    if ( hint_prev && hint_prev->offset() <= offset )
+        c = hint_prev;
+
+    while ( c && ! c->inRange(offset) )
+        c = c->next();
+
+    if ( _tail && offset > _tail->endOffset() )
+        return _tail;
+
+    return c;
+}
+const hilti::rt::stream::detail::Chunk* hilti::rt::stream::detail::Chain::findChunk(const Offset& offset,
+                                                                                    const Chunk* hint_prev) const {
+    _ensureValid();
+
+    const Chunk* c = _head.get();
+
+    // A very common way this function gets called without `hint_prev` is
+    // `Stream::unsafeEnd` via `Chain::unsafeEnd` in construction of an
+    // `UnsafeConstIterator` from a `SafeConstIterator`; in this case the chunk
+    // for `end()` will be `nullptr`. Optimize for that case by assuming we
+    // always want a chunk near the end if no hint is given.
+    if ( ! hint_prev )
+        hint_prev = _tail;
+
+    if ( hint_prev && hint_prev->offset() <= offset )
+        c = hint_prev;
+
+    while ( c && ! c->inRange(offset) )
+        c = c->next();
+
+    if ( c && ! c->inRange(offset) )
+        return nullptr;
+
+    return c;
+}
+
+hilti::rt::stream::SafeConstIterator::SafeConstIterator(const UnsafeConstIterator& i)
+    : _chain(detail::ChainPtr(intrusive_ptr::NewRef(), const_cast<Chain*>(i._chain))),
+      _offset(i._offset),
+      _chunk(i._chunk) {}
+bool hilti::rt::stream::View::operator!=(const View& other) const { return ! (*this == other); }
+bool hilti::rt::stream::View::operator!=(const Stream& other) const { return ! (*this == other); }
+bool hilti::rt::stream::View::operator!=(const Bytes& other) const { return ! (*this == other); }
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::View::cend() const { return end(); }
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::View::end() const {
+    assert(_begin.chain());
+    return _end ? *_end : _begin.chain()->end();
+}
+const hilti::rt::stream::SafeConstIterator& hilti::rt::stream::View::cbegin() const { return _begin; }
+const hilti::rt::stream::SafeConstIterator& hilti::rt::stream::View::begin() const { return _begin; }
+hilti::rt::stream::detail::UnsafeConstIterator hilti::rt::stream::View::unsafeEnd() const {
+    return _end ? detail::UnsafeConstIterator(*_end) : _begin.chain()->unsafeEnd();
+}
+hilti::rt::stream::detail::UnsafeConstIterator hilti::rt::stream::View::unsafeBegin() const {
+    return detail::UnsafeConstIterator(_begin);
+}
+hilti::rt::stream::View hilti::rt::stream::View::extract(Byte* dst, uint64_t n) const {
+    _ensureValid();
+
+    if ( n > size() )
+        throw WouldBlock("end of stream view");
+
+    const auto p = begin();
+
+    const auto* chain = p.chain();
+    assert(chain);
+    assert(chain->isValid());
+    assert(chain->inRange(p.offset()));
+
+    auto offset = p.offset().Ref();
+
+    for ( auto c = chain->findChunk(p.offset()); offset - p.offset().Ref() < n; c = c->next() ) {
+        assert(c);
+
+        const auto into_chunk = offset - c->offset().Ref();
+        const auto remaining = n + p.offset().Ref() - offset;
+        const auto m = std::min(remaining, c->size().Ref() - into_chunk);
+
+        ::memcpy(dst, c->data(offset), m);
+        offset += m;
+        dst += m;
+    }
+
+    return View(p + n, _end);
+}
+hilti::rt::stream::View hilti::rt::stream::View::limit(Offset offset) const {
+    // We cannot increase the size of an already limited view.
+    if ( _end ) {
+        const auto size = _end->offset().Ref() - _begin.offset().Ref();
+        offset = std::min(offset.Ref(), size);
+    }
+
+    return View(begin(), begin() + offset);
+}
+hilti::rt::stream::View hilti::rt::stream::View::trim(const SafeConstIterator& nbegin) const {
+    _ensureSameChain(nbegin);
+
+    if ( ! _end )
+        return View(nbegin);
+
+    if ( nbegin.offset() > _end->offset() )
+        return View(*_end, *_end);
+
+    return View(nbegin, *_end);
+}
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::View::at(const Offset& offset) const {
+    return begin() + (offset - begin().offset());
+}
+hilti::rt::stream::View hilti::rt::stream::View::sub(const Offset& to) const { return View(begin(), begin() + to); }
+hilti::rt::stream::View hilti::rt::stream::View::sub(const Offset& from, const Offset& to) const {
+    return View(begin() + from, begin() + to);
+}
+hilti::rt::stream::View hilti::rt::stream::View::sub(SafeConstIterator to) const {
+    _ensureSameChain(to);
+    return View(begin(), std::move(to));
+}
+hilti::rt::stream::View hilti::rt::stream::View::sub(SafeConstIterator from, SafeConstIterator to) const {
+    _ensureSameChain(from);
+    _ensureSameChain(to);
+    return View(std::move(from), std::move(to));
+}
+hilti::rt::stream::View hilti::rt::stream::View::advance(const integer::safe<uint64_t>& i) const {
+    return View(begin() + i, _end);
+}
+hilti::rt::stream::View hilti::rt::stream::View::advance(SafeConstIterator i) const {
+    _ensureSameChain(i);
+    return View(std::move(i), _end);
+}
+std::tuple<bool, UnsafeConstIterator> hilti::rt::stream::View::find(const Bytes& v, UnsafeConstIterator n,
+                                                                    Direction d) const {
+    if ( d == Direction::Forward )
+        return _findForward(v, n);
+    else
+        return _findBackward(v, n);
+}
+std::tuple<bool, SafeConstIterator> hilti::rt::stream::View::find(const Bytes& v, const SafeConstIterator& n,
+                                                                  Direction d) const {
+    _ensureValid();
+    _ensureSameChain(n);
+    auto x = find(v, UnsafeConstIterator(n), d);
+    return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+}
+std::tuple<bool, SafeConstIterator> hilti::rt::stream::View::find(const Bytes& v, Direction d) const {
+    _ensureValid();
+    auto i = (d == Direction::Forward ? unsafeBegin() : unsafeEnd());
+    auto x = find(v, i, d);
+    return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+}
+std::tuple<bool, SafeConstIterator> hilti::rt::stream::View::find(const View& v, const SafeConstIterator& n) const {
+    _ensureValid();
+    _ensureSameChain(n);
+    auto x = find(v, UnsafeConstIterator(n));
+    return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+}
+std::tuple<bool, SafeConstIterator> hilti::rt::stream::View::find(const View& v) const {
+    _ensureValid();
+    auto x = find(v, UnsafeConstIterator());
+    return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+}
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::View::find(Byte b, const SafeConstIterator& n) const {
+    _ensureValid();
+    _ensureSameChain(n);
+    return SafeConstIterator(find(b, UnsafeConstIterator(n)));
+}
+hilti::rt::stream::SafeConstIterator hilti::rt::stream::View::find(Byte b) const {
+    _ensureValid();
+    return SafeConstIterator(find(b, UnsafeConstIterator()));
+}
+bool hilti::rt::stream::View::isOpenEnded() const { return ! _end.has_value(); }
+bool hilti::rt::stream::View::isEmpty() const { return size() == 0; }
+std::optional<Offset> hilti::rt::stream::View::endOffset() const {
+    if ( _end )
+        return _end->offset();
+    else
+        return std::nullopt;
+}
+hilti::rt::stream::View::Offset hilti::rt::stream::View::offset() const { return _begin.offset(); }
+hilti::rt::stream::View::View(SafeConstIterator begin) : _begin(std::move(begin)) {}
+hilti::rt::stream::View::View(SafeConstIterator begin, SafeConstIterator end)
+    : _begin(std::move(begin)), _end(std::move(end)) {
+    _ensureValid();
+
+    if ( ! _end->_chain )
+        _end = _begin.chain()->end();
+    else
+        _ensureSameChain(*_end);
+}
+std::ostream& hilti::rt::stream::operator<<(std::ostream& out, const View& x) {
+    return out << hilti::rt::to_string_for_print(x);
+}
+hilti::rt::Bytes hilti::rt::stream::View::data() const {
+    Bytes s;
+    s.append(*this);
+    return s;
+}
+hilti::rt::stream::View::Size hilti::rt::stream::View::size() const {
+    // Because our end offset may point beyond what's currently
+    // available, we need to take the actual end in account to return
+    // the number of actually available bytes.
+
+    if ( ! _begin.chain() )
+        return 0;
+
+    auto tail = _begin.chain()->tail();
+    if ( ! tail )
+        return 0;
+
+    if ( _begin.offset() > tail->endOffset() )
+        return 0;
+
+    if ( ! _end || _end->offset() >= tail->endOffset() )
+        return tail->endOffset() - _begin.offset();
+    else
+        return _end->offset() > _begin.offset() ? (_end->offset() - _begin.offset()).Ref() : 0;
+}
+void hilti::rt::stream::View::_ensureValid() const {
+    if ( ! _begin.isValid() )
+        throw InvalidIterator("view has invalid beginning");
+
+    if ( (! _begin.isUnset()) && _begin.offset() < _begin.chain()->offset() )
+        throw InvalidIterator("view starts before available range");
+
+    if ( _end && ! _end->isValid() )
+        throw InvalidIterator("view has invalid end");
+}
+void hilti::rt::stream::View::_ensureSameChain(const SafeConstIterator& other) const {
+    if ( _begin.chain() != other.chain() )
+        throw InvalidIterator("incompatible iterator");
+}
+hilti::rt::stream::View::View(SafeConstIterator begin, std::optional<SafeConstIterator> end)
+    : _begin(std::move(begin)), _end(std::move(end)) {
+    if ( _end )
+        _ensureSameChain(*_end);
+}
+bool hilti::rt::Stream::operator!=(const Stream& other) const { return ! (*this == other); }
+bool hilti::rt::Stream::operator!=(const Bytes& other) const { return ! (*this == other); }
+bool hilti::rt::Stream::operator==(const stream::View& other) const { return view() == other; }
+bool hilti::rt::Stream::operator==(const Stream& other) const { return view() == other.view(); }
+bool hilti::rt::Stream::operator==(const Bytes& other) const { return view() == other; }
+hilti::rt::Stream::View hilti::rt::Stream::view(bool expanding) const {
+    return expanding ? View(begin()) : View(begin(), end());
+}
+hilti::rt::Stream::Offset hilti::rt::Stream::endOffset() const { return _chain->endOffset(); }
+hilti::rt::Stream::SafeConstIterator hilti::rt::Stream::at(const Offset& offset) const { return _chain->at(offset); }
+hilti::rt::Stream::UnsafeConstIterator hilti::rt::Stream::unsafeEnd() const { return _chain->unsafeEnd(); }
+hilti::rt::Stream::UnsafeConstIterator hilti::rt::Stream::unsafeBegin() const { return _chain->unsafeBegin(); }
+hilti::rt::Stream::SafeConstIterator hilti::rt::Stream::cend() const { return end(); }
+hilti::rt::Stream::SafeConstIterator hilti::rt::Stream::end() const { return _chain->end(); }
+hilti::rt::Stream::SafeConstIterator hilti::rt::Stream::cbegin() const { return begin(); }
+hilti::rt::Stream::SafeConstIterator hilti::rt::Stream::begin() const { return _chain->begin(); }
+void hilti::rt::Stream::makeOwning() {
+    // Only the final chunk can be non-owning, that's guaranteed by
+    // `Chunk::setNext()`.
+    if ( auto* t = _chain->tail() )
+        t->makeOwning();
+}
+void hilti::rt::Stream::reset() { _chain->reset(); }
+bool hilti::rt::Stream::isFrozen() const { return _chain->isFrozen(); }
+void hilti::rt::Stream::unfreeze() { _chain->unfreeze(); }
+void hilti::rt::Stream::freeze() { _chain->freeze(); }
+void hilti::rt::Stream::trim(const SafeConstIterator& i) { _chain->trim(i); }
+bool hilti::rt::Stream::isEmpty() const { return _chain->size() == 0; }
+hilti::rt::Stream::Size hilti::rt::Stream::size() const { return _chain->size(); }
+hilti::rt::Stream::~Stream() {
+    assert(_chain);
+    _chain->invalidate();
+}
+hilti::rt::Stream& hilti::rt::Stream::operator=(const Stream& other) {
+    if ( &other == this )
+        return *this;
+
+    _chain->invalidate();
+    _chain = other._chain->copy();
+    return *this;
+}
+hilti::rt::Stream& hilti::rt::Stream::operator=(Stream&& other) noexcept {
+    if ( &other == this )
+        return *this;
+
+    _chain->invalidate();
+    _chain = std::move(other._chain);
+    other._chain = make_intrusive<Chain>();
+    return *this;
+}
+hilti::rt::Stream::Stream(Stream&& other) noexcept : _chain(std::move(other._chain)) {
+    other._chain = make_intrusive<Chain>();
+}
+hilti::rt::Stream::Stream(const Stream& other) : _chain(other._chain->copy()) {}
+hilti::rt::Stream::Stream(const stream::View& d) : Stream(Chunk(0, d)) {}
+hilti::rt::Stream::Stream(const char* d, Size n, stream::NonOwning) : Stream() { append(d, n, stream::NonOwning()); }
+hilti::rt::Stream::Stream(const char* d, Size n) : Stream() { append(d, n); }
+hilti::rt::Stream::Stream() : _chain(make_intrusive<Chain>()) {}
+int hilti::rt::Stream::numberOfChunks() const { return _chain->numberOfChunks(); }
+bool hilti::rt::Stream::operator!=(const stream::View& other) const { return ! (*this == other); }
+hilti::rt::Stream::Stream(Chunk&& ch) : _chain(make_intrusive<Chain>(std::make_unique<Chunk>(std::move(ch)))) {}
+const hilti::rt::stream::Statistics& hilti::rt::Stream::statistics() const { return _chain->statistics(); }
+std::ostream& hilti::rt::operator<<(std::ostream& out, const stream::Statistics& x) {
+    return out << to_string_for_print(x);
+}
+std::ostream& hilti::rt::operator<<(std::ostream& out, const Stream& x) { return out << to_string_for_print(x); }
+std::string hilti::rt::detail::adl::to_string(const stream::View& x, adl::tag /*unused*/) {
+    return fmt("b\"%s\"", hilti::rt::to_string_for_print(x));
+}
+std::string hilti::rt::detail::adl::to_string(const stream::Statistics& x, adl::tag /*unused*/) {
+    // Render like a struct.
+    return fmt("[$num_data_bytes=%" PRIu64 ", $num_data_chunks=%" PRIu64 ", $num_gap_bytes=%" PRIu64
+               ", $num_gap_chunks=%" PRIu64 "]",
+               x.num_data_bytes, x.num_data_chunks, x.num_gap_bytes, x.num_gap_chunks);
+}
+std::string hilti::rt::detail::adl::to_string(const Stream& x, adl::tag /*unused*/) {
+    return hilti::rt::to_string(x.view());
+}
