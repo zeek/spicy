@@ -366,6 +366,7 @@ TEST_CASE("toInt") {
         CHECK_EQ("100"_b.toInt(2), 4);
         CHECK_EQ("-100"_b.toInt(2), -4);
 
+        CHECK_THROWS_WITH_AS(""_b.toInt(16), "cannot decode from empty range", const RuntimeError&);
         CHECK_THROWS_WITH_AS("12a"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
     }
 
@@ -374,16 +375,30 @@ TEST_CASE("toInt") {
         CHECK_EQ("100"_b.toInt(Enum(ByteOrder::Network)), 3223600);
         CHECK_EQ("100"_b.toInt(Enum(ByteOrder::Little)), 3158065);
 
+        CHECK_EQ("\x00\x00\x00\x01\x01"_b.toInt(Enum(ByteOrder::Big)), 257);
+        CHECK_EQ("\xff"_b.toInt(Enum(ByteOrder::Big)), -1);
+        CHECK_EQ("\xff\xff"_b.toInt(Enum(ByteOrder::Big)), -1);
+        CHECK_EQ("\xff\xff\xff\xff"_b.toInt(Enum(ByteOrder::Big)), -1);
+        CHECK_EQ("\xff\xff\xff\xff\xff\xff"_b.toInt(Enum(ByteOrder::Big)), -1);
+        CHECK_EQ("\xff\xff\xff\xff\xff\xff\xff\xff"_b.toInt(Enum(ByteOrder::Big)), -1);
+
+        // 2er complement according to Wikipedia: -(2**39) + 2**8 + 2**0 = -549755813631
+        CHECK_EQ("\x80\x00\x00\x01\x01"_b.toInt(Enum(ByteOrder::Big)), -549755813631);
+        CHECK_EQ("\x01\x01\x00\x00\x80"_b.toInt(Enum(ByteOrder::Little)), -549755813631);
+
         if ( systemByteOrder().value() == ByteOrder::Little )
             CHECK_EQ("100"_b.toInt(Enum(ByteOrder::Host)), 3158065);
         else
             CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
 
+        CHECK_THROWS_WITH_AS(""_b.toInt(Enum(ByteOrder::Big)), "not enough bytes for conversion to integer",
+                             const InvalidValue&);
+
         CHECK_THROWS_WITH_AS("1234567890"_b.toInt(Enum(ByteOrder::Big)),
-                             "more than max of 8 bytes for conversion to integer (have 10)", const RuntimeError&);
+                             "more than max of 8 bytes for conversion to integer (have 10)", const InvalidValue&);
 
         CHECK_THROWS_WITH_AS("100"_b.toInt(Enum(ByteOrder::Undef)), "cannot convert value to undefined byte order",
-                             const RuntimeError&);
+                             const InvalidArgument&);
     }
 }
 
@@ -402,11 +417,14 @@ TEST_CASE("toUInt") {
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Little)), 3158065U);
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Host)), 3158065U);
 
+        CHECK_THROWS_WITH_AS(""_b.toUInt(Enum(ByteOrder::Big)), "not enough bytes for conversion to integer",
+                             const InvalidValue&);
+
         CHECK_THROWS_WITH_AS("1234567890"_b.toUInt(Enum(ByteOrder::Big)),
-                             "more than max of 8 bytes for conversion to integer (have 10)", const RuntimeError&);
+                             "more than max of 8 bytes for conversion to integer (have 10)", const InvalidValue&);
 
         CHECK_THROWS_WITH_AS("100"_b.toInt(Enum(ByteOrder::Undef)), "cannot convert value to undefined byte order",
-                             const RuntimeError&);
+                             const InvalidArgument&);
     }
 }
 

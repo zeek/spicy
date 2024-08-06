@@ -787,7 +787,8 @@ public:
                 R"(
 Interprets the data as representing an ASCII-encoded number and converts that
 into a signed integer, using a base of *base*. *base* must be between 2 and 36.
-If *base* is not given, the default is 10.
+If *base* is not given, the default is 10. If the conversion fails, throws
+a `RuntimeError` exception, this includes calling `to_int()` on empty ``bytes``.
 )",
         };
     }
@@ -815,7 +816,8 @@ public:
                 R"(
 Interprets the data as representing an ASCII-encoded number and converts that
 into an unsigned integer, using a base of *base*. *base* must be between 2 and
-36. If *base* is not given, the default is 10.
+36. If *base* is not given, the default is 10. If the conversion fails, throws
+a `RuntimeError` exception, this includes calling `to_uint()` on empty ``bytes``.
 )",
         };
     }
@@ -841,7 +843,9 @@ public:
             .doc =
                 R"(
 Interprets the ``bytes`` as representing an binary number encoded with the given
-byte order, and converts it into signed integer.
+byte order, and converts it into signed integer. If the conversion fails, throws
+a `RuntimeError` exception, this can happen when ``bytes`` is empty or its
+size is larger than 8 bytes.
 )",
         };
     }
@@ -867,7 +871,9 @@ public:
             .doc =
                 R"(
 Interprets the ``bytes`` as representing an binary number encoded with the given
-byte order, and converts it into an unsigned integer.
+byte order, and converts it into an unsigned integer. If the conversion fails,
+throws a `RuntimeError` exception, this can happen when ``bytes`` is empty or
+its size is larger than 8 bytes.
 )",
         };
     }
