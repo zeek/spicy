@@ -1,11 +1,12 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include "hilti/rt/types/string.h"
+
 #include <utf8proc/utf8proc.h>
 
 #include <hilti/rt/exception.h>
-#include <hilti/rt/types/string.h>
 
-using namespace hilti::rt;
+namespace hilti::rt {
 
 integer::safe<uint64_t> string::size(const std::string& s, DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
@@ -94,3 +95,17 @@ std::string string::lower(const std::string& s, DecodeErrorStrategy errors) {
 
     return rval;
 }
+
+namespace detail::adl {
+
+std::string to_string(const std::string& x, adl::tag /*unused*/) {
+    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+}
+
+std::string to_string(std::string_view x, adl::tag /*unused*/) {
+    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+}
+
+} // namespace detail::adl
+
+} // namespace hilti::rt

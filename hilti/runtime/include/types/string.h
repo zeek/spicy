@@ -53,13 +53,8 @@ std::string upper(const std::string& s, DecodeErrorStrategy errors = DecodeError
 } // namespace string
 
 namespace detail::adl {
-inline std::string to_string(const std::string& x, adl::tag /*unused*/) {
-    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
-}
-
-inline std::string to_string(std::string_view x, adl::tag /*unused*/) {
-    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
-}
+std::string to_string(const std::string& x, adl::tag /*unused*/);
+std::string to_string(std::string_view x, adl::tag /*unused*/);
 
 template<typename CharT, size_t N>
 inline std::string to_string(const CharT (&x)[N], adl::tag /*unused*/) {
