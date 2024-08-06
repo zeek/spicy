@@ -27,23 +27,7 @@ public:
      *
      * @throws InvalidArgument for invalid length values.
      */
-    Network(const Address& prefix, int length) : _prefix(prefix), _length(length) {
-        switch ( _prefix.family().value() ) {
-            case AddressFamily::IPv4:
-                if ( _length < 0 || _length > 32 )
-                    throw InvalidArgument(fmt("prefix length %s is invalid for IPv4 networks", _length));
-                break;
-            case AddressFamily::IPv6:
-                if ( _length < 0 || _length > 128 )
-                    throw InvalidArgument(fmt("prefix length %s is invalid for IPv6 networks", _length));
-                break;
-            case AddressFamily::Undef:
-                throw InvalidArgument(
-                    fmt("Network can only be constructed from either IPv4 or IPv6 addresses, not %s", prefix));
-        }
-
-        _mask();
-    }
+    Network(const Address& prefix, int length);
 
     /** Constructs a network from prefix address and length.
      *
@@ -54,7 +38,7 @@ public:
      * @throws RuntimeError if it cannot parse the prefix into a valid IPv4 or IPv6 address.
      * @throws InvalidArgument for invalid length values.
      */
-    Network(const std::string& prefix, int length) : _prefix(prefix), _length(length) { _mask(); }
+    Network(const std::string& prefix, int length);
     Network(const Network&) = default;
     Network() = default;
     Network(Network&&) noexcept = default;
@@ -64,56 +48,41 @@ public:
     Network& operator=(Network&&) noexcept = default;
 
     /** Returns the network prefix, with the lower bits masked out. */
-    const auto& prefix() const { return _prefix; }
+    const Address& prefix() const;
 
     /** Returns the protocol family of the network, which can be IPv4 or IPv6. */
-    auto family() const { return _prefix.family(); }
+    AddressFamily family() const;
 
     /**
      * Returns the length of the prefix. If the prefix' protocol family is
      * IPv4, this will be between 0 and 32; if IPv6, between 0 and 128.
      */
-    auto length() const { return (family() == AddressFamily::IPv4 ? _length - 96 : _length); }
+    int length() const;
 
     /** Returns true if the network includes a given address. */
-    bool contains(const Address& x) const { return x.mask(_length) == _prefix; }
+    bool contains(const Address& x) const;
 
-    bool operator==(const Network& other) const { return _prefix == other._prefix && _length == other._length; }
-    bool operator!=(const Network& other) const { return ! (*this == other); }
-    bool operator<(const Network& other) const {
-        return std::tie(_prefix, _length) < std::tie(other._prefix, other._length);
-    };
+    bool operator==(const Network& other) const;
+    bool operator!=(const Network& other) const;
+    bool operator<(const Network& other) const;
 
     /**
      * Returns a human-readable representation of the network, using the same
      * format that the corresponding constructor parses.
      */
-    operator std::string() const {
-        if ( _prefix.family() == AddressFamily::Undef )
-            return "<bad network>";
-
-        return fmt("%s/%u", _prefix, length());
-    }
+    operator std::string() const;
 
 private:
-    void _mask() {
-        if ( _prefix.family() == AddressFamily::IPv4 )
-            _length += 96;
-
-        _prefix = _prefix.mask(_length);
-    }
+    void _mask();
 
     Address _prefix;
     int _length = 0;
 };
 
 namespace detail::adl {
-inline std::string to_string(const Network& x, adl::tag /*unused*/) { return x; }
+std::string to_string(const Network& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
-inline std::ostream& operator<<(std::ostream& out, const Network& x) {
-    out << to_string(x);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Network& x);
 
 } // namespace hilti::rt
