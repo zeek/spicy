@@ -1,3 +1,10 @@
+1.12.0-dev.19 | 2024-08-06 15:01:21 +0200
+
+  * Fix use of move'd from variable. (Benjamin Bannier, Corelight)
+
+    Function parameters still shadown members in C++. This is a fixup of
+    c3abbbe8eb28d1e2cee5b58b19e1a30710b38853.
+
 1.12.0-dev.17 | 2024-08-06 13:49:47 +0200
 
   * GH-1817: Prevent null ptr dereference when looking on nodes without `Scope`. (Benjamin Bannier, Corelight)
