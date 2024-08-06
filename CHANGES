@@ -1,3 +1,9 @@
+1.12.0-dev.17 | 2024-08-06 13:49:47 +0200
+
+  * GH-1817: Prevent null ptr dereference when looking on nodes without `Scope`. (Benjamin Bannier, Corelight)
+
+    Closes #1817.
+
 1.12.0-dev.15 | 2024-08-06 13:21:57 +0200
 
   * GH-3865: Add CMAKE_CXX_FLAGS to HILTI_CONFIG_RUNTIME_LD_FLAGS. (Arne Welzel, Corelight)
