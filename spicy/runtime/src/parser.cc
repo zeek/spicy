@@ -184,3 +184,92 @@ std::optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
     else
         return {};
 }
+spicy::rt::ParseError::ParseError(std::string_view msg, std::string_view location)
+    : RecoverableFailure(msg, location) {}
+spicy::rt::ParseError::ParseError(const hilti::rt::result::Error& e) : RecoverableFailure(e.description()) {}
+std::string hilti::rt::detail::adl::to_string(const ::spicy::rt::Direction& x, adl::tag /*unused*/) {
+    switch ( x.value() ) {
+        case spicy::rt::Direction::Originator: return "originator";
+        case spicy::rt::Direction::Responder: return "responder";
+        case spicy::rt::Direction::Both: return "both";
+        case spicy::rt::Direction::Undef: return "undefined";
+    }
+
+    cannot_be_reached();
+};
+std::ostream& spicy::rt::operator<<(std::ostream& out, const Direction& d) { return out << hilti::rt::to_string(d); }
+spicy::rt::ParserPort::ParserPort(std::tuple<hilti::rt::Port, Direction> args)
+    : port(std::get<0>(args)), direction(std::get<1>(args)) {}
+std::ostream& spicy::rt::operator<<(std::ostream& out, const ParserPort& p) { return out << hilti::rt::to_string(p); }
+std::string hilti::rt::detail::adl::to_string(const spicy::rt::ParserPort& x, adl::tag /*unused*/) {
+    // TODO: Not sure why we need to explicit to_string() here.
+    if ( x.direction == spicy::rt::Direction::Both )
+        return x.port;
+    else
+        return fmt("%s (%s direction)", x.port, x.direction);
+}
+spicy::rt::Parser::Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2,
+                          Parse3Function parse3, ContextNewFunction context_new, const hilti::rt::TypeInfo* type,
+                          std::string description, hilti::rt::Vector<MIMEType> mime_types,
+                          hilti::rt::Vector<ParserPort> ports)
+    : name(name),
+      is_public(is_public),
+      parse1(parse1),
+      parse2(std::move(parse2)),
+      parse3(parse3),
+      context_new(context_new),
+      type_info(type),
+      description(std::move(description)),
+      mime_types(std::move(mime_types)),
+      ports(std::move(ports)) {
+    _initProfiling();
+}
+spicy::rt::Parser::Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2,
+                          Parse3Function parse3, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
+                          std::string description, hilti::rt::Vector<MIMEType> mime_types,
+                          hilti::rt::Vector<ParserPort> ports)
+    : name(name),
+      is_public(is_public),
+      parse1(parse1),
+      parse2(std::move(parse2)),
+      parse3(parse3),
+      type_info(type),
+      description(std::move(description)),
+      mime_types(std::move(mime_types)),
+      ports(std::move(ports)) {
+    _initProfiling();
+}
+spicy::rt::Parser::Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+                          hilti::rt::Null /* null */, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
+                          std::string description, hilti::rt::Vector<MIMEType> mime_types,
+                          hilti::rt::Vector<ParserPort> ports)
+    : Parser(name, is_public, nullptr, std::move(parse2), nullptr, nullptr, type, std::move(description),
+             std::move(mime_types), std::move(ports)) {
+    _initProfiling();
+}
+spicy::rt::Parser::Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
+                          hilti::rt::Null /* null */, ContextNewFunction context_new, const hilti::rt::TypeInfo* type,
+                          std::string description, hilti::rt::Vector<MIMEType> mime_types,
+                          hilti::rt::Vector<ParserPort> ports)
+    : Parser(name, is_public, nullptr, std::move(parse2), nullptr, context_new, type, std::move(description),
+             std::move(mime_types), std::move(ports)) {
+    _initProfiling();
+}
+std::optional<UnitContext> spicy::rt::Parser::createContext() const {
+    if ( context_new )
+        return (*context_new)();
+    else
+        return {};
+}
+std::vector<const Parser*> spicy::rt::parsers() {
+    const auto& parsers = detail::globalState()->parsers;
+
+    std::vector<const Parser*> public_parsers;
+    std::copy_if(parsers.begin(), parsers.end(), std::back_inserter(public_parsers),
+                 [](const auto& p) { return p->is_public; });
+
+    return public_parsers;
+}
+spicy::rt::Backtrack::Backtrack() : ParseError("backtracking outside of &try scope") {}
+spicy::rt::MissingData::MissingData(std::string_view location) : ParseError("missing data", location) {}
+void spicy::rt::detail::backtrack() { throw Backtrack(); }

@@ -37,22 +37,13 @@ HILTI_RT_ENUM(Direction, Originator, Responder, Both, Undef);
 
 namespace hilti::rt::detail::adl {
 
-inline std::string to_string(const ::spicy::rt::Direction& x, adl::tag /*unused*/) {
-    switch ( x.value() ) {
-        case spicy::rt::Direction::Originator: return "originator";
-        case spicy::rt::Direction::Responder: return "responder";
-        case spicy::rt::Direction::Both: return "both";
-        case spicy::rt::Direction::Undef: return "undefined";
-    }
-
-    cannot_be_reached();
-};
+std::string to_string(const ::spicy::rt::Direction& x, adl::tag /*unused*/);
 
 } // namespace hilti::rt::detail::adl
 
 namespace spicy::rt {
 
-inline std::ostream& operator<<(std::ostream& out, const Direction& d) { return out << hilti::rt::to_string(d); }
+std::ostream& operator<<(std::ostream& out, const Direction& d);
 
 /** Defines port & direction a parser can handle.  */
 struct ParserPort {
@@ -60,22 +51,16 @@ struct ParserPort {
     Direction direction;
 
     // Constructor used by code generator.
-    ParserPort(std::tuple<hilti::rt::Port, Direction> args) : port(std::get<0>(args)), direction(std::get<1>(args)) {}
+    ParserPort(std::tuple<hilti::rt::Port, Direction> args);
 };
 
-inline std::ostream& operator<<(std::ostream& out, const ParserPort& p) { return out << hilti::rt::to_string(p); }
+std::ostream& operator<<(std::ostream& out, const ParserPort& p);
 
 } // namespace spicy::rt
 
 namespace hilti::rt::detail::adl {
 
-inline std::string to_string(const spicy::rt::ParserPort& x, adl::tag /*unused*/) {
-    // TODO: Not sure why we need to explicit to_string() here.
-    if ( x.direction == spicy::rt::Direction::Both )
-        return x.port;
-    else
-        return fmt("%s (%s direction)", x.port, x.direction);
-}
+std::string to_string(const spicy::rt::ParserPort& x, adl::tag /*unused*/);
 
 } // namespace hilti::rt::detail::adl
 
@@ -141,50 +126,19 @@ struct has_on_undelivered {
 struct Parser {
     Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            ContextNewFunction context_new, const hilti::rt::TypeInfo* type, std::string description,
-           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : name(name),
-          is_public(is_public),
-          parse1(parse1),
-          parse2(std::move(parse2)),
-          parse3(parse3),
-          context_new(context_new),
-          type_info(type),
-          description(std::move(description)),
-          mime_types(std::move(mime_types)),
-          ports(std::move(ports)) {
-        _initProfiling();
-    }
+           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports);
 
     Parser(std::string_view name, bool is_public, Parse1Function parse1, hilti::rt::any parse2, Parse3Function parse3,
            hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type, std::string description,
-           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : name(name),
-          is_public(is_public),
-          parse1(parse1),
-          parse2(std::move(parse2)),
-          parse3(parse3),
-          type_info(type),
-          description(std::move(description)),
-          mime_types(std::move(mime_types)),
-          ports(std::move(ports)) {
-        _initProfiling();
-    }
+           hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports);
 
     Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
-           std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : Parser(name, is_public, nullptr, std::move(parse2), nullptr, nullptr, type, std::move(description),
-                 std::move(mime_types), std::move(ports)) {
-        _initProfiling();
-    }
+           std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports);
 
     Parser(std::string_view name, bool is_public, hilti::rt::Null /* null */, hilti::rt::any parse2,
            hilti::rt::Null /* null */, ContextNewFunction context_new, const hilti::rt::TypeInfo* type,
-           std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
-        : Parser(name, is_public, nullptr, std::move(parse2), nullptr, context_new, type, std::move(description),
-                 std::move(mime_types), std::move(ports)) {
-        _initProfiling();
-    }
+           std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports);
 
     Parser(const Parser&) = default;
 
@@ -198,12 +152,7 @@ struct Parser {
      * Create a new instance of the `%context` type defined for the parser. If
      * there's no context defined, returns an unset optional.
      */
-    std::optional<UnitContext> createContext() const {
-        if ( context_new )
-            return (*context_new)();
-        else
-            return {};
-    }
+    std::optional<UnitContext> createContext() const;
 
     /** Short descriptive name. */
     std::string_view name;
@@ -299,25 +248,16 @@ private:
 };
 
 /** Returns all available public parsers. */
-inline auto parsers() {
-    const auto& parsers = detail::globalState()->parsers;
-
-    std::vector<const Parser*> public_parsers;
-    std::copy_if(parsers.begin(), parsers.end(), std::back_inserter(public_parsers),
-                 [](const auto& p) { return p->is_public; });
-
-    return public_parsers;
-}
-
+std::vector<const Parser*> parsers();
 
 /**
  * Exception thrown by generated parser code when an parsing failed.
  */
 class ParseError : public hilti::rt::RecoverableFailure {
 public:
-    ParseError(std::string_view msg, std::string_view location = "") : RecoverableFailure(msg, location) {}
+    ParseError(std::string_view msg, std::string_view location = "");
 
-    ParseError(const hilti::rt::result::Error& e) : RecoverableFailure(e.description()) {}
+    ParseError(const hilti::rt::result::Error& e);
 
     ~ParseError() override; /* required to create vtable, see hilti::rt::Exception */
 };
@@ -329,13 +269,13 @@ public:
  */
 class Backtrack : public ParseError {
 public:
-    Backtrack() : ParseError("backtracking outside of &try scope") {}
+    Backtrack();
     ~Backtrack() override;
 };
 
 class MissingData : public ParseError {
 public:
-    MissingData(std::string_view location = "") : ParseError("missing data", location) {}
+    MissingData(std::string_view location = "");
     ~MissingData() override; /* required to create vtable, see hilti::rt::Exception */
 };
 
@@ -510,7 +450,7 @@ extern bool atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilt
 /**
  * Manually trigger a backtrack operation, reverting back to the most revent &try.
  */
-inline void backtrack() { throw Backtrack(); }
+void backtrack();
 
 /**
  * Wrapper around hilti::rt::stream::View::find() that's more convenient to
