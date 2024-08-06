@@ -98,3 +98,44 @@ exception::DisableAbortOnExceptions::~DisableAbortOnExceptions() {
 void exception::printUncaught(const Exception& e) { printException("Uncaught exception", e, std::cerr); }
 
 void exception::printUncaught(const Exception& e, std::ostream& out) { printException("Uncaught exception", e, out); }
+hilti::rt::FormattingError::FormattingError(std::string desc) : RuntimeError(_sanitize(std::move(desc))) {}
+hilti::rt::Exception::Exception(std::string_view desc) : Exception(Internal(), "Exception", desc) {
+#ifndef NDEBUG
+    _backtrace = Backtrace();
+#endif
+}
+hilti::rt::Exception::Exception(std::string_view desc, std::string_view location)
+    : Exception(Internal(), "Exception", desc, location) {
+#ifndef NDEBUG
+    _backtrace = Backtrace();
+#endif
+}
+hilti::rt::Exception::Exception(const Exception& other)
+    : std::runtime_error(other),
+      _description(other._description),
+      _location(other._location),
+      _backtrace(other._backtrace) {}
+std::string hilti::rt::Exception::description() const { return _description; }
+std::string hilti::rt::Exception::location() const { return _location; }
+const hilti::rt::Backtrace* hilti::rt::Exception::backtrace() const {
+    if ( ! _backtrace )
+        return nullptr;
+
+    return &*_backtrace;
+}
+std::ostream& hilti::rt::operator<<(std::ostream& stream, const Exception& e) { return stream << e.what(); }
+std::string hilti::rt::FormattingError::_sanitize(std::string desc) {
+    if ( auto pos = desc.find("tinyformat: "); pos != std::string::npos )
+        desc.erase(pos, 12);
+
+    return desc;
+}
+std::string hilti::rt::exception::what(const Exception& e) { return e.description(); }
+std::string hilti::rt::exception::what(const std::exception& e) { return e.what(); }
+std::string hilti::rt::exception::where(const Exception& e) { return e.location(); }
+std::string hilti::rt::detail::adl::to_string(const Exception& e, adl::tag /*unused*/) {
+    return fmt("<exception: %s>", e.what());
+}
+std::string hilti::rt::detail::adl::to_string(const WouldBlock& e, adl::tag /*unused*/) {
+    return fmt("<exception: %s>", e.what());
+}

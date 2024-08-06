@@ -7,7 +7,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <utility>
 
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/extension-points.h>
@@ -24,29 +23,17 @@ public:
     /**
      * @param desc message describing the situation
      */
-    Exception(std::string_view desc) : Exception(Internal(), "Exception", desc) {
-#ifndef NDEBUG
-        _backtrace = Backtrace();
-#endif
-    }
+    Exception(std::string_view desc);
 
     /**
      * @param desc message describing the situation
      * @param location string indicating the location of the operation that failed
      */
-    Exception(std::string_view desc, std::string_view location) : Exception(Internal(), "Exception", desc, location) {
-#ifndef NDEBUG
-        _backtrace = Backtrace();
-#endif
-    }
+    Exception(std::string_view desc, std::string_view location);
 
     Exception();
 
-    Exception(const Exception& other)
-        : std::runtime_error(other),
-          _description(other._description),
-          _location(other._location),
-          _backtrace(other._backtrace) {}
+    Exception(const Exception& other);
 
     Exception(Exception&&) noexcept = default;
     Exception& operator=(const Exception& other) = default;
@@ -59,21 +46,16 @@ public:
     ~Exception() override;
 
     /** Returns the message associated with the exception. */
-    auto description() const { return _description; }
+    std::string description() const;
 
     /** Returns the location associated with the exception. */
-    auto location() const { return _location; }
+    std::string location() const;
 
     /**
      * Returns a stack backtrace captured at the time the exception was
      * thrown, if available. Returns null if unavailable.
      */
-    const Backtrace* backtrace() const {
-        if ( ! _backtrace )
-            return nullptr;
-
-        return &*_backtrace;
-    }
+    const Backtrace* backtrace() const;
 
 protected:
     enum Internal {};
@@ -89,7 +71,7 @@ private:
     std::optional<Backtrace> _backtrace; // null if unavailable.
 };
 
-inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { return stream << e.what(); }
+std::ostream& operator<<(std::ostream& stream, const Exception& e);
 
 #define HILTI_EXCEPTION(name, base)                                                                                    \
     class name : public ::hilti::rt::base {                                                                            \
@@ -209,15 +191,10 @@ HILTI_EXCEPTION(StackSizeExceeded, RuntimeError)
 /** Thrown when fmt() reports a problem. */
 class FormattingError : public RuntimeError {
 public:
-    FormattingError(std::string desc) : RuntimeError(_sanitize(std::move(desc))) {}
+    FormattingError(std::string desc);
 
 private:
-    std::string _sanitize(std::string desc) {
-        if ( auto pos = desc.find("tinyformat: "); pos != std::string::npos )
-            desc.erase(pos, 12);
-
-        return desc;
-    }
+    std::string _sanitize(std::string desc);
 };
 
 /**
@@ -263,22 +240,22 @@ void printUncaught(const Exception& e, std::ostream& out);
  * Returns the message associated with an exception. The returned message does
  * not include the location.
  */
-inline std::string what(const Exception& e) { return e.description(); }
+std::string what(const Exception& e);
 
 /**
  * Returns the message associated with an exception. This is a fallback for
  * standard exceptions that aren't ours.
  */
-inline std::string what(const std::exception& e) { return e.what(); }
+std::string what(const std::exception& e);
 
 /** Returns the location associated with an exception. */
-inline std::string where(const Exception& e) { return e.location(); }
+std::string where(const Exception& e);
 
 } // namespace exception
 
 namespace detail::adl {
-inline std::string to_string(const Exception& e, adl::tag /*unused*/) { return fmt("<exception: %s>", e.what()); }
-inline std::string to_string(const WouldBlock& e, adl::tag /*unused*/) { return fmt("<exception: %s>", e.what()); }
+std::string to_string(const Exception& e, adl::tag /*unused*/);
+std::string to_string(const WouldBlock& e, adl::tag /*unused*/);
 } // namespace detail::adl
 
 } // namespace hilti::rt
