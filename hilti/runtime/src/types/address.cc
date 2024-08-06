@@ -205,3 +205,22 @@ std::string detail::adl::to_string(const AddressFamily& x, tag /*unused*/) {
 
     cannot_be_reached();
 }
+std::string hilti::rt::detail::adl::to_string(const Address& x, adl::tag /*unused*/) { return x; }
+std::ostream& hilti::rt::operator<<(std::ostream& out, const Address& x) {
+    out << to_string(x);
+    return out;
+}
+std::ostream& hilti::rt::operator<<(std::ostream& out, const AddressFamily& family) { return out << to_string(family); }
+hilti::rt::Address::Address(const std::string& addr) { _parse(addr); }
+hilti::rt::Address::Address(struct in_addr addr4) { _init(addr4); }
+hilti::rt::Address::Address(struct in6_addr addr6) { _init(addr6); }
+hilti::rt::Address::Address(uint32_t addr4) : Address(0, addr4, AddressFamily::IPv4) {}
+hilti::rt::Address::Address(uint64_t addr6a, uint64_t addr6b, AddressFamily family)
+    : _a1(addr6a), _a2(addr6b), _family(family) {}
+bool hilti::rt::Address::operator!=(const Address& other) const { return ! (*this == other); }
+bool hilti::rt::Address::operator<(const Address& other) const {
+    return std::tie(_a1, _a2, _family) < std::tie(other._a1, other._a2, other._family);
+};
+hilti::rt::Bytes hilti::rt::address::pack(const Address& addr, ByteOrder fmt) { return addr.pack(fmt); }
+hilti::rt::Address hilti::rt::address::parse(const Bytes& data) { return Address(data.str()); }
+hilti::rt::Address hilti::rt::address::parse(const std::string& data) { return Address(data); }

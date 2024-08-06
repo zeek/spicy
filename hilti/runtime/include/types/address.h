@@ -31,22 +31,22 @@ public:
      *
      * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
      */
-    explicit Address(const std::string& addr) { _parse(addr); }
+    explicit Address(const std::string& addr);
 
     /** Constructs an address from a C `in_addr` struct. */
-    explicit Address(struct in_addr addr4) { _init(addr4); }
+    explicit Address(struct in_addr addr4);
 
     /**
      * Constructs an address from a C `in6_addr` struct.
      */
-    explicit Address(struct in6_addr addr6) { _init(addr6); }
+    explicit Address(struct in6_addr addr6);
 
     /**
      * Constructs an address from binary representation of an IPv4 address.
      *
      * @param addr4 IPv4 address in host byte order
      */
-    explicit Address(uint32_t addr4) : Address(0, addr4, AddressFamily::IPv4) {} // addr4 in host byte order
+    explicit Address(uint32_t addr4); // addr4 in host byte order
 
     /**
      * Constructs an address from binary representation of an IPv6 address.
@@ -54,8 +54,7 @@ public:
      * @param addr6a upper bits of IPv6 address in host byte order
      * @param addr6a lower bits of IPv6 address in host byte order
      */
-    explicit Address(uint64_t addr6a, uint64_t addr6b, AddressFamily family = AddressFamily::IPv6)
-        : _a1(addr6a), _a2(addr6b), _family(family) {}
+    explicit Address(uint64_t addr6a, uint64_t addr6b, AddressFamily family = AddressFamily::IPv6);
 
     Address() noexcept = default;
     Address(const Address&) = default;
@@ -85,10 +84,8 @@ public:
     std::variant<struct in_addr, struct in6_addr> asInAddr() const;
 
     bool operator==(const Address& other) const;
-    bool operator!=(const Address& other) const { return ! (*this == other); }
-    bool operator<(const Address& other) const {
-        return std::tie(_a1, _a2, _family) < std::tie(other._a1, other._a2, other._family);
-    };
+    bool operator!=(const Address& other) const;
+    bool operator<(const Address& other) const;
 
     /**
      * Returns a string representation of the address. For addresses in the
@@ -115,7 +112,7 @@ private:
 
 namespace address {
 /** Packs an address into a binary representation, following the protocol for `pack` operator. */
-inline Bytes pack(const Address& addr, ByteOrder fmt) { return addr.pack(fmt); }
+Bytes pack(const Address& addr, ByteOrder fmt);
 
 /** Unpacks an address from binary representation, following the protocol for `unpack` operator. */
 extern Result<std::tuple<Address, Bytes>> unpack(const Bytes& data, AddressFamily family, ByteOrder fmt);
@@ -130,7 +127,7 @@ extern Result<std::tuple<Address, stream::View>> unpack(const stream::View& data
  *
  * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
  */
-inline Address parse(const Bytes& data) { return Address(data.str()); }
+Address parse(const Bytes& data);
 
 /**
  * Parses an address from a IPv4 or IPv6 string representation.
@@ -139,20 +136,17 @@ inline Address parse(const Bytes& data) { return Address(data.str()); }
  *
  * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
  */
-inline Address parse(const std::string& data) { return Address(data); }
+Address parse(const std::string& data);
 
 } // namespace address
 
 namespace detail::adl {
-extern std::string to_string(const AddressFamily& x, adl::tag /*unused*/);
-inline std::string to_string(const Address& x, adl::tag /*unused*/) { return x; }
+std::string to_string(const AddressFamily& x, adl::tag /*unused*/);
+std::string to_string(const Address& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
-inline std::ostream& operator<<(std::ostream& out, const Address& x) {
-    out << to_string(x);
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Address& x);
 
-inline std::ostream& operator<<(std::ostream& out, const AddressFamily& family) { return out << to_string(family); }
+std::ostream& operator<<(std::ostream& out, const AddressFamily& family);
 
 } // namespace hilti::rt
