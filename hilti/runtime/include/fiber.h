@@ -71,7 +71,7 @@ struct StackBuffer {
      *
      * @param fiber fiber of which to track its current stack region
      */
-    StackBuffer(const ::Fiber* fiber) : _fiber(fiber) {}
+    StackBuffer(const ::Fiber* fiber);
 
     /** Destructor. */
     ~StackBuffer();
@@ -97,7 +97,7 @@ struct StackBuffer {
     size_t activeSize() const;
 
     /** Returns the size of the memory region that's allocated for the fiber's stack. */
-    size_t allocatedSize() const { return static_cast<size_t>(allocatedRegion().second - allocatedRegion().first); }
+    size_t allocatedSize() const;
 
     /** Returns an approximate size of stack space left for a currently executing fiber. */
     size_t liveRemainingSize() const;
@@ -118,10 +118,7 @@ private:
 };
 
 // Render stack region for use in debug output.
-inline std::ostream& operator<<(std::ostream& out, const StackBuffer& s) {
-    out << fmt("%p-%p:%zu", s.activeRegion().first, s.activeRegion().second, s.activeSize());
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const StackBuffer& s);
 
 /** Helper class to store stackless callbacks to be executed on fibers.*/
 class Callback {
@@ -138,7 +135,7 @@ public:
     Callback& operator=(const Callback&) = default;
     Callback& operator=(Callback&&) = default;
 
-    hilti::rt::any operator()(resumable::Handle* h) const { return _invoke(_f, h); }
+    hilti::rt::any operator()(resumable::Handle* h) const;
 
 private:
     hilti::rt::any _f; //< Type-erased storage for the concrete callback.
@@ -170,43 +167,25 @@ public:
     Fiber& operator=(const Fiber&) = delete;
     Fiber& operator=(Fiber&&) = delete;
 
-    void init(Callback f) {
-        _result = {};
-        _exception = nullptr;
-        _function = std::move(f);
-    }
+    void init(Callback f);
 
     /** Returns the fiber's type. */
-    auto type() { return _type; }
+    auto type();
 
     /** Returns the fiber's stack buffer. */
-    const auto& stackBuffer() const { return _stack_buffer; }
+    const StackBuffer& stackBuffer() const;
 
     void run();
     void yield();
     void resume();
     void abort();
 
-    bool isMain() const { return _type == Type::Main; }
+    bool isMain() const;
 
-    bool isDone() {
-        switch ( _state ) {
-            case State::Running:
-            case State::Yielded: return false;
+    bool isDone();
 
-            case State::Aborting:
-            case State::Finished:
-            case State::Idle:
-            case State::Init:
-                // All these mean we didn't recently run a function that could have
-                // produced a result still pending.
-                return true;
-        }
-        cannot_be_reached(); // For you, GCC.
-    }
-
-    auto&& result() { return std::move(_result); }
-    std::exception_ptr exception() const { return _exception; }
+    std::optional<hilti::rt::any>&& result();
+    std::exception_ptr exception() const;
 
     std::string tag() const;
 
@@ -309,14 +288,7 @@ public:
     Resumable& operator=(const Resumable& other) = delete;
     Resumable& operator=(Resumable&& other) noexcept = default;
 
-    ~Resumable() {
-        if ( _fiber )
-            try {
-                detail::Fiber::destroy(std::move(_fiber));
-            } catch ( ... ) {
-                cannot_be_reached();
-            }
-    }
+    ~Resumable();
 
     /** Starts execution of the function. This must be called only once. */
     void run();
@@ -328,13 +300,13 @@ public:
     void abort();
 
     /** Returns a handle to the currently running function. */
-    resumable::Handle* handle() { return _fiber.get(); }
+    resumable::Handle* handle();
 
     /**
      * Returns true if the function has completed orderly and provided a result.
      * If so, `get()` can be used to retrieve the result.
      */
-    bool hasResult() const { return _done && _result.has_value(); }
+    bool hasResult() const;
 
     /**
      * Returns the function's result once it has completed. Must not be
@@ -356,15 +328,12 @@ public:
     }
 
     /** Returns true if the function has completed. **/
-    explicit operator bool() const { return _done; }
+    explicit operator bool() const;
 
 private:
     void yielded();
 
-    void checkFiber(const char* location) const {
-        if ( ! _fiber )
-            throw std::logic_error(std::string("fiber not set in ") + location);
-    }
+    void checkFiber(const char* location) const;
 
     std::unique_ptr<detail::Fiber> _fiber;
     bool _done = false;

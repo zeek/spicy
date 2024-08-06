@@ -469,6 +469,40 @@ std::ostream& operator<<(std::ostream& out, const detail::Fiber& fiber) {
     out << fmt("%s-%p", fiber.tag(), &fiber);
     return out;
 }
+StackBuffer::StackBuffer(const ::Fiber* fiber) : _fiber(fiber) {}
+size_t StackBuffer::allocatedSize() const {
+    return static_cast<size_t>(allocatedRegion().second - allocatedRegion().first);
+}
+std::ostream& operator<<(std::ostream& out, const StackBuffer& s) {
+    out << fmt("%p-%p:%zu", s.activeRegion().first, s.activeRegion().second, s.activeSize());
+    return out;
+}
+hilti::rt::any Callback::operator()(resumable::Handle* h) const { return _invoke(_f, h); }
+void Fiber::init(Callback f) {
+    _result = {};
+    _exception = nullptr;
+    _function = std::move(f);
+}
+auto Fiber::type() { return _type; }
+const StackBuffer& Fiber::stackBuffer() const { return _stack_buffer; }
+bool Fiber::isMain() const { return _type == Type::Main; }
+bool Fiber::isDone() {
+    switch ( _state ) {
+        case State::Running:
+        case State::Yielded: return false;
+
+        case State::Aborting:
+        case State::Finished:
+        case State::Idle:
+        case State::Init:
+            // All these mean we didn't recently run a function that could have
+            // produced a result still pending.
+            return true;
+    }
+    cannot_be_reached(); // For you, GCC.
+}
+std::optional<hilti::rt::any>&& Fiber::result() { return std::move(_result); }
+std::exception_ptr Fiber::exception() const { return _exception; }
 } // namespace hilti::rt::detail
 
 void detail::Fiber::run() {
@@ -668,4 +702,19 @@ detail::Fiber::Statistics detail::Fiber::statistics() {
     };
 
     return stats;
+}
+hilti::rt::Resumable::~Resumable() {
+    if ( _fiber )
+        try {
+            detail::Fiber::destroy(std::move(_fiber));
+        } catch ( ... ) {
+            cannot_be_reached();
+        }
+}
+hilti::rt::resumable::Handle* hilti::rt::Resumable::handle() { return _fiber.get(); }
+bool hilti::rt::Resumable::hasResult() const { return _done && _result.has_value(); }
+hilti::rt::Resumable::operator bool() const { return _done; }
+void hilti::rt::Resumable::checkFiber(const char* location) const {
+    if ( ! _fiber )
+        throw std::logic_error(std::string("fiber not set in ") + location);
 }
