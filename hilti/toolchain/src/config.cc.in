@@ -173,9 +173,11 @@ void Configuration::init(bool use_build_directory) {
     hlto_cxx_flags_release = runtime_cxx_flags_release;
 
     hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
-                                   prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag)});
+                                   prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
+                                   "-Wno-unused-command-line-argument"});
     hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
-                                     prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag)});
+                                     prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
+                                     "-Wno-unused-command-line-argument"});
 
 #ifdef __APPLE__
     // Recent macOS versions have started to report `ld: warning: -undefined

@@ -91,6 +91,7 @@ if (USE_SANITIZERS)
 endif ()
 
 if (USE_WERROR)
+    set(werror_flags "-Werror")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${werror_flags}")
 endif ()
