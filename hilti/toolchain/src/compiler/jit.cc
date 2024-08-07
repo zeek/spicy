@@ -1,10 +1,10 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <sys/errno.h>
 #include <sys/resource.h>
 #include <unistd.h>
 
 #include <array>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
