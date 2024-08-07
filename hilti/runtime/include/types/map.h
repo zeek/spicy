@@ -15,6 +15,7 @@
 #include <initializer_list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -232,7 +233,7 @@ public:
         if ( auto it = this->find(k); it != M::end() )
             return it->second;
         else
-            return {};
+            return std::nullopt;
     }
 
     /** Access an element by key
