@@ -191,11 +191,11 @@ set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS
 # LD flags
 set_config_val(
     HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG
-    "${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS} ${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}"
+    "${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS} ${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT} -Wno-unused-command-line-argument"
 )
 set_config_val(
     HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE
-    "${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS} ${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}"
+    "${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS} ${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT} -Wno-unused-command-line-argument"
 )
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
