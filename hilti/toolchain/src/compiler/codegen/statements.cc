@@ -69,7 +69,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
             cxx::Block try_body;
             try_body.addTmp(cxx::declaration::Local("_", "::hilti::rt::exception::DisableAbortOnExceptions"));
-            try_body.addStatement(fmt("%s", cg->compile(n->expression())));
+            try_body.addStatement(fmt("(void)(%s)", cg->compile(n->expression())));
 
             if ( cg->options().debug_flow )
                 try_body.addStatement(
