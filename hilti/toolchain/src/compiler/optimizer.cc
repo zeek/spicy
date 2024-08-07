@@ -94,6 +94,7 @@ public:
 
 struct FunctionVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
 
     struct Uses {
         bool hook = false;
@@ -510,6 +511,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
 struct TypeVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
 
     std::map<ID, bool> _used;
 
@@ -666,6 +668,7 @@ struct TypeVisitor : OptimizerVisitor {
 
 struct ConstantFoldingVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
 
     std::map<ID, bool> _constants;
 
@@ -1229,6 +1232,7 @@ public:
 
 struct MemberVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
 
     // Map tracking whether a member is used in the code.
     std::map<std::string, bool> _used;
