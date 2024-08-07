@@ -82,7 +82,7 @@ public:
     cxx::Expression compile(hilti::Ctor* c, bool lhs = false);
     cxx::Expression compile(hilti::expression::ResolvedOperator* o, bool lhs = false);
     cxx::Block compile(hilti::Statement* s, cxx::Block* b = nullptr);
-    cxx::declaration::Function compile(const ID& id, type::Function* ft, declaration::Linkage linkage,
+    cxx::declaration::Function compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
                                        function::CallingConvention cc = function::CallingConvention::Standard,
                                        AttributeSet* fattrs = {}, std::optional<cxx::ID> namespace_ = {});
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
@@ -103,7 +103,7 @@ public:
                            bool throw_on_error);
     cxx::Expression unpack(QualifiedType* t, QualifiedType* data_type, const cxx::Expression& data,
                            const std::vector<cxx::Expression>& args, bool throw_on_error);
-    void addDeclarationFor(QualifiedType* t) { _need_decls.push_back(t); }
+    void addDeclarationForType(QualifiedType* t) { _need_decls.push_back(t); }
 
     cxx::Expression addTmp(const std::string& prefix, const cxx::Type& t);
     cxx::Expression addTmp(const std::string& prefix, const cxx::Expression& init);
@@ -136,10 +136,6 @@ public:
     void pushCxxBlock(cxx::Block* b) { _cxx_blocks.push_back(b); }
     void popCxxBlock() { _cxx_blocks.pop_back(); }
 
-    void enablePrioritizeTypes() { ++_prioritize_types; }
-    void disablePrioritizeTypes() { --_prioritize_types; }
-    bool prioritizeTypes() const { return _prioritize_types > 0; }
-
     cxx::Unit* unit() const;                         // will abort if not compiling a module.
     hilti::declaration::Module* hiltiModule() const; // will abort if not compiling a module.
 
@@ -150,6 +146,9 @@ private:
     // LHS, it's returned directly. Otherwise it assigns it over into a
     // temporary, which is then returned.
     cxx::Expression _makeLhs(cxx::Expression expr, QualifiedType* type);
+
+    // Add all required C++ declarations to a unit.
+    void _addCxxDeclarations(cxx::Unit* unit, bool include_implementation);
 
     std::weak_ptr<Context> _context;
     std::unique_ptr<Builder> _builder;
@@ -165,7 +164,6 @@ private:
     hilti::util::Cache<cxx::ID, codegen::CxxTypes> _cache_types_storage;
     hilti::util::Cache<cxx::ID, codegen::CxxTypeInfo> _cache_type_info;
     hilti::util::Cache<cxx::ID, cxx::declaration::Type> _cache_types_declarations;
-    int _prioritize_types = 0;
 };
 
 } // namespace detail

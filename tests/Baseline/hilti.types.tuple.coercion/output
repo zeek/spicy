@@ -9,9 +9,9 @@
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
+    static auto f() -> std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string>;
     extern void __init_module();
     extern void __register_module();
-    static auto f() -> std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string>;
 }
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)

@@ -66,5 +66,5 @@
 [debug/ast-stats]     - type::stream::Iterator: 755
 [debug/ast-stats]     - type::stream::View: 409
 [debug/ast-stats]     - type::tuple::Element: 598
-[debug/ast-stats] garbage collected 23357 nodes in 18 rounds, 0 left retained
+[debug/ast-stats] garbage collected 23354 nodes in 18 rounds, 0 left retained
 [debug/ast-stats] garbage collected 0 nodes in 1 round, 0 left retained

@@ -1,6 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <fstream>
 #include <utility>
 
 #include <hilti/ast/ast-context.h>
@@ -96,32 +95,12 @@ Result<Nothing> Unit::codegen() {
     if ( ! cxx )
         return cxx.error();
 
-    // Import declarations from our dependencies. They will have been compiled
-    // at this point.
-    //
-    // TODO(robin): Would be nice if we had a "cheap" compilation mode that
-    // only generated declarations.
-    for ( const auto& d : dependencies(true) ) {
-        HILTI_DEBUG(logging::debug::Compiler,
-                    fmt("importing declarations from module %s (%s)", d, d.process_extension));
-        logging::DebugPushIndent _(logging::debug::Compiler);
-
-        if ( auto other_cxx = _codegenModule(d) )
-            (*cxx)->importDeclarations(**other_cxx);
-        else
-            return other_cxx.error();
-    }
-
     HILTI_DEBUG(logging::debug::Compiler, fmt("finalizing module %s", _uid));
     if ( auto x = (*cxx)->finalize(); ! x )
         return x.error();
 
     _cxx_unit = *cxx;
     return Nothing();
-}
-
-std::set<declaration::module::UID> Unit::dependencies(bool recursive) const {
-    return context()->astContext()->dependencies(_uid, recursive);
 }
 
 Result<CxxCode> Unit::cxxCode() const {
@@ -134,7 +113,7 @@ Result<CxxCode> Unit::cxxCode() const {
     if ( logger().errors() )
         return result::Error("errors during prototype creation");
 
-    return CxxCode{_cxx_unit->moduleID(), cxx};
+    return CxxCode{_cxx_unit->cxxModuleID(), cxx};
 }
 
 bool Unit::requiresCompilation() {

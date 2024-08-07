@@ -44,7 +44,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     }
 
     void operator()(type::Struct* n) final {
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
@@ -56,7 +56,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
             id,
             []() {
                 // Just return an empty dummy for now to avoid cyclic recursion.
-                return cxx::declaration::Type{};
+                return cxx::declaration::Type();
             },
             [&](auto& dummy) {
                 std::vector<cxx::declaration::Argument> args;
@@ -67,15 +67,10 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                 cxx::Block self_body;
                 self_body.addStatement(util::fmt("return ::hilti::rt::ValueReference<%s>::self(this)", id));
 
-                auto self = cxx::declaration::Function{.result = "auto",
-                                                       .id = "__self",
-                                                       .args = {},
-                                                       .linkage = "inline",
-                                                       .inline_body = std::move(self_body)};
+                auto self = cxx::declaration::Function(cxx::declaration::Function::Free, "auto", "__self", {}, "",
+                                                       cxx::declaration::Function::Inline(), std::move(self_body));
 
                 fields.emplace_back(std::move(self));
-
-                cg->enablePrioritizeTypes();
 
                 for ( const auto& p : n->parameters() ) {
                     cxx::Type type = cg->compile(p->type(), cg->parameterKindToTypeUsage(p->kind()));
@@ -103,10 +98,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     else
                         default_ = cg->typeDefaultValue(p->type());
 
-                    auto arg = cxx::declaration::Argument{.id = cxx::ID(fmt("__p_%s", p->id())),
-                                                          .type = type,
-                                                          .default_ = std::move(default_),
-                                                          .internal_type = internal_type};
+                    auto arg = cxx::declaration::Argument(cxx::ID(fmt("__p_%s", p->id())), type, std::move(default_),
+                                                          internal_type);
                     args.emplace_back(std::move(arg));
                 }
 
@@ -115,8 +108,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                         continue;
 
                     if ( auto ft = f->type()->type()->tryAs<type::Function>() ) {
-                        auto d = cg->compile(f->id(), ft, declaration::Linkage::Struct,
-                                             function::CallingConvention::Standard, f->attributes());
+                        auto d = cg->compile(f, ft, declaration::Linkage::Struct, function::CallingConvention::Standard,
+                                             f->attributes());
 
                         if ( f->isStatic() )
                             d.linkage = "static";
@@ -138,15 +131,16 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                     id_module = cg->hiltiModule()->uid().unique;
 
                                 auto id_type = cxx::ID(id_module, id_class);
-                                auto self = cxx::declaration::Local{"__self", "auto", {}, fmt("%s::__self()", id_type)};
+                                auto self = cxx::declaration::Local("__self", "auto", {}, fmt("%s::__self()", id_type));
                                 cxx_body.addLocal(self);
                             }
 
                             cg->compile(func->body(), &cxx_body);
 
-                            auto method_impl = cxx::Function{.declaration = d, .body = std::move(cxx_body)};
-                            method_impl.declaration.id = cxx::ID(scope, sid, f->id());
-                            method_impl.declaration.linkage = "inline";
+                            auto method_impl = d;
+                            method_impl.id = cxx::ID(scope, sid, f->id());
+                            method_impl.linkage = "inline";
+                            method_impl.body = std::move(cxx_body);
                             cg->unit()->add(method_impl);
                         }
 
@@ -173,27 +167,26 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                             auto method_body = cxx::Block();
 
                             // Need a LHS for __self.
-                            auto self = cxx::declaration::Local{"__self", "auto", {}, fmt("%s::__self()", id_type)};
+                            auto self = cxx::declaration::Local("__self", "auto", {}, fmt("%s::__self()", id_type));
                             method_body.addLocal(self);
                             method_body.addStatement(fmt("return %s(%s)", id_hook, util::join(args, ", ")));
 
-                            auto method_impl = cxx::Function{.declaration = d, .body = std::move(method_body)};
-
-                            method_impl.declaration.id = cxx::ID(scope, sid, f->id());
-                            method_impl.declaration.linkage = "inline";
+                            auto method_impl = d;
+                            method_impl.id = cxx::ID(scope, sid, f->id());
+                            method_impl.linkage = "inline";
+                            method_impl.body = std::move(method_body);
                             cg->unit()->add(method_impl);
 
                             std::list<cxx::declaration::Type> aux_types = {
-                                cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                                       fmt("struct %s", id_class),
-                                                       {},
-                                                       true}};
+                                cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                                       fmt("struct %s", id_class), {}, true)};
 
                             for ( const auto& p : ft->parameters() ) {
                                 for ( auto t : cg->typeDependencies(p->type()) )
                                     aux_types.push_back(std::move(t));
                             }
 
+                            d.ftype = cxx::declaration::Function::Free;
                             auto hook = cxx::linker::Join{.id = cxx::ID(id_hook),
                                                           .callee = d,
                                                           .aux_types = aux_types,
@@ -203,9 +196,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                 cg->builder()->qualifiedType(cg->builder()->typeValueReference(type), Constness::Const);
                             // NOLINTNEXTLINE(modernize-use-emplace)
                             hook.callee.args.push_back(
-                                cxx::declaration::Argument{.id = "__self",
-                                                           .type =
-                                                               cg->compile(vref, codegen::TypeUsage::InOutParameter)});
+                                cxx::declaration::Argument("__self",
+                                                           cg->compile(vref, codegen::TypeUsage::InOutParameter)));
                             cg->unit()->add(hook);
                         }
 
@@ -243,7 +235,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     // the member happens (and needs to happen) via the ctor
                     // block above to guarantee we have a block.
                     auto x =
-                        cxx::declaration::Local{cxx::ID(f->id()), t, {}, {}, (f->isStatic() ? "inline static" : "")};
+                        cxx::declaration::Local(cxx::ID(f->id()), t, {}, {}, (f->isStatic() ? "inline static" : ""));
 
 
                     fields.emplace_back(std::move(x));
@@ -254,32 +246,27 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     cxx::Block dtor_body;
                     dtor_body.addStatement("_0x7e_finally()");
 
-                    auto dtor = cxx::declaration::Function{.result = "",
-                                                           .id = cxx::ID::fromNormalized(
-                                                               fmt("~%s", id.local())), // don't escape the ~
-                                                           .args = {},
-                                                           .linkage = "inline",
-                                                           .inline_body = std::move(dtor_body)};
+                    auto dtor =
+                        cxx::declaration::Function(cxx::declaration::Function::Free, "",
+                                                   cxx::ID::fromNormalized(
+                                                       fmt("~%s", id.local())), // don't escape the ~
+                                                   {}, "", cxx::declaration::Function::Inline(), std::move(dtor_body));
 
+                    dtor.ftype = cxx::declaration::Function::Method;
                     fields.emplace_back(std::move(dtor));
                 }
-
-                cg->disablePrioritizeTypes();
-
-                // Also add a forward declaration.
-                auto type_forward = cxx::declaration::Type{
-                    id, fmt("struct %s", id), {}, true, true,
-                };
-
-                cg->unit()->add(type_forward);
-                dependencies.push_back(type_forward);
 
                 auto t = cxx::type::Struct{.args = std::move(args),
                                            .members = std::move(fields),
                                            .type_name = cxx::ID(id.local()),
                                            .ctor = std::move(ctor),
                                            .add_ctors = true};
-                return cxx::declaration::Type{id, t, t.inlineCode()};
+
+                // Only emit full inline code if we are generating the unit declaring this type.
+                if ( n->typeID().namespace_() == cg->unit()->module()->id() )
+                    return cxx::declaration::Type{id, t, t.code()};
+                else
+                    return cxx::declaration::Type{id, t, {}};
             });
     }
 
@@ -291,7 +278,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     void operator()(type::Union* n) final {
         assert(n->typeID());
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
@@ -299,21 +286,15 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
 
         auto id = cxx::ID(scope, sid);
 
-        // Add a forward declaration.
-        auto type_forward = cxx::declaration::Type{id, fmt("struct %s", id.local()), {}, true, true};
-
-        cg->unit()->add(type_forward);
-        dependencies.push_back(type_forward);
-
         std::vector<cxx::type::union_::Member> fields;
         for ( const auto& f : n->fields() ) {
             auto t = cg->compile(f->type(), codegen::TypeUsage::Storage);
-            auto x = cxx::declaration::Local{cxx::ID(f->id()), t};
+            auto x = cxx::declaration::Local(cxx::ID(f->id()), t);
             fields.emplace_back(std::move(x));
         }
 
         auto t = cxx::type::Union{.members = std::move(fields), .type_name = cxx::ID(id.local())};
-        result = cxx::declaration::Type{id, t};
+        result = cxx::declaration::Type(id, t);
     }
 
     void operator()(type::Vector* n) final {
@@ -324,18 +305,16 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     void operator()(type::Enum* n) final {
         assert(n->typeID());
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
             scope = scope.namespace_();
 
-        // We declare the full enum type as part of the forward declarations block, that makes sure it's always fully
-        // available. This is e.g., needed so we can set default values for vectors of enums.
         auto id = cxx::ID(scope, sid);
         auto labels = util::transform(n->labels(), [](auto l) { return std::make_pair(cxx::ID(l->id()), l->value()); });
         auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
-        auto decl = cxx::declaration::Type{id, t, {}, true, false, true};
+        auto decl = cxx::declaration::Type(id, t, {}, true);
         dependencies.push_back(decl);
         result = decl;
     }
@@ -343,7 +322,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
     void operator()(type::Exception* n) final {
         assert(n->typeID());
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{n->typeID()};
 
         if ( sid.namespace_() )
@@ -362,15 +341,14 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
 
         // Exception instances all need an implementation of a virtual
         // destructor to trigger generation of their vtable.
-        auto decl = cxx::declaration::Function{.result = "",
-                                               .id = cxx::ID::fromNormalized(fmt("%s::~%s", id, id.local())),
-                                               .args = {},
-                                               .linkage = "inline"};
-        auto func = cxx::Function{.declaration = std::move(decl), .body = cxx::Block()};
+        auto func = cxx::declaration::Function(cxx::declaration::Function::Free, "",
+                                               cxx::ID::fromNormalized(fmt("%s::~%s", id, id.local())), {}, "inline",
+                                               cxx::Block());
+        func.ftype = cxx::declaration::Function::Method;
         cg->unit()->add(func);
 
-        result = cxx::declaration::Type(id, fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls), {},
-                                        false, false, true);
+        result =
+            cxx::declaration::Type(id, fmt("HILTI_EXCEPTION_NS(%s, %s, %s)", id.local(), base_ns, base_cls), {}, true);
     }
 };
 
@@ -396,7 +374,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             return cg->compile(b->itemType(), codegen::TypeUsage::Storage);
         });
 
-        auto t = fmt("hilti::rt::Bitfield<%s>", util::join(x, ", "));
+        auto t = fmt("::hilti::rt::Bitfield<%s>", util::join(x, ", "));
         result = CxxTypes{.base_type = t};
     }
 
@@ -415,7 +393,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         auto tid = n->typeID();
         assert(tid);
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace()};
         auto sid = cxx::ID{tid};
 
         if ( sid.namespace_() )
@@ -431,39 +409,32 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         });
 
         auto default_ = cxx::Block();
-        default_.addReturn(fmt(R"(hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", x.value()))", id.local()));
+        default_.addReturn(fmt(R"(::hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", x.value()))", id.local()));
 
         auto body = cxx::Block();
         body.addSwitch("x.value()", cases, std::move(default_));
 
-        auto ts_decl = cxx::declaration::Function{.result = "std::string",
-                                                  .id = {"::hilti::rt::detail::adl", "to_string"},
-                                                  .args = {cxx::declaration::Argument{.id = "x", .type = cxx::Type(id)},
-                                                           cxx::declaration::Argument{.id = "", .type = "adl::tag"}},
-                                                  .linkage = "inline"};
+        auto ts = cxx::declaration::Function(cxx::declaration::Function::Free, "std::string",
+                                             {"hilti::rt::detail::adl", "to_string"},
+                                             {cxx::declaration::Argument("x", cxx::Type(id)),
+                                              cxx::declaration::Argument("", "adl::tag")},
+                                             "inline", std::move(body));
 
-        auto ts_impl = cxx::Function{.declaration = ts_decl, .body = std::move(body)};
-
-        cg->unit()->add(ts_decl);
-        cg->unit()->add(ts_impl);
+        cg->unit()->add(ts);
 
         // Add tailored operator<<.
         auto render_body = cxx::Block();
         render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
 
-        auto render_decl =
-            cxx::declaration::Function{.result = "std::ostream&",
-                                       .id = cxx::ID{fmt("%s::operator<<", id.namespace_())},
-                                       .args = {cxx::declaration::Argument{.id = "o", .type = "std::ostream&"},
-                                                cxx::declaration::Argument{.id = "x", .type = cxx::Type(id.local())}},
-                                       .linkage = "inline"};
+        auto render = cxx::declaration::Function(cxx::declaration::Function::Free, "std::ostream&",
+                                                 cxx::ID{fmt("%s::operator<<", id.namespace_())},
+                                                 {cxx::declaration::Argument("o", "std::ostream&"),
+                                                  cxx::declaration::Argument("x", cxx::Type(id.local()))},
+                                                 "inline", std::move(render_body));
 
-        auto render_impl = cxx::Function{.declaration = render_decl, .body = std::move(render_body)};
+        cg->unit()->add(render);
 
-        cg->unit()->add(render_decl);
-        cg->unit()->add(render_impl);
-
-        cg->addDeclarationFor(type);
+        cg->addDeclarationForType(type);
         result = CxxTypes{.base_type = std::string(sid), .default_ = cxx::Expression(cxx::ID(sid, "Undef"))};
     }
 
@@ -476,7 +447,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         }
 
         if ( auto id = n->typeID() ) {
-            cg->addDeclarationFor(type);
+            cg->addDeclarationForType(type);
             result = CxxTypes{.base_type = std::string(id), .storage = "::hilti::rt::Exception"};
             return;
         }
@@ -524,7 +495,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n->dereferencedType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         auto t = fmt("::hilti::rt::Vector<%s%s>::%s", x, allocator, i);
         result = CxxTypes{.base_type = fmt("%s", t)};
@@ -610,12 +581,9 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             return;
         }
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace().namespace_()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace().namespace_()};
         auto sid = cxx::ID{scope, n->typeID()};
         auto ns = sid.namespace_();
-
-        if ( cg->prioritizeTypes() )
-            cg->unit()->prioritizeType(sid);
 
         result = cache->getOrCreate(
             sid, [&]() { return CxxTypes{.base_type = std::string(sid)}; },
@@ -623,20 +591,13 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                 auto render_body = cxx::Block();
                 render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
 
-                auto render_decl =
-                    cxx::declaration::Function{.result = "std::ostream&",
-                                               .id = cxx::ID{fmt("%s::operator<<", ns)},
-                                               .args = {cxx::declaration::Argument{.id = "o", .type = "std::ostream&"},
-                                                        cxx::declaration::Argument{
-                                                            .id = "x",
-                                                            .type = fmt("const %s&", sid),
-                                                        }}};
-
-                auto render_impl = cxx::Function{.declaration = render_decl, .body = std::move(render_body)};
-
-                cg->unit()->add(render_decl);
-                cg->unit()->add(render_impl);
-                cg->addDeclarationFor(type);
+                auto render = cxx::declaration::Function(cxx::declaration::Function::Free, "std::ostream&",
+                                                         cxx::ID{fmt("%s::operator<<", ns)},
+                                                         {cxx::declaration::Argument("o", "std::ostream&"),
+                                                          cxx::declaration::Argument("x", fmt("const %s&", sid))},
+                                                         "static", std::move(render_body));
+                cg->unit()->add(render);
+                cg->addDeclarationForType(type);
 
                 return cxx_types;
             });
@@ -653,7 +614,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
             std::string allocator;
             if ( auto def = cg->typeDefaultValue(n->elementType()) )
-                allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+                allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
             t = fmt("::hilti::rt::Vector<%s%s>", x, allocator);
         }
@@ -737,33 +698,23 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             return;
         }
 
-        auto scope = cxx::ID{cg->unit()->cxxNamespace().namespace_()};
+        auto scope = cxx::ID{cg->unit()->cxxInternalNamespace().namespace_()};
         auto sid = cxx::ID{scope, type_id};
         auto ns = sid.namespace_();
-
-        if ( cg->prioritizeTypes() )
-            cg->unit()->prioritizeType(sid);
 
         result = cache->getOrCreate(
             sid, [&]() { return CxxTypes{.base_type = std::string(sid)}; },
             [&](auto& cxx_types) {
                 auto render_body = cxx::Block();
-                render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
+                render_body.addStatement("return o << ::hilti::rt::to_string(x);");
 
-                auto render_decl =
-                    cxx::declaration::Function{.result = "std::ostream&",
-                                               .id = cxx::ID{fmt("%s::operator<<", ns)},
-                                               .args = {cxx::declaration::Argument{.id = "o", .type = "std::ostream&"},
-                                                        cxx::declaration::Argument{
-                                                            .id = "x",
-                                                            .type = fmt("const %s&", sid),
-                                                        }}};
-
-                auto render_impl = cxx::Function{.declaration = render_decl, .body = std::move(render_body)};
-
-                cg->unit()->add(render_decl);
-                cg->unit()->add(render_impl);
-                cg->addDeclarationFor(type);
+                auto render = cxx::declaration::Function(cxx::declaration::Function::Free, "std::ostream&",
+                                                         cxx::ID{fmt("%s::operator<<", ns)},
+                                                         {cxx::declaration::Argument("o", "std::ostream&"),
+                                                          cxx::declaration::Argument("x", fmt("const %s&", sid))},
+                                                         "static", std::move(render_body));
+                cg->unit()->add(render);
+                cg->addDeclarationForType(type);
 
                 return cxx_types;
             });
@@ -857,7 +808,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
         auto i = 0;
         for ( const auto&& b : n->bits() )
             elems.push_back(fmt(
-                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, hilti::rt::bitfield::elementOffset<%s, %d>() }",
+                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, ::hilti::rt::bitfield::elementOffset<%s, %d>() }",
                 b->id(), cg->typeInfo(b->itemType()), ttype, i++));
 
         result = fmt("::hilti::rt::type_info::Bitfield(std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
@@ -956,7 +907,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
         int i = 0;
         for ( const auto& e : n->elements() ) {
             elems.push_back(
-                fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, hilti::rt::tuple::elementOffset<%s, %d>() }",
+                fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, ::hilti::rt::tuple::elementOffset<%s, %d>() }",
                     e->id() ? e->id() : ID(), cg->typeInfo(e->type()), ttype, i));
             ++i;
         }
@@ -1000,7 +951,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n->elementType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         result = fmt("::hilti::rt::type_info::Vector(%s, ::hilti::rt::type_info::Vector::accessor<%s%s>())",
                      cg->typeInfo(n->elementType()), x, allocator);
@@ -1011,7 +962,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
         std::string allocator;
         if ( auto def = cg->typeDefaultValue(n->dereferencedType()) )
-            allocator = fmt(", hilti::rt::vector::Allocator<%s, %s>", x, *def);
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
 
         result =
             fmt("::hilti::rt::type_info::VectorIterator(%s, ::hilti::rt::type_info::VectorIterator::accessor<%s%s>())",
@@ -1171,14 +1122,10 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
             if ( auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; }); x && *x )
                 return CxxTypeInfo{.predefined = true, .reference = fmt("&%s", *x)};
 
-            auto forward = cxx::declaration::Constant{.id = tid,
-                                                      .type = "::hilti::rt::TypeInfo",
-                                                      .linkage = "extern",
-                                                      .forward_decl = true};
+            auto forward = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", {}, "extern");
             unit()->add(forward);
-            return CxxTypeInfo{.predefined = false,
-                               .reference = fmt("&%s", std::string(ID("type_info", tid.local()))),
-                               .forward = forward};
+
+            return CxxTypeInfo{false, fmt("&%s", std::string(ID("type_info", tid.local()))), forward};
         },
         [&](auto& ti) {
             if ( ti.predefined )
@@ -1192,8 +1139,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
             auto id_init = (t->type()->typeID() ? fmt("\"%s\"", t->type()->typeID()) : std::string("{}"));
             auto init = fmt("{ %s, \"%s\", new %s }", id_init, util::escapeUTF8(display.str(), true), *x);
 
-            ti.declaration =
-                cxx::declaration::Constant{.id = tid, .type = "::hilti::rt::TypeInfo", .init = init, .linkage = ""};
+            ti.declaration = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", init, "");
 
             unit()->add(*ti.declaration);
 

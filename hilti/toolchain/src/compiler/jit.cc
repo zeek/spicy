@@ -128,7 +128,7 @@ inline const DebugStream Driver("driver");
 CxxCode::CxxCode(const detail::cxx::Unit& u) {
     std::stringstream buffer;
     u.print(buffer);
-    load(u.moduleID(), buffer);
+    load(u.cxxModuleID(), buffer);
 }
 
 bool CxxCode::load(const hilti::rt::filesystem::path& path) {

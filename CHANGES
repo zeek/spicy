@@ -1,3 +1,84 @@
+1.12.0-dev.33 | 2024-08-07 12:38:27 +0200
+
+  * Add an AST pass collecting dependencies between declarations. (Robin Sommer, Corelight)
+
+  * Rework emission of C++ code. (Robin Sommer, Corelight)
+
+    We now use the new AST dependency information to determine in which
+    order to output C++ declarations, including whether to output them at
+    all. Previously, we used a needed to get the desired order through
+    a pretty hacky, adhoc scheme that would prioritize some types
+    manually as needed.
+
+    This includes:
+
+    - We now only declare C++ types that are actually needed by the unit;
+      no more bulk import everything from an imported unit.
+
+    - Remove all the manual scheduling of when `cxx::declaration::*` are
+      to be emitted (no more forward declarations, no more manual
+      prioritization). The order of output is now generally determined
+      through dependencies. For example, before we output a type, we
+      output anything it depend on.
+
+    - Merge `cxx::Function` into `cxx::declaration::Function`. This means
+      we generally don't need to emit separate declaration vs
+      implementation anymore; instead we decide at emission time what
+      parts to output.
+
+    - Unify treatment of cxx::declaration::*: we go through emission
+      phases now where each type decides what to emit when.
+
+    - Remove various state from cxx::declaration::* that’s no longer
+      needed/used.
+
+    - We now unconditionally forward declare structs and unions; seems
+      cheap enough and makes things quite a bit easier.
+
+    - We new logic strives to maintain the same output where possible so
+      that we only get minimal baselines changes (mainly some small
+      ordering changes).
+
+  * Properly set parse extension when importing by path. (Benjamin Bannier, Corelight)
+
+  * Rename `cxx::type::Struct`'s `inlineCode` to `code`. (Benjamin Bannier, Corelight)
+
+    This function now generates not `inline` code, but instead code with
+    bodies which we would only want to include once in the generated C++.
+
+  * Tweak when we emit struct inline code. (Benjamin Bannier, Corelight)
+
+    We would previously emit inline C++ code for types into each unit module
+    where the type's module was imported. This meant that we potentially
+    compiled identical function bodies in many files. While this could in
+    theory lead to better local inlining decisions it also caused poor
+    scaling as the number of modules in a Spicy grammar grows (in
+    particular).
+
+    With this patch we now emit these bodies at most once, in particular
+    into the module of the type. To support this we make a number of
+    declarations and definitions not `inline` anymore so they can link
+    correctly. We also reduce which code gets included when importing a
+    module.
+
+  * Only emit full C++ body of functions in module of matching namespace. (Benjamin Bannier, Corelight)
+
+  * Simplify body of generated `operator<<`. (Benjamin Bannier, Corelight)
+
+  * Remove unused methods to retrieve module dependencies. (Robin Sommer, Corelight)
+
+    If we ever need this, we can now use the new declaration dependencies
+    instead.
+
+  * Fix `Node::tryAs_()`. (Robin Sommer, Corelight)
+
+    (Not used anywhere currently, but didn't work and want to keep.)
+
+  * Fully qualify runtime identifiers in generated code. (Robin Sommer, Corelight)
+
+    We weren't consistent doing that everywhere, which would lead to
+    trouble with upcoming changes.
+
 1.12.0-dev.21 | 2024-08-07 10:49:10 +0200
 
   * GH-1823: Don't qualify magic linker symbols with C++ namespace. (Robin Sommer, Corelight)

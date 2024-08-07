@@ -992,6 +992,7 @@
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] performing global transformations
 [debug/compiler] [HILTI] validating (post)
+[debug/compiler] computing AST dependencies
 module Foo {
 
 global bytes x1 = b"abc";

@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -43,6 +44,8 @@ Result<declaration::Module*> parseSource(Builder* builder, std::istream& in, con
 namespace ast {
 
 namespace detail {
+
+class DependencyTracker;
 
 /**
  * Helper class to define a strongly-typed index type used with maps inside the
@@ -212,6 +215,27 @@ public:
      * @return set of dependencies
      */
     std::set<declaration::module::UID> dependencies(const declaration::module::UID& uid, bool recursive = false) const;
+
+    /**
+     * Returns direct & indirect, global dependencies of a given global
+     * declaration. A "global declaration" is any declaration declared at
+     * either the root or the module level (i.e., node depth <= 2). The result
+     * will likewise include only such global declarations.
+     *
+     * This information will be available only once the AST has been processed
+     * successfully through `processAST()`. If called before that, the method
+     * will abort with an internal error.
+     *
+     * @param  d declaration to return dependencies for, which must be part of
+     * the AST and declared at the root or module level
+     *
+     * @return dependencies of *d*, which will all be root or module-level
+     * nodes as well; will include the declaration *d* itself iff there's a
+     * dependency cycle where any of the children depends in turn on the
+     * declaration itself; will return an empty set if the declaration has no
+     * dependencies, including if *d* is not actually a global declaration
+     */
+    const std::unordered_set<Declaration*>& dependentDeclarations(Declaration* n);
 
     /**
      * Updates an existing UID with new information.
@@ -395,6 +419,7 @@ private:
     Result<Nothing> _transform(Builder* builder, const Plugin& plugin);
     Result<Nothing> _collectErrors();
     Result<Nothing> _optimize(Builder* builder);
+    Result<Nothing> _computeDependencies();
 
     // Adds a module to the AST. The module must not be part of any AST yet
     // (including the current one).
@@ -433,6 +458,7 @@ private:
     bool _resolved = false;                     // true if `processAST()` has finished successfully
     Driver* _driver = nullptr;                  // pointer to compiler drive during `processAST()`, null outside of that
     util::Uniquer<ID> _canon_id_uniquer;        // Produces unique canonified IDs
+    std::unique_ptr<ast::detail::DependencyTracker> _dependency_tracker; // records dependencies between declarations
 
     uint64_t _total_rounds = 0; // total number of rounds of AST processing
 

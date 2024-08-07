@@ -17,12 +17,12 @@ assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    extern void __destroy_globals(::hilti::rt::Context* ctx);
-    extern void __init_globals(::hilti::rt::Context* ctx);
-    extern void __init_module();
-    extern void __register_module();
     static std::optional<double> d = {};
     static std::optional<double> r = {};
+    extern void __init_globals(::hilti::rt::Context* ctx);
+    extern void __destroy_globals(::hilti::rt::Context* ctx);
+    extern void __init_module();
+    extern void __register_module();
 }
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)

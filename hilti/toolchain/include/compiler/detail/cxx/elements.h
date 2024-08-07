@@ -50,6 +50,7 @@ public:
     explicit operator bool() const { return ! _s.empty(); }
     bool operator<(const Element& s) const { return _s < s._s; }
     bool operator==(const Element& s) const { return _s == s._s; }
+    bool operator!=(const Element& s) const { return ! operator==(s); }
 
 private:
     std::string _s;
@@ -76,7 +77,7 @@ public:
     explicit operator bool() const { return ! _s.empty(); }
     bool operator<(const Expression& s) const { return _s < s._s; }
     bool operator==(const Expression& s) const { return _s == s._s; }
-    bool operator!=(const Expression& s) const { return _s != s._s; }
+    bool operator!=(const Expression& s) const { return ! operator==(s); }
 
 private:
     std::string _s;
@@ -103,27 +104,43 @@ public:
 
 namespace declaration {
 
-/** A C++ `@include` specific ation. */
-struct IncludeFile {
+// Joint base class for all C++ declarations.
+struct DeclarationBase {
+    DeclarationBase(cxx::ID id) : id(std::move(id)) {}
+    virtual ~DeclarationBase() = default;
+
+    cxx::ID id;
+
+    // Outputs the C++ representation of the declaration.
+    virtual void emit(Formatter& f) const = 0;
+
+protected:
+    bool operator==(const DeclarationBase& other) const { return id == other.id; } // for derived classes to use
+};
+
+/** A C++ `@include` specific action. */
+struct IncludeFile : public DeclarationBase {
+    IncludeFile(std::string file) : DeclarationBase({}), file(std::move(file)) {}
+
     std::string file;
-    bool operator<(const IncludeFile& o) const { return file < o.file; }
+
+    void emit(Formatter& f) const final;
+
+    bool operator<(const IncludeFile& other) const { return file < other.file; }
+    bool operator==(const IncludeFile& other) const { return file == other.file && DeclarationBase::operator==(other); }
+    bool operator!=(const IncludeFile& other) const { return ! operator==(other); }
 };
 
 /** Declaration of a local C++ variable. */
-struct Local {
-    Local(Local&&) = default;
-    Local(const Local&) = default;
-    Local& operator=(Local&&) = default;
-    Local& operator=(const Local&) = default;
+struct Local : public DeclarationBase {
     Local(cxx::ID id = {}, cxx::Type type = {}, std::vector<cxx::Expression> args = {},
           std::optional<cxx::Expression> init = {}, Linkage linkage = {})
-        : id(std::move(id)),
+        : DeclarationBase(std::move(id)),
           type(std::move(type)),
           args(std::move(args)),
           init(std::move(init)),
           linkage(std::move(linkage)) {}
 
-    cxx::ID id;
     cxx::Type type;
     std::vector<cxx::Expression> args;
     std::optional<cxx::Expression> init;
@@ -137,74 +154,108 @@ struct Local {
     // for anonymous fields that make it out into the generated struct.
     bool isAnonymous() const { return util::startsWith(id.local(), "_anon"); }
 
+    void emit(Formatter& f) const final;
+
+    bool operator==(const Local& other) const {
+        return type == other.type && args == other.args && init == other.init && linkage == other.linkage &&
+               DeclarationBase::operator==(other);
+    }
+
+    bool operator!=(const Local& other) const { return ! operator==(other); }
+
     std::string str() const;
     operator std::string() const { return str(); }
 };
 
 /** Declaration of a global C++ variable. */
-struct Global {
-    cxx::ID id;
+struct Global : public DeclarationBase {
     cxx::Type type;
     std::vector<cxx::Expression> args;
     std::optional<cxx::Expression> init;
     Linkage linkage;
 
+    Global(cxx::ID id = {}, cxx::Type type = {}, std::vector<cxx::Expression> args = {},
+           std::optional<cxx::Expression> init = {}, Linkage linkage = {})
+        : DeclarationBase(std::move(id)),
+          type(std::move(type)),
+          args(std::move(args)),
+          init(std::move(init)),
+          linkage(std::move(linkage)) {}
+
+    void emit(Formatter& f) const final;
+
     bool operator==(const Global& other) const {
-        return id == other.id && type == other.type && init == other.init && linkage == other.linkage;
+        return type == other.type && args == other.args && init == other.init && linkage == other.linkage &&
+               DeclarationBase::operator==(other);
     }
+
+    bool operator!=(const Global& other) const { return ! operator==(other); }
 
     std::string str() const;
     operator std::string() const { return str(); }
 };
 
 /** Declaration of a C++ constant. */
-struct Constant {
-    cxx::ID id;
+struct Constant : public DeclarationBase {
     cxx::Type type;
     std::optional<cxx::Expression> init;
     Linkage linkage;
-    bool forward_decl = false;
+
+    Constant(cxx::ID id = {}, cxx::Type type = {}, std::optional<cxx::Expression> init = {}, Linkage linkage = {})
+        : DeclarationBase(std::move(id)), type(std::move(type)), init(std::move(init)), linkage(std::move(linkage)) {}
+
+    void emit(Formatter& f) const final;
 
     bool operator<(const Constant& s) const { return id < s.id; }
     bool operator==(const Constant& other) const {
-        return id == other.id && type == other.type && init == other.init && linkage == other.linkage;
+        return type == other.type && init == other.init && linkage == other.linkage &&
+               DeclarationBase::operator==(other);
     }
+
+    bool operator!=(const Constant& other) const { return ! operator==(other); }
 };
 
 /** Declaration of a C++ type. */
-struct Type {
-    cxx::ID id;
+struct Type : public DeclarationBase {
     cxx::Type type;
-    std::string inline_code;
-    bool forward_decl = false;
-    bool forward_decl_prio = false;
+    std::string code;
     bool no_using = false; // turned on automatically for types starting with "struct"
 
-    Type(cxx::ID id = {}, cxx::Type type = {}, std::string inline_code = {}, bool forward_decl = false,
-         bool forward_decl_prio = false, bool no_using = false)
-        : id(std::move(id)),
-          type(std::move(type)),
-          inline_code(std::move(inline_code)),
-          forward_decl(forward_decl),
-          forward_decl_prio(forward_decl_prio),
-          no_using(no_using) {}
+    Type(cxx::ID id = {}, cxx::Type type = {}, std::string code = {}, bool no_using = false)
+        : DeclarationBase(std::move(id)), type(std::move(type)), code(std::move(code)), no_using(no_using) {}
+
+    void emit(Formatter& f) const final;
 
     bool operator==(const Type& other) const {
-        return id == other.id && type == other.type && inline_code == other.inline_code &&
-               forward_decl == other.forward_decl && forward_decl_prio == other.forward_decl_prio &&
-               no_using == other.no_using;
+        return type == other.type && code == other.code && no_using == other.no_using &&
+               DeclarationBase::operator==(other);
     }
+
+    bool operator!=(const Type& other) const { return ! operator==(other); }
 };
 
 /** Declaration of a C++ function argument. */
-struct Argument {
-    cxx::ID id;
+struct Argument : public DeclarationBase {
     cxx::Type type;
     std::optional<cxx::Expression> default_;
     cxx::Type internal_type = "";
     operator std::string() const { return id ? util::fmt("%s %s", type, id) : std::string(type); }
 
-    bool operator==(const Argument& other) const { return type == other.type && id == other.id; }
+    Argument(cxx::ID id = {}, cxx::Type type = {}, std::optional<cxx::Expression> default_ = {},
+             cxx::Type internal_type = "")
+        : DeclarationBase(std::move(id)),
+          type(std::move(type)),
+          default_(std::move(default_)),
+          internal_type(std::move(internal_type)) {}
+
+    void emit(Formatter& f) const final;
+
+    bool operator==(const Argument& other) const {
+        return type == other.type && default_ == other.default_ && internal_type == other.internal_type &&
+               DeclarationBase::operator==(other);
+    }
+
+    bool operator!=(const Argument& other) const { return ! operator==(other); }
 };
 
 } // namespace declaration
@@ -251,6 +302,7 @@ public:
     friend ::hilti::detail::cxx::Formatter& operator<<(Formatter& f, const Block& x);
 
     bool operator==(const Block& other) const { return _stmts == other._stmts; }
+    bool operator!=(const Block& other) const { return ! operator==(other); }
 
 private:
     using Flags = unsigned int;
@@ -261,35 +313,57 @@ private:
 
 namespace declaration {
 
+
 /** Declaration of a C++ function. */
-struct Function {
+struct Function : public DeclarationBase {
+    /** Tag marking an inline function for overload resolution. */
+    using Inline = struct {};
+
+    /** Type of function being declared. */
+    enum Type {
+        Free,  // global, free function
+        Method // struct method
+    };
+
+    Type ftype;
     cxx::Type result;
-    cxx::ID id;
     std::vector<Argument> args;
-    bool const_ = false;
-    Linkage linkage = "static";
-    Attribute attribute = "";
+    Linkage linkage;
+    std::optional<Block> body;
     std::optional<Block> inline_body;
 
     std::string prototype(bool qualify) const;
     std::string parameters() const;
 
+    Function(Type ftype, cxx::Type result, cxx::ID id, std::vector<Argument> args, Linkage linkage,
+             std::optional<Block> body = {})
+        : DeclarationBase(std::move(id)),
+          ftype(ftype),
+          result(std::move(result)),
+          args(std::move(args)),
+          linkage(std::move(linkage)),
+          body(std::move(body)) {}
+
+    Function(Type ftype, cxx::Type result, cxx::ID id, std::vector<Argument> args, Linkage linkage, Inline,
+             Block inline_body)
+        : DeclarationBase(std::move(id)),
+          ftype(ftype),
+          result(std::move(result)),
+          args(std::move(args)),
+          linkage(std::move(linkage)),
+          inline_body(std::move(inline_body)) {}
+
+    void emit(Formatter& f) const final;
+
     bool operator==(const Function& other) const {
-        return result == other.result && id == other.id && args == other.args && linkage == other.linkage &&
-               attribute == other.attribute && inline_body == other.inline_body;
+        return ftype == other.ftype && result == other.result && args == other.args && linkage == other.linkage &&
+               inline_body == other.inline_body && body == other.body && DeclarationBase::operator==(other);
     }
+
+    bool operator!=(const Function& other) const { return ! operator==(other); }
 };
 
 } // namespace declaration
-
-/** A C++ function. */
-struct Function {
-    declaration::Function declaration;
-    Block body;
-    bool default_ = false;
-
-    bool operator==(const Function& other) const { return declaration == other.declaration && body == other.body; }
-};
 
 namespace type {
 namespace struct_ {
@@ -320,7 +394,7 @@ struct Struct {
     cxx::Block ctor;
     bool add_ctors = false;
     std::string str() const;
-    std::string inlineCode() const;
+    std::string code() const;
 
     operator std::string() const { return str(); }
     operator cxx::Type() const { return str(); }
@@ -366,11 +440,10 @@ extern Formatter& operator<<(Formatter& f, const Expression& x);
 extern Formatter& operator<<(Formatter& f, const ID& x);
 extern Formatter& operator<<(Formatter& f, const Function& x);
 extern Formatter& operator<<(Formatter& f, const Type& x);
-extern Formatter& operator<<(Formatter& f, const declaration::Type& x);
-extern Formatter& operator<<(Formatter& f, const declaration::IncludeFile& x);
-extern Formatter& operator<<(Formatter& f, const declaration::Local& x);
-extern Formatter& operator<<(Formatter& f, const declaration::Global& x);
-extern Formatter& operator<<(Formatter& f, const declaration::Function& x);
-extern Formatter& operator<<(Formatter& f, const declaration::Constant& x);
+
+inline Formatter& operator<<(Formatter& f, const declaration::DeclarationBase& x) {
+    x.emit(f);
+    return f;
+}
 
 } // namespace hilti::detail::cxx

@@ -33,29 +33,58 @@ namespace {
 
 // This visitor will only receive AST nodes of the first two levels (i.e.,
 // the module and its declarations).
-struct GlobalsVisitor : hilti::visitor::PreOrder {
-    explicit GlobalsVisitor(CodeGen* cg, bool include_implementation)
-        : cg(cg), include_implementation(include_implementation) {}
+struct GlobalsVisitor : hilti::visitor::PostOrder {
+    explicit GlobalsVisitor(CodeGen* cg, cxx::Unit* unit) : cg(cg), unit(unit) {}
 
     GlobalsVisitor(const GlobalsVisitor&) = delete;
     GlobalsVisitor(GlobalsVisitor&&) noexcept = delete;
 
     CodeGen* cg;
-    bool include_implementation;
+    cxx::Unit* unit;
+
+    bool include_implementation = false;
+    ID current_module;
 
     std::vector<cxx::declaration::Global> globals;
-    std::vector<cxx::declaration::Constant> constants;
 
-    // Helper creating function to access dynamically allocated globals, if needed.
-    void createGlobalsAccessorFunction(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
+    // Adds C++ type declarations/definitions for a module's globals if not
+    // compiling with --cxx-enable-dynamic-globals.
+    void createGlobalsDeclarations() {
+        if ( cg->options().cxx_enable_dynamic_globals )
+            // Access to globals goes through dynamic accessor function; no
+            // need for declarations.
+            return;
+
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, unit->cxxModuleID());
+
+        // We emit globals as optionals so that we can control the life time of
+        // the values, in particular wrt destruction when the runtime shuts
+        // down.
+        for ( auto g : globals ) {
+            g.type = fmt("std::optional<%s>", g.type);
+
+            if ( g.id.namespace_() == ns )
+                g.init = "{}";
+            else {
+                g.linkage = "extern";
+                g.init = {};
+            }
+
+            unit->add(g);
+        }
+    }
+
+    // Creates function to access dynamically allocated globals if compiling
+    // with --cxx-enable-dynamic-globals.
+    void createGlobalsAccessorFunction() {
         if ( ! cg->options().cxx_enable_dynamic_globals )
             // Access to globals is direct, no need for function.
             return;
 
-        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
-        auto t = cxx::declaration::Type{{ns, "__globals_t"}, cxxGlobalsType()};
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, unit->cxxModuleID());
+        auto t = cxx::declaration::Type({ns, "__globals_t"}, cxxGlobalsType());
 
-        auto idx = cxx::declaration::Global{.id = {ns, "__globals_index"}, .type = "unsigned int", .linkage = "inline"};
+        auto idx = cxx::declaration::Global({ns, "__globals_index"}, "unsigned int", {}, {}, "inline");
 
         unit->add(idx);
         unit->add(t);
@@ -63,47 +92,16 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
         auto body = cxx::Block();
         body.addStatement("return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
 
-        auto body_decl = cxx::declaration::Function{
-            .result = "auto",
-            .id = {ns, "__globals"},
-            .args = {},
-            .linkage = "static",
-            .inline_body = body,
-        };
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "auto", {ns, "__globals"}, {},
+                                                    "static", cxx::declaration::Function::Inline(), body);
 
         unit->add(body_decl);
     }
 
-    // Helper adding declarations for module's globals, if needed.
-    void createGlobalsDeclarations(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
-        if ( cg->options().cxx_enable_dynamic_globals )
-            // Access to globals goes through dynamic accessor function; no need for declarations.
-            return;
-
-        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
-
-        // We emit globals as optionals so that we can control the life time of
-        // the values, in particular wrt destruction when the runtime shuts
-        // down.
-        for ( const auto& g : globals ) {
-            auto cxx_g = g;
-            cxx_g.id = cxx::ID{ns, g.id.local()};
-            cxx_g.type = fmt("std::optional<%s>", g.type);
-            cxx_g.init = {};
-            cxx_g.linkage = "extern";
-            unit->add(cxx_g);
-        }
-    }
-
-    // Helper creating function initializing the module's globals.
-    void createInitGlobals(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
-        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
+    // Creates function initializing globals.
+    void createInitGlobals() {
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, unit->cxxModuleID());
         auto id = cxx::ID{ns, "__init_globals"};
-
-        auto body_decl = cxx::declaration::Function{.result = "void",
-                                                    .id = id,
-                                                    .args = {{.id = "ctx", .type = "::hilti::rt::Context*"}},
-                                                    .linkage = "extern"};
 
         auto body = cxx::Block();
         cg->pushCxxBlock(&body);
@@ -112,6 +110,9 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
             body.addStatement("::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index)");
 
             for ( auto g : globals ) {
+                if ( g.id.namespace_() != ns )
+                    continue;
+
                 if ( g.init )
                     body.addStatement(fmt("__globals()->%s = %s", g.id.local(), *g.init));
                 else if ( g.args.size() )
@@ -120,10 +121,8 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
         }
         else {
             for ( const auto& g : globals ) {
-                auto cxx_g = g;
-                cxx_g.type = fmt("std::optional<%s>", g.type);
-                cxx_g.init = "{}";
-                unit->add(cxx_g);
+                if ( g.id.namespace_() != ns )
+                    continue;
 
                 if ( g.init )
                     // Initialize to actual value
@@ -137,132 +136,78 @@ struct GlobalsVisitor : hilti::visitor::PreOrder {
 
         cg->popCxxBlock();
 
-        auto body_impl = cxx::Function{.declaration = body_decl, .body = std::move(body)};
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", id,
+                                                    {{"ctx", "::hilti::rt::Context*"}}, "extern", std::move(body));
         unit->add(body_decl);
-        unit->add(body_impl);
     }
 
-    // Helpers creating function destroying the module's globals, if needed.
-    void createDestroyGlobals(hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit) {
+    // Creates function deinitializing globals.
+    void createDestroyGlobals() {
         if ( cg->options().cxx_enable_dynamic_globals )
             // Will be implicitly destroyed at termination by the runtime.
             return;
 
-        auto ns = cxx::ID(cg->options().cxx_namespace_intern, module_id);
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, unit->cxxModuleID());
         auto id = cxx::ID{ns, "__destroy_globals"};
-
-        auto body_decl = cxx::declaration::Function{.result = "void",
-                                                    .id = id,
-                                                    .args = {{.id = "ctx", .type = "::hilti::rt::Context*"}},
-                                                    .linkage = "extern"};
 
         auto body = cxx::Block();
         cg->pushCxxBlock(&body);
 
-        for ( const auto& g : globals )
-            body.addStatement(fmt("::%s::%s.reset();", ns, g.id.local()));
+        for ( const auto& g : globals ) {
+            if ( g.id.namespace_() != ns )
+                continue;
 
-        auto body_impl = cxx::Function{.declaration = body_decl, .body = std::move(body)};
-        unit->add(body_decl);
-        unit->add(body_impl);
-    }
-
-    static void addDeclarations(CodeGen* cg, hilti::declaration::Module* module, const ID& module_id, cxx::Unit* unit,
-                                bool include_implementation) {
-        auto v = GlobalsVisitor(cg, include_implementation);
-
-        v.dispatch(module);
-
-        for ( const auto& i : module->children() )
-            v.dispatch(i);
-
-        for ( const auto& c : v.constants )
-            unit->add(c);
-
-        if ( ! v.globals.empty() ) {
-            v.createGlobalsAccessorFunction(module, module_id, unit);
-
-            if ( include_implementation ) {
-                unit->setUsesGlobals();
-                v.createInitGlobals(module, module_id, unit);
-                v.createDestroyGlobals(module, module_id, unit);
-            }
-            else
-                v.createGlobalsDeclarations(module, module_id, unit);
+            body.addStatement(fmt("::%s.reset();", g.id));
         }
+
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", id,
+                                                    {{"ctx", "::hilti::rt::Context*"}}, "extern", std::move(body));
+        unit->add(body_decl);
     }
 
-
+    // Returns struct type representing the module's globals when compiling
+    // with --cxx-enable-dynamic-globals.
     cxx::type::Struct cxxGlobalsType() const {
+        auto ns = cxx::ID(cg->options().cxx_namespace_intern, unit->cxxModuleID());
+
         std::vector<cxx::type::struct_::Member> fields;
 
         for ( const auto& g : globals ) {
-            auto f = cxx::declaration::Local{g.id.local(), g.type};
+            if ( g.id.namespace_() != ns )
+                continue;
+
+            auto f = cxx::declaration::Local(g.id.local(), g.type);
             fields.emplace_back(f);
         }
 
         return cxx::type::Struct{.members = std::move(fields), .type_name = "__globals_t"};
     }
 
-    void operator()(declaration::GlobalVariable* n) final {
-        auto args = node::transform(n->typeArguments(), [this](auto a) { return cg->compile(a); });
-        auto init = n->init() ? cg->compile(n->init()) : cg->typeDefaultValue(n->type());
-        auto x = cxx::declaration::Global{.id = {cg->unit()->cxxNamespace(), n->id()},
-                                          .type = cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                          .args = std::move(args),
-                                          .init = std::move(init),
-                                          .linkage = (n->linkage() == declaration::Linkage::Public ? "" : "static")};
-
-        globals.push_back(x);
+    // Add all C++ declarations to unit that a given node will need.
+    void addDeclarationsNeededByNode(Node* n, ID module_name, bool include_implementation_) {
+        current_module = std::move(module_name);
+        include_implementation = include_implementation_;
+        dispatch(n);
     }
 
-    void operator()(declaration::Constant* n) final {
-        auto x = cxx::declaration::Constant{.id = {cg->unit()->cxxNamespace(), n->id()},
-                                            .type = cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                            .init = cg->compile(n->value())};
-
-        constants.push_back(x);
-    }
-
-    void operator()(declaration::Type* n) final {
-        assert(n->typeID());
-        cg->compile(n->type(), codegen::TypeUsage::Storage);
-        if ( include_implementation ) {
-            cg->addTypeInfoDefinition(n->type());
-
-            if ( const auto& dt = cg->typeDeclaration(n->type()) )
-                cg->unit()->prioritizeType(dt->id);
-        }
-    }
-};
-
-// This visitor will only receive AST nodes of levels 2-3 (i.e.,
-// the module and its top-level declarations).
-struct Visitor : hilti::visitor::PreOrder {
-    Visitor(CodeGen* cg, const Scope* module_scope, cxx::Unit* unit) : cg(cg), unit(unit), module_scope(module_scope) {}
-    CodeGen* cg;
-    cxx::Unit* unit;
-    const Scope* module_scope;
-
-    ID module;
-
-    // Top-level nodes.
+    // Returns the C++ namespace for the currently processed module.
+    auto cxxNamespace() { return cxx::ID(cg->options().cxx_namespace_intern, current_module); }
 
     void operator()(declaration::Module* n) final {
-        unit->setModule(*n);
-
+        // Add any standard includes.
         for ( const auto& p : plugin::registry().plugins() ) {
             for ( const auto& i : p.cxx_includes ) {
-                auto include = cxx::declaration::IncludeFile{i};
+                auto include = cxx::declaration::IncludeFile(i);
                 unit->add(include);
             }
         }
 
+        // Add any custom includes.
         for ( const auto& i : n->moduleProperties("%cxx-include") ) {
             if ( auto expr = i->expression() ) {
                 if ( auto ctor = expr->tryAs<expression::Ctor>() ) {
                     if ( auto str = ctor->ctor()->tryAs<ctor::String>() ) {
-                        auto include = cxx::declaration::IncludeFile{str->value()};
+                        auto include = cxx::declaration::IncludeFile(str->value());
                         unit->add(include);
                         continue;
                     }
@@ -272,35 +217,53 @@ struct Visitor : hilti::visitor::PreOrder {
             logger().error("%cxx-include must be used with a constant string");
         }
 
-        auto src = n->id();
-
-        if ( n->meta().location() )
-            src += fmt(" (from %s)", n->meta().location().file());
-
-        module = n->id();
         unit->addInitialization(cg->compile(n->statements()));
     }
 
     void operator()(declaration::ImportedModule* n) final {
-        assert(n->uid());
-        auto module = cg->context()->astContext()->module(*n->uid());
-        GlobalsVisitor::addDeclarations(cg, module, n->id(), unit, false);
-    }
-
-    void operator()(declaration::LocalVariable* n) final {
-        // Ignore, we'll treat them during statement processing.
+        // Add any custom includes declared by imported modules.
+        auto includes = cg->context()->astContext()->module(*n->uid())->moduleProperties("%cxx-include");
+        for ( const auto& i : includes ) {
+            auto decl = cxx::declaration::IncludeFile(
+                i->expression()->as<expression::Ctor>()->ctor()->as<ctor::String>()->value());
+            unit->add(decl);
+        }
     }
 
     void operator()(declaration::GlobalVariable* n) final {
-        // Ignore, the GlobalsVisitor() handles them.
+        auto args = node::transform(n->typeArguments(), [this](auto a) { return cg->compile(a); });
+        auto init = n->init() ? cg->compile(n->init()) : cg->typeDefaultValue(n->type());
+        auto x =
+            cxx::declaration::Global({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
+                                     std::move(args), std::move(init),
+                                     (n->linkage() == declaration::Linkage::Public ? "" : "static"));
+
+        // Record the global for now, final declarations will be added later
+        // once the visitor knows all globals.
+        globals.push_back(x);
     }
 
     void operator()(declaration::Constant* n) final {
-        // Ignore, the GlobalsVisitor() handles them.
+        if ( n->type()->type()->isA<type::Enum>() )
+            // Ignore, will be declared through the enum type.
+            return;
+
+        auto x =
+            cxx::declaration::Constant({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
+                                       cg->compile(n->value()));
+        unit->add(x);
     }
 
-    void operator()(declaration::Parameter* n) final {
-        // Ignore, we'll treat it during function processing.
+    void operator()(declaration::Type* n) final {
+        assert(n->typeID());
+
+        // The following compilation will identify, and record, any
+        // declarations the type needs. Those will then be added to the unit
+        // later at the end of its compilation.
+        cg->compile(n->type(), codegen::TypeUsage::Storage);
+
+        if ( include_implementation )
+            cg->addTypeInfoDefinition(n->type());
     }
 
     void operator()(declaration::Function* n) final {
@@ -311,7 +274,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         const auto& f = n->function();
         const auto& ft = f->ftype();
-        auto ns = unit->cxxNamespace();
+        auto ns = cxxNamespace();
         auto id = n->id();
         auto linkage = n->linkage();
         auto is_hook = (n->function()->ftype()->flavor() == type::function::Flavor::Hook);
@@ -319,22 +282,22 @@ struct Visitor : hilti::visitor::PreOrder {
         auto id_module = n->id().sub(-3);
 
         if ( id_module.empty() )
-            id_module = module;
+            id_module = current_module;
 
         auto id_class = n->id().sub(-2);
         auto id_local = n->id().sub(-1);
-        auto id_struct_type = (id_module != module ? ID(id_module, id_class) : id_class);
+        auto id_struct_type = (id_module != current_module ? ID(id_module, id_class) : id_class);
 
         cxx::ID cid;
         if ( ! is_hook ) {
-            cid = cxx::ID(module);
+            cid = cxx::ID(current_module);
             if ( id.namespace_() && id.sub(0) == id_module ) {
                 cid = id.sub(0);
                 id = id.sub(1, -1);
             }
         }
 
-        auto d = cg->compile(id, ft, linkage, f->callingConvention(), f->attributes(), cid);
+        auto d = cg->compile(n, ft, linkage, f->callingConvention(), f->attributes(), cid);
 
         if ( auto a = n->function()->attributes()->find("&cxxname") ) {
             // Just add the prototype. Make sure to skip any custom namespacing.
@@ -369,29 +332,26 @@ struct Visitor : hilti::visitor::PreOrder {
                 return;
 
             auto id_hook_impl =
-                cxx::ID(unit->cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n->function()));
+                cxx::ID(cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n->function()));
             auto id_hook_stub =
                 cxx::ID(cg->options().cxx_namespace_intern, id_module, fmt("__hook_%s_%s", id_class, id_local));
 
             // Adapt the function we generate.
             d.linkage = "extern";
             d.id = id_hook_impl;
+            d.ftype = cxx::declaration::Function::Free;
 
             // TODO(robin): This should compile the struct type, not hardcode
             // the runtime representation. However, we don't have access to
             // the type currently.
             // NOLINTNEXTLINE(modernize-use-emplace)
-            d.args.push_back(cxx::declaration::Argument{
-                .id = "__self",
-                .type = fmt("::hilti::rt::ValueReference<%s>&", id_struct_type),
-            });
+            d.args.push_back(
+                cxx::declaration::Argument("__self", fmt("::hilti::rt::ValueReference<%s>&", id_struct_type)));
 
-            // Make any additional types the hook needs known to local unit and linker.
+            // Make any additional types the hook needs known to the linker.
             std::list<cxx::declaration::Type> aux_types{
-                cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                       fmt("struct %s", id_class),
-                                       {},
-                                       true}};
+                cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                       fmt("struct %s", id_class), {}, true)};
 
             for ( const auto& p : ft->parameters() ) {
                 auto type = p->type();
@@ -414,24 +374,22 @@ struct Visitor : hilti::visitor::PreOrder {
                     continue;
 
                 if ( id_module.empty() )
-                    id_module = cg->hiltiModule()->scopeID(); // XXX
+                    id_module = cg->hiltiModule()->scopeID();
 
                 aux_types.push_back(
-                    cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           fmt("struct %s", id_class),
-                                           {},
-                                           true});
+                    cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           fmt("struct %s", id_class), {}, true));
             }
 
-            for ( const auto& t : aux_types )
-                cg->unit()->add(t); // XXX
-
-            // Tell linker about our implementation.
-            auto hook_join =
-                cxx::linker::Join{.id = id_hook_stub, .callee = d, .aux_types = aux_types, .priority = priority};
-
             cg->unit()->add(d);
-            cg->unit()->add(hook_join);
+
+            if ( include_implementation ) {
+                // Tell linker about our implementation.
+                auto hook_join =
+                    cxx::linker::Join{.id = id_hook_stub, .callee = d, .aux_types = aux_types, .priority = priority};
+
+                cg->unit()->add(hook_join);
+            }
         }
 
         if ( is_hook && n->linkage() != declaration::Linkage::Struct ) {
@@ -439,18 +397,24 @@ struct Visitor : hilti::visitor::PreOrder {
             auto id_module = n->id().sub(-2);
 
             if ( id_module.empty() )
-                id_module = module;
+                id_module = current_module;
 
             auto id_local = id.sub(-1);
             auto id_hook_impl =
-                cxx::ID(unit->cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n->function()));
+                cxx::ID(cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n->function()));
             auto id_hook_stub = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_local);
 
             // Adapt the function we generate.
             d.linkage = "extern";
             d.id = id_hook_impl;
+            d.ftype = cxx::declaration::Function::Free;
 
-            // Make any additional types the hook needs known to local unit and linker.
+            // Add a declaration for the stub that the linker will generate.
+            auto stub_decl = d;
+            stub_decl.id = id_hook_stub;
+            cg->unit()->add(stub_decl);
+
+            // Make any additional types the hook needs known to the linker.
             std::list<cxx::declaration::Type> aux_types;
 
             for ( const auto& p : ft->parameters() ) {
@@ -474,23 +438,20 @@ struct Visitor : hilti::visitor::PreOrder {
                     id_module = cg->hiltiModule()->uid().unique;
 
                 aux_types.push_back(
-                    cxx::declaration::Type{cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           fmt("struct %s", id_class),
-                                           {},
-                                           true});
+                    cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
+                                           fmt("struct %s", id_class), {}, true));
             }
 
-            for ( const auto& t : aux_types )
-                cg->unit()->add(t);
+            if ( include_implementation ) {
+                // Tell linker about our implementation.
+                auto hook_join = cxx::linker::Join{.id = id_hook_stub,
+                                                   .callee = d,
+                                                   .aux_types = aux_types,
+                                                   .priority = priority,
+                                                   .declare_only = (! f->body())};
 
-            // Tell linker about our implementation.
-            auto hook_join = cxx::linker::Join{.id = id_hook_stub,
-                                               .callee = d,
-                                               .aux_types = aux_types,
-                                               .priority = priority,
-                                               .declare_only = (! f->body())};
-
-            cg->unit()->add(hook_join);
+                cg->unit()->add(hook_join);
+            }
         }
 
         // Common code for all functions, compiling the body.
@@ -512,14 +473,14 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->linkage() == declaration::Linkage::Struct && ! f->isStatic() ) {
             if ( ! is_hook && ! f->isStatic() ) {
                 // Need a LHS value for __self.
-                auto self = cxx::declaration::Local{"__self", "auto", {}, fmt("%s::__self()", id_struct_type)};
+                auto self = cxx::declaration::Local("__self", "auto", {}, fmt("%s::__self()", id_struct_type));
                 body.addStatementAtFront(std::move(self));
             }
 
             cg->pushSelf("__self.derefAsValue()");
         }
 
-        auto cxx_func = cxx::Function{.declaration = d, .body = std::move(body)};
+        auto cxx_func = d;
 
         if ( cg->options().debug_flow ) {
             std::vector<cxx::Expression> args;
@@ -530,11 +491,14 @@ struct Visitor : hilti::visitor::PreOrder {
                 fmts.emplace_back("%s");
             }
 
-            auto dbg = fmt("HILTI_RT_DEBUG(\"hilti-flow\", hilti::rt::fmt(\"%s: %s(%s)\"%s))", f->meta().location(),
+            auto dbg = fmt("HILTI_RT_DEBUG(\"hilti-flow\", ::hilti::rt::fmt(\"%s: %s(%s)\"%s))", f->meta().location(),
                            d.id, util::join(fmts, ", "), util::join(args, ""));
 
-            cxx_func.body.addStatementAtFront(std::move(dbg));
+            cxx_func.body->addStatementAtFront(std::move(dbg));
         }
+
+        if ( include_implementation )
+            cxx_func.body = std::move(body);
 
         cg->unit()->add(cxx_func);
 
@@ -548,7 +512,7 @@ struct Visitor : hilti::visitor::PreOrder {
             auto cb = cxx::Block();
 
             auto outer_args =
-                util::join(util::transform(cxx_func.declaration.args,
+                util::join(util::transform(cxx_func.args,
                                            [](auto& x) {
                                                return fmt("::hilti::rt::resumable::detail::copyArg(%s)", x.id);
                                            }),
@@ -565,7 +529,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
             int idx = 0;
             auto inner_args =
-                util::join(util::transform(cxx_func.declaration.args,
+                util::join(util::transform(cxx_func.args,
                                            [&idx](auto& x) { return fmt("std::get<%d>(*args_on_heap)", idx++); }),
                            ", ");
 
@@ -577,8 +541,9 @@ struct Visitor : hilti::visitor::PreOrder {
                 cb.addReturn("::hilti::rt::Nothing()");
             }
 
-            body.addLambda("cb", "[args_on_heap](hilti::rt::resumable::Handle* r) -> hilti::rt::any", std::move(cb));
-            body.addLocal({"r", "auto", {}, "std::make_unique<hilti::rt::Resumable>(std::move(cb))"});
+            body.addLambda("cb", "[args_on_heap](::hilti::rt::resumable::Handle* r) -> ::hilti::rt::any",
+                           std::move(cb));
+            body.addLocal({"r", "auto", {}, "std::make_unique<::hilti::rt::Resumable>(std::move(cb))"});
             body.addStatement("r->run()");
             body.addReturn("std::move(*r)");
 
@@ -586,10 +551,11 @@ struct Visitor : hilti::visitor::PreOrder {
             extern_d.id = cxx::ID(
                 util::replace(extern_d.id, cg->options().cxx_namespace_intern, cg->options().cxx_namespace_extern));
             extern_d.result = "::hilti::rt::Resumable";
+            extern_d.ftype = cxx::declaration::Function::Free;
 
-            auto extern_cxx_func = cxx::Function{.declaration = extern_d, .body = std::move(body)};
+            if ( include_implementation )
+                extern_d.body = std::move(body);
 
-            cg->unit()->add(extern_cxx_func);
             cg->unit()->add(extern_d);
         }
 
@@ -597,7 +563,7 @@ struct Visitor : hilti::visitor::PreOrder {
             // Create a separate function to expose under the externally
             // visible name, which will simply forward to the actual function.
             auto body = cxx::Block();
-            cxx::Expression forward_call = fmt("%s(%s)", d.id, util::join(cxx_func.declaration.args, ", "));
+            cxx::Expression forward_call = fmt("%s(%s)", d.id, util::join(cxx_func.args, ", "));
 
             if ( ! ft->result()->type()->isA<type::Void>() )
                 body.addReturn(forward_call);
@@ -607,35 +573,36 @@ struct Visitor : hilti::visitor::PreOrder {
             auto extern_d = d;
             extern_d.id = cxx::ID(
                 util::replace(extern_d.id, cg->options().cxx_namespace_intern, cg->options().cxx_namespace_extern));
-            auto extern_cxx_func = cxx::Function{.declaration = extern_d, .body = std::move(body)};
+            extern_d.ftype = cxx::declaration::Function::Free;
 
-            cg->unit()->add(extern_cxx_func);
+            if ( include_implementation )
+                extern_d.body = std::move(body);
+
             cg->unit()->add(extern_d);
         }
 
         if ( n->linkage() == declaration::Linkage::Struct && ! f->isStatic() )
             cg->popSelf();
 
-        if ( n->linkage() != declaration::Linkage::Struct )
-            cg->unit()->add(d);
+        if ( include_implementation ) {
+            if ( n->linkage() == declaration::Linkage::Init ) {
+                // Add a call to this to the module's initialization code.
+                cxx::Block call_init_func;
+                call_init_func.addStatement(fmt("%s()", d.id));
+                cg->unit()->addInitialization(call_init_func);
+            }
 
-        if ( n->linkage() == declaration::Linkage::Init ) {
-            // Add a call to this to the module's initialization code.
-            cxx::Block call_init_func;
-            call_init_func.addStatement(fmt("%s()", d.id));
-            cg->unit()->addInitialization(call_init_func);
-        }
-
-        if ( n->linkage() == declaration::Linkage::PreInit ) {
-            // Add a call to this to the module's pre-initialization code.
-            cxx::Block call_preinit_func;
-            call_preinit_func.addStatement(fmt("%s()", d.id));
-            cg->unit()->addPreInitialization(call_preinit_func);
+            if ( n->linkage() == declaration::Linkage::PreInit ) {
+                // Add a call to this to the module's pre-initialization code.
+                cxx::Block call_preinit_func;
+                call_preinit_func.addStatement(fmt("%s()", d.id));
+                cg->unit()->addPreInitialization(call_preinit_func);
+            }
         }
     }
 };
 
-} // anonymous namespace
+} // namespace
 
 CodeGen::CodeGen(const std::shared_ptr<Context>& context)
     : _context(context), _builder(new Builder(context->astContext())) {}
@@ -665,7 +632,7 @@ codegen::TypeUsage CodeGen::parameterKindToTypeUsage(parameter::Kind k) {
     util::cannotBeReached();
 }
 
-cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, declaration::Linkage linkage,
+cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
                                             function::CallingConvention cc, AttributeSet* fattrs,
                                             std::optional<cxx::ID> namespace_) {
     auto result_ = [&]() {
@@ -681,7 +648,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, de
 
     auto param_ = [&](const auto& p) {
         auto t = compile(p->type(), parameterKindToTypeUsage(p->kind()));
-        return cxx::declaration::Argument{.id = cxx::ID(p->id()), .type = std::move(t)};
+        return cxx::declaration::Argument(cxx::ID(p->id()), std::move(t));
     };
 
     auto linkage_ = [&]() {
@@ -698,6 +665,7 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, de
         }
     };
 
+    const auto& id = decl->id();
     auto cxx_id = cxx::ID(id);
 
     if ( linkage == declaration::Linkage::Struct ) {
@@ -714,10 +682,13 @@ cxx::declaration::Function CodeGen::compile(const ID& id, type::Function* ft, de
     else
         ns += _hilti_module->uid().str();
 
-    return cxx::declaration::Function{.result = result_(),
-                                      .id = {ns, cxx_id},
-                                      .args = node::transform(ft->parameters(), param_),
-                                      .linkage = linkage_()};
+    auto cxx_decl = cxx::declaration::Function(cxx::declaration::Function::Free, result_(), {ns, cxx_id},
+                                               node::transform(ft->parameters(), param_), linkage_());
+
+    if ( linkage == declaration::Linkage::Struct )
+        cxx_decl.ftype = cxx::declaration::Function::Method;
+
+    return cxx_decl;
 }
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
@@ -751,6 +722,35 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     return x;
 }
 
+void CodeGen::_addCxxDeclarations(cxx::Unit* unit, bool include_implementation) {
+    GlobalsVisitor v(this, unit);
+
+    v.addDeclarationsNeededByNode(unit->module(), unit->module()->id(), include_implementation);
+
+    for ( const auto& i : unit->module()->children() ) {
+        if ( i )
+            v.addDeclarationsNeededByNode(i, unit->module()->id(), include_implementation);
+    }
+
+    for ( auto dep : context()->astContext()->dependentDeclarations(unit->module()) ) {
+        if ( dep->fullyQualifiedID().namespace_() == unit->module()->id() )
+            continue;
+
+        v.addDeclarationsNeededByNode(dep, dep->fullyQualifiedID().sub(0), false);
+    }
+
+    if ( ! v.globals.empty() ) {
+        v.createGlobalsAccessorFunction();
+        v.createGlobalsDeclarations();
+
+        if ( include_implementation ) {
+            unit->setUsesGlobals();
+            v.createInitGlobals();
+            v.createDestroyGlobals();
+        }
+    }
+}
+
 Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* module) {
     if ( auto cxx = module->cxxUnit() )
         return cxx;
@@ -759,17 +759,10 @@ Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* m
     logging::DebugPushIndent __(logging::debug::Compiler);
     util::timing::Collector _("hilti/compiler/codegen");
 
-    _cxx_unit = std::make_unique<cxx::Unit>(context());
+    _cxx_unit = std::make_unique<cxx::Unit>(context(), module);
     _hilti_module = module;
-    auto v = Visitor(this, module->scope(), _cxx_unit.get());
 
-    v.dispatch(module);
-
-    for ( const auto& i : module->children() )
-        v.dispatch(i);
-
-    GlobalsVisitor::addDeclarations(this, module, ID(std::string(_cxx_unit->moduleID())), _cxx_unit.get(),
-                                    ! module->skipImplementation());
+    _addCxxDeclarations(_cxx_unit.get(), ! module->skipImplementation());
 
     auto x = _need_decls;
     for ( const auto& t : x ) {
@@ -835,8 +828,8 @@ cxx::Expression CodeGen::startProfiler(const std::string& name, cxx::Block* bloc
 
     assert(block);
     pushCxxBlock(block);
-    auto id = addTmp("profiler", cxx::Type("std::optional<hilti::rt::Profiler>"));
-    auto stmt = cxx::Expression(fmt("%s = hilti::rt::profiler::start(\"%s\")", id, name));
+    auto id = addTmp("profiler", cxx::Type("std::optional<::hilti::rt::Profiler>"));
+    auto stmt = cxx::Expression(fmt("%s = ::hilti::rt::profiler::start(\"%s\")", id, name));
 
     if ( insert_at_front )
         cxxBlock()->addStatementAtFront(stmt);
@@ -855,14 +848,14 @@ void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
         block = cxxBlock();
 
     assert(block);
-    block->addStatement(cxx::Expression(fmt("hilti::rt::profiler::stop(%s)", profiler)));
+    block->addStatement(cxx::Expression(fmt("::hilti::rt::profiler::stop(%s)", profiler)));
 }
 
 cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx::Expression& value,
                                                    const cxx::Expression& bitorder) {
     std::vector<cxx::Expression> bits;
     for ( const auto& b : t->bits(false) ) {
-        auto x = fmt("hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
+        auto x = fmt("::hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
 
         if ( auto a = b->attributes()->find("&convert") ) {
             pushDollarDollar(x);
@@ -875,9 +868,9 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
 
     // `noop()` just returns the same value passed in. Without it, the compiler
     // doesn't like the expression we are building, not sure why.
-    bits.emplace_back(fmt("hilti::rt::integer::noop(%s)", value));
+    bits.emplace_back(fmt("::hilti::rt::integer::noop(%s)", value));
 
-    return fmt("hilti::rt::make_bitfield(%s)", util::join(bits, ", "));
+    return fmt("::hilti::rt::make_bitfield(%s)", util::join(bits, ", "));
 }
 
 

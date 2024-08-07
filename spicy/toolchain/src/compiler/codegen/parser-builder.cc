@@ -2083,6 +2083,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     auto sf_ext_overload1 =
         builder()->declarationField(f_ext_overload1->id().local(), hilti::function::CallingConvention::Extern,
                                     f_ext_overload1->function()->ftype(), f_ext_overload1->function()->attributes());
+
     auto sf_ext_overload2 =
         builder()->declarationField(f_ext_overload2->id().local(), hilti::function::CallingConvention::Extern,
                                     f_ext_overload2->function()->ftype(), f_ext_overload2->function()->attributes());

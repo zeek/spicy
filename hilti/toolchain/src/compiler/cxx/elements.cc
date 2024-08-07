@@ -342,9 +342,6 @@ size_t cxx::Block::size(bool ignore_comments) const {
 std::string cxx::declaration::Function::prototype(bool qualify) const {
     std::string qualifier;
 
-    if ( const_ )
-        qualifier = " const";
-
     if ( result == "void" || result == "auto" )
         return fmt("%s %s(%s)%s", result, (qualify ? id : id.local()), util::join(args, ", "), qualifier);
 
@@ -425,7 +422,7 @@ std::string cxx::type::Struct::str() const {
     util::append(struct_fields, util::transform(args, fmt_argument));
 
     if ( add_ctors ) {
-        auto dctor = fmt("inline %s();", type_name);
+        auto dctor = fmt("%s();", type_name);
         auto cctor = fmt("%s(const %s&) = default;", type_name, type_name);
         auto mctor = fmt("%s(%s&&) = default;", type_name, type_name);
         auto cassign = fmt("%s& operator=(const %s&) = default;", type_name, type_name);
@@ -446,7 +443,7 @@ std::string cxx::type::Struct::str() const {
                                                                    return fmt("std::optional<%s> %s", l.type, l.id);
                                                                }),
                                                ", ");
-            auto locals_ctor = fmt("inline %s(%s);", type_name, locals_ctor_args);
+            auto locals_ctor = fmt("%s(%s);", type_name, locals_ctor_args);
             struct_fields.emplace_back(std::move(locals_ctor));
         }
 
@@ -454,7 +451,7 @@ std::string cxx::type::Struct::str() const {
             // Add dedicated constructor to initialize the struct's arguments.
             auto params_ctor_args =
                 util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
-            auto params_ctor = fmt("inline %s(%s);", type_name, params_ctor_args);
+            auto params_ctor = fmt("%s(%s);", type_name, params_ctor_args);
             struct_fields.emplace_back(params_ctor);
         }
     }
@@ -472,7 +469,7 @@ std::string cxx::type::Struct::str() const {
                has_params, type_name, struct_fields_as_str);
 }
 
-std::string cxx::type::Struct::inlineCode() const {
+std::string cxx::type::Struct::code() const {
     if ( ! add_ctors )
         return "";
 
@@ -519,7 +516,7 @@ std::string cxx::type::Struct::inlineCode() const {
                           "");
     };
 
-    std::string inline_code;
+    std::string code;
 
     // Create default constructor. This initializes user-controlled members
     // only if there are no struct parameters. If there are, we wouldn't have
@@ -528,11 +525,10 @@ std::string cxx::type::Struct::inlineCode() const {
     // parameter-based constructors normally anyways, so don't need this
     // here.
     if ( args.size() )
-        inline_code +=
-            fmt("inline %s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
+        code += fmt("%s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
     else
-        inline_code += fmt("inline %s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(),
-                           init_locals_user(), init_locals_non_user());
+        code += fmt("%s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_user(),
+                    init_locals_non_user());
 
     if ( args.size() ) {
         // Create constructor taking the struct's parameters.
@@ -543,8 +539,8 @@ std::string cxx::type::Struct::inlineCode() const {
             util::join(util::transform(args, [&](const auto& x) { return fmt("%s(std::move(%s))", x.id, x.id); }),
                        ", ");
 
-        inline_code += fmt("inline %s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits,
-                           init_locals_user(), init_locals_non_user());
+        code += fmt("%s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits, init_locals_user(),
+                    init_locals_non_user());
     }
 
     if ( locals_user.size() ) {
@@ -564,11 +560,10 @@ std::string cxx::type::Struct::inlineCode() const {
                                        }),
                        "");
 
-        inline_code +=
-            fmt("inline %s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
+        code += fmt("%s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
     }
 
-    return inline_code;
+    return code;
 }
 
 std::string cxx::type::Union::str() const {
@@ -710,112 +705,93 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Type& x) {
     return f << util::replace(x, fmt("%s::", f.namespace_(0)), "");
 }
 
-cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Type& x) {
-    auto id = x.id.local();
+void cxx::declaration::Type::emit(cxx::Formatter& f) const {
+    auto id_ = id.local();
 
-    if ( x.id.namespace_() )
-        id = cxx::ID(x.id.namespace_(), id);
+    if ( id_.namespace_() )
+        id_ = cxx::ID(id.namespace_(), id);
 
     f.enterNamespace(id.namespace_());
 
-    if ( ! x.no_using && id.local() && ! util::startsWith(x.type, "struct") )
-        f << fmt("using %s = ", id.local()) << x.type << eos();
+    if ( ! no_using && id.local() && ! util::startsWith(type, "struct") )
+        f << fmt("using %s = ", id.local()) << type << eos();
     else
-        f << x.type << eos();
+        f << type << eos();
 
-    if ( x.type.isMultiLine() )
+    if ( type.isMultiLine() )
         f << eol();
-
-    return f;
 }
 
-cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::IncludeFile& x) {
-    return f << fmt("#include <%s>", x.file) << eol();
-}
+void cxx::declaration::IncludeFile::emit(cxx::Formatter& f) const { f << fmt("#include <%s>", file) << eol(); }
 
-cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Local& x) {
-    f << x.type << ' ' << x.id.local();
+void cxx::declaration::Local::emit(cxx::Formatter& f) const {
+    f << type << ' ' << id.local();
 
-    if ( x.init )
-        f << " = " << *x.init;
+    if ( init )
+        f << " = " << *init;
 
     f << eos();
-
-    return f;
 }
 
-cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Global& x) {
-    f.enterNamespace(x.id.namespace_());
+void cxx::declaration::Global::emit(cxx::Formatter& f) const {
+    f.enterNamespace(id.namespace_());
 
-    if ( x.linkage )
-        f << x.linkage << ' ';
+    if ( linkage )
+        f << linkage << ' ';
 
-    f << x.type << ' ' << x.id.local();
+    f << type << ' ' << id.local();
 
-    if ( x.init )
-        f << " = " << *x.init;
+    if ( init )
+        f << " = " << *init;
 
     f << eos();
-
-    return f;
 }
 
-cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Function& x) {
-    f.enterNamespace(x.id.namespace_());
+void cxx::declaration::Argument::emit(cxx::Formatter& f) const { f << std::string(*this); }
 
-    if ( x.attribute )
-        f << x.attribute << ' ';
+void cxx::declaration::Function::emit(cxx::Formatter& f) const {
+    const auto needs_separator = (inline_body && inline_body->size() > 1);
 
-    if ( x.linkage )
-        f << x.linkage << ' ';
+    if ( needs_separator )
+        f << separator();
 
-    if ( x.inline_body )
+    if ( ! body )
+        f.enterNamespace(id.namespace_());
+
+    if ( linkage )
+        f << linkage << ' ';
+
+    if ( inline_body )
         f << "inline ";
 
-    f << x.prototype(false);
+    f << prototype(body.has_value());
 
-    if ( x.inline_body ) {
+    if ( inline_body ) {
         f.ensure_braces_for_block = true;
-        f << ' ' << *x.inline_body;
+        f << ' ' << *inline_body;
+    }
+    else if ( body ) {
+        f.ensure_braces_for_block = true;
+        f.compact_block = (body->size() <= 1);
+        f << ' ' << *body;
     }
     else
         f << eos();
 
-    return f;
+    if ( needs_separator )
+        f << separator();
 }
 
-cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Function& x) {
-    if ( x.declaration.attribute )
-        f << x.declaration.attribute << ' ';
+void cxx::declaration::Constant::emit(cxx::Formatter& f) const {
+    f.enterNamespace(id.namespace_());
 
-    if ( x.declaration.linkage )
-        f << x.declaration.linkage << ' ';
+    if ( linkage )
+        f << linkage << ' ';
 
-    f << x.declaration.prototype(true);
+    f << "const " << type << ' ' << id.local();
 
-    if ( x.default_ )
-        f << " = default;" << eol();
-    else {
-        f.ensure_braces_for_block = true;
-        f.compact_block = (x.body.size() <= 1);
-        f << ' ' << x.body;
-    }
-
-    return f;
-}
-
-cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::declaration::Constant& x) {
-    f.enterNamespace(x.id.namespace_());
-
-    if ( x.linkage )
-        f << x.linkage << ' ';
-
-    f << "const " << x.type << ' ' << x.id.local();
-
-    if ( x.init )
-        f << " = " << *x.init;
+    if ( init )
+        f << " = " << *init;
 
     f << eos();
-
-    return f;
 }

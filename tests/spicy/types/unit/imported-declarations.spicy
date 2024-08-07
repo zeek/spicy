@@ -1,0 +1,28 @@
+# @TEST-EXEC: spicyc -c -o output.cc %INPUT
+# @TEST-EXEC: grep -q Used output.cc
+# @TEST-EXEC-FAIL: grep NotUsed output.cc
+#
+# @TEST-DOC: Check that for imported modules we only declare types we need inside the C++ code.
+
+module Test;
+
+import Bar;
+
+public type Message = unit {
+    x: Bar::Used;
+
+    on %done { print self; }
+};
+
+# @TEST-START-FILE bar.spicy
+
+module Bar;
+
+public type Used = unit {
+    data: bytes &eod;
+};
+
+# This isn't used, so the type shouldn't show up in the generated C++ code.
+public type NotUsed = unit {
+    data: bytes &eod;
+};
