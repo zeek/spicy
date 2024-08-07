@@ -1,3 +1,10 @@
+1.12.0-dev.21 | 2024-08-07 10:49:10 +0200
+
+  * GH-1823: Don't qualify magic linker symbols with C++ namespace. (Robin Sommer, Corelight)
+
+    We need them at their original values because that's what the runtime
+    lbirary is hard-coded to expect.
+
 1.12.0-dev.19 | 2024-08-06 15:01:21 +0200
 
   * Fix use of move'd from variable. (Benjamin Bannier, Corelight)
