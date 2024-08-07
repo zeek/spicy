@@ -311,7 +311,7 @@ void X() {}
 static int fibo(int i) {
     hilti::rt::detail::checkStack(); // this will eventually throw
 
-    alloca(512); // Make it fail quicker
+    auto* onstack = static_cast<int*>(alloca(512)); // make it fail quicker
 
     if ( i == 0 )
         return 0;
@@ -320,7 +320,8 @@ static int fibo(int i) {
         return 1;
 
     auto x = fibo(i - 1) + fibo(i - 2);
-    X(); // prevent compiler from removing tail calls
+    onstack[0] = x; // avoid unused variable
+    X();            // prevent compiler from removing tail calls
     return x;
 }
 
