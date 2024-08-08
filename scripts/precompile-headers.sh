@@ -64,11 +64,10 @@ cp "${LIBHILTI}" "${CACHE}/precompiled_libhilti_debug.h"
 $("${HILTI_CONFIG}" --cxx --cxxflags --debug) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti_debug.h.gch"
 
 cp "${LIBHILTI}" "${CACHE}/precompiled_libhilti.h"
-
-$("${HILTI_CONFIG}" --cxx --cxxflags) -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti.h.gch"
+$("${HILTI_CONFIG}" --cxx --cxxflags | sed 's/-flto//g') -x c++-header "${LIBHILTI}" -o "${CACHE}/precompiled_libhilti.h.gch"
 
 cp "${LIBSPICY}" "${CACHE}/precompiled_libspicy_debug.h"
 $("${SPICY_CONFIG}" --cxx --cxxflags --debug) -x c++-header "${LIBSPICY}" -o "${CACHE}/precompiled_libspicy_debug.h.gch"
 
 cp "${LIBSPICY}" "${CACHE}/precompiled_libspicy.h"
-$("${SPICY_CONFIG}" --cxx --cxxflags) -x c++-header "${LIBSPICY}" -o "${CACHE}/precompiled_libspicy.h.gch"
+$("${SPICY_CONFIG}" --cxx --cxxflags | sed 's/-flto//g') -x c++-header "${LIBSPICY}" -o "${CACHE}/precompiled_libspicy.h.gch"
