@@ -106,17 +106,17 @@
 [debug/ast-declarations]     - Function "exception_where" (hilti::exception_where_2)
 [debug/ast-declarations]             - Parameter "excpt" (hilti::excpt_4)
 [debug/ast-declarations] Declaration dependencies:
-[debug/ast-declarations] - [function] hilti::exception_what -> hilti::Exception, hilti::SystemException
-[debug/ast-declarations] - [function] hilti::exception_what_2 -> hilti::Exception, hilti::RecoverableFailure
-[debug/ast-declarations] - [function] hilti::exception_where -> hilti::Exception, hilti::SystemException
-[debug/ast-declarations] - [function] hilti::exception_where_2 -> hilti::Exception, hilti::RecoverableFailure
-[debug/ast-declarations] - [function] hilti::profiler_start -> hilti::Profiler
-[debug/ast-declarations] - [function] hilti::profiler_stop -> hilti::Profiler
-[debug/ast-declarations] - [global variable] Foo::s1 -> Foo::S
 [debug/ast-declarations] - [module] Foo -> Foo::S, Foo::S::test, Foo::s1
+[debug/ast-declarations] - [global variable] Foo::s1 -> Foo::S
 [debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printValues, hilti::profiler_start, hilti::profiler_stop
 [debug/ast-declarations] - [type] hilti::MatchState -> hilti::Captures
 [debug/ast-declarations] - [type] hilti::MissingData -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RecoverableFailure -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RuntimeError -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::SystemException -> hilti::Exception
+[debug/ast-declarations] - [function] hilti::exception_what -> hilti::Exception, hilti::SystemException
+[debug/ast-declarations] - [function] hilti::exception_what_2 -> hilti::Exception, hilti::RecoverableFailure
+[debug/ast-declarations] - [function] hilti::exception_where -> hilti::Exception, hilti::SystemException
+[debug/ast-declarations] - [function] hilti::exception_where_2 -> hilti::Exception, hilti::RecoverableFailure
+[debug/ast-declarations] - [function] hilti::profiler_start -> hilti::Profiler
+[debug/ast-declarations] - [function] hilti::profiler_stop -> hilti::Profiler
