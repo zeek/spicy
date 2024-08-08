@@ -583,8 +583,14 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
 
         _checkAST(true);
 
-        if ( auto rc = _transform(builder, plugin); ! rc )
-            return rc;
+        if ( plugin.ast_transform ) {
+            // Make dependencies available for transformations.
+            if ( auto rc = _computeDependencies(); ! rc )
+                return rc;
+
+            if ( auto rc = _transform(builder, plugin); ! rc )
+                return rc;
+        }
     }
 
     if ( auto rc = driver->hookCompilationFinished(_root); ! rc )
@@ -644,7 +650,7 @@ void ASTContext::_checkAST(bool finished) const {
 
 Result<Nothing> ASTContext::_init(Builder* builder, const Plugin& plugin) {
     _dumpAST(logging::debug::AstOrig, plugin, "Original AST", 0);
-
+    _dependency_tracker.reset(); // flush state
     return _runHook(plugin, &Plugin::ast_init, "initializing", builder, _root);
 }
 
