@@ -103,7 +103,6 @@ public:
                            bool throw_on_error);
     cxx::Expression unpack(QualifiedType* t, QualifiedType* data_type, const cxx::Expression& data,
                            const std::vector<cxx::Expression>& args, bool throw_on_error);
-    void addDeclarationForType(QualifiedType* t) { _need_decls.push_back(t); }
 
     cxx::Expression addTmp(const std::string& prefix, const cxx::Type& t);
     cxx::Expression addTmp(const std::string& prefix, const cxx::Expression& init);
@@ -160,7 +159,6 @@ private:
     std::vector<detail::cxx::Block*> _cxx_blocks;
     std::vector<detail::cxx::declaration::Local> _tmps;
     std::map<std::string, int> _tmp_counters;
-    QualifiedTypes _need_decls;
     hilti::util::Cache<cxx::ID, codegen::CxxTypes> _cache_types_storage;
     hilti::util::Cache<cxx::ID, codegen::CxxTypeInfo> _cache_type_info;
     hilti::util::Cache<cxx::ID, cxx::declaration::Type> _cache_types_declarations;

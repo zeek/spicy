@@ -129,7 +129,6 @@ private:
 
     std::vector<std::string> _comments;
     std::vector<std::string> _statements;
-    std::set<cxx::ID> _namespaces;        // set to keep sorted.
     std::set<linker::Join> _linker_joins; // set to keep sorted.
     cxx::Block _init_module;
     cxx::Block _preinit_module;
@@ -158,12 +157,8 @@ void Unit::add(const Declaration& d, const Meta& m) {
 
     _declarations.emplace_back(d.id, d);
 
-    if ( d.id ) {
+    if ( d.id )
         _declarations_by_id.emplace(d.id, d);
-
-        if ( d.id.namespace_() )
-            _namespaces.insert(d.id.namespace_());
-    }
 }
 
 } // namespace hilti::detail::cxx

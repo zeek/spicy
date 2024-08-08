@@ -183,8 +183,6 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
 }
 
 void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
-    _namespaces.insert("");
-
     const Phase phases[] = {Phase::Forwards, Phase::Enums,     Phase::Types,    Phase::Constants,
                             Phase::Globals,  Phase::Functions, Phase::TypeInfos};
 
