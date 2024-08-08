@@ -595,7 +595,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                                                          cxx::ID{fmt("%s::operator<<", ns)},
                                                          {cxx::declaration::Argument("o", "std::ostream&"),
                                                           cxx::declaration::Argument("x", fmt("const %s&", sid))},
-                                                         "static", std::move(render_body));
+                                                         "extern", std::move(render_body));
                 cg->unit()->add(render);
                 cg->addDeclarationForType(type);
 
@@ -712,7 +712,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                                                          cxx::ID{fmt("%s::operator<<", ns)},
                                                          {cxx::declaration::Argument("o", "std::ostream&"),
                                                           cxx::declaration::Argument("x", fmt("const %s&", sid))},
-                                                         "static", std::move(render_body));
+                                                         "extern", std::move(render_body));
                 cg->unit()->add(render);
                 cg->addDeclarationForType(type);
 

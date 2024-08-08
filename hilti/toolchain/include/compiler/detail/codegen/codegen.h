@@ -148,7 +148,7 @@ private:
     cxx::Expression _makeLhs(cxx::Expression expr, QualifiedType* type);
 
     // Add all required C++ declarations to a unit.
-    void _addCxxDeclarations(cxx::Unit* unit, bool include_implementation);
+    void _addCxxDeclarations(cxx::Unit* unit);
 
     std::weak_ptr<Context> _context;
     std::unique_ptr<Builder> _builder;

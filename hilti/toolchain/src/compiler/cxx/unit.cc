@@ -191,23 +191,28 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_im
     for ( const auto& [_, decl] : _declarations )
         _emitDeclarations(decl, f, Phase::Includes, prototypes_only, include_all_implementations);
 
+    // First output all declarations that are not in a namespace. These should
+    // be only low-level, internal stuff that doesn't require further
+    // dependencies. Doing these first makes the output a bit cleaner.
+    for ( auto phase : phases ) {
+        for ( const auto& [id, decl] : _declarations ) {
+            if ( ! id.namespace_() )
+                _emitDeclarations(decl, f, phase, prototypes_only, include_all_implementations);
+        }
+    }
+
     f << separator();
 
+    // Now output the main set of declarations, i.e., everything having a namespace.
     for ( auto phase : phases ) {
-        for ( const auto& ns : _namespaces ) {
-            if ( prototypes_only && util::endsWith(ns, "::") ) // skip anonymous namespace
-                continue;
-
-            for ( const auto& [id, decl] : _declarations ) {
-                if ( id.namespace_() == ns || id.empty() )
-                    _emitDeclarations(decl, f, phase, prototypes_only, include_all_implementations);
-            }
-        }
+        for ( const auto& [id, decl] : _declarations )
+            if ( id.namespace_() )
+                _emitDeclarations(decl, f, phase, prototypes_only, include_all_implementations);
     }
 
     f.leaveNamespace();
 
-    if ( prototypes_only ) // skip anonymous namespace
+    if ( prototypes_only )
         return;
 
     for ( const auto& s : _statements )

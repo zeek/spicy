@@ -56,7 +56,7 @@ private:
     ASTContext* context;
 
     // State maintained while computing a single declaration's dependencies.
-    bool in_progress;                  // helper to avoid unexpected recursion
+    int64_t level = 0;                 // recursion depth, zero is the starting declaration
     node::CycleDetector cd;            // state to detect dependency cycles
     ASTContext::DeclarationSet result; // receives the result of a single dependency computation
 
@@ -72,7 +72,8 @@ private:
     // Add a single dependency to the current result set if it's deemed of
     // interest.
     void insert(Declaration* d) {
-        if ( d->pathLength() <= 2 ) // top-level declaration only
+        if ( level > 0                 // skip starting node of traversal
+             && d->pathLength() <= 2 ) // global declarations only
             result.insert(d);
     }
 
@@ -84,11 +85,15 @@ private:
 
         cd.recordSeen(d);
 
+        ++level;
         for ( auto child : d->children() ) {
             for ( auto n : visitor::range(hilti::visitor::PreOrder(), child) )
                 if ( n )
                     dispatch(n);
         }
+        --level;
+
+        dispatch(d);
     }
 
     void operator()(declaration::Constant* n) final {
@@ -155,21 +160,17 @@ void DependencyTracker::computeAllDependencies(ASTRoot* root) {
 }
 
 void DependencyTracker::computeSingleDependency(Declaration* d) {
-    assert(d && d->pathLength() <= 2); // top-level declaration only
-    assert(! in_progress);             // assure we don't recurse into this
-                                       // method; that's what follow() is for instead
+    assert(d && d->pathLength() <= 2); // global declarations only
+    assert(level == 0); // assure we aren't calling this method recursively; that's what follow() is for instead
 
-    if ( auto i = dependencies.find(d); i != dependencies.end() ) {
+    if ( dependencies.count(d) > 0 )
         // Dependencies are already fully computed.
-        result.insert(i->second.begin(), i->second.end());
         return;
-    }
 
-    in_progress = true;
     cd.clear();
     result.clear();
     follow(d);
-    in_progress = false;
+    assert(level == 0);
 
     if ( auto* t = d->tryAs<declaration::Type>(); t && t->type()->type()->isA<type::Enum>() )
         // Special-case: For enum types, remove the type itself from the
