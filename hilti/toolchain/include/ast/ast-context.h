@@ -7,7 +7,6 @@
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -97,6 +96,12 @@ template<char Prefix>
 inline std::ostream& operator<<(std::ostream& out, const hilti::ast::detail::ContextIndex<Prefix>& index) {
     return out << index.str();
 }
+
+// Helper to sort declaration pointers by their canonical IDs.
+struct DeclarationPtrCmp {
+    bool operator()(const Declaration* a, const Declaration* b) const;
+};
+
 } // namespace detail
 
 /** Strongly typed index for declarations. */
@@ -115,6 +120,9 @@ using TypeIndex = detail::ContextIndex<'T'>;
  */
 class ASTContext : public std::enable_shared_from_this<ASTContext> {
 public:
+    // Set of declarations ordered by their canonical IDs.
+    using DeclarationSet = std::set<Declaration*, ast::detail::DeclarationPtrCmp>;
+
     /**
      * Constructor.
      *
@@ -235,7 +243,7 @@ public:
      * declaration itself; will return an empty set if the declaration has no
      * dependencies, including if *d* is not actually a global declaration
      */
-    const std::unordered_set<Declaration*>& dependentDeclarations(Declaration* n);
+    const DeclarationSet& dependentDeclarations(Declaration* n);
 
     /**
      * Updates an existing UID with new information.

@@ -1,3 +1,33 @@
+1.12.0-dev.51 | 2024-08-09 15:43:51 +0200
+
+  * Fix AST dependency computation. (Robin Sommer, Corelight)
+
+    Turns out the logic wasn't quite right yet. It worked well enough if
+    all units get wrapped into `ValueReference` because then we just need
+    a forward declaration to make that work; and those we would always
+    output first. But it wouldn't actually track dependencies correctly to
+    output them in the right order so that full struct are available where
+    needed. This commit reworks that logic. Turns out this also further
+    simplifies logic and state tracking, which is a good sign.
+
+  * Provide dependency information to AST transformations. (Robin Sommer, Corelight)
+
+    Before, we computed dependency information only once just before final
+    codegen, meaning that Spicy-to-HILTI lowering would not have it
+    available. This adds a separate dependency computation just before the
+    transformation pass. While this isn't used yet, the change prepares
+    for future functionality leveraging dependencies during lowering (like
+    selective application of `&on-heap`).
+
+  * Make AST dependency information deterministic. (Robin Sommer, Corelight)
+
+    The dependency information returned by the context wasn't sorted, with
+    order depending on pointer values. That means that users of that
+    information would end up processing dependencies in an undetermined
+    order, making their results non-deterministic.
+
+  * Fix an error message. (Robin Sommer, Corelight)
+
 1.12.0-dev.45 | 2024-08-09 14:01:49 +0200
 
   * Silence unused result warnings when expression has [[nodiscard]]. (Arne Welzel, Corelight)

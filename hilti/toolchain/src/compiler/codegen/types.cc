@@ -431,10 +431,8 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                                                  {cxx::declaration::Argument("o", "std::ostream&"),
                                                   cxx::declaration::Argument("x", cxx::Type(id.local()))},
                                                  "inline", std::move(render_body));
-
         cg->unit()->add(render);
 
-        cg->addDeclarationForType(type);
         result = CxxTypes{.base_type = std::string(sid), .default_ = cxx::Expression(cxx::ID(sid, "Undef"))};
     }
 
@@ -447,7 +445,6 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         }
 
         if ( auto id = n->typeID() ) {
-            cg->addDeclarationForType(type);
             result = CxxTypes{.base_type = std::string(id), .storage = "::hilti::rt::Exception"};
             return;
         }
@@ -595,9 +592,8 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                                                          cxx::ID{fmt("%s::operator<<", ns)},
                                                          {cxx::declaration::Argument("o", "std::ostream&"),
                                                           cxx::declaration::Argument("x", fmt("const %s&", sid))},
-                                                         "static", std::move(render_body));
+                                                         "extern", std::move(render_body));
                 cg->unit()->add(render);
-                cg->addDeclarationForType(type);
 
                 return cxx_types;
             });
@@ -712,9 +708,8 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                                                          cxx::ID{fmt("%s::operator<<", ns)},
                                                          {cxx::declaration::Argument("o", "std::ostream&"),
                                                           cxx::declaration::Argument("x", fmt("const %s&", sid))},
-                                                         "static", std::move(render_body));
+                                                         "extern", std::move(render_body));
                 cg->unit()->add(render);
-                cg->addDeclarationForType(type);
 
                 return cxx_types;
             });

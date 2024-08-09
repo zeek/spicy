@@ -35,6 +35,10 @@ inline const DebugStream Resolver("resolver");
 
 namespace hilti::ast::detail {
 
+bool DeclarationPtrCmp::operator()(const Declaration* a, const Declaration* b) const {
+    return a->canonicalID() < b->canonicalID();
+}
+
 // Visitor computing global declaration dependencies.
 class DependencyTracker : hilti::visitor::PreOrder {
 public:
@@ -46,19 +50,20 @@ public:
     // Returns recorded dependencies for a given global declaration.
     // Returns an empty set if the given declaration is not known as having any
     // dependencies.
-    const std::unordered_set<Declaration*>& dependentDeclarations(Declaration* n);
+    const ASTContext::DeclarationSet& dependentDeclarations(Declaration* n);
 
 private:
     ASTContext* context;
 
     // State maintained while computing a single declaration's dependencies.
-    bool in_progress;                        // helper to avoid unexpected recursion
-    node::CycleDetector cd;                  // state to detect dependency cycles
-    std::unordered_set<Declaration*> result; // receives the result of a single dependency computation
+    int64_t level = 0;                 // recursion depth, zero is the starting declaration
+    node::CycleDetector cd;            // state to detect dependency cycles
+    ASTContext::DeclarationSet result; // receives the result of a single dependency computation
 
-    // Records discovered dependencies. If a set contains the index itself,
-    // that means a cyclic dependency.
-    std::unordered_map<const Declaration*, std::unordered_set<Declaration*>> dependencies;
+    // Records discovered dependencies. If a vector contains the index itself,
+    // that means a cyclic dependency. We use vectors as values so that we can
+    // maintain a deterministic order despite the pointers.
+    std::map<const Declaration*, ASTContext::DeclarationSet, DeclarationPtrCmp> dependencies;
 
     // Compute and store the dependencies of a single declaration. Backend for
     // computeAllDependencies().
@@ -67,7 +72,8 @@ private:
     // Add a single dependency to the current result set if it's deemed of
     // interest.
     void insert(Declaration* d) {
-        if ( d->pathLength() <= 2 ) // top-level declaration only
+        if ( level > 0                 // skip starting node of traversal
+             && d->pathLength() <= 2 ) // global declarations only
             result.insert(d);
     }
 
@@ -79,11 +85,15 @@ private:
 
         cd.recordSeen(d);
 
+        ++level;
         for ( auto child : d->children() ) {
             for ( auto n : visitor::range(hilti::visitor::PreOrder(), child) )
                 if ( n )
                     dispatch(n);
         }
+        --level;
+
+        dispatch(d);
     }
 
     void operator()(declaration::Constant* n) final {
@@ -136,44 +146,31 @@ void DependencyTracker::computeAllDependencies(ASTRoot* root) {
     }
 
     if ( logger().isEnabled(logging::debug::AstDeclarations) ) {
-        // Output all computed dependencies in a deterministic order.
         HILTI_DEBUG(logging::debug::AstDeclarations, "Declaration dependencies:");
-
-        std::map<std::string, std::string> sorted;
 
         for ( const auto& [decl, deps] : dependencies ) {
             if ( deps.empty() )
                 continue;
 
             auto decl_ = fmt("[%s] %s", decl->displayName(), decl->canonicalID());
-            std::set<std::string> deps_;
-            std::transform(std::begin(deps), std::end(deps), std::inserter(deps_, std::end(deps_)),
-                           [](const auto* d) { return d->canonicalID(); });
-
-            sorted[decl_] = util::join(deps_, ", ");
+            auto deps_ = util::join(util::transform(deps, [](const auto* d) { return d->canonicalID(); }), ", ");
+            HILTI_DEBUG(logging::debug::AstDeclarations, fmt("- %s -> %s", decl_, deps_));
         }
-
-        for ( const auto& [decl, deps] : sorted )
-            HILTI_DEBUG(logging::debug::AstDeclarations, fmt("- %s -> %s", decl, deps));
     }
 }
 
 void DependencyTracker::computeSingleDependency(Declaration* d) {
-    assert(d && d->pathLength() <= 2); // top-level declaration only
-    assert(! in_progress);             // assure we don't recurse into this
-                                       // method; that's what follow() is for instead
+    assert(d && d->pathLength() <= 2); // global declarations only
+    assert(level == 0); // assure we aren't calling this method recursively; that's what follow() is for instead
 
-    if ( auto i = dependencies.find(d); i != dependencies.end() ) {
+    if ( dependencies.count(d) > 0 )
         // Dependencies are already fully computed.
-        result.insert(i->second.begin(), i->second.end());
         return;
-    }
 
-    in_progress = true;
     cd.clear();
     result.clear();
     follow(d);
-    in_progress = false;
+    assert(level == 0);
 
     if ( auto* t = d->tryAs<declaration::Type>(); t && t->type()->type()->isA<type::Enum>() )
         // Special-case: For enum types, remove the type itself from the
@@ -182,14 +179,14 @@ void DependencyTracker::computeSingleDependency(Declaration* d) {
         // can never be cyclic, so we don't want it in there.
         result.erase(d);
 
-    dependencies.emplace(d, result);
+    dependencies.emplace(d, std::move(result));
 }
 
-const std::unordered_set<Declaration*>& DependencyTracker::dependentDeclarations(Declaration* n) {
+const ASTContext::DeclarationSet& DependencyTracker::dependentDeclarations(Declaration* n) {
     if ( auto x = dependencies.find(n); x != dependencies.end() )
         return x->second;
     else {
-        static const std::unordered_set<Declaration*> empty;
+        static const ASTContext::DeclarationSet empty;
         return empty;
     }
 }
@@ -587,8 +584,14 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
 
         _checkAST(true);
 
-        if ( auto rc = _transform(builder, plugin); ! rc )
-            return rc;
+        if ( plugin.ast_transform ) {
+            // Make dependencies available for transformations.
+            if ( auto rc = _computeDependencies(); ! rc )
+                return rc;
+
+            if ( auto rc = _transform(builder, plugin); ! rc )
+                return rc;
+        }
     }
 
     if ( auto rc = driver->hookCompilationFinished(_root); ! rc )
@@ -648,7 +651,7 @@ void ASTContext::_checkAST(bool finished) const {
 
 Result<Nothing> ASTContext::_init(Builder* builder, const Plugin& plugin) {
     _dumpAST(logging::debug::AstOrig, plugin, "Original AST", 0);
-
+    _dependency_tracker.reset(); // flush state
     return _runHook(plugin, &Plugin::ast_init, "initializing", builder, _root);
 }
 
@@ -935,7 +938,7 @@ void ASTContext::_saveIterationAST(const Plugin& plugin, const std::string& pref
     _dumpAST(out, plugin, prefix, 0);
 }
 
-const std::unordered_set<Declaration*>& ASTContext::dependentDeclarations(Declaration* n) {
+const ASTContext::DeclarationSet& ASTContext::dependentDeclarations(Declaration* n) {
     if ( _dependency_tracker )
         return _dependency_tracker->dependentDeclarations(n);
     else

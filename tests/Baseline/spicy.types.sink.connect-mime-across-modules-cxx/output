@@ -4,8 +4,8 @@ Available parsers:
 
         Test::Bar 
   Test::CommonPublic  [common/public]
-        Test::Foo 
   Test::CommonPublic  [common/public]
+        Test::Foo 
 
 Foo
 foo/private from Foo
@@ -16,8 +16,8 @@ Available parsers:
 
         Test::Bar 
   Test::CommonPublic  [common/public]
-        Test::Foo 
   Test::CommonPublic  [common/public]
+        Test::Foo 
 
 Bar
 bar/private from Bar

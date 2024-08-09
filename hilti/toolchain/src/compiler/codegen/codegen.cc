@@ -184,11 +184,8 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
     }
 
     // Add all C++ declarations to unit that a given node will need.
-    void addDeclarationsNeededByNode(Node* n, ID module_name, bool include_implementation_) {
-        current_module = std::move(module_name);
-        include_implementation = include_implementation_;
-        dispatch(n);
-    }
+    // TODO: Do we need/use include_implementation? What about %skip-implementation?
+    void addCxxDeclarationsFor(Declaration* d, ID module_name, bool include_implementation_, node::CycleDetector* cd);
 
     // Returns the C++ namespace for the currently processed module.
     auto cxxNamespace() { return cxx::ID(cg->options().cxx_namespace_intern, current_module); }
@@ -257,10 +254,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
     void operator()(declaration::Type* n) final {
         assert(n->typeID());
 
-        // The following compilation will identify, and record, any
-        // declarations the type needs. Those will then be added to the unit
-        // later at the end of its compilation.
-        cg->compile(n->type(), codegen::TypeUsage::Storage);
+        auto t = cg->compile(n->type(), codegen::TypeUsage::Storage);
+        if ( auto dt = cg->typeDeclaration(n->type()) )
+            unit->add(*dt);
 
         if ( include_implementation )
             cg->addTypeInfoDefinition(n->type());
@@ -722,32 +718,43 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     return x;
 }
 
-void CodeGen::_addCxxDeclarations(cxx::Unit* unit, bool include_implementation) {
+void GlobalsVisitor::addCxxDeclarationsFor(Declaration* d, ID module_name, bool include_implementation_,
+                                           node::CycleDetector* cd) {
+    if ( cd->haveSeen(d) )
+        return;
+
+    cd->recordSeen(d);
+
+    for ( auto dep : cg->context()->astContext()->dependentDeclarations(d) ) {
+        if ( dep != d )
+            addCxxDeclarationsFor(dep, dep->fullyQualifiedID().sub(0), include_implementation_, cd);
+    }
+
+    current_module = std::move(module_name);
+
+    if ( include_implementation_ )
+        include_implementation = (d->fullyQualifiedID().sub(0) == unit->module()->id());
+    else
+        include_implementation = false;
+
+    dispatch(d);
+}
+
+void CodeGen::_addCxxDeclarations(cxx::Unit* unit) {
     GlobalsVisitor v(this, unit);
 
-    v.addDeclarationsNeededByNode(unit->module(), unit->module()->id(), include_implementation);
+    node::CycleDetector cd;
+    v.addCxxDeclarationsFor(unit->module(), unit->module()->id(), true, &cd);
 
-    for ( const auto& i : unit->module()->children() ) {
-        if ( i )
-            v.addDeclarationsNeededByNode(i, unit->module()->id(), include_implementation);
-    }
-
-    for ( auto dep : context()->astContext()->dependentDeclarations(unit->module()) ) {
-        if ( dep->fullyQualifiedID().namespace_() == unit->module()->id() )
-            continue;
-
-        v.addDeclarationsNeededByNode(dep, dep->fullyQualifiedID().sub(0), false);
-    }
+    for ( const auto& i : unit->module()->childrenOfType<Declaration>() )
+        v.addCxxDeclarationsFor(i, unit->module()->id(), true, &cd);
 
     if ( ! v.globals.empty() ) {
+        unit->setUsesGlobals();
         v.createGlobalsAccessorFunction();
         v.createGlobalsDeclarations();
-
-        if ( include_implementation ) {
-            unit->setUsesGlobals();
-            v.createInitGlobals();
-            v.createDestroyGlobals();
-        }
+        v.createInitGlobals();
+        v.createDestroyGlobals();
     }
 }
 
@@ -762,13 +769,7 @@ Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* m
     _cxx_unit = std::make_unique<cxx::Unit>(context(), module);
     _hilti_module = module;
 
-    _addCxxDeclarations(_cxx_unit.get(), ! module->skipImplementation());
-
-    auto x = _need_decls;
-    for ( const auto& t : x ) {
-        if ( auto dt = typeDeclaration(t) )
-            unit()->add(*dt);
-    }
+    _addCxxDeclarations(_cxx_unit.get());
 
     module->setCxxUnit(std::move(_cxx_unit));
     _cxx_unit.reset();

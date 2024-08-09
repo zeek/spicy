@@ -300,7 +300,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         else if ( n->id().str() == "%cxx-include" ) {
             if ( auto e = n->expression(); ! e ) {
-                error("%byte-order requires an argument", n);
+                error("%cxx-include requires an argument", n);
                 return;
             }
         }
