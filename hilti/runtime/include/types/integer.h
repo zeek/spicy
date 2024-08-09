@@ -99,7 +99,8 @@ inline Bytes pack(integer::safe<T> i, ByteOrder fmt) {
     if ( fmt == ByteOrder::Host )
         return pack<T>(i, systemByteOrder());
 
-    uint8_t raw[sizeof(T)];
+    Bytes b(sizeof(T), '\0');
+    auto* raw = reinterpret_cast<uint8_t*>(b.data());
 
     switch ( fmt.value() ) {
         case ByteOrder::Big:
@@ -146,7 +147,7 @@ inline Bytes pack(integer::safe<T> i, ByteOrder fmt) {
         case ByteOrder::Undef: throw RuntimeError("attempt to pack value with undefined byte order");
     }
 
-    return Bytes(reinterpret_cast<Bytes::Base::value_type*>(raw), sizeof(raw));
+    return b;
 }
 
 template<typename T, typename D>

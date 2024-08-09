@@ -68,13 +68,16 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
         if ( begin.has_value() )
             begin_ = hilti::rt::fmt("%" PRId64, begin->offset());
 
+        auto begin_offset = data->begin().offset();
+        auto end_offset = data->end().offset();
+
         return hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%s/%" PRId64 "/%" PRId64
                               "/%" PRId64 " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64
                               " lah_token=\"%s%s\" recovering=%s",
-                              unit_id, input_data, input_dots, data.get(), data->begin().offset(), begin_,
-                              cur.begin().offset(), data->end().offset(), cur.end().offset(), data->numberOfChunks(),
-                              (data->isFrozen() ? "yes" : "no"), literal_mode, (trim ? "yes" : "no"), lah_str, lah_data,
-                              lah_dots, (error.has_value() ? "yes" : "no"));
+                              unit_id, input_data, input_dots, data.get(), begin_offset, begin_, cur.begin().offset(),
+                              end_offset, cur.end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"),
+                              literal_mode, (trim ? "yes" : "no"), lah_str, lah_data, lah_dots,
+                              (error.has_value() ? "yes" : "no"));
     };
 
     SPICY_RT_DEBUG_VERBOSE(msg());
