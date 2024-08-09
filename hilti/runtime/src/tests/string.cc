@@ -2,6 +2,7 @@
 
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/types/string.h>
+#include <hilti/rt/types/vector.h>
 
 using namespace hilti::rt;
 
@@ -71,6 +72,63 @@ TEST_CASE("to_string_for_print") {
     CHECK_EQ(to_string_for_print(std::string("abc")), "abc");
     CHECK_EQ(to_string_for_print(std::string_view("abc")), "abc");
     CHECK_EQ(to_string_for_print("abc"), "abc");
+}
+
+TEST_CASE("split") {
+    SUBCASE("separator") {
+        CHECK_EQ(string::split("12 45", " "), Vector<std::string>({"12", "45"}));
+        CHECK_EQ(string::split("12 45 678", " "), Vector<std::string>({"12", "45", "678"}));
+        CHECK_EQ(string::split("12345", "34"), Vector<std::string>({"12", "5"}));
+        CHECK_EQ(string::split(" 2345", " "), Vector<std::string>({"", "2345"}));
+        CHECK_EQ(string::split("12345", ""), Vector<std::string>({"12345"}));
+        CHECK_EQ(string::split("12345", "6"), Vector<std::string>({"12345"}));
+        CHECK_EQ(string::split("12 34 5", ""), Vector<std::string>({"12 34 5"}));
+        CHECK_EQ(string::split(" ", " "), Vector<std::string>({"", ""}));
+        CHECK_EQ(string::split("", " "), Vector<std::string>({""}));
+        CHECK_EQ(string::split("", ""), Vector<std::string>({""}));
+    }
+
+    SUBCASE("whitespace") {
+        CHECK_EQ(string::split("12 45"), Vector<std::string>({"12", "45"}));
+        CHECK_EQ(string::split("12 45 678"), Vector<std::string>({"12", "45", "678"}));
+        CHECK_EQ(string::split("1"), Vector<std::string>({"1"}));
+
+        // TODO: These (and the bytes tests) should match behavior with a provided separator
+        CHECK_EQ(string::split(" 2345"), Vector<std::string>({"2345"}));
+        CHECK_EQ(string::split(" "), Vector<std::string>());
+        CHECK_EQ(string::split(""), Vector<std::string>());
+    }
+
+    SUBCASE("multibyte") {
+        CHECK_EQ(string::split("𝔘𝔫𝔦𝔠𝔬𝔡𝔢", "𝔦"), Vector<std::string>({"𝔘𝔫", "𝔠𝔬𝔡𝔢"}));
+        CHECK_EQ(string::split("𝔘𝔫𝔦𝔠𝔬𝔡𝔢", "i"), Vector<std::string>({"𝔘𝔫𝔦𝔠𝔬𝔡𝔢"}));
+        CHECK_EQ(string::split("𝔘𝔫𝔦 𝔠𝔬𝔡𝔢"), Vector<std::string>({"𝔘𝔫𝔦", "𝔠𝔬𝔡𝔢"}));
+    }
+}
+
+TEST_CASE("split1") {
+    SUBCASE("separator") {
+        CHECK_EQ(string::split1("12 45", " "), std::make_tuple("12", "45"));
+        CHECK_EQ(string::split1("12 45 678", " "), std::make_tuple("12", "45 678"));
+        CHECK_EQ(string::split1("12345", "34"), std::make_tuple("12", "5"));
+        CHECK_EQ(string::split1(" 2345", " "), std::make_tuple("", "2345"));
+        CHECK_EQ(string::split1("12345", ""), std::make_tuple("", "12345"));
+        CHECK_EQ(string::split1("12345", "6"), std::make_tuple("12345", ""));
+        CHECK_EQ(string::split1("12 34 5", ""), std::make_tuple("", "12 34 5"));
+        CHECK_EQ(string::split1("1", " "), std::make_tuple("1", ""));
+        CHECK_EQ(string::split1("", "1"), std::make_tuple("", ""));
+        CHECK_EQ(string::split1("", ""), std::make_tuple("", ""));
+    }
+
+    SUBCASE("whitespace") {
+        CHECK_EQ(string::split1("12 45"), std::make_tuple("12", "45"));
+        CHECK_EQ(string::split1("12 45 678"), std::make_tuple("12", "45 678"));
+        CHECK_EQ(string::split1(" 2345"), std::make_tuple("", "2345"));
+        CHECK_EQ(string::split1("12345"), std::make_tuple("12345", ""));
+        CHECK_EQ(string::split1(" "), std::make_tuple("", ""));
+        CHECK_EQ(string::split1(""), std::make_tuple("", ""));
+        CHECK_EQ(string::split1("1"), std::make_tuple("1", ""));
+    }
 }
 
 TEST_SUITE_END();

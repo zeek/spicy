@@ -790,6 +790,35 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::fmt(%s, %s)", op0(n), op1(n));
     }
 
+    void operator()(operator_::string::Split* n) final {
+        auto [self, args] = methodArguments(n);
+        std::string sep;
+
+        if ( auto x = optionalArgument(args, 0); ! x.empty() )
+            sep = fmt(", %s", x);
+
+        result = fmt("::hilti::rt::string::split(%s%s)", self, sep);
+    }
+
+    void operator()(operator_::string::Split1* n) final {
+        auto [self, args] = methodArguments(n);
+        std::string sep;
+
+        if ( auto x = optionalArgument(args, 0); ! x.empty() )
+            sep = fmt(", %s", x);
+
+        result = fmt("::hilti::rt::string::split1(%s%s)", self, sep);
+    }
+
+    void operator()(operator_::string::StartsWith* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("::hilti::rt::startsWith(%s, %s)", self, args[0]);
+    }
+
+    void operator()(operator_::string::LowerCase* n) final { result = fmt("::hilti::rt::string::lower(%s)", op0(n)); }
+
+    void operator()(operator_::string::UpperCase* n) final { result = fmt("::hilti::rt::string::upper(%s)", op0(n)); }
+
     // Strong reference
     void operator()(operator_::strong_reference::Deref* n) final { result = {fmt("(*%s)", op0(n)), Side::LHS}; }
     void operator()(operator_::strong_reference::Equal* n) final { result = fmt("%s == %s", op0(n), op1(n)); }

@@ -35,7 +35,7 @@ integer::safe<uint64_t> string::size(const std::string& s, DecodeErrorStrategy e
     return len;
 }
 
-std::string string::upper(const std::string& s, DecodeErrorStrategy errors) {
+std::string string::upper(std::string_view s, DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -65,7 +65,7 @@ std::string string::upper(const std::string& s, DecodeErrorStrategy errors) {
     return rval;
 }
 
-std::string string::lower(const std::string& s, DecodeErrorStrategy errors) {
+std::string string::lower(std::string_view s, DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -93,4 +93,38 @@ std::string string::lower(const std::string& s, DecodeErrorStrategy errors) {
     }
 
     return rval;
+}
+
+Vector<std::string> string::split(std::string_view s) {
+    auto xs = hilti::rt::split(s);
+
+    Vector<std::string> result;
+    result.reserve(xs.size());
+
+    for ( auto&& v : xs )
+        result.emplace_back(v);
+
+    return result;
+}
+
+Vector<std::string> string::split(std::string_view s, std::string_view sep) {
+    auto xs = hilti::rt::split(s, sep);
+
+    Vector<std::string> result;
+    result.reserve(xs.size());
+
+    for ( auto&& v : xs )
+        result.emplace_back(v);
+
+    return result;
+}
+
+std::tuple<std::string, std::string> string::split1(const std::string& s) {
+    auto pair = hilti::rt::split1(s);
+    return {pair.first, pair.second};
+}
+
+std::tuple<std::string, std::string> string::split1(const std::string& s, const std::string& sep) {
+    auto pair = hilti::rt::split1(s, sep);
+    return {pair.first, pair.second};
 }

@@ -487,6 +487,11 @@ class Sum;
 class SumAssign;
 class Modulo;
 class Encode;
+class Split;
+class Split1;
+class StartsWith;
+class LowerCase;
+class UpperCase;
 } // namespace string
 
 namespace struct_ {

@@ -1,3 +1,38 @@
+1.12.0-dev.58 | 2024-08-09 15:57:52 +0200
+
+  * Add `string::lower` and `string::upper` (Evan Typanski, Corelight)
+
+    These already had a whole impl in the `string` namespace, so this just
+    hooks it up so you can use them reasonably on a string type in a spicy
+    file. It also switches those impls to use `string_view`
+
+  * Fix `split` and `split1` docs to be more accurate (Evan Typanski, Corelight)
+
+    The documentation for the bytes method seemed incorrect (or, at least,
+    confusing) where an empty separator did *not* split on white space. This
+    correctly documents the behavior with what the actual behavior is
+    (especially for split1).
+
+    Note, the behavior is a bit confusing, unintuitive, and maybe
+    inconsistent between the implementations of `split` and `split1`.
+    Namely, `split1` will sometimes but the entire value in the first
+    element of the tuple (if a match isn't found) or the second element (if
+    the separator is just an empty string).
+
+    For now this just updates the documentation, but I'd also welcome a
+    change in behavior.
+
+  * Add `string::split` and `string::split1` helpers (Evan Typanski, Corelight)
+
+    This doesn't do any work to fix the TODOs that were already in the Bytes
+    version. Also, there is a small unclear bit about the documentation for
+    the `split` op in both Bytes and now string, namely that an empty `sep`
+    argument should make the break take place at sequences of whitespace,
+    but it does not do that. It may also be misreading the documentation,
+    but one of the two should probably be clarified.
+
+  * Add `string::starts_with` helper (Evan Typanski, Corelight)
+
 1.12.0-dev.53 | 2024-08-09 15:45:05 +0200
 
   * GH-1831: Fix optimizer regression. (Robin Sommer, Corelight)
