@@ -41,7 +41,9 @@ namespace spicy::detail::codegen {
 
 // Information collected from the AST in an initial pass for any code generation.
 struct ASTInfo {
-    std::set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
+    std::unordered_set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
+    std::unordered_set<ID>
+        units_with_references; // type IDs if any unit types that are wrapped into a reference somewhere
 };
 
 } // namespace spicy::detail::codegen
@@ -67,6 +69,31 @@ struct VisitorASTInfo : public visitor::PreOrder {
         if ( n->id() == ID("0x25_sync_advance") ) {
             const auto& unit = context->lookup(n->hook()->unitTypeIndex());
             info->uses_sync_advance.insert(unit->typeID());
+        }
+    }
+
+    void operator()(hilti::type::StrongReference* n) final {
+        if ( auto t = n->dereferencedType()->type(); t->isA<type::Unit>() )
+            info->units_with_references.insert(t->canonicalID());
+    }
+
+    void operator()(hilti::type::ValueReference* n) final {
+        if ( auto t = n->dereferencedType()->type(); t->isA<type::Unit>() )
+            info->units_with_references.insert(t->canonicalID());
+    }
+
+    void operator()(hilti::type::WeakReference* n) final {
+        if ( auto t = n->dereferencedType()->type(); t->isA<type::Unit>() )
+            info->units_with_references.insert(t->canonicalID());
+    }
+
+    void operator()(hilti::declaration::Parameter* n) final {
+        if ( n->kind() == hilti::parameter::Kind::InOut ) {
+            if ( auto t = n->type()->type(); t->isA<type::Unit>() )
+                // For historical reasons, `inout` unit parameters are expected
+                // to be wrapped into a reference, so mark them as such so that
+                // they will gain a `value_ref` wrapping.
+                info->units_with_references.insert(t->canonicalID());
         }
     }
 };
@@ -125,7 +152,6 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         auto qstruct = builder()->qualifiedType(struct_, n->type()->constness());
 
         n->setType(context(), qstruct);
-        n->addAttribute(context(), builder()->attribute("&on-heap"));
 
         if ( info->uses_sync_advance.find(u->typeID()) != info->uses_sync_advance.end() )
             // Unit has an implementation of `%sync_advance`, so add feature
@@ -135,6 +161,24 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
                                                             builder()->stringLiteral("uses_sync_advance")));
 
         cg->recordTypeMapping(u, struct_);
+
+        // Add &on-hep attribute to struct types that need it for correct functioning.
+        bool add_on_heap = false;
+
+        if ( info->units_with_references.find(n->canonicalID()) != info->units_with_references.end() )
+            // Add &on-heap attribute to units types that are wrapped into a reference anywhere.
+            add_on_heap = true;
+
+        auto unit_decl = u->typeDeclaration();
+        const auto& decl = context()->dependentDeclarations(unit_decl);
+        if ( auto x = std::find(decl.begin(), decl.end(), unit_decl); x != decl.end() )
+            // Add &on-heap attribute to units types that are wrapped into a reference anywhere.
+            add_on_heap = true;
+
+        if ( add_on_heap ) {
+            recordChange(hilti::util::fmt("marking struct type %s as %%on-heap", n->canonicalID()));
+            n->attributes()->add(context(), builder()->attribute("&on-heap"));
+        }
 
         recordChange(n, "replaced unit type with struct");
     }
