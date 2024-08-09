@@ -1038,7 +1038,6 @@
 [debug/optimizer] [unused-types.spicy:43:22-46:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:43:22-46:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:43:22-46:1] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
-[debug/optimizer] [unused-types.spicy:49:1-49:31] declaration::Type "type Priv11 = enum { A = 0, B = 1, C = 2 };" -> null (removing unused type)
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_error

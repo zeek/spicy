@@ -585,6 +585,26 @@ struct TypeVisitor : OptimizerVisitor {
         }
     }
 
+    void operator()(type::Name* n) final {
+        auto t = n->resolvedType();
+        assert(t);
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( const auto& type_id = t->typeID() )
+                    // Record this type as used.
+                    _used[type_id] = true;
+
+                break;
+            }
+
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS:
+                // Nothing.
+                break;
+        }
+    }
+
     void operator()(UnqualifiedType* n) final {
         if ( n->parent(2)->isA<declaration::Type>() )
             return;
