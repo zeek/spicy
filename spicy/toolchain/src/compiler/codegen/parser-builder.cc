@@ -594,6 +594,9 @@ struct ProductionVisitor : public production::Visitor {
 
         beginProduction(*p);
 
+        if ( is_field_owner )
+            setUpStandardFieldParsing(field);
+
         if ( const auto& x = p->tryAs<production::Enclosure>() )
             // Recurse.
             parseProduction(*x->child());
@@ -637,10 +640,16 @@ struct ProductionVisitor : public production::Visitor {
         else
             parseNonAtomicProduction(*p, {});
 
+        Expression* ncur = nullptr;
+        Expression* ncur_max_size = nullptr;
+
+        if ( is_field_owner )
+            std::tie(ncur, ncur_max_size) = finishStandardFieldParsing(field);
+
         endProduction(*p);
 
         if ( is_field_owner ) {
-            postParseField(*p, meta, pre_container_offset);
+            postParseField(*p, meta, pre_container_offset, ncur, ncur_max_size);
 
             if ( profiler ) {
                 auto offset = builder()->memberCall(state().cur, "offset");
@@ -735,6 +744,31 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto a = field->attributes()->find("&parse-at") )
             redirectInputToStreamPosition(*a->valueAsExpression());
 
+        if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+            auto __offsets = builder()->member(state().self, "__offsets");
+            auto cur_offset = builder()->memberCall(state().cur, "offset");
+
+            // Since the offset list is created empty resize the
+            // vector so that we can access the current field's index.
+            assert(field->index());
+            auto index = builder()->addTmp("index", builder()->integer(*field->index()));
+            builder()->addMemberCall(__offsets, "resize", {builder()->sum(index, builder()->integer(1))});
+
+            builder()->addAssign(builder()->index(__offsets, *field->index()),
+                                 builder()->tuple(
+                                     {cur_offset,
+                                      builder()->optional(builder()->qualifiedType(builder()->typeUnsignedInteger(64),
+                                                                                   hilti::Constness::Const))}));
+        }
+
+        if ( field->attributes()->find("&try") )
+            pb->initBacktracking();
+
+        return pre_container_offset;
+    }
+
+    // Sets up parsing infrastructure for non-optimized fields.
+    void initFullFieldParsing(type::unit::item::Field* field) {
         // `&size` and `&max-size` share the same underlying infrastructure
         // so try to extract both of them and compute the ultimate value.
         Expression* length = nullptr;
@@ -762,31 +796,47 @@ struct ProductionVisitor : public production::Visitor {
             pstate.ncur = {};
             pushState(std::move(pstate));
         }
-
-        if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
-            auto __offsets = builder()->member(state().self, "__offsets");
-            auto cur_offset = builder()->memberCall(state().cur, "offset");
-
-            // Since the offset list is created empty resize the
-            // vector so that we can access the current field's index.
-            assert(field->index());
-            auto index = builder()->addTmp("index", builder()->integer(*field->index()));
-            builder()->addMemberCall(__offsets, "resize", {builder()->sum(index, builder()->integer(1))});
-
-            builder()->addAssign(builder()->index(__offsets, *field->index()),
-                                 builder()->tuple(
-                                     {cur_offset,
-                                      builder()->optional(builder()->qualifiedType(builder()->typeUnsignedInteger(64),
-                                                                                   hilti::Constness::Const))}));
-        }
-
-        if ( field->attributes()->find("&try") )
-            pb->initBacktracking();
-
-        return pre_container_offset;
     }
 
-    void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset) {
+    // Tears down parsing infrastructure for non-optimized fields.
+    //
+    // Returns two expressions:
+    // 1. `cur` from the state that was current when calling the method.
+    // 2. `ncur_max_size` if we're parsing with `&max-size`, which in that case
+    // is the position in the limited view we ended parsing to; this will be
+    // used to compute how much data we consumed from the original view.
+    std::pair<Expression*, Expression*> finishFullFieldParsing(type::unit::item::Field* field) {
+        std::pair<Expression*, Expression*> result = {state().ncur, {}};
+
+        if ( auto a = field->attributes()->find("&max-size") ) {
+            assert(state().ncur);
+            // Check that we did not read into the sentinel byte.
+            auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
+                                                builder()->memberCall(state().ncur, "offset"));
+            auto exceeded = builder()->addIf(cond);
+            pushBuilder(exceeded, [&]() {
+                // We didn't finish parsing the data, which is an error.
+                if ( ! field->isAnonymous() && ! field->isSkip() )
+                    // Clear the field in case the type parsing has started to fill it.
+                    builder()->addExpression(builder()->unset(state().self, field->id()));
+
+                pb->parseError("parsing not done within &max-size bytes", a->meta());
+            });
+
+            result.second = state().cur;
+        }
+
+        else if ( auto a = field->attributes()->find("&size"); a && ! field->attributes()->find("&eod") ) {
+            assert(state().ncur);
+            _checkSizeAmount(a, state().ncur, field);
+        }
+
+        popState(); // from &size (pushed even if absent)
+        return result;
+    }
+
+    void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset,
+                        Expression* ncur, Expression* ncur_max_size) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
@@ -817,34 +867,6 @@ struct ProductionVisitor : public production::Visitor {
                                  builder()->tuple({builder()->index(builder()->deref(offsets), 0), cur_offset}));
         }
 
-        auto ncur = state().ncur;
-
-        // Expression tracking `ncur` in case we operate on a limited view from `&max-size` parsing.
-        // This differs from `&size` parsing in that we do not need to consume the full limited view.
-        Expression* ncur_max_size = nullptr;
-
-        if ( auto a = field->attributes()->find("&max-size") ) {
-            // Check that we did not read into the sentinel byte.
-            auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
-                                                builder()->memberCall(ncur, "offset"));
-            auto exceeded = builder()->addIf(cond);
-            pushBuilder(exceeded, [&]() {
-                // We didn't finish parsing the data, which is an error.
-                if ( ! field->isAnonymous() && ! field->isSkip() )
-                    // Clear the field in case the type parsing has started to fill it.
-                    builder()->addExpression(builder()->unset(state().self, field->id()));
-
-                pb->parseError("parsing not done within &max-size bytes", a->meta());
-            });
-
-            // For `&max-size` store away the position into the limited view we ended up parsing to.
-            // This is used below to compute how much data we consumed from the original view.
-            ncur_max_size = state().cur;
-        }
-
-        else if ( auto a = field->attributes()->find("&size"); a && ! field->attributes()->find("&eod") )
-            _checkSizeAmount(a, ncur, field);
-
         auto val = destination();
 
         if ( field->convertExpression() ) {
@@ -854,8 +876,6 @@ struct ProductionVisitor : public production::Visitor {
             pb->applyConvertExpression(*field, val, destination());
         }
 
-        popState(); // From &size (pushed even if absent).
-
         if ( field->attributes()->find("&parse-from") || field->attributes()->find("&parse-at") ) {
             ncur = {};
             popState();
@@ -864,9 +884,9 @@ struct ProductionVisitor : public production::Visitor {
 
         else if ( ncur_max_size )
             // Compute how far to advance for `&max-size` parsing where we operate on a limited view, but do not
-            // necessarily consume it fully. Since `cur` and `ncur_max_size` point to different views we need compute
-            // the difference in offset; this is safe since the limited view is into the original stream `cur` points
-            // to.
+            // necessarily consume it fully. Since `cur` and `ncur_max_size` point to different views we need
+            // compute the difference in offset; this is safe since the limited view is into the original stream
+            // `cur` points to.
             ncur = builder()->memberCall(state().cur, "advance",
                                          {builder()->difference(builder()->memberCall(ncur_max_size, "offset"),
                                                                 builder()->memberCall(state().cur, "offset"))});
