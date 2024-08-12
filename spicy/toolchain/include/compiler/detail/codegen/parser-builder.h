@@ -55,6 +55,20 @@ enum class LiteralMode {
     Skip,
 };
 
+/**
+ * Conveys to the parsing logic for types what the caller wants them to do.
+ */
+enum class TypesMode {
+    /** Standard parsing of the type, with full field machinery set up. */
+    Default,
+
+    /**
+     * Attempt to parse the type using standard machinery, but don't abort
+     * parsing with an error if it fails.
+     */
+    Try,
+};
+
 namespace detail {
 constexpr hilti::util::enum_::Value<LiteralMode> LiteralModes[] = {{LiteralMode::Default, "default"},
                                                                    {LiteralMode::Try, "try"},
@@ -269,11 +283,21 @@ public:
         return b;
     }
 
-    /** Generates code that parses an instance of a specific type. */
-    Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst);
-
-    /** Generates code that parses an instance of a specific type into an expression yielding a `Result` of `t`. */
-    Expression* parseTypeTry(UnqualifiedType* t, const production::Meta& meta, Expression* dst);
+    /**
+     * Generates code that parses an instance of a specific type.
+     *
+     * Advances the current position to the end of the parsed value if
+     * successful. If *mode* is `Default`, raises an error if parsing fails.
+     * If *mode* is `Try`, does not raise an error if parsing fails but leaves
+     * current position at the beginning of the current view.
+     *
+     * @param t type to parse
+     * @param meta meta information associated with the parsing operation
+     * @param dst expression to store the parsed value into; if null, an internal temporary is used to store the result
+     * @param mode parsing mode
+     * @returns the expression that holds the parsed value, which will be equal to *dst* if that's non-null
+     */
+    Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode);
 
     /** Returns the type for a `parse_stageX` unit method. */
     hilti::type::Function* parseMethodFunctionType(hilti::type::function::Parameter* addl_param = {},
@@ -541,8 +565,6 @@ public:
 private:
     friend struct spicy::detail::codegen::ProductionVisitor;
     CodeGen* _cg;
-
-    Expression* _parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, bool is_try);
 
     Expression* _filters(const ParserState& state);
     std::shared_ptr<Builder> _featureCodeIf(const type::Unit* unit, const std::vector<std::string_view>& features);

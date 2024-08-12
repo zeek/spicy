@@ -239,7 +239,7 @@ struct Visitor : public visitor::PreOrder {
                 auto old_cur = builder()->addTmp("ocur", state().cur);
 
                 // Parse value as an instance of the corresponding type.
-                auto x = pb()->parseType(type, lp->production->meta(), {});
+                auto x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Default);
 
                 // Compare parsed value against expected value.
                 auto no_match = builder()->or_(builder()->equal(offset(old_cur), offset(state().cur)),
@@ -262,7 +262,7 @@ struct Visitor : public visitor::PreOrder {
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
                 auto old_cur = builder()->addTmp("ocur", state().cur);
-                auto x = pb()->parseTypeTry(type, lp->production->meta(), {});
+                auto x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Try);
                 auto new_cur = builder()->addTmp("ncur", state().cur);
                 builder()->addAssign(state().cur, old_cur);
 
@@ -300,7 +300,7 @@ struct Visitor : public visitor::PreOrder {
                 popBuilder();
 
                 // Need to reparse the value to assign it to our destination.
-                auto value = pb()->parseType(n->btype(), lp->production->meta(), {});
+                auto value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default);
                 builder()->addAssign(lp->destination(n->btype()), value);
 
                 pb()->consumeLookAhead();
@@ -309,7 +309,7 @@ struct Visitor : public visitor::PreOrder {
                 pushBuilder(no_lah);
                 auto old_cur = builder()->addTmp("ocur", state().cur);
 
-                value = pb()->parseType(n->btype(), lp->production->meta(), {});
+                value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default);
 
                 // Check that the bit values match what we expect.
                 for ( const auto& b : n->bits() ) {
@@ -334,7 +334,7 @@ struct Visitor : public visitor::PreOrder {
             case LiteralMode::Try: {
                 auto old_cur = builder()->addTmp("ocur", state().cur);
                 auto bf = builder()->addTmp("bf", n->btype());
-                pb()->parseTypeTry(n->btype(), lp->production->meta(), bf);
+                pb()->parseType(n->btype(), lp->production->meta(), bf, TypesMode::Try);
                 auto new_cur = builder()->addTmp("ncur", state().cur);
 
                 auto match = builder()->addIf(builder()->unequal(offset(old_cur), offset(new_cur)));

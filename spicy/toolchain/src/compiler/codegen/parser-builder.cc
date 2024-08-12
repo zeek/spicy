@@ -1940,7 +1940,9 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
-    void operator()(const production::Variable* p) final { pb->parseType(p->type()->type(), p->meta(), destination()); }
+    void operator()(const production::Variable* p) final {
+        pb->parseType(p->type()->type(), p->meta(), destination(), TypesMode::Default);
+    }
 
     void operator()(const production::While* p) final {
         if ( p->expression() )
