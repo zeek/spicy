@@ -594,57 +594,69 @@ struct ProductionVisitor : public production::Visitor {
 
         beginProduction(*p);
 
-        if ( is_field_owner )
-            setUpStandardFieldParsing(field);
+        bool use_full_field_parsing = true;
 
-        if ( const auto& x = p->tryAs<production::Enclosure>() )
-            // Recurse.
-            parseProduction(*x->child());
-
-        else if ( p->isAtomic() )
-            // dispatch() will write value to current destination.
-            dispatch(p);
-
-        else if ( auto unit = p->tryAs<production::Unit>(); unit && ! top_level ) {
-            // Parsing a different unit type. We call the other unit's parse
-            // function, but don't have to create it here.
-            Expressions args = {pb->state().data,   pb->state().begin,      pb->state().cur,  pb->state().trim,
-                                pb->state().lahead, pb->state().lahead_end, pb->state().error};
-
-            Location location;
-            Expressions type_args;
-
-            if ( meta.field() ) {
-                location = meta.field()->location();
-                type_args = meta.field()->arguments();
-            }
-
-            if ( meta.field() ) {
-                Expression* default_ =
-                    builder()->default_(builder()->typeName(unit->unitType()->typeID()), type_args, location);
-                builder()->addAssign(destination(), default_);
-            }
-
-            auto call = builder()->memberCall(destination(), "__parse_stage1", args);
-            builder()->addAssign(builder()->tuple(
-                                     {pb->state().cur, pb->state().lahead, pb->state().lahead_end, pb->state().error}),
-                                 call);
+        if ( is_field_owner && p->tryAs<production::Variable>() ) {
+            // Try optimized field parsing first. If this works, we can skip
+            // the full machinery below.
+            if ( pb->parseType(p->type()->type(), p->meta(), destination(), TypesMode::Optimize) )
+                use_full_field_parsing = false; // parsed through optimized means
         }
-
-        else if ( p->isA<production::Block>() )
-            // No need to build this a full non-atomic production.
-            dispatch(p);
-
-        else if ( unit )
-            parseNonAtomicProduction(*p, unit->unitType());
-        else
-            parseNonAtomicProduction(*p, {});
 
         Expression* ncur = nullptr;
         Expression* ncur_max_size = nullptr;
 
-        if ( is_field_owner )
-            std::tie(ncur, ncur_max_size) = finishStandardFieldParsing(field);
+        if ( use_full_field_parsing ) {
+            if ( is_field_owner )
+                initFullFieldParsing(field);
+
+            if ( const auto& x = p->tryAs<production::Enclosure>() )
+                // Recurse.
+                parseProduction(*x->child());
+
+            else if ( p->isAtomic() )
+                // dispatch() will write value to current destination.
+                dispatch(p);
+
+            else if ( auto unit = p->tryAs<production::Unit>(); unit && ! top_level ) {
+                // Parsing a different unit type. We call the other unit's parse
+                // function, but don't have to create it here.
+                Expressions args = {pb->state().data,   pb->state().begin,      pb->state().cur,  pb->state().trim,
+                                    pb->state().lahead, pb->state().lahead_end, pb->state().error};
+
+                Location location;
+                Expressions type_args;
+
+                if ( meta.field() ) {
+                    location = meta.field()->location();
+                    type_args = meta.field()->arguments();
+                }
+
+                if ( meta.field() ) {
+                    Expression* default_ =
+                        builder()->default_(builder()->typeName(unit->unitType()->typeID()), type_args, location);
+                    builder()->addAssign(destination(), default_);
+                }
+
+                auto call = builder()->memberCall(destination(), "__parse_stage1", args);
+                builder()->addAssign(builder()->tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end,
+                                                       pb->state().error}),
+                                     call);
+            }
+
+            else if ( p->isA<production::Block>() )
+                // No need to build this a full non-atomic production.
+                dispatch(p);
+
+            else if ( unit )
+                parseNonAtomicProduction(*p, unit->unitType());
+
+            else
+                parseNonAtomicProduction(*p, {});
+
+            if ( is_field_owner )
+                std::tie(ncur, ncur_max_size) = finishFullFieldParsing(field);
+        }
 
         endProduction(*p);
 

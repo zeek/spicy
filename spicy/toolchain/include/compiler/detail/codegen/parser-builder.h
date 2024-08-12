@@ -67,6 +67,12 @@ enum class TypesMode {
      * parsing with an error if it fails.
      */
     Try,
+
+    /**
+     * Attempt to optimize/short-cut parsing of the type, without having the
+     * full field machinery set up yet.
+     */
+    Optimize,
 };
 
 namespace detail {
@@ -287,15 +293,19 @@ public:
      * Generates code that parses an instance of a specific type.
      *
      * Advances the current position to the end of the parsed value if
-     * successful. If *mode* is `Default`, raises an error if parsing fails.
-     * If *mode* is `Try`, does not raise an error if parsing fails but leaves
-     * current position at the beginning of the current view.
+     * successful. If *mode* is `Default` or `Optimize`, raises an error if
+     * parsing fails. If *mode* is `Try`, does not raise an error if parsing
+     * fails but leaves current position at the beginning of the current view.
      *
      * @param t type to parse
      * @param meta meta information associated with the parsing operation
-     * @param dst expression to store the parsed value into; if null, an internal temporary is used to store the result
+     * @param dst expression to store the parsed value into; if null, an
+     * internal temporary is used to store the result
      * @param mode parsing mode
-     * @returns the expression that holds the parsed value, which will be equal to *dst* if that's non-null
+     * @returns the expression that holds the parsed value, which will be equal
+     * to *dst* if that's non-null; if *mode* is `Optimize`, returns null to if
+     * the parsing could not optimized (no state will have changed in that
+     * case)
      */
     Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode);
 

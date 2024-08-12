@@ -146,6 +146,10 @@ struct Visitor : public visitor::PreOrder {
             }
 
             case TypesMode::Try: hilti::logger().internalError("type cannot be used with try mode for parsing");
+
+            case TypesMode::Optimize: {
+                return; // not supported
+            }
         }
 
         hilti::rt::cannot_be_reached();
@@ -186,6 +190,10 @@ struct Visitor : public visitor::PreOrder {
                 result = target;
                 return;
             }
+
+            case TypesMode::Optimize: {
+                return; // not supported
+            }
         }
 
         hilti::rt::cannot_be_reached();
@@ -203,6 +211,10 @@ struct Visitor : public visitor::PreOrder {
             }
 
             case TypesMode::Try: hilti::logger().internalError("type cannot be used with try mode for parsing");
+
+            case TypesMode::Optimize: {
+                return; // not supported
+            }
         }
 
         hilti::rt::cannot_be_reached();
@@ -215,6 +227,10 @@ struct Visitor : public visitor::PreOrder {
                 result = tp->performUnpack(tp->destination(n), builder()->typeSignedInteger(n->width()), n->width() / 8,
                                            {state().cur, tp->fieldByteOrder()}, n->meta(), tp->mode == TypesMode::Try);
                 return;
+            }
+
+            case TypesMode::Optimize: {
+                return; // not supported
             }
         }
 
@@ -230,6 +246,10 @@ struct Visitor : public visitor::PreOrder {
                                       {state().cur, tp->fieldByteOrder()}, n->meta(), tp->mode == TypesMode::Try);
                 return;
             }
+
+            case TypesMode::Optimize: {
+                return; // not supported
+            }
         }
 
         hilti::rt::cannot_be_reached();
@@ -243,6 +263,10 @@ struct Visitor : public visitor::PreOrder {
             }
 
             case TypesMode::Try: hilti::logger().internalError("type cannot be used with try mode for parsing");
+
+            case TypesMode::Optimize: {
+                return; // not supported
+            }
         }
 
         hilti::rt::cannot_be_reached();
@@ -396,6 +420,10 @@ struct Visitor : public visitor::PreOrder {
             }
 
             case TypesMode::Try: hilti::logger().internalError("type cannot be used with try mode for parsing");
+
+            case TypesMode::Optimize: {
+                return; // not supported
+            }
         }
 
         hilti::rt::cannot_be_reached();
@@ -410,7 +438,7 @@ Expression* TypeParser::buildParser(UnqualifiedType* t) {
 
 Expression* ParserBuilder::parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst,
                                      TypesMode mode) {
-    if ( auto e = TypeParser(this, meta, dst, mode).buildParser(t) )
+    if ( auto e = TypeParser(this, meta, dst, mode).buildParser(t); e || mode == TypesMode::Optimize )
         return e;
 
     hilti::logger().internalError(
