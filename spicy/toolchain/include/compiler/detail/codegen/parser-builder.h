@@ -569,16 +569,47 @@ public:
      */
     void syncAdvanceHook(std::shared_ptr<Builder> cond = {});
 
+    /**
+     * Returns an expression referencing the current parse object's `__filters`
+     * member if that exists; otherwises return a `Null` expression. The result
+     * of this method can be passed to runtime functions expecting a
+     * `__filters` argument.
+     *
+     * @param state current parser state
+     */
+    Expression* currentFilters(const ParserState& state);
+
     QualifiedType* lookAheadType() const;
     hilti::Expression* featureConstant(const type::Unit* unit, std::string_view feature);
 
+    /*
+     * Filters a set of field attributes to remove those that are handled
+     * generically by the field parsing machinery that the parser builder sets
+     * up itself; in contrast to attributes that must be handled by
+     * field-specific parsing code. For example, the `&convert` attribute is a
+     * generic attributes, whereas `&byte-order` is not.
+     *
+     * Note that the concrete semantics remain a bit fuzzy here because
+     * attribute semantics aren't always clear-cut. For example, `&size` is
+     * generally handled generically, but may still control field-specific
+     * code in some cases. The main purpose of this method is to weed out
+     * attributes that field-specific code normally doesn't need to care about
+     * when checking for attributes it needs to handle (and the method does
+     * remove `&size`). If in doubt, look at the full set of attributes
+     * instead.
+     *
+     * @param attrs the set of attributes to filter
+     * @return a new set of attributes with the generic ones removed; the
+     * pointers are shared with the original set
+     */
+    static hilti::Attributes removeGenericParseAttributes(hilti::AttributeSet* attrs);
+
 private:
     friend struct spicy::detail::codegen::ProductionVisitor;
-    CodeGen* _cg;
 
-    Expression* _filters(const ParserState& state);
     std::shared_ptr<Builder> _featureCodeIf(const type::Unit* unit, const std::vector<std::string_view>& features);
 
+    CodeGen* _cg;
     std::vector<ParserState> _states;
     std::vector<std::shared_ptr<Builder>> _builders;
     std::map<ID, Expression*> _functions;

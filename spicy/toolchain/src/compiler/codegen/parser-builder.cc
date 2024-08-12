@@ -2604,8 +2604,8 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     });
 }
 
-Expression* ParserBuilder::_filters(const ParserState& state) {
-    // Since used of a unit's `_filters` member triggers a requirement for
+Expression* ParserBuilder::currentFilters(const ParserState& state) {
+    // Since use of a unit's `_filters` member triggers a requirement for
     // filter support, guard access to it behind a feature flag. This allows us
     // to decide with user-written code whether we actually want to enable
     // filter support.
@@ -2621,30 +2621,49 @@ Expression* ParserBuilder::_filters(const ParserState& state) {
                                                            hilti::Constness::Mutable)));
 }
 
+hilti::Attributes ParserBuilder::removeGenericParseAttributes(hilti::AttributeSet* attrs) {
+    // List of generic attributes. This isn't perfect because we actually don't
+    // really have a well-defined list of attributes that are clearly generic
+    // vs field-specific. So this best-effort weeding out attributes that
+    // field-specific code usually doesn't need to care about.
+    static std::unordered_set<std::string_view> generic_attributes = {
+        "&convert",    "&default",  "&eod",  "&max-size",    "&optional", "&parse-at",
+        "&parse-from", "&requires", "&size", "&synchronize", "&try",
+    };
+
+    hilti::Attributes filtered;
+    for ( auto a : attrs->attributes() ) {
+        if ( ! generic_attributes.count(a->tag()) )
+            filtered.emplace_back(a);
+    }
+
+    return filtered;
+}
+
 Expression* ParserBuilder::waitForInputOrEod() {
-    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, _filters(state())});
+    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, currentFilters(state())});
 }
 
 Expression* ParserBuilder::atEod() {
-    return builder()->call("spicy_rt::atEod", {state().data, state().cur, _filters(state())});
+    return builder()->call("spicy_rt::atEod", {state().data, state().cur, currentFilters(state())});
 }
 
 void ParserBuilder::waitForInput(std::string_view error_msg, const Meta& location) {
     builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, builder()->stringLiteral(error_msg),
-                                                  builder()->expression(location), _filters(state())});
+                                                  builder()->expression(location), currentFilters(state())});
 }
 
 Expression* ParserBuilder::waitForInputOrEod(Expression* min) {
-    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, min, _filters(state())});
+    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, min, currentFilters(state())});
 }
 
 void ParserBuilder::waitForInput(Expression* min, std::string_view error_msg, const Meta& location) {
     builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, min, builder()->stringLiteral(error_msg),
-                                                  builder()->expression(location), _filters(state())});
+                                                  builder()->expression(location), currentFilters(state())});
 }
 
 void ParserBuilder::waitForEod() {
-    builder()->addCall("spicy_rt::waitForEod", {state().data, state().cur, _filters(state())});
+    builder()->addCall("spicy_rt::waitForEod", {state().data, state().cur, currentFilters(state())});
 }
 
 void ParserBuilder::parseError(Expression* error_msg, const Meta& meta) {

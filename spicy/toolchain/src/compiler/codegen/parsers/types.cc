@@ -273,32 +273,33 @@ struct Visitor : public visitor::PreOrder {
     }
 
     void operator()(hilti::type::Bytes* n) final {
+        auto attrs = tp->meta.field()->attributes();
+        auto chunked_attr = attrs->find("&chunked");
+        auto eod_attr = attrs->find("&eod");
+        auto size_attr = attrs->find("&size");
+        auto until_attr = attrs->find("&until");
+        auto until_including_attr = attrs->find("&until-including");
+
+        bool to_eod = (eod_attr != nullptr); // parse to end of input data
+        bool parse_attr = false;             // do we have a &parse-* attribute
+
+        if ( (tp->meta.field()->attributes()->find("&parse-from") ||
+              tp->meta.field()->attributes()->find("&parse-at")) &&
+             ! (until_attr || until_including_attr) )
+            parse_attr = true;
+
+        if ( size_attr ) {
+            // If we have a &size attribute, our input will have been
+            // truncated accordingly. If no other attributes are set, we'll
+            // parse to the end of our (limited) input data.
+            if ( ! (until_attr || until_including_attr || parse_attr) )
+                to_eod = true;
+        }
+
+        auto target = tp->destination(n);
+
         switch ( tp->mode ) {
             case TypesMode::Default: {
-                auto chunked_attr = tp->meta.field()->attributes()->find("&chunked");
-                auto eod_attr = tp->meta.field()->attributes()->find("&eod");
-                auto size_attr = tp->meta.field()->attributes()->find("&size");
-                auto until_attr = tp->meta.field()->attributes()->find("&until");
-                auto until_including_attr = tp->meta.field()->attributes()->find("&until-including");
-
-                bool to_eod = (eod_attr != nullptr); // parse to end of input data
-                bool parse_attr = false;             // do we have a &parse-* attribute
-
-                if ( (tp->meta.field()->attributes()->find("&parse-from") ||
-                      tp->meta.field()->attributes()->find("&parse-at")) &&
-                     ! (until_attr || until_including_attr) )
-                    parse_attr = true;
-
-                if ( size_attr ) {
-                    // If we have a &size attribute, our input will have been
-                    // truncated accordingly. If no other attributes are set, we'll
-                    // parse to the end of our (limited) input data.
-                    if ( ! (until_attr || until_including_attr || parse_attr) )
-                        to_eod = true;
-                }
-
-                auto target = tp->destination(n);
-
                 if ( to_eod || parse_attr ) {
                     if ( tp->meta.field() && chunked_attr && ! tp->meta.container() )
                         pb()->enableDefaultNewValueForField(false);
@@ -422,6 +423,20 @@ struct Visitor : public visitor::PreOrder {
             case TypesMode::Try: hilti::logger().internalError("type cannot be used with try mode for parsing");
 
             case TypesMode::Optimize: {
+                auto parse_attrs = ParserBuilder::removeGenericParseAttributes(attrs);
+                if ( size_attr && parse_attrs.size() == 0 ) {
+                    auto length = *size_attr->valueAsExpression();
+                    auto eod_ok = builder()->bool_(eod_attr ? true : false);
+                    auto value =
+                        builder()->call("spicy_rt::extractBytes", {state().data, state().cur, length, eod_ok,
+                                                                   builder()->expression(tp->meta.field()->meta()),
+                                                                   pb()->currentFilters(state())});
+                    builder()->addAssign(target, value);
+                    pb()->advanceInput(length);
+                    result = target;
+                    return;
+                }
+
                 return; // not supported
             }
         }

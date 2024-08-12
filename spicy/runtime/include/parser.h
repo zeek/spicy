@@ -527,5 +527,20 @@ std::optional<hilti::rt::stream::SafeConstIterator> unitFind(
     const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
     const std::optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
     hilti::rt::stream::Direction d);
+
+/**
+ * Extracts a given number of bytes from a stream view.
+ *
+ * @param data underlying stream
+ * @param cur view of *data* to extract bytes from
+ * @param size number of bytes to extract
+ * @param eod_ok if true, it's ok if end-of-data is reached without *size*
+ * behind reached; otherwise an error will be triggered in that case
+ * @returns extracted bytes
+ */
+hilti::rt::Bytes extractBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+                              uint64_t size, bool eod_ok, std::string_view location,
+                              const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+
 } // namespace detail
 } // namespace spicy::rt

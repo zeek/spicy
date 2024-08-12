@@ -424,6 +424,27 @@ TEST_CASE("waitForInputOrEod with min") {
     }
 }
 
+TEST_CASE("extractBytes") {
+    // Most of the work in extractBytes() is done through the waitFor...()
+    // functions, which we test separately.
+
+    auto data = hilti::rt::ValueReference<hilti::rt::Stream>();
+    data->append("12345");
+    data->freeze();
+    auto view = data->view();
+
+    SUBCASE("without eod") {
+        CHECK_EQ(detail::extractBytes(data, data->view(), 5, false, "<location>", {}), hilti::rt::Bytes("12345"));
+        CHECK_THROWS_WITH_AS(detail::extractBytes(data, data->view(), 10, false, "<location>", {}),
+                             "expected 10 bytes (5 bytes available) (<location>)", const spicy::rt::ParseError&);
+    }
+
+    SUBCASE("with eod") {
+        CHECK_EQ(detail::extractBytes(data, data->view(), 5, true, "<location>", {}), hilti::rt::Bytes("12345"));
+        CHECK_EQ(detail::extractBytes(data, data->view(), 10, true, "<location>", {}), hilti::rt::Bytes("12345"));
+    }
+}
+
 TEST_CASE("unitFind") {
     // We just tests the argument forwarding here, the matching itself is
     // covered by hilti::rt::stream::View::find().

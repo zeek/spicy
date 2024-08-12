@@ -187,3 +187,15 @@ std::optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
     else
         return {};
 }
+
+hilti::rt::Bytes detail::extractBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                                      const hilti::rt::stream::View& cur, uint64_t size, bool eod_ok,
+                                      std::string_view location,
+                                      const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
+    if ( eod_ok )
+        detail::waitForInputOrEod(data, cur, size, filters);
+    else
+        detail::waitForInput(data, cur, size, hilti::rt::fmt("expected %" PRIu64 " bytes", size), location, filters);
+
+    return cur.sub(cur.begin() + size).data();
+}
