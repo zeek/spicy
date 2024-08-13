@@ -140,13 +140,14 @@ void Configuration::init(bool use_build_directory) {
     //
     // (3) it helps the optimizer to know that symbols won't be accessed
     // externally.
-    runtime_cxx_flags_debug = flatten({"-fPIC", "-std=c++17", "-g", "-fvisibility=hidden",
+    runtime_cxx_flags_debug = flatten({"-fPIC", "-std=c++17", "-g", "-fvisibility=hidden", "-Wno-invalid-offsetof",
                                        prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
 
-    runtime_cxx_flags_release = flatten({"-fPIC", "-std=c++17", "-g", "-O3", "-DNDEBUG", "-fvisibility=hidden",
-                                         prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
-                                         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
+    runtime_cxx_flags_release =
+        flatten({"-fPIC", "-std=c++17", "-g", "-O3", "-DNDEBUG", "-fvisibility=hidden", "-Wno-invalid-offsetof",
+                 prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
 
 
     if ( auto libhilti_pch = precompiled_libhilti(*this, true) )
@@ -155,29 +156,29 @@ void Configuration::init(bool use_build_directory) {
     if ( auto libhilti_pch = precompiled_libhilti(*this, false) )
         runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
 
-    runtime_ld_flags_debug = flatten(
-        {prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-L", installation_tag),
-         prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-Wl,-rpath,", installation_tag),
-         prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
-         prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
-         prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag), prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
+    runtime_ld_flags_debug =
+        flatten({prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-L", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-Wl,-rpath,", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "-l", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
+                 prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag), prefix(CMAKE_DL_LIBS, "-l", installation_tag),
+                 "-Wno-unused-command-line-argument"});
 
-    runtime_ld_flags_release = flatten(
-        {prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-L", installation_tag),
-         prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-Wl,-rpath,", installation_tag),
-         prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
-         prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
-         prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag), prefix(CMAKE_DL_LIBS, "-l", installation_tag)});
+    runtime_ld_flags_release =
+        flatten({prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-L", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-Wl,-rpath,", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "-l", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
+                 prefix(CMAKE_THREAD_LIBS_INIT, "-l", installation_tag), prefix(CMAKE_DL_LIBS, "-l", installation_tag),
+                 "-Wno-unused-command-line-argument"});
 
     hlto_cxx_flags_debug = runtime_cxx_flags_debug;
     hlto_cxx_flags_release = runtime_cxx_flags_release;
 
     hlto_ld_flags_debug = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
-                                   prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
-                                   "-Wno-unused-command-line-argument"});
+                                   prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag)});
     hlto_ld_flags_release = flatten({"-shared", "-Wl,-undefined", "-Wl,dynamic_lookup",
-                                     prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
-                                     "-Wno-unused-command-line-argument"});
+                                     prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag)});
 
 #ifdef __APPLE__
     // Recent macOS versions have started to report `ld: warning: -undefined
