@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <utility>
-
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/tuple.h>
@@ -26,6 +24,7 @@
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/codegen/grammar-builder.h>
 #include <spicy/compiler/detail/codegen/grammar.h>
+#include <spicy/compiler/detail/codegen/productions/ctor.h>
 
 using namespace spicy;
 using namespace spicy::detail;
@@ -37,36 +36,57 @@ namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream CodeGen("spicy-codegen");
 } // namespace spicy::logging::debug
 
-namespace spicy::detail::codegen {
-
-// Information collected from the AST in an initial pass for any code generation.
-struct ASTInfo {
-    std::set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
-};
-
-} // namespace spicy::detail::codegen
-
 namespace {
 
 // Read-only visitor collecting information from the AST that's needed for
 // subsequent code generation.
 struct VisitorASTInfo : public visitor::PreOrder {
-    VisitorASTInfo(ASTContext* ctx, ASTInfo* info) : context(ctx), info(info) {}
+    VisitorASTInfo(CodeGen* cg, ASTInfo* info) : cg(cg), info(info) {}
 
-    ASTContext* context;
+    CodeGen* cg;
     ASTInfo* info;
 
     void operator()(declaration::UnitHook* n) final {
         if ( n->id().local() == ID("0x25_sync_advance") ) {
-            const auto& unit = context->lookup(n->hook()->unitTypeIndex());
+            const auto& unit = cg->context()->lookup(n->hook()->unitTypeIndex());
             info->uses_sync_advance.insert(unit->typeID());
         }
     }
 
     void operator()(type::unit::item::UnitHook* n) final {
         if ( n->id() == ID("0x25_sync_advance") ) {
-            const auto& unit = context->lookup(n->hook()->unitTypeIndex());
+            const auto& unit = cg->context()->lookup(n->hook()->unitTypeIndex());
             info->uses_sync_advance.insert(unit->typeID());
+        }
+    }
+
+    void operator()(hilti::declaration::Type* n) final {
+        if ( auto unit = n->type()->type()->tryAs<type::Unit>() ) {
+            if ( n->type()->alias() )
+                return;
+
+            if ( auto r = cg->grammarBuilder()->run(unit); ! r ) {
+                hilti::logger().error(r.error().description(), n->location());
+                return;
+            }
+
+            auto lahs = unit->grammar().lookAheadsInUse();
+            info->look_aheads_in_use.insert(lahs.begin(), lahs.end());
+
+            for ( const auto& [id, p] : unit->grammar().productions() ) {
+                auto field = p->meta().field();
+                if ( ! field || ! field->attributes()->has("&synchronize") )
+                    continue;
+
+                auto lahs = unit->grammar().lookAheadsForProduction(p);
+                if ( ! lahs )
+                    continue;
+
+                for ( const auto* lah_prod : *lahs ) {
+                    if ( const auto* ctor = lah_prod->tryAs<production::Ctor>() )
+                        info->look_aheads_in_use.insert(ctor->tokenID());
+                }
+            }
         }
     }
 };
@@ -109,12 +129,6 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         }
 
         // Replace unit type with compiled struct type.
-
-        if ( auto r = cg->grammarBuilder()->run(u); ! r ) {
-            hilti::logger().error(r.error().description(), n->location());
-            return;
-        }
-
         bool declare_only = false;
         if ( auto m = n->parent<hilti::declaration::Module>(); m && m->skipImplementation() )
             declare_only = true;
@@ -567,13 +581,14 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
         }
     };
 
-    ASTInfo info;
-    visitor::visit(VisitorASTInfo(context(), &info), root, ".spicy");
+    visitor::visit(VisitorASTInfo(this, &_ast_info), root, ".spicy");
 
     auto modified =
-        visitor::visit(VisitorModule(this, 1, &info), root, ".spicy", [](const auto& v) { return v.modified; });
-    modified |= visitor::visit(VisitorModule(this, 2, &info), root, ".spicy", [](const auto& v) { return v.modified; });
-    modified |= visitor::visit(VisitorModule(this, 3, &info), root, ".spicy", [](const auto& v) { return v.modified; });
+        visitor::visit(VisitorModule(this, 1, &_ast_info), root, ".spicy", [](const auto& v) { return v.modified; });
+    modified |=
+        visitor::visit(VisitorModule(this, 2, &_ast_info), root, ".spicy", [](const auto& v) { return v.modified; });
+    modified |=
+        visitor::visit(VisitorModule(this, 3, &_ast_info), root, ".spicy", [](const auto& v) { return v.modified; });
 
     // Update the context with type changes record by any of the passes.
     for ( auto [old, new_] : _type_mappings )

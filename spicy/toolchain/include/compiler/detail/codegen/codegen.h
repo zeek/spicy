@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -26,7 +27,13 @@ namespace spicy::detail {
 namespace codegen {
 class GrammarBuilder;
 class ParserBuilder;
-struct ASTInfo;
+
+// Information collected from the AST in an initial pass for any code generation.
+struct ASTInfo {
+    std::set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
+    std::set<uint64_t> look_aheads_in_use;
+};
+
 } // namespace codegen
 
 /**
@@ -44,6 +51,7 @@ public:
     auto driver() const { return context()->driver(); }
     const auto& compilerContext() const { return driver()->context(); }
     const auto& options() const { return compilerContext()->options(); }
+    const auto& astInfo() const { return _ast_info; }
 
     /** Entry point for transformation from a Spicy AST to a HILTI AST. */
     bool compileAST(hilti::ASTRoot* root);
@@ -102,6 +110,7 @@ private:
     Builder* _builder;
     codegen::GrammarBuilder _gb;
     codegen::ParserBuilder _pb;
+    codegen::ASTInfo _ast_info;
 
     std::vector<hilti::declaration::Property> _properties;
     std::map<UnqualifiedType*, UnqualifiedType*> _type_mappings;

@@ -49,7 +49,6 @@ inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
 ParserState::ParserState(Builder* builder, type::Unit* unit, const Grammar& grammar, Expression* data, Expression* cur)
     : unit(unit),
       unit_id(unit->typeID()),
-      needs_look_ahead(grammar.needsLookAhead()),
       self(builder->expressionName(ID("self"))),
       data(data),
       begin(builder->begin(cur)),
@@ -1793,14 +1792,9 @@ struct ProductionVisitor : public production::Visitor {
         popState();
     }
 
-    void operator()(const production::Ctor* p) final {
-        pb->parseLiteral(*p, destination());
-        pb->trimInput();
-    }
+    void operator()(const production::Ctor* p) final { pb->parseLiteral(*p, destination()); }
 
     auto parseLookAhead(const production::LookAhead& p) {
-        assert(state().needs_look_ahead);
-
         if ( auto c = p.condition() )
             pushBuilder(builder()->addIf(c));
 
@@ -2180,6 +2174,16 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     }
 
     if ( ! declare_only ) {
+        const auto* grammar = cg()->grammarBuilder()->grammar(*t);
+        if ( ! grammar ) {
+            // not computed, presumably due to an earlier error
+            HILTI_DEBUG(spicy::logging::debug::ParserBuilder,
+                        fmt("no grammar available for %s, skipping parser generation", t->canonicalID()));
+            return;
+        }
+
+        auto visitor = ProductionVisitor(this, *grammar);
+
         // Helper to initialize a unit's __context attribute. We use
         // a parse functions "context" argument if that was provided,
         // and otherwise create a default instanc of the unit's context type.
@@ -2200,15 +2204,12 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("creating parser for %s", t->canonicalID()));
         hilti::logging::DebugPushIndent _(spicy::logging::debug::ParserBuilder);
 
-        const auto& grammar = cg()->grammarBuilder()->grammar(*t);
-        auto visitor = ProductionVisitor(this, grammar);
-
         const auto& parameters = t->parameters();
         // Only create `parse1` and `parse3` body if the unit can be default constructed.
         if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p->default_(); }) ) {
             // Create parse1() body.
             pushBuilder();
-            builder()->setLocation(grammar.root()->location());
+            builder()->setLocation(grammar->root()->location());
             builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
@@ -2232,7 +2233,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             init_context();
 
-            auto pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+            auto pstate = ParserState(builder(), t, *grammar, builder()->id("__data"), builder()->id("__cur"));
             pstate.self = builder()->id("__unit");
             pstate.begin = builder()->begin(builder()->id("__ncur"));
             pstate.cur = builder()->id("__ncur");
@@ -2242,7 +2243,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             pstate.error = builder()->id("__error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
-            visitor.parseProduction(*grammar.root(), true);
+            visitor.parseProduction(*grammar->root(), true);
 
             // Check if the unit never left trial mode.
             pushBuilder(builder()->addIf(state().error), [&]() {
@@ -2260,7 +2261,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             // Create parse3() body.
             pushBuilder();
-            builder()->setLocation(grammar.root()->location());
+            builder()->setLocation(grammar->root()->location());
             builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
@@ -2287,7 +2288,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             init_context();
 
-            pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+            pstate = ParserState(builder(), t, *grammar, builder()->id("__data"), builder()->id("__cur"));
             pstate.self = builder()->id("__unit");
             pstate.begin = builder()->begin(builder()->id("__ncur"));
             pstate.cur = builder()->id("__ncur");
@@ -2297,7 +2298,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             pstate.error = builder()->id("__error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
-            visitor.parseProduction(*grammar.root(), true);
+            visitor.parseProduction(*grammar->root(), true);
 
             // Check if the unit never left trial mode.
             pushBuilder(builder()->addIf(state().error), [&]() {
@@ -2317,7 +2318,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
         // Create parse2() body.
         pushBuilder();
-        builder()->setLocation(grammar.root()->location());
+        builder()->setLocation(grammar->root()->location());
         builder()->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable),
                             builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),
                                                builder()->cast(builder()->deref(builder()->id("__data")),
@@ -2332,7 +2333,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
         init_context();
 
-        auto pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+        auto pstate = ParserState(builder(), t, *grammar, builder()->id("__data"), builder()->id("__cur"));
         pstate.self = builder()->id("__unit");
         pstate.begin = builder()->begin(builder()->id("__ncur"));
         pstate.cur = builder()->id("__ncur");
@@ -2342,7 +2343,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
         pstate.error = builder()->id("__error");
         pushState(pstate);
         visitor.pushDestination(pstate.self);
-        visitor.parseProduction(*grammar.root(), true);
+        visitor.parseProduction(*grammar->root(), true);
 
         // Check if the unit never left trial mode.
         pushBuilder(builder()->addIf(state().error), [&]() {

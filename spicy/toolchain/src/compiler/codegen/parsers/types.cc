@@ -63,9 +63,6 @@ struct TypeParser {
             auto unpacked = builder()->unpack(qt, unpack_args);
             builder()->addAssign(builder()->tuple({target, state().cur}), builder()->deref(unpacked));
 
-            if ( ! state().needs_look_ahead )
-                pb->trimInput();
-
             return target;
         }
         else {
@@ -206,7 +203,7 @@ struct Visitor : public visitor::PreOrder {
                 assert(type);
                 result = tp->performUnpack(tp->destination(n), builder()->typeReal(), 4,
                                            {state().cur, *type->valueAsExpression(), tp->fieldByteOrder()}, n->meta(),
-                                           tp->mode == TypesMode::Try);
+                                           false);
                 return;
             }
 
@@ -451,10 +448,14 @@ Expression* TypeParser::buildParser(UnqualifiedType* t) {
 
 } // namespace
 
-Expression* ParserBuilder::parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst,
-                                     TypesMode mode) {
-    if ( auto e = TypeParser(this, meta, dst, mode).buildParser(t); e || mode == TypesMode::Optimize )
+Expression* ParserBuilder::parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode,
+                                     bool no_trim) {
+    if ( auto e = TypeParser(this, meta, dst, mode).buildParser(t); e || mode == TypesMode::Optimize ) {
+        if ( mode == TypesMode::Default && ! no_trim )
+            trimInput();
+
         return e;
+    }
 
     hilti::logger().internalError(
         fmt("codegen: type parser did not return expression for '%s' (%s)", *t, t->typename_()));

@@ -131,9 +131,6 @@ struct ParserState {
     /** Type name of unit type that is currently being compiled. */
     ID unit_id;
 
-    /** True if the current grammar needs look-ahead tracking. */
-    bool needs_look_ahead;
-
     /**< Expression* referencing the current parse object. */
     Expression* self = nullptr;
 
@@ -302,12 +299,14 @@ public:
      * @param dst expression to store the parsed value into; if null, an
      * internal temporary is used to store the result
      * @param mode parsing mode
+     * @param no_trim if true, do not trim the input after successfully parsing the instance
      * @returns the expression that holds the parsed value, which will be equal
      * to *dst* if that's non-null; if *mode* is `Optimize`, returns null to if
      * the parsing could not optimized (no state will have changed in that
      * case)
      */
-    Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode);
+    Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode,
+                          bool no_trim = false);
 
     /** Returns the type for a `parse_stageX` unit method. */
     hilti::type::Function* parseMethodFunctionType(hilti::type::function::Parameter* addl_param = {},

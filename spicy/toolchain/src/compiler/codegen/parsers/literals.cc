@@ -56,42 +56,61 @@ struct Visitor : public visitor::PreOrder {
     }
     auto popBuilder() { return pb()->popBuilder(); }
 
+    auto needToCheckForLookAhead(const Meta& meta) {
+        bool needs_check = false;
+
+        if ( auto field = lp->production->meta().field(); field && field->attributes()->find("&synchronize") )
+            needs_check = true;
+        else {
+            auto tokens = pb()->cg()->astInfo().look_aheads_in_use;
+            needs_check = tokens.find(lp->production->tokenID()) != tokens.end();
+        }
+
+        if ( pb()->options().debug && ! needs_check )
+            builder()->addAssert(builder()->not_(state().lahead), "unexpected look-ahead token pending", meta);
+
+        return needs_check;
+    }
+
     void operator()(hilti::ctor::Bytes* n) final {
-        auto error_msg = fmt("expecting '%s'", n->value());
         auto len = builder()->integer(static_cast<uint64_t>(n->value().size()));
-        auto cond = builder()->memberCall(state().cur, "starts_with", {builder()->expression(n)});
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
             case LiteralMode::Skip: {
-                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
+                bool check_for_look_ahead = needToCheckForLookAhead(n->meta());
+                if ( check_for_look_ahead ) {
+                    auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                pushBuilder(have_lah);
+                    pushBuilder(have_lah);
 
-                pushBuilder(builder()->addIf(
-                    builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
-                pb()->parseError("unexpected token to consume", n->meta());
-                popBuilder();
+                    pushBuilder(builder()->addIf(
+                        builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
+                    pb()->parseError("unexpected token to consume", n->meta());
+                    popBuilder();
 
-                pushBuilder(builder()->addIf(
-                    builder()->unequal(builder()->expression(n),
-                                       builder()->memberCall(state().cur, "sub",
-                                                             {builder()->begin(state().cur), state().lahead_end}))));
-                pb()->parseError("unexpected data when consuming token", n->meta());
-                popBuilder();
+                    pushBuilder(
+                        builder()->addIf(builder()->unequal(builder()->expression(n),
+                                                            builder()->memberCall(state().cur, "sub",
+                                                                                  {builder()->begin(state().cur),
+                                                                                   state().lahead_end}))));
+                    pb()->parseError("unexpected data when consuming token", n->meta());
+                    popBuilder();
 
-                pb()->consumeLookAhead();
-                popBuilder();
+                    pb()->consumeLookAhead();
+                    popBuilder();
 
-                pushBuilder(no_lah);
-                pb()->waitForInput(len, error_msg, n->meta());
-                auto no_match = builder()->addIf(builder()->not_(cond));
-                pushBuilder(no_match);
-                pb()->parseError(error_msg, n->meta());
-                popBuilder();
+                    pushBuilder(no_lah);
+                }
+
+                builder()->addCall("spicy_rt::expectBytesLiteral",
+                                   {state().data, state().cur, builder()->expression(n),
+                                    builder()->expression(n->meta()), pb()->currentFilters(state())});
 
                 pb()->advanceInput(len);
-                popBuilder();
+
+                if ( check_for_look_ahead )
+                    popBuilder();
 
                 if ( state().literal_mode != LiteralMode::Skip )
                     builder()->addAssign(lp->destination(n->type()->type()), builder()->expression(n));
@@ -102,6 +121,7 @@ struct Visitor : public visitor::PreOrder {
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try:
+                auto cond = builder()->memberCall(state().cur, "starts_with", {builder()->expression(n)});
                 result = builder()->ternary(builder()->and_(pb()->waitForInputOrEod(len), cond),
                                             builder()->sum(builder()->begin(state().cur), len),
                                             builder()->begin(state().cur));
@@ -125,45 +145,48 @@ struct Visitor : public visitor::PreOrder {
         }
 
         auto parse = [&](Expression* result) -> Expression* {
-            auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
             if ( ! result && state().literal_mode != LiteralMode::Skip )
                 result = lp->destination(builder()->typeBytes());
 
-            pushBuilder(have_lah);
+            bool check_for_look_ahead = needToCheckForLookAhead(n->meta());
+            if ( check_for_look_ahead ) {
+                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-            pushBuilder(
-                builder()->addIf(builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
-            pb()->parseError("unexpected token to consume", n->meta());
-            popBuilder();
+                pushBuilder(have_lah);
 
-            pb()->consumeLookAhead(result);
-            popBuilder();
+                pushBuilder(builder()->addIf(
+                    builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
+                pb()->parseError("unexpected token to consume", n->meta());
+                popBuilder();
 
-            pushBuilder(no_lah);
+                pb()->consumeLookAhead(result);
+                popBuilder();
 
-            builder()->addLocal(ID("ncur"), state().cur);
+                pushBuilder(no_lah);
+            }
+
+            auto ncur = builder()->addTmp(ID("ncur"), state().cur);
             auto ms = builder()->local("ms", builder()->memberCall(builder()->id(re), "token_matcher"));
             auto body = builder()->addWhile(ms, builder()->bool_(true));
             pushBuilder(body);
 
-            builder()->addLocal(ID("rc"),
-                                builder()->qualifiedType(builder()->typeSignedInteger(32), hilti::Constness::Mutable));
+            auto rc = builder()->addTmp(ID("rc"), builder()->qualifiedType(builder()->typeSignedInteger(32),
+                                                                           hilti::Constness::Mutable));
 
-            builder()->addAssign(builder()->tuple({builder()->id("rc"), builder()->id("ncur")}),
-                                 builder()->memberCall(builder()->id("ms"), "advance", {builder()->id("ncur")}),
-                                 n->meta());
+            builder()->addAssign(builder()->tuple({rc, ncur}),
+                                 builder()->memberCall(builder()->id("ms"), "advance", {ncur}), n->meta());
 
-            auto switch_ = builder()->addSwitch(builder()->id("rc"), n->meta());
+            auto switch_ = builder()->addSwitch(rc, n->meta());
 
             auto no_match_try_again = switch_.addCase(builder()->integer(-1));
             pushBuilder(no_match_try_again);
             auto pstate = pb()->state();
             pstate.self = builder()->expressionName(ID("self"));
-            pstate.cur = builder()->id("ncur");
+            pstate.cur = ncur;
             pb()->pushState(std::move(pstate));
 
             builder()->addComment("NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)");
-            builder()->addLocal(ID("more_data"), pb()->waitForInputOrEod());
+            builder()->addExpression(pb()->waitForInputOrEod());
 
             pb()->popState();
             builder()->addContinue();
@@ -182,17 +205,17 @@ struct Visitor : public visitor::PreOrder {
                     builder()->addAssign(state().captures,
                                          builder()->memberCall(builder()->id("ms"), "captures", {state().data}));
 
-                builder()->addAssign(result, builder()->memberCall(state().cur, "sub",
-                                                                   {builder()->begin(builder()->id("ncur"))}));
+                builder()->addAssign(result, builder()->memberCall(state().cur, "sub", {builder()->begin(ncur)}));
             }
 
-            pb()->setInput(builder()->id("ncur"));
+            pb()->setInput(ncur);
             builder()->addBreak();
             popBuilder();
 
             popBuilder();
 
-            popBuilder();
+            if ( check_for_look_ahead )
+                popBuilder();
 
             return result;
         };
@@ -223,23 +246,27 @@ struct Visitor : public visitor::PreOrder {
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
             case LiteralMode::Skip: {
-                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
+                bool check_for_look_ahead = needToCheckForLookAhead(meta);
+                if ( check_for_look_ahead ) {
+                    auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                pushBuilder(have_lah);
+                    pushBuilder(have_lah);
 
-                pushBuilder(builder()->addIf(
-                    builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
-                pb()->parseError("unexpected token to consume", meta);
-                popBuilder();
+                    pushBuilder(builder()->addIf(
+                        builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
+                    pb()->parseError("unexpected token to consume", meta);
+                    popBuilder();
 
-                pb()->consumeLookAhead();
-                popBuilder();
+                    pb()->consumeLookAhead();
+                    popBuilder();
 
-                pushBuilder(no_lah);
+                    pushBuilder(no_lah);
+                }
+
                 auto old_cur = builder()->addTmp("ocur", state().cur);
 
-                // Parse value as an instance of the corresponding type.
-                auto x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Default);
+                // Parse value as an instance of the corresponding type, without trimming.
+                auto x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Default, true);
 
                 // Compare parsed value against expected value.
                 auto no_match = builder()->or_(builder()->equal(offset(old_cur), offset(state().cur)),
@@ -251,10 +278,13 @@ struct Visitor : public visitor::PreOrder {
                 pb()->parseError(fmt("expecting %u", *expected), meta);
                 popBuilder();
 
-                popBuilder();
+                if ( check_for_look_ahead )
+                    popBuilder();
 
                 if ( state().literal_mode != LiteralMode::Skip )
                     builder()->addAssign(lp->destination(type), expected);
+
+                pb()->trimInput();
 
                 return expected;
             }
@@ -290,26 +320,31 @@ struct Visitor : public visitor::PreOrder {
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
             case LiteralMode::Skip: {
-                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
+                bool check_for_look_ahead = needToCheckForLookAhead(n->meta());
+                if ( check_for_look_ahead ) {
+                    auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                pushBuilder(have_lah);
+                    pushBuilder(have_lah);
 
-                pushBuilder(builder()->addIf(
-                    builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
-                pb()->parseError("unexpected token to consume", n->meta());
-                popBuilder();
+                    pushBuilder(builder()->addIf(
+                        builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
+                    pb()->parseError("unexpected token to consume", n->meta());
+                    popBuilder();
 
-                // Need to reparse the value to assign it to our destination.
-                auto value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default);
-                builder()->addAssign(lp->destination(n->btype()), value);
+                    // Need to reparse the value to assign it to our destination.
+                    auto value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default);
+                    builder()->addAssign(lp->destination(n->btype()), value);
 
-                pb()->consumeLookAhead();
-                popBuilder();
+                    pb()->consumeLookAhead();
+                    popBuilder();
 
-                pushBuilder(no_lah);
+                    pushBuilder(no_lah);
+                }
+
                 auto old_cur = builder()->addTmp("ocur", state().cur);
 
-                value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default);
+                // Parse value as an instance of the underlying type, without trimming.
+                auto value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default, true);
 
                 // Check that the bit values match what we expect.
                 for ( const auto& b : n->bits() ) {
@@ -324,7 +359,10 @@ struct Visitor : public visitor::PreOrder {
                 if ( state().literal_mode != LiteralMode::Skip )
                     builder()->addAssign(lp->destination(n->btype()), value);
 
-                popBuilder();
+                pb()->trimInput();
+
+                if ( check_for_look_ahead )
+                    popBuilder();
 
                 result = value;
                 return;

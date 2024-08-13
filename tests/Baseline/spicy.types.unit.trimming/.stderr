@@ -4,16 +4,13 @@
 [spicy-verbose]   - state: type=Mini::Test input="1234567890..." stream=0xXXXXXXXX offsets=0/0/0/14/14 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f1  -> b"12" (const bytes)
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f1' to '12'
 [spicy-verbose]   - state: type=Mini::Test input="34567890ab..." stream=0xXXXXXXXX offsets=2/0/2/14/14 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f2  -> b"34" (const bytes)
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f2' to '34'
 [spicy-verbose]   - state: type=Mini::Test input="567890abcd" stream=0xXXXXXXXX offsets=4/0/4/14/14 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f3  -> b"5678" (const bytes)
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f3' to '5678'
 [spicy-verbose]   - state: type=Mini::Test input="90abcd" stream=0xXXXXXXXX offsets=8/0/8/14/14 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -21,11 +18,9 @@
 [spicy-verbose]     - state: type=Mini::Sub input="90abcd" stream=0xXXXXXXXX offsets=8/8/8/14/14 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: x   -> b"90a" (const bytes)
 [spicy-verbose]       - trimming input
-[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'x' to '90a'
 [spicy-verbose]     - state: type=Mini::Sub input="bcd" stream=0xXXXXXXXX offsets=11/8/11/14/14 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: y   -> b"bcd" (const bytes)
-[spicy-verbose]       - trimming input
 [spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'y' to 'bcd'
 [spicy-verbose]   - setting field 'f4' to '[$x=b"90a", $y=b"bcd"]'
@@ -36,7 +31,6 @@
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]     resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f1' to '12'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=2/0/2/2/2 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f2  -> b"34" (const bytes)
@@ -44,7 +38,6 @@
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]     resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f2' to '34'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=4/0/4/4/4 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -58,7 +51,6 @@
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 3
 [spicy-verbose]     resuming after insufficient input, now have 4 for stream 0xXXXXXXXX
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f3' to '5678'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=8/0/8/8/8 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Unit: Mini__Sub_2 -> x_2 y_2
@@ -70,7 +62,6 @@
 [spicy-verbose]       resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]       resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
-[spicy-verbose]       - trimming input
 [spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'x' to '90a'
 [spicy-verbose]     - state: type=Mini::Sub input="" stream=0xXXXXXXXX offsets=11/8/11/11/11 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -82,7 +73,6 @@
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]       resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
 [spicy-verbose]       - trimming input
-[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'y' to 'bcd'
 [spicy-verbose]   - setting field 'f4' to '[$x=b"90a", $y=b"bcd"]'
 [spicy-verbose] - state: type=Mini::Test input="12" stream=0xXXXXXXXX offsets=0/0/0/2/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -90,13 +80,11 @@
 [spicy-verbose]   - state: type=Mini::Test input="12" stream=0xXXXXXXXX offsets=0/0/0/2/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f1  -> b"12" (const bytes)
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f1' to '12'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=2/0/2/2/2 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f2  -> b"34" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f2' to '34'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=4/0/4/4/4 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -105,7 +93,6 @@
 [spicy-verbose]     resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]     resuming after insufficient input, now have 4 for stream 0xXXXXXXXX
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f3' to '5678'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=8/0/8/8/8 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -117,13 +104,11 @@
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]       resuming after insufficient input, now have 4 for stream 0xXXXXXXXX
 [spicy-verbose]       - trimming input
-[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'x' to '90a'
 [spicy-verbose]     - state: type=Mini::Sub input="b" stream=0xXXXXXXXX offsets=11/8/11/12/12 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: y   -> b"bcd" (const bytes)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]       resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
-[spicy-verbose]       - trimming input
 [spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'y' to 'bcd'
 [spicy-verbose]   - setting field 'f4' to '[$x=b"90a", $y=b"bcd"]'
@@ -132,20 +117,17 @@
 [spicy-verbose]   - state: type=Mini::Test input="123" stream=0xXXXXXXXX offsets=0/0/0/3/3 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f1  -> b"12" (const bytes)
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f1' to '12'
 [spicy-verbose]   - state: type=Mini::Test input="3" stream=0xXXXXXXXX offsets=2/0/2/3/3 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f2  -> b"34" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]     resuming after insufficient input, now have 4 for stream 0xXXXXXXXX
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f2' to '34'
 [spicy-verbose]   - state: type=Mini::Test input="56" stream=0xXXXXXXXX offsets=4/0/4/6/6 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f3  -> b"5678" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]     resuming after insufficient input, now have 5 for stream 0xXXXXXXXX
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f3' to '5678'
 [spicy-verbose]   - state: type=Mini::Test input="9" stream=0xXXXXXXXX offsets=8/0/8/9/9 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -155,13 +137,11 @@
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]       resuming after insufficient input, now have 4 for stream 0xXXXXXXXX
 [spicy-verbose]       - trimming input
-[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'x' to '90a'
 [spicy-verbose]     - state: type=Mini::Sub input="b" stream=0xXXXXXXXX offsets=11/8/11/12/12 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: y   -> b"bcd" (const bytes)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]       resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
-[spicy-verbose]       - trimming input
 [spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'y' to 'bcd'
 [spicy-verbose]   - setting field 'f4' to '[$x=b"90a", $y=b"bcd"]'
@@ -170,18 +150,15 @@
 [spicy-verbose]   - state: type=Mini::Test input="1234" stream=0xXXXXXXXX offsets=0/0/0/4/4 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f1  -> b"12" (const bytes)
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f1' to '12'
 [spicy-verbose]   - state: type=Mini::Test input="34" stream=0xXXXXXXXX offsets=2/0/2/4/4 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f2  -> b"34" (const bytes)
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f2' to '34'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=4/0/4/4/4 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f3  -> b"5678" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 4 for stream 0xXXXXXXXX
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f3' to '5678'
 [spicy-verbose]   - state: type=Mini::Test input="" stream=0xXXXXXXXX offsets=8/0/8/8/8 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -191,13 +168,11 @@
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 4 for stream 0xXXXXXXXX
 [spicy-verbose]       - trimming input
-[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'x' to '90a'
 [spicy-verbose]     - state: type=Mini::Sub input="b" stream=0xXXXXXXXX offsets=11/8/11/12/12 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: y   -> b"bcd" (const bytes)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]       resuming after insufficient input, now have 3 for stream 0xXXXXXXXX
-[spicy-verbose]       - trimming input
 [spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'y' to 'bcd'
 [spicy-verbose]   - setting field 'f4' to '[$x=b"90a", $y=b"bcd"]'
@@ -206,18 +181,15 @@
 [spicy-verbose]   - state: type=Mini::Test input="12345" stream=0xXXXXXXXX offsets=0/0/0/5/5 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f1  -> b"12" (const bytes)
 [spicy-verbose]     - trimming input
-[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f1' to '12'
 [spicy-verbose]   - state: type=Mini::Test input="345" stream=0xXXXXXXXX offsets=2/0/2/5/5 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f2  -> b"34" (const bytes)
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f2' to '34'
 [spicy-verbose]   - state: type=Mini::Test input="5" stream=0xXXXXXXXX offsets=4/0/4/5/5 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: f3  -> b"5678" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 1
 [spicy-verbose]     resuming after insufficient input, now have 6 for stream 0xXXXXXXXX
-[spicy-verbose]     - trimming input
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'f3' to '5678'
 [spicy-verbose]   - state: type=Mini::Test input="90" stream=0xXXXXXXXX offsets=8/0/8/10/10 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -227,11 +199,9 @@
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 2
 [spicy-verbose]       resuming after insufficient input, now have 6 for stream 0xXXXXXXXX
 [spicy-verbose]       - trimming input
-[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'x' to '90a'
 [spicy-verbose]     - state: type=Mini::Sub input="bcd" stream=0xXXXXXXXX offsets=11/8/11/14/14 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: y   -> b"bcd" (const bytes)
-[spicy-verbose]       - trimming input
 [spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'y' to 'bcd'
 [spicy-verbose]   - setting field 'f4' to '[$x=b"90a", $y=b"bcd"]'

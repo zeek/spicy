@@ -199,3 +199,17 @@ hilti::rt::Bytes detail::extractBytes(hilti::rt::ValueReference<hilti::rt::Strea
 
     return cur.sub(cur.begin() + size).data();
 }
+
+void detail::expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+                                const hilti::rt::Bytes& literal, std::string_view location,
+                                const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
+    detail::waitForInput(data, cur, literal.size(),
+                         hilti::rt::fmt("expected %" PRIu64 R"( bytes for bytes literal "%s")", literal.size(),
+                                        literal),
+                         location, filters);
+    if ( ! cur.startsWith(literal) ) {
+        auto content = cur.sub(cur.begin() + literal.size()).data();
+        throw ParseError(hilti::rt::fmt(R"(expected bytes literal "%s" but input starts with "%s")", literal, content),
+                         location);
+    }
+}

@@ -445,6 +445,21 @@ TEST_CASE("extractBytes") {
     }
 }
 
+TEST_CASE("expectBytesLiteral") {
+    // Most of the work in extractBytesLiteral() is done through the waitFor...()
+    // functions, which we test separately.
+
+    auto data = hilti::rt::ValueReference<hilti::rt::Stream>();
+    data->append("12345");
+    data->freeze();
+    auto view = data->view();
+
+    CHECK_NOTHROW(detail::expectBytesLiteral(data, data->view(), "123"_b, "<location>", {}));
+    CHECK_THROWS_WITH_AS(detail::expectBytesLiteral(data, data->view(), "abc"_b, "<location>", {}),
+                         "expected bytes literal \"abc\" but input starts with \"123\" (<location>)",
+                         const spicy::rt::ParseError&);
+}
+
 TEST_CASE("unitFind") {
     // We just tests the argument forwarding here, the matching itself is
     // covered by hilti::rt::stream::View::find().

@@ -366,15 +366,15 @@ hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
         return r.error();
 
     _grammars[id] = std::move(g);
+    unit->setGrammar(&_grammars[id]);
     return hilti::Nothing();
 }
 
-const Grammar& GrammarBuilder::grammar(const type::Unit& unit) {
+const Grammar* GrammarBuilder::grammar(const type::Unit& unit) {
     assert(unit.canonicalID());
     auto id = unit.canonicalID();
-    if ( _grammars.find(id) == _grammars.end() )
-        hilti::logger().internalError(fmt("grammar for unit %s accessed before it's been computed", id),
-                                      unit.meta().location());
-
-    return _grammars[id];
+    if ( _grammars.find(id) != _grammars.end() )
+        return &_grammars[id];
+    else
+        return nullptr;
 }
