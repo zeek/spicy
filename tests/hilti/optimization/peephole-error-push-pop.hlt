@@ -1,0 +1,19 @@
+# @TEST-EXEC: hiltic -V -p %INPUT >opt.hlt
+# @TEST-EXEC: btest-diff opt.hlt
+#
+# @TEST-DOC: Test removal of redundant __error assignments.
+
+module Test {
+
+type Foo = struct {
+    method void test();
+    int<64> __error; # name is internal, hence compiling with -V; type does not matter
+};
+
+function void Foo::test() {
+    local int<64> __error;
+    (*self).__error = __error;
+    __error = (*self).__error;
+}
+
+}

@@ -9,6 +9,10 @@
 #
 # Ensure we don't get any look-ahead checks when parsing the literals, we don't need them here.
 # @TEST-EXEC: spicyc -p %INPUT | grep -vq 'if.*lah'
+#
+# Ensure our peephole optimizer removes `(*self).__error = __error; default<void>(); __error = (*self).__error;` blocks
+# @TEST-EXEC-FAIL: spicyc -p %INPUT | grep -q 'default<void>()'
+# @TEST-EXEC-FAIL: spicyc -p %INPUT | grep -v 'default<void>()' | grep -A1 '(.self).__error = __error' | grep -q -B1 "__error = (.self).__error"
 
 module Test;
 
