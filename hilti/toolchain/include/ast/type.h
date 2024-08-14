@@ -365,6 +365,12 @@ public:
     /** Returns true if the qualified type is constant. */
     bool isConstant() const { return _constness == Constness::Const; }
 
+    /**
+     * Returns true if the type was created through `createExternal()`. If so,
+     * `type()` will retrieve the external type.
+     */
+    auto isExternal() const { return static_cast<bool>(_external); }
+
     /** Returns the type's constness. */
     auto constness() const { return _constness; }
 

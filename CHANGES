@@ -1,3 +1,17 @@
+1.12.0-dev.61 | 2024-08-14 14:04:27 +0200
+
+  * Suppress warning `invalid-offsetof`. (Robin Sommer, Corelight)
+
+    We now run into these in CI due to `-Werror`.
+
+    Also clean up existing duplication of
+    `-Wno-unused-command-line-argument`.
+
+  * GH-1835: Fix computation of declaration dependencies. (Robin Sommer, Corelight)
+
+    One more branch we had to follow to track down all dependencies
+    between global declarations: external qualified types.
+
 1.12.0-dev.58 | 2024-08-09 15:57:52 +0200
 
   * Add `string::lower` and `string::upper` (Evan Typanski, Corelight)

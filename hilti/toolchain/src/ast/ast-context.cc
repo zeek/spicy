@@ -122,6 +122,11 @@ private:
 
     void operator()(declaration::Type* n) final { insert(n); }
 
+    void operator()(QualifiedType* n) final {
+        if ( n->isExternal() )
+            follow(n->type());
+    }
+
     void operator()(expression::Name* n) final {
         auto d = n->resolvedDeclaration();
         assert(d);
