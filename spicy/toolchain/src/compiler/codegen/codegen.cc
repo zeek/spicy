@@ -205,7 +205,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         assert(unit_type);
 
         auto func =
-            cg->compileHook(*unit_type->as<type::Unit>(), n->hook()->id(), {}, hook->isForEach(), hook->isDebug(),
+            cg->compileHook(*unit_type->as<type::Unit>(), n->hook()->id(), {}, hook->hookType(), hook->isDebug(),
                             hook->ftype()->parameters(), hook->body(), hook->priority(), n->meta());
 
         replaceNode(n, func);
@@ -598,8 +598,9 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
 }
 
 hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
-                                                   bool foreach, bool debug, hilti::type::function::Parameters params,
-                                                   Statement* body, Expression* priority, const hilti::Meta& meta) {
+                                                   declaration::hook::Type type, bool debug,
+                                                   hilti::type::function::Parameters params, Statement* body,
+                                                   Expression* priority, const hilti::Meta& meta) {
     if ( debug && ! options().debug )
         return {};
 
@@ -625,7 +626,7 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
         }
     }
 
-    if ( foreach ) {
+    if ( type == declaration::hook::Type::ForEach ) {
         params.push_back(
             builder()->parameter("__dd", field->ddType()->type()->elementType()->type(), hilti::parameter::Kind::In));
         params.push_back(builder()->parameter("__stop", builder()->typeBool(), hilti::parameter::Kind::InOut));
@@ -652,7 +653,7 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     }
     else {
         result = builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const);
-        hid = fmt("__on_%s%s", id.local(), (foreach ? "_foreach" : ""));
+        hid = fmt("__on_%s%s", id.local(), (type == declaration::hook::Type::ForEach ? "_foreach" : ""));
     }
 
     if ( ! id.namespace_().empty() )

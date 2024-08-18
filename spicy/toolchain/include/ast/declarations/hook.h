@@ -30,6 +30,31 @@ class Field;
 
 namespace declaration {
 
+namespace hook {
+
+/** Type of a hook. */
+enum class Type {
+    /**
+     * Normal hook executing when a field has received its value; or, if it's
+     * life-time hook like `%init`, when time has come.
+     */
+    Standard,
+
+    /** `foreach` hook for containers, executing for each element added. */
+    ForEach,
+};
+
+namespace detail {
+constexpr hilti::util::enum_::Value<Type> Types[] = {
+    {Type::Standard, "standard"},
+    {Type::ForEach, "foreach"},
+};
+
+} // namespace detail
+
+constexpr auto to_string(Type cc) { return hilti::util::enum_::to_string(cc, detail::Types); }
+} // namespace hook
+
 /** AST node representing a Spicy unit hook. */
 class Hook : public Declaration {
 public:
@@ -53,7 +78,13 @@ public:
             return nullptr;
     }
 
-    auto isForEach() const { return attributes()->has("foreach"); }
+    hook::Type hookType() const {
+        if ( attributes()->has("foreach") )
+            return hook::Type::ForEach;
+        else
+            return hook::Type::Standard;
+    }
+
     auto isDebug() const { return attributes()->has("%debug"); }
 
     void setUnitTypeIndex(hilti::ast::TypeIndex index) {

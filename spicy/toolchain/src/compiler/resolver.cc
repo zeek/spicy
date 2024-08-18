@@ -276,7 +276,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             QualifiedType* dd = nullptr;
 
-            if ( n->isForEach() ) {
+            if ( n->hookType() == declaration::hook::Type::ForEach ) {
                 dd = unit_field->ddType();
                 if ( ! dd || ! dd->isResolved() )
                     return;

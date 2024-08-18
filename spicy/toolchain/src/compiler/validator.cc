@@ -221,7 +221,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
     void operator()(hilti::expression::Name* n) final {
         if ( n->id() == ID("__dd") ) {
-            if ( auto hook = n->parent<spicy::declaration::Hook>(); hook && hook->isForEach() )
+            if ( auto hook = n->parent<spicy::declaration::Hook>();
+                 hook && hook->hookType() == declaration::hook::Type::ForEach )
                 // $$ in "foreach" ok is ok.
                 return;
 
@@ -286,7 +287,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
     void operator()(statement::Stop* n) final {
         // Must be inside &foreach hook.
-        if ( auto x = n->parent<declaration::Hook>(); ! (x && x->isForEach()) )
+        if ( auto x = n->parent<declaration::Hook>(); ! (x && x->hookType() == declaration::hook::Type::ForEach) )
             error("'stop' can only be used inside a 'foreach' hook", n);
     }
 
@@ -478,9 +479,15 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::declaration::Hook* n) final {
-        if ( auto field = n->parent<spicy::type::unit::item::Field>() ) {
-            if ( n->isForEach() && ! field->isContainer() )
-                error("'foreach' can only be used with containers", n);
+        for ( const auto* attr : n->attributes()->attributes() ) {
+            if ( attr->tag() == "foreach" ) {
+                if ( auto field = n->parent<spicy::type::unit::item::Field>(); field && ! field->isContainer() )
+                    error("'foreach' can only be used with containers", n);
+            }
+            else if ( attr->tag() == "%debug" || attr->tag() == "&priority" )
+                continue;
+            else
+                error(fmt("unknown hook type '%s'", attr->tag()), n);
         }
     }
 

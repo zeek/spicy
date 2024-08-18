@@ -65,8 +65,9 @@ public:
     void compilePublicUnitAlias(hilti::declaration::Module* module, const ID& alias_id, type::Unit* unit);
 
     hilti::declaration::Function* compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
-                                              bool foreach, bool debug, hilti::type::function::Parameters params,
-                                              hilti::Statement* body, Expression* priority, const hilti::Meta& meta);
+                                              declaration::hook::Type type, bool debug,
+                                              hilti::type::function::Parameters params, hilti::Statement* body,
+                                              Expression* priority, const hilti::Meta& meta);
 
     // These must be called only while a module is being compiled.
     codegen::ParserBuilder* parserBuilder() { return &_pb; }
