@@ -128,6 +128,7 @@ type Priv4 = struct {
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_x(value_ref<const Priv3> __dd);
+    hook void __on_x_error(string __excpt);
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
@@ -215,6 +216,7 @@ public type Pub3 = struct {
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_x(value_ref<const Priv6> __dd);
+    hook void __on_x_error(string __excpt);
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
@@ -1462,29 +1464,36 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
     if ( ::__feat%foo@@Priv4%uses_offset ) 
         (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    # "<...>/unused-types.spicy:20:14-20:20"
+    try {
+        # "<...>/unused-types.spicy:20:14-20:20"
 
-    # Begin parsing production: Unit: foo__Priv3_2 ->
-    (*self).x = default<const Priv3>();
-    (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
-    # End parsing production: Unit: foo__Priv3_2 ->
+        # Begin parsing production: Unit: foo__Priv3_2 ->
+        (*self).x = default<const Priv3>();
+        (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+        # End parsing production: Unit: foo__Priv3_2 ->
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@Priv4%uses_random_access || ::__feat%foo@@Priv4%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_x((*self).x);
-
-    if ( ::__feat%foo@@Priv4%uses_random_access || ::__feat%foo@@Priv4%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@Priv4%uses_random_access || ::__feat%foo@@Priv4%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_x((*self).x);
+
+        if ( ::__feat%foo@@Priv4%uses_random_access || ::__feat%foo@@Priv4%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
+    }
+    catch ( hilti::SystemException __except ) {
+        (*self).__on_x_error(hilti::exception_what(__except));
+        throw;
+    }
+
 
     if ( ::__feat%foo@@Priv4%uses_random_access ) 
         (*self).__begin = __begin;
@@ -2246,29 +2255,36 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
     if ( ::__feat%foo@@Pub3%uses_offset ) 
         (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    # "<...>/unused-types.spicy:28:14-28:20"
+    try {
+        # "<...>/unused-types.spicy:28:14-28:20"
 
-    # Begin parsing production: Unit: foo__Priv6_2 ->
-    (*self).x = default<const Priv6>();
-    (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
-    # End parsing production: Unit: foo__Priv6_2 ->
+        # Begin parsing production: Unit: foo__Priv6_2 ->
+        (*self).x = default<const Priv6>();
+        (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+        # End parsing production: Unit: foo__Priv6_2 ->
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@Pub3%uses_random_access || ::__feat%foo@@Pub3%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_x((*self).x);
-
-    if ( ::__feat%foo@@Pub3%uses_random_access || ::__feat%foo@@Pub3%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@Pub3%uses_random_access || ::__feat%foo@@Pub3%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_x((*self).x);
+
+        if ( ::__feat%foo@@Pub3%uses_random_access || ::__feat%foo@@Pub3%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
+    }
+    catch ( hilti::SystemException __except ) {
+        (*self).__on_x_error(hilti::exception_what(__except));
+        throw;
+    }
+
 
     if ( ::__feat%foo@@Pub3%uses_random_access ) 
         (*self).__begin = __begin;

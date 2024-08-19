@@ -479,16 +479,25 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::declaration::Hook* n) final {
-        for ( const auto* attr : n->attributes()->attributes() ) {
-            if ( attr->tag() == "foreach" ) {
+        int count = 0;
+        for ( const auto& a : n->attributes()->attributes() ) {
+            if ( a->tag() == "foreach" ) {
                 if ( auto field = n->parent<spicy::type::unit::item::Field>(); field && ! field->isContainer() )
                     error("'foreach' can only be used with containers", n);
+
+                ++count;
             }
-            else if ( attr->tag() == "%debug" || attr->tag() == "&priority" )
-                continue;
+            else if ( a->tag() == "%error" )
+                ++count;
+            else if ( a->tag() == "%debug" || a->tag() == "&priority" ) {
+                // ok on any hook
+            }
             else
-                error(fmt("unknown hook type '%s'", attr->tag()), n);
+                error(fmt("unknown hook type '%s'", a->tag()), n);
         }
+
+        if ( count > 1 )
+            error("hook cannot have be both types, 'foreach' and '%error'", n);
     }
 
     void operator()(spicy::type::unit::item::UnitHook* n) final {
@@ -1038,6 +1047,12 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                           id_readable),
                       n, location);
         }
+
+        else if ( hook->hookType() == declaration::hook::Type::Error && ! params.empty() ) {
+            if ( params.size() != 1 || ! hilti::type::same(params[0]->type()->type(), builder()->typeString()) )
+                error("%error hook must only take a string parameter", n, location);
+        }
+
         else {
             if ( auto i = unit->itemByName(ID(id)); ! i )
                 error(fmt("no field '%s' in unit type", id), n, location);

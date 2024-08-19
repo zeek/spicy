@@ -631,6 +631,10 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
             builder()->parameter("__dd", field->ddType()->type()->elementType()->type(), hilti::parameter::Kind::In));
         params.push_back(builder()->parameter("__stop", builder()->typeBool(), hilti::parameter::Kind::InOut));
     }
+    else if ( type == declaration::hook::Type::Error ) {
+        if ( params.empty() )
+            params.push_back(builder()->parameter("__excpt", builder()->typeString(), hilti::parameter::Kind::In));
+    }
     else if ( original_field_type ) {
         params.push_back(builder()->parameter("__dd", field->itemType()->type(), hilti::parameter::Kind::In));
 
@@ -652,9 +656,19 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
         hid = "__str__";
     }
     else {
+        std::string postfix;
+
+        switch ( type ) {
+            case declaration::hook::Type::Standard: break;
+            case declaration::hook::Type::Error: postfix = "_error"; break;
+            case declaration::hook::Type::ForEach: postfix = "_foreach"; break;
+        }
+
+        hid = fmt("__on_%s%s", id.local(), postfix);
         result = builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const);
-        hid = fmt("__on_%s%s", id.local(), (type == declaration::hook::Type::ForEach ? "_foreach" : ""));
     }
+
+    assert(! hid.empty());
 
     if ( ! id.namespace_().empty() )
         hid = fmt("%s::%s", id.namespace_(), hid);

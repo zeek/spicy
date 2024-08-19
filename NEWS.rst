@@ -37,6 +37,41 @@ Version 1.12 (in progress)
              };
         };
 
+ - We now support attaching an ``%error`` handler to an individual
+   field:
+
+   .. code-block:: spicy
+
+        type Test = unit {
+            a: b"A";
+            b: b"B" %error { print "field B %error", self; }
+            c: b"C";
+        };
+
+   With input ``AxC``, that handler will trigger, whereas with ``ABx``
+   it won't. If the unit had a unit-wide ``%error`` handler as well,
+   that one would trigger in both cases (i.e., for ``b``, in addition
+   to its field local handler).
+
+   The handler can also be provided separately from the field:
+
+   .. code-block:: spicy
+
+        on b %error { ... }
+
+   In that separate version, one can receive the error message as well by
+   declaring a corresponding string parameter:
+
+   .. code-block:: spicy
+
+        on b(msg: string) %error { ... }
+
+   This works externally, from outside the unit, as well:
+
+   .. code-block:: spicy
+
+        on Test::b(msg: string) %error { ... }
+
 .. rubric:: Changed Functionality
 
 .. rubric:: Bug fixes

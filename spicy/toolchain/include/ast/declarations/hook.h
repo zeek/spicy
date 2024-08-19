@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/function.h>
@@ -42,12 +39,16 @@ enum class Type {
 
     /** `foreach` hook for containers, executing for each element added. */
     ForEach,
+
+    /** `%error` hook executing when an error has occurred processing the field. */
+    Error,
 };
 
 namespace detail {
 constexpr hilti::util::enum_::Value<Type> Types[] = {
     {Type::Standard, "standard"},
     {Type::ForEach, "foreach"},
+    {Type::Error, "error"},
 };
 
 } // namespace detail
@@ -81,6 +82,8 @@ public:
     hook::Type hookType() const {
         if ( attributes()->has("foreach") )
             return hook::Type::ForEach;
+        else if ( attributes()->has("%error") )
+            return hook::Type::Error;
         else
             return hook::Type::Standard;
     }

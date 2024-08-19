@@ -82,6 +82,7 @@ struct FieldBuilder : public visitor::PreOrder {
 
         if ( f->emitHook() ) {
             add_hook_declaration(f, declaration::hook::Type::Standard);
+            add_hook_declaration(f, declaration::hook::Type::Error);
 
             if ( f->isContainer() )
                 add_hook_declaration(f, declaration::hook::Type::ForEach);

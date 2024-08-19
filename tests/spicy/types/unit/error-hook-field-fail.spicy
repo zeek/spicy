@@ -1,0 +1,20 @@
+# @TEST-EXEC-FAIL: spicyc -j -d -o test.hlto %INPUT 2>output
+#
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type Test1 = unit {
+    x: uint8[] %error foreach {} # cannot have both
+
+    on x %error foreach {} # cannot use  both
+};
+
+on Test1::x(msg: bool) %error { # wrong parameter type
+}
+
+on Test1::x(msg: string, x: bool) %error { # wrong parameter number
+}
+
+on Test1::x %error foreach { # cannot use  both
+}

@@ -72,7 +72,9 @@ public type P2 = struct {
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_x(uint<8> __dd);
+    hook void __on_x_error(string __excpt);
     hook void __on_y(uint<8> __dd);
+    hook void __on_y_error(string __excpt);
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
@@ -732,33 +734,40 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P2::__parse_foo__P2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:16:18-21:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
-    # "<...>/default-parser-functions.spicy:17:8-17:12"
+    try {
+        # "<...>/default-parser-functions.spicy:17:8-17:12"
 
-    # Begin parsing production: Variable: x   -> uint<8>
-    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
-    ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
+        # Begin parsing production: Variable: x   -> uint<8>
+        spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
+        ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
-    if ( __trim ) 
-        (*__data).trim(begin(__cur));
+        if ( __trim ) 
+            (*__data).trim(begin(__cur));
 
-    # End parsing production: Variable: x   -> uint<8>
+        # End parsing production: Variable: x   -> uint<8>
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_x((*self).x);
-
-    if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_x((*self).x);
+
+        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
+    }
+    catch ( hilti::SystemException __except ) {
+        (*self).__on_x_error(hilti::exception_what(__except));
+        throw;
+    }
+
 
     if ( ::__feat%foo@@P2%uses_random_access ) 
         (*self).__begin = __begin;
@@ -767,33 +776,40 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
     if ( ::__feat%foo@@P2%uses_offset ) 
         (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    # "<...>/default-parser-functions.spicy:18:8-18:12"
+    try {
+        # "<...>/default-parser-functions.spicy:18:8-18:12"
 
-    # Begin parsing production: Variable: y   -> uint<8>
-    spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
-    ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
+        # Begin parsing production: Variable: y   -> uint<8>
+        spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
+        ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
-    if ( __trim ) 
-        (*__data).trim(begin(__cur));
+        if ( __trim ) 
+            (*__data).trim(begin(__cur));
 
-    # End parsing production: Variable: y   -> uint<8>
+        # End parsing production: Variable: y   -> uint<8>
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_y((*self).y);
-
-    if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_y((*self).y);
+
+        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
+    }
+    catch ( hilti::SystemException __except ) {
+        (*self).__on_y_error(hilti::exception_what(__except));
+        throw;
+    }
+
 
     if ( ::__feat%foo@@P2%uses_random_access ) 
         (*self).__begin = __begin;
