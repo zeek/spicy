@@ -1000,6 +1000,22 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
             }
         }
     }
+
+    void operator()(statement::Try* n) final {
+        // If a there's only a single catch block that just rethrows, replace
+        // the whole try/catch with the block inside.
+        if ( auto catches = n->catches(); catches.size() == 1 ) {
+            const auto& catch_ = catches.front();
+            if ( auto catch_body = catch_->body()->as<statement::Block>(); catch_body->statements().size() == 1 ) {
+                if ( auto throw_ = catch_body->statements().front()->tryAs<statement::Throw>();
+                     throw_ && ! throw_->expression() ) {
+                    recordChange(n, "replacing rethrowing try/catch with just the block");
+                    replaceNode(n, n->body());
+                    return;
+                }
+            }
+        }
+    }
 };
 
 // This visitor collects requirement attributes in the AST and toggles unused features.

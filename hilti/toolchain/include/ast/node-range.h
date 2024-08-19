@@ -110,7 +110,7 @@ public:
     auto begin() const { return const_iterator(_begin); }
     auto end() const { return const_iterator(_end); }
     size_t size() const { return static_cast<size_t>(_end - _begin); }
-    const T& front() const { return *_begin; }
+    T* front() const { return *_begin; }
     bool empty() const { return _begin == _end; }
 
     operator NodeVector<T>() const {
