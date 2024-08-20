@@ -11,6 +11,7 @@
 %{
 namespace spicy { namespace detail { class Parser; } }
 
+#include <hilti/compiler/context.h>
 #include <spicy/compiler/detail/parser/driver.h>
 #include <spicy/ast/builder/builder.h>
 
@@ -341,10 +342,12 @@ module        : MODULE local_id ';'              { _docs.emplace_back(driver->do
 
 local_id      : IDENT                            { std::string name($1);
 
-                                                   if ( name.find('-') != std::string::npos)
-                                                       hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
-                                                   if ( name.substr(0, 2) == "__" )
-                                                       hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
+                                                   if ( ! driver->builder()->options().skip_validation ) {
+                                                       if ( name.find('-') != std::string::npos)
+                                                           hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
+                                                       if ( name.substr(0, 2) == "__" )
+                                                           hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
+                                                   }
 
                                                    $$ = hilti::ID(std::move(name));
                                                  }

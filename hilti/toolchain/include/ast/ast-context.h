@@ -133,6 +133,9 @@ public:
     /** Destructor. */
     ~ASTContext();
 
+    /** Returns the current compiler context in use. */
+    auto* compilerContext() const { return _context; }
+
     /** Returns the AST's root node. This always exists. */
     auto root() const { return _root.get(); }
 
