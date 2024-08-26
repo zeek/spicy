@@ -1,3 +1,7 @@
+1.12.0-dev.63 | 2024-08-26 17:10:07 +0200
+
+  * Bump 3rdparty/any from `7c76129` to `a05d5ad` (dependabot[bot])
+
 1.12.0-dev.61 | 2024-08-14 14:04:27 +0200
 
   * Suppress warning `invalid-offsetof`. (Robin Sommer, Corelight)
