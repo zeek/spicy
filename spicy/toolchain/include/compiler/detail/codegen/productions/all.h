@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <spicy/compiler/detail/codegen/productions/boolean.h>
 #include <spicy/compiler/detail/codegen/productions/counter.h>
 #include <spicy/compiler/detail/codegen/productions/ctor.h>
 #include <spicy/compiler/detail/codegen/productions/deferred.h>

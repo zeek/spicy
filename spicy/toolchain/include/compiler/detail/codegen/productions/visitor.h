@@ -2,10 +2,6 @@
 
 #pragma once
 
-#include <string>
-#include <utility>
-#include <vector>
-
 #include <spicy/compiler/detail/codegen/production.h>
 
 namespace spicy::detail::codegen {
@@ -14,7 +10,6 @@ class Production;
 
 namespace production {
 
-class Boolean;
 class ByteBlock;
 class Counter;
 class Ctor;
@@ -46,7 +41,6 @@ public:
 
     void dispatch(const Production& n) { n.dispatch(*this); }
 
-    virtual void operator()(const Boolean*) {}
     virtual void operator()(const ByteBlock*) {}
     virtual void operator()(const Counter*) {}
     virtual void operator()(const Ctor*) {}
