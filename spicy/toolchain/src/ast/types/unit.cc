@@ -4,6 +4,7 @@
 #include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/reference.h>
 
+#include <spicy/ast/types/unit-items/block.h>
 #include <spicy/ast/types/unit-items/property.h>
 #include <spicy/ast/types/unit-items/sink.h>
 #include <spicy/ast/types/unit-items/switch.h>
@@ -23,10 +24,15 @@ static Node* itemByNameBackend(spicy::type::unit::Item* i, const ID& id) {
 
     if ( auto x = i->tryAs<unit::item::Switch>() ) {
         for ( const auto& c : x->cases() ) {
-            for ( const auto& si : c->items() ) {
-                if ( auto x = itemByNameBackend(si, id) )
-                    return x;
-            }
+            if ( auto x = itemByNameBackend(c->block(), id) )
+                return x;
+        }
+    }
+
+    if ( auto x = i->tryAs<unit::item::Block>() ) {
+        for ( const auto& si : x->allItems() ) {
+            if ( auto x = itemByNameBackend(si, id) )
+                return x;
         }
     }
 
@@ -98,11 +104,17 @@ static std::pair<unit::item::Field*, hilti::type::bitfield::BitRange*> findRange
             if ( auto bits = t->bits(id) )
                 return std::make_pair(field, bits);
         }
+
         else if ( auto field = item->tryAs<type::unit::item::Switch>() ) {
-            for ( const auto& c : field->cases() ) {
-                if ( auto result = findRangeInAnonymousBitField(c->items(), id); result.first )
+            for ( const auto* c : field->cases() ) {
+                if ( auto result = findRangeInAnonymousBitField({c->block()}, id); result.first )
                     return result;
             }
+        }
+
+        else if ( auto field = item->tryAs<type::unit::item::Block>() ) {
+            if ( auto result = findRangeInAnonymousBitField(field->allItems(), id); result.first )
+                return result;
         }
     }
 
@@ -115,6 +127,11 @@ std::pair<unit::item::Field*, hilti::type::bitfield::BitRange*> Unit::findRangeI
 
 namespace {
 struct AssignItemIndicesVisitor : public visitor::PreOrder {
+    void operator()(unit::item::Block* n) final {
+        for ( auto* i : n->allItems() )
+            dispatch(i);
+    }
+
     void operator()(unit::item::Field* n) final {
         n->setIndex(index++);
 
@@ -130,10 +147,8 @@ struct AssignItemIndicesVisitor : public visitor::PreOrder {
     }
 
     void operator()(unit::item::Switch* n) final {
-        for ( auto& c : n->cases() ) {
-            for ( auto& i : c->items() )
-                dispatch(i);
-        }
+        for ( auto* c : n->cases() )
+            dispatch(c->block());
     }
 
     uint64_t index = 0;

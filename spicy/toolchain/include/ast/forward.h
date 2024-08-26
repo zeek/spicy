@@ -109,6 +109,7 @@ class Item;
 using Items = NodeVector<Item>;
 
 namespace item {
+class Block;
 class Field;
 class Property;
 class Sink;

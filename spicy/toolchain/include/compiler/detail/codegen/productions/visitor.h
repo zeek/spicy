@@ -10,6 +10,7 @@ class Production;
 
 namespace production {
 
+class Block;
 class ByteBlock;
 class Counter;
 class Ctor;
@@ -41,6 +42,7 @@ public:
 
     void dispatch(const Production& n) { n.dispatch(*this); }
 
+    virtual void operator()(const Block*) {}
     virtual void operator()(const ByteBlock*) {}
     virtual void operator()(const Counter*) {}
     virtual void operator()(const Ctor*) {}
