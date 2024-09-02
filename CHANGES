@@ -1,3 +1,102 @@
+1.11.1 | 2024-08-16 12:11:22 +0200
+
+  * GH-1831: Fix optimizer regression. (Robin Sommer, Corelight)
+
+    We were no longer marking types as used that are referenced through a
+    type name.
+
+    Closes #1831.
+
+    (cherry-picked from commit 07dfdd211619f38f5312d786cd313f9922ac0808)
+
+  * GH-1823: Don't qualify magic linker symbols with C++ namespace. (Robin Sommer, Corelight)
+
+    We need them at their original values because that's what the runtime
+    lbirary is hard-coded to expect.
+
+    Closes #1823.
+
+    (cherry picked from commit 28c09bfbd527b2763c53f152a23f9df00031737d)
+
+  * Fix use of move'd from variable. (Benjamin Bannier, Corelight)
+
+    Function parameters still shadown members in C++. This is a fixup of
+    c3abbbe8eb28d1e2cee5b58b19e1a30710b38853.
+
+    (cherry picked from commit 929409f77f18be1b36c1e644ca2af4ba6f6b191f)
+
+  * Fix undefined shifts of 32bit integer in toInt(). (Arne Welzel, Corelight)
+
+    1U is 32bit on a 64bit system and shifting it by more than 31 bits
+    is undefined. The following does currently produce -4294967296 instead
+    of -1:
+
+        b"\xff\xff\xff\xff".to_int(spicy::ByteOrder::Big)
+
+    (cherry picked from commit 2638b5daa6c3806e46989e20dcff95535ce0e540)
+
+  * Fix to_uint(ByteOrder) for empty byte ranges. (Arne Welzel, Corelight)
+
+    to_uint() and to_int() for empty byte ranges throw when attempting to
+    convert printable decimals to integers. Do the same for the byte order
+    versions. The assumption is that it is really an error when the user
+    calls to_int() or to_uint() on an empty byte range.
+
+    (cherry picked from commit d6a6224ab9d4b13ef224aaf6b9c81e40872bc01f)
+
+  * GH-1817: Prevent null ptr dereference when looking on nodes without `Scope`. (Benjamin Bannier, Corelight)
+
+    Closes #1817.
+
+    (cherry picked from commit 13fbe5ca20f99b74a404d0df6f9f81b5be2c50df)
+
+  * GH-1815: Disallow expanding limited `View`s again with `limit`. (Benjamin Bannier, Corelight)
+
+    The documented semantics of `View::limit` are that it creates a new view
+    with equal or smaller size. In contrast to that we would still have
+    allowed to expand views with more calls `limit` again as well.
+
+    This patch changes the implementation of `View::limit` so it can only
+    ever make a `View` smaller.
+
+    We also tweak the implementation of the check for consumed `&size` when
+    used together with `&eod`: if the `&size` was already nested in a
+    limited view a larger `&size` value could previously extend the view so
+    the `&eod` effectively was ignored. Since we now do not extend the
+    `View` anymore we need to only activate the check for consumed `&size`
+    if `&eod` was not specified since in this case the user communicated that
+    they are fine with consuming less data.
+
+    Closes #1815.
+
+    (cherry picked from commit 44d87b21c33c63a2c2e39f9ffe22822fdee55fd0)
+
+  * GH-1810: Fix nested look-ahead switches. (Robin Sommer, Corelight)
+
+    Closes #1810.
+
+    (cherry picked from commit 215b8bfcafcb701f684ce573b39e275caaf38698)
+
+  * Remember normalized paths when checking for duplicate files in driver. (Benjamin Bannier, Corelight)
+
+    While we ignore duplicate files it was still possible to erroneously add
+    the same file multiple times to a compilation. Catch this trivial case.
+
+  * GH-1462: Remember files processed by the driver. (Benjamin Bannier, Corelight)
+
+    We did this previously but stopped doing it with #1462.
+
+  * Remove a few value copies. (Benjamin Bannier, Corelight)
+
+  * GH-1813: Fix equality implementation of module UID. (Benjamin Bannier, Corelight)
+
+    We already computed a `unique` `ID` value for each module to allow
+    declaring the same `ID` name multiple times; we however did not
+    consistently use that value in the implementation of `module::UID`
+    equality and hash operators which is addressed by this patch.
+
+    Closes #1813.
+
 1.11.0 | 2024-07-26 12:48:14 +0200
 
   * Release 1.11.0.
