@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL:  spicyc -p %INPUT 2>output
+# @TEST-EXEC:       btest-diff output
+
+module Test;
+
+type MyBytes = bytes;
+type MySizedBytes = bytes &size=10;
+
+public type BytesVectors = unit {
+    : bytes[10] &size=5; # Fail - bytes can't have &size specified like this
+    : (bytes)[10] &size=5; # Fail - bytes can have &size but doesn't
+    : (bytes[4] &size=6)[10] &size=5; # Fail - even in a container they don't have &size
+    :  MyBytes[10] &size=5; # Fail - MyBytes doesn't have size
+
+    : (bytes &size=15)[10] &size=5; # Okay
+    : MySizedBytes[10] &size=5; # Fail - TODO: #1861 this diagnostic is wrong though
+};
