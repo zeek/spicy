@@ -1,0 +1,13 @@
+# @TEST-EXEC: printf 'x' | spicy-driver -d %INPUT
+#
+# @TEST-DOC: Check that even with skip, a unit instance gets properly initialized for paresing; regression test for #1852
+
+module Test;
+
+public type Testing = unit {
+    padding: skip Pad(42);
+};
+
+type Pad = unit(x: uint8) {
+    on %init { assert(x == 42); } # before fix, x ended up being zero here
+};
