@@ -616,7 +616,7 @@ struct ProductionVisitor : public production::Visitor {
                 type_args = meta.field()->arguments();
             }
 
-            if ( meta.field() && ! meta.field()->isSkip() ) {
+            if ( meta.field() ) {
                 Expression* default_ =
                     builder()->default_(builder()->typeName(unit->unitType()->typeID()), type_args, location);
                 builder()->addAssign(destination(), default_);
