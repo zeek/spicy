@@ -1,3 +1,21 @@
+1.12.0-dev.67 | 2024-09-04 12:44:42 +0200
+
+  * GH-1852: Fix `skip` with units. (Robin Sommer, Corelight)
+
+    For unit parsing with `skip`, we would create a temporary instance
+    but wouldn't properly initialize it, meaning for example that
+    parameters weren't available. We now generally fully initialize any
+    destination, even if temporary.
+
+  * Do not by default skip CI in update-changes cfg. (Benjamin Bannier, Corelight)
+
+    We rely on CI to create releases, so having `[skip CI]` in our
+    update-changes config was always a hassle which needed to be edited out
+    when creating a release (just tagging would autocommit with the message
+    template without a way to change the commit message before tagging).
+
+    Drop this part to make releases easier and less error prone.
+
 1.12.0-dev.63 | 2024-08-26 17:10:07 +0200
 
   * Bump 3rdparty/any from `7c76129` to `a05d5ad` (dependabot[bot])
