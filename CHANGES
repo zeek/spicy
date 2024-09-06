@@ -1,3 +1,27 @@
+1.12.0-dev.71 | 2024-09-06 16:29:02 +0200
+
+  * Move some `scoped_id` out for better locations. (Evan Typanski, Corelight)
+
+  * Fix `vector<>` syntax missing diagnostics. (Evan Typanski, Corelight)
+
+  * GH-1832: Fail for vectors with bytes but no stop. (Evan Typanski, Corelight)
+
+    Cases with parentheses were caught before this change. The comments
+    indicate behavior before the change, even though both cases should fail:
+
+    public type BytesVectors = unit {
+        : bytes[10] &size=5; # No diagnostic - oh no!
+        : (bytes)[10] &size=5; # Error - good
+    };
+
+    That's because a new `_anon` field is created with the parentheses. This
+    makes the `bytes` in an item, which can have its own `&size` and gets
+    checked later. But `bytes` by itself cannot have the `&size` attribute
+    since it's just a type - the vector will use its own `&size` attribute!
+
+    The fix makes all types in vectors use the anonymous field instead, so
+    their lack of attributes are properly modeled during validation.
+
 1.12.0-dev.67 | 2024-09-04 12:44:42 +0200
 
   * GH-1852: Fix `skip` with units. (Robin Sommer, Corelight)

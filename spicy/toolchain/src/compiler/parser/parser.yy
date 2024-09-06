@@ -307,7 +307,7 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::ID>                            opt_unit_field_id
 %type <spicy::declaration::Hook*>          unit_hook
 %type <spicy::declaration::Hooks>            opt_unit_item_hooks unit_hooks
-%type <spicy::type::unit::Item*>           unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink
+%type <spicy::type::unit::Item*>           unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink scoped_id_in_container
 %type <spicy::type::unit::Items>             unit_items opt_unit_items
 %type <spicy::type::unit::item::switch_::Case*>   unit_switch_case
 %type <spicy::type::unit::item::switch_::Cases>     unit_switch_cases
@@ -781,17 +781,25 @@ unit_property : PROPERTY opt_attributes ';'      { $$ = builder->typeUnitItemPro
               | PROPERTY '=' base_type_no_ref ';'       { $$ = builder->typeUnitItemProperty(ID(std::move($1)), builder->expressionType(builder->qualifiedType(std::move($3), hilti::Constness::Mutable)), {}, false, __loc__); };
 
 
-unit_field    : opt_unit_field_id ':' opt_skip base_type opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+unit_field    : opt_unit_field_id ':' opt_skip base_type opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  {   if ( $4->isA<hilti::type::Vector>() )
                                                          error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     $$ = builder->typeUnitItemUnresolvedField(std::move($1), builder->qualifiedType(std::move($4), hilti::Constness::Mutable), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__);
+                                                     $$ = builder->typeUnitItemUnresolvedField(std::move($1), builder->qualifiedType(std::move($4), hilti::Constness::Mutable), $3, {}, {}, std::move($7), std::move($5), std::move($6), std::move($8), __loc__);
+                                                 }
+              | opt_unit_field_id ':' opt_skip base_type unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 {   if ( $4->isA<hilti::type::Vector>() )
+                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
+                                                     auto typeField = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($4), hilti::Constness::Mutable), false, {}, {}, {}, {}, {}, {}, toMeta(@4));
+                                                     $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move(typeField), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__);
                                                  }
 
               | opt_unit_field_id ':' opt_skip unit_field_ctor opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move($4), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__); }
 
-              | opt_unit_field_id ':' opt_skip scoped_id  opt_unit_field_args opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 { $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move($4), $3, std::move($5), std::move($6), std::move($9), std::move($7), std::move($8), std::move($10), __loc__); }
+              | opt_unit_field_id ':' opt_skip scoped_id opt_unit_field_args opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 { $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move($4), $3, std::move($5), {}, std::move($8), std::move($6), std::move($7), std::move($9), __loc__); }
+              | opt_unit_field_id ':' opt_skip scoped_id_in_container unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 { $$ = builder->typeUnitItemUnresolvedField(std::move($1), $4, $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__); }
               | opt_unit_field_id ':' opt_skip '(' unit_field_in_container ')' opt_unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move($5), $3, {}, std::move($7), std::move($10), std::move($8), std::move($9), std::move($11), __loc__); }
 
@@ -816,10 +824,24 @@ unit_field_ctor
 unit_field_in_container
               : ctor opt_unit_field_args opt_attributes
                                                  { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), false, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
-              | scoped_id opt_unit_field_args opt_unit_field_repeat opt_attributes
-                                                 { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), false, std::move($2), std::move($3), {}, std::move($4), {}, {}, __loc__); }
-              | base_type opt_unit_field_repeat opt_unit_field_args opt_attributes
-                                                 { $$ = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($1), hilti::Constness::Mutable), false, std::move($3), std::move($2), {}, std::move($4), {}, {}, __loc__); }
+              | scoped_id opt_unit_field_args opt_attributes
+                                                 { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), false, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
+              | scoped_id_in_container unit_field_repeat opt_attributes
+                                                 { $$ = builder->typeUnitItemUnresolvedField({}, $1, false, {}, std::move($2), {}, std::move($3), {}, {}, __loc__); }
+              | base_type opt_unit_field_args opt_attributes
+                                                 {   if ( $1->isA<hilti::type::Vector>() )
+                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
+                                                     $$ = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($1), hilti::Constness::Mutable), false, std::move($2), {}, {}, std::move($3), {}, {}, __loc__);
+                                                 }
+              | base_type unit_field_repeat opt_unit_field_args opt_attributes
+                                                 {   if ( $1->isA<hilti::type::Vector>() )
+                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
+                                                     auto typeField = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($1), hilti::Constness::Mutable), false, {}, {}, {}, {}, {}, {}, toMeta(@1));
+                                                     $$ = builder->typeUnitItemUnresolvedField({}, std::move(typeField), false, {}, std::move($2), {}, std::move($4), {}, {}, __loc__);
+                                                 }
+
+scoped_id_in_container
+              : scoped_id opt_unit_field_args    { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), false, std::move($2), {}, {}, {}, {}, {}, __loc__); }
 
 unit_wide_hook : ON unit_hook_id unit_hook       { $$ = builder->typeUnitItemUnitHook(std::move($2), std::move($3), __loc__); }
 
