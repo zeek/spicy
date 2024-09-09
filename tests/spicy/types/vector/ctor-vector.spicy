@@ -1,0 +1,22 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x01\x01abcabc' | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test parsing vectors of constants; regression test for #1860.
+
+module Test;
+
+public type X = unit {
+    x1: (uint8(0))[] foreach {
+        assert $$ == 0: "unreachable";
+    }
+
+    x2: uint8(1)[] foreach {
+        assert $$ == 1: "unreachable";
+    }
+
+    x3: b"abc"[] foreach {
+        assert $$ == b"abc": "unreachable";
+    }
+
+    on %done { print self; }
+};
