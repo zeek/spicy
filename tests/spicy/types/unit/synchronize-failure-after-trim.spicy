@@ -1,0 +1,30 @@
+# @TEST-EXEC: spicy-driver -d %INPUT -F test.dat >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Tests resynchronization after an error that occurred after the current unit has already trimmed its input; regression test for #1847
+
+module Test;
+
+type Blah = unit {
+    ab: /AB/;
+    cd: /CD/;
+};
+
+public type X = unit {
+    x: (Blah &synchronize)[];
+
+    on %synced { print "Confirming with state: %s" % self; confirm; }
+    on %done { print self; }
+};
+
+
+# @TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-flow id1 stream Test::X
+@data id1 2
+AB
+@gap id1 1
+@data id1 5
+DABCD
+@end-flow id1
+# @TEST-END-FILE

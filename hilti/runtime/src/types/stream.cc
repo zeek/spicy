@@ -236,9 +236,16 @@ bool View::isComplete() const {
 }
 
 View View::advanceToNextData() const {
-    // Start search for next data chunk at the next byte. This
-    // ensures that we always advance by at least one byte.
-    auto i = _begin + 1;
+    SafeConstIterator i;
+
+    if ( _begin.offset() < _begin.chain()->offset() )
+        // We're at a position that has been trimmed already, move to current
+        // head of the stream
+        i = _begin.chain()->begin();
+    else
+        // Start search for next data chunk at the next byte. This
+        // ensures that we always advance by at least one byte.
+        i = _begin + 1;
 
     auto* c = i.chunk(); // Pointer to the currently looked at chunk.
 
