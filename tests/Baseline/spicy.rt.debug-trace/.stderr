@@ -78,5 +78,5 @@
 [hilti-trace] : return __result;
 [hilti-trace] : hilti::debugDedent("spicy-verbose");
 [hilti-trace] : # End parsing production: Unit: Mini__Test -> f1 f2
-[hilti-trace] : if ( __error ) { hilti::debug("spicy", "successful sync never confirmed, failing unit"); throw ; }
+[hilti-trace] : if ( __error ) { hilti::debug("spicy", "successful sync never confirmed, failing unit"); throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)))); }
 [hilti-trace] : return __ncur;
