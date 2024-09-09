@@ -814,7 +814,7 @@ unit_field_ctor
               | INT64 '(' const_sint ')'         { $$ = builder->ctorSignedInteger($3, 64, __loc__); }
 
 unit_field_in_container
-              : ctor opt_unit_field_args opt_attributes
+              : unit_field_ctor opt_unit_field_args opt_attributes
                                                  { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), false, std::move($2), {}, {}, std::move($3), {}, {}, __loc__); }
               | scoped_id opt_unit_field_args opt_unit_field_repeat opt_attributes
                                                  { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), false, std::move($2), std::move($3), {}, std::move($4), {}, {}, __loc__); }

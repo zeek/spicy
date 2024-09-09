@@ -46,7 +46,7 @@ struct TypeParser {
         if ( dst )
             return dst;
 
-        if ( meta.field() )
+        if ( meta.field() && meta.isFieldProduction() )
             return builder()->addTmp("x", meta.field()->parseType());
 
         return builder()->addTmp("x", t);
