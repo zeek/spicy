@@ -196,7 +196,7 @@ public:
 
             if ( ! type::sameExceptForConstness(lhs_elem_type, rhs_elem_type) )
                 n->addError(util::fmt("type mismatch for element %d in assignment, expected type %s but got %s", j,
-                                      lhs_elem_type, rhs_elem_type));
+                                      *lhs_elem_type, *rhs_elem_type));
         }
     }
 
