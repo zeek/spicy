@@ -1,3 +1,23 @@
+1.12.0-dev.77 | 2024-09-11 08:18:38 +0200
+
+  * GH-1847: Fix resynchronization issue with trimmed input. (Robin Sommer, Corelight)
+
+    When input had been trimmed, `View::advanceToNextData` could end up
+    returning a view starting ahead of the valid area.
+
+  * Add missing printer support for exception values. (Robin Sommer, Corelight)
+
+  * GH-1860: Fix parsing for vectors of literals. (Robin Sommer, Corelight)
+
+    This was broken in two ways:
+
+    1. with the `(LITERAL)[]` syntax, the parser would not recognize literals
+       using type constructors
+    2. with the syntax `LITERAL[]`, we'd try to store the parsed value
+       into a vector
+
+  * Fix error message. (Robin Sommer, Corelight)
+
 1.12.0-dev.71 | 2024-09-06 16:29:02 +0200
 
   * Move some `scoped_id` out for better locations. (Evan Typanski, Corelight)

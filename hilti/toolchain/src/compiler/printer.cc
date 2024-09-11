@@ -204,6 +204,8 @@ struct Printer : visitor::PreOrder {
 
     void operator()(ctor::Error* n) final { _out << "error(\"" << n->value() << "\")"; }
 
+    void operator()(ctor::Exception* n) final { _out << "exception(" << n->value() << ")"; }
+
     void operator()(ctor::Interval* n) final { _out << "interval_ns(" << n->value().nanoseconds() << ")"; }
 
     void operator()(ctor::List* n) final { _out << '[' << std::make_pair(n->value(), ", ") << ']'; }
