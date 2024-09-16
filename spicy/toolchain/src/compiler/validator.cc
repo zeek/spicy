@@ -134,21 +134,13 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, const type::uni
         return hilti::Nothing();
     }
 
-    // A vector can be parsed either through a sub-item, or through a type.
-
-    if ( auto item = f->item() ) {
-        if ( item->isA<spicy::type::unit::item::Field>() ) {
-            // Nothing to check here right now.
-        }
-
+    // A vector can contain a sub-item
+    if ( f->item() ) {
         return hilti::Nothing();
     }
-
-    else if ( const auto& x = pt->type()->tryAs<hilti::type::Vector>() ) {
-        if ( auto rc = isParseableType(x->elementType(), f); ! rc )
-            return rc;
-
-        return hilti::Nothing();
+    // But a vector cannot contain a type; this is enforced at parse time
+    else if ( pt->type()->isA<hilti::type::Vector>() ) {
+        hilti::logger().internalError("vectors must only have sub-item, not an inner type");
     }
 
     return hilti::result::Error(fmt("not a parseable type (%s)", *pt));
