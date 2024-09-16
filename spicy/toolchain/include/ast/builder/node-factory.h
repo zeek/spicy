@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include <hilti/ast/builder/node-factory.h>
@@ -103,18 +101,18 @@ public:
                                                                 repeat, std::move(sinks), attrs, cond, std::move(hooks),
                                                                 std::move(meta));
     }
-    auto typeUnitItemUnresolvedField(ID id, ID unresolved_id, bool skip, Expressions args, Expression* repeat,
-                                     Expressions sinks, AttributeSet* attrs, Expression* cond,
-                                     spicy::declaration::Hooks hooks, Meta meta = {}) {
+    auto typeUnitItemUnresolvedField(ID id, ID unresolved_id, bool skip, Expressions args, Expressions sinks,
+                                     AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                                     Meta meta = {}) {
         return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), std::move(unresolved_id),
-                                                                skip, std::move(args), repeat, std::move(sinks), attrs,
+                                                                skip, std::move(args), {}, std::move(sinks), attrs,
                                                                 cond, std::move(hooks), std::move(meta));
     }
-    auto typeUnitItemUnresolvedField(ID id, QualifiedType* type, bool skip, Expressions args, Expression* repeat,
-                                     Expressions sinks, AttributeSet* attrs, Expression* cond,
-                                     spicy::declaration::Hooks hooks, Meta meta = {}) {
+    auto typeUnitItemUnresolvedField(ID id, QualifiedType* type, bool skip, Expressions args, Expressions sinks,
+                                     AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
+                                     Meta meta = {}) {
         return spicy::type::unit::item::UnresolvedField::create(context(), std::move(id), type, skip, std::move(args),
-                                                                repeat, std::move(sinks), attrs, cond, std::move(hooks),
+                                                                {}, std::move(sinks), attrs, cond, std::move(hooks),
                                                                 std::move(meta));
     }
     auto typeUnitItemUnresolvedField(ID id, type::unit::Item* item, bool skip, Expressions args, Expression* repeat,
