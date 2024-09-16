@@ -272,7 +272,7 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::Declaration*>               local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
 %type <hilti::Declarations>                 struct_fields
 %type <hilti::UnqualifiedType*>           base_type_no_ref base_type type type_no_ref tuple_type struct_type enum_type unit_type bitfield_type reference_type
-%type <hilti::QualifiedType*>             qtype func_result opt_func_result
+%type <hilti::QualifiedType*>             qtype func_result opt_func_result unit_field_base_type
 %type <hilti::Ctor*>                      ctor tuple struct_ regexp list vector map set unit_field_ctor
 %type <hilti::Expression*>                expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_range_value
 %type <hilti::Expressions>                  opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
@@ -780,16 +780,15 @@ unit_property : PROPERTY opt_attributes ';'      { $$ = builder->typeUnitItemPro
                                                  { $$ = builder->typeUnitItemProperty(ID(std::move($1)), std::move($3), std::move($4), false, __loc__); };
               | PROPERTY '=' base_type_no_ref ';'       { $$ = builder->typeUnitItemProperty(ID(std::move($1)), builder->expressionType(builder->qualifiedType(std::move($3), hilti::Constness::Mutable)), {}, false, __loc__); };
 
-
-unit_field    : opt_unit_field_id ':' opt_skip base_type opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 {   if ( $4->isA<hilti::type::Vector>() )
+unit_field_base_type : base_type                   {   if ( $1->isA<hilti::type::Vector>() )
                                                          error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     $$ = builder->typeUnitItemUnresolvedField(std::move($1), builder->qualifiedType(std::move($4), hilti::Constness::Mutable), $3, {}, std::move($7), std::move($5), std::move($6), std::move($8), __loc__);
+                                                     $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable);
                                                  }
-              | opt_unit_field_id ':' opt_skip base_type unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
-                                                 {   if ( $4->isA<hilti::type::Vector>() )
-                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     auto typeField = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($4), hilti::Constness::Mutable), false, {}, {}, {}, {}, {}, toMeta(@4));
+
+unit_field    : opt_unit_field_id ':' opt_skip unit_field_base_type opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 { $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move($4), $3, {}, std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
+              | opt_unit_field_id ':' opt_skip unit_field_base_type unit_field_repeat opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
+                                                 {   auto typeField = builder->typeUnitItemUnresolvedField({}, std::move($4), false, {}, {}, {}, {}, {}, toMeta(@4));
                                                      $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move(typeField), $3, {}, std::move($5), std::move($8), std::move($6), std::move($7), std::move($9), __loc__);
                                                  }
 
@@ -828,15 +827,10 @@ unit_field_in_container
                                                  { $$ = builder->typeUnitItemUnresolvedField({}, std::move($1), false, std::move($2), {}, std::move($3), {}, {}, __loc__); }
               | scoped_id_in_container unit_field_repeat opt_attributes
                                                  { $$ = builder->typeUnitItemUnresolvedField({}, $1, false, {}, std::move($2), {}, std::move($3), {}, {}, __loc__); }
-              | base_type opt_unit_field_args opt_attributes
-                                                 {   if ( $1->isA<hilti::type::Vector>() )
-                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     $$ = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($1), hilti::Constness::Mutable), false, std::move($2), {}, std::move($3), {}, {}, __loc__);
-                                                 }
-              | base_type unit_field_repeat opt_unit_field_args opt_attributes
-                                                 {   if ( $1->isA<hilti::type::Vector>() )
-                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     auto typeField = builder->typeUnitItemUnresolvedField({}, builder->qualifiedType(std::move($1), hilti::Constness::Mutable), false, {}, {}, {}, {}, {}, toMeta(@1));
+              | unit_field_base_type opt_unit_field_args opt_attributes
+                                                 { $$ = builder->typeUnitItemUnresolvedField({}, $1, false, std::move($2), {}, std::move($3), {}, {}, __loc__); }
+              | unit_field_base_type unit_field_repeat opt_unit_field_args opt_attributes
+                                                 {   auto typeField = builder->typeUnitItemUnresolvedField({}, std::move($1), false, {}, {}, {}, {}, {}, toMeta(@1));
                                                      $$ = builder->typeUnitItemUnresolvedField({}, std::move(typeField), false, {}, std::move($2), {}, std::move($4), {}, {}, __loc__);
                                                  }
 
