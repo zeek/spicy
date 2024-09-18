@@ -1,3 +1,25 @@
+1.12.0-dev.81 | 2024-09-18 14:42:34 +0200
+
+  * Add internal error for unvalidatable vectors. (Evan Typanski, Corelight)
+
+    Vectors were changed to never be a vector-of-type, just a
+    vector-of-items that redirect to a type. This allows validating
+    attributes and whatnot properly, which only apply to fields, not types.
+    The consequence is that a vector-of-types should be impossible, or else
+    there is an error in the parser's workarounds to get to that state,
+    which is a bug.
+
+    Add an internal error so that case never surfaces without a big scary
+    error.
+
+  * Move legacy vector syntax check to new production. (Evan Typanski, Corelight)
+
+  * Remove vector builders for type/ids. (Evan Typanski, Corelight)
+
+    Currently, vectors need the inner type to actually point to a field.
+    This removes the repeat from builder methods that would otherwise need a
+    field but don't so that they aren't mistakenly added.
+
 1.12.0-dev.77 | 2024-09-11 08:18:38 +0200
 
   * GH-1847: Fix resynchronization issue with trimmed input. (Robin Sommer, Corelight)
