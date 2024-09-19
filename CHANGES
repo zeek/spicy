@@ -1,3 +1,49 @@
+1.11.2 | 2024-09-11 08:21:44 +0200
+
+  * GH-1860: Fix parsing for vectors of literals. (Robin Sommer, Corelight)
+
+    This was broken in two ways:
+
+    1. with the `(LITERAL)[]` syntax, the parser would not recognize literals
+       using type constructors
+    2. with the syntax `LITERAL[]`, we'd try to store the parsed value
+       into a vector
+
+    Closes #1860.
+
+    (cherry picked from commit f3a02904c0ea1038b8ab7e1fa672e7e6347d6b5d)
+
+  * GH-1847: Fix resynchronization issue with trimmed input. (Robin Sommer, Corelight)
+
+    When input had been trimmed, `View::advanceToNextData` could end up
+    returning a view starting ahead of the valid area.
+
+    Closes #1847.
+
+    (cherry picked from commit c6177f92c55c3d944e9288eb41ff5144c49bda19)
+
+  * GH-1852: Fix `skip` with units. (Robin Sommer, Corelight)
+
+    For unit parsing with `skip`, we would create a temporary instance
+    but wouldn't properly initialize it, meaning for example that
+    parameters weren't available. We now generally fully initialize any
+    destination, even if temporary.
+
+    Closes #1852.
+
+    (cherry picked from commit fe76a869e1307f797fb3d8e6bdb230c24b452d6f)
+
+  * Do not by default skip CI in update-changes cfg. [skip CI] (Benjamin Bannier, Corelight)
+
+    We rely on CI to create releases, so having `[skip CI]` in our
+    update-changes config was always a hassle which needed to be edited out
+    when creating a release (just tagging would autocommit with the message
+    template without a way to change the commit message before tagging).
+
+    Drop this part to make releases easier and less error prone.
+
+    (cherry picked from commit 33abf3b99cb299057bd84a3a513b65b142f926bb)
+
 1.11.1 | 2024-08-16 12:11:22 +0200
 
   * GH-1831: Fix optimizer regression. (Robin Sommer, Corelight)
