@@ -1,3 +1,12 @@
+1.12.0-dev.83 | 2024-09-19 08:58:15 +0200
+
+  * Fix attributes not getting validated. (Evan Typanski, Corelight)
+
+    This particularly fixes the case where a ctor within a field will not
+    have its attributes validated because it does not go through
+    `isParseableType`. The "generic attribute checks" are moved to apply to
+    all attributes, while type-specific ones remain in `isParseableType`
+
 1.12.0-dev.81 | 2024-09-18 14:42:34 +0200
 
   * Add internal error for unvalidatable vectors. (Evan Typanski, Corelight)

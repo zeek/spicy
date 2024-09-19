@@ -31,8 +31,56 @@ bool supportsLiterals(QualifiedType* t) {
            t->type()->isA<hilti::type::Bitfield>();
 }
 
+// Helper to make sure a field's attributes are consistent. This is type-independent.
+hilti::Result<hilti::Nothing> checkFieldAttributes(type::unit::item::Field* f) {
+    // Can't combine ipv4 and ipv6
+    auto v4 = f->attributes()->find("&ipv4");
+    auto v6 = f->attributes()->find("&ipv6");
+
+    if ( v4 && v6 )
+        return hilti::result::Error("field cannot have both &ipv4 and &ipv6 attributes");
+
+    // Termination conditions cannot be combined in certain ways
+    auto eod_attr = f->attributes()->find("&eod");
+    auto until_attr = f->attributes()->find("&until");
+    auto until_including_attr = f->attributes()->find("&until-including");
+    auto parse_at_attr = f->attributes()->find("&parse-at");
+    auto parse_from_attr = f->attributes()->find("&parse-from");
+    auto size_attr = f->attributes()->find("&size");
+    auto max_size_attr = f->attributes()->find("&max-size");
+
+    std::vector<std::string> start_attrs_present;
+    for ( const auto& i : {parse_from_attr, parse_at_attr} ) {
+        if ( i )
+            start_attrs_present.emplace_back(i->tag());
+    }
+
+    std::vector<std::string> end_attrs_present;
+    for ( const auto& i : {eod_attr, until_attr, until_including_attr} ) {
+        if ( i )
+            end_attrs_present.emplace_back(i->tag());
+    }
+
+    std::vector<std::string> size_attrs_present;
+    for ( const auto& i : {size_attr, max_size_attr} ) {
+        if ( i )
+            size_attrs_present.emplace_back(i->tag());
+    }
+
+    for ( const auto* attrs_present : {&start_attrs_present, &size_attrs_present} ) {
+        if ( attrs_present->size() > 1 )
+            return hilti::result::Error(
+                fmt("attributes cannot be combined: %s", hilti::util::join(*attrs_present, ", ")));
+    }
+
+    if ( until_attr && until_including_attr )
+        return hilti::result::Error(fmt("attributes cannot be combined: &until, &until-including"));
+
+    return hilti::Nothing();
+}
+
 // Helper to validate that a type is parseable.
-hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, const type::unit::item::Field* f) {
+hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::item::Field* f) {
     if ( pt->type()->isA<hilti::type::Bitfield>() )
         return hilti::Nothing();
 
@@ -40,46 +88,15 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, const type::uni
         if ( f->ctor() )
             return hilti::Nothing();
 
-        auto eod_attr = f->attributes()->find("&eod");
-        auto until_attr = f->attributes()->find("&until");
-        auto until_including_attr = f->attributes()->find("&until-including");
-        auto parse_at_attr = f->attributes()->find("&parse-at");
-        auto parse_from_attr = f->attributes()->find("&parse-from");
-        auto size_attr = f->attributes()->find("&size");
-        auto max_size_attr = f->attributes()->find("&max-size");
+        const auto required_one_of = {"&eod", "&parse-at", "&parse-from", "&size", "&until", "&until-including"};
 
-        std::vector<std::string> start_attrs_present;
-        for ( const auto& i : {parse_from_attr, parse_at_attr} ) {
-            if ( i )
-                start_attrs_present.emplace_back(i->tag());
+        // Make sure we have one of the required attributes
+        for ( const auto& attr : required_one_of ) {
+            if ( f->attributes()->find(attr) )
+                return hilti::Nothing();
         }
 
-        std::vector<std::string> end_attrs_present;
-        for ( const auto& i : {eod_attr, until_attr, until_including_attr} ) {
-            if ( i )
-                end_attrs_present.emplace_back(i->tag());
-        }
-
-        std::vector<std::string> size_attrs_present;
-        for ( const auto& i : {size_attr, max_size_attr} ) {
-            if ( i )
-                size_attrs_present.emplace_back(i->tag());
-        }
-
-        for ( const auto* attrs_present : {&start_attrs_present, &size_attrs_present} ) {
-            if ( attrs_present->size() > 1 )
-                return hilti::result::Error(
-                    fmt("attributes cannot be combined: %s", hilti::util::join(*attrs_present, ", ")));
-        }
-
-        if ( until_attr && until_including_attr )
-            return hilti::result::Error(fmt("attributes cannot be combined: &until, &until-including"));
-
-        if ( ! size_attr && start_attrs_present.empty() && end_attrs_present.empty() )
-            return hilti::result::Error(
-                "bytes field requires one of &eod, &parse_at, &parse_from, &size, &until, &until-including");
-
-        return hilti::Nothing();
+        return hilti::result::Error(fmt("bytes field requires one of %s", hilti::util::join(required_one_of, ", ")));
     }
 
     if ( pt->type()->isA<hilti::type::Address>() ) {
@@ -88,9 +105,6 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, const type::uni
 
         if ( ! (v4 || v6) )
             return hilti::result::Error("address field must come with either &ipv4 or &ipv6 attribute");
-
-        if ( v4 && v6 )
-            return hilti::result::Error("address field cannot have both &ipv4 and &ipv6 attributes");
 
         return hilti::Nothing();
     }
@@ -810,6 +824,9 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                                                b->meta().location());
             }
         }
+
+        if ( auto rc = checkFieldAttributes(n); ! rc )
+            error(rc.error(), n);
     }
 
     void operator()(spicy::type::unit::item::UnresolvedField* n) final {

@@ -4,9 +4,12 @@
 [error] <...>/attr-multiple-fail.spicy:13:5-13:43: '&max-size' can be used at most once
 [error] <...>/attr-multiple-fail.spicy:15:5-15:64: '&parse-at' can be used at most once
 [error] <...>/attr-multiple-fail.spicy:18:5-18:52: '&parse-from' can be used at most once
-[error] <...>/attr-multiple-fail.spicy:20:5-20:25: address field cannot have both &ipv4 and &ipv6 attributes
+[error] <...>/attr-multiple-fail.spicy:20:5-20:25: field cannot have both &ipv4 and &ipv6 attributes
 [error] <...>/attr-multiple-fail.spicy:21:5-21:89: '&type' can be used at most once
 [error] <...>/attr-multiple-fail.spicy:23:5-23:44: '&until' can be used at most once
 [error] <...>/attr-multiple-fail.spicy:24:5-24:64: '&until-including' can be used at most once
-[error] <...>/attr-multiple-fail.spicy:25:5-25:44: '&while' can be used at most once
+[error] <...>/attr-multiple-fail.spicy:25:5-25:45: '&while' can be used at most once
+[error] <...>/attr-multiple-fail.spicy:28:11-28:38: attributes cannot be combined: &size, &max-size
+[error] <...>/attr-multiple-fail.spicy:29:11-29:38: attributes cannot be combined: &size, &max-size
+[error] <...>/attr-multiple-fail.spicy:33:5-33:27: field cannot have both &ipv4 and &ipv6 attributes
 [error] spicyc: aborting after errors
