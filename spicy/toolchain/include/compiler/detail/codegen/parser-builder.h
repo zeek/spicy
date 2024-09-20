@@ -127,7 +127,7 @@ struct ParserState {
     Expression* cur = nullptr;
 
     /**< If set, expression referencing a new `cur` to set after parsing the current rule. */
-    std::optional<Expression*> ncur;
+    Expression* ncur = nullptr;
 
     /**
      * Boolean expression indicating whether the input data can be trimmed
@@ -154,7 +154,7 @@ struct ParserState {
      * Target for storing extracted capture groups; set only when needed &
      * desired.
      */
-    std::optional<Expression*> captures;
+    Expression* captures = nullptr;
 
     /**
      * Expression* holding the last parse error if any. This field is set only in sync or trial mode.
@@ -453,8 +453,7 @@ public:
      * that destination (and then it might not need create a tmp to store the
      * result in).
      */
-    Expression* applyConvertExpression(const type::unit::item::Field& field, Expression* value,
-                                       std::optional<Expression*> dst = {});
+    Expression* applyConvertExpression(const type::unit::item::Field& field, Expression* value, Expression* dst = {});
 
     /**
      * Trims the input's beginning to the current parsing position,

@@ -581,7 +581,7 @@ struct ProductionVisitor : public production::Visitor {
 
         builder()->setLocation(p->location());
 
-        std::optional<Expression*> pre_container_offset;
+        Expression* pre_container_offset = nullptr;
         std::optional<PathTracker> path_tracker;
         Expression* profiler = nullptr;
 
@@ -661,10 +661,8 @@ struct ProductionVisitor : public production::Visitor {
 
         else if ( ! meta.isFieldProduction() ) {
             // Need to move position ahead.
-            if ( state().ncur ) {
-                builder()->addAssign(state().cur, *state().ncur);
-                state().ncur = {};
-            }
+            if ( state().ncur )
+                builder()->addAssign(state().cur, state().ncur);
 
             popDestination();
         }
@@ -687,7 +685,7 @@ struct ProductionVisitor : public production::Visitor {
         return stop;
     }
 
-    std::optional<Expression*> preParseField(const Production& /* i */, const production::Meta& meta) {
+    Expression* preParseField(const Production& /* i */, const production::Meta& meta) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
@@ -696,7 +694,7 @@ struct ProductionVisitor : public production::Visitor {
         // If the field holds a container we expect to see the offset of the field, not the individual container
         // elements inside e.g., this unit's fields hooks. Store the value before parsing of a container starts so we
         // can restore it later.
-        std::optional<Expression*> pre_container_offset;
+        Expression* pre_container_offset = nullptr;
         if ( field && field->isContainer() )
             pre_container_offset =
                 builder()->addTmp("pre_container_offset",
@@ -739,7 +737,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // `&size` and `&max-size` share the same underlying infrastructure
         // so try to extract both of them and compute the ultimate value.
-        std::optional<Expression*> length;
+        Expression* length = nullptr;
         // Only at most one of `&max-size` and `&size` will be set.
         assert(! (field->attributes()->find("&size") && field->attributes()->find("&max-size")));
         if ( auto a = field->attributes()->find("&size") )
@@ -751,12 +749,12 @@ struct ProductionVisitor : public production::Visitor {
 
         if ( length ) {
             // Limit input to the specified length.
-            auto limited = builder()->addTmp("limited_", builder()->memberCall(state().cur, "limit", {*length}));
+            auto limited = builder()->addTmp("limited_", builder()->memberCall(state().cur, "limit", {length}));
 
             // Establish limited view, remembering position to continue at.
             auto pstate = state();
             pstate.cur = limited;
-            pstate.ncur = builder()->addTmp("ncur", builder()->memberCall(state().cur, "advance", {*length}));
+            pstate.ncur = builder()->addTmp("ncur", builder()->memberCall(state().cur, "advance", {length}));
             pushState(std::move(pstate));
         }
         else {
@@ -788,21 +786,20 @@ struct ProductionVisitor : public production::Visitor {
         return pre_container_offset;
     }
 
-    void postParseField(const Production& p, const production::Meta& meta,
-                        const std::optional<Expression*>& pre_container_offset) {
+    void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
         // If the field holds a container we expect to see the offset of the field, not the individual container
         // elements inside e.g., this unit's fields hooks. Temporarily restore the previously stored offset.
-        std::optional<Expression*> prev;
+        Expression* prev = nullptr;
         if ( pre_container_offset ) {
             prev = builder()->addTmp("prev", builder()->ternary(pb->featureConstant(state().unit, "uses_offset"),
                                                                 builder()->member(state().self, "__offset"),
                                                                 builder()->integer(0)));
 
             pb->guardFeatureCode(state().unit, {"uses_offset"}, [&]() {
-                builder()->addAssign(builder()->member(state().self, "__offset"), *pre_container_offset);
+                builder()->addAssign(builder()->member(state().self, "__offset"), pre_container_offset);
             });
         }
 
@@ -821,7 +818,6 @@ struct ProductionVisitor : public production::Visitor {
         }
 
         auto ncur = state().ncur;
-        state().ncur = {};
 
         // Expression tracking `ncur` in case we operate on a limited view from `&max-size` parsing.
         // This differs from `&size` parsing in that we do not need to consume the full limited view.
@@ -830,7 +826,7 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto a = field->attributes()->find("&max-size") ) {
             // Check that we did not read into the sentinel byte.
             auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
-                                                builder()->memberCall(*ncur, "offset"));
+                                                builder()->memberCall(ncur, "offset"));
             auto exceeded = builder()->addIf(cond);
             pushBuilder(exceeded, [&]() {
                 // We didn't finish parsing the data, which is an error.
@@ -847,7 +843,7 @@ struct ProductionVisitor : public production::Visitor {
         }
 
         else if ( auto a = field->attributes()->find("&size"); a && ! field->attributes()->find("&eod") )
-            _checkSizeAmount(a, *ncur, field);
+            _checkSizeAmount(a, ncur, field);
 
         auto val = destination();
 
@@ -876,7 +872,7 @@ struct ProductionVisitor : public production::Visitor {
                                                                 builder()->memberCall(state().cur, "offset"))});
 
         if ( ncur )
-            builder()->addAssign(state().cur, *ncur);
+            builder()->addAssign(state().cur, ncur);
 
         if ( ! meta.container() ) {
             if ( pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
@@ -888,7 +884,7 @@ struct ProductionVisitor : public production::Visitor {
 
         if ( prev )
             pb->guardFeatureCode(state().unit, {"uses_offset"},
-                                 [&]() { builder()->addAssign(builder()->member(state().self, "__offset"), *prev); });
+                                 [&]() { builder()->addAssign(builder()->member(state().self, "__offset"), prev); });
 
         if ( field->condition() )
             popBuilder();
@@ -1744,22 +1740,22 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto a = p->unitType()->attributes()->find("&max-size") ) {
             // Check that we did not read into the sentinel byte.
             auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
-                                                builder()->memberCall(*state().ncur, "offset"));
+                                                builder()->memberCall(state().ncur, "offset"));
             auto exceeded = builder()->addIf(cond);
             pushBuilder(exceeded, [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
 
             // Restore parser state.
             auto ncur = state().ncur;
             popState();
-            builder()->addAssign(state().cur, *ncur);
+            builder()->addAssign(state().cur, ncur);
         }
 
         else if ( auto a = p->unitType()->attributes()->find("&size");
                   a && ! p->unitType()->attributes()->find("&eod") ) {
             auto ncur = state().ncur;
-            _checkSizeAmount(a, *ncur);
+            _checkSizeAmount(a, ncur);
             popState();
-            builder()->addAssign(state().cur, *ncur);
+            builder()->addAssign(state().cur, ncur);
         }
 
         popState();
@@ -2420,7 +2416,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
 
         if ( field->originalType()->type()->isA<hilti::type::RegExp>() && ! field->isContainer() ) {
             if ( state().captures )
-                args.push_back(*state().captures);
+                args.push_back(state().captures);
             else
                 args.push_back(builder()->default_(builder()->typeName("hilti::Captures")));
         }
@@ -2490,7 +2486,7 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field& field
 }
 
 Expression* ParserBuilder::applyConvertExpression(const type::unit::item::Field& field, Expression* value,
-                                                  std::optional<Expression*> dst) {
+                                                  Expression* dst) {
     auto convert = field.convertExpression();
     if ( ! convert )
         return value;
@@ -2503,13 +2499,13 @@ Expression* ParserBuilder::applyConvertExpression(const type::unit::item::Field&
         if ( ! field.isSkip() )
             block->addLocal(ID("__dd"), field.ddType(), value);
 
-        block->addAssign(*dst, convert->first);
+        block->addAssign(dst, convert->first);
     }
     else
         // Unit got its own __convert() method for us to call.
-        builder()->addAssign(*dst, builder()->memberCall(value, "__convert"));
+        builder()->addAssign(dst, builder()->memberCall(value, "__convert"));
 
-    return *dst;
+    return dst;
 }
 
 void ParserBuilder::trimInput(bool force) {
@@ -2714,7 +2710,7 @@ void ParserBuilder::afterHook() {
         auto ncur = builder()->memberCall(state().cur, "advance", {builder()->deref(position_update)});
 
         if ( state().ncur )
-            advance->addAssign(*state().ncur, ncur);
+            advance->addAssign(state().ncur, ncur);
         else
             advance->addAssign(state().cur, ncur);
 
