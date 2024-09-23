@@ -31,6 +31,5 @@ Spicy pretty quickly.
     types
     statements
     packing
-    error-handling
     conditional
     appendix
