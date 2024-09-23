@@ -63,6 +63,8 @@ doc_text     [ \t]*##[^\n]*\n?
 comment      [ \t]*#[^#\n]*\n?
 
 attribute \&(bit-order|byte-order|chunked|convert|count|cxxname|default|eod|internal|ipv4|ipv6|hilti_type|length|max-size|no-emit|nosub|on-heap|optional|originator|parse-at|parse-from|requires|responder|size|static|synchronize|transient|try|type|until|until-including|while|have_prototype)
+property  %(byte-order|context|cxx-include|debug|description|done|error|filter|mime-type|orig|port|random-access|resp|s_default|skip|skip-implementation|skip-post|skip-pre|spicy-version|sync-advance-block-size|synchronize-after|synchronize-at)
+
 blank     [ \t]
 digit     [0-9]
 digits    {digit}+
@@ -73,7 +75,6 @@ P         ([Pp][+-]?{digits})
 decfloat  {digits}{E}|{digit}*\.{digits}{E}?|{digits}\.{digit}+{E}?
 hexfloat  0[xX]({hexit}+{P}|{hexit}*\.{hexit}+{P}?|{hexit}+\.{hexit}+{P}?)
 id        [a-zA-Z_]|[a-zA-Z_][a-zA-Z_0-9]*[a-zA-Z_0-9]|[$][$]
-property  %[a-zA-Z_][a-zA-Z_0-9-]*
 string    \"(\\.|[^\\"])*\"
 preprocessor @[a-zA-Z_][a-zA-Z_0-9-]*
 
@@ -231,7 +232,7 @@ Null                  return token::CNULL;
 <NEW_KEYWORD>skip     return token::SKIP;
 
 {attribute}           yylval->build(std::string(yytext)); return token::ATTRIBUTE;
-<INITIAL>{property}   yylval->build(std::string(yytext)); return token::PROPERTY;
+{property}            yylval->build(std::string(yytext)); return token::PROPERTY;
 {digits}\/(tcp|udp)   yylval->build(std::string(yytext)); return token::CPORT;
 {address4}            yylval->build(std::string(yytext)); return token::CADDRESS;
 {address6}            yylval->build(std::string(yytext, 1, strlen(yytext) - 2)); return token::CADDRESS;

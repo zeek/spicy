@@ -10,6 +10,10 @@
 # @TEST-EXEC: echo C   | spicy-driver -p Mini::Test2 test.hlto 2>&1 | sort >>output
 # @TEST-EXEC: echo AxC | (spicy-driver -p Mini::Test2 test.hlto 2>&1; true) | sort >>output
 #
+# @TEST-EXEC: echo === >>output
+#
+# @TEST-EXEC: echo 123 | (spicy-driver -p Mini::Test3 test.hlto 2>&1; true) | sort >>output
+#
 # @TEST-EXEC: btest-diff output
 
 module Mini;
@@ -21,7 +25,6 @@ public type Test1 = unit {
     b: b"B"  %error { print "field B %error, attached", self; }
     c: b"C";
 
-    # TODO: These don't trigger yet
     on b %error {
         print "field B %error, inside unit", self;
     }
@@ -64,4 +67,9 @@ public type Test2 = unit {
 type Foo = unit {
     a: b"A" %error { print "field A %error"; self.backtrack(); }
     b: b"B";
+};
+
+# Test that contains a field where Bison parsing is tricky.
+public type Test3 = unit {
+    x: bytes &size=5 %error { print "field x %error"; }
 };
