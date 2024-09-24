@@ -1888,18 +1888,15 @@ struct ProductionVisitor : public production::Visitor {
         }
 
         auto builder_default = switch_.addDefault();
-        pushBuilder(builder_default);
-        pb->parseError("no expected look-ahead token found", p.location());
-        popBuilder();
 
         if ( p.condition() )
             popBuilder();
 
-        return std::make_pair(builder_alt1, builder_alt2);
+        return std::make_tuple(builder_alt1, builder_alt2, builder_default);
     }
 
     void operator()(const production::LookAhead* p) final {
-        auto [builder_alt1, builder_alt2] = parseLookAhead(*p);
+        auto [builder_alt1, builder_alt2, builder_default] = parseLookAhead(*p);
 
         pushBuilder(builder_alt1);
         parseProduction(*p->alternatives().first);
@@ -1908,6 +1905,8 @@ struct ProductionVisitor : public production::Visitor {
         pushBuilder(builder_alt2);
         parseProduction(*p->alternatives().second);
         popBuilder();
+
+        pushBuilder(builder_default, [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
     }
 
     void operator()(const production::Sequence* p) final {
@@ -2000,7 +1999,10 @@ struct ProductionVisitor : public production::Visitor {
 
                 std::shared_ptr<Builder> builder_alt1;
                 std::shared_ptr<Builder> builder_alt2;
-                auto parse = [&]() { std::tie(builder_alt1, builder_alt2) = parseLookAhead(*lah_prod); };
+                std::shared_ptr<Builder> builder_default;
+                auto parse = [&]() {
+                    std::tie(builder_alt1, builder_alt2, builder_default) = parseLookAhead(*lah_prod);
+                };
 
                 // If the list field generating this While is a synchronization point, set up a try/catch block
                 // for internal list synchronization (failure to parse a list element tries to synchronize at
@@ -2023,9 +2025,18 @@ struct ProductionVisitor : public production::Visitor {
 
                                     syncProductionNext(*p);
                                 });
+
+                    pushBuilder(builder_default,
+                                [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
                 }
-                else
+                else {
                     parse();
+
+                    pushBuilder(builder_default, [&]() {
+                        // Terminate loop.
+                        builder()->addBreak();
+                    });
+                }
 
                 pushBuilder(builder_alt1, [&]() {
                     // Terminate loop.
