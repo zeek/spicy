@@ -2444,7 +2444,7 @@ Expression* ParserBuilder::contextNewFunction(const type::Unit& t) {
 }
 
 // Helper to heuristically reconstruct the Spicy source code for a given expression.
-std::string prettyPrintExpr(Expression* e) {
+static std::string prettyPrintExpr(Expression* e) {
     std::stringstream ss;
     ss << *e;
     return hilti::util::replace(ss.str(), "__dd", "$$");
