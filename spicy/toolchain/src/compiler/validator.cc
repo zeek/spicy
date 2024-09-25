@@ -924,6 +924,9 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::type::unit::item::Variable* n) final {
+        if ( ! n->parent()->isA<spicy::type::Unit>() )
+            error("unit variables must be declared at the top-level of a unit", n);
+
         if ( auto attrs = n->attributes() ) {
             for ( const auto& attr : attrs->attributes() ) {
                 const auto& tag = attr->tag();
