@@ -15,7 +15,15 @@
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
-[debug/ast-final] # [HILTI] Final AST (round 3)
+[debug/compiler] [HILTI] validating (post)
+[debug/compiler] performing global transformations
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] [HILTI] validating (post)
+[debug/compiler] finalized AST
+[debug/ast-final] # [HILTI] Final AST
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
 [debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D1" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/types.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       | hilti -> declaration::Module <canonical-id="hilti" declaration="D19" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
@@ -988,10 +996,6 @@
 [debug/ast-final]   [T13] hilti::Exception [type::Exception] (hilti.hlt:46:25-46:33)
 [debug/ast-final]   [T14] hilti::SystemException [type::Exception] (hilti.hlt:49:31-49:53)
 [debug/ast-final]   [T15] hilti::RecoverableFailure [type::Exception] (hilti.hlt:56:34-56:56)
-[debug/compiler]   finalized AST
-[debug/compiler] [HILTI] validating (post)
-[debug/compiler] performing global transformations
-[debug/compiler] [HILTI] validating (post)
 [debug/compiler] computing AST dependencies
 module Foo {
 

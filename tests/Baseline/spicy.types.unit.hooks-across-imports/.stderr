@@ -66,5 +66,69 @@
 [debug/ast-stats]     - type::stream::Iterator: 1023
 [debug/ast-stats]     - type::stream::View: 557
 [debug/ast-stats]     - type::tuple::Element: 677
-[debug/ast-stats] garbage collected 32560 nodes in 18 rounds, 0 left retained
+[debug/ast-stats] garbage collected 7098 nodes in 13 rounds, 21852 left retained
+[debug/ast-stats] # [HILTI] AST statistics:
+[debug/ast-stats]   - # AST rounds 1
+[debug/ast-stats]   - max tree depth: 26
+[debug/ast-stats]   - # context declarations: 262
+[debug/ast-stats]   - # context types: 55
+[debug/ast-stats]   - # context modules: 8
+[debug/ast-stats]   - # nodes reachable in AST: 12230
+[debug/ast-stats]   - # nodes live: 21852
+[debug/ast-stats]   - # nodes retained: 21852
+[debug/ast-stats]   - # nodes live > 1%:
+[debug/ast-stats]     - Attribute: 261
+[debug/ast-stats]     - AttributeSet: 692
+[debug/ast-stats]     - QualifiedType: 7326
+[debug/ast-stats]     - ctor::String: 231
+[debug/ast-stats]     - declaration::Parameter: 355
+[debug/ast-stats]     - expression::Ctor: 646
+[debug/ast-stats]     - expression::Name: 520
+[debug/ast-stats]     - type::Bool: 272
+[debug/ast-stats]     - type::Function: 221
+[debug/ast-stats]     - type::Member: 346
+[debug/ast-stats]     - type::Name: 459
+[debug/ast-stats]     - type::OperandList: 794
+[debug/ast-stats]     - type::Optional: 312
+[debug/ast-stats]     - type::String: 411
+[debug/ast-stats]     - type::Tuple: 239
+[debug/ast-stats]     - type::UnsignedInteger: 1239
+[debug/ast-stats]     - type::Void: 253
+[debug/ast-stats]     - type::bytes::Iterator: 236
+[debug/ast-stats]     - type::operand_list::Operand: 1542
+[debug/ast-stats]     - type::stream::Iterator: 681
+[debug/ast-stats]     - type::stream::View: 457
+[debug/ast-stats]     - type::tuple::Element: 572
+[debug/ast-stats] # [HILTI] AST statistics:
+[debug/ast-stats]   - max tree depth: 26
+[debug/ast-stats]   - # context declarations: 262
+[debug/ast-stats]   - # context types: 55
+[debug/ast-stats]   - # context modules: 8
+[debug/ast-stats]   - # nodes reachable in AST: 12230
+[debug/ast-stats]   - # nodes live: 21852
+[debug/ast-stats]   - # nodes retained: 21852
+[debug/ast-stats]   - # nodes live > 1%:
+[debug/ast-stats]     - Attribute: 261
+[debug/ast-stats]     - AttributeSet: 692
+[debug/ast-stats]     - QualifiedType: 7326
+[debug/ast-stats]     - ctor::String: 231
+[debug/ast-stats]     - declaration::Parameter: 355
+[debug/ast-stats]     - expression::Ctor: 646
+[debug/ast-stats]     - expression::Name: 520
+[debug/ast-stats]     - type::Bool: 272
+[debug/ast-stats]     - type::Function: 221
+[debug/ast-stats]     - type::Member: 346
+[debug/ast-stats]     - type::Name: 459
+[debug/ast-stats]     - type::OperandList: 794
+[debug/ast-stats]     - type::Optional: 312
+[debug/ast-stats]     - type::String: 411
+[debug/ast-stats]     - type::Tuple: 239
+[debug/ast-stats]     - type::UnsignedInteger: 1239
+[debug/ast-stats]     - type::Void: 253
+[debug/ast-stats]     - type::bytes::Iterator: 236
+[debug/ast-stats]     - type::operand_list::Operand: 1542
+[debug/ast-stats]     - type::stream::Iterator: 681
+[debug/ast-stats]     - type::stream::View: 457
+[debug/ast-stats]     - type::tuple::Element: 572
+[debug/ast-stats] garbage collected 25620 nodes in 18 rounds, 0 left retained
 [debug/ast-stats] garbage collected 0 nodes in 1 round, 0 left retained
