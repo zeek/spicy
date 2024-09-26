@@ -553,11 +553,13 @@ hilti::rt::Bytes extractBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data
  * @param literal raw bytes representation of the literal to extract
  * @param location location associated with the situation
  * @param filters filter state associated with current unit instance (which may be null)
+ * @returns `literal` (for convenience)
  * @throws ParseError if the literal isn't found at the beginning of *cur*
  */
-void expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                        const hilti::rt::Bytes& literal, std::string_view location,
-                        const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+hilti::rt::Bytes expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                                    const hilti::rt::stream::View& cur, hilti::rt::Bytes literal,
+                                    std::string_view location,
+                                    const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
 
 } // namespace detail
 } // namespace spicy::rt

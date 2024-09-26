@@ -454,7 +454,7 @@ TEST_CASE("expectBytesLiteral") {
     data->freeze();
     auto view = data->view();
 
-    CHECK_NOTHROW(detail::expectBytesLiteral(data, data->view(), "123"_b, "<location>", {}));
+    CHECK_EQ(detail::expectBytesLiteral(data, data->view(), "123"_b, "<location>", {}), "123"_b);
     CHECK_THROWS_WITH_AS(detail::expectBytesLiteral(data, data->view(), "abc"_b, "<location>", {}),
                          "expected bytes literal \"abc\" but input starts with \"123\" (<location>)",
                          const spicy::rt::ParseError&);

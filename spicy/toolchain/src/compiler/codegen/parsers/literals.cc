@@ -89,13 +89,16 @@ struct Visitor : public visitor::PreOrder {
                     pb()->parseError("unexpected token to consume", n->meta());
                     popBuilder();
 
-                    pushBuilder(
-                        builder()->addIf(builder()->unequal(builder()->expression(n),
-                                                            builder()->memberCall(state().cur, "sub",
-                                                                                  {builder()->begin(state().cur),
-                                                                                   state().lahead_end}))));
+                    auto literal = builder()->addTmp("literal", builder()->expression(n));
+
+                    pushBuilder(builder()->addIf(
+                        builder()->unequal(literal, builder()->memberCall(state().cur, "sub",
+                                                                          {builder()->begin(state().cur),
+                                                                           state().lahead_end}))));
                     pb()->parseError("unexpected data when consuming token", n->meta());
                     popBuilder();
+
+                    builder()->addAssign(lp->destination(n->type()->type()), literal);
 
                     pb()->consumeLookAhead();
                     popBuilder();
@@ -103,17 +106,21 @@ struct Visitor : public visitor::PreOrder {
                     pushBuilder(no_lah);
                 }
 
-                builder()->addCall("spicy_rt::expectBytesLiteral",
-                                   {state().data, state().cur, builder()->expression(n),
-                                    builder()->expression(n->meta()), pb()->currentFilters(state())});
+                auto expect_bytes_literal =
+                    builder()->call("spicy_rt::expectBytesLiteral",
+                                    {state().data, state().cur, builder()->expression(n),
+                                     builder()->expression(n->meta()), pb()->currentFilters(state())});
+
+
+                if ( state().literal_mode != LiteralMode::Skip )
+                    builder()->addAssign(lp->destination(n->type()->type()), expect_bytes_literal);
+                else
+                    builder()->addExpression(expect_bytes_literal);
 
                 pb()->advanceInput(len);
 
                 if ( check_for_look_ahead )
                     popBuilder();
-
-                if ( state().literal_mode != LiteralMode::Skip )
-                    builder()->addAssign(lp->destination(n->type()->type()), builder()->expression(n));
 
                 result = builder()->expression(n);
                 return;
