@@ -7,6 +7,36 @@ Version 1.12 (in progress)
 
 .. rubric:: New Functionality
 
+- We now support ``if`` around a block of unit items:
+
+  .. code-block:: spicy
+
+        type X = unit {
+             x: uint8;
+
+             if ( self.x == 1 ) {
+                 a1: bytes &size=2;
+                 a2: bytes &size=2;
+             };
+        };
+
+  One can also add an ``else``-block:
+
+  .. code-block:: spicy
+
+        type X = unit {
+             x: uint8;
+
+             if ( self.x == 1 ) {
+                 a1: bytes &size=2;
+                 a2: bytes &size=2;
+             }
+             else {
+                 b1: bytes &size=2;
+                 b2: bytes &size=2;
+             };
+        };
+
 .. rubric:: Changed Functionality
 
 .. rubric:: Bug fixes

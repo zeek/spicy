@@ -455,6 +455,20 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(type::unit::item::Block* n) final {
+        if ( auto cond = n->condition() ) {
+            auto coerced =
+                hilti::coerceExpression(builder(), cond,
+                                        builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Const),
+                                        hilti::CoercionStyle::TryAllForMatching |
+                                            hilti::CoercionStyle::ContextualConversion);
+            if ( coerced && coerced.nexpr ) {
+                recordChange(n, coerced.nexpr, "condition");
+                n->setCondition(context(), coerced.nexpr);
+            }
+        }
+    }
+
     void operator()(type::unit::item::Field* n) final {
         if ( (n->isAnonymous() || n->isSkip()) && ! n->isTransient() ) {
             // Make the field transient if it's either top-level, or a direct

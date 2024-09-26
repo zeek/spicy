@@ -59,6 +59,7 @@ public:
     virtual void operator()(spicy::type::Sink*) {}
     virtual void operator()(spicy::type::Unit*) {}
     virtual void operator()(spicy::type::unit::Item*) {}
+    virtual void operator()(spicy::type::unit::item::Block*) {}
     virtual void operator()(spicy::type::unit::item::Field*) {}
     virtual void operator()(spicy::type::unit::item::Property*) {}
     virtual void operator()(spicy::type::unit::item::Sink*) {}

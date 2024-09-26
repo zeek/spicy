@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <spicy/ast/types/unit-items/block.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/property.h>
 #include <spicy/ast/types/unit-items/sink.h>

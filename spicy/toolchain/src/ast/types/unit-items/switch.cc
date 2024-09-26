@@ -8,7 +8,7 @@
 
 bool spicy::type::unit::item::Switch::hasNoFields() const {
     for ( const auto& c : cases() ) {
-        for ( const auto& f : c->items() ) {
+        for ( const auto& f : c->block()->items() ) {
             if ( ! f->itemType()->type()->isA<hilti::type::Void>() )
                 return false;
         }
@@ -20,7 +20,7 @@ bool spicy::type::unit::item::Switch::hasNoFields() const {
 spicy::type::unit::item::switch_::Case* spicy::type::unit::item::Switch::case_(
     const type::unit::item::Field* field) const {
     for ( const auto& c : cases() ) {
-        for ( const auto& i : c->items() ) {
+        for ( const auto& i : c->block()->items() ) {
             if ( i == field )
                 return c;
         }

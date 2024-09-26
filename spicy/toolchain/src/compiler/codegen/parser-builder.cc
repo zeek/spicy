@@ -628,6 +628,10 @@ struct ProductionVisitor : public production::Visitor {
                                  call);
         }
 
+        else if ( p->isA<production::Block>() )
+            // No need to build this a full non-atomic production.
+            dispatch(p);
+
         else if ( unit )
             parseNonAtomicProduction(*p, unit->unitType());
         else
@@ -1438,6 +1442,76 @@ struct ProductionVisitor : public production::Visitor {
         popBuilder(); // while_.
     }
 
+    std::optional<Expression*> preAggregate(const Production* p, AttributeSet* attributes) {
+        builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
+
+        if ( const auto& a = attributes->find("&parse-from") )
+            redirectInputToBytesValue(*a->valueAsExpression());
+
+        if ( auto a = attributes->find("&parse-at") )
+            redirectInputToStreamPosition(*a->valueAsExpression());
+
+        std::optional<Expression*> ncur;
+        if ( const auto& a = attributes->find("&size") ) {
+            // Limit input to the specified length.
+            auto length = *a->valueAsExpression();
+            auto limited = builder()->addTmp("limited_field", builder()->memberCall(state().cur, "limit", {length}));
+
+            // Establish limited view, remembering position to continue at.
+            auto pstate = state();
+            pstate.cur = limited;
+            // NOTE: We do not store `ncur` in `pstate` since field code
+            // might update `pstate.ncur` as well.
+            ncur = builder()->addTmp("ncur", builder()->memberCall(state().cur, "advance", {length}));
+            pushState(std::move(pstate));
+        }
+
+        return ncur;
+    }
+
+    void postAggregate(const Production* p, AttributeSet* attributes, std::optional<Expression*> ncur) {
+        if ( auto a = attributes->find("&size"); a && ! attributes->find("&eod") ) {
+            _checkSizeAmount(a, *ncur);
+            popState();
+            builder()->addAssign(state().cur, *ncur);
+        }
+
+        if ( attributes->has("&parse-from") || attributes->has("&parse-at") )
+            popState();
+
+        builder()->addCall("hilti::debugDedent", {builder()->stringLiteral("spicy")});
+    }
+
+    void operator()(const production::Block* p) final {
+        auto build_block_productions = [this, p](const auto& productions) {
+            auto ncur = preAggregate(p, p->attributes());
+
+            for ( const auto& i : productions )
+                parseProduction(*i);
+
+            postAggregate(p, p->attributes(), ncur);
+        };
+
+        std::optional<std::pair<BuilderPtr, BuilderPtr>> if_else;
+
+        if ( auto* condition = p->condition() ) {
+            if_else = builder()->addIfElse(condition);
+            pushBuilder(if_else->first);
+        }
+
+        build_block_productions(p->productions());
+
+        if ( if_else ) {
+            popBuilder();
+
+            if ( const auto& else_ = p->elseProductions(); else_.size() ) {
+                pushBuilder(if_else->second);
+                build_block_productions(p->elseProductions());
+                popBuilder();
+            }
+        }
+    }
+
     void operator()(const production::Epsilon* /* p */) final {}
 
     void operator()(const production::Counter* p) final {
@@ -1514,31 +1588,10 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Switch* p) final {
-        if ( auto c = p->condition() )
-            pushBuilder(builder()->addIf(c));
+        if ( auto* condition = p->condition() )
+            pushBuilder(builder()->addIf(condition));
 
-        builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
-
-        if ( const auto& a = p->attributes()->find("&parse-from") )
-            redirectInputToBytesValue(*a->valueAsExpression());
-
-        if ( auto a = p->attributes()->find("&parse-at") )
-            redirectInputToStreamPosition(*a->valueAsExpression());
-
-        std::optional<Expression*> ncur;
-        if ( const auto& a = p->attributes()->find("&size") ) {
-            // Limit input to the specified length.
-            auto length = *a->valueAsExpression();
-            auto limited = builder()->addTmp("limited_field", builder()->memberCall(state().cur, "limit", {length}));
-
-            // Establish limited view, remembering position to continue at.
-            auto pstate = state();
-            pstate.cur = limited;
-            // NOTE: We do not store `ncur` in `pstate` since builders
-            // for different cases might update `pstate.ncur` as well.
-            ncur = builder()->addTmp("ncur", builder()->memberCall(state().cur, "advance", {length}));
-            pushState(std::move(pstate));
-        }
+        auto ncur = preAggregate(p, p->attributes());
 
         auto switch_ = builder()->addSwitch(p->expression(), p->location());
 
@@ -1558,16 +1611,7 @@ struct ProductionVisitor : public production::Visitor {
             });
         }
 
-        if ( auto a = p->attributes()->find("&size"); a && ! p->attributes()->find("&eod") ) {
-            _checkSizeAmount(a, *ncur);
-            popState();
-            builder()->addAssign(state().cur, *ncur);
-        }
-
-        if ( p->attributes()->has("&parse-from") || p->attributes()->has("&parse-at") )
-            popState();
-
-        builder()->addCall("hilti::debugDedent", {builder()->stringLiteral("spicy")});
+        postAggregate(p, p->attributes(), ncur);
 
         if ( p->condition() )
             popBuilder();

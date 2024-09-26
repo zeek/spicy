@@ -240,7 +240,7 @@ hilti::Result<hilti::Nothing> Grammar::_computeTables() {
         _follow[sym] = {};
     }
 
-    // SafeIterator until no further change.
+    // Iterate until no further change.
     while ( true ) {
         bool changed = false;
 

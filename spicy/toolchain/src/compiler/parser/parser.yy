@@ -307,8 +307,8 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::ID>                            opt_unit_field_id
 %type <spicy::declaration::Hook*>          unit_hook
 %type <spicy::declaration::Hooks>            opt_unit_item_hooks unit_hooks
-%type <spicy::type::unit::Item*>           unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink scoped_id_in_container
-%type <spicy::type::unit::Items>             unit_items opt_unit_items
+%type <spicy::type::unit::Item*>           unit_item unit_variable unit_field unit_field_in_container unit_wide_hook unit_property unit_switch unit_sink unit_block scoped_id_in_container
+%type <spicy::type::unit::Items>             unit_items opt_unit_items opt_unit_block_else_items
 %type <spicy::type::unit::item::switch_::Case*>   unit_switch_case
 %type <spicy::type::unit::item::switch_::Cases>     unit_switch_cases
 %type <std::pair<hilti::QualifiedType*, hilti::Expression*>> global_decl_type_and_init
@@ -767,6 +767,7 @@ unit_item     : unit_field                       { $$ = std::move($1); }
               | unit_property                    { $$ = std::move($1); }
               | unit_sink                        { $$ = std::move($1); }
               | unit_switch                      { $$ = std::move($1); }
+              | unit_block                       { $$ = std::move($1); }
               ;
 
 
@@ -920,6 +921,13 @@ unit_switch_case
               | '*'   ARROW unit_item            { $$ = builder->typeUnitItemSwitchCase(type::unit::Items{$3}, __loc__); }
               | ARROW unit_field                 { $$ = builder->typeUnitItemSwitchCase($2, __loc__); }
               | ARROW unit_switch                { $$ = builder->typeUnitItemSwitchCase($2, __loc__); }
+
+opt_unit_block_else_items
+              : ELSE '{' opt_unit_items '}'      { $$ = std::move($3); }
+              | /* empty */                      { $$ = {}; }
+
+unit_block    : IF '(' expr ')' '{' opt_unit_items '}' opt_unit_block_else_items ';'
+                                                 { $$ = builder->typeUnitItemBlock(std::move($3), std::move($6), std::move($8), {}, __loc__); }
 
 /* --- End of Spicy units --- */
 

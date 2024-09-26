@@ -610,6 +610,13 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
             return rc;
     }
 
+    HILTI_DEBUG(logging::debug::Compiler, "finalized AST");
+
+    const auto& hilti_plugin = plugin::registry().hiltiPlugin();
+    _dumpAST(logging::debug::AstFinal, hilti_plugin, "Final AST", -1);
+    _dumpState(logging::debug::AstFinal);
+    _dumpStats(logging::debug::AstStats, hilti_plugin.component);
+
     if ( auto rc = _computeDependencies(); ! rc )
         return rc;
 
@@ -716,7 +723,6 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
 
         garbageCollect();
 
-        _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", round);
         _saveIterationAST(plugin, "AST after resolving", round);
 
         if ( ! modified )
@@ -726,11 +732,9 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
             logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
     }
 
-    _dumpAST(logging::debug::AstFinal, plugin, "Final AST", round);
-    _dumpState(logging::debug::AstFinal);
+    _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", static_cast<int>(_total_rounds));
     _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
-    _saveIterationAST(plugin, "Final AST", round);
 
     _checkAST(false);
 
@@ -740,7 +744,6 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
     operator_::registry().debugEnforceBuiltInsAreResolved(builder);
 #endif
 
-    HILTI_DEBUG(logging::debug::Compiler, "finalized AST");
     _resolved = true;
     _total_rounds = 0;
 
@@ -768,6 +771,11 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
     optimizer::optimize(builder, _root);
+
+    // Optimization may have left some computed node state unset, such as a
+    // canonical IDs. Do a final resolver run to get that in shape.
+    if ( auto rc = _resolve(builder, plugin::registry().hiltiPlugin()); ! rc )
+        return rc;
 
     // Make sure we didn't leave anything odd during optimization.
     _checkAST(true);

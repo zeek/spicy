@@ -1,3 +1,76 @@
+1.12.0-dev.93 | 2024-09-26 13:07:41 +0200
+
+  * Disallow unit variables nested into other items. (Robin Sommer, Corelight)
+
+    Initialization would be ill-defined.
+
+  * GH-1839: Support `if`-blocks in unit. (Robin Sommer, Corelight)
+
+    We now support `if` around a block of unit items:
+
+        type X = unit {
+             x: uint8;
+
+             if ( self.x == 1 ) {
+                 a1: bytes &size=2;
+                 a2: bytes &size=2;
+             };
+        };
+
+    One can also add an `else`-block:
+
+        type X = unit {
+             x: uint8;
+
+             if ( self.x == 1 ) {
+                 a1: bytes &size=2;
+                 a2: bytes &size=2;
+             }
+             else {
+                 b1: bytes &size=2;
+                 b2: bytes &size=2;
+             };
+        };
+
+  * Add a new unit item `Block` that stores a sequence of subitems. (Robin Sommer, Corelight)
+
+    We now have a new unit item `Block` that represents a sequence of
+    sub-items. This goes along with a new production `Block` that the item
+    gets turned into inside the grammar.
+
+    The implementation reuses logic from `unit::item::switch_::Case`. We
+    then refactor `Case` to use the new `Block` instead of continuing to
+    maintain its own list of items.
+
+    We also refactor some other logic previously located with `Switch`
+    to now apply to `Blocks` as well.
+
+    Optionally, a `Block` can have a conditional expressions, an
+    "else"-block as well attributes with it. We don't use them yet, but
+    will soon; tests then coming as well. However, we already also
+    refactor some attribute logic that previously went just with the
+    `Switch` unit item to now also apply to the `Block` item, so that the
+    two can support the same attributes.
+
+  * Remove `production::Boolean`. (Robin Sommer, Corelight)
+
+    Turns out this was neither used nor fully implemented.
+
+  * Run a final resolver pass after optimization. (Robin Sommer, Corelight)
+
+    Optimization may leave node state unset, such as canonical IDs if we
+    created new nodes. The final resolver pass gets that back to a
+    well-defined state.
+
+    This also moves the debug output for `ast-final` out of the resolver
+    loop; it now executes at the very end after optimization. That's a
+    change I've been meaning to do for a while because the "final" AST
+    wasn't really final. `ast-resolved` now shows what used to be
+    `ast-final` (and no longer each iteration of the resolver).
+
+    Test coming with subsequent commit, where a new test would break
+    otherwise.
+
 1.12.0-dev.87 | 2024-09-26 13:07:06 +0200
 
   * Compile generated C++ with `-O0` in debug mode. (Robin Sommer, Corelight)

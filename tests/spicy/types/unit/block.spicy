@@ -1,0 +1,67 @@
+# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x10\x20\xff' | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01a1a2\x10\x20\xff' | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x02\x10b2b3\x10\x20\xff' | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x02\x20\x0a\x10\x20\xff' | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: ${SCRIPTS}/printf '\x03d1\xff' | spicy-driver %INPUT.hlto >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks unit if-blocks.
+
+module Mini;
+
+public type X = unit {
+    x: uint8;
+
+    if ( 42 ) {
+        if ( True ) {
+            if ( True ) {
+                if ( self.x == 1 ) {
+                    a1: bytes &size=2;
+                    a2: bytes &size=2;
+                };
+            };
+        };
+    };
+
+    if ( self.x == 2 ) {
+        b1: uint8;
+
+        switch ( self.b1 ) {
+            0x10 -> {
+                b2: bytes &size=1;
+                b3: bytes &size=2;
+            }
+
+            0x20 ->  b4: bitfield(8) {
+                c1: 0..4;
+                c2: 1..2;
+            };
+        };
+    };
+
+    if ( self.x == 3 ) {
+        d1: bytes &size=2;
+    }
+    else {
+        e1: uint8;
+        : bitfield(8) {
+            f1: 0..4;
+            f2: 1..2;
+        };
+    };
+
+    y: uint8;
+
+    on %done {
+        print self;
+
+        if ( self?.b4 )
+            print self.b4.c1;
+
+        if ( self?.f1 )
+            print self.f1;
+
+    }
+
+};

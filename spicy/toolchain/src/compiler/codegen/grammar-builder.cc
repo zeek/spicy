@@ -121,6 +121,25 @@ struct Visitor : public visitor::PreOrder {
         return std::move(c);
     }
 
+    void operator()(spicy::type::unit::item::Block* n) final {
+        std::vector<std::unique_ptr<Production>> prods;
+
+        for ( const auto& n : n->items() ) {
+            if ( auto prod = productionForItem(n) )
+                prods.push_back(std::move(prod));
+        }
+
+        std::vector<std::unique_ptr<Production>> else_prods;
+        for ( const auto& n : n->elseItems() ) {
+            if ( auto prod = productionForItem(n) )
+                else_prods.push_back(std::move(prod));
+        }
+
+        auto block_label = pf->cg->uniquer()->get("block");
+        result = std::make_unique<production::Block>(context(), block_label, std::move(prods), n->condition(),
+                                                     std::move(else_prods), n->attributes(), n->meta().location());
+    }
+
     void operator()(spicy::type::unit::item::Field* n) final {
         if ( n->isSkip() ) {
             // For field types that support it, create a dedicated skip production.
@@ -200,17 +219,6 @@ struct Visitor : public visitor::PreOrder {
     }
 
     void operator()(spicy::type::unit::item::Switch* n) final {
-        auto productionForCase = [this](spicy::type::unit::item::switch_::Case* c, const std::string& label) {
-            std::vector<std::unique_ptr<Production>> prods;
-
-            for ( const auto& n : c->items() ) {
-                if ( auto prod = productionForItem(n) )
-                    prods.push_back(std::move(prod));
-            }
-
-            return std::make_unique<production::Sequence>(context(), label, std::move(prods), c->meta().location());
-        };
-
         auto switch_sym = pf->cg->uniquer()->get("switch");
 
         if ( n->expression() ) {
@@ -220,10 +228,13 @@ struct Visitor : public visitor::PreOrder {
             int i = 0;
 
             for ( const auto& c : n->cases() ) {
-                if ( c->isDefault() )
-                    default_ = productionForCase(c, fmt("%s_default", switch_sym));
+                if ( c->isDefault() ) {
+                    default_ = productionForItem(c->block());
+                    default_->setSymbol(fmt("%s_default", switch_sym)); // set more descriptive symbol name
+                }
                 else {
-                    auto prod = productionForCase(c, fmt("%s_case_%d", switch_sym, ++i));
+                    auto prod = productionForItem(c->block());
+                    prod->setSymbol(fmt("%s_case_%d", switch_sym, ++i)); // set more descriptive symbol name
                     cases.emplace_back(c->expressions(), std::move(prod));
                 }
             }
@@ -242,12 +253,15 @@ struct Visitor : public visitor::PreOrder {
             auto d = production::look_ahead::Default::None;
 
             for ( const auto& c : n->cases() ) {
-                std::unique_ptr<Production> prod;
+                auto prod = productionForItem(c->block());
 
-                if ( c->isDefault() )
-                    prod = productionForCase(c, fmt("%s_default", switch_sym));
-                else
-                    prod = productionForCase(c, fmt("%s_case_%d", switch_sym, ++i));
+                if ( prod ) {
+                    // Set more descriptive symbol names for the case productions.
+                    if ( c->isDefault() )
+                        prod->setSymbol(fmt("%s_default", switch_sym));
+                    else
+                        prod->setSymbol(fmt("%s_case_%d", switch_sym, ++i));
+                }
 
                 if ( ! prev ) {
                     prev = std::move(prod);

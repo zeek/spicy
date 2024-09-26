@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -14,6 +12,7 @@
 
 #include <spicy/ast/forward.h>
 #include <spicy/ast/types/unit-item.h>
+#include <spicy/ast/types/unit-items/block.h>
 #include <spicy/ast/types/unit-items/field.h>
 
 namespace spicy::type::unit::item {
@@ -23,8 +22,8 @@ namespace switch_ {
 /** AST node for a unit switch's case. */
 class Case : public Node {
 public:
-    auto expressions() const { return childrenOfType<Expression>(); }
-    auto items() const { return childrenOfType<type::unit::Item>(); }
+    auto block() const { return child<type::unit::item::Block>(0); }
+    auto expressions() const { return children<Expression>(1, {}); }
 
     /** Returns true if this is the default case. */
     bool isDefault() const { return expressions().empty() && ! _look_ahead; }
@@ -33,33 +32,26 @@ public:
     bool isLookAhead() const { return _look_ahead; }
 
     /** Returns true if all items have been resolved. */
-    bool isResolved(hilti::node::CycleDetector* cd = nullptr) const {
-        for ( const auto& i : items() ) {
-            if ( ! i->isResolved(cd) )
-                return false;
-        }
-
-        return true;
-    }
+    bool isResolved(hilti::node::CycleDetector* cd = nullptr) const { return block()->isResolved(cd); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"look-ahead", _look_ahead}, {"default", isDefault()}};
         return Node::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const Expressions& exprs, const type::unit::Items& items,
+    static auto create(ASTContext* ctx, const Expressions& exprs, type::unit::item::Block* block,
                        const Meta& m = Meta()) {
-        return ctx->make<Case>(ctx, node::flatten(exprs, items), false, m);
+        return ctx->make<Case>(ctx, node::flatten(block, exprs), false, m);
     }
 
     /** Factory function for a default case. */
-    static auto create(ASTContext* ctx, const type::unit::Items& items, const Meta& m = Meta()) {
-        return ctx->make<Case>(ctx, items, false, m);
+    static auto create(ASTContext* ctx, type::unit::item::Block* block, const Meta& m = Meta()) {
+        return ctx->make<Case>(ctx, {block}, false, m);
     }
 
     /** Factory function for a look-ahead case. */
     static auto create(ASTContext* ctx, type::unit::Item* field, const Meta& m = Meta()) {
-        return ctx->make<Case>(ctx, {field}, true, m);
+        return ctx->make<Case>(ctx, {Block::create(ctx, {field}, nullptr, {}, nullptr, m)}, true, m);
     }
 
 protected:

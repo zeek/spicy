@@ -636,7 +636,11 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
             else if ( auto f = item->tryAs<spicy::type::unit::item::Switch>() ) {
                 for ( const auto& c : f->cases() )
-                    checkBits(u, c->items(), seen_bits);
+                    checkBits(u, {c->block()}, seen_bits);
+            }
+
+            else if ( auto f = item->tryAs<spicy::type::unit::item::Block>() ) {
+                checkBits(u, f->allItems(), seen_bits);
             }
         }
     }
@@ -749,6 +753,26 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             error("units cannot be compared with !=", n);
     }
 
+    // Check attributes for items containing sequence of sub-items (Block, Switch).
+    void checkAttributesForAggregateItem(spicy::type::unit::Item* n, AttributeSet* attrs) {
+        if ( ! attrs )
+            return;
+
+        for ( const auto& attr : attrs->attributes() ) {
+            const auto& tag = attr->tag();
+
+            if ( tag != "&size" && tag != "&parse-at" && tag != "&parse-from" )
+                error(fmt("attribute '%s' is not supported here", tag), n);
+        }
+    }
+
+    void operator()(spicy::type::unit::item::Block* n) final {
+        if ( n->condition() && ! n->condition()->type()->type()->isA<hilti::type::Bool>() )
+            error("block condition must be of type bool", n);
+
+        checkAttributesForAggregateItem(n, n->attributes());
+    }
+
     void operator()(spicy::type::unit::item::Field* n) final {
         const auto count_attr = n->attributes()->find("&count");
         const auto repeat = n->repeatCount();
@@ -848,7 +872,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         std::vector<spicy::type::unit::item::Field*> seen_fields;
 
         for ( const auto& c : n->cases() ) {
-            if ( c->items().empty() )
+            if ( c->block()->items().empty() )
                 error("switch case without any item", n);
 
             if ( c->isDefault() )
@@ -875,7 +899,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 seen_exprs.emplace_back(e->print());
             }
 
-            for ( const auto& i : c->items() ) {
+            for ( const auto& i : c->block()->items() ) {
                 if ( auto f = i->tryAs<spicy::type::unit::item::Field>() ) {
                     for ( const auto& x : seen_fields ) {
                         if ( f->id() == x->id() &&
@@ -896,17 +920,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( defaults > 1 )
             error("more than one default case", n);
 
-        if ( const auto& attrs = n->attributes() ) {
-            for ( const auto& attr : attrs->attributes() ) {
-                const auto& tag = attr->tag();
-
-                if ( tag != "&size" && tag != "&parse-at" && tag != "&parse-from" )
-                    error(fmt("attribute '%s' is not supported here", tag), n);
-            }
-        }
+        checkAttributesForAggregateItem(n, n->attributes());
     }
 
     void operator()(spicy::type::unit::item::Variable* n) final {
+        if ( ! n->parent()->isA<spicy::type::Unit>() )
+            error("unit variables must be declared at the top-level of a unit", n);
+
         if ( auto attrs = n->attributes() ) {
             for ( const auto& attr : attrs->attributes() ) {
                 const auto& tag = attr->tag();

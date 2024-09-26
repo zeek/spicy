@@ -37,6 +37,11 @@ struct FieldBuilder : public visitor::PreOrder {
 
     void addField(hilti::declaration::Field* f) { fields.emplace_back(f); }
 
+    void operator()(spicy::type::unit::item::Block* f) final {
+        for ( const auto& i : f->allItems() )
+            dispatch(i);
+    }
+
     void operator()(spicy::type::unit::item::Field* f) final {
         // Create struct field.
         auto attrs = builder()->attributeSet({builder()->attribute("&optional")});
@@ -93,10 +98,14 @@ struct FieldBuilder : public visitor::PreOrder {
         if ( f->cases().empty() )
             return;
 
+        // We go through all items here, instead of dispatching to the cases'
+        // blocks, so that we can weed out duplicate fields, which are ok for
+        // switch cases if they match exactly.
+
         std::set<ID> seen;
 
         for ( const auto&& [n, c] : hilti::util::enumerate(f->cases()) ) {
-            for ( const auto& i : c->items() ) {
+            for ( const auto& i : c->block()->items() ) {
                 if ( auto f = i->tryAs<spicy::type::unit::item::Field>() ) {
                     if ( seen.find(f->id()) != seen.end() )
                         // Validator ensures two fields with the same name are equivalent.

@@ -1,0 +1,22 @@
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Wrong usage of if-blocks in units.
+
+module Mini;
+
+type test = unit {
+    if ( "123" ) {     # error: not a boolean
+        a: uint32;
+    };
+};
+
+# @TEST-START-NEXT
+
+module Mini;
+
+type test = unit {
+    if ( False ) {
+        a: uint32;
+    } &convert=True; # error: attribute not allowed here, won't parse
+};

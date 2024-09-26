@@ -50,6 +50,14 @@ public:
     auto typeUnit(hilti::type::Wildcard _, Meta meta = {}) {
         return spicy::type::Unit::create(context(), _, std::move(meta));
     }
+    auto typeUnitItemBlock(const type::unit::Items& items, AttributeSet* attrs = nullptr, const Meta& m = Meta()) {
+        return spicy::type::unit::item::Block::create(context(), items, nullptr, {}, attrs, m);
+    }
+    auto typeUnitItemBlock(Expression* condition, const type::unit::Items& true_items,
+                           const type::unit::Items& false_items = {}, AttributeSet* attrs = nullptr,
+                           const Meta& m = Meta()) {
+        return spicy::type::unit::item::Block::create(context(), true_items, condition, false_items, attrs, m);
+    }
     auto typeUnitItemField(const ID& id, Ctor* ctor, bool skip, Expressions args, Expression* repeat, Expressions sinks,
                            AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks, Meta meta = {}) {
         return spicy::type::unit::item::Field::create(context(), id, ctor, skip, std::move(args), repeat,
@@ -83,13 +91,21 @@ public:
                                                        std::move(meta));
     }
     auto typeUnitItemSwitchCase(const Expressions& exprs, const type::unit::Items& items, const Meta& m = Meta()) {
-        return spicy::type::unit::item::switch_::Case::create(context(), exprs, items, m);
+        return spicy::type::unit::item::switch_::Case::create(context(), exprs,
+                                                              spicy::type::unit::item::Block::create(context(), items,
+                                                                                                     nullptr, {},
+                                                                                                     nullptr, m),
+                                                              m);
     }
     auto typeUnitItemSwitchCase(type::unit::Item* field, const Meta& m = Meta()) {
         return spicy::type::unit::item::switch_::Case::create(context(), field, m);
     }
     auto typeUnitItemSwitchCase(const type::unit::Items& items, const Meta& m = Meta()) {
-        return spicy::type::unit::item::switch_::Case::create(context(), items, m);
+        return spicy::type::unit::item::switch_::Case::create(context(),
+                                                              spicy::type::unit::item::Block::create(context(), items,
+                                                                                                     nullptr, {},
+                                                                                                     nullptr, m),
+                                                              m);
     }
     auto typeUnitItemUnitHook(const ID& id, spicy::declaration::Hook* hook, Meta meta = {}) {
         return spicy::type::unit::item::UnitHook::create(context(), id, hook, std::move(meta));

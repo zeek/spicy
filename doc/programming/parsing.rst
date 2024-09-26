@@ -1457,8 +1457,50 @@ time the field is next in line.
     :exec: printf '\01\02\03\04' | spicy-driver %INPUT; printf '\02\02\03\04' | spicy-driver %INPUT
     :show-with: foo.spicy
 
-For repeated cases of conditional parsing unit :ref:`parse_switch` statements
-might allow for more compact and easier to maintain code.
+.. versionadded:: 1.12 Conditional blocks
+
+If the same condition applies to multiple subsequent fields, they can
+be grouped together into a single conditional block:
+
+.. spicy-code:: parse-if-block.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        a: int8;
+
+        if ( self.a == 1 ) {
+            b: int8;
+            c: int8;
+        }; # note the trailing semicolon
+
+        on %done { print self; }
+    };
+
+
+The syntax supports an optional ``else``-block as well:
+
+.. spicy-code:: parse-if-block-with-else.spicy
+
+    module Test;
+
+    public type Foo = unit {
+        a: int8;
+
+        if ( self.a == 1 ) {
+            b: int8;
+        }
+        else {
+            c: int8;
+        }; # note the trailing semicolon
+
+        on %done { print self; }
+    };
+
+
+For repeated cases of conditional parsing where a single expression
+evaluates to one of several values, unit :ref:`parse_switch`
+statements might allow for more compact and easier to maintain code.
 
 .. _parse_lookahead:
 

@@ -85,8 +85,9 @@ constexpr Tag Sink = 11000;
 }
 
 namespace unit::item {
-constexpr Tag Switch = 11100;
-}
+constexpr Tag Block = 11100;
+constexpr Tag Switch = 11101;
+} // namespace unit::item
 
 namespace unit::item {
 constexpr Tag UnitHook = 11200;

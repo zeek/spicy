@@ -365,7 +365,15 @@
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
-[debug/ast-final] # [HILTI] Final AST (round 3)
+[debug/compiler] [HILTI] validating (post)
+[debug/compiler] performing global transformations
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] [HILTI] validating (post)
+[debug/compiler] finalized AST
+[debug/ast-final] # [HILTI] Final AST
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
 [debug/ast-final]       | Bar -> declaration::Module <canonical-id="Bar" declaration="D22" dependencies="Foo" ext=".hlt" fqid="Bar" id="Bar" linkage="public" path="<...>/bar.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
@@ -375,7 +383,6 @@
 [debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo1 -> declaration::Type <canonical-id="Foo::Foo1" declaration="D1" fqid="Foo::Foo1" id="Foo1" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo2 -> declaration::Type <canonical-id="Foo::Foo2" declaration="-" fqid="Foo::Foo2" id="Foo2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | foo -> declaration::Function <canonical-id="Foo::foo_2" declaration="-" fqid="Foo::foo" id="foo" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (foo.hlt:2:1-11:1) [@s:XXX]
 [debug/ast-final]       - declaration::ImportedModule <canonical-id="Foo::Bar" declaration="-" dirs="" ext=".hlt" fqid="Foo::Bar" id="Bar" linkage="private" path="" scope="<n/a>" uid="Bar"> [parent @d:XXX] (foo.hlt:4:1-4:11) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="Foo::Foo1" declaration="D1" fqid="Foo::Foo1" id="Foo1" linkage="public"> [parent @d:XXX] (foo.hlt:6:1-6:24) [@d:XXX]
@@ -386,26 +393,7 @@
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (foo.hlt:7:20-7:28) [@q:XXX]
 [debug/ast-final]           - type::Name <builtin="false" declaration="-" id="Bar::Bar1" resolved-type="T17" type="-" unified="string" wildcard="false"> [parent @q:XXX] (foo.hlt:7:20-7:28) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (foo.hlt:7:29-7:28) [@a:XXX]
-[debug/ast-final]       - declaration::Function <canonical-id="Foo::foo_2" declaration="-" fqid="Foo::foo" id="foo" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (foo.hlt:9:1-9:44) [@d:XXX]
-[debug/ast-final]           | bar -> declaration::Parameter <canonical-id="Foo::bar" declaration="-" fqid="bar" id="bar" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]           | foo -> declaration::Parameter <canonical-id="Foo::foo" declaration="-" fqid="foo" id="foo" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]         - Function <cc="<standard>" id="foo"> [parent @d:XXX] (foo.hlt:9:9-9:43) [@f:XXX]
-[debug/ast-final]           - QualifiedType <const="true" side="rhs"> [parent @f:XXX] (foo.hlt:9:9-9:43) [@q:XXX]
-[debug/ast-final]             - type::Function <declaration="-" flavor="standard" type="-" unified="function(result:string, bool, string)" wildcard="false"> [parent @q:XXX] (foo.hlt:9:9-9:43) (resolved) [@t:XXX]
-[debug/ast-final]               - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (foo.hlt:9:9-9:14) [@q:XXX]
-[debug/ast-final]                 - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (foo.hlt:9:9-9:14) (resolved) [@t:XXX]
-[debug/ast-final]               - declaration::Parameter <canonical-id="Foo::foo" declaration="-" fqid="foo" id="foo" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (foo.hlt:9:20-9:27) (resolved) [@d:XXX]
-[debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @d:XXX] (foo.hlt:9:20-9:23) [@q:XXX]
-[debug/ast-final]                   - type::Name <builtin="false" declaration="-" id="Foo1" resolved-type="T11" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (foo.hlt:9:20-9:23) (resolved) [@t:XXX]
-[debug/ast-final]                 - <empty>
-[debug/ast-final]                 - AttributeSet [parent @d:XXX] (foo.hlt:9:28-9:27) [@a:XXX]
-[debug/ast-final]               - declaration::Parameter <canonical-id="Foo::bar" declaration="-" fqid="bar" id="bar" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (foo.hlt:9:30-9:42) (resolved) [@d:XXX]
-[debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @d:XXX] (foo.hlt:9:30-9:38) [@q:XXX]
-[debug/ast-final]                   - type::Name <builtin="false" declaration="-" id="Bar::Bar1" resolved-type="T17" type="-" unified="string" wildcard="false"> [parent @q:XXX] (foo.hlt:9:30-9:38) (resolved) [@t:XXX]
-[debug/ast-final]                 - <empty>
-[debug/ast-final]                 - AttributeSet [parent @d:XXX] (foo.hlt:9:43-9:42) [@a:XXX]
-[debug/ast-final]           - <empty>
-[debug/ast-final]           - AttributeSet [parent @f:XXX] (foo.hlt:9:44-9:43) [@a:XXX]
+[debug/ast-final]       - <empty>
 [debug/ast-final]     - declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (hilti.hlt:3:1-68:1) [@d:XXX]
 [debug/ast-final]         | AddressFamily -> declaration::Type <canonical-id="hilti::AddressFamily" declaration="D6" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | BitOrder -> declaration::Type <canonical-id="hilti::BitOrder" declaration="D3" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
@@ -1296,7 +1284,6 @@
 [debug/ast-final]         | Bar1 -> declaration::Type <canonical-id="Bar::Bar1" declaration="D21" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Bar2 -> declaration::Type <canonical-id="Bar::Bar2" declaration="-" fqid="Bar::Bar2" id="Bar2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | bar -> declaration::Function <canonical-id="Bar::bar_2" declaration="-" fqid="Bar::bar" id="bar" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (bar.hlt:2:1-11:1) [@s:XXX]
 [debug/ast-final]       - declaration::ImportedModule <canonical-id="Bar::Foo" declaration="-" dirs="" ext=".hlt" fqid="Bar::Foo" id="Foo" linkage="private" path="" scope="<n/a>" uid="Foo"> [parent @d:XXX] (bar.hlt:4:1-4:11) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="Bar::Bar1" declaration="D21" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] (bar.hlt:6:1-6:26) [@d:XXX]
@@ -1307,26 +1294,7 @@
 [debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (bar.hlt:7:20-7:28) [@q:XXX]
 [debug/ast-final]           - type::Name <builtin="false" declaration="-" id="Foo::Foo1" resolved-type="T11" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (bar.hlt:7:20-7:28) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (bar.hlt:7:29-7:28) [@a:XXX]
-[debug/ast-final]       - declaration::Function <canonical-id="Bar::bar_2" declaration="-" fqid="Bar::bar" id="bar" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (bar.hlt:9:1-9:44) [@d:XXX]
-[debug/ast-final]           | bar -> declaration::Parameter <canonical-id="Bar::bar" declaration="-" fqid="bar" id="bar" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]           | foo -> declaration::Parameter <canonical-id="Bar::foo" declaration="-" fqid="foo" id="foo" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]         - Function <cc="<standard>" id="bar"> [parent @d:XXX] (bar.hlt:9:9-9:43) [@f:XXX]
-[debug/ast-final]           - QualifiedType <const="true" side="rhs"> [parent @f:XXX] (bar.hlt:9:9-9:43) [@q:XXX]
-[debug/ast-final]             - type::Function <declaration="-" flavor="standard" type="-" unified="function(result:string, string, bool)" wildcard="false"> [parent @q:XXX] (bar.hlt:9:9-9:43) (resolved) [@t:XXX]
-[debug/ast-final]               - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (bar.hlt:9:9-9:14) [@q:XXX]
-[debug/ast-final]                 - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (bar.hlt:9:9-9:14) (resolved) [@t:XXX]
-[debug/ast-final]               - declaration::Parameter <canonical-id="Bar::bar" declaration="-" fqid="bar" id="bar" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (bar.hlt:9:20-9:27) (resolved) [@d:XXX]
-[debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @d:XXX] (bar.hlt:9:20-9:23) [@q:XXX]
-[debug/ast-final]                   - type::Name <builtin="false" declaration="-" id="Bar1" resolved-type="T17" type="-" unified="string" wildcard="false"> [parent @q:XXX] (bar.hlt:9:20-9:23) (resolved) [@t:XXX]
-[debug/ast-final]                 - <empty>
-[debug/ast-final]                 - AttributeSet [parent @d:XXX] (bar.hlt:9:28-9:27) [@a:XXX]
-[debug/ast-final]               - declaration::Parameter <canonical-id="Bar::foo" declaration="-" fqid="foo" id="foo" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (bar.hlt:9:30-9:42) (resolved) [@d:XXX]
-[debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @d:XXX] (bar.hlt:9:30-9:38) [@q:XXX]
-[debug/ast-final]                   - type::Name <builtin="false" declaration="-" id="Foo::Foo1" resolved-type="T11" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (bar.hlt:9:30-9:38) (resolved) [@t:XXX]
-[debug/ast-final]                 - <empty>
-[debug/ast-final]                 - AttributeSet [parent @d:XXX] (bar.hlt:9:43-9:42) [@a:XXX]
-[debug/ast-final]           - <empty>
-[debug/ast-final]           - AttributeSet [parent @f:XXX] (bar.hlt:9:44-9:43) [@a:XXX]
+[debug/ast-final]       - <empty>
 [debug/ast-final] # State tables:
 [debug/ast-final]   [D1] Foo::Foo1 [declaration::Type] (foo.hlt:6:1-6:24)
 [debug/ast-final]   [D2] Foo [declaration::Module] (foo.hlt:2:1-11:1)
@@ -1369,10 +1337,6 @@
 [debug/ast-final]   [T15] hilti::SystemException [type::Exception] (hilti.hlt:49:31-49:53)
 [debug/ast-final]   [T16] hilti::RecoverableFailure [type::Exception] (hilti.hlt:56:34-56:56)
 [debug/ast-final]   [T17] Bar::Bar1 [type::String] (bar.hlt:6:20-6:25)
-[debug/compiler]   finalized AST
-[debug/compiler] [HILTI] validating (post)
-[debug/compiler] performing global transformations
-[debug/compiler] [HILTI] validating (post)
 [debug/compiler] computing AST dependencies
 [debug/driver] codegen for input unit Foo
 [debug/compiler] codegen module Foo to C++

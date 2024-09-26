@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT 2>output
+# @TEST-EXEC:      btest-diff output
+
+module Mini;
+
+import spicy;
+
+public type Test = unit {
+    if ( True ) {
+        var x: bytes;
+    };
+};
