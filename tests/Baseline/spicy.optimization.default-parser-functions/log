@@ -174,6 +174,15 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@P2%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Ternary "False ? (*self).__filters : Null" -> expression::Ctor "Null"
 [debug/optimizer] [<no location>] expression::Ternary "False ? (*self).__filters : Null" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
@@ -264,6 +273,8 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__P1_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { throw; }" -> replacing rethrowing try/catch with just the block
+[debug/optimizer] [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__P1_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__P1_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }"
 [debug/optimizer] [default-parser-functions.spicy:10:1-21:2] declaration::Constant "const bool __feat%foo@@P0%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::P0' since it is not used
 [debug/optimizer] [default-parser-functions.spicy:10:1-21:2] declaration::Constant "const bool __feat%foo@@P0%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::P0' since it is not used
 [debug/optimizer] [default-parser-functions.spicy:10:1-21:2] declaration::Constant "const bool __feat%foo@@P0%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::P0' since it is not used
@@ -330,6 +341,11 @@
 [debug/optimizer] [default-parser-functions.spicy:14:18-14:24] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [default-parser-functions.spicy:14:18-14:24] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [default-parser-functions.spicy:14:18-14:24] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer] [default-parser-functions.spicy:14:18-14:24] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] [default-parser-functions.spicy:14:18-14:24] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] [default-parser-functions.spicy:14:18-14:24] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] [default-parser-functions.spicy:14:18-14:24] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] [default-parser-functions.spicy:14:18-14:24] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] declaration::Field "hook optional<string> __str__();" -> null
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] declaration::Field "hook void __on_0x25_done();" -> null
@@ -349,8 +365,13 @@
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer] [default-parser-functions.spicy:16:18-21:1] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] [default-parser-functions.spicy:16:18-21:1] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] [default-parser-functions.spicy:16:18-21:1] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] [default-parser-functions.spicy:16:18-21:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [default-parser-functions.spicy:17:5-17:13] declaration::Field "hook void __on_x(uint<8> __dd);" -> null
 [debug/optimizer] [default-parser-functions.spicy:17:5-17:13] operator_::struct_::MemberCall "(*self).__on_x((*self).x)" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer] [default-parser-functions.spicy:17:5-17:13] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [spicy_rt.hlt:28:5-28:76] declaration::Field "method void connect_mime_type(string mime_type, string scope) &internal;" -> null (removing unused member)
 [debug/optimizer] [spicy_rt.hlt:29:5-29:75] declaration::Field "method void connect_mime_type(bytes mime_type, string scope) &internal;" -> null (removing unused member)
 [debug/optimizer] removing field for unused method foo::P0::__on_0x25_confirmed

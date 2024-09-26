@@ -41,11 +41,12 @@ public:
     hilti::Result<hilti::Nothing> run(type::Unit* unit);
 
     /**
-     * Returns the grammar for a unit type. The type must have been computed
-     * through `run()` already, otherwise this will abort That's generally
-     * done for all AST unit types at the beginning of code generation.
+     * Returns the grammar for a unit type. The type's grammar must have been
+     * computed through `run()` already, which is generally done for all AST
+     * unit types at the beginning of code generation. If the grammar hasn't
+     * been computed yet, this will return null.
      */
-    const Grammar& grammar(const type::Unit& unit);
+    const Grammar* grammar(const type::Unit& unit);
 
 private:
     CodeGen* _cg;

@@ -457,6 +457,27 @@ public:
     }
 
     /**
+     * Returns the subsequent sibling of given child node. This skips over null
+     * children.
+     *
+     * @param n child whose sibling to return
+     * @return sibling of *n*, or null if *n* is the last child or not child at all
+     **/
+    Node* sibling(Node* n) const {
+        auto i = std::find(_children.begin(), _children.end(), n);
+        if ( i == _children.end() )
+            return nullptr;
+
+        while ( true ) {
+            if ( ++i == _children.end() )
+                return nullptr;
+
+            if ( *i )
+                return *i;
+        }
+    }
+
+    /**
      * Adds a child node. The node will be appended to the end of the current
      * list of children, and its parent will be set to the current node. If the
      * node already has a parent, it will be deep-copied first, and the new

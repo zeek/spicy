@@ -49,7 +49,6 @@ inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
 ParserState::ParserState(Builder* builder, type::Unit* unit, const Grammar& grammar, Expression* data, Expression* cur)
     : unit(unit),
       unit_id(unit->typeID()),
-      needs_look_ahead(grammar.needsLookAhead()),
       self(builder->expressionName(ID("self"))),
       data(data),
       begin(builder->begin(cur)),
@@ -581,7 +580,7 @@ struct ProductionVisitor : public production::Visitor {
 
         builder()->setLocation(p->location());
 
-        std::optional<Expression*> pre_container_offset;
+        Expression* pre_container_offset = nullptr;
         std::optional<PathTracker> path_tracker;
         Expression* profiler = nullptr;
 
@@ -594,53 +593,74 @@ struct ProductionVisitor : public production::Visitor {
 
         beginProduction(*p);
 
-        if ( const auto& x = p->tryAs<production::Enclosure>() )
-            // Recurse.
-            parseProduction(*x->child());
+        bool use_full_field_parsing = true;
 
-        else if ( p->isAtomic() )
-            // dispatch() will write value to current destination.
-            dispatch(p);
-
-        else if ( auto unit = p->tryAs<production::Unit>(); unit && ! top_level ) {
-            // Parsing a different unit type. We call the other unit's parse
-            // function, but don't have to create it here.
-            Expressions args = {pb->state().data,   pb->state().begin,      pb->state().cur,  pb->state().trim,
-                                pb->state().lahead, pb->state().lahead_end, pb->state().error};
-
-            Location location;
-            Expressions type_args;
-
-            if ( meta.field() ) {
-                location = meta.field()->location();
-                type_args = meta.field()->arguments();
-            }
-
-            if ( meta.field() ) {
-                Expression* default_ =
-                    builder()->default_(builder()->typeName(unit->unitType()->typeID()), type_args, location);
-                builder()->addAssign(destination(), default_);
-            }
-
-            auto call = builder()->memberCall(destination(), "__parse_stage1", args);
-            builder()->addAssign(builder()->tuple(
-                                     {pb->state().cur, pb->state().lahead, pb->state().lahead_end, pb->state().error}),
-                                 call);
+        if ( is_field_owner && p->tryAs<production::Variable>() ) {
+            // Try optimized field parsing first. If this works, we can skip
+            // the full machinery below.
+            if ( pb->parseType(p->type()->type(), p->meta(), destination(), TypesMode::Optimize) )
+                use_full_field_parsing = false; // parsed through optimized means
         }
 
-        else if ( p->isA<production::Block>() )
-            // No need to build this a full non-atomic production.
-            dispatch(p);
+        Expression* ncur = nullptr;
+        Expression* ncur_max_size = nullptr;
 
-        else if ( unit )
-            parseNonAtomicProduction(*p, unit->unitType());
-        else
-            parseNonAtomicProduction(*p, {});
+        if ( use_full_field_parsing ) {
+            if ( is_field_owner )
+                initFullFieldParsing(field);
+
+            if ( const auto& x = p->tryAs<production::Enclosure>() )
+                // Recurse.
+                parseProduction(*x->child());
+
+            else if ( p->isAtomic() )
+                // dispatch() will write value to current destination.
+                dispatch(p);
+
+            else if ( auto unit = p->tryAs<production::Unit>(); unit && ! top_level ) {
+                // Parsing a different unit type. We call the other unit's parse
+                // function, but don't have to create it here.
+                Expressions args = {pb->state().data,   pb->state().begin,      pb->state().cur,  pb->state().trim,
+                                    pb->state().lahead, pb->state().lahead_end, pb->state().error};
+
+                Location location;
+                Expressions type_args;
+
+                if ( meta.field() ) {
+                    location = meta.field()->location();
+                    type_args = meta.field()->arguments();
+                }
+
+                if ( meta.field() ) {
+                    Expression* default_ =
+                        builder()->default_(builder()->typeName(unit->unitType()->typeID()), type_args, location);
+                    builder()->addAssign(destination(), default_);
+                }
+
+                auto call = builder()->memberCall(destination(), "__parse_stage1", args);
+                builder()->addAssign(builder()->tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end,
+                                                       pb->state().error}),
+                                     call);
+            }
+
+            else if ( p->isA<production::Block>() )
+                // No need to build this a full non-atomic production.
+                dispatch(p);
+
+            else if ( unit )
+                parseNonAtomicProduction(*p, unit->unitType());
+
+            else
+                parseNonAtomicProduction(*p, {});
+
+            if ( is_field_owner )
+                std::tie(ncur, ncur_max_size) = finishFullFieldParsing(field);
+        }
 
         endProduction(*p);
 
         if ( is_field_owner ) {
-            postParseField(*p, meta, pre_container_offset);
+            postParseField(*p, meta, pre_container_offset, ncur, ncur_max_size);
 
             if ( profiler ) {
                 auto offset = builder()->memberCall(state().cur, "offset");
@@ -661,10 +681,8 @@ struct ProductionVisitor : public production::Visitor {
 
         else if ( ! meta.isFieldProduction() ) {
             // Need to move position ahead.
-            if ( state().ncur ) {
-                builder()->addAssign(state().cur, *state().ncur);
-                state().ncur = {};
-            }
+            if ( state().ncur )
+                builder()->addAssign(state().cur, state().ncur);
 
             popDestination();
         }
@@ -687,7 +705,7 @@ struct ProductionVisitor : public production::Visitor {
         return stop;
     }
 
-    std::optional<Expression*> preParseField(const Production& /* i */, const production::Meta& meta) {
+    Expression* preParseField(const Production& /* i */, const production::Meta& meta) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
@@ -696,7 +714,7 @@ struct ProductionVisitor : public production::Visitor {
         // If the field holds a container we expect to see the offset of the field, not the individual container
         // elements inside e.g., this unit's fields hooks. Store the value before parsing of a container starts so we
         // can restore it later.
-        std::optional<Expression*> pre_container_offset;
+        Expression* pre_container_offset = nullptr;
         if ( field && field->isContainer() )
             pre_container_offset =
                 builder()->addTmp("pre_container_offset",
@@ -737,34 +755,6 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto a = field->attributes()->find("&parse-at") )
             redirectInputToStreamPosition(*a->valueAsExpression());
 
-        // `&size` and `&max-size` share the same underlying infrastructure
-        // so try to extract both of them and compute the ultimate value.
-        std::optional<Expression*> length;
-        // Only at most one of `&max-size` and `&size` will be set.
-        assert(! (field->attributes()->find("&size") && field->attributes()->find("&max-size")));
-        if ( auto a = field->attributes()->find("&size") )
-            length = *a->valueAsExpression();
-        if ( auto a = field->attributes()->find("&max-size") )
-            // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
-                                       builder()->sum(*a->valueAsExpression(), builder()->integer(1U)));
-
-        if ( length ) {
-            // Limit input to the specified length.
-            auto limited = builder()->addTmp("limited_", builder()->memberCall(state().cur, "limit", {*length}));
-
-            // Establish limited view, remembering position to continue at.
-            auto pstate = state();
-            pstate.cur = limited;
-            pstate.ncur = builder()->addTmp("ncur", builder()->memberCall(state().cur, "advance", {*length}));
-            pushState(std::move(pstate));
-        }
-        else {
-            auto pstate = state();
-            pstate.ncur = {};
-            pushState(std::move(pstate));
-        }
-
         if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
             auto __offsets = builder()->member(state().self, "__offsets");
             auto cur_offset = builder()->memberCall(state().cur, "offset");
@@ -788,21 +778,89 @@ struct ProductionVisitor : public production::Visitor {
         return pre_container_offset;
     }
 
-    void postParseField(const Production& p, const production::Meta& meta,
-                        const std::optional<Expression*>& pre_container_offset) {
+    // Sets up parsing infrastructure for non-optimized fields.
+    void initFullFieldParsing(type::unit::item::Field* field) {
+        // `&size` and `&max-size` share the same underlying infrastructure
+        // so try to extract both of them and compute the ultimate value.
+        Expression* length = nullptr;
+        // Only at most one of `&max-size` and `&size` will be set.
+        assert(! (field->attributes()->find("&size") && field->attributes()->find("&max-size")));
+        if ( auto a = field->attributes()->find("&size") )
+            length = *a->valueAsExpression();
+        if ( auto a = field->attributes()->find("&max-size") )
+            // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
+            length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
+                                       builder()->sum(*a->valueAsExpression(), builder()->integer(1U)));
+
+        if ( length ) {
+            // Limit input to the specified length.
+            auto limited = builder()->addTmp("limited_", builder()->memberCall(state().cur, "limit", {length}));
+
+            // Establish limited view, remembering position to continue at.
+            auto pstate = state();
+            pstate.cur = limited;
+            pstate.ncur = builder()->addTmp("ncur", builder()->memberCall(state().cur, "advance", {length}));
+            pushState(std::move(pstate));
+        }
+        else {
+            auto pstate = state();
+            pstate.ncur = {};
+            pushState(std::move(pstate));
+        }
+    }
+
+    // Tears down parsing infrastructure for non-optimized fields.
+    //
+    // Returns two expressions:
+    // 1. `cur` from the state that was current when calling the method.
+    // 2. `ncur_max_size` if we're parsing with `&max-size`, which in that case
+    // is the position in the limited view we ended parsing to; this will be
+    // used to compute how much data we consumed from the original view.
+    std::pair<Expression*, Expression*> finishFullFieldParsing(type::unit::item::Field* field) {
+        std::pair<Expression*, Expression*> result = {state().ncur, {}};
+
+        if ( auto a = field->attributes()->find("&max-size") ) {
+            assert(state().ncur);
+            // Check that we did not read into the sentinel byte.
+            auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
+                                                builder()->memberCall(state().ncur, "offset"));
+            auto exceeded = builder()->addIf(cond);
+            pushBuilder(exceeded, [&]() {
+                // We didn't finish parsing the data, which is an error.
+                if ( ! field->isAnonymous() && ! field->isSkip() )
+                    // Clear the field in case the type parsing has started to fill it.
+                    builder()->addExpression(builder()->unset(state().self, field->id()));
+
+                pb->parseError("parsing not done within &max-size bytes", a->meta());
+            });
+
+            result.second = state().cur;
+        }
+
+        else if ( auto a = field->attributes()->find("&size"); a && ! field->attributes()->find("&eod") ) {
+            assert(state().ncur);
+            _checkSizeAmount(a, state().ncur, field);
+        }
+
+        popState(); // from &size (pushed even if absent)
+        return result;
+    }
+
+    void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset,
+                        Expression* ncur, Expression* ncur_max_size) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
         // If the field holds a container we expect to see the offset of the field, not the individual container
         // elements inside e.g., this unit's fields hooks. Temporarily restore the previously stored offset.
-        std::optional<Expression*> prev;
+        Expression* prev = nullptr;
         if ( pre_container_offset ) {
             prev = builder()->addTmp("prev", builder()->ternary(pb->featureConstant(state().unit, "uses_offset"),
                                                                 builder()->member(state().self, "__offset"),
                                                                 builder()->integer(0)));
 
             pb->guardFeatureCode(state().unit, {"uses_offset"}, [&]() {
-                builder()->addAssign(builder()->member(state().self, "__offset"), *pre_container_offset);
+                builder()->addAssign(builder()->member(state().self, "__offset"), pre_container_offset);
             });
         }
 
@@ -820,35 +878,6 @@ struct ProductionVisitor : public production::Visitor {
                                  builder()->tuple({builder()->index(builder()->deref(offsets), 0), cur_offset}));
         }
 
-        auto ncur = state().ncur;
-        state().ncur = {};
-
-        // Expression tracking `ncur` in case we operate on a limited view from `&max-size` parsing.
-        // This differs from `&size` parsing in that we do not need to consume the full limited view.
-        Expression* ncur_max_size = nullptr;
-
-        if ( auto a = field->attributes()->find("&max-size") ) {
-            // Check that we did not read into the sentinel byte.
-            auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
-                                                builder()->memberCall(*ncur, "offset"));
-            auto exceeded = builder()->addIf(cond);
-            pushBuilder(exceeded, [&]() {
-                // We didn't finish parsing the data, which is an error.
-                if ( ! field->isAnonymous() && ! field->isSkip() )
-                    // Clear the field in case the type parsing has started to fill it.
-                    builder()->addExpression(builder()->unset(state().self, field->id()));
-
-                pb->parseError("parsing not done within &max-size bytes", a->meta());
-            });
-
-            // For `&max-size` store away the position into the limited view we ended up parsing to.
-            // This is used below to compute how much data we consumed from the original view.
-            ncur_max_size = state().cur;
-        }
-
-        else if ( auto a = field->attributes()->find("&size"); a && ! field->attributes()->find("&eod") )
-            _checkSizeAmount(a, *ncur, field);
-
         auto val = destination();
 
         if ( field->convertExpression() ) {
@@ -858,8 +887,6 @@ struct ProductionVisitor : public production::Visitor {
             pb->applyConvertExpression(*field, val, destination());
         }
 
-        popState(); // From &size (pushed even if absent).
-
         if ( field->attributes()->find("&parse-from") || field->attributes()->find("&parse-at") ) {
             ncur = {};
             popState();
@@ -868,15 +895,15 @@ struct ProductionVisitor : public production::Visitor {
 
         else if ( ncur_max_size )
             // Compute how far to advance for `&max-size` parsing where we operate on a limited view, but do not
-            // necessarily consume it fully. Since `cur` and `ncur_max_size` point to different views we need compute
-            // the difference in offset; this is safe since the limited view is into the original stream `cur` points
-            // to.
+            // necessarily consume it fully. Since `cur` and `ncur_max_size` point to different views we need
+            // compute the difference in offset; this is safe since the limited view is into the original stream
+            // `cur` points to.
             ncur = builder()->memberCall(state().cur, "advance",
                                          {builder()->difference(builder()->memberCall(ncur_max_size, "offset"),
                                                                 builder()->memberCall(state().cur, "offset"))});
 
         if ( ncur )
-            builder()->addAssign(state().cur, *ncur);
+            builder()->addAssign(state().cur, ncur);
 
         if ( ! meta.container() ) {
             if ( pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
@@ -888,7 +915,7 @@ struct ProductionVisitor : public production::Visitor {
 
         if ( prev )
             pb->guardFeatureCode(state().unit, {"uses_offset"},
-                                 [&]() { builder()->addAssign(builder()->member(state().self, "__offset"), *prev); });
+                                 [&]() { builder()->addAssign(builder()->member(state().self, "__offset"), prev); });
 
         if ( field->condition() )
             popBuilder();
@@ -1744,35 +1771,30 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto a = p->unitType()->attributes()->find("&max-size") ) {
             // Check that we did not read into the sentinel byte.
             auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
-                                                builder()->memberCall(*state().ncur, "offset"));
+                                                builder()->memberCall(state().ncur, "offset"));
             auto exceeded = builder()->addIf(cond);
             pushBuilder(exceeded, [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
 
             // Restore parser state.
             auto ncur = state().ncur;
             popState();
-            builder()->addAssign(state().cur, *ncur);
+            builder()->addAssign(state().cur, ncur);
         }
 
         else if ( auto a = p->unitType()->attributes()->find("&size");
                   a && ! p->unitType()->attributes()->find("&eod") ) {
             auto ncur = state().ncur;
-            _checkSizeAmount(a, *ncur);
+            _checkSizeAmount(a, ncur);
             popState();
-            builder()->addAssign(state().cur, *ncur);
+            builder()->addAssign(state().cur, ncur);
         }
 
         popState();
     }
 
-    void operator()(const production::Ctor* p) final {
-        pb->parseLiteral(*p, destination());
-        pb->trimInput();
-    }
+    void operator()(const production::Ctor* p) final { pb->parseLiteral(*p, destination()); }
 
     auto parseLookAhead(const production::LookAhead& p) {
-        assert(state().needs_look_ahead);
-
         if ( auto c = p.condition() )
             pushBuilder(builder()->addIf(c));
 
@@ -1924,7 +1946,9 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
-    void operator()(const production::Variable* p) final { pb->parseType(p->type()->type(), p->meta(), destination()); }
+    void operator()(const production::Variable* p) final {
+        pb->parseType(p->type()->type(), p->meta(), destination(), TypesMode::Default);
+    }
 
     void operator()(const production::While* p) final {
         if ( p->expression() )
@@ -2150,6 +2174,16 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     }
 
     if ( ! declare_only ) {
+        const auto* grammar = cg()->grammarBuilder()->grammar(*t);
+        if ( ! grammar ) {
+            // not computed, presumably due to an earlier error
+            HILTI_DEBUG(spicy::logging::debug::ParserBuilder,
+                        fmt("no grammar available for %s, skipping parser generation", t->canonicalID()));
+            return;
+        }
+
+        auto visitor = ProductionVisitor(this, *grammar);
+
         // Helper to initialize a unit's __context attribute. We use
         // a parse functions "context" argument if that was provided,
         // and otherwise create a default instanc of the unit's context type.
@@ -2170,15 +2204,12 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("creating parser for %s", t->canonicalID()));
         hilti::logging::DebugPushIndent _(spicy::logging::debug::ParserBuilder);
 
-        const auto& grammar = cg()->grammarBuilder()->grammar(*t);
-        auto visitor = ProductionVisitor(this, grammar);
-
         const auto& parameters = t->parameters();
         // Only create `parse1` and `parse3` body if the unit can be default constructed.
         if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p->default_(); }) ) {
             // Create parse1() body.
             pushBuilder();
-            builder()->setLocation(grammar.root()->location());
+            builder()->setLocation(grammar->root()->location());
             builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
@@ -2202,7 +2233,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             init_context();
 
-            auto pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+            auto pstate = ParserState(builder(), t, *grammar, builder()->id("__data"), builder()->id("__cur"));
             pstate.self = builder()->id("__unit");
             pstate.begin = builder()->begin(builder()->id("__ncur"));
             pstate.cur = builder()->id("__ncur");
@@ -2212,7 +2243,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             pstate.error = builder()->id("__error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
-            visitor.parseProduction(*grammar.root(), true);
+            visitor.parseProduction(*grammar->root(), true);
 
             // Check if the unit never left trial mode.
             pushBuilder(builder()->addIf(state().error), [&]() {
@@ -2230,7 +2261,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             // Create parse3() body.
             pushBuilder();
-            builder()->setLocation(grammar.root()->location());
+            builder()->setLocation(grammar->root()->location());
             builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
@@ -2257,7 +2288,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             init_context();
 
-            pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+            pstate = ParserState(builder(), t, *grammar, builder()->id("__data"), builder()->id("__cur"));
             pstate.self = builder()->id("__unit");
             pstate.begin = builder()->begin(builder()->id("__ncur"));
             pstate.cur = builder()->id("__ncur");
@@ -2267,7 +2298,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             pstate.error = builder()->id("__error");
             pushState(pstate);
             visitor.pushDestination(pstate.self);
-            visitor.parseProduction(*grammar.root(), true);
+            visitor.parseProduction(*grammar->root(), true);
 
             // Check if the unit never left trial mode.
             pushBuilder(builder()->addIf(state().error), [&]() {
@@ -2287,7 +2318,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
         // Create parse2() body.
         pushBuilder();
-        builder()->setLocation(grammar.root()->location());
+        builder()->setLocation(grammar->root()->location());
         builder()->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable),
                             builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),
                                                builder()->cast(builder()->deref(builder()->id("__data")),
@@ -2302,7 +2333,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
         init_context();
 
-        auto pstate = ParserState(builder(), t, grammar, builder()->id("__data"), builder()->id("__cur"));
+        auto pstate = ParserState(builder(), t, *grammar, builder()->id("__data"), builder()->id("__cur"));
         pstate.self = builder()->id("__unit");
         pstate.begin = builder()->begin(builder()->id("__ncur"));
         pstate.cur = builder()->id("__ncur");
@@ -2312,7 +2343,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
         pstate.error = builder()->id("__error");
         pushState(pstate);
         visitor.pushDestination(pstate.self);
-        visitor.parseProduction(*grammar.root(), true);
+        visitor.parseProduction(*grammar->root(), true);
 
         // Check if the unit never left trial mode.
         pushBuilder(builder()->addIf(state().error), [&]() {
@@ -2420,7 +2451,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
 
         if ( field->originalType()->type()->isA<hilti::type::RegExp>() && ! field->isContainer() ) {
             if ( state().captures )
-                args.push_back(*state().captures);
+                args.push_back(state().captures);
             else
                 args.push_back(builder()->default_(builder()->typeName("hilti::Captures")));
         }
@@ -2490,7 +2521,7 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field& field
 }
 
 Expression* ParserBuilder::applyConvertExpression(const type::unit::item::Field& field, Expression* value,
-                                                  std::optional<Expression*> dst) {
+                                                  Expression* dst) {
     auto convert = field.convertExpression();
     if ( ! convert )
         return value;
@@ -2503,13 +2534,13 @@ Expression* ParserBuilder::applyConvertExpression(const type::unit::item::Field&
         if ( ! field.isSkip() )
             block->addLocal(ID("__dd"), field.ddType(), value);
 
-        block->addAssign(*dst, convert->first);
+        block->addAssign(dst, convert->first);
     }
     else
         // Unit got its own __convert() method for us to call.
-        builder()->addAssign(*dst, builder()->memberCall(value, "__convert"));
+        builder()->addAssign(dst, builder()->memberCall(value, "__convert"));
 
-    return *dst;
+    return dst;
 }
 
 void ParserBuilder::trimInput(bool force) {
@@ -2574,8 +2605,8 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     });
 }
 
-Expression* ParserBuilder::_filters(const ParserState& state) {
-    // Since used of a unit's `_filters` member triggers a requirement for
+Expression* ParserBuilder::currentFilters(const ParserState& state) {
+    // Since use of a unit's `_filters` member triggers a requirement for
     // filter support, guard access to it behind a feature flag. This allows us
     // to decide with user-written code whether we actually want to enable
     // filter support.
@@ -2591,30 +2622,49 @@ Expression* ParserBuilder::_filters(const ParserState& state) {
                                                            hilti::Constness::Mutable)));
 }
 
+hilti::Attributes ParserBuilder::removeGenericParseAttributes(hilti::AttributeSet* attrs) {
+    // List of generic attributes. This isn't perfect because we actually don't
+    // really have a well-defined list of attributes that are clearly generic
+    // vs field-specific. So this best-effort weeding out attributes that
+    // field-specific code usually doesn't need to care about.
+    static std::unordered_set<std::string_view> generic_attributes = {
+        "&convert",    "&default",  "&eod",  "&max-size",    "&optional", "&parse-at",
+        "&parse-from", "&requires", "&size", "&synchronize", "&try",
+    };
+
+    hilti::Attributes filtered;
+    for ( auto a : attrs->attributes() ) {
+        if ( ! generic_attributes.count(a->tag()) )
+            filtered.emplace_back(a);
+    }
+
+    return filtered;
+}
+
 Expression* ParserBuilder::waitForInputOrEod() {
-    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, _filters(state())});
+    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, currentFilters(state())});
 }
 
 Expression* ParserBuilder::atEod() {
-    return builder()->call("spicy_rt::atEod", {state().data, state().cur, _filters(state())});
+    return builder()->call("spicy_rt::atEod", {state().data, state().cur, currentFilters(state())});
 }
 
 void ParserBuilder::waitForInput(std::string_view error_msg, const Meta& location) {
     builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, builder()->stringLiteral(error_msg),
-                                                  builder()->expression(location), _filters(state())});
+                                                  builder()->expression(location), currentFilters(state())});
 }
 
 Expression* ParserBuilder::waitForInputOrEod(Expression* min) {
-    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, min, _filters(state())});
+    return builder()->call("spicy_rt::waitForInputOrEod", {state().data, state().cur, min, currentFilters(state())});
 }
 
 void ParserBuilder::waitForInput(Expression* min, std::string_view error_msg, const Meta& location) {
     builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, min, builder()->stringLiteral(error_msg),
-                                                  builder()->expression(location), _filters(state())});
+                                                  builder()->expression(location), currentFilters(state())});
 }
 
 void ParserBuilder::waitForEod() {
-    builder()->addCall("spicy_rt::waitForEod", {state().data, state().cur, _filters(state())});
+    builder()->addCall("spicy_rt::waitForEod", {state().data, state().cur, currentFilters(state())});
 }
 
 void ParserBuilder::parseError(Expression* error_msg, const Meta& meta) {
@@ -2714,7 +2764,7 @@ void ParserBuilder::afterHook() {
         auto ncur = builder()->memberCall(state().cur, "advance", {builder()->deref(position_update)});
 
         if ( state().ncur )
-            advance->addAssign(*state().ncur, ncur);
+            advance->addAssign(state().ncur, ncur);
         else
             advance->addAssign(state().cur, ncur);
 

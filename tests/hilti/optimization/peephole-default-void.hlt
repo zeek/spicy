@@ -1,0 +1,12 @@
+# @TEST-EXEC: hiltic -p %INPUT >opt.hlt
+# @TEST-EXEC: btest-diff opt.hlt
+#
+# @TEST-DOC: Test removal of no-op `default<void>()` statements
+
+module Test {
+
+public function void foo() {
+    default<void>();
+}
+
+}

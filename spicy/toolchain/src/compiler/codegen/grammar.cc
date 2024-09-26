@@ -109,9 +109,6 @@ void Grammar::_addProduction(Production* p) {
             for ( const auto& r : rhs )
                 _addProduction(r);
     }
-
-    if ( p->isA<production::LookAhead>() || p->isLiteral() )
-        _needs_look_ahead = true;
 }
 
 void Grammar::_simplify() {
@@ -302,6 +299,12 @@ hilti::Result<hilti::Nothing> Grammar::_computeTables() {
             continue;
 
         lap->setLookAheads(std::make_pair(*v0, *v1));
+
+        // Add v0 and v1 to the set of look-ahead tokens in use.
+        for ( const auto& v : {v0, v1} ) {
+            for ( const auto& x : *v )
+                _look_aheads_in_use.insert(x->tokenID());
+        }
     }
 
     return _check();

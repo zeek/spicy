@@ -1,0 +1,16 @@
+# @TEST-EXEC: hiltic -p %INPUT >opt.hlt
+# @TEST-EXEC: btest-diff opt.hlt
+#
+# @TEST-DOC: Test that catch-blocks that just rethrow get removed.
+
+module Test {
+
+public function void foo() {
+    try {
+        assert True;
+    } catch {
+        throw;
+    }
+}
+
+}

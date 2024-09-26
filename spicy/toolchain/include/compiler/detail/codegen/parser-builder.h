@@ -55,6 +55,26 @@ enum class LiteralMode {
     Skip,
 };
 
+/**
+ * Conveys to the parsing logic for types what the caller wants them to do.
+ */
+enum class TypesMode {
+    /** Standard parsing of the type, with full field machinery set up. */
+    Default,
+
+    /**
+     * Attempt to parse the type using standard machinery, but don't abort
+     * parsing with an error if it fails.
+     */
+    Try,
+
+    /**
+     * Attempt to optimize/short-cut parsing of the type, without having the
+     * full field machinery set up yet.
+     */
+    Optimize,
+};
+
 namespace detail {
 constexpr hilti::util::enum_::Value<LiteralMode> LiteralModes[] = {{LiteralMode::Default, "default"},
                                                                    {LiteralMode::Try, "try"},
@@ -111,9 +131,6 @@ struct ParserState {
     /** Type name of unit type that is currently being compiled. */
     ID unit_id;
 
-    /** True if the current grammar needs look-ahead tracking. */
-    bool needs_look_ahead;
-
     /**< Expression* referencing the current parse object. */
     Expression* self = nullptr;
 
@@ -127,7 +144,7 @@ struct ParserState {
     Expression* cur = nullptr;
 
     /**< If set, expression referencing a new `cur` to set after parsing the current rule. */
-    std::optional<Expression*> ncur;
+    Expression* ncur = nullptr;
 
     /**
      * Boolean expression indicating whether the input data can be trimmed
@@ -154,7 +171,7 @@ struct ParserState {
      * Target for storing extracted capture groups; set only when needed &
      * desired.
      */
-    std::optional<Expression*> captures;
+    Expression* captures = nullptr;
 
     /**
      * Expression* holding the last parse error if any. This field is set only in sync or trial mode.
@@ -269,11 +286,27 @@ public:
         return b;
     }
 
-    /** Generates code that parses an instance of a specific type. */
-    Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst);
-
-    /** Generates code that parses an instance of a specific type into an expression yielding a `Result` of `t`. */
-    Expression* parseTypeTry(UnqualifiedType* t, const production::Meta& meta, Expression* dst);
+    /**
+     * Generates code that parses an instance of a specific type.
+     *
+     * Advances the current position to the end of the parsed value if
+     * successful. If *mode* is `Default` or `Optimize`, raises an error if
+     * parsing fails. If *mode* is `Try`, does not raise an error if parsing
+     * fails but leaves current position at the beginning of the current view.
+     *
+     * @param t type to parse
+     * @param meta meta information associated with the parsing operation
+     * @param dst expression to store the parsed value into; if null, an
+     * internal temporary is used to store the result
+     * @param mode parsing mode
+     * @param no_trim if true, do not trim the input after successfully parsing the instance
+     * @returns the expression that holds the parsed value, which will be equal
+     * to *dst* if that's non-null; if *mode* is `Optimize`, returns null to if
+     * the parsing could not optimized (no state will have changed in that
+     * case)
+     */
+    Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode,
+                          bool no_trim = false);
 
     /** Returns the type for a `parse_stageX` unit method. */
     hilti::type::Function* parseMethodFunctionType(hilti::type::function::Parameter* addl_param = {},
@@ -453,8 +486,7 @@ public:
      * that destination (and then it might not need create a tmp to store the
      * result in).
      */
-    Expression* applyConvertExpression(const type::unit::item::Field& field, Expression* value,
-                                       std::optional<Expression*> dst = {});
+    Expression* applyConvertExpression(const type::unit::item::Field& field, Expression* value, Expression* dst = {});
 
     /**
      * Trims the input's beginning to the current parsing position,
@@ -536,18 +568,47 @@ public:
      */
     void syncAdvanceHook(std::shared_ptr<Builder> cond = {});
 
+    /**
+     * Returns an expression referencing the current parse object's `__filters`
+     * member if that exists; otherwises return a `Null` expression. The result
+     * of this method can be passed to runtime functions expecting a
+     * `__filters` argument.
+     *
+     * @param state current parser state
+     */
+    Expression* currentFilters(const ParserState& state);
+
     QualifiedType* lookAheadType() const;
     hilti::Expression* featureConstant(const type::Unit* unit, std::string_view feature);
 
+    /*
+     * Filters a set of field attributes to remove those that are handled
+     * generically by the field parsing machinery that the parser builder sets
+     * up itself; in contrast to attributes that must be handled by
+     * field-specific parsing code. For example, the `&convert` attribute is a
+     * generic attributes, whereas `&byte-order` is not.
+     *
+     * Note that the concrete semantics remain a bit fuzzy here because
+     * attribute semantics aren't always clear-cut. For example, `&size` is
+     * generally handled generically, but may still control field-specific
+     * code in some cases. The main purpose of this method is to weed out
+     * attributes that field-specific code normally doesn't need to care about
+     * when checking for attributes it needs to handle (and the method does
+     * remove `&size`). If in doubt, look at the full set of attributes
+     * instead.
+     *
+     * @param attrs the set of attributes to filter
+     * @return a new set of attributes with the generic ones removed; the
+     * pointers are shared with the original set
+     */
+    static hilti::Attributes removeGenericParseAttributes(hilti::AttributeSet* attrs);
+
 private:
     friend struct spicy::detail::codegen::ProductionVisitor;
-    CodeGen* _cg;
 
-    Expression* _parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, bool is_try);
-
-    Expression* _filters(const ParserState& state);
     std::shared_ptr<Builder> _featureCodeIf(const type::Unit* unit, const std::vector<std::string_view>& features);
 
+    CodeGen* _cg;
     std::vector<ParserState> _states;
     std::vector<std::shared_ptr<Builder>> _builders;
     std::map<ID, Expression*> _functions;

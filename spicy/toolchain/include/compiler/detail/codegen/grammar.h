@@ -105,11 +105,8 @@ public:
      */
     hilti::Result<production::Set> lookAheadsForProduction(const Production* p, const Production* parent = {}) const;
 
-    /** Returns true if the grammar needs look-ahead for parsing.
-     *
-     * @note will always return false until the root production gets set.
-     */
-    bool needsLookAhead() const { return _needs_look_ahead; }
+    /** Returns the set of look-ahead symbols that the grammar uses. */
+    const auto& lookAheadsInUse() const { return _look_aheads_in_use; }
 
     /**
      * Prints the grammar in a (somewhat) human readable form. This is for
@@ -139,7 +136,6 @@ private:
     std::unique_ptr<Production> _root;
 
     // Computed by _computeTables()
-    bool _needs_look_ahead = false;
     std::map<std::string, Production*> _prods;
     std::map<std::string, std::string> _resolved_mapping;
     std::vector<std::unique_ptr<Production>> _resolved; // retains ownership for resolved productions
@@ -147,6 +143,7 @@ private:
     std::map<std::string, bool> _nullable;
     std::map<std::string, std::set<std::string>> _first;
     std::map<std::string, std::set<std::string>> _follow;
+    std::set<uint64_t> _look_aheads_in_use;
 };
 
 } // namespace spicy::detail::codegen

@@ -255,6 +255,19 @@
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
 [debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_3)
+[debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
+[debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
+[debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
+[debug/ast-declarations]             - Parameter "n" (spicy_rt::n_3)
+[debug/ast-declarations]             - Parameter "eod_ok" (spicy_rt::eod_ok)
+[debug/ast-declarations]             - Parameter "location" (spicy_rt::location_3)
+[debug/ast-declarations]             - Parameter "filters" (spicy_rt::filters_7)
+[debug/ast-declarations]     - Function "expectBytesLiteral" (spicy_rt::expectBytesLiteral)
+[debug/ast-declarations]             - Parameter "data" (spicy_rt::data_11)
+[debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_10)
+[debug/ast-declarations]             - Parameter "literal" (spicy_rt::literal)
+[debug/ast-declarations]             - Parameter "location" (spicy_rt::location_4)
+[debug/ast-declarations]             - Parameter "filters" (spicy_rt::filters_8)
 [debug/ast-declarations]   - Module "spicy" (spicy)
 [debug/ast-declarations]     - Property "%skip-implementation" (spicy::%skip-implementation)
 [debug/ast-declarations]     - Type "AddressFamily" (spicy::AddressFamily)
@@ -379,10 +392,12 @@
 [debug/ast-declarations] - [function] spicy::zlib_decompress -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_finish -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_init -> spicy::ZlibStream
-[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::TypeInfo, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::TypeInfo, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
 [debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort, spicy_rt::TypeInfo
 [debug/ast-declarations] - [function] spicy_rt::atEod -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::TypeInfo, spicy_rt::UnitContext
+[debug/ast-declarations] - [function] spicy_rt::expectBytesLiteral -> spicy_rt::Filters
+[debug/ast-declarations] - [function] spicy_rt::extractBytes -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::initializeParsedUnit -> spicy_rt::ParsedUnit, spicy_rt::TypeInfo
 [debug/ast-declarations] - [function] spicy_rt::printParserState -> hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [function] spicy_rt::registerParser -> spicy_rt::MIMEType, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::TypeInfo
@@ -941,6 +956,19 @@
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
 [debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_3)
+[debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
+[debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
+[debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
+[debug/ast-declarations]             - Parameter "n" (spicy_rt::n_3)
+[debug/ast-declarations]             - Parameter "eod_ok" (spicy_rt::eod_ok)
+[debug/ast-declarations]             - Parameter "location" (spicy_rt::location_3)
+[debug/ast-declarations]             - Parameter "filters" (spicy_rt::filters_7)
+[debug/ast-declarations]     - Function "expectBytesLiteral" (spicy_rt::expectBytesLiteral)
+[debug/ast-declarations]             - Parameter "data" (spicy_rt::data_11)
+[debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_10)
+[debug/ast-declarations]             - Parameter "literal" (spicy_rt::literal)
+[debug/ast-declarations]             - Parameter "location" (spicy_rt::location_4)
+[debug/ast-declarations]             - Parameter "filters" (spicy_rt::filters_8)
 [debug/ast-declarations]   - Module "spicy" (spicy)
 [debug/ast-declarations]     - Property "%skip-implementation" (spicy::%skip-implementation)
 [debug/ast-declarations]     - Type "AddressFamily" (spicy::AddressFamily)
@@ -1103,9 +1131,8 @@
 [debug/ast-declarations]             - Parameter "__lahe" (DNS::__lahe_5)
 [debug/ast-declarations]             - Parameter "__error" (DNS::__error_7)
 [debug/ast-declarations]             - LocalVariable "__result" (DNS::__result)
-[debug/ast-declarations]                 - LocalVariable "__begin" (DNS::__begin_8)
-[debug/ast-declarations]                 - LocalVariable "filtered" (DNS::filtered)
-[debug/ast-declarations]               - Parameter "__except" (DNS::__except_3)
+[debug/ast-declarations]               - LocalVariable "__begin" (DNS::__begin_8)
+[debug/ast-declarations]               - LocalVariable "filtered" (DNS::filtered)
 [debug/ast-declarations]     - Function "DNS::Label::__parse_DNS__Label_stage2" (DNS::DNS::Label::__parse_DNS__Label_stage2)
 [debug/ast-declarations]             - Parameter "__data" (DNS::__data_12)
 [debug/ast-declarations]             - Parameter "__begin" (DNS::__begin_9)
@@ -1133,9 +1160,8 @@
 [debug/ast-declarations]             - Parameter "__lahe" (DNS::__lahe_7)
 [debug/ast-declarations]             - Parameter "__error" (DNS::__error_12)
 [debug/ast-declarations]             - LocalVariable "__result" (DNS::__result_3)
-[debug/ast-declarations]                 - LocalVariable "__begin" (DNS::__begin_11)
-[debug/ast-declarations]                 - LocalVariable "filtered" (DNS::filtered_2)
-[debug/ast-declarations]               - Parameter "__except" (DNS::__except_4)
+[debug/ast-declarations]               - LocalVariable "__begin" (DNS::__begin_11)
+[debug/ast-declarations]               - LocalVariable "filtered" (DNS::filtered_2)
 [debug/ast-declarations]     - Function "DNS::Pointer::__parse_DNS__Pointer_2_stage2" (DNS::DNS::Pointer::__parse_DNS__Pointer_2_stage2)
 [debug/ast-declarations]             - Parameter "__data" (DNS::__data_17)
 [debug/ast-declarations]             - Parameter "__begin" (DNS::__begin_12)
@@ -1388,6 +1414,19 @@
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
 [debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_3)
+[debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
+[debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
+[debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
+[debug/ast-declarations]             - Parameter "n" (spicy_rt::n_3)
+[debug/ast-declarations]             - Parameter "eod_ok" (spicy_rt::eod_ok)
+[debug/ast-declarations]             - Parameter "location" (spicy_rt::location_3)
+[debug/ast-declarations]             - Parameter "filters" (spicy_rt::filters_7)
+[debug/ast-declarations]     - Function "expectBytesLiteral" (spicy_rt::expectBytesLiteral)
+[debug/ast-declarations]             - Parameter "data" (spicy_rt::data_11)
+[debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_10)
+[debug/ast-declarations]             - Parameter "literal" (spicy_rt::literal)
+[debug/ast-declarations]             - Parameter "location" (spicy_rt::location_4)
+[debug/ast-declarations]             - Parameter "filters" (spicy_rt::filters_8)
 [debug/ast-declarations]   - Module "spicy" (spicy)
 [debug/ast-declarations]     - Property "%skip-implementation" (spicy::%skip-implementation)
 [debug/ast-declarations]     - Type "AddressFamily" (spicy::AddressFamily)
@@ -1492,11 +1531,11 @@
 [debug/ast-declarations]     - ImportedModule "hilti" (spicy::hilti)
 [debug/ast-declarations]     - ImportedModule "spicy_rt" (spicy::spicy_rt)
 [debug/ast-declarations] Declaration dependencies:
-[debug/ast-declarations] - [module] DNS -> DNS::DNS::Label::__parse_DNS__Label_stage2, DNS::DNS::Label::__parse_stage1, DNS::DNS::Pointer::__parse_DNS__Pointer_2_stage2, DNS::DNS::Pointer::__parse_stage1, DNS::Label, DNS::Pointer, DNS::__feat%DNS@@Label%is_filter, DNS::__feat%DNS@@Label%supports_filters, DNS::__feat%DNS@@Label%supports_sinks, DNS::__feat%DNS@@Label%synchronization, DNS::__feat%DNS@@Label%uses_offset, DNS::__feat%DNS@@Label%uses_random_access, DNS::__feat%DNS@@Label%uses_stream, DNS::__feat%DNS@@Label%uses_sync_advance, DNS::__feat%DNS@@Pointer%is_filter, DNS::__feat%DNS@@Pointer%supports_filters, DNS::__feat%DNS@@Pointer%supports_sinks, DNS::__feat%DNS@@Pointer%synchronization, DNS::__feat%DNS@@Pointer%uses_offset, DNS::__feat%DNS@@Pointer%uses_random_access, DNS::__feat%DNS@@Pointer%uses_stream, DNS::__feat%DNS@@Pointer%uses_sync_advance, DNS::__register_DNS_Label, DNS::__register_DNS_Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::SystemException, hilti::debugDedent, hilti::debugIndent
+[debug/ast-declarations] - [module] DNS -> DNS::DNS::Label::__parse_DNS__Label_stage2, DNS::DNS::Label::__parse_stage1, DNS::DNS::Pointer::__parse_DNS__Pointer_2_stage2, DNS::DNS::Pointer::__parse_stage1, DNS::Label, DNS::Pointer, DNS::__feat%DNS@@Label%is_filter, DNS::__feat%DNS@@Label%supports_filters, DNS::__feat%DNS@@Label%supports_sinks, DNS::__feat%DNS@@Label%synchronization, DNS::__feat%DNS@@Label%uses_offset, DNS::__feat%DNS@@Label%uses_random_access, DNS::__feat%DNS@@Label%uses_stream, DNS::__feat%DNS@@Label%uses_sync_advance, DNS::__feat%DNS@@Pointer%is_filter, DNS::__feat%DNS@@Pointer%supports_filters, DNS::__feat%DNS@@Pointer%supports_sinks, DNS::__feat%DNS@@Pointer%synchronization, DNS::__feat%DNS@@Pointer%uses_offset, DNS::__feat%DNS@@Pointer%uses_random_access, DNS::__feat%DNS@@Pointer%uses_stream, DNS::__feat%DNS@@Pointer%uses_sync_advance, DNS::__register_DNS_Label, DNS::__register_DNS_Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::debugDedent, hilti::debugIndent
 [debug/ast-declarations] - [function] DNS::DNS::Label::__parse_DNS__Label_stage2 -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::debugDedent
-[debug/ast-declarations] - [function] DNS::DNS::Label::__parse_stage1 -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::SystemException, hilti::debugIndent
+[debug/ast-declarations] - [function] DNS::DNS::Label::__parse_stage1 -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::debugIndent
 [debug/ast-declarations] - [function] DNS::DNS::Pointer::__parse_DNS__Pointer_2_stage2 -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::debugDedent
-[debug/ast-declarations] - [function] DNS::DNS::Pointer::__parse_stage1 -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::SystemException, hilti::debugIndent
+[debug/ast-declarations] - [function] DNS::DNS::Pointer::__parse_stage1 -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::debugIndent
 [debug/ast-declarations] - [type] DNS::Label -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [type] DNS::Pointer -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printValues, hilti::profiler_start, hilti::profiler_stop
@@ -1518,10 +1557,12 @@
 [debug/ast-declarations] - [function] spicy::zlib_decompress -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_finish -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_init -> spicy::ZlibStream
-[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::TypeInfo, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::TypeInfo, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
 [debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort, spicy_rt::TypeInfo
 [debug/ast-declarations] - [function] spicy_rt::atEod -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::TypeInfo, spicy_rt::UnitContext
+[debug/ast-declarations] - [function] spicy_rt::expectBytesLiteral -> spicy_rt::Filters
+[debug/ast-declarations] - [function] spicy_rt::extractBytes -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::initializeParsedUnit -> spicy_rt::ParsedUnit, spicy_rt::TypeInfo
 [debug/ast-declarations] - [function] spicy_rt::printParserState -> hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [function] spicy_rt::registerParser -> spicy_rt::MIMEType, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::TypeInfo

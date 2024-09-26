@@ -1,3 +1,131 @@
+1.12.0-dev.104 | 2024-09-26 14:14:36 +0200
+
+  * Fine-tune `bytes` literal parsing further. (Robin Sommer, Corelight)
+
+    This now optimizes the generated code for parsing a `bytes` literal
+    based on what we're going to use it for, or not (require literal vs.
+    look-ahead vs skip).
+
+    The standard case of a parsing an expected literal now looks like
+    this:
+
+    ```
+        # Begin parsing production: Ctor: b1  -> b"abc" (const bytes)
+        (*self).b1 = spicy_rt::expectBytesLiteral(__data, __cur, b"abc", "../tests/spicy/types/bytes/parse-length.spicy:20:10-20:15", Null);
+        __cur = __cur.advance(3);
+
+        if ( __trim )
+            (*__data).trim(begin(__cur));
+
+        # End parsing production: Ctor: b1  -> b"abc" (const bytes)
+    ```
+
+  * Add peephole optimization simplifying rethrowing catch blocks. (Robin Sommer, Corelight)
+
+    The optimization turns this:
+
+    ```
+    function void foo() {
+         try {
+            ...
+         } catch {
+             throw;
+         }
+     }
+    ```
+
+    into
+
+    ```
+    function void foo() {
+         {
+            ...
+         }
+     }
+    ```
+
+    It would be even nicer if we didn't need the braces around the
+    remaining block, but it's generally not safe to remove them because if
+    the block declares any locals their life-times and visibility would
+    change.
+
+  * GH-1592: Add peephole optimizer for final AST tuning. (Robin Sommer, Corelight)
+
+    We use this to remove two statement constructs that the main optimizer
+    may leave behind:
+
+        1. `default<void>()`
+        2. `(*self).__error = __error; __error = (*self).__error;`
+
+    The second case is a quite specific situation that eventually, once we
+    have CFG/DFG tracking, the main optimizer should be able to cover more
+    generically. However, for now, it's just not nice to always have
+    these blocks in the generated C++ code, so adding this special case
+    seems useful.
+
+    Couples notes on (2):
+
+        - Per #1592, case 2 may also have overhead. Closes #1592.
+        - Technically, this optimization isn't always correct: subsequent
+          code could assume that `(*self).__error` is set, whereas after
+          removal it's not (or not to the expected value). However,
+          `__error` is strictly-internal state, and we know that we don't
+          use it any different, so this seems ok until we have more
+          general optimizer logic.
+
+  * Disable check for reserved IDs with `--skip-validation`. (Robin Sommer, Corelight)
+
+    This allows to write tests that use internal IDs.
+
+  * Simplify parsing of literals. (Robin Sommer, Corelight)
+
+    There are two changes in here:
+
+    1. For grammars that don't use look-ahead, we skip the runtime check for a
+    pending look-ahead symbol, because we know we will never have one. This removes
+    generated code of the form `if ( _lah ) { ... }`. This change needs a bit of
+    machinery unfortunately because we need to get the information about look-ahead
+    usage over into the codegen for literal parsing.
+
+    2. For bytes literals, we now outsource their parsing to a runtime function to
+    make the generated code simpler. As a side effect this also provides more
+    informative error messages when the literal isn't found.
+
+    Taking the two together means that the code for parsing a plain `b"Foo"`
+    literal may look like this now:
+
+        spicy_rt::expectBytesLiteral(__data, __cur, b"Foo", "b.spicy:4:10-4:15", Null);
+        __cur = __cur.advance(3);
+
+        if ( __trim )
+            (*__data).trim(begin(__cur));
+
+        (*self).foo = b"Foo";
+
+  * Optimize parsing for `bytes &size=N`. (Robin Sommer, Corelight)
+
+  * Add mode for optimize types parsing. (Robin Sommer, Corelight)
+
+    This provides the surrounding infrastructure, but does not yet
+    implement it for any type.
+
+  * Refactor type parsing modes. (Robin Sommer, Corelight)
+
+    So far we had a boolean flag to differentiate between "normal" and
+    "try" parsing. We turn this flag into an enum now so that we can more
+    easily extend the set of modes later. No functional change otherwise.
+
+  * Refactor pre/post parsing logic. (Robin Sommer, Corelight)
+
+    This splits out the `&size/&max-size` handling so that we can
+    special-case that later.
+
+  * Cleanup: replace optionals with pointers. (Robin Sommer, Corelight)
+
+    For AST nodes, we can/should use nullptrs instead of unset optionals.
+    The versions using `optional` were still a left-over from the old AST
+    code.
+
 1.12.0-dev.93 | 2024-09-26 13:07:41 +0200
 
   * Disallow unit variables nested into other items. (Robin Sommer, Corelight)

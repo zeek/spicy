@@ -150,9 +150,6 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
@@ -160,28 +157,18 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         
             spicy_rt::filter_forward_eod(self);
 
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
         throw;
     }
 
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     return __result;
 }
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X4::__parse_foo__X4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:32:11-34:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     
         spicy_rt::filter_forward_eod(self);
 
@@ -292,28 +279,18 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         
             spicy_rt::filter_disconnect(self);
 
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
         throw;
     }
 
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     return __result;
 }
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X5::__parse_foo__X5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:36:18-40:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     
         spicy_rt::filter_disconnect(self);
 
@@ -404,28 +381,18 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     }
     catch ( hilti::SystemException __except ) {
-        default<void>();
         
             (*(*self).data).close();
 
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
         throw;
     }
 
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     return __result;
 }
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X6::__parse_foo__X6_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:43:11-46:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     
         (*(*self).data).close();
 

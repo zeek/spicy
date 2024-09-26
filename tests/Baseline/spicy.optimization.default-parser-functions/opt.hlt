@@ -58,38 +58,22 @@ init function void __register_foo_P0() {
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P1::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:14:18-14:24"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
-    try {
+    {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
             __result = (*self).__parse_foo__P1_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
-    catch ( hilti::SystemException __except ) {
-        default<void>();
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
-        throw;
-    }
 
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     return __result;
 }
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P1::__parse_foo__P1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:14:18-14:24"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
     return __result;
@@ -169,9 +153,6 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
@@ -180,15 +161,9 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
     }
     catch ( hilti::SystemException __except ) {
         (*self).__on_0x25_error(hilti::exception_what(__except));
-        (*self).__error = __error;
-        default<void>();
-        __error = (*self).__error;
         throw;
     }
 
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     return __result;
 }
 
@@ -206,9 +181,6 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     # End parsing production: Variable: x   -> uint<8>
 
-    (*self).__error = __error;
-    default<void>();
-    __error = (*self).__error;
     # "<...>/default-parser-functions.spicy:18:8-18:12"
 
     # Begin parsing production: Variable: y   -> uint<8>
@@ -222,9 +194,6 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
     (*self).__error = __error;
     (*self).__on_y((*self).y);
-    __error = (*self).__error;
-    (*self).__error = __error;
-    default<void>();
     __error = (*self).__error;
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);

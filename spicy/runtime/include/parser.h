@@ -527,5 +527,39 @@ std::optional<hilti::rt::stream::SafeConstIterator> unitFind(
     const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
     const std::optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
     hilti::rt::stream::Direction d);
+
+/**
+ * Extracts a given number of bytes from a stream view.
+ *
+ * @param data underlying stream
+ * @param cur view of *data* to extract bytes from
+ * @param size number of bytes to extract
+ * @param eod_ok if true, it's ok if end-of-data is reached without *size*
+ * behind reached; otherwise an error will be triggered in that case
+ * @param location location associated with the situation
+ * @param filters filter state associated with current unit instance (which may be null)
+ * @returns extracted bytes
+ * @throws ParseError if not enough data is available
+ */
+hilti::rt::Bytes extractBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+                              uint64_t size, bool eod_ok, std::string_view location,
+                              const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+
+/**
+ * Confirms that a stream view begins with a given bytes literal.
+ *
+ * @param data stream view to extract from
+ * @param cur view of *data* that's being parsed
+ * @param literal raw bytes representation of the literal to extract
+ * @param location location associated with the situation
+ * @param filters filter state associated with current unit instance (which may be null)
+ * @returns `literal` (for convenience)
+ * @throws ParseError if the literal isn't found at the beginning of *cur*
+ */
+hilti::rt::Bytes expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                                    const hilti::rt::stream::View& cur, hilti::rt::Bytes literal,
+                                    std::string_view location,
+                                    const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+
 } // namespace detail
 } // namespace spicy::rt

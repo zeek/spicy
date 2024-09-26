@@ -113,7 +113,7 @@ public:
 
     void setAttributes(ASTContext* ctx, AttributeSet* attrs) { setChild(ctx, 1, attrs); }
     void setContextType(ASTContext* ctx, UnqualifiedType* type) { setChild(ctx, 2, type); }
-    void setGrammar(std::shared_ptr<spicy::detail::codegen::Grammar> g) { _grammar = std::move(g); }
+    void setGrammar(spicy::detail::codegen::Grammar* g) { _grammar = g; }
     void setPublic(bool p) { _public = p; }
 
     std::string_view typeClass() const final { return "unit"; }
@@ -170,7 +170,7 @@ private:
 
     bool _public = false;
     bool _may_have_filter = false;
-    std::shared_ptr<spicy::detail::codegen::Grammar> _grammar;
+    spicy::detail::codegen::Grammar* _grammar = nullptr;
 };
 
 } // namespace type

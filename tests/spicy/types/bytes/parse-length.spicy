@@ -1,5 +1,18 @@
-# @TEST-EXEC:  printf 'abc12345def' | spicy-driver %INPUT >output 2>&1
-# @TEST-EXEC:  btest-diff output
+# @TEST-EXEC: printf 'abc12345def' | spicy-driver %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# Ensure type-specific optimization kicks in.
+# @TEST-EXEC: spicyc -p %INPUT | grep -q 'b2 = spicy_rt::extractBytes'
+#
+# Ensure literal-specific optimization kicks in.
+# @TEST-EXEC: spicyc -p %INPUT | grep -q ' = spicy_rt::expectBytesLiteral'
+#
+# Ensure we don't get any look-ahead checks when parsing the literals, we don't need them here.
+# @TEST-EXEC: spicyc -p %INPUT | grep -vq 'if.*lah'
+#
+# Ensure our peephole optimizer removes `(*self).__error = __error; default<void>(); __error = (*self).__error;` blocks
+# @TEST-EXEC-FAIL: spicyc -p %INPUT | grep -q 'default<void>()'
+# @TEST-EXEC-FAIL: spicyc -p %INPUT | grep -v 'default<void>()' | grep -A1 '(.self).__error = __error' | grep -q -B1 "__error = (.self).__error"
 
 module Test;
 

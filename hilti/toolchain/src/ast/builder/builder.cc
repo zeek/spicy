@@ -1,18 +1,12 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <algorithm>
-#include <exception>
-
 #include <hilti/ast/builder/builder.h>
 #include <hilti/compiler/driver.h>
 
 using namespace hilti;
 using util::fmt;
 
-const Options& Builder::options() const {
-    assert(context()->driver());
-    return context()->driver()->options();
-}
+const Options& Builder::options() const { return context()->compilerContext()->options(); }
 
 Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, const Expressions& args) {
     int n = 0;
