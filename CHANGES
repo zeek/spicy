@@ -1,3 +1,11 @@
+1.12.0-dev.87 | 2024-09-26 13:07:06 +0200
+
+  * Compile generated C++ with `-O0` in debug mode. (Robin Sommer, Corelight)
+
+  * Bump centos-stream in documentation. (Benjamin Bannier, Corelight)
+
+  * Bump latest release in docs. (Benjamin Bannier, Corelight)
+
 1.12.0-dev.83 | 2024-09-19 08:58:15 +0200
 
   * Fix attributes not getting validated. (Evan Typanski, Corelight)
