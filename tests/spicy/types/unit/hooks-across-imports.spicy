@@ -1,6 +1,5 @@
-# @TEST-EXEC:  echo 123456666677777CC | spicy-driver -D ast-stats -p A::tA b.spicy %INPUT | sort >output
+# @TEST-EXEC:  echo 123456666677777CC | spicy-driver -p A::tA b.spicy %INPUT | sort >output
 # @TEST-EXEC:  btest-diff output
-# @TEST-EXEC:  btest-diff .stderr
 
 module A;
 

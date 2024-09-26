@@ -8,73 +8,19 @@
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
 [debug/compiler]       -> modified
-[debug/ast-stats] garbage collected 537 nodes in 12 rounds, 5351 left retained
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
 [debug/compiler]       -> modified
-[debug/ast-stats] garbage collected 223 nodes in 11 rounds, 5607 left retained
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
-[debug/ast-stats] garbage collected 29 nodes in 2 rounds, 5635 left retained
-[debug/ast-stats] # [HILTI] AST statistics:
-[debug/ast-stats]   - # AST rounds 3
-[debug/ast-stats]   - max tree depth: 16
-[debug/ast-stats]   - # context declarations: 23
-[debug/ast-stats]   - # context types: 16
-[debug/ast-stats]   - # context modules: 2
-[debug/ast-stats]   - # nodes reachable in AST: 705
-[debug/ast-stats]   - # nodes live: 5635
-[debug/ast-stats]   - # nodes retained: 5635
-[debug/ast-stats]   - # nodes live > 1%:
-[debug/ast-stats]     - AttributeSet: 64
-[debug/ast-stats]     - QualifiedType: 1971
-[debug/ast-stats]     - expression::Ctor: 69
-[debug/ast-stats]     - type::Bool: 141
-[debug/ast-stats]     - type::Bytes: 80
-[debug/ast-stats]     - type::Member: 121
-[debug/ast-stats]     - type::OperandList: 504
-[debug/ast-stats]     - type::Real: 60
-[debug/ast-stats]     - type::SignedInteger: 78
-[debug/ast-stats]     - type::String: 80
-[debug/ast-stats]     - type::Unknown: 118
-[debug/ast-stats]     - type::UnsignedInteger: 338
-[debug/ast-stats]     - type::bytes::Iterator: 108
-[debug/ast-stats]     - type::operand_list::Operand: 911
-[debug/ast-stats]     - type::stream::Iterator: 81
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] performing global transformations
 [debug/compiler] resolving units with plugin HILTI
 [debug/compiler]   processing ASTs, round 1
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
-[debug/ast-stats] garbage collected 29 nodes in 2 rounds, 5635 left retained
-[debug/ast-stats] # [HILTI] AST statistics:
-[debug/ast-stats]   - # AST rounds 1
-[debug/ast-stats]   - max tree depth: 16
-[debug/ast-stats]   - # context declarations: 23
-[debug/ast-stats]   - # context types: 16
-[debug/ast-stats]   - # context modules: 2
-[debug/ast-stats]   - # nodes reachable in AST: 694
-[debug/ast-stats]   - # nodes live: 5635
-[debug/ast-stats]   - # nodes retained: 5635
-[debug/ast-stats]   - # nodes live > 1%:
-[debug/ast-stats]     - AttributeSet: 64
-[debug/ast-stats]     - QualifiedType: 1971
-[debug/ast-stats]     - expression::Ctor: 69
-[debug/ast-stats]     - type::Bool: 141
-[debug/ast-stats]     - type::Bytes: 80
-[debug/ast-stats]     - type::Member: 121
-[debug/ast-stats]     - type::OperandList: 504
-[debug/ast-stats]     - type::Real: 60
-[debug/ast-stats]     - type::SignedInteger: 78
-[debug/ast-stats]     - type::String: 80
-[debug/ast-stats]     - type::Unknown: 118
-[debug/ast-stats]     - type::UnsignedInteger: 338
-[debug/ast-stats]     - type::bytes::Iterator: 108
-[debug/ast-stats]     - type::operand_list::Operand: 911
-[debug/ast-stats]     - type::stream::Iterator: 81
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] finalized AST
 [debug/ast-final] # [HILTI] Final AST
@@ -1013,32 +959,7 @@
 [debug/ast-final]   [T13] hilti::Exception [type::Exception] (hilti.hlt:46:25-46:33)
 [debug/ast-final]   [T14] hilti::SystemException [type::Exception] (hilti.hlt:49:31-49:53)
 [debug/ast-final]   [T15] hilti::RecoverableFailure [type::Exception] (hilti.hlt:56:34-56:56)
-[debug/ast-stats] # [HILTI] AST statistics:
-[debug/ast-stats]   - max tree depth: 16
-[debug/ast-stats]   - # context declarations: 23
-[debug/ast-stats]   - # context types: 16
-[debug/ast-stats]   - # context modules: 2
-[debug/ast-stats]   - # nodes reachable in AST: 694
-[debug/ast-stats]   - # nodes live: 5635
-[debug/ast-stats]   - # nodes retained: 5635
-[debug/ast-stats]   - # nodes live > 1%:
-[debug/ast-stats]     - AttributeSet: 64
-[debug/ast-stats]     - QualifiedType: 1971
-[debug/ast-stats]     - expression::Ctor: 69
-[debug/ast-stats]     - type::Bool: 141
-[debug/ast-stats]     - type::Bytes: 80
-[debug/ast-stats]     - type::Member: 121
-[debug/ast-stats]     - type::OperandList: 504
-[debug/ast-stats]     - type::Real: 60
-[debug/ast-stats]     - type::SignedInteger: 78
-[debug/ast-stats]     - type::String: 80
-[debug/ast-stats]     - type::Unknown: 118
-[debug/ast-stats]     - type::UnsignedInteger: 338
-[debug/ast-stats]     - type::bytes::Iterator: 108
-[debug/ast-stats]     - type::operand_list::Operand: 911
-[debug/ast-stats]     - type::stream::Iterator: 81
 [debug/compiler] computing AST dependencies
 [debug/compiler] codegen module Foo to C++
 [debug/compiler]   generating C++ for module Foo
 [debug/compiler]   finalizing module Foo
-[debug/ast-stats] garbage collected 5636 nodes in 17 rounds, 0 left retained
