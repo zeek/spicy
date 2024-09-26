@@ -15,5 +15,4 @@ public type Foo = unit {
     %mime-type;
     %mime-type = 42;
     %mime-type = "kaputt";
-    %unknown;
 } &byte-order;

@@ -578,18 +578,38 @@ struct ProductionVisitor : public production::Visitor {
 
         // Parse production
 
-        builder()->setLocation(p->location());
-
-        Expression* pre_container_offset = nullptr;
-        std::optional<PathTracker> path_tracker;
         Expression* profiler = nullptr;
+        std::optional<PathTracker> path_tracker;
+        std::optional<std::pair<std::shared_ptr<Builder>, Builder::TryProxy>> try_;
 
         if ( is_field_owner ) {
             path_tracker = PathTracker(&_path, field->id());
             auto offset = builder()->memberCall(state().cur, "offset");
             profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")), offset);
-            pre_container_offset = preParseField(*p, meta);
+
+            bool add_try = (! field->isAnonymous());
+            for ( const auto* h : field->hooks() ) {
+                if ( h->hookType() == declaration::hook::Type::Error ) {
+                    add_try = true;
+                    break;
+                }
+            }
+
+            if ( add_try ) {
+                // Wrap field parsing into try-block for per-field %error hook,
+                // which may be attached directly or provided externally for
+                // named fields.
+                try_ = builder()->addTry();
+                pushBuilder(try_->first);
+            }
         }
+
+        builder()->setLocation(p->location());
+
+        Expression* pre_container_offset = nullptr;
+
+        if ( is_field_owner )
+            pre_container_offset = preParseField(*p, meta);
 
         beginProduction(*p);
 
@@ -659,9 +679,24 @@ struct ProductionVisitor : public production::Visitor {
 
         endProduction(*p);
 
-        if ( is_field_owner ) {
+        if ( is_field_owner )
             postParseField(*p, meta, pre_container_offset, ncur, ncur_max_size);
 
+        if ( try_ ) {
+            popBuilder(); // per-field try-block
+
+            auto catch_ =
+                try_->second.addCatch(builder()->parameter("__except", builder()->typeName("hilti::SystemException")));
+
+            pushBuilder(catch_, [&]() {
+                auto what = builder()->call("hilti::exception_what", {builder()->id("__except")});
+                builder()->addMemberCall(state().self, ID(fmt("__on_%s_error", field->id().local())), {what},
+                                         field->meta());
+                builder()->addRethrow();
+            });
+        }
+
+        if ( is_field_owner ) {
             if ( profiler ) {
                 auto offset = builder()->memberCall(state().cur, "offset");
                 builder()->stopProfiler(profiler, offset);

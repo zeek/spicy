@@ -49,7 +49,7 @@ This will print:
     :exec: spicyc -j %INPUT
 
 Fields are initially unset, and attempting to read an unset field will
-trigger a :ref:`runtime exception <exceptions>`. You may, however,
+trigger a :ref:`runtime error <error_handling>`. You may, however,
 provide a default value by adding a ``&default`` *attribute* to the
 field, in which case that will be returned on access if no value has
 been explicitly assigned:
@@ -2203,6 +2203,87 @@ the Zeek on a corresponding packet trace.
 Note that the units for the two sides of the connection need to
 declare the same ``%context`` type. Processing will abort at
 runtime with a type mismatch error if that's not the case.
+
+.. _error_handling:
+
+Error Handling
+===============
+
+Whenever a parser encounters an unexpected situation during
+processing, it triggers a runtime error. This includes parsing errors
+due to input that does not match the current unit, failing
+:ref:`&requires <attribute_requires>` conditions, and also any logic
+errors in hooks, such as attempting to read an unset unit field or
+accessing an invalid vector index.
+
+By default, any runtime error will cause the parsing to terminate
+immediately, with a corresponding error message reported back to the
+host application. The Spicy parser will not be able to continue
+processing afterwards. However, there are a couple of ways to catch
+*parsing errors* (but not other runtime errors) and potentially
+recover from them, which we discuss in the following.
+
+.. _parsing_errors:
+
+A unit can provide special :ref:`%error hooks <unit_hooks>` that will
+execute when a parsing error is encountered. A unit-wide ``%error``
+hook will catch all parsing errors occurring anywhere inside the unit,
+including any sub-units (if not otherwise handled by the sub-unit
+itself already). Example:
+
+.. code-block:: spicy
+
+    module MyModule;
+
+    type MyType = unit {
+        magic: b"MAGIC";
+
+        on %error(msg: string) {
+            print "Error when parsing MyUnit: ", msg;
+        }
+    };
+
+The ``msg`` parameter is optional. If it's specified, it will contain
+an error message describing the issue.
+
+By default, even with an ``%error`` hook in place, the parser will
+still terminate after executing the hook. To change that, the hook may
+use :ref:`backtracking` to specify where to continue parsing after the
+error. Alternatively, if :ref:`automatic error recovery
+<error_recovery>` is in place, the parser will attempt recovery after
+the error hooks have executed.
+
+.. versionadded:: 1.12 Per-field ``%error`` handler
+
+Rather than defining a unit-wide ``%error`` hook, it is also possible
+to just have an individual field catch its own parsing errors. The
+easiest way to do this is to attach an ``%error`` attribute to an
+inline hook:
+
+.. code-block:: spicy
+
+    module My;
+
+    type MyType = unit {
+        magic: b"MAGIC" %error { # will run if magic cannot be parsed
+            print "magic not found";
+        }
+    };
+
+To get access to the error message as well, define it out of line like this:
+
+.. code-block:: spicy
+
+    module MyUnit;
+
+    type MyType = unit {
+        magic: b"MAGIC"
+
+        on magic(msg: string) %error {
+            print "Error when parsing magic: ", msg;
+        }
+    };
+
 
 .. _error_recovery:
 

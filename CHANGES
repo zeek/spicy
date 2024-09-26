@@ -1,3 +1,59 @@
+1.12.0-dev.109 | 2024-09-26 17:29:17 +0200
+
+  * Fix parsing ambiguity with properties. (Robin Sommer, Corelight)
+
+    In the past, we had special-cased properties in our Flex/Bison parser
+    so that when parsing an expression, they wouldn't be recognized.
+    However, that now led an error field hook of the form `x: bytes
+    &size=42 %error` to be parsed as `&size=(42 % error)`. We now switch
+    to white-listing all known properties, just as we already do for
+    attributes. That way conflicts should be extremely rare.
+
+  * Redo error handling docs (Robin Sommer, Corelight)
+
+    The old text was very outdated. This extends the content, documents
+    the new per-field `%error` handler, and moves it all into the
+    "parsing" section to have it closer to the error recovery content.
+
+  * GH-1824: Add support for field-local `%error` handlers. (Robin Sommer, Corelight)
+
+    We now support attaching an `%error` handler to an individual field:
+
+        type Test = unit {
+            a: b"A";
+            b: b"B" %error { print "field B %error", self; }
+            c: b"C";
+        };
+
+    With input `AxC`, that handler will trigger, whereas with `ABx` it
+    won't. If the unit had a unit-wide `%error` handler as well, that one
+    would trigger in both cases (i.e., for `b`, in addition to its field
+    local handler).
+
+    The handler can also be provided separately from the field:
+
+        on b %error { ... }
+
+    In that separate version, one can receive the error message as well by
+    declaring a corresponding string parameter:
+
+        on b(msg: string) %error { ... }
+
+    This works externally, from outside the unit, as well:
+
+        on Test::b(msg: string) %error { ... }
+
+    This is eebased on top of `topic/robin/optimize-type-parsing` so that
+    we get the peephole optimizer.
+
+  * Refactor field hook attributes. (Robin Sommer, Corelight)
+
+    Currently we only have two types of field hooks: standard hooks and
+    `foreach` hooks. To prepare for more types, this refactors the code
+    to represent the type with an `enum` instead of a `foreach` boolean. It
+    also moves validation of permitted attributes from the parser to
+    the validator.
+
 1.12.0-dev.104 | 2024-09-26 14:14:36 +0200
 
   * Fine-tune `bytes` literal parsing further. (Robin Sommer, Corelight)

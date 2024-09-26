@@ -63,9 +63,9 @@ struct FieldBuilder : public visitor::PreOrder {
         addField(nf);
 
         // Add hooks.
-        auto add_hook_declaration = [&](const auto& f, bool foreach) {
+        auto add_hook_declaration = [&](const auto& f, declaration::hook::Type type) {
             if ( auto hook_decl = cg->compileHook(*unit, f->id(), {f->template as<spicy::type::unit::item::Field>()},
-                                                  foreach, false, {}, {}, {}, f->meta()) ) {
+                                                  type, false, {}, {}, {}, f->meta()) ) {
                 auto nf =
                     builder()->declarationField(hook_decl->id().local(), hook_decl->function()->type(), {}, f->meta());
                 addField(std::move(nf));
@@ -74,17 +74,18 @@ struct FieldBuilder : public visitor::PreOrder {
 
         auto add_hook_implementation = [&](auto& hook) {
             if ( auto hook_impl = cg->compileHook(*unit, ID(unit->typeID(), f->id()),
-                                                  f->template as<spicy::type::unit::item::Field>(), hook->isForEach(),
+                                                  f->template as<spicy::type::unit::item::Field>(), hook->hookType(),
                                                   hook->isDebug(), hook->ftype()->parameters(), hook->body(),
                                                   hook->priority(), hook->meta()) )
                 cg->addDeclaration(hook_impl);
         };
 
         if ( f->emitHook() ) {
-            add_hook_declaration(f, false);
+            add_hook_declaration(f, declaration::hook::Type::Standard);
+            add_hook_declaration(f, declaration::hook::Type::Error);
 
             if ( f->isContainer() )
-                add_hook_declaration(f, true);
+                add_hook_declaration(f, declaration::hook::Type::ForEach);
 
             for ( auto h : f->hooks() )
                 add_hook_implementation(h);
@@ -150,9 +151,8 @@ struct FieldBuilder : public visitor::PreOrder {
 
     void operator()(spicy::type::unit::item::UnitHook* h) final {
         const auto& hook = h->hook();
-        if ( auto hook_impl =
-                 cg->compileHook(*unit, ID(unit->typeID(), h->id()), {}, hook->isForEach(), hook->isDebug(),
-                                 hook->ftype()->parameters(), hook->body(), hook->priority(), h->meta()) )
+        if ( auto hook_impl = cg->compileHook(*unit, ID(unit->typeID(), h->id()), {}, hook->hookType(), hook->isDebug(),
+                                              hook->ftype()->parameters(), hook->body(), hook->priority(), h->meta()) )
             cg->addDeclaration(hook_impl);
     }
 };
@@ -166,7 +166,8 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
         v.dispatch(i);
 
     auto add_hook = [&](const std::string& id, hilti::declaration::Parameters params, AttributeSet* attributes = {}) {
-        if ( auto hook_decl = compileHook(*unit, ID(id), {}, false, false, std::move(params), {}, {}, unit->meta()) ) {
+        if ( auto hook_decl = compileHook(*unit, ID(id), {}, declaration::hook::Type::Standard, false,
+                                          std::move(params), {}, {}, unit->meta()) ) {
             auto nf = builder()->declarationField(hook_decl->id().local(), hook_decl->function()->type(), attributes,
                                                   unit->meta());
             v.addField(nf);

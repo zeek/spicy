@@ -1,0 +1,75 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+#
+# @TEST-EXEC: echo ABC | spicy-driver -p Mini::Test1 test.hlto 2>&1 | sort >>output
+# @TEST-EXEC: echo AxC | (spicy-driver -p Mini::Test1 test.hlto 2>&1; true) | sort >>output
+# @TEST-EXEC: echo ABx | (spicy-driver -p Mini::Test1 test.hlto 2>&1; true) | sort >>output
+#
+# @TEST-EXEC: echo === >>output
+#
+# @TEST-EXEC: echo ABC | spicy-driver -p Mini::Test2 test.hlto 2>&1 | sort >>output
+# @TEST-EXEC: echo C   | spicy-driver -p Mini::Test2 test.hlto 2>&1 | sort >>output
+# @TEST-EXEC: echo AxC | (spicy-driver -p Mini::Test2 test.hlto 2>&1; true) | sort >>output
+#
+# @TEST-EXEC: echo === >>output
+#
+# @TEST-EXEC: echo 123 | (spicy-driver -p Mini::Test3 test.hlto 2>&1; true) | sort >>output
+#
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type Test1 = unit {
+    on %init        { print "---"; }
+
+    a: b"A"         { print "field A standard"; }
+    b: b"B"  %error { print "field B %error, attached", self; }
+    c: b"C";
+
+    on b %error {
+        print "field B %error, inside unit", self;
+    }
+
+    on b(msg: string) %error {
+        print "field B %error, inside unit", msg, self;
+    }
+
+    on %error       { print "unit %error", self; }
+    on %done        { print "unit %done", self; }
+};
+
+on Test1::b %error {
+    print "field B %error, external", self;
+}
+
+on Test1::b(msg: string) %error {
+    print "field B %error, external", msg, self;
+}
+
+on Test1::c %error {
+    print "unit %error, external", self;
+}
+
+on Test1::%error(msg: string) {
+    print "unit %error, external", msg, self;
+}
+
+# Test that backtracks only inside one field's error handler.
+public type Test2 = unit {
+    on %init        { print "---"; }
+
+    foo: Foo &try;
+    c: b"C";
+
+    on %error       { print "unit %error", self; }
+    on %done        { print "unit %done", self; }
+};
+
+type Foo = unit {
+    a: b"A" %error { print "field A %error"; self.backtrack(); }
+    b: b"B";
+};
+
+# Test that contains a field where Bison parsing is tricky.
+public type Test3 = unit {
+    x: bytes &size=5 %error { print "field x %error"; }
+};

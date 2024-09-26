@@ -130,13 +130,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(declaration::UnitHook* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( auto m = n->parent<hilti::declaration::Module>() )
-                n->setFullyQualifiedID(m->id() + n->id()); // global scope
-        }
-    }
-
     void operator()(type::unit::Item* n) final {
         if ( ! n->fullyQualifiedID() ) {
             if ( auto utype = n->parent<type::Unit>(); utype && utype->typeID() )
@@ -276,7 +269,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             QualifiedType* dd = nullptr;
 
-            if ( n->isForEach() ) {
+            if ( n->hookType() == declaration::hook::Type::ForEach ) {
                 dd = unit_field->ddType();
                 if ( ! dd || ! dd->isResolved() )
                     return;

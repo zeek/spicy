@@ -35,7 +35,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 94
+%expect 100
 %expect-rr 168
 
 %{
@@ -902,9 +902,8 @@ unit_hook_id: { driver->enableHookIDMode(); }
 unit_hook_attribute
               : FOREACH                          { $$ = builder->attribute("foreach", __loc__); }
               | PRIORITY '=' expr                { $$ = builder->attribute("&priority", std::move($3), __loc__); }
-              | PROPERTY                         { if ( $1 != "%debug" ) error(@$, "unexpected hook property, only %debug permitted");
-                                                   $$ = builder->attribute("%debug", __loc__);
-                                                 }
+              | PROPERTY                         { $$ = builder->attribute($1, __loc__); }
+              | attribute                        { $$ = std::move($1); }
 
 unit_switch   : SWITCH opt_unit_switch_expr '{' unit_switch_cases '}' opt_attributes opt_unit_field_condition ';'
                                                  { $$ = builder->typeUnitItemSwitch(std::move($2), std::move($4), std::move($7), {}, std::move($6), __loc__); }

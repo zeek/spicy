@@ -205,7 +205,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         assert(unit_type);
 
         auto func =
-            cg->compileHook(*unit_type->as<type::Unit>(), n->hook()->id(), {}, hook->isForEach(), hook->isDebug(),
+            cg->compileHook(*unit_type->as<type::Unit>(), n->hook()->id(), {}, hook->hookType(), hook->isDebug(),
                             hook->ftype()->parameters(), hook->body(), hook->priority(), n->meta());
 
         replaceNode(n, func);
@@ -598,8 +598,9 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
 }
 
 hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
-                                                   bool foreach, bool debug, hilti::type::function::Parameters params,
-                                                   Statement* body, Expression* priority, const hilti::Meta& meta) {
+                                                   declaration::hook::Type type, bool debug,
+                                                   hilti::type::function::Parameters params, Statement* body,
+                                                   Expression* priority, const hilti::Meta& meta) {
     if ( debug && ! options().debug )
         return {};
 
@@ -625,10 +626,14 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
         }
     }
 
-    if ( foreach ) {
+    if ( type == declaration::hook::Type::ForEach ) {
         params.push_back(
             builder()->parameter("__dd", field->ddType()->type()->elementType()->type(), hilti::parameter::Kind::In));
         params.push_back(builder()->parameter("__stop", builder()->typeBool(), hilti::parameter::Kind::InOut));
+    }
+    else if ( type == declaration::hook::Type::Error ) {
+        if ( params.empty() )
+            params.push_back(builder()->parameter("__excpt", builder()->typeString(), hilti::parameter::Kind::In));
     }
     else if ( original_field_type ) {
         params.push_back(builder()->parameter("__dd", field->itemType()->type(), hilti::parameter::Kind::In));
@@ -651,9 +656,19 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
         hid = "__str__";
     }
     else {
+        std::string postfix;
+
+        switch ( type ) {
+            case declaration::hook::Type::Standard: break;
+            case declaration::hook::Type::Error: postfix = "_error"; break;
+            case declaration::hook::Type::ForEach: postfix = "_foreach"; break;
+        }
+
+        hid = fmt("__on_%s%s", id.local(), postfix);
         result = builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const);
-        hid = fmt("__on_%s%s", id.local(), (foreach ? "_foreach" : ""));
     }
+
+    assert(! hid.empty());
 
     if ( ! id.namespace_().empty() )
         hid = fmt("%s::%s", id.namespace_(), hid);

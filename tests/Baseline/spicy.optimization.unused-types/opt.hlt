@@ -306,12 +306,14 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
     (__cur, __lah, __lahe, __error) = (*__transient__anon_2).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
     # End parsing production: Unit: foo__Priv5_2 ->
 
-    # "<...>/unused-types.spicy:28:14-28:20"
+    {
+        # "<...>/unused-types.spicy:28:14-28:20"
 
-    # Begin parsing production: Unit: foo__Priv6_2 ->
-    (*self).x = default<const Priv6>();
-    (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
-    # End parsing production: Unit: foo__Priv6_2 ->
+        # Begin parsing production: Unit: foo__Priv6_2 ->
+        (*self).x = default<const Priv6>();
+        (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+        # End parsing production: Unit: foo__Priv6_2 ->
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
