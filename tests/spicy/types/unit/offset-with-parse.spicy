@@ -1,0 +1,18 @@
+# @TEST-EXEC: printf 'a' | spicy-driver -d %INPUT
+#
+# @TEST-DOC:
+
+module Test;
+
+public type X = unit {
+    a: bytes &size=1;
+
+    y1: Y &parse-at=self.input();
+    y2: Y &parse-from=self.a; # Behaves identical.
+};
+
+type Y = unit {
+    a: bytes &size=1 {
+        assert self.offset() == 0 : "First element should always be at offset 0";
+    }
+};
