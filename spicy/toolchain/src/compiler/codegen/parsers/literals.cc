@@ -151,7 +151,7 @@ struct Visitor : public visitor::PreOrder {
             pb()->cg()->addDeclaration(d);
         }
 
-        auto parse = [&](Expression* result) -> Expression* {
+        auto parse = [&](Expression* result, bool trim) -> Expression* {
             if ( ! result && state().literal_mode != LiteralMode::Skip )
                 result = lp->destination(builder()->typeBytes());
 
@@ -216,6 +216,10 @@ struct Visitor : public visitor::PreOrder {
             }
 
             pb()->setInput(ncur);
+
+            if ( trim )
+                pb()->trimInput();
+
             builder()->addBreak();
             popBuilder();
 
@@ -230,14 +234,14 @@ struct Visitor : public visitor::PreOrder {
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
             case LiteralMode::Skip: {
-                result = parse(result);
+                result = parse(result, true);
                 return;
             }
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
                 auto tmp = builder()->addTmp("result", state().cur);
-                result = parse(tmp);
+                result = parse(tmp, false);
                 return;
             }
         }
