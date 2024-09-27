@@ -138,6 +138,9 @@ public function mktime(y: uint64, m: uint64, d: uint64, H: uint64, M: uint64, S:
 ## Returns a bytes value rendered as a hex string.
 public function bytes_to_hexstring(value: bytes) : string &cxxname="spicy::rt::bytes_to_hexstring" &have_prototype;
 
+## Returns a bytes value rendered as a MAC address string (i.e., colon-separated hex bytes).
+public function bytes_to_mac(value: bytes) : string &cxxname="spicy::rt::bytes_to_mac" &have_prototype;
+
 ## Returns the value of an environment variable, if set.
 public function getenv(name: string) : optional<string> &cxxname="hilti::rt::getenv" &have_prototype;
 

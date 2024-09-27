@@ -29,6 +29,16 @@ std::string spicy::rt::bytes_to_hexstring(const hilti::rt::Bytes& value) {
     return result;
 }
 
+std::string spicy::rt::bytes_to_mac(const hilti::rt::Bytes& value) {
+    std::vector<std::string> bytes;
+    bytes.reserve(value.size());
+
+    for ( auto x : value )
+        bytes.emplace_back(hilti::rt::fmt("%02X", x));
+
+    return hilti::rt::join(bytes, ":");
+}
+
 const hilti::rt::Vector<
     std::optional<std::tuple<hilti::rt::integer::safe<uint64_t>, std::optional<hilti::rt::integer::safe<uint64_t>>>>>*
 spicy::rt::get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value) {
