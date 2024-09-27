@@ -1,0 +1,15 @@
+# @TEST-EXEC: printf 'babc' | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that we can use capture group from inside attributes
+
+module Test;
+
+public type X = unit {
+    a: /b/;
+    b: /a(b+)c/ &requires=($1 == self.a)
+          {
+              assert($1 == self.a);
+              print self;
+          }
+};
