@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include <hilti/ast/ast-context.h>
@@ -19,13 +17,16 @@ public:
     bool isBuiltIn() const { return _builtin; }
 
     // resolves recursively
-    UnqualifiedType* resolvedType() const {
+    UnqualifiedType* resolvedType(size_t recursion_depth = 0) const {
         if ( ! _resolved_type_index )
+            return nullptr;
+
+        if ( recursion_depth > 1000 )
             return nullptr;
 
         auto t = context()->lookup(_resolved_type_index);
         if ( auto n = t->tryAs<type::Name>() )
-            return n->resolvedType();
+            return n->resolvedType(recursion_depth + 1);
         else
             return t;
     }

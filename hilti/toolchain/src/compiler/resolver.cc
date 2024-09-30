@@ -66,7 +66,10 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
         }
 
         if ( n->resolvedTypeIndex() ) {
-            if ( auto resolved = n->resolvedType(); resolved->isOnHeap() ) {
+            auto resolved = n->resolvedType();
+            if ( ! resolved )
+                n->addError(util::fmt("type '%s' cannot be resolved by its name", n->id()));
+            else if ( resolved->isOnHeap() ) {
                 if ( auto qtype = n->parent()->tryAs<QualifiedType>() ) {
                     auto replace = false;
 

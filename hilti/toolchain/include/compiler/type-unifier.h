@@ -5,6 +5,7 @@
 #include <string>
 
 #include <hilti/ast/forward.h>
+#include <hilti/ast/node.h>
 
 namespace hilti::type_unifier {
 
@@ -55,12 +56,14 @@ public:
     /** Resets all state to start a new unification. */
     void reset() {
         _serial.clear();
+        _cd.clear();
         _abort = false;
     }
 
 private:
-    std::string _serial; // builds up serialization incrementally
-    bool _abort = false; // if true, cannot compute serialization yet
+    std::string _serial;     // builds up serialization incrementally
+    node::CycleDetector _cd; // used to check for invalid cycles
+    bool _abort = false;     // if true, cannot compute serialization yet
 };
 
 namespace detail {
