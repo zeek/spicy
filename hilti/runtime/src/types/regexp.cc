@@ -199,7 +199,7 @@ std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& dat
     return std::make_pair(_pimpl->_acc, _pimpl->_ms.offset - start_ms_offset);
 }
 
-regexp::Captures regexp::MatchState::captures(const Stream& data) const {
+regexp::Captures regexp::MatchState::captures(const stream::View& data) const {
     if ( _pimpl->_re->_flags.no_sub || _pimpl->_acc <= 0 || ! _pimpl->_done )
         return Captures();
 
@@ -213,7 +213,7 @@ regexp::Captures regexp::MatchState::captures(const Stream& data) const {
             // internally as well: if not both are set, just skip (and
             // don't count) the group.
             if ( groups[i].rm_so >= 0 || groups[i].rm_eo >= 0 )
-                captures.emplace_back(data.view(false).sub(groups[i].rm_so, groups[i].rm_eo).data());
+                captures.emplace_back(data.sub(groups[i].rm_so, groups[i].rm_eo).data());
         }
     }
 

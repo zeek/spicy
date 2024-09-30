@@ -237,7 +237,7 @@ TEST_CASE("advance") {
         {
             auto ms_std_1 = re_std.tokenMatcher();
             CHECK_EQ(ms_std_1.advance("Xa"_b, false), std::make_tuple(0, 0));
-            CHECK_EQ(ms_std_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+            CHECK_EQ(ms_std_1.captures(Stream("XabbbcdefgX"_b).view()), Vector<Bytes>());
         }
 
         {
@@ -247,13 +247,13 @@ TEST_CASE("advance") {
             CHECK_EQ(ms_std_2.advance("bc"_b, false), std::make_tuple(-1, 2));
             CHECK_EQ(ms_std_2.advance("de"_b, false), std::make_tuple(-1, 2));
             CHECK_EQ(ms_std_2.advance("fgX"_b, true), std::make_tuple(1, 2));
-            CHECK_EQ(ms_std_2.captures(Stream("abbbcdefg"_b)), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
+            CHECK_EQ(ms_std_2.captures(Stream("abbbcdefg"_b).view()), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
         }
 
         {
             auto ms_no_sub_1 = re_no_sub.tokenMatcher();
             CHECK_EQ(ms_no_sub_1.advance("Xa"_b, false), std::make_tuple(0, 0));
-            CHECK_EQ(ms_no_sub_1.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+            CHECK_EQ(ms_no_sub_1.captures(Stream("XabbbcdefgX"_b).view()), Vector<Bytes>());
         }
 
         {
@@ -263,7 +263,7 @@ TEST_CASE("advance") {
             CHECK_EQ(ms_no_sub_2.advance("bc"_b, false), std::make_tuple(-1, 2));
             CHECK_EQ(ms_no_sub_2.advance("de"_b, false), std::make_tuple(-1, 2));
             CHECK_EQ(ms_no_sub_2.advance("fgX"_b, true), std::make_tuple(1, 2));
-            CHECK_EQ(ms_no_sub_2.captures(Stream("XabbbcdefgX"_b)), Vector<Bytes>());
+            CHECK_EQ(ms_no_sub_2.captures(Stream("XabbbcdefgX"_b).view()), Vector<Bytes>());
         }
 
         // Check that patterns stop when current match cannot be possible expanded anymore.
@@ -284,27 +284,27 @@ TEST_CASE("advance") {
         {
             auto ms_std_1 = re_std.tokenMatcher();
             CHECK_EQ(ms_std_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
-            CHECK_EQ(ms_std_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
+            CHECK_EQ(ms_std_1.captures(Stream("XabbcyX"_b).view()), Vector<Bytes>({}));
         }
 
         {
             auto ms_std_2 = re_std.tokenMatcher();
             CHECK_EQ(ms_std_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
             CHECK_EQ(ms_std_2.advance("yX"_b, true), std::make_tuple(20, 1));
-            CHECK_EQ(ms_std_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
+            CHECK_EQ(ms_std_2.captures(Stream("abbcyX"_b).view()), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
         }
 
         {
             auto ms_no_sub_1 = re_no_sub.tokenMatcher();
             CHECK_EQ(ms_no_sub_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
-            CHECK_EQ(ms_no_sub_1.captures(Stream("XabbcyX"_b)), Vector<Bytes>({}));
+            CHECK_EQ(ms_no_sub_1.captures(Stream("XabbcyX"_b).view()), Vector<Bytes>({}));
         }
 
         {
             auto ms_no_sub_2 = re_no_sub.tokenMatcher();
             CHECK_EQ(ms_no_sub_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
             CHECK_EQ(ms_no_sub_2.advance("yX"_b, true), std::make_tuple(20, 1));
-            CHECK_EQ(ms_no_sub_2.captures(Stream("abbcyX"_b)), Vector<Bytes>({}));
+            CHECK_EQ(ms_no_sub_2.captures(Stream("abbcyX"_b).view()), Vector<Bytes>({}));
         }
     }
 

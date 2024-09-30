@@ -1,3 +1,13 @@
+1.12.0-dev.119 | 2024-09-30 13:37:10 +0200
+
+  * GH-1846: Fix bug with captures groups. (Robin Sommer, Corelight)
+
+    When extracting the data matching capture groups we'd take it from the
+    beginning of the stream, not the beginning of the current view, even
+    though the latter is what we are matching against.
+
+  * Add missing trim after matching a regular expression. (Robin Sommer, Corelight)
+
 1.12.0-dev.116 | 2024-09-30 13:35:49 +0200
 
   * GH-1842: Fix when input redirection becomes visible. (Robin Sommer, Corelight)

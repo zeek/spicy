@@ -3,8 +3,9 @@
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'a' to 'A'
-[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=0/0/1/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1/1 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: b   -> b"B" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
@@ -14,16 +15,19 @@
 [spicy-verbose]   - parsing production: Ctor: c   -> /C/ (regexp)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'c' to 'C'
-[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=2/0/3/3/3 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=3/0/3/3/3 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: d   -> /D/ (regexp)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'd' to 'D'
-[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=2/0/4/4/4 chunks=2 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=4/0/4/4/4 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: e   -> /E/ (regexp)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'e' to 'E'
 Done: [$a=b"A", $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy-verbose] - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -61,31 +65,35 @@ Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)
 [spicy-verbose]     - parsing production: Ctor: c   -> /C/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'c' to 'C'
-[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=5/0/6/6/6 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=6/0/6/6/6 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: d   -> /D/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'd' to 'D'
-[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=5/0/7/7/7 chunks=2 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=7/0/7/7/7 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: e   -> /E/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'e' to 'E'
 Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy-verbose] - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'a' to 'A'
-[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=0/0/1/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1/1 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: b   -> b"B" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
 [spicy-verbose]     failed to parse, will try to synchronize at 'd'
-[spicy-verbose]     - state: type=test::A input="C" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
-[spicy-verbose]     - state: type=test::A input="C" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
-[spicy-verbose]     - state: type=test::A input="C" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="C" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="C" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="C" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
@@ -102,6 +110,7 @@ Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose]     - parsing production: Ctor: e   -> /E/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'e' to 'E'
 Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy-verbose] - state: type=test::A input="B" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -123,34 +132,38 @@ Confirmed: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)
 [spicy-verbose]     - parsing production: Ctor: c   -> /C/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'c' to 'C'
-[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/2/2/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=2/0/2/2/2 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: d   -> /D/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'd' to 'D'
-[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/3/3/3 chunks=2 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=3/0/3/3/3 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]     - parsing production: Ctor: e   -> /E/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'e' to 'E'
 Done: [$a=(not set), $b=b"B", $c=b"C", $d=b"D", $e=b"E"]
 [spicy-verbose] - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'a' to 'A'
-[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=0/0/1/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1/1 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: b   -> b"B" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
 [spicy-verbose]     failed to parse, will try to synchronize at 'd'
-[spicy-verbose]     - state: type=test::A input="D" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
-[spicy-verbose]     - state: type=test::A input="D" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=no mode=default trim=yes lah=2 lah_token="D" recovering=yes
+[spicy-verbose]     - state: type=test::A input="D" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="D" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=no mode=default trim=yes lah=2 lah_token="D" recovering=yes
 [spicy-verbose]     successfully synchronized
 Synced: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[spicy-verbose]     - state: type=test::A input="D" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=no mode=default trim=yes lah=2 lah_token="D" recovering=no
+[spicy-verbose]     - state: type=test::A input="D" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=no mode=default trim=yes lah=2 lah_token="D" recovering=no
 [spicy-verbose]     - parsing production: Ctor: d   -> /D/ (regexp)
 [spicy-verbose]       - consuming look-ahead token
 [spicy-verbose]       - trimming input
@@ -159,21 +172,23 @@ Confirmed: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose]     - parsing production: Ctor: e   -> /E/ (regexp)
 [spicy-verbose]       suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]       resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
+[spicy-verbose]       - trimming input
 [spicy-verbose]     - setting field 'e' to 'E'
 Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy-verbose] - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'a' to 'A'
-[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=0/0/1/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1/1 chunks=0 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: b   -> b"B" (const bytes)
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 1 for stream 0xXXXXXXXX
 [spicy-verbose]     failed to parse, will try to synchronize at 'd'
-[spicy-verbose]     - state: type=test::A input="E" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
-[spicy-verbose]     - state: type=test::A input="E" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
-[spicy-verbose]     - state: type=test::A input="E" stream=0xXXXXXXXX offsets=0/0/1/2/2 chunks=2 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="E" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="E" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="E" stream=0xXXXXXXXX offsets=1/0/1/2/2 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=2/0/2/2/2 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=2/0/2/2/2 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
@@ -183,12 +198,13 @@ Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: a   -> /A/ (regexp)
+[spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'a' to 'A'
-[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=0/0/1/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
+[spicy-verbose]   - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1/1 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose]   - parsing production: Ctor: b   -> b"B" (const bytes)
 [spicy-verbose]     insufficient input at end of data for stream 0xXXXXXXXX (which is not ok here)
 [spicy-verbose]     failed to parse, will try to synchronize at 'd'
-[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=0/0/1/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
+[spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1/1 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expected 1 bytes for bytes literal "B" (0 bytes available) (<...>/synchronize.spicy:39:8-39:11)
 [spicy-verbose] - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no

@@ -17,7 +17,7 @@ public type Captures = vector<bytes>;
 public type Profiler = __library_type("hilti::rt::Profiler");
 
 public type MatchState = struct {
-    method Captures captures(stream data);
+    method Captures captures(view<stream> data);
 } &cxxname="hilti::rt::regexp::MatchState";
 
 public type StreamStatistics = struct {
