@@ -57,14 +57,13 @@
 
     Returns the offset of the current location in the input stream
     relative to the unit's start. If executed from inside a field hook,
-    the offset will represent the first byte that the field has been
-    parsed from.
+    the offset will represent the beginning of the field, not the end.
 
 .. spicy:method:: unit::position unit position False iterator<stream> ()
 
     Returns an iterator to the current position in the unit's input
     stream. If executed from inside a field hook, the position will
-    represent the first byte that the field has been parsed from.
+    represent the beginning of the field, not the end.
 
 .. spicy:method:: unit::set_input unit set_input False void (i: iterator<stream>)
 

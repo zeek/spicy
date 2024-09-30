@@ -1,3 +1,12 @@
+1.12.0-dev.116 | 2024-09-30 13:35:49 +0200
+
+  * GH-1842: Fix when input redirection becomes visible. (Robin Sommer, Corelight)
+
+    With `&parse-at/from` we were updating the internal state on our
+    current position immediately, meaning they were visible already when
+    evaluating other attributes on the same field afterwards, which is
+    unexpected.
+
 1.12.0-dev.114 | 2024-09-30 10:24:42 +0200
 
   * GH-1844: Fix nested look-ahead parsing. (Robin Sommer, Corelight)

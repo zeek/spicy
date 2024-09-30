@@ -191,7 +191,7 @@ public:
             .doc = R"(
 Returns the offset of the current location in the input stream relative to the
 unit's start. If executed from inside a field hook, the offset will represent
-the first byte that the field has been parsed from.
+the beginning of the field, not the end.
 )",
         };
     }
@@ -212,8 +212,8 @@ public:
             .ns = "unit",
             .doc = R"(
 Returns an iterator to the current position in the unit's input stream. If
-executed from inside a field hook, the position will represent the first byte
-that the field has been parsed from.
+executed from inside a field hook, the position will represent the beginning of
+the field, not the end.
 )",
         };
     }

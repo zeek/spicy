@@ -1,0 +1,30 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\0x05' | spicy-driver %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-EXED: Check that changing the input with `&parse-at` isn't visible to other attributes on same field; regression test for #1842.
+
+module Test;
+
+import spicy;
+
+public type X = unit {
+    a: uint8;
+    b: uint8;
+    c: uint8;
+
+    x: bytes &size=self.offset()  # yields 3
+             &parse-at=self.input() {
+        print "x", self.offset(); # yields still 3
+        print "x", $$;
+    }
+
+    y: uint8;
+
+    z: bytes &size=self.offset()  # yields 4
+             &parse-from=b"12345" {
+        print "z", self.offset(); # yields still 4
+        print "z", $$;
+    }
+
+    d: uint8;
+};
