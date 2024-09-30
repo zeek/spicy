@@ -355,6 +355,8 @@
 [debug/ast-declarations]             - Parameter "S" (spicy::S)
 [debug/ast-declarations]     - Function "bytes_to_hexstring" (spicy::bytes_to_hexstring)
 [debug/ast-declarations]             - Parameter "value" (spicy::value)
+[debug/ast-declarations]     - Function "bytes_to_mac" (spicy::bytes_to_mac)
+[debug/ast-declarations]             - Parameter "value" (spicy::value_2)
 [debug/ast-declarations]     - Function "getenv" (spicy::getenv)
 [debug/ast-declarations]             - Parameter "name" (spicy::name)
 [debug/ast-declarations]     - Function "strftime" (spicy::strftime)
@@ -384,7 +386,7 @@
 [debug/ast-declarations] - [function] hilti::exception_where_2 -> hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [function] hilti::profiler_start -> hilti::Profiler
 [debug/ast-declarations] - [function] hilti::profiler_stop -> hilti::Profiler
-[debug/ast-declarations] - [module] spicy -> spicy::AddressFamily, spicy::Base64Stream, spicy::BitOrder, spicy::ByteOrder, spicy::Charset, spicy::DecodeErrorStrategy, spicy::Direction, spicy::Error, spicy::MatchState, spicy::Protocol, spicy::RealType, spicy::ReassemblerPolicy, spicy::Side, spicy::StreamStatistics, spicy::ZlibStream, spicy::accept_input, spicy::base64_decode, spicy::base64_encode, spicy::base64_finish, spicy::bytes_to_hexstring, spicy::crc32_add, spicy::crc32_init, spicy::current_time, spicy::decline_input, spicy::getenv, spicy::mktime, spicy::parse_address, spicy::parse_address_2, spicy::strftime, spicy::strptime, spicy::zlib_decompress, spicy::zlib_finish, spicy::zlib_init
+[debug/ast-declarations] - [module] spicy -> spicy::AddressFamily, spicy::Base64Stream, spicy::BitOrder, spicy::ByteOrder, spicy::Charset, spicy::DecodeErrorStrategy, spicy::Direction, spicy::Error, spicy::MatchState, spicy::Protocol, spicy::RealType, spicy::ReassemblerPolicy, spicy::Side, spicy::StreamStatistics, spicy::ZlibStream, spicy::accept_input, spicy::base64_decode, spicy::base64_encode, spicy::base64_finish, spicy::bytes_to_hexstring, spicy::bytes_to_mac, spicy::crc32_add, spicy::crc32_init, spicy::current_time, spicy::decline_input, spicy::getenv, spicy::mktime, spicy::parse_address, spicy::parse_address_2, spicy::strftime, spicy::strptime, spicy::zlib_decompress, spicy::zlib_finish, spicy::zlib_init
 [debug/ast-declarations] - [function] spicy::base64_decode -> spicy::Base64Stream
 [debug/ast-declarations] - [function] spicy::base64_encode -> spicy::Base64Stream
 [debug/ast-declarations] - [function] spicy::base64_finish -> spicy::Base64Stream
@@ -914,6 +916,8 @@
 [debug/ast-declarations]             - Parameter "S" (spicy::S)
 [debug/ast-declarations]     - Function "bytes_to_hexstring" (spicy::bytes_to_hexstring)
 [debug/ast-declarations]             - Parameter "value" (spicy::value)
+[debug/ast-declarations]     - Function "bytes_to_mac" (spicy::bytes_to_mac)
+[debug/ast-declarations]             - Parameter "value" (spicy::value_2)
 [debug/ast-declarations]     - Function "getenv" (spicy::getenv)
 [debug/ast-declarations]             - Parameter "name" (spicy::name)
 [debug/ast-declarations]     - Function "strftime" (spicy::strftime)
@@ -1382,6 +1386,8 @@
 [debug/ast-declarations]             - Parameter "S" (spicy::S)
 [debug/ast-declarations]     - Function "bytes_to_hexstring" (spicy::bytes_to_hexstring)
 [debug/ast-declarations]             - Parameter "value" (spicy::value)
+[debug/ast-declarations]     - Function "bytes_to_mac" (spicy::bytes_to_mac)
+[debug/ast-declarations]             - Parameter "value" (spicy::value_2)
 [debug/ast-declarations]     - Function "getenv" (spicy::getenv)
 [debug/ast-declarations]             - Parameter "name" (spicy::name)
 [debug/ast-declarations]     - Function "strftime" (spicy::strftime)
@@ -1422,7 +1428,7 @@
 [debug/ast-declarations] - [function] hilti::exception_where_2 -> hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [function] hilti::profiler_start -> hilti::Profiler
 [debug/ast-declarations] - [function] hilti::profiler_stop -> hilti::Profiler
-[debug/ast-declarations] - [module] spicy -> spicy::AddressFamily, spicy::Base64Stream, spicy::BitOrder, spicy::ByteOrder, spicy::Charset, spicy::DecodeErrorStrategy, spicy::Direction, spicy::Error, spicy::MatchState, spicy::Protocol, spicy::RealType, spicy::ReassemblerPolicy, spicy::Side, spicy::StreamStatistics, spicy::ZlibStream, spicy::accept_input, spicy::base64_decode, spicy::base64_encode, spicy::base64_finish, spicy::bytes_to_hexstring, spicy::crc32_add, spicy::crc32_init, spicy::current_time, spicy::decline_input, spicy::getenv, spicy::mktime, spicy::parse_address, spicy::parse_address_2, spicy::strftime, spicy::strptime, spicy::zlib_decompress, spicy::zlib_finish, spicy::zlib_init
+[debug/ast-declarations] - [module] spicy -> spicy::AddressFamily, spicy::Base64Stream, spicy::BitOrder, spicy::ByteOrder, spicy::Charset, spicy::DecodeErrorStrategy, spicy::Direction, spicy::Error, spicy::MatchState, spicy::Protocol, spicy::RealType, spicy::ReassemblerPolicy, spicy::Side, spicy::StreamStatistics, spicy::ZlibStream, spicy::accept_input, spicy::base64_decode, spicy::base64_encode, spicy::base64_finish, spicy::bytes_to_hexstring, spicy::bytes_to_mac, spicy::crc32_add, spicy::crc32_init, spicy::current_time, spicy::decline_input, spicy::getenv, spicy::mktime, spicy::parse_address, spicy::parse_address_2, spicy::strftime, spicy::strptime, spicy::zlib_decompress, spicy::zlib_finish, spicy::zlib_init
 [debug/ast-declarations] - [function] spicy::base64_decode -> spicy::Base64Stream
 [debug/ast-declarations] - [function] spicy::base64_encode -> spicy::Base64Stream
 [debug/ast-declarations] - [function] spicy::base64_finish -> spicy::Base64Stream

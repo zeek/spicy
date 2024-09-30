@@ -1,3 +1,14 @@
+1.12.0-dev.122 | 2024-09-30 14:18:09 +0200
+
+  * GH-1874: Add new library function `spicy::bytes_to_mac`. (Robin Sommer, Corelight)
+
+    ```
+    ## Returns a bytes value rendered as a MAC address string (i.e., colon-separated hex bytes).
+    public function bytes_to_mac(value: bytes) : string;
+    ```
+
+  * Optimize `spicy::bytes_to_hexstring` and `spicy::bytes_to_mac`. (Robin Sommer, Corelight)
+
 1.12.0-dev.119 | 2024-09-30 13:37:10 +0200
 
   * GH-1846: Fix bug with captures groups. (Robin Sommer, Corelight)

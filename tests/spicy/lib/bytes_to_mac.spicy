@@ -1,0 +1,9 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT
+
+module Test;
+
+import spicy;
+
+assert spicy::bytes_to_mac(b"\x01\x23\xff") == "01:23:FF";
+assert spicy::bytes_to_mac(b"\x01") == "01";
+assert spicy::bytes_to_mac(b"") == "";

@@ -76,6 +76,12 @@ Constructs a time value from a tuple of broken-out elements specifying local tim
 
 Returns a bytes value rendered as a hex string.
 
+.. _spicy_bytes_to_mac:
+
+.. rubric:: ``function spicy::bytes_to_mac(value: bytes) : string``
+
+Returns a bytes value rendered as a MAC address string (i.e., colon-separated hex bytes).
+
 .. _spicy_getenv:
 
 .. rubric:: ``function spicy::getenv(name: string) : optional<string>``
