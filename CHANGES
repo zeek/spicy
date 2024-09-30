@@ -1,3 +1,16 @@
+1.12.0-dev.114 | 2024-09-30 10:24:42 +0200
+
+  * GH-1844: Fix nested look-ahead parsing. (Robin Sommer, Corelight)
+
+    When parsing nested vectors all using look-ahead, we need to return
+    control back to upper level when an inner look-ahead isn't found.
+
+    This may change the error message for "normal" look-ahead parsing (see
+    test baseline), but the new one seems fine and potentially even
+    better.
+
+  * Apply compiler suggestion. (Robin Sommer, Corelight)
+
 1.12.0-dev.111 | 2024-09-26 20:00:42 +0200
 
   * Remove `ast-stats` output from tests baselines. (Robin Sommer, Corelight)
