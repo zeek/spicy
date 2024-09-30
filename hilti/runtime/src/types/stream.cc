@@ -565,6 +565,9 @@ bool stream::View::operator==(const View& other) const {
     auto j = other.unsafeBegin();
 
     while ( i != unsafeEnd() ) {
+        if ( ! i.chunk() || ! j.chunk() )
+            return (i.chunk() == j.chunk() && i.offset() == j.offset()); // same out-of-bounds iterators
+
         if ( i.chunk()->isGap() != j.chunk()->isGap() )
             return false;
 
@@ -586,6 +589,9 @@ bool stream::View::operator==(const Bytes& other) const {
     auto j = other.begin();
 
     while ( i != unsafeEnd() ) {
+        if ( ! i.chunk() ) // out-of-bounds, cannot match
+            return false;
+
         if ( *i++ != *j++ )
             return false;
     }
@@ -594,7 +600,7 @@ bool stream::View::operator==(const Bytes& other) const {
 }
 
 std::string hilti::rt::detail::adl::to_string(const stream::SafeConstIterator& x, adl::tag /*unused*/) {
-    auto str = [](auto x) {
+    auto str = [](const auto& x) {
         auto y = x + 10;
         auto v = stream::View(x, y);
         if ( y.isEnd() )
