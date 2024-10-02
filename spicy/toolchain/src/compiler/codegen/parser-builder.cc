@@ -585,11 +585,19 @@ struct ProductionVisitor : public production::Visitor {
         std::optional<Expression*> pre_container_offset;
         std::optional<PathTracker> path_tracker;
         Expression* profiler = nullptr;
+        std::shared_ptr<Builder> block;
 
         if ( is_field_owner ) {
             path_tracker = PathTracker(&_path, field->id());
             auto offset = builder()->memberCall(state().cur, "offset");
             profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")), offset);
+
+            if ( ! field->isAnonymous() ) {
+                // Set up a per-field block for scoping.
+                block = builder()->addBlock();
+                pushBuilder(block);
+            }
+
             pre_container_offset = preParseField(*p, meta);
         }
 
@@ -636,9 +644,13 @@ struct ProductionVisitor : public production::Visitor {
 
         endProduction(*p);
 
-        if ( is_field_owner ) {
+        if ( is_field_owner )
             postParseField(*p, meta, pre_container_offset);
 
+        if ( block )
+            popBuilder(); // Per-field block.
+
+        if ( is_field_owner ) {
             if ( profiler ) {
                 auto offset = builder()->memberCall(state().cur, "offset");
                 builder()->stopProfiler(profiler, offset);

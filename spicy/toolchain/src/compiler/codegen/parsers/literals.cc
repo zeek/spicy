@@ -180,7 +180,7 @@ struct Visitor : public visitor::PreOrder {
             if ( state().literal_mode != LiteralMode::Skip ) {
                 if ( state().captures )
                     builder()->addAssign(*state().captures,
-                                         builder()->memberCall(builder()->id("ms"), "captures", {state().data}));
+                                         builder()->memberCall(builder()->id("ms"), "captures", {state().cur}));
 
                 builder()->addAssign(result, builder()->memberCall(state().cur, "sub",
                                                                    {builder()->begin(builder()->id("ncur"))}));

@@ -107,7 +107,7 @@ public:
      * support for that, or when matching has not finished
      * successfully), the return vector will be empty.
      */
-    Captures captures(const Stream& data) const;
+    Captures captures(const stream::View& data) const;
 
 private:
     // Returns (rc, bytes-consumed). Note that the latter can be negative if
