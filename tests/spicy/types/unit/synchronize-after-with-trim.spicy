@@ -1,0 +1,14 @@
+# @TEST-EXEC: printf ba | spicy-driver -d %INPUT
+#
+# @TEST-DOC: Tests `%synchronize-after` with a fully trimmed view; regression test for #1875.
+
+module RESP;
+
+public type Datas = unit {
+    : (Data &synchronize)[] { confirm; }
+};
+
+type Data = unit {
+    %synchronize-after=b"a";
+    ty: uint8 &requires=($$ < 5);
+    };
