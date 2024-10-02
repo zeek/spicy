@@ -1,3 +1,52 @@
+1.11.3 | 2024-10-01 20:15:46 +0200
+
+  * GH-1846: Fix bug with captures groups. (Robin Sommer, Corelight)
+
+    When extracting the data matching capture groups we'd take it from the
+    beginning of the stream, not the beginning of the current view, even
+    though the latter is what we are matching against.
+
+    Closes #1846.
+
+    (cherry picked from commit 5f14c360866abcd130508382f632386428654dda)
+
+  * Add missing trim after matching a regular expression. (Robin Sommer, Corelight)
+
+    (cherry picked from commit 961ee94fa432377452b9c59c17b87905ac79f403)
+
+  * GH-1875: Fix potential nullptr dereference when comparing streams. (Robin Sommer, Corelight)
+
+    Because we are operating on unsafe iterators, need to catch when one
+    goes out of bounds.
+
+    Closes #1875.
+
+    (cherry picked from commit f1f7a92b18fb71142586a938bc2129518335d052)
+
+  * GH-1842: Fix when input redirection becomes visible. (Robin Sommer, Corelight)
+
+    With `&parse-at/from` we were updating the internal state on our
+    current position immediately, meaning they were visible already when
+    evaluating other attributes on the same field afterwards, which is
+    unexpected.
+
+    Closes #1842.
+
+    (cherry picked from commit 2eeffa6442a7382e07af698e27d0bd2a7a299b7c)
+
+  * GH-1844: Fix nested look-ahead parsing. (Robin Sommer, Corelight)
+
+    When parsing nested vectors all using look-ahead, we need to return
+    control back to upper level when an inner look-ahead isn't found.
+
+    This may change the error message for "normal" look-ahead parsing (see
+    test baseline), but the new one seems fine and potentially even
+    better.
+
+    Closes #1844.
+
+    (cherry picked from commit 2223f18de4a568465f8fbea349237648b8bfbe5a)
+
 1.11.2 | 2024-09-11 08:21:44 +0200
 
   * GH-1860: Fix parsing for vectors of literals. (Robin Sommer, Corelight)
