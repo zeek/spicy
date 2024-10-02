@@ -549,6 +549,7 @@ struct ProductionVisitor : public production::Visitor {
             auto etype = c->parseType()->type()->elementType();
             auto container_element = builder()->addTmp("elem", etype);
             pushDestination(container_element);
+            pb->saveParsePosition(); // need to update position for container elements in case input is redirected
         }
 
         else if ( ! meta.isFieldProduction() )
@@ -1364,7 +1365,6 @@ struct ProductionVisitor : public production::Visitor {
         pstate.cur = builder()->addTmp("parse_cur", builder()->typeStreamView(), builder()->deref(tmp));
         pstate.ncur = {};
         pushState(std::move(pstate));
-        pb->saveParsePosition();
     }
 
     // Redirects input to be read from given stream position next.
@@ -1380,7 +1380,6 @@ struct ProductionVisitor : public production::Visitor {
         pstate.cur = builder()->addTmp("parse_cur", cur);
         pstate.ncur = {};
         pushState(std::move(pstate));
-        pb->saveParsePosition();
     }
 
     // Start sync and trial mode.
