@@ -1,0 +1,21 @@
+# @TEST-EXEC: printf 'yz1z2z3yyz1x' | spicy-dump  %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Parse two nested vectors each using look-ahead; regression test for #1844.
+
+module Test;
+
+type Z = unit {
+    : /z/;
+    zb: bytes &size=1;
+};
+
+type Y = unit {
+    : /y/;
+    z: Z[];
+};
+
+public type X = unit {
+    y: Y[];
+    x: /x/;
+};
