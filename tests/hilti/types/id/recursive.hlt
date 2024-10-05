@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -p %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+type Direct = Direct;
+type Referenced = strong_ref<Referenced>;
+type InVector = vector<InVector>;
+
+type First = Second;
+type Second = First;
+
+}

@@ -1,3 +1,24 @@
+1.12.0-dev.127 | 2024-10-05 13:21:27 +0200
+
+  * GH-1867: Fix infinite loops with recursive types. (Evan Typanski, Corelight)
+
+    Closes #1867
+
+    There are two different cases where infinite loops happen with recursive
+    types. First, a type may reference itself (`type Data = Data`). Second,
+    a type may reference itself inside some other type (`type Data =
+    vector<Data>`).
+
+    The first is fixed with a recursion limit. Since the type simply cannot
+    resolve, it doesn't get anywhere near codegen. You could detect cycles,
+    but that introduces some extra overhead and complexity that shouldn't
+    be needed in a "simple" function.
+
+    The second is fixed with an ad-hoc "occurs" check in type unification.
+    That just detects cycles and aborts if one is present. This could be
+    placed at some other place in the "resolve until convergence" loop, but
+    it seems best put closest to the source of the issue.
+
 1.12.0-dev.124 | 2024-09-30 17:43:41 +0200
 
   * GH-1875: Fix potential nullptr dereference when comparing streams. (Robin Sommer, Corelight)

@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <optional>
-
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/type.h>
@@ -203,8 +201,17 @@ public:
 } // namespace
 
 void type_unifier::Unifier::add(UnqualifiedType* t) {
+    // Occurs check: We cannot handle recursive types. Error out if we see the same
+    // node twice.
+    if ( _cd.haveSeen(t) ) {
+        t->addError(util::fmt("cycle detected in definition of type '%s'", t->typeID()));
+        abort();
+    }
+
     if ( _abort )
         return;
+
+    _cd.recordSeen(t);
 
     if ( auto name = t->tryAs<type::Name>() ) {
         t = name->resolvedType();
