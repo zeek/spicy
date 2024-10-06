@@ -10,13 +10,13 @@ repos:
     entry: ./tests/Scripts/3rdparty/checkbashisms.pl
     language: script
     types: ["sh"]
-    stages: ["commit"]
+    stages: ["pre-commit"]
 
   - id: license
     name: Check for license headers
     entry: ./tests/Scripts/license-header.py
     language: python
-    stages: ["commit"]
+    stages: ["pre-commit"]
     types: [text]
     exclude: '^tests|NOTES|README|autogen|^(CHANGES|VERSION|scripts/ninja-build-stats|\.gitmodules|\.paths|.*\.(decl|json|rst|t2d|txt))$'
 
@@ -25,7 +25,7 @@ repos:
     entry: ./doc/scripts/autogen-docs
     language: script
     pass_filenames: false
-    stages: ["commit"]
+    stages: ["pre-commit"]
 
   - id: stray-baselines
     name: Check for stray BTest baselines
@@ -34,14 +34,14 @@ repos:
       - btest
     language: python
     pass_filenames: false
-    stages: ["commit"]
+    stages: ["pre-commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
   rev: 'v18.1.8'
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
-    stages: ["commit"]
+    stages: ["pre-commit"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0
@@ -51,7 +51,7 @@ repos:
   - id: end-of-file-fixer
     exclude: '^tests/Baseline|^doc/autogen|^doc/_static'
   - id: check-yaml
-    stages: ["commit"]
+    stages: ["pre-commit"]
   - id: check-added-large-files
 
 - repo: https://gitlab.com/daverona/pre-commit/cpp
@@ -60,7 +60,7 @@ repos:
   - id: cpplint
     exclude: '3rdparty/'
     args: ["--quiet"]
-    stages: ["commit"]
+    stages: ["pre-commit"]
 
 - repo: https://github.com/jorisroovers/gitlint
   rev:  v0.19.1
@@ -71,19 +71,19 @@ repos:
   rev: v1.10.0
   hooks:
   - id: rst-backticks
-    stages: ["commit"]
+    stages: ["pre-commit"]
   - id: rst-directive-colons
-    stages: ["commit"]
+    stages: ["pre-commit"]
   - id: rst-inline-touching-normal
-    stages: ["commit"]
+    stages: ["pre-commit"]
 
 - repo: https://github.com/cheshirekow/cmake-format-precommit
   rev: v0.6.13
   hooks:
   - id: cmake-format
-    stages: ["commit"]
+    stages: ["pre-commit"]
   - id: cmake-lint
-    stages: ["commit"]
+    stages: ["pre-commit"]
 
 - repo: https://github.com/crate-ci/typos
   rev: v1.19.0
