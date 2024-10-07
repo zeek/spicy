@@ -1,3 +1,10 @@
+1.12.0-dev.129 | 2024-10-07 13:02:38 +0200
+
+  * Stop using deprecated pre-commit stage names. (Benjamin Bannier, Corelight)
+
+    The names we used have been deprecated since some time, see
+    https://github.com/pre-commit/pre-commit/issues/2732.
+
 1.12.0-dev.127 | 2024-10-05 13:21:27 +0200
 
   * GH-1867: Fix infinite loops with recursive types. (Evan Typanski, Corelight)
