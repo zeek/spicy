@@ -1,3 +1,7 @@
+1.12.0-dev.131 | 2024-10-08 17:09:30 +0200
+
+  * Fix "it's" used as a possessive. (Evan Typanski, Corelight)
+
 1.12.0-dev.129 | 2024-10-07 13:02:38 +0200
 
   * Stop using deprecated pre-commit stage names. (Benjamin Bannier, Corelight)

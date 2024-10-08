@@ -175,7 +175,7 @@ public:
             .ns = "enum_",
             .doc = R"(
 Returns *true* if the value of *op1* corresponds to a known enum label (other
-than ``Undef``), as defined by it's type.
+than ``Undef``), as defined by its type.
 )",
         };
     }
