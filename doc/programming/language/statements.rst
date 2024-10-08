@@ -65,6 +65,18 @@ See :ref:`statement_reject` to reject the synchronization instead.
 
 ``confirm`` can only be invoked from hooks.
 
+.. _statement_continue:
+
+``continue``
+------------
+
+::
+
+    continue;
+
+Inside a :ref:`statement_for` or :ref:`statement_while` loop, ``continue``
+causes the remaining portion of the enclosing loop body to be skipped.
+
 .. _operator_end:
 
 ``end``
