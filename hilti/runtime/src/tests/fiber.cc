@@ -1,7 +1,9 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #include <exception>
-#include <sstream>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/doctest.h>
@@ -9,6 +11,7 @@
 #include <hilti/rt/fiber-check-stack.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/init.h>
+#include <hilti/rt/logging.h>
 #include <hilti/rt/result.h>
 
 class TestDtor { //NOLINT
@@ -343,6 +346,35 @@ TEST_CASE("stack-size-check" * doctest::skip(isMacosAsan())) {
     };
 
     CHECK_THROWS_AS(hilti::rt::fiber::execute(f), hilti::rt::StackSizeExceeded);
+}
+
+TEST_CASE("locations") {
+    hilti::rt::init();
+
+    __location__("global");
+
+    auto f1 = [&](hilti::rt::resumable::Handle* r) {
+        __location__("f1");
+        r->yield();
+        CHECK(strcmp(hilti::rt::debug::location(), "f1") == 0);
+        return hilti::rt::Nothing();
+    };
+
+    auto f2 = [&](hilti::rt::resumable::Handle* r) {
+        __location__("f2");
+        r->yield();
+        CHECK(strcmp(hilti::rt::debug::location(), "f2") == 0);
+        return hilti::rt::Nothing();
+    };
+
+    auto r1 = hilti::rt::fiber::execute(f1);
+    auto r2 = hilti::rt::fiber::execute(f2);
+    r2.resume();
+    r1.resume();
+    CHECK(r1);
+    CHECK(r2);
+
+    CHECK(strcmp(hilti::rt::debug::location(), "global") == 0);
 }
 
 TEST_SUITE_END();
