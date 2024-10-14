@@ -13,8 +13,6 @@ using namespace hilti::rt::detail;
 
 using namespace hilti::rt;
 
-HILTI_THREAD_LOCAL const char* debug::detail::tls_location = nullptr;
-
 void hilti::rt::internalError(std::string_view msg) {
     std::cerr << fmt("[libhilti] Internal error: %s", msg) << '\n';
     abort_with_backtrace();

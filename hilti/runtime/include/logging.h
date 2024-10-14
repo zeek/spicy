@@ -36,7 +36,7 @@ void warning(std::string_view msg);
     }
 
 /** Shortcut to `hilti::rt::debug::setLocation`. */
-#define __location__(x) ::hilti::rt::debug::detail::tls_location = x;
+#define __location__(x) ::hilti::rt::debug::setLocation(x);
 
 namespace debug {
 
@@ -79,23 +79,33 @@ inline void dedent(const std::string_view stream) {
         ::hilti::rt::detail::globalState()->debug_logger->dedent(stream);
 }
 
-namespace detail {
-// Stores pointer to a string containing the current HILTI-side source
-// location. This needs to be thread-local but also should also be as cheap as
-// possible for updating the value.
-extern HILTI_THREAD_LOCAL const char* tls_location;
-} // namespace detail
-
 /**
  * Returns the current source code location if set, or null if not.
  */
-inline const char* location() { return detail::tls_location; }
+inline const char* location() {
+    if ( auto* ctx = ::hilti::rt::context::detail::current() ) {
+        if ( auto* r = ctx->resumable )
+            return r->location();
+        else
+            return ctx->location;
+    }
+    else
+        return nullptr;
+}
 
 /**
- * Sets the current source code location or unsets it if no argument.
- * *loc* must point to a static string that won't go out of scope.
+ * Sets the current source code location, or unsets it if argument is null.
+ *
+ * @param l pointer to a statically allocated string that won't go out of scope.
  */
-inline void setLocation(const char* l = nullptr) { detail::tls_location = l; }
+inline void setLocation(const char* l = nullptr) {
+    if ( auto* ctx = ::hilti::rt::context::detail::current() ) {
+        if ( auto* r = ctx->resumable )
+            r->setLocation(l);
+        else
+            ctx->location = l;
+    }
+}
 
 /**
  * Prints a string, or a runtime value, to a specific debug stream. This is a

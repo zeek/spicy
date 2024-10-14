@@ -44,7 +44,7 @@ struct Context {
      */
     resumable::Handle* resumable = nullptr;
 
-    /**  Context-specific state for fiber management. */
+    /** Context-specific state for fiber management. */
     detail::FiberContext fiber;
 
     /**
@@ -59,6 +59,13 @@ struct Context {
 
     /** Current indent level for debug messages. */
     uint64_t debug_indent{};
+
+    /**
+     * Current location for user-visible diagnostic messages if we're running
+     * outside of a fiber; null if not set. Considered valid only if
+     * `resumable` is not set.
+     */
+    const char* location = nullptr;
 };
 
 namespace context {

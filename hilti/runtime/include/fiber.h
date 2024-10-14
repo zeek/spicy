@@ -208,6 +208,15 @@ public:
     auto&& result() { return std::move(_result); }
     std::exception_ptr exception() const { return _exception; }
 
+    /** Returns the current source code location if set, or null if not. */
+    const char* location() const { return _location; }
+
+    /**
+     * Sets the current source code location or unsets it if argument is null.
+     * @param l pointer to a statically allocated string that won't go out of scope.
+     */
+    void setLocation(const char* location = nullptr) { _location = location; }
+
     std::string tag() const;
 
     static std::unique_ptr<Fiber> create();
@@ -259,6 +268,9 @@ private:
 
     /** Buffer for the fiber's stack when swapped out. */
     StackBuffer _stack_buffer;
+
+    /** Current location for user-visible diagnostic messages; null if not set. */
+    const char* _location = nullptr;
 
 #ifdef HILTI_HAVE_ASAN
     /** Additional tracking state that ASAN needs. */

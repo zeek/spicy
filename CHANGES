@@ -1,3 +1,15 @@
+1.12.0-dev.138 | 2024-10-14 16:16:08 +0200
+
+  * GH-1868: Associate source code locations with current fiber instead of current thread. (Robin Sommer, Corelight)
+
+    This fixes potential location mix-ups when switching between fibers.
+    Note that we still need a context-wide fallback location as well
+    because we're not always running inside a fiber.
+
+    I ran a performance comparison before/after and couldn't measure a
+    difference. Looks like using TLS storage was a case of premature
+    optimization.
+
 1.12.0-dev.136 | 2024-10-14 14:20:16 +0200
 
   * Disable cpplint iwyu check. (Benjamin Bannier, Corelight)
