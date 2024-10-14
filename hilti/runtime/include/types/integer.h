@@ -340,7 +340,7 @@ inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uin
     if ( range == width )
         return v;
 
-    const auto mask = ((uint64_t(1) << range) - uint64_t(1U)) << lower;
+    const auto mask = ((static_cast<uint64_t>(1) << range) - static_cast<uint64_t>(1U)) << lower;
     return (v & mask) >> lower;
 }
 
