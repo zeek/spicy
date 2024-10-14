@@ -137,7 +137,7 @@ struct VisitorCtor : visitor::PreOrder {
                 switch ( t->isWildcard() ? 64 : t->width() ) {
                     case 8:
                         if ( static_cast<double>(int8_t(d)) == d )
-                            result = builder->ctorSignedInteger(int64_t(d), 8, n->meta());
+                            result = builder->ctorSignedInteger(static_cast<int64_t>(d), 8, n->meta());
                         break;
 
                     case 16:
@@ -167,7 +167,7 @@ struct VisitorCtor : visitor::PreOrder {
 
                     case 16:
                         if ( static_cast<double>(static_cast<uint16_t>(d)) == d )
-                            result = builder->ctorUnsignedInteger(uint64_t(d), 16, n->meta());
+                            result = builder->ctorUnsignedInteger(static_cast<uint64_t>(d), 16, n->meta());
                         break;
 
                     case 32:
