@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: printf 12345 | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Switch clause with a &max-size attribute exceeded by our input
+
+module foo;
+
+public type X = unit {
+    switch (0) {
+        * -> : bytes &eod;
+    };
+} &max-size=3;
