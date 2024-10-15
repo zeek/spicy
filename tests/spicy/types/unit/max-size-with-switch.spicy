@@ -1,0 +1,11 @@
+# @TEST-EXEC: echo -n | spicy-driver -d %INPUT
+#
+# @TEST-DOC: Switch clause with a &max-size attribute never reached; regression test for #1871
+
+module foo;
+
+public type X = unit {
+    switch (0) {
+        * -> : void;
+    };
+} &max-size=4711; # Should never fail as unit consumes zero bytes.
