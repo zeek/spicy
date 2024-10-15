@@ -31,7 +31,7 @@ QualifiedType* itemType(hilti::Builder* builder, const Expressions& operands) {
     else if ( auto bitrange = unit->findRangeInAnonymousBitField(id).second )
         return bitrange->itemType();
     else
-        return builder->qualifiedType(builder->typeAuto(), hilti::Constness::Const);
+        return builder->qualifiedType(builder->typeUnknown(), hilti::Constness::Const);
 }
 
 QualifiedType* contextResult(hilti::Builder* builder, const Expressions& operands, hilti::Constness constness) {
