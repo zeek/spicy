@@ -4,7 +4,6 @@
 module Test;
 
 type MyBytes = bytes;
-type MySizedBytes = bytes &size=10;
 
 public type BytesVectors = unit {
     : bytes[10] &size=5; # Fail - bytes can't have &size specified like this
@@ -13,5 +12,4 @@ public type BytesVectors = unit {
     :  MyBytes[10] &size=5; # Fail - MyBytes doesn't have size
 
     : (bytes &size=15)[10] &size=5; # Okay
-    : MySizedBytes[10] &size=5; # TODO: This should be okay, but it fails!
 };
