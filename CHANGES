@@ -1,3 +1,10 @@
+1.12.0-dev.140 | 2024-10-15 16:21:58 +0200
+
+  * GH-1871: Fix `&max-size` on unit containing a `switch`. (Robin Sommer, Corelight)
+
+    We would advance our input too early, letting the subsequent
+    `&max-size` check fail.
+
 1.12.0-dev.138 | 2024-10-14 16:16:08 +0200
 
   * GH-1868: Associate source code locations with current fiber instead of current thread. (Robin Sommer, Corelight)

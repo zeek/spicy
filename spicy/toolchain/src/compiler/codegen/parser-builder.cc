@@ -715,13 +715,8 @@ struct ProductionVisitor : public production::Visitor {
             stop = pb->newContainerItem(*meta.container(), destination(), elem, ! meta.container()->isTransient());
         }
 
-        else if ( ! meta.isFieldProduction() ) {
-            // Need to move position ahead.
-            if ( state().ncur )
-                builder()->addAssign(state().cur, state().ncur);
-
+        else if ( ! meta.isFieldProduction() )
             popDestination();
-        }
 
         else if ( field->parseType()->type()->isA<hilti::type::Void>() )
             popDestination();
