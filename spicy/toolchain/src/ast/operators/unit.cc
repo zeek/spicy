@@ -18,7 +18,7 @@ void checkName(hilti::expression::ResolvedOperator* op) {
     auto i = op->op0()->type()->type()->as<type::Unit>()->itemByName(id);
 
     if ( ! i )
-        op->addError(hilti::util::fmt("unit does not have field '%s'", id));
+        op->addError(hilti::util::fmt("unit does not have field '%s'", id), node::ErrorPriority::High);
 }
 
 

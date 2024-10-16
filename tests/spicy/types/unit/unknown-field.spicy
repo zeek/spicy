@@ -1,7 +1,7 @@
 # @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-DOC: Check that we get a proper error message when trying to access an unknown unit field; regression test for #1790
+# @TEST-DOC: Check that we get a proper error message when trying to access an unknown unit field; regression test for #1790 and #1792
 
 module Test;
 
@@ -11,5 +11,22 @@ type Msg = unit {
 
   on %done {
     self.x = self.bar_;
+  }
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+type T = unit() {
+  x: uint8;
+};
+
+public type U = unit() {
+  len: uint32;
+
+  ts: T[] &size=self.len {
+    for ( e in self.tss )
+      print e.x;
   }
 };
