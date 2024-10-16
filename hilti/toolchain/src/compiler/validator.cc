@@ -322,7 +322,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
 
         if ( ! t->parameters().empty() )
-            checkTypeArguments(n->typeArguments(), t->parameters(), n);
+            checkTypeArguments(n->typeArguments(), t->parameters(), n, true);
     }
 
     void operator()(hilti::ctor::Exception* n) final {

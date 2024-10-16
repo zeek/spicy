@@ -1,0 +1,18 @@
+# @TEST-EXEC: spicyc -j -d %INPUT
+#
+# @TEST-DOC: Use `&convert` on a unit that has a type parameter; regression test for #1790.
+
+module Test;
+
+type Ctx = bool;
+
+public type XXX = unit {
+    %context = Ctx;
+    xxx: YYY(self.context());
+};
+
+type YYY = unit(ctx1: Ctx&) {
+    message: ZZZ(ctx1);
+} &convert=self.message;
+
+type ZZZ = unit(ctx2: Ctx&) {};
