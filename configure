@@ -83,7 +83,7 @@ if [ ! -e "$source_dir/3rdparty/doctest/CMakeLists.txt" ] && [ -d "$source_dir/.
 You seem to be missing the content of the 3rdparty/doctest directory.
 
 This typically means that you performed a non-recursive git clone of
-Spict. To check out the required subdirectories, please execute:
+Spicy. To check out the required subdirectories, please execute:
 
   ( cd $source_dir && git submodule update --recursive --init )
 " >&2;
