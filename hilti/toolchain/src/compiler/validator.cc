@@ -81,6 +81,37 @@ void validator::VisitorMixIn::error(std::string msg, Node* n, Location l, node::
     ++_errors;
 }
 
+void validator::VisitorMixIn::checkTypeArguments(const node::Range<Expression>& have,
+                                                 const node::Set<type::function::Parameter>& want, Node* n,
+                                                 bool allow_no_arguments, bool do_not_check_types) {
+    if ( have.size() > want.size() ) {
+        error(fmt("type expects %u parameter%s, but receives %u", want.size(), (want.size() > 1 ? "s" : ""),
+                  have.size()),
+              n);
+    }
+
+    if ( have.empty() && allow_no_arguments )
+        return;
+
+    for ( size_t i = 0; i < want.size(); i++ ) {
+        if ( i < have.size() ) {
+            if ( do_not_check_types )
+                continue;
+
+            if ( type::same(have[i]->type(), want[i]->type()) )
+                continue;
+
+            if ( type::sameExceptForConstness(have[i]->type(), want[i]->type()) && want[i]->type()->isConstant() )
+                continue;
+
+            error(fmt("type expects %s for parameter %u, but receives %s", *want[i]->type(), i + 1, *have[i]->type()),
+                  n);
+        }
+        else if ( ! want[i]->default_() )
+            error(fmt("type parameter %u is missing (%s)", i + 1, want[i]->id()), n);
+    }
+}
+
 namespace {
 struct VisitorPre : visitor::PreOrder, public validator::VisitorMixIn {
     using hilti::validator::VisitorMixIn::VisitorMixIn;
@@ -104,31 +135,6 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
 
         return Nothing();
-    }
-
-    void checkStructArguments(const node::Range<Expression>& have, const node::Set<type::function::Parameter>& want,
-                              Node* n) {
-        if ( have.size() > want.size() ) {
-            error(fmt("type expects %u parameter%s, but receives %u", want.size(), (want.size() > 1 ? "s" : ""),
-                      have.size()),
-                  n);
-        }
-
-        for ( size_t i = 0; i < want.size(); i++ ) {
-            if ( i < have.size() ) {
-                if ( type::same(have[i]->type(), want[i]->type()) )
-                    continue;
-
-                if ( type::sameExceptForConstness(have[i]->type(), want[i]->type()) && want[i]->type()->isConstant() )
-                    continue;
-
-                error(fmt("type expects %s for parameter %u, but receives %s", *want[i]->type(), i + 1,
-                          *have[i]->type()),
-                      n);
-            }
-            else if ( ! want[i]->default_() )
-                error(fmt("type parameter %u is missing (%s)", i + 1, want[i]->id()), n);
-        }
     }
 
     void operator()(Node* n) final {
@@ -232,7 +238,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
 
             if ( ! n->type()->type()->parameters().empty() )
-                checkStructArguments(n->typeArguments(), n->type()->type()->parameters(), n);
+                checkTypeArguments(n->typeArguments(), n->type()->type()->parameters(), n);
         }
 
         // Check whether this local variable was declared at module scope. We
@@ -299,7 +305,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
 
         if ( ! n->type()->type()->parameters().empty() )
-            checkStructArguments(n->typeArguments(), n->type()->type()->parameters(), n);
+            checkTypeArguments(n->typeArguments(), n->type()->type()->parameters(), n);
     }
 
     ////// Ctors
@@ -316,7 +322,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
 
         if ( ! t->parameters().empty() )
-            checkStructArguments(n->typeArguments(), t->parameters(), n);
+            checkTypeArguments(n->typeArguments(), t->parameters(), n);
     }
 
     void operator()(hilti::ctor::Exception* n) final {
@@ -737,7 +743,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     // Operators (only special cases here, most validation happens where they are defined)
 
     void operator()(operator_::generic::New* n) final {
-        // We reuse the _checkStructArguments() here, that's why this operator is covered here.
+        // We reuse checkTypeArguments() here, that's why this operator is covered here.
         if ( auto t = n->operands()[0]->type()->type()->tryAs<type::Type_>() ) {
             if ( ! t->typeValue()->type()->parameters().empty() ) {
                 node::Range<Expression> args;
@@ -749,7 +755,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                     args = ctor->as<ctor::Tuple>()->value();
                 }
 
-                checkStructArguments(args, t->typeValue()->type()->parameters(), n);
+                checkTypeArguments(args, t->typeValue()->type()->parameters(), n);
             }
         }
         else if ( ! n->operands()[0]->isA<expression::Ctor>() )
