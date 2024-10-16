@@ -355,6 +355,18 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(hilti::declaration::Type* n) final {
+        // Reject attributes on type aliases.
+        //
+        // We cannot use `QualifiedType::alias` here since it only works if the
+        // declaration aliases some other user-declared type, but would miss
+        // alias declarations like `type X = addr;`.
+        const bool isAlias = n->type()->print() != n->typeID().str();
+        if ( isAlias ) {
+            if ( ! n->attributes()->attributes().empty() )
+                // TODO(#1893): This should diagnose on the attribute set
+                error("attributes are not allow on type aliases", n);
+        }
+
         if ( n->linkage() == hilti::declaration::Linkage::Public && n->type()->alias() ) {
             if ( n->type()->alias()->resolvedDeclaration()->linkage() != hilti::declaration::Linkage::Public )
                 error("public unit alias cannot refer to a non-public type", n);

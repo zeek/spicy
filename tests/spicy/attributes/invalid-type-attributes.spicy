@@ -1,0 +1,16 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -p %INPUT 2> output
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Test validation of type attributes.
+
+module Test;
+
+import spicy;
+
+# These attributes seem like they apply to the type, but really they apply to fields
+type Addr = addr &ipv4;
+type X = bytes &size=3;
+
+# These attributes apply to types, but not aliases
+type InvalidOnAlias = bytes &cxxname="valid1";
+type Valid2 = bytes &bit-order=spicy::BitOrder::MSB0;
