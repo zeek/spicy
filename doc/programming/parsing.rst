@@ -1971,7 +1971,7 @@ Here's a basic example of two units types chained through a sink:
 Let's see what's going on here. First, there's ``sink b`` inside the
 declaration of ``A``. That's the connector, kept as state inside
 ``A``. When parsing for ``A`` is about to begin, the ``%init`` hook
-connects the sink to a new instance of ``B``; that'll be the receiver
+connects the sink to a :ref:`new instance <operator_new>` of ``B``; that'll be the receiver
 for data that ``A`` is going to write into the sink. That writing
 happens inside the field hook for ``data``: once we have parsed that
 field, we write what will go to the sink using its built-in
