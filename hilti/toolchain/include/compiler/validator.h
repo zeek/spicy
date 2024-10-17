@@ -38,6 +38,10 @@ public:
     /** Returns the number of errors reported so far. */
     auto errors() const { return _errors; }
 
+    /** Validates if provided type arguments match a type's expectation. */
+    void checkTypeArguments(const node::Range<Expression>& have, const node::Set<type::function::Parameter>& want,
+                            Node* n, bool allow_no_arguments = false, bool do_not_check_types = false);
+
 private:
     Builder* _builder;
     int _errors = 0;

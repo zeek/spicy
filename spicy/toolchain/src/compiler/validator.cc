@@ -879,6 +879,15 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         if ( auto rc = checkFieldAttributes(n); ! rc )
             error(rc.error(), n);
+
+        if ( auto t = n->type() ) {
+            if ( auto unit = t->type()->tryAs<type::Unit>() )
+                // We disable the actual type checking here because arguments
+                // won't have been coerced yet. We are only interested in in
+                // the number of arguments being correct, type checking will
+                // happen later on the HILTI side.
+                checkTypeArguments(n->arguments(), unit->parameters(), n, false, true);
+        }
     }
 
     void operator()(spicy::type::unit::item::UnresolvedField* n) final {

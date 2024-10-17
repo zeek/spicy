@@ -56,7 +56,9 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(ctor::Default* n) final {
         std::string args;
 
-        if ( ! n->type()->type()->parameters().empty() ) {
+        // If type arguments are provided, call the corresponding constructor.
+        // If they aren't, we'll use the default constructor instead.
+        if ( ! n->typeArguments().empty() ) {
             auto exprs = cg->compileCallArguments(n->typeArguments(), n->type()->type()->parameters());
             args = util::join(exprs, ", ");
         }
