@@ -1,10 +1,25 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #pragma once
+#include <algorithm>
+
+#include <hilti/rt/exception.h>
 
 #define SAFEINT_DISABLE_ADDRESS_OPERATOR
+
+// Workaround for https://github.com/zeek/spicy/issues/1829 while is waiting to be merged.
+
+namespace hilti::rt::debug {
+// Forward-declare since `hilti/rt/logging.h` includes this header.
+const char* location();
+} // namespace hilti::rt::debug
+
+#define SAFEINT_REMOVE_NOTHROW
+#define SAFEINT_ASSERT(x)                                                                                              \
+    throw ::hilti::rt::Overflow("overflow detected",                                                                   \
+                                std::max(hilti::rt::debug::location(), static_cast<const char*>("<no location>")))
+
 #include <hilti/rt/3rdparty/SafeInt/SafeInt.hpp>
-#include <hilti/rt/exception.h>
 
 namespace hilti::rt::integer {
 

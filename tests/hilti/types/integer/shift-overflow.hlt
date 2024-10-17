@@ -1,0 +1,21 @@
+# @TEST-DOC: Checks that overflows on bitshifts cause exceptions, regression test for #1829.
+#
+# TODO: Revisit this once https://github.com/dcleblanc/SafeInt/pull/64 moved forward.
+#
+# @TEST-EXEC-FAIL: hiltic -dj %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module overflow {
+
+import hilti;
+
+hilti::print(uint8(0) << 8, True);
+hilti::print(uint16(0) << 16, True);
+hilti::print(uint32(0) << 32, True);
+hilti::print(0 << 64, True);
+hilti::print(uint8(0) << 8, True);
+hilti::print(uint16(0) << 16, True);
+hilti::print(uint32(0) << 32, True);
+hilti::print(0 << 64, True);
+
+}
