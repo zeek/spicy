@@ -8,7 +8,6 @@
 #include <memory>
 #include <optional>
 #include <ostream>
-#include <set>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -500,6 +499,16 @@ public:
         _children.emplace_back(n);
         n->_parent = this;
         n->retain();
+    }
+
+    /**
+     * Updates this Node's location to encompass the other Node's location.
+     *
+     * @param other the node whose location will get merged
+     */
+    void combineLocations(const Node* other) {
+        auto meta = Meta(_meta->location().mergedRange(other->location()), _meta->comments());
+        setMeta(std::move(meta));
     }
 
     /**
