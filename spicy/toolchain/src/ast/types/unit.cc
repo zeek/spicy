@@ -97,7 +97,7 @@ static std::pair<unit::item::Field*, hilti::type::bitfield::BitRange*> findRange
             if ( ! field->isAnonymous() )
                 continue;
 
-            auto t = field->itemType()->type()->tryAs<hilti::type::Bitfield>();
+            auto t = field->originalType()->type()->tryAs<hilti::type::Bitfield>();
             if ( ! t )
                 continue;
 

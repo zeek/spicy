@@ -1,3 +1,42 @@
+1.12.0-dev.150 | 2024-10-17 10:16:57 +0200
+
+  * GH-1792: Prioritize error message reporting unknown field. (Robin Sommer, Corelight)
+
+    This suppresses some non-interesting follow-up errors.
+
+  * GH-1790: Provide proper error message when trying access an unknown unit field. (Robin Sommer, Corelight)
+
+    Returning `type::Unknown` instead of `type::Auto` will let the
+    resolver process stop, allowing an already existing error message to
+    kick in later. We were doing it this way already for structs, but not
+    for units.
+
+    This also includes a fix for a bug with finding bitfield ranges by ID,
+    which was triggered by the change.
+
+  * GH-1791: Fix usage of `&convert` with unit's requiring parameters. (Robin Sommer, Corelight)
+
+    The generated code needs to create a temporary instance of the type,
+    but doesn't have any arguments to provide to it. But that's ok, and we
+    now let the validation pass and just instantiate a default-constructed
+    instance.
+
+    However, this change now requires an additional validator check on the
+    Spicy side to ensure fields giving arguments to types do so correctly
+    Before we happened to check that implicitly on the HILTI-side through
+    code that now would let it pass if no arguments were given.
+
+  * Factor out logic to validate arguments given to a type. (Robin Sommer, Corelight)
+
+    This will allow Spicy's validator to use it as well.
+
+    We also add two options to (1) accept usages where no argument is given at
+    all even when the type would normally require it,;and (2) skip any
+    actual type checking, and just confirm argument count. In a subsequent
+    change, we'll use (1) to fall-back to a type's default constructor,
+    and (2) to check type usage inside unit fields where we haven't
+    fully coerced arguments yet.
+
 1.12.0-dev.144 | 2024-10-16 16:10:40 +0200
 
   * GH-1861: Disallow ignored attributes on type aliases. (Evan Typanski, Corelight)

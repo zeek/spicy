@@ -18,7 +18,7 @@ void checkName(hilti::expression::ResolvedOperator* op) {
     auto i = op->op0()->type()->type()->as<type::Unit>()->itemByName(id);
 
     if ( ! i )
-        op->addError(hilti::util::fmt("unit does not have field '%s'", id));
+        op->addError(hilti::util::fmt("unit does not have field '%s'", id), node::ErrorPriority::High);
 }
 
 
@@ -31,7 +31,7 @@ QualifiedType* itemType(hilti::Builder* builder, const Expressions& operands) {
     else if ( auto bitrange = unit->findRangeInAnonymousBitField(id).second )
         return bitrange->itemType();
     else
-        return builder->qualifiedType(builder->typeAuto(), hilti::Constness::Const);
+        return builder->qualifiedType(builder->typeUnknown(), hilti::Constness::Const);
 }
 
 QualifiedType* contextResult(hilti::Builder* builder, const Expressions& operands, hilti::Constness constness) {
