@@ -35,8 +35,8 @@ hilti::rt::Bytes Stream::encode(const hilti::rt::Bytes& data) {
     if ( ! _state )
         throw Base64Error("encoding already finished");
 
-    std::string buf(data.size() * 2, {});
-    auto len = base64_encode_block(data.data(), static_cast<int>(data.size()), buf.data(), &_state->estate);
+    std::string buf(static_cast<std::string::size_type>(data.size() * 2), {});
+    auto len = base64_encode_block(data.data(), static_cast<std::size_t>(data.size()), buf.data(), &_state->estate);
     return hilti::rt::Bytes(buf.data(), len);
 }
 
@@ -60,8 +60,8 @@ hilti::rt::Bytes Stream::decode(const hilti::rt::Bytes& data) {
     if ( ! _state )
         throw Base64Error("decoding already finished");
 
-    std::string buf(data.size() * 2, {});
-    auto len = base64_decode_block(reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size()),
+    std::string buf(static_cast<std::string::size_type>(data.size() * 2), {});
+    auto len = base64_decode_block(reinterpret_cast<const char*>(data.data()), static_cast<std::size_t>(data.size()),
                                    buf.data(), &_state->dstate);
 
     return hilti::rt::Bytes(buf.data(), len);
@@ -75,8 +75,8 @@ hilti::rt::Bytes Stream::decode(const hilti::rt::stream::View& data) {
 
     for ( auto block = data.firstBlock(); block; block = data.nextBlock(block) ) {
         std::string buf(block->size * 2, {});
-        auto len = base64_decode_block(reinterpret_cast<const char*>(block->start), static_cast<int>(block->size),
-                                       buf.data(), &_state->dstate);
+        auto len = base64_decode_block(reinterpret_cast<const char*>(block->start),
+                                       static_cast<std::size_t>(block->size), buf.data(), &_state->dstate);
         decoded.append(hilti::rt::Bytes(buf.data(), len));
     }
 
