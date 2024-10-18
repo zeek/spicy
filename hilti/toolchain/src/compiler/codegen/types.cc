@@ -1096,7 +1096,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
         // Prefer the bare type name as the display value.
         display << t->type()->typeID();
     else
-        printer::print(display, t, true);
+        printer::print(display, t, true, true);
 
     if ( display.str().empty() )
         logger().internalError(fmt("codegen: type %s does not have a display rendering for type information",

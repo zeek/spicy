@@ -1,0 +1,16 @@
+# @TEST-EXEC: spicyc -p -d %INPUT >output 2>&1; true
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that HILTI-level identifiers are not showing up in compiler errors, but do show up when printing generated HILTI code; regression test for #1803
+
+module Test;
+
+print b"xxx".decode("utf-8");
+
+# @TEST-START-NEXT
+
+module Test;
+
+import spicy;
+
+print b"xxx".decode(spicy::Charset::UTF8);

@@ -86,6 +86,8 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
 
         .ast_print = [](Node* node, hilti::printer::Stream& out) { return printer::print(out, node); },
 
+        .ast_print_id = [](const ID& id, hilti::printer::Stream& out) { return printer::printID(out, id); },
+
         .ast_transform = [](hilti::Builder* builder, hilti::ASTRoot* m) -> bool {
             auto spicy_builder = static_cast<spicy::Builder*>(builder);
             return CodeGen(spicy_builder).compileAST(m);
