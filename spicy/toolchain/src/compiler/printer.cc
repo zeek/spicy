@@ -16,6 +16,26 @@
 
 using namespace spicy;
 
+bool spicy::detail::printer::printID(hilti::printer::Stream& out, const ID& id) {
+    // In user-visible output, replace any `hilti` prefix with `spicy`. This is
+    // a bit of a hammer: it's assuming that any HILTI types showing up there
+    // have a corresponding Spicy type. The alternative would be to explicitly
+    // identify valid mappings somehow (e.g., through a shared `&cxxname`).
+    // However, that's neither easy nor is it clear that that's worth it. For
+    // one, we currently do indeed maintain only such 1:1 mappings (i.e., we
+    // don't rename IDs existing at both layers other than the namespace). And
+    // second, when displaying Spicy code to users, there should really never
+    // be any HILTI identifier showing up anyways; so if we still end up with
+    // any, printing them with a `spicy` prefix is probably still a better
+    // solution than just printing them as-is.
+    if ( out.state().user_visible && id.namespace_() && id.sub(0) == ID("hilti") ) {
+        out << ID("spicy", id.sub(1, -1));
+        return true;
+    }
+
+    return false;
+}
+
 namespace {
 
 struct VisitorPrinter : visitor::PreOrder {
