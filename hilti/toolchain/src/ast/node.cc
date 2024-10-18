@@ -90,11 +90,19 @@ std::string Node::renderSelf(bool include_location) const {
     return s;
 }
 
-void Node::print(std::ostream& out, bool compact) const { printer::print(out, const_cast<Node*>(this), compact); }
+void Node::print(std::ostream& out, bool compact, bool user_visible) const {
+    printer::print(out, const_cast<Node*>(this), compact, user_visible);
+}
 
 std::string Node::print() const {
     std::stringstream out;
-    printer::print(out, const_cast<Node*>(this), true);
+    printer::print(out, const_cast<Node*>(this), true, true);
+    return out.str();
+}
+
+std::string Node::printRaw() const {
+    std::stringstream out;
+    printer::print(out, const_cast<Node*>(this), true, false);
     return out.str();
 }
 

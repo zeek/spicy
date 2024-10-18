@@ -13,26 +13,30 @@
 #include <hilti/ast/id.h>
 #include <hilti/base/util.h>
 
-namespace hilti::printer {
+namespace hilti {
 
-class Stream;
+struct Plugin;
 
-/**
- * Prints an AST as HILTI source code. This consults any installed plugin
- * `print_ast` hooks.
- */
-void print(std::ostream& out, Node* root, bool compact = false);
+namespace printer {
 
 /**
  * Prints an AST as HILTI source code. This consults any installed plugin
  * `print_ast` hooks.
+ *
+ * @param out output stream
+ * @param root top-level node of the AST to print (which does not need to be an `ASTRoot`)
+ * @param compact if true, create a one-line representation
+ * @param user_visible if true, signal to the printer that the output is
+ * intended for user consumption, permitting it to do some visual polishing
  */
-void print(Stream& stream, Node* root); // NOLINT
+void print(std::ostream& out, Node* root, bool compact, bool user_visible);
 
 namespace detail {
 
 /** Maintains printer state while output is in progress. */
 struct State {
+    const Plugin* current_plugin = nullptr;
+
     std::vector<ID> scopes = {{""}};
     std::string pending;
     int indent = 0;
@@ -41,6 +45,7 @@ struct State {
     bool last_in_block = false;
     bool expand_subsequent_type = false;
     bool compact = false;
+    bool user_visible = true;
 
     inline static std::unique_ptr<State> current;
     inline static uint64_t depth = 0;
@@ -102,7 +107,7 @@ public:
     template<typename T, IF_DERIVED_FROM(T, Node)>
     Stream& operator<<(T* t) {
         _flush_pending();
-        ::hilti::printer::print(*this, t);
+        _print(t);
         return *this;
     }
 
@@ -150,6 +155,10 @@ public:
     }
 
 private:
+    friend void printer::print(std::ostream& out, Node* root, bool compact, bool user_visible);
+
+    void _print(Node* root);
+
     void _flush_pending() {
         _stream << state().pending;
         state().pending.clear();
@@ -158,4 +167,5 @@ private:
     std::ostream& _stream;
 };
 
-} // namespace hilti::printer
+} // namespace printer
+} // namespace hilti
