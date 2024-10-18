@@ -14,7 +14,7 @@ using util::fmt;
 
 using namespace hilti::detail;
 
-inline auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_location = false) {
+static auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_location = false) {
     if ( s->isA<statement::Block>() )
         return;
 
@@ -28,7 +28,7 @@ inline auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_l
             location = fmt("%s: ", s->meta().location().dump(true));
 
         b->addStatement(
-            fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", location, util::escapeUTF8(fmt("%s", *s), true)));
+            fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", location, util::escapeUTF8(s->printRaw(), true)));
     }
 }
 

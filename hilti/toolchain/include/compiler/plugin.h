@@ -191,6 +191,17 @@ struct Plugin {
     Hook<bool, Node*, printer::Stream&> ast_print = nullptr;
 
     /**
+     * Hook called to output an ID during AST output. The hook gets to
+     * choose if it actually wants to print the ID (potentially
+     * modified), or fall back to the default printer.
+     *
+     * @param arg1 ID to print
+     * @param arg2 stream to print the ID to
+     * @return true if the hook printed the ID, false to fall back to default
+     */
+    Hook<bool, const ID&, printer::Stream&> ast_print_id = nullptr;
+
+    /**
      * Hook called to replace AST nodes of one language (plugin) with nodes
      * of another coming further down in the pipeline.
      *

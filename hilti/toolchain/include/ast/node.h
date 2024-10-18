@@ -710,17 +710,34 @@ public:
      *
      * @param out output stream
      * @param compact create a one-line representation
+     * @param user_visible if true, signal to the printer that the output is
+     * intended for user consumption, permitting it to do some visual polishing
      *
      */
-    void print(std::ostream& out, bool compact = false) const;
+    void print(std::ostream& out, bool compact, bool user_visible) const;
 
     /**
      * Returns a HILTI source code representation of the node and all its
-     * children. Note that this can be called from inside a debugger.
+     * children. This always renders the code as "user-visible", per the flag
+     * in the extended version of `print()`.
+     *
+     * Note that this can be called from inside a debugger.
      */
     std::string print() const;
 
-    /** Renders the node as HILTI source code (same as `print()`) */
+    /**
+     * Returns a HILTI source code representation of the node and all
+     * its children. This always renders the code as *not*
+     * "user-visible", per the flag in the extended version of Zeek.
+     *
+     * Note that this can be called from inside a debugger.
+     */
+    std::string printRaw() const;
+
+    /**
+     * Renders the node as HILTI source code, using the same semantics
+     * as `print()`.
+     */
     operator std::string() const { return print(); }
 
     /**
@@ -1207,7 +1224,7 @@ auto transform(const hilti::node::Set<X>& x, F f) {
 
 /** Renders a node as HILTI source code. */
 inline std::ostream& operator<<(std::ostream& out, const Node& n) {
-    n.print(out, true);
+    n.print(out, true, true);
     return out;
 }
 

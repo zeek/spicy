@@ -16,10 +16,10 @@ void visitor::MutatingVisitorBase::replaceNode(Node* old, Node* new_, const std:
         msg_ = util::fmt(" (%s)", msg);
 
     if ( new_ )
-        HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s \"%s\"%s", location, old->typename_(), *old, new_->typename_(),
-                                    *new_, msg_))
+        HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s \"%s\"%s", location, old->typename_(), old->printRaw(),
+                                    new_->typename_(), new_->printRaw(), msg_))
     else
-        HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> null%s", location, old->typename_(), *old, msg_))
+        HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> null%s", location, old->typename_(), old->printRaw(), msg_))
 
     assert(old->parent());
     if ( new_ && new_->parent() )
@@ -36,14 +36,14 @@ void visitor::MutatingVisitorBase::recordChange(const Node* old, Node* changed, 
     if ( ! msg.empty() )
         msg_ = util::fmt(" (%s)", msg);
 
-    HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s \"%s\"%s", location, old->typename_(), *old, changed->typename_(),
-                                *changed, msg_))
+    HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s \"%s\"%s", location, old->typename_(), old->printRaw(),
+                                changed->typename_(), *changed, msg_))
     _modified = true;
 }
 
 void visitor::MutatingVisitorBase::recordChange(const Node* old, const std::string& msg) {
     auto location = util::fmt("[%s] ", old->location().dump(true));
-    HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s", location, old->typename_(), *old, msg))
+    HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s", location, old->typename_(), old->printRaw(), msg))
     _modified = true;
 }
 
