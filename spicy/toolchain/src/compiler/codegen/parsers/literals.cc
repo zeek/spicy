@@ -138,6 +138,8 @@ struct Visitor : public visitor::PreOrder {
         hilti::util::cannotBeReached();
     }
 
+    void operator()(hilti::ctor::Coerced* n) final { dispatch(n->coercedCtor()); }
+
     void operator()(hilti::ctor::RegExp* n) final {
         auto re = hilti::ID(fmt("__re_%" PRId64, lp->production->tokenID()));
 
@@ -419,7 +421,8 @@ Expression* ParserBuilder::parseLiteral(const Production& p, Expression* dst) {
     if ( auto e = LiteralParser(this, &p, dst).buildParser(p.expression()) )
         return e;
 
-    hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s'", *p.expression()));
+    hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s' (%s)",
+                                      *p.expression(), p.expression()->typename_()));
 }
 
 void ParserBuilder::skipLiteral(const Production& p) {
