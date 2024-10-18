@@ -18,4 +18,11 @@ namespace spicy::detail::printer {
  */
 bool print(hilti::printer::Stream& stream, Node* root);
 
+/**
+ * Prints out an AST ID. This only prints the ID if the Spicy-side output needs
+ * to be different from the default HILTI output. Returns true in that case,
+ * otherwise false.
+ */
+bool printID(hilti::printer::Stream& out, const ID& id);
+
 } // namespace spicy::detail::printer
