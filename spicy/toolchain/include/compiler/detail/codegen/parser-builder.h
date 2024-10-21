@@ -474,10 +474,10 @@ public:
 
     /**
      * Called when a container item has been parsed. Returns a boolean
-     * expression that true if container parsing is to continue.
+     * expression that is true if container parsing is to continue.
      */
-    Expression* newContainerItem(const type::unit::item::Field& field, Expression* self, Expression* item,
-                                 bool need_value);
+    Expression* newContainerItem(const type::unit::item::Field* field, const type::unit::item::Field* container,
+                                 Expression* self, Expression* item, bool need_value);
 
     /**
      * Applies a field's `&convert` expression to a value, and returns the
