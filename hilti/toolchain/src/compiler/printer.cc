@@ -1090,12 +1090,10 @@ void printer::print(std::ostream& out, Node* root, bool compact) {
 
     ++detail::State::depth;
 
-    struct _ {
-        ~_() {
-            if ( --detail::State::depth == 0 )
-                detail::State::current.reset();
-        }
-    } __;
+    auto _ = util::scope_exit([&]() {
+        if ( --detail::State::depth == 0 )
+            detail::State::current.reset();
+    });
 
     if ( compact ) {
         std::stringstream buffer;
