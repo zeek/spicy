@@ -1,0 +1,11 @@
+# @TEST-EXEC: printf a | spicy-driver -d %INPUT >output
+#
+# @TEST-DOC: Checks that the literals parsers follows coercions; regression test for #1858
+
+module foo;
+
+const a: uint8 = 97; # will be coerced
+
+public type X = unit {
+   : a;
+};
