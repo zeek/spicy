@@ -297,9 +297,10 @@ namespace render_style {
  * the default style accordingly.
  */
 enum class Bytes {
-    Default = 0,               /**< name for unmodified default style */
-    EscapeQuotes = (1U << 1U), /**< escape double quotes with backslashes */
-    UseOctal = (1U << 2U),     /**< escape non-printables with `\NNN` instead of `\xNN` */
+    Default = 0,                    /**< name for unmodified default style */
+    EscapeQuotes = (1U << 1U),      /**< escape double quotes with backslashes */
+    UseOctal = (1U << 2U),          /**< escape non-printables with `\NNN` instead of `\xNN` */
+    NoEscapeBackslash = (1U << 3U), /**< do not escape backslashes */
 };
 
 /**
@@ -311,11 +312,12 @@ enum class Bytes {
  * through `expandUTF8Escapes()`.
  */
 enum class UTF8 {
-    Default = 0,                  /**< name for unmodified default style */
-    EscapeQuotes = (1U << 1U),    /**< escape double quotes with backslashes */
-    NoEscapeControl = (1U << 2U), /**< do not escape control characters and null bytes */
+    Default = 0,                    /**< name for unmodified default style */
+    EscapeQuotes = (1U << 1U),      /**< escape double quotes with backslashes */
+    NoEscapeBackslash = (1U << 2U), /**< do not escape backslashes; this may leave the result non-reversible */
+    NoEscapeControl = (1U << 3U),   /**< do not escape control characters and null bytes */
     NoEscapeHex =
-        (1U << 3U), /**< do not escape already existing `\xNN` escape codes; this may leave the result non-reversible */
+        (1U << 4U), /**< do not escape already existing `\xNN` escape codes; this may leave the result non-reversible */
 };
 
 } // namespace render_style

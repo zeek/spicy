@@ -294,8 +294,10 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8
         if ( cp == '\\' ) {
             if ( (style & render_style::UTF8::NoEscapeHex) && (p + n) < e && *(p + n) == 'x' )
                 esc += "\\";
-            else
+            else if ( ! (style & render_style::UTF8::NoEscapeBackslash) )
                 esc += "\\\\";
+            else
+                esc += "\\";
         }
 
         else if ( cp == '"' && (style & render_style::UTF8::EscapeQuotes) )
@@ -346,7 +348,7 @@ std::string hilti::rt::escapeBytes(std::string_view s, bitmask<render_style::Byt
     std::string esc;
 
     while ( p < e ) {
-        if ( *p == '\\' )
+        if ( *p == '\\' && ! (style & render_style::Bytes::NoEscapeBackslash) )
             esc += "\\\\";
 
         else if ( *p == '"' && (style & render_style::Bytes::EscapeQuotes) )
