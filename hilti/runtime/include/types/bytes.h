@@ -572,7 +572,7 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
-    out << escapeBytes(x.str(), false);
+    out << escapeBytes(x.str());
     return out;
 }
 
@@ -584,7 +584,7 @@ inline Bytes operator"" _b(const char* str, size_t size) { return Bytes(Bytes::B
 
 template<>
 inline std::string detail::to_string_for_print<Bytes>(const Bytes& x) {
-    return escapeBytes(x.str(), false);
+    return escapeBytes(x.str());
 }
 
 namespace detail::adl {

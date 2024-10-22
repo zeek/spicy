@@ -181,29 +181,26 @@ TEST_CASE("escapeBytes") {
     SUBCASE("escape_quotes") {
         // This test is value-parameterized over `quote` and `escape_quotes`.
         std::string quote;
-        bool escape_quotes{};
+        bitmask<render_style::Bytes> style = render_style::Bytes::Default;
         SUBCASE("true") {
-            escape_quotes = true;
+            style = render_style::Bytes::EscapeQuotes;
             quote = R"(\")";
         }
-        SUBCASE("false") {
-            escape_quotes = false;
-            quote = R"(")";
-        }
+        SUBCASE("false") { quote = R"(")"; }
 
-        CHECK_EQ(escapeBytes("", escape_quotes), "");
-        CHECK_EQ(escapeBytes("a\"b\n12", escape_quotes), "a" + quote + R"(b\x0a12)");
-        CHECK_EQ(escapeBytes("a\"b\\n12", escape_quotes), "a" + quote + R"(b\\n12)");
-        CHECK_EQ(escapeBytes("a\"b\\\n12", escape_quotes), "a" + quote + R"(b\\\x0a12)");
-        CHECK_EQ(escapeBytes("a\"b\t12", escape_quotes), "a" + quote + R"(b\x0912)");
+        CHECK_EQ(escapeBytes("", style), "");
+        CHECK_EQ(escapeBytes("a\"b\n12", style), "a" + quote + R"(b\x0a12)");
+        CHECK_EQ(escapeBytes("a\"b\\n12", style), "a" + quote + R"(b\\n12)");
+        CHECK_EQ(escapeBytes("a\"b\\\n12", style), "a" + quote + R"(b\\\x0a12)");
+        CHECK_EQ(escapeBytes("a\"b\t12", style), "a" + quote + R"(b\x0912)");
     }
 
     SUBCASE("use_octal") {
-        CHECK_EQ(escapeBytes("", false, true), "");
-        CHECK_EQ(escapeBytes("ab\n12", false, true), R"(ab\01212)");
-        CHECK_EQ(escapeBytes("ab\\n12", false, true), R"(ab\\n12)");
-        CHECK_EQ(escapeBytes("ab\\\n12", false, true), R"(ab\\\01212)");
-        CHECK_EQ(escapeBytes("ab\t12", false, true), R"(ab\01112)");
+        CHECK_EQ(escapeBytes("", render_style::Bytes::UseOctal), "");
+        CHECK_EQ(escapeBytes("ab\n12", render_style::Bytes::UseOctal), R"(ab\01212)");
+        CHECK_EQ(escapeBytes("ab\\n12", render_style::Bytes::UseOctal), R"(ab\\n12)");
+        CHECK_EQ(escapeBytes("ab\\\n12", render_style::Bytes::UseOctal), R"(ab\\\01212)");
+        CHECK_EQ(escapeBytes("ab\t12", render_style::Bytes::UseOctal), R"(ab\01112)");
     }
 }
 
@@ -215,46 +212,47 @@ TEST_CASE("escapeUTF8") {
     }
 
     SUBCASE("escape_quotes") {
-        CHECK_EQ(escapeUTF8("\"", false), R"(")");
-        CHECK_EQ(escapeUTF8("\"", true), R"(\")");
-        CHECK_EQ(escapeUTF8("\"\"", false), R"("")");
-        CHECK_EQ(escapeUTF8("\"\"", true), R"(\"\")");
+        CHECK_EQ(escapeUTF8("\""), R"(")");
+        CHECK_EQ(escapeUTF8("\"", render_style::UTF8::EscapeQuotes), R"(\")");
+        CHECK_EQ(escapeUTF8("\"\""), R"("")");
+        CHECK_EQ(escapeUTF8("\"\"", render_style::UTF8::EscapeQuotes), R"(\"\")");
     }
 
     SUBCASE("escape_control") {
-        CHECK_EQ(escapeUTF8(std::string(1U, '\0'), false, false), std::string(1U, '\0'));
-        CHECK_EQ(escapeUTF8(std::string(1U, '\0'), false, true), "\\0");
+        CHECK_EQ(escapeUTF8(std::string(1U, '\0'), hilti::rt::render_style::UTF8::NoEscapeControl),
+                 std::string(1U, '\0'));
+        CHECK_EQ(escapeUTF8(std::string(1U, '\0')), "\\0");
 
-        CHECK_EQ(escapeUTF8("\a", false, false), "\a");
-        CHECK_EQ(escapeUTF8("\a", false, true), "\\a");
+        CHECK_EQ(escapeUTF8("\a", hilti::rt::render_style::UTF8::NoEscapeControl), "\a");
+        CHECK_EQ(escapeUTF8("\a"), "\\a");
 
-        CHECK_EQ(escapeUTF8("\b", false, false), "\b");
-        CHECK_EQ(escapeUTF8("\b", false, true), "\\b");
+        CHECK_EQ(escapeUTF8("\b", hilti::rt::render_style::UTF8::NoEscapeControl), "\b");
+        CHECK_EQ(escapeUTF8("\b"), "\\b");
 
-        CHECK_EQ(escapeUTF8("\e", false, false), "\e");
-        CHECK_EQ(escapeUTF8("\e", false, true), "\\e");
+        CHECK_EQ(escapeUTF8("\e", hilti::rt::render_style::UTF8::NoEscapeControl), "\e");
+        CHECK_EQ(escapeUTF8("\e"), "\\e");
 
-        CHECK_EQ(escapeUTF8("\f", false, false), "\f");
-        CHECK_EQ(escapeUTF8("\f", false, true), "\\f");
+        CHECK_EQ(escapeUTF8("\f", hilti::rt::render_style::UTF8::NoEscapeControl), "\f");
+        CHECK_EQ(escapeUTF8("\f"), "\\f");
 
-        CHECK_EQ(escapeUTF8("\n", false, false), "\n");
-        CHECK_EQ(escapeUTF8("\n", false, true), "\\n");
+        CHECK_EQ(escapeUTF8("\n", hilti::rt::render_style::UTF8::NoEscapeControl), "\n");
+        CHECK_EQ(escapeUTF8("\n"), "\\n");
 
-        CHECK_EQ(escapeUTF8("\r", false, false), "\r");
-        CHECK_EQ(escapeUTF8("\r", false, true), "\\r");
+        CHECK_EQ(escapeUTF8("\r", hilti::rt::render_style::UTF8::NoEscapeControl), "\r");
+        CHECK_EQ(escapeUTF8("\r"), "\\r");
 
-        CHECK_EQ(escapeUTF8("\t", false, false), "\t");
-        CHECK_EQ(escapeUTF8("\t", false, true), "\\t");
+        CHECK_EQ(escapeUTF8("\t", hilti::rt::render_style::UTF8::NoEscapeControl), "\t");
+        CHECK_EQ(escapeUTF8("\t"), "\\t");
 
-        CHECK_EQ(escapeUTF8("\v", false, false), "\v");
-        CHECK_EQ(escapeUTF8("\v", false, true), "\\v");
+        CHECK_EQ(escapeUTF8("\v", hilti::rt::render_style::UTF8::NoEscapeControl), "\v");
+        CHECK_EQ(escapeUTF8("\v"), "\\v");
     }
 
     SUBCASE("keep_hex") {
-        CHECK_EQ(escapeUTF8("\x12", false, false, false), "");
-        CHECK_EQ(escapeUTF8("\x12", false, false, true), "");
-        CHECK_EQ(escapeUTF8("\\x12", false, false, false), R"(\\x12)");
-        CHECK_EQ(escapeUTF8("\\x12", false, false, true), R"(\x12)");
+        CHECK_EQ(escapeUTF8("\x12"), "");
+        CHECK_EQ(escapeUTF8("\x12", render_style::UTF8::NoEscapeHex), "");
+        CHECK_EQ(escapeUTF8("\\x12"), R"(\\x12)");
+        CHECK_EQ(escapeUTF8("\\x12", render_style::UTF8::NoEscapeHex), R"(\x12)");
     }
 }
 

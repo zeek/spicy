@@ -27,8 +27,8 @@ inline auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_l
         if ( s->meta().location() )
             location = fmt("%s: ", s->meta().location().dump(true));
 
-        b->addStatement(
-            fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", location, util::escapeUTF8(fmt("%s", *s), true)));
+        b->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", location,
+                            util::escapeUTF8(fmt("%s", *s), hilti::rt::render_style::UTF8::EscapeQuotes)));
     }
 }
 
@@ -51,7 +51,7 @@ struct Visitor : hilti::visitor::PreOrder {
         else {
             auto msg = std::string(*n->expression());
             throw_ = fmt(R"(throw ::hilti::rt::AssertionFailure("failed expression '%s'", "%s"))",
-                         util::escapeUTF8(msg, true), n->meta().location());
+                         util::escapeUTF8(msg, hilti::rt::render_style::UTF8::EscapeQuotes), n->meta().location());
         }
 
         if ( ! n->expectException() ) {

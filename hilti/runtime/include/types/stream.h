@@ -1878,7 +1878,7 @@ private:
 
 template<>
 inline std::string detail::to_string_for_print<stream::View>(const stream::View& x) {
-    return escapeBytes(x.dataForPrint(), true);
+    return escapeBytes(x.dataForPrint(), render_style::Bytes::EscapeQuotes);
 }
 
 template<>

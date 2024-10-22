@@ -187,7 +187,9 @@ struct Printer : visitor::PreOrder {
 
     void operator()(ctor::Bool* n) final { _out << (n->value() ? "True" : "False"); }
 
-    void operator()(ctor::Bytes* n) final { _out << "b\"" << util::escapeBytes(n->value(), true) << '"'; }
+    void operator()(ctor::Bytes* n) final {
+        _out << "b\"" << util::escapeBytes(n->value(), hilti::rt::render_style::Bytes::EscapeQuotes) << '"';
+    }
 
     void operator()(ctor::Coerced* n) final { _out << n->originalCtor(); }
 
@@ -262,9 +264,13 @@ struct Printer : visitor::PreOrder {
             _out << n->value();
     }
 
-    void operator()(ctor::Stream* n) final { _out << "stream(" << util::escapeUTF8(n->value(), true) << ')'; }
+    void operator()(ctor::Stream* n) final {
+        _out << "stream(" << util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes) << ')';
+    }
 
-    void operator()(ctor::String* n) final { _out << '"' << util::escapeUTF8(n->value(), true) << '"'; }
+    void operator()(ctor::String* n) final {
+        _out << '"' << util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes) << '"';
+    }
 
     void operator()(ctor::Struct* n) final {
         _out << "[";

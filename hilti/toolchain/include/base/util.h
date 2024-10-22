@@ -372,6 +372,11 @@ double charsToDouble(const char* dgts, Error handler) {
  */
 extern std::string uitoa_n(uint64_t value, unsigned int base, int n = -1);
 
+namespace render_style {
+using hilti::rt::render_style::Bytes;
+using hilti::rt::render_style::UTF8;
+} // namespace render_style
+
 using hilti::rt::escapeBytes;
 using hilti::rt::escapeUTF8;    // NOLINT(misc-unused-using-decls)
 using hilti::rt::expandEscapes; // NOLINT(misc-unused-using-decls)
@@ -383,7 +388,9 @@ using hilti::rt::expandEscapes; // NOLINT(misc-unused-using-decls)
  * @return escaped std::string
  *
  */
-inline std::string escapeBytesForCxx(std::string_view s) { return escapeBytes(s, true, true); }
+inline std::string escapeBytesForCxx(std::string_view s) {
+    return escapeBytes(s, hilti::rt::render_style::Bytes::EscapeQuotes | hilti::rt::render_style::Bytes::UseOctal);
+}
 
 /**
  * Turns an arbitrary string into something that can be used as C-level

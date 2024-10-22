@@ -814,7 +814,7 @@ inline std::string detail::to_string_for_print<ValueReference<std::string>>(cons
 
 template<>
 inline std::string detail::to_string_for_print<StrongReference<Bytes>>(const StrongReference<Bytes>& x) {
-    return x ? escapeBytes((*x).str(), false) : "Null";
+    return x ? escapeBytes((*x).str()) : "Null";
 }
 
 template<>
@@ -825,12 +825,12 @@ inline std::string detail::to_string_for_print<WeakReference<Bytes>>(const WeakR
     if ( x.isNull() )
         return "Null";
 
-    return escapeBytes((*x).str(), false);
+    return escapeBytes((*x).str());
 }
 
 template<>
 inline std::string detail::to_string_for_print<ValueReference<Bytes>>(const ValueReference<Bytes>& x) {
-    return escapeBytes((*x).str(), false);
+    return escapeBytes((*x).str());
 }
 
 template<typename T>
