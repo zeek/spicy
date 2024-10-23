@@ -173,7 +173,7 @@ std::pair<std::string, std::string> hilti::rt::rsplit1(std::string s, const std:
 
 // In-place implementation copies chars shrinking escape sequences to binary.
 // Requires that binary results are not larger than their escape sequence.
-std::string hilti::rt::expandEscapes(std::string s) {
+std::string hilti::rt::expandUTF8Escapes(std::string s) {
     auto d = s.begin();
     for ( auto c = d; c != s.end(); ) {
         if ( *c != '\\' ) {

@@ -286,7 +286,7 @@ constexpr auto enumerate(T&& iterable) {
  * @param str string to expand
  * @return A UTF8 string with escape sequences expanded
  */
-std::string expandEscapes(std::string s);
+std::string expandUTF8Escapes(std::string s);
 
 namespace render_style {
 
@@ -308,7 +308,7 @@ enum class Bytes {
  * corresponding C-style control escapes (e.g., `\n`, `\0`), and escapes any
  * backslashes with a second backslash. Any specified flags modify the default
  * style accordingly. If not otherwise noted, any escapings are reversible
- * through `expandEscapes()`.
+ * through `expandUTF8Escapes()`.
  */
 enum class UTF8 {
     Default = 0,                  /**< name for unmodified default style */

@@ -256,46 +256,46 @@ TEST_CASE("escapeUTF8") {
     }
 }
 
-TEST_CASE("expandEscapes") {
-    CHECK_EQ(expandEscapes(""), "");
-    CHECK_EQ(expandEscapes("ab\n12"), "ab\n12");
-    CHECK_EQ(expandEscapes("ab\\n12"), "ab\n12");
-    CHECK_THROWS_WITH_AS(expandEscapes("ab\\\n12"), "unknown escape sequence", const Exception&);
-    CHECK_EQ(expandEscapes("ab\\\\n12"), "ab\\n12");
-    CHECK_EQ(expandEscapes("ab\\\\\n12"), "ab\\\n12");
+TEST_CASE("expandUTF8Escapes") {
+    CHECK_EQ(expandUTF8Escapes(""), "");
+    CHECK_EQ(expandUTF8Escapes("ab\n12"), "ab\n12");
+    CHECK_EQ(expandUTF8Escapes("ab\\n12"), "ab\n12");
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("ab\\\n12"), "unknown escape sequence", const Exception&);
+    CHECK_EQ(expandUTF8Escapes("ab\\\\n12"), "ab\\n12");
+    CHECK_EQ(expandUTF8Escapes("ab\\\\\n12"), "ab\\\n12");
 
-    CHECK_THROWS_WITH_AS(expandEscapes("\\"), "broken escape sequence", const Exception&);
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\"), "broken escape sequence", const Exception&);
 
-    CHECK_EQ(expandEscapes("\\\""), "\"");
-    CHECK_EQ(expandEscapes("\\r"), "\r");
-    CHECK_EQ(expandEscapes("\\n"), "\n");
-    CHECK_EQ(expandEscapes("\\t"), "\t");
-    CHECK_EQ(expandEscapes("\\0"), std::string(1U, '\0'));
-    CHECK_EQ(expandEscapes("\\a"), "\a");
-    CHECK_EQ(expandEscapes("\\b"), "\b");
-    CHECK_EQ(expandEscapes("\\v"), "\v");
-    CHECK_EQ(expandEscapes("\\f"), "\f");
-    CHECK_EQ(expandEscapes("\\e"), "\e");
+    CHECK_EQ(expandUTF8Escapes("\\\""), "\"");
+    CHECK_EQ(expandUTF8Escapes("\\r"), "\r");
+    CHECK_EQ(expandUTF8Escapes("\\n"), "\n");
+    CHECK_EQ(expandUTF8Escapes("\\t"), "\t");
+    CHECK_EQ(expandUTF8Escapes("\\0"), std::string(1U, '\0'));
+    CHECK_EQ(expandUTF8Escapes("\\a"), "\a");
+    CHECK_EQ(expandUTF8Escapes("\\b"), "\b");
+    CHECK_EQ(expandUTF8Escapes("\\v"), "\v");
+    CHECK_EQ(expandUTF8Escapes("\\f"), "\f");
+    CHECK_EQ(expandUTF8Escapes("\\e"), "\e");
 
-    CHECK_THROWS_WITH_AS(expandEscapes("\\uFOO"), "incomplete unicode \\u", const Exception&);
-    CHECK_THROWS_WITH_AS(expandEscapes("\\uFOOL"), "cannot decode character", const Exception&);
-    CHECK_EQ(expandEscapes("\\u2614"), "☔");
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\uFOO"), "incomplete unicode \\u", const Exception&);
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\uFOOL"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandUTF8Escapes("\\u2614"), "☔");
     // We assume a max value of \uFFFF so the following is expanded as `\u1F60` and `E`, not `😎`.
-    CHECK_EQ(expandEscapes("\\u1F60E"), "ὠE");
+    CHECK_EQ(expandUTF8Escapes("\\u1F60E"), "ὠE");
 
-    CHECK_THROWS_WITH_AS(expandEscapes("\\UFOO"), "incomplete unicode \\U", const Exception&);
-    CHECK_THROWS_WITH_AS(expandEscapes("\\UFOOBAR"), "incomplete unicode \\U", const Exception&);
-    CHECK_THROWS_WITH_AS(expandEscapes("\\UFOOBARBAZ"), "cannot decode character", const Exception&);
-    CHECK_EQ(expandEscapes("\\U00002614"), "☔");
-    CHECK_EQ(expandEscapes("\\U0001F60E"), "😎");
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\UFOO"), "incomplete unicode \\U", const Exception&);
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\UFOOBAR"), "incomplete unicode \\U", const Exception&);
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\UFOOBARBAZ"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandUTF8Escapes("\\U00002614"), "☔");
+    CHECK_EQ(expandUTF8Escapes("\\U0001F60E"), "😎");
 
-    CHECK_THROWS_WITH_AS(expandEscapes("\\x"), "\\x used with no following hex digits", const Exception&);
-    CHECK_THROWS_WITH_AS(expandEscapes("\\xZ"), "cannot decode character", const Exception&);
-    CHECK_EQ(expandEscapes("\\xA"), "\xA");
-    CHECK_EQ(expandEscapes("\\xAB"), "\xAB");
-    CHECK_THROWS_WITH_AS(expandEscapes("\\xAZ"), "cannot decode character", const Exception&);
-    CHECK_EQ(expandEscapes("\\xABC"), std::string("\xAB") + "C");
-    CHECK_EQ(expandEscapes("\\x01"), "\x01");
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\x"), "\\x used with no following hex digits", const Exception&);
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\xZ"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandUTF8Escapes("\\xA"), "\xA");
+    CHECK_EQ(expandUTF8Escapes("\\xAB"), "\xAB");
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\xAZ"), "cannot decode character", const Exception&);
+    CHECK_EQ(expandUTF8Escapes("\\xABC"), std::string("\xAB") + "C");
+    CHECK_EQ(expandUTF8Escapes("\\x01"), "\x01");
 }
 
 TEST_CASE("getenv") {

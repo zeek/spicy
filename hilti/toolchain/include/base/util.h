@@ -378,8 +378,8 @@ using hilti::rt::render_style::UTF8;
 } // namespace render_style
 
 using hilti::rt::escapeBytes;
-using hilti::rt::escapeUTF8;    // NOLINT(misc-unused-using-decls)
-using hilti::rt::expandEscapes; // NOLINT(misc-unused-using-decls)
+using hilti::rt::escapeUTF8;        // NOLINT(misc-unused-using-decls)
+using hilti::rt::expandUTF8Escapes; // NOLINT(misc-unused-using-decls)
 
 /**
  * Wrapper for `escapeBytes` that produces a valid C++ string literal.
