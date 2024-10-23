@@ -712,7 +712,8 @@ struct ProductionVisitor : public production::Visitor {
         if ( meta.container() ) {
             auto elem = destination();
             popDestination();
-            stop = pb->newContainerItem(*meta.container(), destination(), elem, ! meta.container()->isTransient());
+            stop =
+                pb->newContainerItem(field, meta.container(), destination(), elem, ! meta.container()->isTransient());
         }
 
         else if ( ! meta.isFieldProduction() )
@@ -2506,8 +2507,9 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
     }
 }
 
-Expression* ParserBuilder::newContainerItem(const type::unit::item::Field& field, Expression* self, Expression* item,
-                                            bool need_value) {
+Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field,
+                                            const type::unit::item::Field* container, Expression* self,
+                                            Expression* item, bool need_value) {
     auto stop = builder()->addTmp("stop", builder()->bool_(false));
 
     auto push_element = [&]() {
@@ -2519,10 +2521,10 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field& field
     auto run_hook = [&]() {
         builder()->addDebugMsg("spicy-verbose", "- got container item");
         pushBuilder(builder()->addIf(builder()->not_(stop)), [&]() {
-            if ( field.emitHook() ) {
+            if ( container->emitHook() ) {
                 beforeHook();
-                builder()->addMemberCall(state().self, ID(fmt("__on_%s_foreach", field.id().local())), {item, stop},
-                                         field.meta());
+                builder()->addMemberCall(state().self, ID(fmt("__on_%s_foreach", container->id().local())),
+                                         {item, stop}, container->meta());
                 afterHook();
             }
         });
@@ -2535,24 +2537,41 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field& field
         });
     };
 
-    if ( auto a = field.attributes()->find("&until") ) {
+    auto check_requires = [&]() {
+        for ( const auto& a : field->attributes()->findAll("&requires") ) {
+            pushBuilder(builder()->addBlock(), [&]() {
+                builder()->addLocal("__dd", item);
+                auto cond = builder()->addTmp("requires", *a->valueAsExpression());
+                pushBuilder(builder()->addIf(builder()->not_(cond)), [&]() {
+                    parseError(fmt("&requires failed: %s", prettyPrintExpr(*a->valueAsExpression())), a->location());
+                });
+            });
+        }
+    };
+
+    if ( auto a = container->attributes()->find("&until") ) {
         eval_condition(*a->valueAsExpression());
+        check_requires();
         run_hook();
         push_element();
     }
 
-    else if ( auto a = field.attributes()->find("&until-including") ) {
+    else if ( auto a = container->attributes()->find("&until-including") ) {
+        check_requires();
         run_hook();
         push_element();
         eval_condition(*a->valueAsExpression());
     }
 
-    else if ( auto a = field.attributes()->find("&while") ) {
+    else if ( auto a = container->attributes()->find("&while") ) {
         eval_condition(builder()->not_(*a->valueAsExpression()));
+        check_requires();
         run_hook();
         push_element();
     }
+
     else {
+        check_requires();
         run_hook();
         push_element();
     }

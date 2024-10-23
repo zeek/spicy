@@ -1,0 +1,46 @@
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x00\x01\x02' | spicy-driver -d %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that `&requires` works on vector items.
+
+module Test;
+
+public type X = unit {
+    : (uint8 &requires=$$ == 0)[] foreach {
+        print $$;
+        assert $$ == 0 : "unreachable";
+    }
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+public type X = unit {
+    : (uint8 &requires=$$ == 0)[] &until=($$==0x02) foreach {
+        print $$;
+        assert $$ == 0 : "unreachable";
+    }
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+public type X = unit {
+    : (uint8 &requires=$$ == 0)[] &until-including=($$==0x02) foreach {
+        print $$;
+        assert $$ == 0 : "unreachable";
+    }
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+public type X = unit {
+    : (uint8 &requires=$$ == 0)[] &while=($$!=0x02) foreach {
+        print $$;
+        assert $$ == 0 : "unreachable";
+    }
+};
