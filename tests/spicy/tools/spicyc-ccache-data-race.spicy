@@ -1,6 +1,5 @@
 # @TEST-DOC: This test validates that if the same module is included in multiple other modules, we create unique filenames. This avoids that concurrent JIT jobs work on the same file.
 #
-# @TEST-EXEC: rm -f /tmp/log
 # @TEST-EXEC: chmod +x wrapper.sh
 #
 # We expect exactly three files for this compilation (modules `a` and `foo` and linker script).

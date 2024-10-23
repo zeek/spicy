@@ -173,7 +173,7 @@ std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& dat
                 jrx_regexec_partial_min(_pimpl->_re->jrx(), reinterpret_cast<const char*>(block->start), block->size,
                                         first, last, &_pimpl->_ms, final_block));
 
-            // Note: The JRX match_state initializes offsets with 1.
+        // Note: The JRX match_state initializes offsets with 1.
 
 #ifdef _DEBUG_MATCHING
         std::cerr << fmt("-> state=%p rc=%d ms->offset=%d\n", this, rc, _pimpl->_ms.offset);

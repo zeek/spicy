@@ -13,7 +13,7 @@ void Address::_parse(const std::string& addr) {
     // We need to guess whether it's a struct in_addr or IPv6 address. If
     // there's a colon in there, it's the latter.
     if ( addr.find(':') == std::string::npos ) {
-        struct in_addr v4 {};
+        struct in_addr v4{};
         if ( inet_pton(AF_INET, addr.c_str(), &v4) > 0 )
             _init(v4);
         else
@@ -21,7 +21,7 @@ void Address::_parse(const std::string& addr) {
     }
 
     else {
-        struct in6_addr v6 {};
+        struct in6_addr v6{};
         if ( inet_pton(AF_INET6, addr.c_str(), &v6) > 0 )
             _init(v6);
         else
@@ -77,7 +77,7 @@ std::variant<struct in_addr, struct in6_addr> Address::asInAddr() const {
         case AddressFamily::IPv4: return in_addr{integer::hton32(_a2)};
 
         case AddressFamily::IPv6: {
-            struct in6_addr v6 {};
+            struct in6_addr v6{};
             uint64_t a1 = integer::hton64(_a1);
             memcpy(&v6, &a1, 8);
 

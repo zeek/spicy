@@ -1,5 +1,11 @@
 # Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+[files]
+extend-exclude = [
+  # This is a file generated from a template not controlled by us.
+  "doc/Doxyfile",
+]
+
 [default.extend-words]
 inout = "inout"
 ocur = "ocur"

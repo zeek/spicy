@@ -1,3 +1,9 @@
+1.12.0-dev.159 | 2024-10-23 17:33:28 +0200
+
+  * Bump pre-commit hooks (Benjamin Bannier, Corelight)
+
+  * Remove stray removal of directory in `/tmp` in test. (Benjamin Bannier, Corelight)
+
 1.12.0-dev.156 | 2024-10-21 15:50:46 +0200
 
   * GH-1063: Document arguments to `new` operator. (Robin Sommer, Corelight)
@@ -2436,7 +2442,7 @@
 
   * Use unchecked operations for `View::unsafeEnd`. (Benjamin Bannier, Corelight)
 
-    We previously would call `end()` to compute `unsafeEnd` which incurrs
+    We previously would call `end()` to compute `unsafeEnd` which incurs
     overheads this function is explicitly designed to avoid. We now switch
     this implementation of this function to completely unsafe code avoiding
     these overheads.

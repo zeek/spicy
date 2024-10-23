@@ -10,7 +10,7 @@
 using namespace hilti::rt;
 
 Time time::current_time() {
-    struct timeval tv {};
+    struct timeval tv{};
     if ( gettimeofday(&tv, nullptr) < 0 )
         throw RuntimeError("gettimeofday failed in current_time()");
 
@@ -49,7 +49,7 @@ Time::operator std::string() const {
     time_t secs = _nsecs.Ref() / 1000000000;
 
     char buffer[60];
-    struct tm tm {};
+    struct tm tm{};
     strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S", gmtime_r(&secs, &tm));
     auto sfrac = fmt("%.9fZ", frac);
     return fmt("%s.%s", buffer, sfrac.substr(2));

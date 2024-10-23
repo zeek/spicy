@@ -187,7 +187,7 @@ void util::abortWithBacktrace() {
 }
 
 double util::currentTime() {
-    struct timeval tv {};
+    struct timeval tv{};
     gettimeofday(&tv, nullptr);
     return static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec) / 1e6;
 }
