@@ -699,7 +699,9 @@ TEST_CASE("fmt") {
     CHECK_EQ(fmt("%s", WeakReference<int>(StrongReference<int>(42))), "42");
 
     auto wref = WeakReference<int>();
-    { wref = StrongReference<int>(42); }
+    {
+        wref = StrongReference<int>(42);
+    }
     REQUIRE(wref.isExpired());
     CHECK_EQ(fmt("%s", wref), "<expired ref>");
 }
@@ -710,7 +712,9 @@ TEST_CASE("to_string") {
     CHECK_EQ(to_string(WeakReference<int>(StrongReference<int>(42))), "42");
 
     auto wref = WeakReference<int>();
-    { wref = StrongReference<int>(42); }
+    {
+        wref = StrongReference<int>(42);
+    }
     REQUIRE(wref.isExpired());
     CHECK_EQ(to_string(wref), "<expired ref>");
 }
@@ -722,7 +726,9 @@ TEST_CASE("to_string_for_print") {
         CHECK_EQ(to_string_for_print(WeakReference<std::string>(StrongReference<std::string>("🤷\r\n"))), "🤷\r\n");
 
         auto wref = WeakReference<std::string>();
-        { wref = StrongReference<std::string>("abc"); }
+        {
+            wref = StrongReference<std::string>("abc");
+        }
         REQUIRE(wref.isExpired());
         CHECK_EQ(to_string_for_print(wref), "<expired ref>");
     }
@@ -734,7 +740,9 @@ TEST_CASE("to_string_for_print") {
                  "\\x00\\x01\\x02\\x03");
 
         auto wref = WeakReference<Bytes>();
-        { wref = StrongReference<Bytes>("abc"_b); }
+        {
+            wref = StrongReference<Bytes>("abc"_b);
+        }
         REQUIRE(wref.isExpired());
         CHECK_EQ(to_string_for_print(wref), "<expired ref>");
     }

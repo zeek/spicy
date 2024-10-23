@@ -2436,7 +2436,7 @@
 
   * Use unchecked operations for `View::unsafeEnd`. (Benjamin Bannier, Corelight)
 
-    We previously would call `end()` to compute `unsafeEnd` which incurrs
+    We previously would call `end()` to compute `unsafeEnd` which incurs
     overheads this function is explicitly designed to avoid. We now switch
     this implementation of this function to completely unsafe code avoiding
     these overheads.
