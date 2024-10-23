@@ -66,12 +66,16 @@ TEST_CASE("to_string") {
     CHECK_EQ(to_string(std::string("abc")), "\"abc\"");
     CHECK_EQ(to_string(std::string_view("abc")), "\"abc\"");
     CHECK_EQ(to_string("abc"), "\"abc\"");
+    CHECK_EQ(to_string("\"\\"), "\"\\\"\\\\\"");
 }
 
 TEST_CASE("to_string_for_print") {
     CHECK_EQ(to_string_for_print(std::string("abc")), "abc");
     CHECK_EQ(to_string_for_print(std::string_view("abc")), "abc");
     CHECK_EQ(to_string_for_print("abc"), "abc");
+    CHECK_EQ(to_string_for_print(std::string("\\\"")), "\\\"");
+    CHECK_EQ(to_string_for_print(std::string_view("\\\"")), "\\\"");
+    CHECK_EQ(to_string_for_print("\\\""), "\\\"");
 }
 
 TEST_CASE("split") {

@@ -5,7 +5,6 @@
 #include <utf8proc/utf8proc.h>
 
 #include <cerrno>
-#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -174,7 +173,7 @@ std::pair<std::string, std::string> hilti::rt::rsplit1(std::string s, const std:
 
 // In-place implementation copies chars shrinking escape sequences to binary.
 // Requires that binary results are not larger than their escape sequence.
-std::string hilti::rt::expandEscapes(std::string s) {
+std::string hilti::rt::expandUTF8Escapes(std::string s) {
     auto d = s.begin();
     for ( auto c = d; c != s.end(); ) {
         if ( *c != '\\' ) {
@@ -272,8 +271,10 @@ std::string hilti::rt::expandEscapes(std::string s) {
     return s;
 }
 
-std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool escape_control, bool keep_hex) {
-    auto escapeControl = [escape_control](auto c, const char* s) { return escape_control ? s : std::string(1, c); };
+std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8> style) {
+    auto escapeControl = [style](auto c, const char* s) {
+        return (style & render_style::UTF8::NoEscapeControl) ? std::string(1, c) : s;
+    };
 
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
@@ -291,13 +292,15 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
         }
 
         if ( cp == '\\' ) {
-            if ( keep_hex && (p + n) < e && *(p + n) == 'x' )
+            if ( (style & render_style::UTF8::NoEscapeHex) && (p + n) < e && *(p + n) == 'x' )
                 esc += "\\";
-            else
+            else if ( ! (style & render_style::UTF8::NoEscapeBackslash) )
                 esc += "\\\\";
+            else
+                esc += "\\";
         }
 
-        else if ( cp == '"' && escape_quotes )
+        else if ( cp == '"' && (style & render_style::UTF8::EscapeQuotes) )
             esc += "\\\"";
 
         else if ( *p == '\0' )
@@ -338,23 +341,23 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bool escape_quotes, bool e
     return esc;
 }
 
-std::string hilti::rt::escapeBytes(std::string_view s, bool escape_quotes, bool use_octal) {
+std::string hilti::rt::escapeBytes(std::string_view s, bitmask<render_style::Bytes> style) {
     auto p = s.data();
     auto e = p + s.size();
 
     std::string esc;
 
     while ( p < e ) {
-        if ( *p == '\\' )
+        if ( *p == '\\' && ! (style & render_style::Bytes::NoEscapeBackslash) )
             esc += "\\\\";
 
-        else if ( *p == '"' && escape_quotes )
+        else if ( *p == '"' && (style & render_style::Bytes::EscapeQuotes) )
             esc += "\\\"";
 
         else if ( isprint(*p) )
             esc += *p;
 
-        else if ( use_octal )
+        else if ( (style & render_style::Bytes::UseOctal) )
             esc += fmt("\\%03o", static_cast<uint8_t>(*p));
         else
             esc += fmt("\\x%02x", static_cast<uint8_t>(*p));

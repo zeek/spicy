@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/result.h>
@@ -285,7 +286,48 @@ constexpr auto enumerate(T&& iterable) {
  * @param str string to expand
  * @return A UTF8 string with escape sequences expanded
  */
-std::string expandEscapes(std::string s);
+std::string expandUTF8Escapes(std::string s);
+
+namespace render_style {
+
+/**
+ * Flags specifying escaping style when rendering raw data for printing. The
+ * default style renders all non-printable characters as hex escapes (`\xNN`)
+ * and escapes backslashes with a second backslash. Any specified flags modify
+ * the default style accordingly.
+ */
+enum class Bytes {
+    Default = 0,                    /**< name for unmodified default style */
+    EscapeQuotes = (1U << 1U),      /**< escape double quotes with backslashes */
+    UseOctal = (1U << 2U),          /**< escape non-printables with `\NNN` instead of `\xNN` */
+    NoEscapeBackslash = (1U << 3U), /**< do not escape backslashes */
+};
+
+/**
+ * Flags specifying escaping style when rendering UTF8 strings for printing.
+ * The default style escapes control characters and null bytes with
+ * corresponding C-style control escapes (e.g., `\n`, `\0`), and escapes any
+ * backslashes with a second backslash. Any specified flags modify the default
+ * style accordingly. If not otherwise noted, any escapings are reversible
+ * through `expandUTF8Escapes()`.
+ */
+enum class UTF8 {
+    Default = 0,                    /**< name for unmodified default style */
+    EscapeQuotes = (1U << 1U),      /**< escape double quotes with backslashes */
+    NoEscapeBackslash = (1U << 2U), /**< do not escape backslashes; this may leave the result non-reversible */
+    NoEscapeControl = (1U << 3U),   /**< do not escape control characters and null bytes */
+    NoEscapeHex =
+        (1U << 4U), /**< do not escape already existing `\xNN` escape codes; this may leave the result non-reversible */
+};
+
+} // namespace render_style
+
+} // namespace hilti::rt
+
+enableEnumClassBitmask(hilti::rt::render_style::Bytes); // must be in global scope
+enableEnumClassBitmask(hilti::rt::render_style::UTF8);  // must be in global scope
+
+namespace hilti::rt {
 
 /*
  * Escapes non-printable characters in a raw string. This produces a new
@@ -295,10 +337,8 @@ std::string expandEscapes(std::string s);
  * @param escape_quotes if true, also escapes quotes characters
  * @param use_octal use `\NNN` instead of `\XX` (needed for C++)
  * @return escaped string
- *
- * \todo This is getting messy; should use enums instead of booleans.
  */
-std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool use_octal = false);
+std::string escapeBytes(std::string_view s, bitmask<render_style::Bytes> style = render_style::Bytes::Default);
 
 /*
  * Escapes non-printable and control characters in an UTF8 string. This
@@ -309,11 +349,8 @@ std::string escapeBytes(std::string_view s, bool escape_quotes = false, bool use
  * @param escape_control if false, do not escape control characters
  * @param keep_hex if true, do not escape our custom "\xYY" escape codes
  * @return escaped std::string
- *
- * \todo This is getting messy; should use enums instead of booleans.
  */
-std::string escapeUTF8(std::string_view s, bool escape_quotes = false, bool escape_control = true,
-                       bool keep_hex = false);
+std::string escapeUTF8(std::string_view s, bitmask<render_style::UTF8> style = render_style::UTF8::Default);
 
 /**
  * Joins elements of a container into a string, using a specified delimiter

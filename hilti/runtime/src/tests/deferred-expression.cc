@@ -89,8 +89,8 @@ TEST_CASE("to_string_for_print") {
     auto expr = make_deferred<Bytes>([&i]() { return Bytes(fmt("\\x0%d", ++i)); });
 
     // Stringification evaluates the expression.
-    CHECK_EQ(to_string_for_print(expr), R"#(\\x01)#");
-    CHECK_EQ(to_string_for_print(expr), R"#(\\x02)#");
+    CHECK_EQ(to_string_for_print(expr), R"#(\x01)#");
+    CHECK_EQ(to_string_for_print(expr), R"#(\x02)#");
 }
 
 TEST_SUITE_END();

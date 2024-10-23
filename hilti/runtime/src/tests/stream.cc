@@ -113,10 +113,10 @@ TEST_CASE("construct") {
 
     SUBCASE("from Bytes") {
         auto d1 = Bytes(1, '\x01');
-        CHECK_EQ(to_string_for_print(Stream(d1)), escapeBytes(d1.str(), true));
+        CHECK_EQ(to_string_for_print(Stream(d1)), escapeBytes(d1.str(), render_style::Bytes::EscapeQuotes));
 
         auto d2 = Bytes(1024, '\x01');
-        CHECK_EQ(to_string_for_print(Stream(d2)), escapeBytes(d2.str(), true));
+        CHECK_EQ(to_string_for_print(Stream(d2)), escapeBytes(d2.str(), render_style::Bytes::EscapeQuotes));
     }
 }
 

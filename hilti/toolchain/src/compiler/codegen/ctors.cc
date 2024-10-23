@@ -189,7 +189,8 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::RegExp(%s{%s}, {%s})", t,
                      util::join(util::transform(n->value(),
                                                 [&](const auto& s) {
-                                                    return fmt("\"%s\"", util::escapeUTF8(s, true, false));
+                                                    return fmt("\"%s\"", util::escapeUTF8(s, hilti::rt::render_style::
+                                                                                                 UTF8::EscapeQuotes));
                                                 }),
                                 ", "),
                      util::join(flags, ", "));
@@ -239,9 +240,11 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(ctor::String* n) final {
         if ( n->isLiteral() )
-            result = fmt("std::string_view(\"%s\")", util::escapeUTF8(n->value(), true));
+            result = fmt("std::string_view(\"%s\")",
+                         util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
         else
-            result = fmt("std::string(\"%s\")", util::escapeUTF8(n->value(), true));
+            result =
+                fmt("std::string(\"%s\")", util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
     }
 
     void operator()(ctor::Tuple* n) final {

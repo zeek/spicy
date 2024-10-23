@@ -3,6 +3,8 @@
 #include <hilti/base/code-formatter.h>
 #include <hilti/base/logger.h>
 
+#include "base/util.h"
+
 using namespace hilti;
 using namespace hilti::code_formatter;
 
@@ -39,7 +41,7 @@ void CodeFormatter::eos() {
 
 void CodeFormatter::quoted(const std::string& s) {
     next();
-    _out << '"' << util::escapeUTF8(s) << '"';
+    _out << '"' << util::escapeUTF8(s, util::render_style::UTF8::NoEscapeControl) << '"';
 }
 
 void CodeFormatter::comment(const std::string& s) {

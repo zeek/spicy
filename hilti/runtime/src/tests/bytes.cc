@@ -653,4 +653,13 @@ TEST_CASE("issue 599") {
     CHECK_EQ(a->toInt(), 31);
 }
 
+TEST_CASE("to_string") {
+    CHECK_EQ(to_string("abc"_b), "b\"abc\"");
+    CHECK_EQ(to_string("\"\\"_b), "b\"\\\"\\\\\"");
+}
+
+TEST_CASE("to_string_for_print") {
+    CHECK_EQ(to_string_for_print("abc"_b), "abc");
+    CHECK_EQ(to_string_for_print("\\\""_b), "\\\"");
+}
 TEST_SUITE_END();
