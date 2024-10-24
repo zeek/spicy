@@ -56,7 +56,7 @@ bool Unit::isCompiledHILTI() const {
 
 Result<Nothing> Unit::print(std::ostream& out) const {
     if ( module() )
-        printer::print(out, module());
+        printer::print(out, module(), false, false);
 
     return Nothing();
 }

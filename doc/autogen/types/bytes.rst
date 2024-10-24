@@ -5,7 +5,7 @@
     Returns an iterator representing the offset *i* inside the bytes
     value.
 
-.. spicy:method:: bytes::decode bytes decode False string ([ charset: spicy::Charset = hilti::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = hilti::DecodeErrorStrategy::REPLACE ])
+.. spicy:method:: bytes::decode bytes decode False string ([ charset: spicy::Charset = spicy::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = spicy::DecodeErrorStrategy::REPLACE ])
 
     Interprets the ``bytes`` as representing an binary string encoded with
     the given character set, and converts it into a UTF8 string. If data
@@ -29,7 +29,7 @@
     as printable strings. The portions will be separated by the bytes
     value to which this method is invoked as a member.
 
-.. spicy:method:: bytes::lower bytes lower False bytes ([ charset: spicy::Charset = hilti::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = hilti::DecodeErrorStrategy::REPLACE ])
+.. spicy:method:: bytes::lower bytes lower False bytes ([ charset: spicy::Charset = spicy::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = spicy::DecodeErrorStrategy::REPLACE ])
 
     Returns a lower-case version of the bytes value, assuming it is
     encoded in character set *charset*. If data is encountered that
@@ -139,7 +139,7 @@
     conversion fails, throws a `RuntimeError` exception, this can happen
     when ``bytes`` is empty or its size is larger than 8 bytes.
 
-.. spicy:method:: bytes::upper bytes upper False bytes ([ charset: spicy::Charset = hilti::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = hilti::DecodeErrorStrategy::REPLACE ])
+.. spicy:method:: bytes::upper bytes upper False bytes ([ charset: spicy::Charset = spicy::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = spicy::DecodeErrorStrategy::REPLACE ])
 
     Returns an upper-case version of the bytes value, assuming it is
     encoded in character set *charset*. If data is encountered that

@@ -17,6 +17,11 @@ using namespace hilti;
 using util::fmt;
 
 printer::Stream& printer::Stream::operator<<(const ID& id) {
+    if ( const auto* plugin = state().current_plugin ) {
+        if ( auto hook = plugin->ast_print_id; hook && hook(id, *this) )
+            return *this; // plugin handled it
+    }
+
     if ( id.namespace_() == currentScope() )
         (*this) << std::string(id.local());
     else
@@ -1084,24 +1089,24 @@ private:
 
 } // anonymous namespace
 
-void printer::print(std::ostream& out, Node* root, bool compact) {
-    if ( ! detail::State::current )
+void printer::print(std::ostream& out, Node* root, bool compact, bool user_visible) {
+    if ( ! detail::State::current ) {
         detail::State::current = std::make_unique<detail::State>();
+        detail::State::current->user_visible = user_visible;
+    }
 
     ++detail::State::depth;
 
-    struct _ {
-        ~_() {
-            if ( --detail::State::depth == 0 )
-                detail::State::current.reset();
-        }
-    } __;
+    auto _ = util::scope_exit([&]() {
+        if ( --detail::State::depth == 0 )
+            detail::State::current.reset();
+    });
 
     if ( compact ) {
         std::stringstream buffer;
         auto stream = printer::Stream(buffer);
         stream.setCompact(true);
-        print(stream, root);
+        stream._print(root);
         auto data = buffer.str();
         data = util::trim(data);
         data = util::replace(data, "\n", " ");
@@ -1111,20 +1116,31 @@ void printer::print(std::ostream& out, Node* root, bool compact) {
     }
     else {
         auto stream = printer::Stream(out);
-        print(stream, root);
+        stream._print(root);
     }
 }
 
-void printer::print(printer::Stream& stream, Node* root) {
+void printer::Stream::_print(Node* root) {
     util::timing::Collector _("hilti/printer");
 
     for ( auto& p : plugin::registry().plugins() ) {
         if ( ! p.ast_print )
             continue;
 
-        if ( (*p.ast_print)(root, stream) )
+        auto* prev = std::exchange(detail::State::current->current_plugin, &p);
+        auto _ = util::scope_exit([&]() { detail::State::current->current_plugin = prev; });
+
+        if ( (*p.ast_print)(root, *this) )
             return;
+        else {
+            // If the print hook did not succeed defer to default printer.
+            // This might still make use of the currently selected plugin.
+            Printer(*this).dispatch(root);
+            return;
+        }
     }
 
-    Printer(stream).dispatch(root);
+    // Defer to the default printer with the current plugin (which might be
+    // unset).
+    Printer(*this).dispatch(root);
 }

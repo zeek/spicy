@@ -1,3 +1,27 @@
+1.12.0-dev.163 | 2024-10-24 09:59:35 +0200
+
+  * GH-1803: Fix namespacing of `hilti` IDs in Spicy-side diagnostic output. (Robin Sommer, Corelight)
+
+    We now show them with a `spicy` prefix, which makes more sense for
+    users.
+
+  * Add printer plugin hook to customize ID printing. (Robin Sommer, Corelight)
+
+    Because IDs are no longer AST nodes, we did not have a way for a
+    compiler plugin's printing code to modify how it would like them to be
+    printed. This adds a corresponding hook. It's not used anywhere yet,
+    but will be soon.
+
+    In addition, we add a notion of "user-visibility" to the printer API
+    so that printing code knows whether the resulting output is something
+    that will be shown to the user (e.g., in diagnostics), or remains
+    internal (e..g, raw code output, debugging output). Likewise not used
+    yet, but will be soon.
+
+    We also clean up the printer API a little bit.
+
+  * Add scope guard utility class. (Robin Sommer, Corelight)
+
 1.12.0-dev.159 | 2024-10-23 17:33:28 +0200
 
   * Bump pre-commit hooks (Benjamin Bannier, Corelight)
