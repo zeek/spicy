@@ -363,8 +363,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         const bool isAlias = n->type()->print() != n->typeID().str();
         if ( isAlias ) {
             if ( ! n->attributes()->attributes().empty() )
-                // TODO(#1893): This should diagnose on the attribute set
-                error("attributes are not allow on type aliases", n);
+                error("attributes are not allowed on type aliases", n->attributes());
         }
 
         if ( n->linkage() == hilti::declaration::Linkage::Public && n->type()->alias() ) {

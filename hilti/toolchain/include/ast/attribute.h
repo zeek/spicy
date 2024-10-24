@@ -136,7 +136,11 @@ public:
     bool has(std::string_view tag) const { return find(tag) != nullptr; }
 
     /** Adds an attribute to the set. */
-    void add(ASTContext* ctx, Attribute* a) { addChild(ctx, a); }
+    void add(ASTContext* ctx, Attribute* a) {
+        addChild(ctx, a);
+        // Combine this location with the attribute's location so this spans the range
+        setMeta(meta().mergeLocation(a->location()));
+    }
 
     /** Removes all attributes of the given tag. */
     void remove(std::string_view tag);

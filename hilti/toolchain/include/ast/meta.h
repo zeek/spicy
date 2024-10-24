@@ -51,6 +51,8 @@ public:
     void setLocation(Location l) { _location = std::move(l); }
     void setComments(Comments c) { _comments = std::move(c); }
 
+    Meta mergeLocation(const Location& l) const { return Meta(location().merge(l), _comments); }
+
     /**
      * Returns true if the location does not equal a default constructed
      * instance.
