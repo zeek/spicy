@@ -1,3 +1,30 @@
+1.12.0-dev.169 | 2024-10-25 10:09:50 +0200
+
+  * GH-1895: Do no longer escape backslashes when printing strings or bytes. (Robin Sommer, Corelight)
+
+    Escaping backslashes in `print` output seems both unnecessary and
+    confusing.
+
+  * Rename `expandEscapes()` to `expandUTF8Escapes`. (Robin Sommer, Corelight)
+
+    For better readability to avoid confusion about the semantics of the
+    function.
+
+  * Introduce style flags for functions rendering values into strings. (Robin Sommer, Corelight)
+
+    This is just cleanup for better readability. I also fixed a couple of
+    cases where we now escape control characters where previously we
+    wouldn't, but I believe should have. Otherwise no functional change.
+
+  * GH-1893: Encompass child node's location in parent. (Evan Typanski, Corelight)
+
+    When a child is added with `addChild`, the parent's location should
+    (generally) span over that child as well. This primarily helps for cases
+    where a node doesn't have much of a location until it gets children
+    added - like `AttributeSet`. The locations for those should encompass
+    all of the attributes within the set. That logic applies for any node
+    with a child: if it's the child, then its location should reflect that.
+
 1.12.0-dev.163 | 2024-10-24 09:59:35 +0200
 
   * GH-1803: Fix namespacing of `hilti` IDs in Spicy-side diagnostic output. (Robin Sommer, Corelight)

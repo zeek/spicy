@@ -92,28 +92,30 @@ std::tuple<std::string, std::string> split1(const std::string& s, const std::str
 
 namespace detail::adl {
 inline std::string to_string(const std::string& x, adl::tag /*unused*/) {
-    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+    return fmt("\"%s\"", escapeUTF8(x, render_style::UTF8::EscapeQuotes | render_style::UTF8::NoEscapeHex));
 }
 
 inline std::string to_string(std::string_view x, adl::tag /*unused*/) {
-    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+    return fmt("\"%s\"", escapeUTF8(x, render_style::UTF8::EscapeQuotes | render_style::UTF8::NoEscapeHex));
 }
 
 template<typename CharT, size_t N>
 inline std::string to_string(const CharT (&x)[N], adl::tag /*unused*/) {
-    return fmt("\"%s\"", escapeUTF8(x, true, true, true));
+    return fmt("\"%s\"", escapeUTF8(x, render_style::UTF8::EscapeQuotes | render_style::UTF8::NoEscapeHex));
 }
 
 } // namespace detail::adl
 
 template<>
 inline std::string detail::to_string_for_print<std::string>(const std::string& x) {
-    return escapeUTF8(x, false, false, true);
+    return escapeUTF8(x, render_style::UTF8::NoEscapeHex | render_style::UTF8::NoEscapeControl |
+                             render_style::UTF8::NoEscapeBackslash);
 }
 
 template<>
 inline std::string detail::to_string_for_print<std::string_view>(const std::string_view& x) {
-    return escapeUTF8(x, false, false, true);
+    return escapeUTF8(x, render_style::UTF8::NoEscapeHex | render_style::UTF8::NoEscapeControl |
+                             render_style::UTF8::NoEscapeBackslash);
 }
 
 // Specialization for string literals. Since `to_string_for_print` is not

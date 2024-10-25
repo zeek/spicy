@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc -j -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that we escape certain special characters in strings correctly when printing them.
+
+module test;
+
+import spicy;
+
+global x = b"\\\"";
+global y = "\\\"";
+
+print x, y;
+print "%s, %s" % (x, y);
+
+# for comparison
+print spicy::bytes_to_hexstring(x), spicy::bytes_to_hexstring(y.encode());

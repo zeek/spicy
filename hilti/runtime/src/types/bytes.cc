@@ -245,7 +245,9 @@ void Bytes::append(const stream::View& view) {
 }
 
 namespace hilti::rt::detail::adl {
-std::string to_string(const Bytes& x, tag /*unused*/) { return fmt("b\"%s\"", escapeBytes(x.str(), true)); }
+std::string to_string(const Bytes& x, tag /*unused*/) {
+    return fmt("b\"%s\"", escapeBytes(x.str(), render_style::Bytes::EscapeQuotes));
+}
 
 std::string to_string(const bytes::Charset& x, tag /*unused*/) {
     switch ( x.value() ) {

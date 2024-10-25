@@ -33,9 +33,9 @@ static hilti::Meta toMeta(hilti::detail::parser::location l) {
     return hilti::Meta(hilti::Location(*l.begin.filename, l.begin.line, l.end.line, l.begin.column, l.end.column));
 }
 
-static std::string expandEscapes(detail::parser::Driver* driver, std::string s, hilti::detail::parser::location l) {
+static std::string expandUTF8Escapes(detail::parser::Driver* driver, std::string s, hilti::detail::parser::location l) {
     try {
-        return hilti::util::expandEscapes(s);
+        return hilti::util::expandUTF8Escapes(s);
     } catch ( const hilti::rt::Exception& ) {
         driver->error("invalid escape sequence", toMeta(l));
         return "<error>";
@@ -206,8 +206,8 @@ True                  yylval->build(true); return token::CBOOL;
 '.'                   yylval->build(static_cast<uint64_t>(*(yytext + 1))); return token::CUINTEGER;
 
 {decfloat}|{hexfloat} yylval->build(hilti::util::charsToDouble(yytext, range_error_real)); return token::CUREAL;
-{string}              yylval->build(expandEscapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc)); return token::CSTRING;
-b{string}             yylval->build(expandEscapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc)); return token::CBYTES;
+{string}              yylval->build(expandUTF8Escapes(driver, std::string(yytext, 1, strlen(yytext) - 2), *yylloc)); return token::CSTRING;
+b{string}             yylval->build(expandUTF8Escapes(driver, std::string(yytext, 2, strlen(yytext) - 3), *yylloc)); return token::CBYTES;
 {digits}\/(tcp|udp)   yylval->build(std::string(yytext)); return token::CPORT;
 {address4}            yylval->build(std::string(yytext)); return token::CADDRESS;
 {address6}            yylval->build(std::string(yytext, 1, strlen(yytext) - 2)); return token::CADDRESS;
