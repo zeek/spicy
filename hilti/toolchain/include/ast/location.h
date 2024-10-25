@@ -45,6 +45,12 @@ public:
     auto to() const { return _to_line; }
 
     /**
+     * Merges this Location with the provided location. Returns new a location
+     * which encompasses the entire span.
+     */
+    Location merge(const Location& loc) const;
+
+    /**
      * Returns a string representation of the location.
      *
      * @param no_path if true, do not include the file
