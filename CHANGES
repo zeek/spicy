@@ -1,3 +1,18 @@
+1.12.0-dev.173 | 2024-10-28 10:22:29 +0100
+
+  * GH-1908: Fix performance regression when parsing bytes. (Robin Sommer, Corelight)
+
+    Turns out our improved error messages were adding additional overhead
+    because we were now constructing them through `fmt()` each time we
+    needed more data, independent of whether there was actually going to
+    be an error reported.
+
+    This adds a second version of `waitForInput()` that doesn't receive an
+    already prepared error message, but just returns false on error so
+    that the caller can throw itself.
+
+  * GH-1857: Support `&requires`for individual vector items. (Robin Sommer, Corelight)
+
 1.12.0-dev.169 | 2024-10-25 10:09:50 +0200
 
   * GH-1895: Do no longer escape backslashes when printing strings or bytes. (Robin Sommer, Corelight)

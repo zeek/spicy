@@ -436,7 +436,7 @@ TEST_CASE("extractBytes") {
     SUBCASE("without eod") {
         CHECK_EQ(detail::extractBytes(data, data->view(), 5, false, "<location>", {}), hilti::rt::Bytes("12345"));
         CHECK_THROWS_WITH_AS(detail::extractBytes(data, data->view(), 10, false, "<location>", {}),
-                             "expected 10 bytes (5 bytes available) (<location>)", const spicy::rt::ParseError&);
+                             "expected 10 bytes (5 available) (<location>)", const spicy::rt::ParseError&);
     }
 
     SUBCASE("with eod") {

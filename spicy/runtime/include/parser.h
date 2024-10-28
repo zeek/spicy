@@ -450,7 +450,12 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes
  * available. If a end-of-data is reached before that, will trigger a parse
- * error.
+ * error reporting the given message.
+ *
+ * Note that this function should not be used if the caller needs to prepare
+ * the error message dynamically using `fmt()`, because that can be expensive
+ * to do for each call. Use `waitForInputNoThrow()` instead and throw the error
+ * manually.
  *
  * @param data current input data
  * @param cur view of *data* that's being parsed
@@ -458,13 +463,27 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
  * @param error_msg message to report with parse error if end-of-data is been reached
  * @param location location associated with the situation
  * @param filter filter state associated with current unit instance (which may be null)
- * @return true if minimum number of bytes are available; false if end-of-data
- * has been reached
  */
 extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
                          const hilti::rt::stream::View& cur, uint64_t min, std::string_view error_msg,
                          std::string_view location,
                          hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
+
+/**
+ * Used by generated parsers to wait until a minimum amount of input becomes is
+ * encountered. available. This version does not directly throw a parse error
+ * if insufficient data
+ *
+ * @param data current input data
+ * @param cur view of *data* that's being parsed
+ * @param min desired number of bytes
+ * @param filter filter state associated with current unit instance (which may be null)
+ * @return true if minimum number of bytes are available; false if end-of-data
+ * has been reached prematurely
+ */
+extern bool waitForInputNoThrow(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
+                                const hilti::rt::stream::View& cur, uint64_t min,
+                                hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
 
 /**
  * Used by generated parsers to wait more input becomes available or

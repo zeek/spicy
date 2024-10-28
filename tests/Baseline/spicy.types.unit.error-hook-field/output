@@ -28,5 +28,5 @@ unit %done, [$foo=[$a=(not set), $b=(not set)], $c=b"C"]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: expected bytes literal "B" but input starts with "x" (<...>/error-hook-field.spicy:69:8-69:11)
 unit %error, [$foo=[$a=b"A", $b=(not set)], $c=(not set)]
 ===
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expected 5 bytes (4 bytes available) (<...>/error-hook-field.spicy:74:5-74:55)
+[error] terminating with uncaught exception of type spicy::rt::ParseError: expected 5 bytes (4 available) (<...>/error-hook-field.spicy:74:5-74:55)
 field x %error
