@@ -20,7 +20,7 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
     if ( v.isEmpty() )
         return std::make_tuple(true, n ? n : b);
 
-    auto bv = v.begin();
+    auto bv = v.unsafeBegin();
     auto first = *bv;
 
     for ( auto i = const_iterator(n ? n : b); true; ++i ) {
@@ -40,7 +40,7 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
             if ( *x++ != *y++ )
                 break;
 
-            if ( y == v.end() )
+            if ( y == v.unsafeEnd() )
                 return std::make_tuple(true, i);
         }
     }

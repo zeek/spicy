@@ -456,7 +456,9 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
     void operator()(type::Interval* n) final { result = CxxTypes{.base_type = "::hilti::rt::Interval"}; }
 
-    void operator()(type::bytes::Iterator* n) final { result = CxxTypes{.base_type = "::hilti::rt::bytes::Iterator"}; }
+    void operator()(type::bytes::Iterator* n) final {
+        result = CxxTypes{.base_type = "::hilti::rt::bytes::SafeIterator"};
+    }
 
     void operator()(type::stream::Iterator* n) final {
         result = CxxTypes{.base_type = "::hilti::rt::stream::SafeConstIterator"};

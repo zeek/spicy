@@ -301,7 +301,7 @@ std::tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstItera
     if ( v.isEmpty() )
         return std::make_tuple(true, n);
 
-    auto first = *v.begin();
+    auto first = *v.unsafeBegin();
 
     for ( auto i = n; true; ++i ) {
         if ( i == unsafeEnd() )
@@ -333,7 +333,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeC
     if ( v.isEmpty() )
         return std::make_tuple(true, n);
 
-    auto first = *v.begin();
+    auto first = *v.unsafeBegin();
 
     for ( auto i = n; true; ++i ) {
         if ( i == unsafeEnd() )
@@ -343,7 +343,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeC
             continue;
 
         auto x = i;
-        auto y = v.begin();
+        auto y = v.unsafeBegin();
 
         for ( ;; ) {
             if ( x == unsafeEnd() )
@@ -352,7 +352,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeC
             if ( *x++ != *y++ )
                 break;
 
-            if ( y == v.end() )
+            if ( y == v.unsafeEnd() )
                 return std::make_tuple(true, i);
         }
     }
@@ -384,20 +384,20 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
 
     i -= (needle.size() - 1).Ref(); // this is safe now, get us 1st position where initial character may match
 
-    auto first = *needle.begin();
+    auto first = *needle.unsafeBegin();
 
     // The following is not the most efficient way to search backwards, but
     // it'll do for now.
     for ( auto j = i; true; --j ) {
         if ( *j == first ) {
             auto x = j;
-            auto y = needle.begin();
+            auto y = needle.unsafeBegin();
 
             for ( ;; ) {
                 if ( *x++ != *y++ )
                     break;
 
-                if ( y == needle.end() )
+                if ( y == needle.unsafeEnd() )
                     return std::make_tuple(true, j);
             }
         }
@@ -413,8 +413,8 @@ bool View::startsWith(const Bytes& b) const {
     _ensureValid();
     auto s1 = unsafeBegin();
     auto e1 = unsafeEnd();
-    auto s2 = b.begin();
-    auto e2 = b.end();
+    auto s2 = b.unsafeBegin();
+    auto e2 = b.unsafeEnd();
 
     // If the iterator has no data in it, we cannot dereference it.
     if ( isEmpty() )
@@ -586,7 +586,7 @@ bool stream::View::operator==(const Bytes& other) const {
         return false;
 
     auto i = unsafeBegin();
-    auto j = other.begin();
+    auto j = other.unsafeBegin();
 
     while ( i != unsafeEnd() ) {
         if ( ! i.chunk() ) // out-of-bounds, cannot match

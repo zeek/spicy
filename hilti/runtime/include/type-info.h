@@ -447,7 +447,7 @@ class Bool : public detail::AtomicType<bool> {};
 class Bytes : public detail::AtomicType<hilti::rt::Bytes> {};
 
 /** Type information for type ``iterator<bytes>`. */
-class BytesIterator : public detail::AtomicType<hilti::rt::bytes::Iterator> {};
+class BytesIterator : public detail::AtomicType<hilti::rt::bytes::SafeIterator> {};
 
 namespace enum_ {
 
