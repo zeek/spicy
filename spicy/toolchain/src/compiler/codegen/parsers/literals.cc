@@ -75,6 +75,14 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::ctor::Bytes* n) final {
         auto len = builder()->integer(static_cast<uint64_t>(n->value().size()));
 
+        auto literal = builder()->id(
+            hilti::ID(fmt("__bytes_%" PRIu64, hilti::util::uitoa_n(hilti::util::hash(n->value()), 16, 5))));
+
+        if ( ! pb()->cg()->haveAddedDeclaration(literal->id()) ) {
+            auto d = builder()->constant(literal->id(), builder()->expression(n));
+            pb()->cg()->addDeclaration(d);
+        }
+
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
             case LiteralMode::Skip: {
@@ -89,8 +97,6 @@ struct Visitor : public visitor::PreOrder {
                     pb()->parseError("unexpected token to consume", n->meta());
                     popBuilder();
 
-                    auto literal = builder()->addTmp("literal", builder()->expression(n));
-
                     pushBuilder(builder()->addIf(
                         builder()->unequal(literal, builder()->memberCall(state().cur, "sub",
                                                                           {builder()->begin(state().cur),
@@ -98,7 +104,8 @@ struct Visitor : public visitor::PreOrder {
                     pb()->parseError("unexpected data when consuming token", n->meta());
                     popBuilder();
 
-                    builder()->addAssign(lp->destination(n->type()->type()), literal);
+                    if ( state().literal_mode != LiteralMode::Skip )
+                        builder()->addAssign(lp->destination(n->type()->type()), literal);
 
                     pb()->consumeLookAhead();
                     popBuilder();
@@ -108,27 +115,26 @@ struct Visitor : public visitor::PreOrder {
 
                 auto expect_bytes_literal =
                     builder()->call("spicy_rt::expectBytesLiteral",
-                                    {state().data, state().cur, builder()->expression(n),
-                                     builder()->expression(n->meta()), pb()->currentFilters(state())});
+                                    {state().data, state().cur, literal, builder()->expression(n->meta()),
+                                     pb()->currentFilters(state())});
 
+                builder()->addExpression(expect_bytes_literal);
 
                 if ( state().literal_mode != LiteralMode::Skip )
-                    builder()->addAssign(lp->destination(n->type()->type()), expect_bytes_literal);
-                else
-                    builder()->addExpression(expect_bytes_literal);
+                    builder()->addAssign(lp->destination(n->type()->type()), literal);
 
                 pb()->advanceInput(len);
 
                 if ( check_for_look_ahead )
                     popBuilder();
 
-                result = builder()->expression(n);
+                result = literal;
                 return;
             }
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try:
-                auto cond = builder()->memberCall(state().cur, "starts_with", {builder()->expression(n)});
+                auto cond = builder()->memberCall(state().cur, "starts_with", {literal});
                 result = builder()->ternary(builder()->and_(pb()->waitForInputOrEod(len), cond),
                                             builder()->sum(builder()->begin(state().cur), len),
                                             builder()->begin(state().cur));

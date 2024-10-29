@@ -216,9 +216,9 @@ hilti::rt::Bytes detail::extractBytes(hilti::rt::ValueReference<hilti::rt::Strea
     return cur.sub(cur.begin() + size).data();
 }
 
-hilti::rt::Bytes detail::expectBytesLiteral(
-    hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur, hilti::rt::Bytes literal,
-    std::string_view location, const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
+void detail::expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+                                const hilti::rt::Bytes& literal, std::string_view location,
+                                const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( ! detail::waitForInputNoThrow(data, cur, literal.size(), filters) ) {
         auto msg = hilti::rt::fmt("expected %" PRIu64 R"( bytes for bytes literal "%s")"
                                   " (%" PRIu64 " available))",
@@ -231,6 +231,4 @@ hilti::rt::Bytes detail::expectBytesLiteral(
         throw ParseError(hilti::rt::fmt(R"(expected bytes literal "%s" but input starts with "%s")", literal, content),
                          location);
     }
-
-    return literal;
 }

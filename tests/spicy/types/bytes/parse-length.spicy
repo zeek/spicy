@@ -5,7 +5,7 @@
 # @TEST-EXEC: spicyc -p %INPUT | grep -q 'b2 = spicy_rt::extractBytes'
 #
 # Ensure literal-specific optimization kicks in.
-# @TEST-EXEC: spicyc -p %INPUT | grep -q ' = spicy_rt::expectBytesLiteral'
+# @TEST-EXEC: spicyc -p %INPUT | grep -q '^ *spicy_rt::expectBytesLiteral'
 #
 # Ensure we don't get any look-ahead checks when parsing the literals, we don't need them here.
 # @TEST-EXEC: spicyc -p %INPUT | grep -vq 'if.*lah'
