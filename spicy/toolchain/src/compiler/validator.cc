@@ -4,6 +4,7 @@
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/type.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
@@ -890,11 +891,18 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::type::unit::item::UnresolvedField* n) final {
-        if ( auto id = n->unresolvedID() )
-            error(fmt("unknown ID '%s'", id), n, node::ErrorPriority::High);
-        else
-            // I don't think this can actually happen ...
-            error("unit field left unresolved", n);
+        if ( auto id = n->unresolvedID() ) {
+            // Re-lookup ID to see if it exists at all.
+            if ( auto resolved = hilti::scope::lookupID<hilti::Declaration>(id, n, "field"); ! resolved )
+                error(resolved.error(), n, node::ErrorPriority::High);
+
+            if ( n->hasErrors() )
+                // Report existing error, probably from the resolver.
+                return;
+        }
+
+        // I believe we can't get here.
+        hilti::logger().internalError("unit field left unresolved", n);
     }
 
     void operator()(spicy::type::unit::item::Switch* n) final {

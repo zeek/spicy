@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that we get an appropriate error when a parameter is used as a field; regression test for #1859.
+
+module foo;
+
+type Y = unit(expected: uint8) {
+    : expected;
+};
