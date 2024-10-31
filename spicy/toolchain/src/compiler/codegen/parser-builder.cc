@@ -1177,7 +1177,7 @@ struct ProductionVisitor : public production::Visitor {
 
                 auto guardedSearch = guardSearch([]() {});
 
-                auto match = pb->parseLiteral(*p, {});
+                auto match = builder()->addTmp("literal", pb->parseLiteral(*p, {}));
 
                 popState();
 
