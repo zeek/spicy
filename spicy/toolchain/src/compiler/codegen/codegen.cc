@@ -684,6 +684,19 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     return builder()->declarationFunction(f, hilti::declaration::Linkage::Struct, meta);
 }
 
+Expression* CodeGen::addGlobalConstant(Ctor* ctor) {
+    // Create an internal ID that's unique, but stable, for the given value.
+    auto type = hilti::util::toIdentifier(hilti::util::tolower(ctor->typename_()));
+    auto& [uniquer, cache] = _global_constants[type];
+
+    return cache.getOrCreate(ctor->print(), [&, &uniquer = uniquer]() { // need to capture `u` explicitly with C++17
+        auto id = uniquer.get(ID(fmt("__%s", type)));
+        auto d = builder()->constant(id, builder()->expression(ctor));
+        _hilti_module->add(context(), d);
+        return builder()->id(id);
+    });
+}
+
 hilti::declaration::Module* CodeGen::hiltiModule() const {
     if ( ! _hilti_module )
         hilti::logger().internalError("not compiling a HILTI unit");

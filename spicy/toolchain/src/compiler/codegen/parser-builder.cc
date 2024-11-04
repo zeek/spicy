@@ -973,25 +973,13 @@ struct ProductionVisitor : public production::Visitor {
         if ( ! c )
             return;
 
-        // Compute a unique name and store the regexp as a constant to avoid
-        // recomputing the regexp on each runtime pass through the calling
-        // context. We pick a unique stem to not clash with general regexp
-        // interning in the literals visitor.
-        //
-        // TODO(bbannier): We should instead use a builder methods which (1)
-        // compute a unique name, and (2) check whether an identical constant
-        // has already been declared and can be reused.
-        auto re = ID(fmt("__re_skip"));
-        int i = 0;
-        while ( pb->cg()->haveAddedDeclaration(re) )
-            re = ID(fmt("__re_skip_%" PRId64, ++i));
-
-        auto d = builder()->constant(re, builder()->regexp(c->value(),
-                                                           builder()->attributeSet({builder()->attribute("&anchor")})));
-        pb->cg()->addDeclaration(d);
+        // Store the regexp as a global constant to avoid recomputing the
+        // regexp on each runtime pass through the calling context.
+        auto re = pb->cg()->addGlobalConstant(
+            builder()->ctorRegExp(c->value(), builder()->attributeSet({builder()->attribute("&anchor")})));
 
         auto ncur = builder()->addTmp("ncur", state().cur);
-        auto ms = builder()->local("ms", builder()->memberCall(builder()->id(re), "token_matcher"));
+        auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
         auto body = builder()->addWhile(ms, builder()->bool_(true));
         pushBuilder(body);
 
@@ -1105,18 +1093,12 @@ struct ProductionVisitor : public production::Visitor {
                         flattened.push_back(hilti::util::fmt("%s{#%" PRId64 "}", r, p.second));
                 }
 
-                auto re = hilti::ID(fmt("__re_%" PRId64, symbol));
-                if ( ! cg()->haveAddedDeclaration(re) ) {
-                    auto d =
-                        builder()->constant(re, builder()->regexp(flattened, builder()->attributeSet(
-                                                                                 {builder()->attribute("&nosub"),
-                                                                                  builder()->attribute("&anchor")})));
-                    pb->cg()->addDeclaration(d);
-                }
-
+                auto re = pb->cg()->addGlobalConstant(
+                    builder()->ctorRegExp(flattened, builder()->attributeSet({builder()->attribute("&anchor"),
+                                                                              builder()->attribute("&nosub")})));
                 // Create the token matcher state.
                 builder()->addLocal(ID("ncur"), state().cur);
-                auto ms = builder()->local("ms", builder()->memberCall(builder()->id(re), "token_matcher"));
+                auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
 
                 // Create loop for incremental matching.
                 pushBuilder(builder()->addWhile(ms, builder()->bool_(true)), [&]() {

@@ -74,14 +74,7 @@ struct Visitor : public visitor::PreOrder {
 
     void operator()(hilti::ctor::Bytes* n) final {
         auto len = builder()->integer(static_cast<uint64_t>(n->value().size()));
-
-        auto literal = builder()->id(
-            hilti::ID(fmt("__bytes_%" PRIu64, hilti::util::uitoa_n(hilti::util::hash(n->value()), 16, 5))));
-
-        if ( ! pb()->cg()->haveAddedDeclaration(literal->id()) ) {
-            auto d = builder()->constant(literal->id(), builder()->expression(n));
-            pb()->cg()->addDeclaration(d);
-        }
+        auto literal = pb()->cg()->addGlobalConstant(n);
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
@@ -147,17 +140,12 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::ctor::Coerced* n) final { dispatch(n->coercedCtor()); }
 
     void operator()(hilti::ctor::RegExp* n) final {
-        auto re = hilti::ID(fmt("__re_%" PRId64, lp->production->tokenID()));
+        auto attrs = builder()->attributeSet({builder()->attribute("&anchor")});
 
-        if ( ! pb()->cg()->haveAddedDeclaration(re) ) {
-            auto attrs = builder()->attributeSet({builder()->attribute("&anchor")});
+        if ( ! state().captures )
+            attrs->add(context(), builder()->attribute("&nosub"));
 
-            if ( ! state().captures )
-                attrs->add(context(), builder()->attribute("&nosub"));
-
-            auto d = builder()->constant(re, builder()->regexp(n->value(), attrs));
-            pb()->cg()->addDeclaration(d);
-        }
+        auto re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->value(), attrs));
 
         auto parse = [&](Expression* result, bool trim) -> Expression* {
             if ( ! result && state().literal_mode != LiteralMode::Skip )
@@ -181,7 +169,7 @@ struct Visitor : public visitor::PreOrder {
             }
 
             auto ncur = builder()->addTmp(ID("ncur"), state().cur);
-            auto ms = builder()->local("ms", builder()->memberCall(builder()->id(re), "token_matcher"));
+            auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
             auto body = builder()->addWhile(ms, builder()->bool_(true));
             pushBuilder(body);
 
