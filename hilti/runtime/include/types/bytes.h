@@ -351,12 +351,12 @@ public:
     /**
      * Returns the position of the first occurrence of a byte.
      *
-     * @param b byte to search
-     * @param n optional starting point, which must be inside the same instance
+     * @param needle byte to search
+     * @param start optional starting point, which must be inside the same instance
      */
-    const_iterator find(value_type b, const const_iterator& n = const_iterator()) const {
+    const_iterator find(value_type needle, const const_iterator& start = const_iterator()) const {
         auto beg = begin();
-        if ( auto i = Base::find(b, (n ? n - beg : 0)); i != Base::npos )
+        if ( auto i = Base::find(needle, (start ? start - beg : 0)); i != Base::npos )
             return beg + i;
         else
             return end();
@@ -365,14 +365,14 @@ public:
     /**
      * Returns the position of the first occurrence of a range of bytes
      *
-     * @param v bytes to search
-     * @param n optional starting point, which must be inside the same instance
+     * @param needle bytes to search
+     * @param start optional starting point, which must be inside the same instance
      * @return tuple where the 1st element is a boolean indicating whether
      * *v* has been found; if yes, the 2nd element points to the 1st bytes;
      * if no, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*.
      */
-    std::tuple<bool, const_iterator> find(const Bytes& v, const const_iterator& n = const_iterator()) const;
+    std::tuple<bool, const_iterator> find(const Bytes& needle, const const_iterator& start = const_iterator()) const;
 
     /**
      * Extracts a subrange of bytes.
