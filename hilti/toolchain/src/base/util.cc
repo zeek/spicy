@@ -110,14 +110,7 @@ std::string util::trim(const std::string& s) { return ltrim(rtrim(s)); }
 
 uint64_t util::hash(const std::string& str) { return util::hash(str.data(), str.size()); }
 
-uint64_t util::hash(const char* data, size_t len) {
-    uint64_t h = 0;
-
-    while ( len-- )
-        h = (h << 5U) - h + static_cast<uint64_t>(*data++);
-
-    return h;
-}
+uint64_t util::hash(const char* data, size_t len) { return std::hash<std::string_view>()(std::string_view(data, len)); }
 
 std::string util::uitoa_n(uint64_t value, unsigned int base, int n) {
     static char dig[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
