@@ -111,7 +111,10 @@ public:
         _assignItemIndices();
     }
 
-    void setAttributes(ASTContext* ctx, AttributeSet* attrs) { setChild(ctx, 1, attrs); }
+    void setAttributes(ASTContext* ctx, AttributeSet* attrs) {
+        setChild(ctx, 1, attrs);
+        setMeta(meta().mergeLocation(attrs->location()));
+    }
     void setContextType(ASTContext* ctx, UnqualifiedType* type) { setChild(ctx, 2, type); }
     void setGrammar(spicy::detail::codegen::Grammar* g) { _grammar = g; }
     void setPublic(bool p) { _public = p; }
