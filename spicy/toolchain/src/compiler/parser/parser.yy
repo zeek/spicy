@@ -379,10 +379,17 @@ global_scope_decl
               | hook_decl                        { $$ = std::move($1); }
 
 type_decl     : opt_linkage TYPE scoped_id '='   { _docs.emplace_back(driver->docGetAndClear()); }
-                qtype opt_attributes ';'          { if ( auto u = $6->type()->tryAs<type::Unit>(); u && $7 && *$7 ) {
-                                                       u->setAttributes(builder->context(), $7);
-                                                       $7 = {}; // don't associate with declaration
-                                                       }
+                qtype opt_attributes ';'         { if ( auto u = $6->type()->tryAs<type::Unit>(); u && $7 && *$7 ) {
+                                                      u->setAttributes(builder->context(), $7);
+                                                      $7 = {}; // don't associate with declaration
+                                                   }
+
+                                                   // Type decls can have attributes, but only for certain types
+                                                   if ( $7 && ! $7->attributes().empty() ) {
+                                                      auto ty = $6->type();
+                                                      if ( ! (ty->isA<hilti::type::Struct>() || ty->isA<hilti::type::Enum>() || ty->isA<hilti::type::Bitfield>()) )
+                                                          error(@7, "attributes are not allowed on type aliases");
+                                                   }
 
                                                    $$ = builder->declarationType(std::move($3), std::move($6), std::move($7), std::move($1), __loc__);
                                                    $$->setDocumentation(_docs.back());
