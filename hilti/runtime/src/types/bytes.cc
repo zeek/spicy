@@ -14,16 +14,16 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
-std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_iterator& n) const {
+std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const const_iterator& start) const {
     auto b = begin();
 
-    if ( v.isEmpty() )
-        return std::make_tuple(true, n ? n : b);
+    if ( needle.isEmpty() )
+        return std::make_tuple(true, start ? start : b);
 
-    auto bv = v.begin();
+    auto bv = needle.unsafeBegin();
     auto first = *bv;
 
-    for ( auto i = const_iterator(n ? n : b); true; ++i ) {
+    for ( auto i = const_iterator(start ? start : b); true; ++i ) {
         if ( i == end() )
             return std::make_tuple(false, i);
 
@@ -40,7 +40,7 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& v, const const_
             if ( *x++ != *y++ )
                 break;
 
-            if ( y == v.end() )
+            if ( y == needle.unsafeEnd() )
                 return std::make_tuple(true, i);
         }
     }

@@ -233,6 +233,21 @@ TEST_CASE("iteration") {
     }
 }
 
+TEST_CASE("unsafe iteration") {
+    const auto b = "123"_b;
+    auto i = b.unsafeBegin();
+    CHECK_EQ(*i, '1');
+    CHECK_EQ(*(++i), '2');
+    CHECK_EQ(*(++i), '3');
+    CHECK_EQ(++i, b.unsafeEnd());
+
+    // Check yield type, like above.
+    for ( auto i = b.unsafeBegin(); i != b.unsafeEnd(); ++i ) {
+        (void)i;
+        static_assert(std::is_same_v<decltype(*i), uint8_t>);
+    }
+}
+
 TEST_CASE("split") {
     SUBCASE("separator") {
         CHECK_EQ("12 45"_b.split(" "), Vector({"12"_b, "45"_b}));

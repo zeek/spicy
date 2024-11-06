@@ -1,3 +1,33 @@
+1.12.0-dev.180 | 2024-11-06 08:41:55 +0100
+
+  * GH-1913: Avoid redundant computation during literal parsing. (Robin Sommer, Corelight)
+
+  * GH-1910: Optimize parsing of literal bytes. (Robin Sommer, Corelight)
+
+    We now create the bytes instance representing the literal as a global
+    singleton to avoid instantiating it over and over again.
+
+    Closes #1910.
+
+  * Introduce `UnsafeConstIterator` for bytes instances. (Robin Sommer, Corelight)
+
+    An unsafe iterator offers fast but unchecked access to the data. We
+    also rename `bytes::Iterator` to `bytes::SafeConstIterator` so that
+    for bytes we now follow the same two-tiered iterator structure as for
+    streams. We then switch some library code over to now use unsafe
+    iterators, gaining a noticeable speed-up in some cases.
+
+  * Add infrastructure to create and cache global constants. (Robin Sommer, Corelight)
+
+    So far we had replicated low-level code a few times that cached
+    constants through a global declaration for reuse. This now factors out
+    that logic into a central method inside the Spicy code generator.
+
+    This isn't full interning, which I'm not sure we want/need, but covers
+    the performance use case that has now come up a few times.
+
+  * Replace our poor hash function with `std::hash()`. (Robin Sommer, Corelight)
+
 1.12.0-dev.173 | 2024-10-28 10:22:29 +0100
 
   * GH-1908: Fix performance regression when parsing bytes. (Robin Sommer, Corelight)

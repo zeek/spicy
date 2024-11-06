@@ -94,6 +94,6 @@ declare public void backtrack() &cxxname="spicy::rt::detail::backtrack" &have_pr
 declare public void initializeParsedUnit(inout ParsedUnit punit, any unit, TypeInfo ti) &cxxname="spicy::rt::ParsedUnit::initialize" &have_prototype;
 
 declare public bytes extractBytes(inout value_ref<stream> data, view<stream> cur, uint<64> n, bool eod_ok, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::extractBytes" &have_prototype;
-declare public bytes expectBytesLiteral(inout value_ref<stream> data, view<stream> cur, bytes literal, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::expectBytesLiteral" &have_prototype;
+declare public void expectBytesLiteral(inout value_ref<stream> data, view<stream> cur, bytes literal, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::expectBytesLiteral" &have_prototype;
 
 }

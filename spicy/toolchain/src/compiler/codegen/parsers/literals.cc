@@ -74,6 +74,7 @@ struct Visitor : public visitor::PreOrder {
 
     void operator()(hilti::ctor::Bytes* n) final {
         auto len = builder()->integer(static_cast<uint64_t>(n->value().size()));
+        auto literal = pb()->cg()->addGlobalConstant(n);
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
@@ -89,8 +90,6 @@ struct Visitor : public visitor::PreOrder {
                     pb()->parseError("unexpected token to consume", n->meta());
                     popBuilder();
 
-                    auto literal = builder()->addTmp("literal", builder()->expression(n));
-
                     pushBuilder(builder()->addIf(
                         builder()->unequal(literal, builder()->memberCall(state().cur, "sub",
                                                                           {builder()->begin(state().cur),
@@ -98,7 +97,8 @@ struct Visitor : public visitor::PreOrder {
                     pb()->parseError("unexpected data when consuming token", n->meta());
                     popBuilder();
 
-                    builder()->addAssign(lp->destination(n->type()->type()), literal);
+                    if ( state().literal_mode != LiteralMode::Skip )
+                        builder()->addAssign(lp->destination(n->type()->type()), literal);
 
                     pb()->consumeLookAhead();
                     popBuilder();
@@ -108,27 +108,26 @@ struct Visitor : public visitor::PreOrder {
 
                 auto expect_bytes_literal =
                     builder()->call("spicy_rt::expectBytesLiteral",
-                                    {state().data, state().cur, builder()->expression(n),
-                                     builder()->expression(n->meta()), pb()->currentFilters(state())});
+                                    {state().data, state().cur, literal, builder()->expression(n->meta()),
+                                     pb()->currentFilters(state())});
 
+                builder()->addExpression(expect_bytes_literal);
 
                 if ( state().literal_mode != LiteralMode::Skip )
-                    builder()->addAssign(lp->destination(n->type()->type()), expect_bytes_literal);
-                else
-                    builder()->addExpression(expect_bytes_literal);
+                    builder()->addAssign(lp->destination(n->type()->type()), literal);
 
                 pb()->advanceInput(len);
 
                 if ( check_for_look_ahead )
                     popBuilder();
 
-                result = builder()->expression(n);
+                result = literal;
                 return;
             }
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try:
-                auto cond = builder()->memberCall(state().cur, "starts_with", {builder()->expression(n)});
+                auto cond = builder()->memberCall(state().cur, "starts_with", {literal});
                 result = builder()->ternary(builder()->and_(pb()->waitForInputOrEod(len), cond),
                                             builder()->sum(builder()->begin(state().cur), len),
                                             builder()->begin(state().cur));
@@ -141,17 +140,12 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::ctor::Coerced* n) final { dispatch(n->coercedCtor()); }
 
     void operator()(hilti::ctor::RegExp* n) final {
-        auto re = hilti::ID(fmt("__re_%" PRId64, lp->production->tokenID()));
+        auto attrs = builder()->attributeSet({builder()->attribute("&anchor")});
 
-        if ( ! pb()->cg()->haveAddedDeclaration(re) ) {
-            auto attrs = builder()->attributeSet({builder()->attribute("&anchor")});
+        if ( ! state().captures )
+            attrs->add(context(), builder()->attribute("&nosub"));
 
-            if ( ! state().captures )
-                attrs->add(context(), builder()->attribute("&nosub"));
-
-            auto d = builder()->constant(re, builder()->regexp(n->value(), attrs));
-            pb()->cg()->addDeclaration(d);
-        }
+        auto re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->value(), attrs));
 
         auto parse = [&](Expression* result, bool trim) -> Expression* {
             if ( ! result && state().literal_mode != LiteralMode::Skip )
@@ -175,7 +169,7 @@ struct Visitor : public visitor::PreOrder {
             }
 
             auto ncur = builder()->addTmp(ID("ncur"), state().cur);
-            auto ms = builder()->local("ms", builder()->memberCall(builder()->id(re), "token_matcher"));
+            auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
             auto body = builder()->addWhile(ms, builder()->bool_(true));
             pushBuilder(body);
 

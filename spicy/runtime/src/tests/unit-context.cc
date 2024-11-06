@@ -32,20 +32,20 @@ TEST_CASE("copy context") {
 
 TEST_CASE("create and set") {
     auto b = hilti::rt::reference::make_strong<hilti::rt::Bytes>("x"_b);
-    auto c = detail::createContext(b, &hilti::rt::type_info::bytes);
+    auto c = spicy::rt::detail::createContext(b, &hilti::rt::type_info::bytes);
 
     hilti::rt::StrongReference<hilti::rt::Bytes> __context;
 
     // Set __context
-    detail::setContext(__context, c, &hilti::rt::type_info::bytes);
+    spicy::rt::detail::setContext(__context, c, &hilti::rt::type_info::bytes);
     CHECK_EQ(*__context, "x"_b);
 
     // Unset __context
-    detail::setContext(__context, {}, &hilti::rt::type_info::bytes);
+    spicy::rt::detail::setContext(__context, {}, &hilti::rt::type_info::bytes);
     CHECK(! __context);
 
     // Catch type mismatch
-    CHECK_THROWS_AS(detail::setContext(__context, c, &hilti::rt::type_info::string), ContextMismatch);
+    CHECK_THROWS_AS(spicy::rt::detail::setContext(__context, c, &hilti::rt::type_info::string), ContextMismatch);
 }
 
 TEST_CASE("to_string") {

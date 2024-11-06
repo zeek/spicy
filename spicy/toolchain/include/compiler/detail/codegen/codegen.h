@@ -92,16 +92,21 @@ public:
      * additional will be performed at the end of codegen when its safe to
      * modify the AST.
      */
-    void addDeclaration(Declaration* d) {
-        _decls_added.insert(d->id());
-        _new_decls.push_back(d);
-    }
+    void addDeclaration(Declaration* d) { _new_decls.push_back(d); }
 
     /**
-     * Returns true if a declaration with the given ID has been scheduled for
-     * additional via `addDeclaration()` already.
+     * Adds a global constant to the current module and returns an expression
+     * referring to it. If this is called multiple times for the same value,
+     * only one instance is created and returned each time.
+     *
+     * This is useful for constants that are expensive to instantiate. If added
+     * globally through this method, only a single instance will ever be
+     * created.
+     *
+     * @param ctor the value to add as a global constant
+     * @return an expression referring to the constant
      */
-    bool haveAddedDeclaration(const ID& id) { return _decls_added.find(id) != _decls_added.end(); }
+    Expression* addGlobalConstant(Ctor* ctor);
 
 private:
     bool _compileModule(hilti::declaration::Module* module, int pass, codegen::ASTInfo* info);
@@ -115,10 +120,11 @@ private:
 
     std::vector<hilti::declaration::Property> _properties;
     std::map<UnqualifiedType*, UnqualifiedType*> _type_mappings;
+    std::map<std::string, std::pair<hilti::util::Uniquer<ID>, hilti::util::Cache<std::string, Expression*>>>
+        _global_constants; // map type of ctor to type-specific uniquer and cache
 
     hilti::declaration::Module* _hilti_module = nullptr;
     Declarations _new_decls;
-    std::unordered_set<ID> _decls_added;
     hilti::util::Uniquer<std::string> _uniquer;
 };
 

@@ -59,7 +59,7 @@
 [debug/resolver] [spicy_rt.hlt:92:33-92:71] Attribute "&cxxname="spicy::rt::detail::backtrack"" -> Attribute "&cxxname="::spicy::rt::detail::backtrack""
 [debug/resolver] [spicy_rt.hlt:94:89-94:132] Attribute "&cxxname="spicy::rt::ParsedUnit::initialize"" -> Attribute "&cxxname="::spicy::rt::ParsedUnit::initialize""
 [debug/resolver] [spicy_rt.hlt:96:160-96:201] Attribute "&cxxname="spicy::rt::detail::extractBytes"" -> Attribute "&cxxname="::spicy::rt::detail::extractBytes""
-[debug/resolver] [spicy_rt.hlt:97:156-97:203] Attribute "&cxxname="spicy::rt::detail::expectBytesLiteral"" -> Attribute "&cxxname="::spicy::rt::detail::expectBytesLiteral""
+[debug/resolver] [spicy_rt.hlt:97:155-97:202] Attribute "&cxxname="spicy::rt::detail::expectBytesLiteral"" -> Attribute "&cxxname="::spicy::rt::detail::expectBytesLiteral""
 [debug/resolver] [spicy.spicy:14:3-14:37] Attribute "&cxxname="hilti::rt::AddressFamily"" -> Attribute "&cxxname="::hilti::rt::AddressFamily""
 [debug/resolver] [spicy.spicy:23:3-23:41] Attribute "&cxxname="hilti::rt::integer::BitOrder"" -> Attribute "&cxxname="::hilti::rt::integer::BitOrder""
 [debug/resolver] [spicy.spicy:31:3-31:33] Attribute "&cxxname="hilti::rt::ByteOrder"" -> Attribute "&cxxname="::hilti::rt::ByteOrder""

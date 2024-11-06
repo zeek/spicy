@@ -250,7 +250,10 @@ struct Printer : visitor::PreOrder {
     void operator()(ctor::StrongReference* n) final { _out << "Null"; }
 
     void operator()(ctor::RegExp* n) final {
-        _out << std::make_pair(util::transform(n->value(), [](auto p) { return fmt("/%s/", p); }), " |");
+        _out << std::make_pair(util::transform(n->value(), [](const auto& p) { return fmt("/%s/", p); }), " |");
+
+        if ( auto* attrs = n->attributes() )
+            _out << ' ' << std::make_pair(attrs->attributes(), " ");
     }
 
     void operator()(ctor::Result* n) final {

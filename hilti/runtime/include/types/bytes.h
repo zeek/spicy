@@ -44,7 +44,19 @@ HILTI_RT_ENUM(Charset, Undef, UTF8, ASCII);
 /** For bytes decoding, how to handle decoding errors. */
 using DecodeErrorStrategy = string::DecodeErrorStrategy;
 
-class Iterator {
+/**
+ * Safe bytes iterator traversing the content of an instance.
+ *
+ * Unlike the STL-style iterators, this iterator protects against the bytes
+ * instance being no longer available by throwing an `InvalidIterator`
+ * exception if it's still dereferenced. It will also catch attempts to
+ * dereference iterators that remain outside of the current valid range of the
+ * underlying bytes instance, throwing an `IndexError` exception in that case.
+ * However, operations that only move the iterator will succeed even for
+ * out-of-range positions. That includes advancing an iterator beyond the end
+ * of the content.
+ */
+class SafeIterator {
     using B = std::string;
     using difference_type = B::const_iterator::difference_type;
 
@@ -52,9 +64,9 @@ class Iterator {
     typename integer::safe<std::uint64_t> _index = 0;
 
 public:
-    Iterator() = default;
+    SafeIterator() = default;
 
-    Iterator(typename B::size_type index, std::weak_ptr<const B*> control)
+    SafeIterator(typename B::size_type index, std::weak_ptr<const B*> control)
         : _control(std::move(control)), _index(index) {}
 
     uint8_t operator*() const {
@@ -87,7 +99,7 @@ public:
 
     template<typename T>
     auto operator+(const T& n) const {
-        return Iterator{_index + n, _control};
+        return SafeIterator{_index + n, _control};
     }
 
     explicit operator bool() const { return static_cast<bool>(_control.lock()); }
@@ -103,39 +115,39 @@ public:
         return result;
     }
 
-    friend auto operator==(const Iterator& a, const Iterator& b) {
+    friend auto operator==(const SafeIterator& a, const SafeIterator& b) {
         if ( a._control.lock() != b._control.lock() )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index == b._index;
     }
 
-    friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
+    friend bool operator!=(const SafeIterator& a, const SafeIterator& b) { return ! (a == b); }
 
-    friend auto operator<(const Iterator& a, const Iterator& b) {
+    friend auto operator<(const SafeIterator& a, const SafeIterator& b) {
         if ( a._control.lock() != b._control.lock() )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index < b._index;
     }
 
-    friend auto operator<=(const Iterator& a, const Iterator& b) {
+    friend auto operator<=(const SafeIterator& a, const SafeIterator& b) {
         if ( a._control.lock() != b._control.lock() )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index <= b._index;
     }
 
-    friend auto operator>(const Iterator& a, const Iterator& b) {
+    friend auto operator>(const SafeIterator& a, const SafeIterator& b) {
         if ( a._control.lock() != b._control.lock() )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index > b._index;
     }
 
-    friend auto operator>=(const Iterator& a, const Iterator& b) {
+    friend auto operator>=(const SafeIterator& a, const SafeIterator& b) {
         if ( a._control.lock() != b._control.lock() )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index >= b._index;
     }
 
-    friend difference_type operator-(const Iterator& a, const Iterator& b) {
+    friend difference_type operator-(const SafeIterator& a, const SafeIterator& b) {
         if ( a._control.lock() != b._control.lock() )
             throw InvalidArgument("cannot perform arithmetic with iterators into different bytes");
         return a._index - b._index;
@@ -144,12 +156,82 @@ public:
     friend class ::hilti::rt::Bytes;
 };
 
-inline std::string to_string(const Iterator& /* i */, rt::detail::adl::tag /*unused*/) { return "<bytes iterator>"; }
+inline std::string to_string(const SafeIterator& /* i */, rt::detail::adl::tag /*unused*/) {
+    return "<bytes iterator>";
+}
 
-inline std::ostream& operator<<(std::ostream& out, const Iterator& /* x */) {
+inline std::ostream& operator<<(std::ostream& out, const SafeIterator& /* x */) {
     out << "<bytes iterator>";
     return out;
 }
+
+namespace detail {
+/**
+ * Unsafe bytes iterator for internal usage. Unlike *SafeConstIterator*, this
+ * version is not safe against the underlying bytes instances
+ * disappearing or potentially even just changing; it will not catch that and
+ * likely causes crashes on access. It also does not perform any
+ * bounds-checking. When using this, one needs to ensure that the bytes
+ * instance will remain valid & unchanged for long as the iterator remains
+ * alive. In return, this iterator is more efficient than the
+ * `SafeConstIterator`.
+ */
+class UnsafeConstIterator {
+    using I = std::string::const_iterator;
+
+    I _i;
+
+public:
+    UnsafeConstIterator() = default;
+    UnsafeConstIterator(I i) : _i(i) {}
+
+    uint8_t operator*() const { return static_cast<uint8_t>(*_i); }
+
+    template<typename T>
+    auto& operator+=(const T& n) {
+        return *this += n;
+    }
+
+    auto& operator+=(uint64_t n) {
+        _i += static_cast<I::difference_type>(n);
+        return *this;
+    }
+
+    template<typename T>
+    auto operator+(const T& n) const {
+        return *this + n;
+    }
+
+    auto& operator++() {
+        ++_i;
+        return *this;
+    }
+
+    auto operator++(int) {
+        auto result = *this;
+        ++_i;
+        return result;
+    }
+
+    friend auto operator==(const UnsafeConstIterator& a, const UnsafeConstIterator& b) { return a._i == b._i; }
+    friend bool operator!=(const UnsafeConstIterator& a, const UnsafeConstIterator& b) { return ! (a == b); }
+    friend auto operator<(const UnsafeConstIterator& a, const UnsafeConstIterator& b) { return a._i < b._i; }
+    friend auto operator<=(const UnsafeConstIterator& a, const UnsafeConstIterator& b) { return a._i <= b._i; }
+    friend auto operator>(const UnsafeConstIterator& a, const UnsafeConstIterator& b) { return a._i > b._i; }
+    friend auto operator>=(const UnsafeConstIterator& a, const UnsafeConstIterator& b) { return a._i >= b._i; }
+    friend auto operator-(const UnsafeConstIterator& a, const UnsafeConstIterator& b) { return a._i - b._i; }
+};
+
+inline std::string to_string(const UnsafeConstIterator& /* i */, rt::detail::adl::tag /*unused*/) {
+    return "<bytes iterator>";
+}
+
+inline std::ostream& operator<<(std::ostream& out, const UnsafeConstIterator& /* x */) {
+    out << "<bytes iterator>";
+    return out;
+}
+
+} // namespace detail
 
 } // namespace bytes
 
@@ -162,7 +244,8 @@ inline std::ostream& operator<<(std::ostream& out, const Iterator& /* x */) {
 class Bytes : protected std::string {
 public:
     using Base = std::string;
-    using const_iterator = bytes::Iterator;
+    using const_iterator = bytes::SafeIterator;
+    using unsafe_const_iterator = bytes::detail::UnsafeConstIterator;
     using Base::const_reference;
     using Base::reference;
     using Offset = uint64_t;
@@ -238,11 +321,23 @@ public:
     /** Same as `begin()`, just for compatibility with std types. */
     const_iterator cbegin() const { return const_iterator(0U, getControl()); }
 
+    /**
+     * Returns an unchecked (but fast) iterator representing the first byte of
+     * the instance.
+     */
+    auto unsafeBegin() const { return unsafe_const_iterator(str().begin()); }
+
     /** Returns an iterator representing the end of the instance. */
     const_iterator end() const { return const_iterator(size(), getControl()); }
 
     /** Same as `end()`, just for compatibility with std types. */
     const_iterator cend() const { return const_iterator(size(), getControl()); }
+
+    /**
+     * Returns an unchecked (but fast) iterator representing the end of the
+     * instance.
+     */
+    auto unsafeEnd() const { return unsafe_const_iterator(str().end()); }
 
     /** Returns an iterator referring to the given offset. */
     const_iterator at(Offset o) const { return begin() + o; }
@@ -256,12 +351,12 @@ public:
     /**
      * Returns the position of the first occurrence of a byte.
      *
-     * @param b byte to search
-     * @param n optional starting point, which must be inside the same instance
+     * @param needle byte to search
+     * @param start optional starting point, which must be inside the same instance
      */
-    const_iterator find(value_type b, const const_iterator& n = const_iterator()) const {
+    const_iterator find(value_type needle, const const_iterator& start = const_iterator()) const {
         auto beg = begin();
-        if ( auto i = Base::find(b, (n ? n - beg : 0)); i != Base::npos )
+        if ( auto i = Base::find(needle, (start ? start - beg : 0)); i != Base::npos )
             return beg + i;
         else
             return end();
@@ -270,14 +365,14 @@ public:
     /**
      * Returns the position of the first occurrence of a range of bytes
      *
-     * @param v bytes to search
-     * @param n optional starting point, which must be inside the same instance
+     * @param needle bytes to search
+     * @param start optional starting point, which must be inside the same instance
      * @return tuple where the 1st element is a boolean indicating whether
      * *v* has been found; if yes, the 2nd element points to the 1st bytes;
      * if no, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*.
      */
-    std::tuple<bool, const_iterator> find(const Bytes& v, const const_iterator& n = const_iterator()) const;
+    std::tuple<bool, const_iterator> find(const Bytes& needle, const const_iterator& start = const_iterator()) const;
 
     /**
      * Extracts a subrange of bytes.
@@ -557,7 +652,7 @@ public:
     }
 
 private:
-    friend bytes::Iterator;
+    friend bytes::SafeIterator;
 
     const C& getControl() const {
         if ( ! _control )
