@@ -34,4 +34,9 @@ inline std::string detail::to_string_for_print<Result<std::string_view>>(const R
     return x ? std::string(*x) : hilti::rt::to_string(x.error());
 }
 
+template<>
+inline std::string detail::to_string_for_print<Result<Nothing>>(const Result<Nothing>& x) {
+    return x ? "<no value>" : hilti::rt::to_string(x.error());
+}
+
 } // namespace hilti::rt

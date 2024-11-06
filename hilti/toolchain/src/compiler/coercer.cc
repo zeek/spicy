@@ -249,6 +249,13 @@ struct VisitorCtor : visitor::PreOrder {
         }
     }
 
+    void operator()(ctor::String* n) final {
+        if ( dst->type()->isA<type::Error>() && (style & CoercionStyle::ContextualConversion) ) {
+            result = builder->ctorError(n->value(), n->meta());
+            return;
+        }
+    }
+
     void operator()(ctor::Vector* n) final {
         if ( auto t = dst->type()->tryAs<type::Vector>() ) {
             Expressions nexprs;
@@ -527,6 +534,13 @@ struct VisitorType : visitor::PreOrder {
             if ( type::same(n->dereferencedType(), dst) ) {
                 result = dst;
             }
+        }
+    }
+
+    void operator()(type::String* n) final {
+        if ( dst->type()->isA<type::Error>() && (style & CoercionStyle::ContextualConversion) ) {
+            result = dst;
+            return;
         }
     }
 

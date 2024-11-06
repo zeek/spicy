@@ -505,6 +505,8 @@ struct Printer : visitor::PreOrder {
 
     void operator()(expression::Name* n) final { _out << n->id(); }
 
+    void operator()(expression::ConditionTest* n) final { _out << n->condition() << " : " << n->error(); }
+
     void operator()(expression::ResolvedOperator* n) final {
         _out << operator_::detail::print(n->kind(), n->operands());
     }

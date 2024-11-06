@@ -35,7 +35,7 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 100
+%expect 101
 %expect-rr 168
 
 %{
@@ -275,8 +275,8 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::UnqualifiedType*>           base_type_no_ref base_type type type_no_ref tuple_type struct_type enum_type unit_type bitfield_type reference_type
 %type <hilti::QualifiedType*>             qtype func_result opt_func_result unit_field_base_type
 %type <hilti::Ctor*>                      ctor tuple struct_ regexp list vector map set unit_field_ctor
-%type <hilti::Expression*>                expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_range_value
-%type <hilti::Expressions>                  opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks
+%type <hilti::Expression*>                expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_range_value expr_no_or_error
+%type <hilti::Expressions>                  opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks case_exprs
 %type <hilti::type::function::Parameter*> func_param
 %type <hilti::parameter::Kind>              opt_func_param_kind
 %type <hilti::type::function::Flavor>       opt_func_flavor
@@ -533,10 +533,12 @@ stmts         : stmts stmt                       { $$ = std::move($1); $$.push_b
 
 stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | stmt_decl                        { $$ = std::move($1); }
-              | ASSERT expr ';'                  { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
-              | ASSERT expr ':' expr ';'         { $$ = builder->statementAssert(std::move($2), std::move($4), __loc__); }
-              | ASSERT_EXCEPTION expr ';'        { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
-              | ASSERT_EXCEPTION expr ':' expr ';'
+              | ASSERT expr_no_or_error ';'      { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
+              | ASSERT expr_no_or_error ':' expr ';'
+                                                 { $$ = builder->statementAssert(std::move($2), std::move($4), __loc__); }
+              | ASSERT_EXCEPTION expr_no_or_error ';'
+                                                 { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
+              | ASSERT_EXCEPTION expr_no_or_error ':' expr ';'
                                                  { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, std::move($4), __loc__); }
               | BREAK ';'                        { $$ = builder->statementBreak(__loc__); }
               | CONTINUE ';'                     { $$ = builder->statementContinue(__loc__); }
@@ -599,8 +601,11 @@ opt_else_block
 switch_cases  : switch_cases switch_case         { $$ = std::move($1); $$.push_back(std::move($2)); }
               | switch_case                      { $$ = hilti::statement::switch_::Cases({ std::move($1) }); }
 
-switch_case   : CASE exprs ':' block             { $$ = builder->statementSwitchCase(std::move($2), std::move($4), __loc__); }
+switch_case   : CASE case_exprs ':' block             { $$ = builder->statementSwitchCase(std::move($2), std::move($4), __loc__); }
               | DEFAULT ':' block                { $$ = builder->statementSwitchCase(hilti::statement::switch_::Default(), std::move($3), __loc__); }
+
+case_exprs    : case_exprs ',' expr_no_or_error  { $$ = std::move($1); $$.push_back(std::move($3)); }
+              | expr_no_or_error                 { $$ = hilti::Expressions{std::move($1)}; }
 
 stmt_decl     : local_decl                       { $$ = builder->statementDeclaration($1, __loc__); }
               | type_decl                        { $$ = builder->statementDeclaration($1, __loc__); }
@@ -957,6 +962,9 @@ expr          :
                                                  { $$ = std::move($2); }
               ;
 
+expr_no_or_error
+              : expr_1                           { $$ = std::move($1); }
+
 opt_exprs     : exprs                            { $$ = std::move($1); }
               | /* empty */                      { $$ = Expressions(); }
 
@@ -964,6 +972,7 @@ exprs         : exprs ',' expr                   { $$ = std::move($1); $$.push_b
               | expr                             { $$ = Expressions{std::move($1)}; }
 
 expr_0        : expr_1                           { $$ = std::move($1); }
+              | expr_1 ':' expr                  { $$ = builder->expressionConditionTest(std::move($1), std::move($3), __loc__); }
               ;
 
 expr_1        : expr_2 '=' expr_1                { $$ = builder->expressionAssign(std::move($1), std::move($3), __loc__); }
@@ -971,7 +980,7 @@ expr_1        : expr_2 '=' expr_1                { $$ = builder->expressionAssig
               | expr_2 PLUSASSIGN expr_1         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SumAssign, {std::move($1), std::move($3)}, __loc__); }
               | expr_2 TIMESASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MultipleAssign, {std::move($1), std::move($3)}, __loc__); }
               | expr_2 DIVIDEASSIGN expr_1       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DivisionAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 '?' expr ':' expr         { $$ = builder->expressionTernary(std::move($1), std::move($3), std::move($5), __loc__); }
+              | expr_2 '?' expr_1 ':' expr         { $$ = builder->expressionTernary(std::move($1), std::move($3), std::move($5), __loc__); }
               | expr_2                           { $$ = std::move($1); }
 
 expr_2        : expr_2 OR expr_3                 { $$ = builder->expressionLogicalOr(std::move($1), std::move($3), __loc__); }
@@ -1176,7 +1185,7 @@ opt_map_elems : map_elems                        { $$ = std::move($1); }
 map_elems     : map_elems ',' map_elem           { $$ = std::move($1); $$.push_back(std::move($3)); }
               | map_elem                         { $$ = hilti::ctor::map::Elements(); $$.push_back(std::move($1)); }
 
-map_elem      : expr ':' expr                    { $$ = builder->ctorMapElement($1, $3); }
+map_elem      : expr_no_or_error ':' expr        { $$ = builder->ctorMapElement($1, $3); }
 
 /* Attributes */
 

@@ -327,6 +327,9 @@ public:
     auto expressionName(const hilti::ID& id, const Meta& meta = {}) {
         return hilti::expression::Name::create(context(), id, meta);
     }
+    auto expressionConditionTest(Expression* cond, Expression* error, Meta meta = {}) {
+        return hilti::expression::ConditionTest::create(context(), cond, error, std::move(meta));
+    }
     auto expressionPendingCoerced(Expression* expr, QualifiedType* type, Meta meta = {}) {
         return hilti::expression::PendingCoerced::create(context(), expr, type, std::move(meta));
     }

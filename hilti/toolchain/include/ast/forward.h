@@ -103,6 +103,7 @@ class LogicalOr;
 class Member;
 class Move;
 class Name;
+class ConditionTest;
 class PendingCoerced;
 class ResolvedOperator;
 class Ternary;
