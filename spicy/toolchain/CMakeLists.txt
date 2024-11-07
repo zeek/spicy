@@ -140,7 +140,7 @@ add_subdirectory(bin/spicy-dump)
 add_custom_target(spicy-build ALL DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build
                   COMMENT "Generating spicy-build")
 add_custom_command(
-    OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build POST_BUILD
+    OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/spicy-build
     COMMENT "Copying spicy-build"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/bin/spicy-build
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
