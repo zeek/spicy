@@ -3888,7 +3888,7 @@
 
     We previously would go through a checked iterator to iterate a `Bytes`
     instance. Since none of the iterators were user-provided this was always
-    safe, but incured the performance overhead for checking.
+    safe, but incurred the performance overhead for checking.
 
     With this patch we iterate the underlying bytes directly.
 

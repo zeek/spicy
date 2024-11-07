@@ -15,7 +15,7 @@ public type getThirdChild = unit {
 
 type TCAPTag = unit(consume: bool = False) {
     on %init {
-        print "enterred TCAPTag";
+        print "entered TCAPTag";
         print "is consume true: ", consume;
       }
 };

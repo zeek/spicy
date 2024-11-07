@@ -1510,7 +1510,7 @@ public:
         return _end ? detail::UnsafeConstIterator(*_end) : _begin.chain()->unsafeEnd();
     }
 
-    /** Returns an safe iterator pointint to the beginning of the view. */
+    /** Returns an safe iterator pointing to the beginning of the view. */
     const SafeConstIterator& begin() const { return _begin; }
 
     /** Same as `begin()`, just for compatibility with std types. */
