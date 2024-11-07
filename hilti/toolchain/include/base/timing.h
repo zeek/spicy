@@ -33,7 +33,7 @@ public:
     static void summary(std::ostream& out);
 
     /**
-     * Returns a pointer to a global singleon manager instance. This returns
+     * Returns a pointer to a global singleton manager instance. This returns
      * a shared_ptr so that ledgers can store that to ensure the global
      * singleton doesn't get destroyed at exit before they go away, too.
      */
