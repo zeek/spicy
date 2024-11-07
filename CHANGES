@@ -1,3 +1,21 @@
+1.12.0-dev.188 | 2024-11-07 15:19:35 +0100
+
+  * Make units encompass attributes in location. (Evan Typanski, Corelight)
+
+  * GH-1898: Move type alias attribute validation to parser. (Evan Typanski, Corelight)
+
+    Closes #1898
+
+    This was originally in a validator, but there's some sense that this is
+    a parsing issue since attributes should not be allowed at all on most
+    constructs of that form.
+
+    Note that a lot of the cleanup here was meant to span removing the
+    `opt_attributes` field in `type_decl` altogether, but the fallout from
+    that is pretty large. It ended up being less cleanup and more
+    rearchitecting. This way still avoids the hacky test for type aliases in
+    the validator while not changing the AST structure.
+
 1.12.0-dev.182 | 2024-11-06 14:19:55 +0100
 
   * GH-1859: Improve error message when a unit parameter is used as a
