@@ -1,5 +1,14 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+// Our uses of `visitor::range` below trigger false positives from >=gcc-13's
+// dangling-reference check, see //
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107532. Disable the warning for
+// now.
+#if __GNUC__ >= 13
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
+#endif
+
 #include <utility>
 
 #include <hilti/ast/ast-context.h>

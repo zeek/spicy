@@ -1,3 +1,19 @@
+1.12.0-dev.191 | 2024-11-14 11:18:29 +0100
+
+  * Locally disable some warnings for >=gcc-13. (Benjamin Bannier, Corelight)
+
+    fedora-40 and fedora-41 come with GCC versions which trigger new
+    warnings.
+
+    - Some uses of `visitor::range` trigger dangling-reference false
+      positives, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107532.
+    - The dtor of `Location` triggers maybe-uninitialized false positives in
+      `hilti::rt::filesystem::path` for `_file`.
+
+    Disable these warnings locally if we are building with >=gcc-13 for now.
+
+  * Bump Fedora versions in CI. (Benjamin Bannier, Corelight)
+
 1.12.0-dev.188 | 2024-11-07 15:19:35 +0100
 
   * Make units encompass attributes in location. (Evan Typanski, Corelight)
