@@ -717,13 +717,22 @@ private:
         if ( ! n )
             return;
 
+        if ( _chain->isValid() ) {
+            const Chunk* hint = nullptr;
+
+            if ( _chain->inRange(_offset) )
+                hint = _chunk; // current chunk is still valid
+            else
+                hint = _chain->head(); // previous chunk was likely trimmed off, try new head
+
+            _chunk = _chain->findChunk(_offset + n, hint); // null if we're pointing beyond the end now
+        }
+        else
+            // Invalid chain will trigger exception when dereferenced, but
+            // invalidate chunk to be safe.
+            _chunk = nullptr;
+
         _offset += n;
-
-        if ( ! (_chain && _chain->isValid()) )
-            return; // will be caught when dereferenced
-
-        _chunk = _chain->findChunk(_offset, chunk());
-        // chunk will be null if we're pointing beyond the end.
     }
 
     void _decrement(const integer::safe<uint64_t>& n) {
@@ -736,16 +745,28 @@ private:
         if ( ! n )
             return;
 
+        if ( _chain->isValid() ) {
+            const Chunk* hint = nullptr;
+
+            if ( _chain->inRange(_offset) ) {
+                if ( _chunk && _chunk->inRange(_offset - n) ) {
+                    _offset -= n;
+                    return; // fast-path, inside still-valid chunk
+                }
+
+                hint = _chunk; // current chunk is still valid
+            }
+            else
+                hint = _chain->head(); // previous chunk was likely trimmed off, try new head
+
+            _chunk = _chain->findChunk(_offset - n, hint); // null if we're pointing outside the chain now
+        }
+        else
+            // Invalid chain will trigger exception when dereferenced, but
+            // invalidate chunk to be safe.
+            _chunk = nullptr;
+
         _offset -= n;
-
-        if ( _chunk && _offset > _chunk->offset() )
-            return; // fast-path, chunk still valid
-
-        if ( ! (_chain && _chain->isValid()) )
-            return; // will be caught when dereferenced
-
-        _chunk = _chain->findChunk(_offset, _chunk);
-        // chunk will be null if we're pointing beyond the beginning.
     }
 
     Byte _dereference() const {
