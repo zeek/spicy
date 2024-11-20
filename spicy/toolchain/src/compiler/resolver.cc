@@ -267,18 +267,15 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( n->unitFieldIndex() && ! n->dd() ) {
             auto unit_field = context()->lookup(n->unitFieldIndex())->as<type::unit::item::Field>();
 
-            QualifiedType* dd = nullptr;
+            QualifiedType* dd = unit_field->ddType();
 
             if ( n->hookType() == declaration::hook::Type::ForEach ) {
-                dd = unit_field->ddType();
                 if ( ! dd || ! dd->isResolved() )
                     return;
 
                 // Validator will catch if the type is not a container.
                 dd = dd->type()->elementType();
             }
-            else
-                dd = unit_field->itemType();
 
             if ( dd && dd->isResolved() ) {
                 auto dd_ = QualifiedType::createExternal(context(), dd->type(), dd->constness());

@@ -1,0 +1,14 @@
+# @TEST-EXEC: echo '00' | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module DDConsistency;
+
+public type Data = unit {
+    x: uint8 &convert=($$ + 5) &requires=($$ < 50) {
+        print $$ < 50; # Should print True since it got through the requires
+    }
+
+    y: uint8 &convert=($$ == 48) &requires=($$ < 50) {
+        print $$ == 48; # Should succeed compiling since $$ is uint8 still
+    }
+};

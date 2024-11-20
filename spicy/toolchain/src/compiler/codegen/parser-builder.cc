@@ -2470,7 +2470,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
     if ( field->emitHook() ) {
         beforeHook();
 
-        Expressions args = {value};
+        Expressions args = {dd};
 
         if ( field->originalType()->type()->isA<hilti::type::RegExp>() && ! field->isContainer() ) {
             if ( state().captures )
