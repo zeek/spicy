@@ -620,8 +620,10 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(type::Map* n) final {
-        if ( auto rc = isSortable(n->keyType()); ! rc )
-            error(fmt("type cannot be used as key type for maps (because %s)", rc.error()), n);
+        if ( ! n->keyType()->type()->isA<type::Unknown>() ) { // unknown will be reported elsewhere
+            if ( auto rc = isSortable(n->keyType()); ! rc )
+                error(fmt("type cannot be used as key type for maps (because %s)", rc.error()), n);
+        }
     }
 
     void operator()(type::SignedInteger* n) final {
@@ -629,6 +631,13 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( w != 8 && w != 16 && w != 32 && w != 64 && ! n->isWildcard() )
             error(fmt("integer type's width must be one of 8/16/32/64, but is %d", n->width()), n);
+    }
+
+    void operator()(type::Set* n) final {
+        if ( ! n->elementType()->type()->isA<type::Unknown>() ) { // unknown will be reported elsewhere
+            if ( auto rc = isSortable(n->elementType()); ! rc )
+                error(fmt("type cannot be used as element type for sets (because %s)", rc.error()), n);
+        }
     }
 
     void operator()(type::UnsignedInteger* n) final {

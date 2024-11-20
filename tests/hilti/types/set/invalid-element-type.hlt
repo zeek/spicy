@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that a non-sortable element type is reported.
+
+module foo {
+
+type X = struct {};
+global set<X> s;
+
+global set<tuple<set<uint<8>>>> x1;
+global set<tuple<tuple<set<uint<8>>>>> x2;
+
+}
