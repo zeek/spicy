@@ -771,7 +771,7 @@ struct ProductionVisitor : public production::Visitor {
             if ( auto ctor_ = field->ctor(); ctor_ && ctor_->as<hilti::ctor::RegExp>()->isNoSub() )
                 needs_captures = false;
 
-            if ( field->attributes()->find("&nosub") )
+            if ( field->attributes()->find(hilti::Attribute::Kind::NOSUB) )
                 needs_captures = false;
 
             if ( needs_captures ) {
@@ -781,10 +781,10 @@ struct ProductionVisitor : public production::Visitor {
             }
         }
 
-        if ( auto a = field->attributes()->find("&parse-from") )
+        if ( auto a = field->attributes()->find(hilti::Attribute::Kind::PARSE_FROM) )
             redirectInputToBytesValue(*a->valueAsExpression());
 
-        if ( auto a = field->attributes()->find("&parse-at") )
+        if ( auto a = field->attributes()->find(hilti::Attribute::Kind::PARSE_AT) )
             redirectInputToStreamPosition(*a->valueAsExpression());
 
         if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
@@ -804,7 +804,7 @@ struct ProductionVisitor : public production::Visitor {
                                                                                    hilti::Constness::Const))}));
         }
 
-        if ( field->attributes()->find("&try") )
+        if ( field->attributes()->find(hilti::Attribute::Kind::TRY) )
             pb->initBacktracking();
 
         return pre_container_offset;
@@ -816,10 +816,11 @@ struct ProductionVisitor : public production::Visitor {
         // so try to extract both of them and compute the ultimate value.
         Expression* length = nullptr;
         // Only at most one of `&max-size` and `&size` will be set.
-        assert(! (field->attributes()->find("&size") && field->attributes()->find("&max-size")));
-        if ( auto a = field->attributes()->find("&size") )
+        assert(! (field->attributes()->find(hilti::Attribute::Kind::SIZE) &&
+                  field->attributes()->find(hilti::Attribute::Kind::MAX_SIZE)));
+        if ( auto a = field->attributes()->find(hilti::Attribute::Kind::SIZE) )
             length = *a->valueAsExpression();
-        if ( auto a = field->attributes()->find("&max-size") )
+        if ( auto a = field->attributes()->find(hilti::Attribute::Kind::MAX_SIZE) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
             length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
                                        builder()->sum(*a->valueAsExpression(), builder()->integer(1U)));
@@ -851,7 +852,7 @@ struct ProductionVisitor : public production::Visitor {
     std::pair<Expression*, Expression*> finishFullFieldParsing(type::unit::item::Field* field) {
         std::pair<Expression*, Expression*> result = {state().ncur, {}};
 
-        if ( auto a = field->attributes()->find("&max-size") ) {
+        if ( auto a = field->attributes()->find(hilti::Attribute::Kind::MAX_SIZE) ) {
             assert(state().ncur);
             // Check that we did not read into the sentinel byte.
             auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
@@ -869,7 +870,8 @@ struct ProductionVisitor : public production::Visitor {
             result.second = state().cur;
         }
 
-        else if ( auto a = field->attributes()->find("&size"); a && ! field->attributes()->find("&eod") ) {
+        else if ( auto a = field->attributes()->find(hilti::Attribute::Kind::SIZE);
+                  a && ! field->attributes()->find(hilti::Attribute::Kind::EOD) ) {
             assert(state().ncur);
             _checkSizeAmount(a, state().ncur, field);
         }
@@ -898,7 +900,7 @@ struct ProductionVisitor : public production::Visitor {
 
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- post-parse field: %s", field->id()));
 
-        if ( field->attributes()->find("&try") )
+        if ( field->attributes()->find(hilti::Attribute::Kind::TRY) )
             pb->finishBacktracking();
 
         if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
@@ -919,7 +921,8 @@ struct ProductionVisitor : public production::Visitor {
             pb->applyConvertExpression(*field, val, destination());
         }
 
-        if ( field->attributes()->find("&parse-from") || field->attributes()->find("&parse-at") ) {
+        if ( field->attributes()->find(hilti::Attribute::Kind::PARSE_FROM) ||
+             field->attributes()->find(hilti::Attribute::Kind::PARSE_AT) ) {
             ncur = {};
             popState();
             pb->saveParsePosition();
@@ -976,7 +979,8 @@ struct ProductionVisitor : public production::Visitor {
         // Store the regexp as a global constant to avoid recomputing the
         // regexp on each runtime pass through the calling context.
         auto re = pb->cg()->addGlobalConstant(
-            builder()->ctorRegExp(c->value(), builder()->attributeSet({builder()->attribute("&anchor")})));
+            builder()->ctorRegExp(c->value(),
+                                  builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::ANCHOR)})));
 
         auto ncur = builder()->addTmp("ncur", state().cur);
         auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
@@ -1094,8 +1098,9 @@ struct ProductionVisitor : public production::Visitor {
                 }
 
                 auto re = pb->cg()->addGlobalConstant(
-                    builder()->ctorRegExp(flattened, builder()->attributeSet({builder()->attribute("&anchor"),
-                                                                              builder()->attribute("&nosub")})));
+                    builder()->ctorRegExp(flattened, builder()->attributeSet(
+                                                         {builder()->attribute(hilti::Attribute::Kind::ANCHOR),
+                                                          builder()->attribute(hilti::Attribute::Kind::NOSUB)})));
                 // Create the token matcher state.
                 builder()->addLocal(ID("ncur"), state().cur);
                 auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
@@ -1484,14 +1489,14 @@ struct ProductionVisitor : public production::Visitor {
     std::optional<Expression*> preAggregate(const Production* p, AttributeSet* attributes) {
         builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
 
-        if ( const auto& a = attributes->find("&parse-from") )
+        if ( const auto& a = attributes->find(hilti::Attribute::Kind::PARSE_FROM) )
             redirectInputToBytesValue(*a->valueAsExpression());
 
-        if ( auto a = attributes->find("&parse-at") )
+        if ( auto a = attributes->find(hilti::Attribute::Kind::PARSE_AT) )
             redirectInputToStreamPosition(*a->valueAsExpression());
 
         std::optional<Expression*> ncur;
-        if ( const auto& a = attributes->find("&size") ) {
+        if ( const auto& a = attributes->find(hilti::Attribute::Kind::SIZE) ) {
             // Limit input to the specified length.
             auto length = *a->valueAsExpression();
             auto limited = builder()->addTmp("limited_field", builder()->memberCall(state().cur, "limit", {length}));
@@ -1509,13 +1514,14 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void postAggregate(const Production* p, AttributeSet* attributes, std::optional<Expression*> ncur) {
-        if ( auto a = attributes->find("&size"); a && ! attributes->find("&eod") ) {
+        if ( auto a = attributes->find(hilti::Attribute::Kind::SIZE);
+             a && ! attributes->find(hilti::Attribute::Kind::EOD) ) {
             _checkSizeAmount(a, *ncur);
             popState();
             builder()->addAssign(state().cur, *ncur);
         }
 
-        if ( attributes->has("&parse-from") || attributes->has("&parse-at") )
+        if ( attributes->has(hilti::Attribute::Kind::PARSE_FROM) || attributes->has(hilti::Attribute::Kind::PARSE_AT) )
             popState();
 
         builder()->addCall("hilti::debugDedent", {builder()->stringLiteral("spicy")});
@@ -1572,7 +1578,7 @@ struct ProductionVisitor : public production::Visitor {
         // The container element type creating this counter was marked `&synchronize`. Allow any container
         // element to fail parsing and be skipped. This means that if `n` elements where requested and one
         // element fails to parse, we will return `n-1` elements.
-        if ( auto f = p->body()->meta().field(); f && f->attributes()->find("&synchronize") ) {
+        if ( auto f = p->body()->meta().field(); f && f->attributes()->find(hilti::Attribute::Kind::SYNCHRONIZE) ) {
             auto try_ = builder()->addTry();
             pushBuilder(try_.first, [&]() { parse(); });
 
@@ -1667,10 +1673,11 @@ struct ProductionVisitor : public production::Visitor {
         // during validation.
         Expression* length = nullptr;
         // Only at most one of `&max-size` and `&size` will be set.
-        assert(! (p->unitType()->attributes()->find("&size") && p->unitType()->attributes()->find("&max-size")));
-        if ( auto a = p->unitType()->attributes()->find("&size") )
+        assert(! (p->unitType()->attributes()->find(hilti::Attribute::Kind::SIZE) &&
+                  p->unitType()->attributes()->find(hilti::Attribute::Kind::MAX_SIZE)));
+        if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::SIZE) )
             length = *a->valueAsExpression();
-        else if ( auto a = p->unitType()->attributes()->find("&max-size") )
+        else if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::MAX_SIZE) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
             length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
                                        builder()->sum(*a->valueAsExpression(), builder()->integer(1U)));
@@ -1703,7 +1710,7 @@ struct ProductionVisitor : public production::Visitor {
             for ( auto candidate_counter = field_counter + 1; candidate_counter < p->fields().size();
                   ++candidate_counter )
                 if ( auto candidate = p->fields()[candidate_counter]->meta().field();
-                     candidate && candidate->attributes()->find("&synchronize") ) {
+                     candidate && candidate->attributes()->find(hilti::Attribute::Kind::SYNCHRONIZE) ) {
                     sync_points.emplace_back(candidate_counter);
                     found_sync_point = true;
                     break;
@@ -1780,7 +1787,7 @@ struct ProductionVisitor : public production::Visitor {
         for ( int i = 0; i < trial_loops; ++i )
             finishSynchronize();
 
-        if ( auto a = p->unitType()->attributes()->find("&max-size") ) {
+        if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::MAX_SIZE) ) {
             // Check that we did not read into the sentinel byte.
             auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
                                                 builder()->memberCall(state().ncur, "offset"));
@@ -1793,8 +1800,8 @@ struct ProductionVisitor : public production::Visitor {
             builder()->addAssign(state().cur, ncur);
         }
 
-        else if ( auto a = p->unitType()->attributes()->find("&size");
-                  a && ! p->unitType()->attributes()->find("&eod") ) {
+        else if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::SIZE);
+                  a && ! p->unitType()->attributes()->find(hilti::Attribute::Kind::EOD) ) {
             auto ncur = state().ncur;
             _checkSizeAmount(a, ncur);
             popState();
@@ -1902,10 +1909,10 @@ struct ProductionVisitor : public production::Visitor {
             pb->skip(size, p->location());
 
         else if ( p->field()->parseType()->type()->isA<hilti::type::Bytes>() ) {
-            auto eod_attr = p->field()->attributes()->find("&eod");
-            auto until_attr = p->field()->attributes()->find("&until");
+            auto eod_attr = p->field()->attributes()->find(hilti::Attribute::Kind::EOD);
+            auto until_attr = p->field()->attributes()->find(hilti::Attribute::Kind::UNTIL);
             if ( ! until_attr )
-                until_attr = p->field()->attributes()->find("&until-including");
+                until_attr = p->field()->attributes()->find(hilti::Attribute::Kind::UNTIL_INCLUDING);
 
             if ( eod_attr ) {
                 builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
@@ -1985,7 +1992,7 @@ struct ProductionVisitor : public production::Visitor {
                 // for internal list synchronization (failure to parse a list element tries to synchronize at
                 // the next possible list element).
                 if ( auto field = p->body()->meta().field();
-                     field && field->attributes() && field->attributes()->find("&synchronize") ) {
+                     field && field->attributes() && field->attributes()->find(hilti::Attribute::Kind::SYNCHRONIZE) ) {
                     auto try_ = builder()->addTry();
 
                     pushBuilder(try_.first, [&]() { parse(); });
@@ -2104,10 +2111,10 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
                                                                         hilti::Constness::Mutable)))};
 
-    auto attr_ext_overload =
-        builder()->attributeSet({builder()->attribute("&needed-by-feature", builder()->stringLiteral("is_filter")),
-                                 builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_sinks")),
-                                 builder()->attribute("&static")});
+    auto attr_ext_overload = builder()->attributeSet(
+        {builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE, builder()->stringLiteral("is_filter")),
+         builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE, builder()->stringLiteral("supports_sinks")),
+         builder()->attribute(hilti::Attribute::Kind::STATIC)});
 
     auto f_ext_overload1_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
     auto f_ext_overload1 =
@@ -2165,7 +2172,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     auto f_ext_context_new =
         builder()->function(id_ext_context_new, f_ext_context_new_result, {}, hilti::type::function::Flavor::Method,
                             hilti::declaration::Linkage::Struct, hilti::function::CallingConvention::ExternNoSuspend,
-                            builder()->attributeSet({builder()->attribute("&static")}), t->meta());
+                            builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::STATIC)}), t->meta());
 
     // We only actually add the functions we just build if the unit is
     // publicly exposed. We still build their code in either case below
@@ -2398,15 +2405,15 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             s->addField(context(), f);
     }
 
-    s->addField(context(),
-                builder()->declarationField(ID("__error"),
-                                            builder()->qualifiedType(builder()->typeOptional(builder()->qualifiedType(
-                                                                         builder()->typeName(
-                                                                             "hilti::RecoverableFailure"),
-                                                                         hilti::Constness::Const)),
-                                                                     hilti::Constness::Mutable),
-                                            builder()->attributeSet({builder()->attribute("&always-emit"),
-                                                                     builder()->attribute("&internal")})));
+    s->addField(context(), builder()->declarationField(
+                               ID("__error"),
+                               builder()->qualifiedType(builder()->typeOptional(
+                                                            builder()->qualifiedType(builder()->typeName(
+                                                                                         "hilti::RecoverableFailure"),
+                                                                                     hilti::Constness::Const)),
+                                                        hilti::Constness::Mutable),
+                               builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::ALWAYS_EMIT),
+                                                        builder()->attribute(hilti::Attribute::Kind::INTERNAL)})));
 }
 
 Builder* ParserBuilder::builder() const { return _builders.empty() ? _cg->builder() : _builders.back().get(); }
@@ -2441,7 +2448,7 @@ static std::string prettyPrintExpr(Expression* e) {
 void ParserBuilder::newValueForField(const production::Meta& meta, Expression* value, Expression* dd) {
     const auto& field = meta.field();
 
-    for ( const auto& a : field->attributes()->findAll("&requires") ) {
+    for ( const auto& a : field->attributes()->findAll(hilti::Attribute::Kind::REQUIRES) ) {
         // We evaluate "&requires" here so that the field's value has been
         // set already, and is hence accessible to the condition through
         // "self.<x>".
@@ -2520,7 +2527,7 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
     };
 
     auto check_requires = [&]() {
-        for ( const auto& a : field->attributes()->findAll("&requires") ) {
+        for ( const auto& a : field->attributes()->findAll(hilti::Attribute::Kind::REQUIRES) ) {
             pushBuilder(builder()->addBlock(), [&]() {
                 builder()->addLocal("__dd", item);
                 auto cond = builder()->addTmp("requires", *a->valueAsExpression());
@@ -2531,21 +2538,21 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
         }
     };
 
-    if ( auto a = container->attributes()->find("&until") ) {
+    if ( auto a = container->attributes()->find(hilti::Attribute::Kind::UNTIL) ) {
         eval_condition(*a->valueAsExpression());
         check_requires();
         run_hook();
         push_element();
     }
 
-    else if ( auto a = container->attributes()->find("&until-including") ) {
+    else if ( auto a = container->attributes()->find(hilti::Attribute::Kind::UNTIL_INCLUDING) ) {
         check_requires();
         run_hook();
         push_element();
         eval_condition(*a->valueAsExpression());
     }
 
-    else if ( auto a = container->attributes()->find("&while") ) {
+    else if ( auto a = container->attributes()->find(hilti::Attribute::Kind::WHILE) ) {
         eval_condition(builder()->not_(*a->valueAsExpression()));
         check_requires();
         run_hook();
@@ -2616,7 +2623,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         // We evaluate any "&requires" before running the final "%done" hook
         // so that (1) that one can rely on the condition, and (2) we keep
         // running either "%done" or "%error".
-        for ( const auto& attr : unit->attributes()->findAll("&requires") ) {
+        for ( const auto& attr : unit->attributes()->findAll(hilti::Attribute::Kind::REQUIRES) ) {
             auto cond = *attr->valueAsExpression();
             pushBuilder(builder()->addIf(builder()->not_(cond)),
                         [&]() { parseError(fmt("&requires failed: %s", prettyPrintExpr(cond)), cond->meta()); });
@@ -2668,14 +2675,16 @@ hilti::Attributes ParserBuilder::removeGenericParseAttributes(hilti::AttributeSe
     // really have a well-defined list of attributes that are clearly generic
     // vs field-specific. So this best-effort weeding out attributes that
     // field-specific code usually doesn't need to care about.
-    static std::unordered_set<std::string_view> generic_attributes = {
-        "&convert",    "&default",  "&eod",  "&max-size",    "&optional", "&parse-at",
-        "&parse-from", "&requires", "&size", "&synchronize", "&try",
+    static std::unordered_set<hilti::Attribute::Kind> generic_attributes = {
+        hilti::Attribute::Kind::CONVERT,     hilti::Attribute::Kind::DEFAULT,  hilti::Attribute::Kind::EOD,
+        hilti::Attribute::Kind::MAX_SIZE,    hilti::Attribute::Kind::OPTIONAL, hilti::Attribute::Kind::PARSE_AT,
+        hilti::Attribute::Kind::PARSE_FROM,  hilti::Attribute::Kind::REQUIRES, hilti::Attribute::Kind::SIZE,
+        hilti::Attribute::Kind::SYNCHRONIZE, hilti::Attribute::Kind::TRY,
     };
 
     hilti::Attributes filtered;
     for ( auto a : attrs->attributes() ) {
-        if ( ! generic_attributes.count(a->tag()) )
+        if ( ! generic_attributes.count(a->kind()) )
             filtered.emplace_back(a);
     }
 

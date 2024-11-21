@@ -44,20 +44,20 @@ struct FieldBuilder : public visitor::PreOrder {
 
     void operator()(spicy::type::unit::item::Field* f) final {
         // Create struct field.
-        auto attrs = builder()->attributeSet({builder()->attribute("&optional")});
+        auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::OPTIONAL)});
 
-        if ( auto x = f->attributes()->find("&default") )
+        if ( auto x = f->attributes()->find(hilti::Attribute::Kind::DEFAULT) )
             attrs->add(context(), x);
 
         if ( f->isAnonymous() )
-            attrs->add(context(), builder()->attribute("&anonymous"));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::ANONYMOUS));
 
         if ( (f->isAnonymous() || f->isSkip() || f->parseType()->type()->isA<hilti::type::Void>()) &&
              ! f->itemType()->type()->isA<hilti::type::Bitfield>() )
             // This field will never make it into the C++ struct. We still
             // carry it around though as that makes type inference easier at
             // times, and also can improve error messages.
-            attrs->add(context(), builder()->attribute("&no-emit"));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::NO_EMIT));
 
         auto nf = builder()->declarationField(f->id(), f->itemType(), attrs, f->meta());
         addField(nf);
@@ -126,10 +126,10 @@ struct FieldBuilder : public visitor::PreOrder {
 
         // Create struct field.
         if ( auto x = f->default_() )
-            attrs->add(context(), builder()->attribute("&default", x));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::DEFAULT, x));
 
         if ( f->isOptional() )
-            attrs->add(context(), builder()->attribute("&optional"));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::OPTIONAL));
 
         auto nf = builder()->declarationField(f->id(), ftype, attrs, f->meta());
         addField(nf);
@@ -137,9 +137,11 @@ struct FieldBuilder : public visitor::PreOrder {
 
     void operator()(spicy::type::unit::item::Sink* s) final {
         auto type = builder()->typeName("spicy_rt::Sink", s->meta());
-        auto attrs = builder()->attributeSet(
-            {builder()->attribute("&default", builder()->new_(type)), builder()->attribute("&internal"),
-             builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_sinks"))});
+        auto attrs =
+            builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::DEFAULT, builder()->new_(type)),
+                                     builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                     builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
+                                                          builder()->stringLiteral("supports_sinks"))});
 
         auto sink = builder()->qualifiedType(builder()->typeSink(), hilti::Constness::Mutable, hilti::Side::LHS);
         auto nf = builder()->declarationField(s->id(),
@@ -183,12 +185,13 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
         auto vec = builder()->qualifiedType(builder()->typeVector(opt_v_elem), hilti::Constness::Const);
 
         v.addField(builder()->declarationField(ID("__offsets"), vec,
-                                               builder()->attributeSet({builder()->attribute("&internal"),
-                                                                        builder()->attribute("&always-emit")})));
+                                               builder()->attributeSet(
+                                                   {builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                                    builder()->attribute(hilti::Attribute::Kind::ALWAYS_EMIT)})));
     }
 
     if ( auto context = unit->contextType() ) {
-        auto attrs = builder()->attributeSet({builder()->attribute("&internal")});
+        auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::INTERNAL)});
         auto ftype = builder()->typeStrongReference(builder()->qualifiedType(context, hilti::Constness::Mutable));
         auto f =
             builder()->declarationField(ID("__context"), builder()->qualifiedType(ftype, hilti::Constness::Mutable),
@@ -203,7 +206,7 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     add_hook("0x25_finally", {});
 
     auto attr_sync = builder()->attributeSet(
-        {builder()->attribute("&needed-by-feature", builder()->stringLiteral("synchronization"))});
+        {builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE, builder()->stringLiteral("synchronization"))});
     add_hook("0x25_confirmed", {}, attr_sync);
     add_hook("0x25_rejected", {}, attr_sync);
     add_hook("0x25_synced", {}, attr_sync);
@@ -231,60 +234,68 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     add_hook("0x25_undelivered", {builder()->parameter("seq", builder()->typeUnsignedInteger(64)),
                                   builder()->parameter("data", builder()->typeBytes())});
 
-    auto attr_uses_stream = builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_stream"));
+    auto attr_uses_stream =
+        builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE, builder()->stringLiteral("uses_stream"));
     auto stream =
         builder()->declarationField(ID("__stream"),
                                     builder()->qualifiedType(builder()->typeWeakReference(
                                                                  builder()->qualifiedType(builder()->typeStream(),
                                                                                           hilti::Constness::Const)),
                                                              hilti::Constness::Const),
-                                    builder()->attributeSet({builder()->attribute("&internal"), attr_uses_stream}));
+                                    builder()->attributeSet(
+                                        {builder()->attribute(hilti::Attribute::Kind::INTERNAL), attr_uses_stream}));
 
     v.addField(stream);
 
-    auto attr_sync_advance = builder()->attributeSet(
-        {builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_sync_advance"))});
+    auto attr_sync_advance =
+        builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
+                                                      builder()->stringLiteral("uses_sync_advance"))});
 
     add_hook("0x25_sync_advance", {builder()->parameter("offset", builder()->typeUnsignedInteger(64))},
              attr_sync_advance);
 
     // Fields related to random-access functionality.
     auto attr_uses_random_access =
-        builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_random_access"));
+        builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE, builder()->stringLiteral("uses_random_access"));
     auto iter = builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Mutable);
-    auto f1 = builder()->declarationField(ID("__begin"), iter,
-                                          builder()->attributeSet(
-                                              {builder()->attribute("&internal"), attr_uses_random_access}));
+    auto f1 =
+        builder()->declarationField(ID("__begin"), iter,
+                                    builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                                             attr_uses_random_access}));
     auto f2 =
         builder()->declarationField(ID("__position_update"),
                                     builder()->qualifiedType(builder()->typeOptional(iter), hilti::Constness::Mutable),
-                                    builder()->attributeSet(
-                                        {builder()->attribute("&internal"), attr_uses_random_access}));
+                                    builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                                             attr_uses_random_access}));
     v.addField(f1);
     v.addField(f2);
 
     // Fields related to offset functionality.
-    auto attr_uses_offset = builder()->attribute("&needed-by-feature", builder()->stringLiteral("uses_offset"));
+    auto attr_uses_offset =
+        builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE, builder()->stringLiteral("uses_offset"));
     auto f3 =
         builder()->declarationField(ID("__offset"),
                                     builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                              hilti::Constness::Mutable),
-                                    builder()->attributeSet({builder()->attribute("&internal"), attr_uses_offset}));
+                                    builder()->attributeSet(
+                                        {builder()->attribute(hilti::Attribute::Kind::INTERNAL), attr_uses_offset}));
     v.addField(f3);
 
     {
-        auto attrs = builder()->attributeSet(
-            {builder()->attribute("&static"), builder()->attribute("&internal"),
-             builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_filters"))});
+        auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::STATIC),
+                                              builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                              builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
+                                                                   builder()->stringLiteral("supports_filters"))});
 
         if ( unit->isPublic() )
-            attrs->add(context(), builder()->attribute("&always-emit"));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::ALWAYS_EMIT));
         else
-            attrs->add(context(),
-                       builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_sinks")));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
+                                                       builder()->stringLiteral("supports_sinks")));
 
         if ( unit->isFilter() )
-            attrs->add(context(), builder()->attribute("&needed-by-feature", builder()->stringLiteral("is_filter")));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
+                                                       builder()->stringLiteral("is_filter")));
 
         auto parser = builder()->declarationField(ID("__parser"),
                                                   builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
@@ -295,15 +306,15 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     }
 
     {
-        auto attrs = builder()->attributeSet(
-            {builder()->attribute("&internal"),
-             builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_sinks"))});
+        auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                              builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
+                                                                   builder()->stringLiteral("supports_sinks"))});
 
         // If the unit has a `%mime-type` property consumers can connect to it via
         // MIME type with `connect_mime_type`. In that case we need to always emit
         // the field since we cannot detect use of this type later on.
         if ( unit->propertyItem("%mime-type") )
-            attrs->add(context(), builder()->attribute("&always-emit"));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::ALWAYS_EMIT));
 
         auto sink = builder()->declarationField(ID("__sink"),
                                                 builder()->qualifiedType(builder()->typeName("spicy_rt::SinkState"),
@@ -322,8 +333,8 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
                                                                                          hilti::Constness::Mutable)),
                                                             hilti::Constness::Mutable),
                                    builder()->attributeSet(
-                                       {builder()->attribute("&internal"),
-                                        builder()->attribute("&needed-by-feature",
+                                       {builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                        builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
                                                              builder()->stringLiteral("supports_filters"))}));
         v.addField(filters);
     }
@@ -338,8 +349,8 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
                                                                                          hilti::Constness::Mutable)),
                                                             hilti::Constness::Mutable),
                                    builder()->attributeSet(
-                                       {builder()->attribute("&internal"),
-                                        builder()->attribute("&needed-by-feature",
+                                       {builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                        builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
                                                              builder()->stringLiteral("is_filter"))}));
         v.addField(forward);
     }
@@ -348,7 +359,7 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     v.addField(
         builder()->declarationField(ID("__parse_stage1"), builder()->qualifiedType(ft, hilti::Constness::Mutable), {}));
 
-    if ( auto convert = unit->attributes()->find("&convert") ) {
+    if ( auto convert = unit->attributes()->find(hilti::Attribute::Kind::CONVERT) ) {
         auto expression = *convert->valueAsExpression();
         auto result = builder()->qualifiedType(builder()->typeAuto(), hilti::Constness::Mutable);
         auto ftype = builder()->typeFunction(result, {}, hilti::type::function::Flavor::Method, expression->meta());
@@ -374,9 +385,10 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
 
 void CodeGen::compilePublicUnitAlias(hilti::declaration::Module* module, const ID& alias_id, type::Unit* unit) {
     // We create a mini parser struct here that just contains the `__parser` field for runtime registration.
-    auto attrs = builder()->attributeSet(
-        {builder()->attribute("&static"), builder()->attribute("&internal"),
-         builder()->attribute("&needed-by-feature", builder()->stringLiteral("supports_filters"))});
+    auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::STATIC),
+                                          builder()->attribute(hilti::Attribute::Kind::INTERNAL),
+                                          builder()->attribute(hilti::Attribute::Kind::NEEDED_BY_FEATURE,
+                                                               builder()->stringLiteral("supports_filters"))});
 
     auto parser_field = builder()->declarationField(ID("__parser"),
                                                     builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
@@ -401,8 +413,8 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
         auto dir = ID("spicy_rt::Direction::Both");
 
         if ( const auto& attrs = p->attributes() ) {
-            auto orig = attrs->find("&originator");
-            auto resp = attrs->find("&responder");
+            auto orig = attrs->find(hilti::Attribute::Kind::ORIGINATOR);
+            auto resp = attrs->find(hilti::Attribute::Kind::RESPONDER);
 
             if ( orig && ! resp )
                 dir = ID("spicy_rt::Direction::Originator");

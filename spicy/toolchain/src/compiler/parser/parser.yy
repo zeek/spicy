@@ -907,10 +907,18 @@ unit_hook_id: { driver->enableHookIDMode(); }
               { driver->disableHookIDMode(); } { $$ = hilti::ID(hilti::util::replace($2, "%", "0x25_")); }
 
 unit_hook_attribute
-              : FOREACH                          { $$ = builder->attribute("foreach", __loc__); }
-              | PRIORITY '=' expr                { $$ = builder->attribute("&priority", std::move($3), __loc__); }
-              | PROPERTY                         { $$ = builder->attribute($1, __loc__); }
-              | attribute                        { $$ = std::move($1); }
+              : FOREACH                          { $$ = builder->attribute(hilti::Attribute::Kind::FOREACH, __loc__); }
+              | PRIORITY '=' expr                { $$ = builder->attribute(hilti::Attribute::Kind::PRIORITY, std::move($3), __loc__); }
+              | PROPERTY                         { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
+                                                     $$ = builder->attribute(*attr_kind, __loc__);
+                                                   else
+                                                     hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+                                                 }
+              | ATTRIBUTE                        { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
+                                                     $$ = builder->attribute(*attr_kind, __loc__);
+                                                   else
+                                                     hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+                                                 }
 
 unit_switch   : SWITCH opt_unit_switch_expr '{' unit_switch_cases '}' opt_attributes opt_unit_field_condition ';'
                                                  { $$ = builder->typeUnitItemSwitch(std::move($2), std::move($4), std::move($7), {}, std::move($6), __loc__); }
@@ -1172,11 +1180,27 @@ map_elem      : expr ':' expr                    { $$ = builder->ctorMapElement(
 
 /* Attributes */
 
-attribute     : ATTRIBUTE                       { $$ = builder->attribute(std::move($1), __loc__); }
-              | ATTRIBUTE '=' expr              { $$ = builder->attribute(std::move($1), std::move($3), __loc__); }
+attribute     : ATTRIBUTE                       { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
+                                                    $$ = builder->attribute(*attr_kind, __loc__);
+                                                  else {
+                                                    hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+                                                    $$ = {};
+                                                  }
+                                                }
+              | ATTRIBUTE '=' expr              { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
+                                                    $$ = builder->attribute(*attr_kind, std::move($3), __loc__);
+                                                  else {
+                                                    hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+                                                    $$ = {};
+                                                  }
+                                                }
 
 opt_attributes
-              : opt_attributes attribute        { $1->add(builder->context(), $2); $$ = $1; }
+              : opt_attributes attribute        { if ( $2 )
+                                                    $1->add(builder->context(), $2);
+
+                                                  $$ = $1;
+                                                }
               | /* empty */                     { $$ = builder->attributeSet({}, __loc__); }
 
 %%

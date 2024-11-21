@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -25,11 +24,11 @@ public:
     /** Returns the AST context in use for creating nodes. */
     ASTContext* context() const { return _context; }
 
-    auto attribute(const std::string& tag, Expression* v, const Meta& m = Meta()) {
-        return hilti::Attribute::create(context(), tag, v, m);
+    auto attribute(hilti::Attribute::Kind kind, Expression* v, const Meta& m = Meta()) {
+        return hilti::Attribute::create(context(), kind, v, m);
     }
-    auto attribute(const std::string& tag, const Meta& m = Meta()) {
-        return hilti::Attribute::create(context(), tag, m);
+    auto attribute(hilti::Attribute::Kind kind, const Meta& m = Meta()) {
+        return hilti::Attribute::create(context(), kind, m);
     }
     auto attributeSet(Attributes attrs = {}, Meta m = Meta()) {
         return hilti::AttributeSet::create(context(), std::move(attrs), std::move(m));

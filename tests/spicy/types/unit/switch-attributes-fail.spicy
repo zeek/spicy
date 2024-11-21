@@ -8,5 +8,5 @@ module Mini;
 type X = unit {
     switch ( 1 ) {
         * -> : void;
-    } &eod &size=1 &until;
+    } &eod &size=1 &until=True;
 };

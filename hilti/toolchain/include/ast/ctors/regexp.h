@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,7 +21,7 @@ public:
     /**
      * Returns true if this pattern does not need support for capturing groups.
      */
-    bool isNoSub() const { return attributes()->find("&nosub") != nullptr; }
+    bool isNoSub() const { return attributes()->find(hilti::Attribute::Kind::NOSUB) != nullptr; }
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 

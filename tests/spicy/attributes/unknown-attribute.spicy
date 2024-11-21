@@ -1,0 +1,9 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -p %INPUT 2> output
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Test validation of attributes that don't exist.
+
+module Test;
+
+# Just an attribute that doesn't exist
+type X1 = bytes &this-does-not-exist;

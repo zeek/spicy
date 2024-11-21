@@ -85,10 +85,10 @@ struct TypeParser {
     Expression* fieldByteOrder() {
         Expression* byte_order = nullptr;
 
-        if ( const auto& a = meta.field()->attributes()->find("&byte-order") )
+        if ( const auto& a = meta.field()->attributes()->find(hilti::Attribute::Kind::BYTE_ORDER_) )
             byte_order = *a->valueAsExpression();
 
-        else if ( const auto& a = state().unit->attributes()->find("&byte-order") )
+        else if ( const auto& a = state().unit->attributes()->find(hilti::Attribute::Kind::BYTE_ORDER_) )
             byte_order = *a->valueAsExpression();
 
         else if ( const auto& p = state().unit->propertyItem("%byte-order") )
@@ -122,8 +122,8 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::type::Address* n) final {
         switch ( tp->mode ) {
             case TypesMode::Default: {
-                auto v4 = tp->meta.field()->attributes()->find("&ipv4");
-                auto v6 = tp->meta.field()->attributes()->find("&ipv6");
+                auto v4 = tp->meta.field()->attributes()->find(hilti::Attribute::Kind::IPV4);
+                auto v6 = tp->meta.field()->attributes()->find(hilti::Attribute::Kind::IPV6);
                 (void)v6;
                 assert(! (v4 && v6));
 
@@ -159,7 +159,7 @@ struct Visitor : public visitor::PreOrder {
                 Expression* bitorder = builder()->id("hilti::BitOrder::LSB0");
 
                 if ( auto attrs = n->attributes() ) {
-                    if ( auto a = attrs->find("&bit-order") )
+                    if ( auto a = attrs->find(hilti::Attribute::Kind::BIT_ORDER) )
                         bitorder = *a->valueAsExpression();
                 }
 
@@ -199,7 +199,7 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::type::Real* n) final {
         switch ( tp->mode ) {
             case TypesMode::Default: {
-                auto type = tp->meta.field()->attributes()->find("&type");
+                auto type = tp->meta.field()->attributes()->find(hilti::Attribute::Kind::TYPE);
                 assert(type);
                 result = tp->performUnpack(tp->destination(n), builder()->typeReal(), 4,
                                            {state().cur, *type->valueAsExpression(), tp->fieldByteOrder()}, n->meta(),
@@ -271,17 +271,17 @@ struct Visitor : public visitor::PreOrder {
 
     void operator()(hilti::type::Bytes* n) final {
         auto attrs = tp->meta.field()->attributes();
-        auto chunked_attr = attrs->find("&chunked");
-        auto eod_attr = attrs->find("&eod");
-        auto size_attr = attrs->find("&size");
-        auto until_attr = attrs->find("&until");
-        auto until_including_attr = attrs->find("&until-including");
+        auto chunked_attr = attrs->find(hilti::Attribute::Kind::CHUNKED);
+        auto eod_attr = attrs->find(hilti::Attribute::Kind::EOD);
+        auto size_attr = attrs->find(hilti::Attribute::Kind::SIZE);
+        auto until_attr = attrs->find(hilti::Attribute::Kind::UNTIL);
+        auto until_including_attr = attrs->find(hilti::Attribute::Kind::UNTIL_INCLUDING);
 
         bool to_eod = (eod_attr != nullptr); // parse to end of input data
         bool parse_attr = false;             // do we have a &parse-* attribute
 
-        if ( (tp->meta.field()->attributes()->find("&parse-from") ||
-              tp->meta.field()->attributes()->find("&parse-at")) &&
+        if ( (tp->meta.field()->attributes()->find(hilti::Attribute::Kind::PARSE_FROM) ||
+              tp->meta.field()->attributes()->find(hilti::Attribute::Kind::PARSE_AT)) &&
              ! (until_attr || until_including_attr) )
             parse_attr = true;
 

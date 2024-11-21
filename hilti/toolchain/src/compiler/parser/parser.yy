@@ -946,11 +946,23 @@ map_elems     : map_elems ',' map_elem           { $$ = std::move($1); $$.push_b
 map_elem      : expr ':' expr                    { $$ = builder->ctorMapElement($1, $3, __loc__); }
 
 
-attribute     : ATTRIBUTE                       { $$ = builder->attribute(std::move($1), __loc__); }
-              | ATTRIBUTE '=' expr              { $$ = builder->attribute(std::move($1), std::move($3), __loc__); }
+attribute     : ATTRIBUTE                        { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
+                                                     $$ = builder->attribute(*attr_kind, __loc__);
+                                                   else
+                                                     logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+                                                 }
+              | ATTRIBUTE '=' expr               { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
+                                                     $$ = builder->attribute(*attr_kind, std::move($3), __loc__);
+                                                   else
+                                                     logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+                                                 }
 
 opt_attributes
-              : opt_attributes attribute        { $1->add(builder->context(), $2); $$ = $1; }
+              : opt_attributes attribute        { if ( $2 )
+                                                    $1->add(builder->context(), $2);
+
+                                                  $$ = $1;
+                                                }
               | /* empty */                     { $$ = builder->attributeSet({}, __loc__); }
 
 %%

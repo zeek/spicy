@@ -48,17 +48,17 @@ public:
     }
 
     hilti::Expression* default_() const {
-        if ( auto a = attributes()->find("&default") )
+        if ( auto a = attributes()->find(hilti::Attribute::Kind::DEFAULT) )
             return *a->valueAsExpression();
         else
             return {};
     }
 
-    auto isAnonymous() const { return attributes()->find("&anonymous") != nullptr; }
-    auto isInternal() const { return attributes()->find("&internal") != nullptr; }
-    auto isOptional() const { return attributes()->find("&optional") != nullptr; }
-    auto isStatic() const { return attributes()->find("&static") != nullptr; }
-    auto isNoEmit() const { return attributes()->find("&no-emit") != nullptr; }
+    auto isAnonymous() const { return attributes()->find(hilti::Attribute::Kind::ANONYMOUS) != nullptr; }
+    auto isInternal() const { return attributes()->find(hilti::Attribute::Kind::INTERNAL) != nullptr; }
+    auto isOptional() const { return attributes()->find(hilti::Attribute::Kind::OPTIONAL) != nullptr; }
+    auto isStatic() const { return attributes()->find(hilti::Attribute::Kind::STATIC) != nullptr; }
+    auto isNoEmit() const { return attributes()->find(hilti::Attribute::Kind::NO_EMIT) != nullptr; }
 
     auto linkedTypeIndex() const { return _linked_type_index; }
 
@@ -78,7 +78,7 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        if ( attrs->has("&static") )
+        if ( attrs->has(hilti::Attribute::Kind::STATIC) )
             // make it assignable
             type = type->recreateAsLhs(ctx);
 

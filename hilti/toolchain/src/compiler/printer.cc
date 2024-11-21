@@ -97,7 +97,7 @@ struct Printer : visitor::PreOrder {
     }
 
     void operator()(Attribute* n) final {
-        _out << n->tag();
+        _out << n->attributeName();
 
         if ( n->hasValue() )
             _out << "=" << n->value();

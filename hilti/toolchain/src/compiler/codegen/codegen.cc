@@ -265,7 +265,8 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
     void operator()(declaration::Function* n) final {
         // TODO(robin): This method needs a refactoring.
 
-        if ( n->function()->attributes()->find("&cxxname") && n->function()->attributes()->find("&have_prototype") )
+        if ( n->function()->attributes()->find(hilti::Attribute::Kind::CXXNAME) &&
+             n->function()->attributes()->find(hilti::Attribute::Kind::HAVE_PROTOTYPE) )
             return;
 
         const auto& f = n->function();
@@ -295,7 +296,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         auto d = cg->compile(n, ft, linkage, f->callingConvention(), f->attributes(), cid);
 
-        if ( auto a = n->function()->attributes()->find("&cxxname") ) {
+        if ( auto a = n->function()->attributes()->find(hilti::Attribute::Kind::CXXNAME) ) {
             // Just add the prototype. Make sure to skip any custom namespacing.
             const auto& value = a->valueAsString();
             if ( ! value ) {
@@ -311,7 +312,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         int64_t priority = 0;
         if ( is_hook && f->attributes() ) {
-            if ( auto x = f->attributes()->find("&priority") ) {
+            if ( auto x = f->attributes()->find(hilti::Attribute::Kind::PRIORITY) ) {
                 if ( auto i = x->valueAsInteger() )
                     priority = *i;
                 else
@@ -858,7 +859,7 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
     for ( const auto& b : t->bits(false) ) {
         auto x = fmt("::hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
 
-        if ( auto a = b->attributes()->find("&convert") ) {
+        if ( auto a = b->attributes()->find(hilti::Attribute::Kind::CONVERT) ) {
             pushDollarDollar(x);
             bits.emplace_back(compile(*a->valueAsExpression()));
             popDollarDollar();

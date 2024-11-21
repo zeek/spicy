@@ -115,7 +115,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::Attribute* n) final {
-        if ( n->tag() == "&size" || n->tag() == "&max-size" ) {
+        if ( n->kind() == hilti::Attribute::Kind::SIZE || n->kind() == hilti::Attribute::Kind::MAX_SIZE ) {
             if ( ! n->hasValue() )
                 // Caught elsewhere, we don't want to report it here again.
                 return;
@@ -123,7 +123,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( auto x = n->coerceValueTo(builder(), builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                                                hilti::Constness::Const)) ) {
                 if ( *x )
-                    recordChange(n, n->tag());
+                    recordChange(n, std::string{n->attributeName()});
             }
             else
                 n->addError(x.error());
@@ -318,7 +318,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 if ( ! attr )
                     continue;
 
-                if ( attr->tag() != "&convert" )
+                if ( attr->kind() != hilti::Attribute::Kind::CONVERT )
                     return;
 
                 // The direct parent of the attribute set containing the attribute should be the unit.
@@ -420,7 +420,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     void operator()(hilti::type::Bitfield* n) final {
         if ( auto field = n->parent(2)->tryAs<type::unit::item::Field>() ) {
             // Transfer any "&bitorder" attribute over to the type.
-            if ( auto a = field->attributes()->find("&bit-order"); a && ! n->attributes()->find("&bit-order") ) {
+            if ( auto a = field->attributes()->find(hilti::Attribute::Kind::BIT_ORDER);
+                 a && ! n->attributes()->find(hilti::Attribute::Kind::BIT_ORDER) ) {
                 recordChange(n, "transfer &bitorder attribute");
                 n->attributes()->add(context(), a);
             }
@@ -428,7 +429,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
         if ( auto decl = n->parent(2)->tryAs<hilti::declaration::Type>() ) {
             // Transfer any "&bitorder" attribute over to the type.
-            if ( auto a = decl->attributes()->find("&bit-order"); a && ! n->attributes()->find("&bit-order") ) {
+            if ( auto a = decl->attributes()->find(hilti::Attribute::Kind::BIT_ORDER);
+                 a && ! n->attributes()->find(hilti::Attribute::Kind::BIT_ORDER) ) {
                 recordChange(n, "transfer &bitorder attribute");
                 n->attributes()->add(context(), a);
             }
@@ -507,7 +509,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 if ( x->second ) {
                     // Unit-level convert on the sub-item.
                     auto u = x->second->type()->as<type::Unit>();
-                    auto a = u->attributes()->find("&convert");
+                    auto a = u->attributes()->find(hilti::Attribute::Kind::CONVERT);
                     assert(a);
                     auto e = *a->valueAsExpression();
                     if ( e->isResolved() )
@@ -562,7 +564,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             size_t ok_attrs = 0;
             const auto& attrs = n->attributes()->attributes();
             for ( const auto& a : attrs ) {
-                if ( a->tag() == "&requires" )
+                if ( a->kind() == hilti::Attribute::Kind::REQUIRES )
                     ok_attrs++;
             }
 
@@ -591,7 +593,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // subitem so that we have our recursive machinery available
                 // (which we don't have for pure types).
                 if ( auto unit_type = t->type()->type()->tryAs<type::Unit>();
-                     unit_type && unit_type->attributes()->has("&convert") ) {
+                     unit_type && unit_type->attributes()->has(hilti::Attribute::Kind::CONVERT) ) {
                     auto inner_field =
                         builder()->typeUnitItemField({}, tt, false, n->arguments(), {}, {}, {}, {}, {}, n->meta());
                     inner_field->setIndex(*n->index());

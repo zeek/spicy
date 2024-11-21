@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -50,7 +49,7 @@ public:
     auto body() const { return child<Statement>(1); }
     auto attributes() const { return child<AttributeSet>(2); }
     auto callingConvention() const { return _cc; }
-    auto isStatic() const { return attributes()->find("&static") != nullptr; }
+    auto isStatic() const { return attributes()->find(hilti::Attribute::Kind::STATIC) != nullptr; }
 
     void setBody(ASTContext* ctx, Statement* b) { setChild(ctx, 1, b); }
     void setID(ID id) { _id = std::move(id); }
