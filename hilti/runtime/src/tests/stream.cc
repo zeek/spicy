@@ -486,6 +486,20 @@ TEST_CASE("iteration") {
         CHECK_EQ(*it, '3');
     }
 
+    SUBCASE("increment - regression test for #1918") {
+        auto s = make_stream({"123"_b});
+        // Add two more chunks, with the 1st larger than the existing one. This
+        // will let the trim later destroy the original chunk, instead of
+        // continuing to cache it internally.
+        s.append("4567"_b);
+        s.append("890"_b);
+
+        auto i = s.begin();
+        s.trim(i + 4);
+        s.trim(i + 7);
+        i = i + 7; // triggered ASAN heap-use-after-free before fixing #1918
+    }
+
     SUBCASE("decrement - SafeIterator") {
         // This test is value-parameterized over `s`.
         Stream s;
@@ -510,6 +524,20 @@ TEST_CASE("iteration") {
 
         it = s.end();
         CHECK_THROWS_AS((it -= 100), const InvalidIterator&);
+    }
+
+    SUBCASE("decrement - regression test for #1918") {
+        auto s = make_stream({"123"_b});
+        // Add two more chunks, with the 1st smaller than the existing one.
+        // This will let the trim later destroy this added chunk, instead of
+        // continuing to cache it internally.
+        s.append("45"_b);
+        s.append("678"_b);
+
+        auto i = s.begin() + 4;
+        s.trim(i);
+        s.trim(i + 3);
+        i = i - 4; // triggered ASAN heap-use-after-free before fixing #1918
     }
 
     SUBCASE("decrement - UnsafeIterator") {
