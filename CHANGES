@@ -1,3 +1,16 @@
+1.12.0-dev.196 | 2024-11-25 08:30:19 +0100
+
+  * GH-1918: Fix potential segfault with stream iterators. (Robin Sommer, Corelight)
+
+    When trimming off the beginning of a stream, an existing iterator
+    could end up dereferencing its internal chunk pointer even if the
+    chunk now no longer existed. The issue was inside the
+    increment/decrement operations, which didn't check if the *current*
+    iterator offset was still valid (because only then the current chunk
+    is guaranteed to be valid too).
+
+  * GH-1918: Add regression tests triggering #1918. (Robin Sommer, Corelight)
+
 1.12.0-dev.193 | 2024-11-21 14:48:06 +0100
 
   * GH-1919: Validate that sets are sortable. (Evan Typanski, Corelight)
