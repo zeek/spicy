@@ -278,8 +278,8 @@ Anonymous Fields
 Field names are optional. If skipped, the field becomes an *anonymous*
 field. These still participate in parsing as any other field, but they
 won't store any value, nor is there a way to get access to them from
-outside. You can however still get to the parsed value inside a
-corresponding field hook (see :ref:`unit_hooks`) using the reserved
+outside. You can, however, still get to the field's final value inside
+a corresponding field hook (see :ref:`unit_hooks`) using the reserved
 ``$$`` identifier (see :ref:`id_dollardollar`).
 
 .. spicy-code:: anonymous-field.spicy
@@ -359,9 +359,19 @@ currently being parsed:
     ``self``.
 
 ``$$``
-    Inside field attributes and hooks, ``$$`` refers to the just
-    parsed value, even if it's not going to be directly stored in the
-    field. The value of ``$$`` is writable and may be modified.
+    Inside field attributes, ``$$`` refers to the value as it was
+    parsed. Inside field hooks, ``$$`` refers to the final value
+    *after* any conversions are applied (see
+    :ref:`attribute_convert`). This applies even if the value is not
+    going to be directly stored in the field. The value of ``$$`` is
+    writable and may be modified.
+
+.. note::
+
+   ``$$`` has slightly different semantics in a field attribute and
+   in a hook. In an attribute, ``$$`` refers to the parsed value
+   *before* any conversions. In a hook, ``$$`` refers to the final
+   value *after* any conversions.
 
 .. _attribute_convert:
 
@@ -374,10 +384,10 @@ value. With the attribute being present, it's the value of ``EXPR``
 that's stored in the field, not the parsed value. Accordingly, the
 field's type also changes to the type of ``EXPR``.
 
-Typically, ``EXPR`` will use ``$$`` to access the value actually being
-parsed and then transform it into the desired representation. For
-example, the following stores an integer parsed in an ASCII
-representation as a ``uint64``:
+Typically, ``EXPR`` will use ``$$`` to access the parsed value and
+then transform it into the desired representation. For example, the
+following stores an integer parsed in an ASCII representation as a
+``uint64``:
 
 .. spicy-code:: parse-convert.spicy
 
@@ -541,7 +551,7 @@ The most commonly used hooks are:
 
 ``on <field name> { ... }`` (field hook)
     Executes just after the given unit field has been parsed. The
-    parsed value is accessible through the ``$$``, potentially with
+    final value is accessible through the ``$$``, potentially with
     any relevant type conversion applied (see
     :ref:`attribute_convert`). The same will also have been assigned
     to the field already.
@@ -551,11 +561,12 @@ The most commonly used hooks are:
 ``on <field name> foreach { ... }`` (container hook)
     Assuming the specified field is a container (e.g., a vector), this
     executes each time a new container element has been parsed, and
-    just before it's been added to the container. The parsed element
-    is accessible through the ``$$`` identifier, and can be modified
-    before it's stored. The hook implementation may also use the
-    :ref:`statement_stop` statement to abort container parsing,
-    without the current element being added anymore.
+    just before it's been added to the container. The element's final
+    value is accessible through the ``$$`` identifier, although it
+    can be further modified before it's stored. The hook
+    implementation may also use the :ref:`statement_stop` statement to
+    abort container parsing, without the current element being added
+    anymore.
 
 In addition, Spicy provides a set of hooks specific to the ``sink`` type which
 are discussed in the :ref:`section on sinks <sinks>`, and hooks which are
@@ -1394,7 +1405,7 @@ including subunits (e.g., ``x: MyUnit[]``).
 
 When parsing a vector, Spicy supports using a special kind of field
 hook, ``foreach``, that executes for each parsed element individually.
-Inside that hook, ``$$`` refers to the just parsed element:
+Inside that hook, ``$$`` refers to the element's final value:
 
 .. spicy-code:: parse-vector-foreach.spicy
 
