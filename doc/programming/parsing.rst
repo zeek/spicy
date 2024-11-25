@@ -1839,13 +1839,10 @@ control the current position:
     Returns iterator to the current input position in the stream fed
     into this unit.
 
-For random access, you'd typically get the current position through
-``input()``, subtract from it the desired number of bytes you want to
-back, and then use ``set_input`` to establish that new position. By
-further storing iterators as unit variables you can decouple these
-steps and, e.g., remember a position to later come back to.
-
-Here's an example that parses input data twice with different sub units:
+You can achieve random access by saving an iterator from ``input()``
+in a unit variable, then later return to that position (or one derived
+from it) by calling ``set_input()`` with that variable. Here's an
+example that parses input data twice with different sub units:
 
 .. spicy-code:: parse-random-access.spicy
 
@@ -1875,7 +1872,7 @@ Here's an example that parses input data twice with different sub units:
     :exec: printf '\00\00\00\01' | spicy-driver %INPUT
     :show-with: foo.spicy
 
-If you look at output, you see that ``start`` iterator remembers it's
+If you look at output, you see that ``start`` iterator remembers its
 offset, relative to the global input stream. It would also show the
 data at that offset if the parser had not already discarded that at
 the time we print it out.

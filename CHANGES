@@ -1,3 +1,20 @@
+1.12.0-dev.200 | 2024-11-25 16:14:56 +0100
+
+  * GH-1920: Fix some inconsistencies in random access docs. (Evan Typanski, Corelight)
+
+  * GH-1914: Make `$$` documentation more precise. (Evan Typanski, Corelight)
+
+    The documentation would refer to `$$` in an attribute and hook with
+    similar language (the "parsed" value). But, in an attribute, it refers
+    to the value before any conversions. In a hook, it refers to the value
+    after any conversions.
+
+    Now, "parsed" is used to refer to the pre-conversion value, and "final"
+    is used to refer to the post-conversion value. Those terms were chosen
+    because they make sense when no conversions are applied (or when `$$` is
+    used *in* a conversion). But, "final" can still be a little confusing,
+    since you can write to `$$`.
+
 1.12.0-dev.196 | 2024-11-25 08:30:19 +0100
 
   * GH-1918: Fix potential segfault with stream iterators. (Robin Sommer, Corelight)
