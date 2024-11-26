@@ -128,6 +128,33 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             else
                 n->addError(x.error());
         }
+
+        else if ( n->kind() == hilti::Attribute::Kind::Requires ) {
+            if ( ! n->hasValue() )
+                // Caught elsewhere, we don't want to report it here again.
+                return;
+
+            auto cond = *n->valueAsExpression();
+            if ( ! cond->isResolved() )
+                return;
+
+            if ( cond->type()->type()->isA<hilti::type::Result>() )
+                return;
+
+            auto ne = coerceExpression(builder(), cond,
+                                       builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Const));
+            if ( ! ne.coerced ) {
+                n->addError(ne.coerced.error());
+                return;
+            }
+
+            // Implicitly create an error message from the condition itself.
+            auto msg = hilti::util::fmt("&requires failed: %s", hilti::util::replace(cond->print(), "__dd", "$$"));
+            auto new_cond =
+                builder()->conditionTest(*ne.coerced, builder()->expression(builder()->ctorError(msg)), cond->meta());
+            n->replaceChild(context(), cond, new_cond);
+            recordChange(n, std::string(hilti::Attribute::kindToString(n->kind())));
+        }
     }
 
     void operator()(type::unit::Item* n) final {

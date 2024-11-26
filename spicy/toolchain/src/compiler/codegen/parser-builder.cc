@@ -2438,13 +2438,6 @@ Expression* ParserBuilder::contextNewFunction(const type::Unit& t) {
     return builder()->expressionName(id);
 }
 
-// Helper to heuristically reconstruct the Spicy source code for a given expression.
-static std::string prettyPrintExpr(Expression* e) {
-    std::stringstream ss;
-    ss << *e;
-    return hilti::util::replace(ss.str(), "__dd", "$$");
-}
-
 void ParserBuilder::newValueForField(const production::Meta& meta, Expression* value, Expression* dd) {
     const auto& field = meta.field();
 
@@ -2458,9 +2451,8 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
             block->addLocal(ID("__dd"), field->ddType(), dd);
 
         auto cond = block->addTmp("requires", *a->valueAsExpression());
-        pushBuilder(block->addIf(builder()->not_(cond)), [&]() {
-            parseError(fmt("&requires failed: %s", prettyPrintExpr(*a->valueAsExpression())), a->location());
-        });
+        pushBuilder(block->addIf(builder()->not_(cond)),
+                    [&]() { parseError(builder()->memberCall(cond, "error"), a->location()); });
     }
 
     if ( ! field->originalType()->type()->isA<hilti::type::Bitfield>() &&
@@ -2531,9 +2523,8 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
             pushBuilder(builder()->addBlock(), [&]() {
                 builder()->addLocal("__dd", item);
                 auto cond = builder()->addTmp("requires", *a->valueAsExpression());
-                pushBuilder(builder()->addIf(builder()->not_(cond)), [&]() {
-                    parseError(fmt("&requires failed: %s", prettyPrintExpr(*a->valueAsExpression())), a->location());
-                });
+                pushBuilder(builder()->addIf(builder()->not_(cond)),
+                            [&]() { parseError(builder()->memberCall(cond, "error"), a->location()); });
             });
         }
     };
@@ -2624,9 +2615,9 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         // so that (1) that one can rely on the condition, and (2) we keep
         // running either "%done" or "%error".
         for ( const auto& attr : unit->attributes()->findAll(hilti::Attribute::Kind::Requires) ) {
-            auto cond = *attr->valueAsExpression();
+            auto cond = builder()->addTmp("requires", *attr->valueAsExpression());
             pushBuilder(builder()->addIf(builder()->not_(cond)),
-                        [&]() { parseError(fmt("&requires failed: %s", prettyPrintExpr(cond)), cond->meta()); });
+                        [&]() { parseError(builder()->memberCall(cond, "error"), attr->value()->meta()); });
         }
     }
 

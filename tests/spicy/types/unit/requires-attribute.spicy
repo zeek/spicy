@@ -17,7 +17,7 @@ type E = enum { X = 1, Y = 2 };
 
 public type Foo = unit {
     x: uint8 &requires=($$ == 1);
-    y: uint8 &convert=E($$) &requires=($$ == 1);
+    y: uint8 &convert=E($$) &requires=($$ == 1 : error"trouble!");
     z: uint8 &convert=E($$) &requires=(self.z == E::X);
 
     on %done { print "success", self; }
@@ -27,5 +27,5 @@ public type Foo = unit {
 public type Bar = unit {
     x: uint8;
     # `&requires` can be used multiple times.
-    y: uint8 &requires=self.x==1 &requires=self.y==2;
+    y: uint8 &requires=self.x==1 &requires=((self.y==2 : "inner") : "outer");
 };

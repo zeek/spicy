@@ -66,7 +66,9 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("(%s(%s))", cg->compile(n->type(), codegen::TypeUsage::Ctor), args);
     }
 
-    void operator()(ctor::Error* n) final { result = fmt("::hilti::rt::result::Error(\"%s\")", n->value()); }
+    void operator()(ctor::Error* n) final {
+        result = fmt("::hilti::rt::result::Error(\"%s\")", hilti::util::escapeBytesForCxx(n->value()));
+    }
 
     void operator()(ctor::Exception* n) final {
         std::string type;
