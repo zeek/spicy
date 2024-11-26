@@ -533,13 +533,11 @@ stmts         : stmts stmt                       { $$ = std::move($1); $$.push_b
 
 stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | stmt_decl                        { $$ = std::move($1); }
-              | ASSERT expr_no_or_error ';'      { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
-              | ASSERT expr_no_or_error ':' expr ';'
-                                                 { $$ = builder->statementAssert(std::move($2), std::move($4), __loc__); }
-              | ASSERT_EXCEPTION expr_no_or_error ';'
-                                                 { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
+              | ASSERT expr ';'                  { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
               | ASSERT_EXCEPTION expr_no_or_error ':' expr ';'
                                                  { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, std::move($4), __loc__); }
+              | ASSERT_EXCEPTION expr_no_or_error ';'
+                                                 { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
               | BREAK ';'                        { $$ = builder->statementBreak(__loc__); }
               | CONTINUE ';'                     { $$ = builder->statementContinue(__loc__); }
               | FOR '(' local_id IN expr ')' block

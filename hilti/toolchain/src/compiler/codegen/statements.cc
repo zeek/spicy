@@ -43,16 +43,19 @@ struct Visitor : hilti::visitor::PreOrder {
     int level = 0;
 
     void operator()(statement::Assert* n) final {
-        std::string throw_;
+        auto throw_with_msg = [&](const cxx::Expression& msg) {
+            return fmt("throw ::hilti::rt::AssertionFailure(::hilti::rt::to_string_for_print(%s), \"%s\")", msg,
+                       n->meta().location());
+        };
 
-        if ( n->message() )
-            throw_ = fmt("throw ::hilti::rt::AssertionFailure(::hilti::rt::to_string_for_print(%s), \"%s\")",
-                         cg->compile(n->message()), n->meta().location());
-        else {
-            auto msg = std::string(*n->expression());
-            throw_ = fmt(R"(throw ::hilti::rt::AssertionFailure("failed expression '%s'", "%s"))",
-                         util::escapeUTF8(msg, hilti::rt::render_style::UTF8::EscapeQuotes), n->meta().location());
-        }
+        auto throw_ = [&](Expression* cond, Expression* msg) {
+            if ( msg )
+                return throw_with_msg(cg->compile(msg));
+            else
+                return fmt(R"(throw ::hilti::rt::AssertionFailure("failed expression '%s'", "%s"))",
+                           util::escapeUTF8(cond->print(), hilti::rt::render_style::UTF8::EscapeQuotes),
+                           n->meta().location());
+        };
 
         if ( ! n->expectException() ) {
             cxx::Block stmt;
@@ -60,8 +63,15 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( cg->options().debug_flow )
                 stmt.addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: assertion error"))", n->meta().location()));
 
-            stmt.addStatement(throw_);
-            block->addIf(fmt("! (%s)", cg->compile(n->expression())), cxx::Block(std::move(stmt)));
+            if ( n->expression()->type()->type()->isA<type::Result>() ) {
+                stmt.addStatement(throw_with_msg("__result.error().description()"));
+                block->addIf(fmt("auto __result = %s; ! __result", cg->compile(n->expression())),
+                             cxx::Block(std::move(stmt)));
+            }
+            else {
+                stmt.addStatement(throw_(n->expression(), n->message()));
+                block->addIf(fmt("! (%s)", cg->compile(n->expression())), cxx::Block(std::move(stmt)));
+            }
         }
         else {
             if ( n->exception() )
@@ -75,7 +85,7 @@ struct Visitor : hilti::visitor::PreOrder {
                 try_body.addStatement(
                     fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: assertion error"))", n->meta().location()));
 
-            try_body.addStatement(throw_);
+            try_body.addStatement(throw_(n->expression(), n->message()));
 
             cxx::Block catch_rethrow;
             catch_rethrow.addStatement("throw"); // dummy to  make it non-empty;

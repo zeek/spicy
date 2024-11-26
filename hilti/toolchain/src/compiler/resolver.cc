@@ -1507,7 +1507,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(statement::Assert* n) final {
-        if ( ! n->expectException() ) {
+        if ( ! n->expectException() && ! n->expression()->type()->type()->isA<type::Result>() ) {
             if ( auto x = coerceTo(n, n->expression(),
                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
                 recordChange(n, x, "expression");

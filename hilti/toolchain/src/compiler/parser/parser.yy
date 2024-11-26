@@ -35,7 +35,7 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 114
+%expect 113
 %expect-rr 209
 
 %{
@@ -508,12 +508,10 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | TRY block try_catches
                                                  { $$ = builder->statementTry(std::move($2), std::move($3), __loc__); }
               | ASSERT expr ';'                  { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
-              | ASSERT expr_no_or_error ':' expr ';'
-                                                 { $$ = builder->statementAssert(std::move($2), std::move($4), __loc__); }
-              | ASSERT_EXCEPTION expr_no_or_error ';'
-                                                 { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
               | ASSERT_EXCEPTION expr_no_or_error ':' expr ';'
                                                  { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, std::move($4), __loc__); }
+              | ASSERT_EXCEPTION expr_no_or_error ';'
+                                                 { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
 
               | ADD expr ';'                     { auto op = $2->tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )

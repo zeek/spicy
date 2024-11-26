@@ -28,6 +28,12 @@ doesn't, an exception gets thrown that will typically abort execution.
 coercion into it. If ``MSG`` is specified, it must be a string and
 will be carried along with the exception.
 
+.. note::
+
+    Technically, the version providing a ``MSG`` isn't a separate
+    syntax but just leveraging the :ref:`condition test
+    <operator_condition_test>` operator.
+
 .. _operator_begin:
 
 ``begin``
