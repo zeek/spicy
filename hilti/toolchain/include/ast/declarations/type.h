@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
@@ -20,7 +18,7 @@ public:
 
     bool isOnHeap() const {
         if ( auto x = attributes() )
-            return x->find("&on-heap") != nullptr;
+            return x->find(hilti::Attribute::Kind::ON_HEAP) != nullptr;
         else
             return false;
     }

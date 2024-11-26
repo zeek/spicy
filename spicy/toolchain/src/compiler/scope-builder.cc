@@ -69,7 +69,9 @@ struct VisitorScopeBuilder : visitor::PostOrder {
     }
 
     void operator()(hilti::Attribute* n) final {
-        if ( n->tag() == "&until" || n->tag() == "&until-including" || n->tag() == "&while" ) {
+        if ( hilti::Attribute::isOneOf(n->kind(),
+                                       {hilti::Attribute::Kind::UNTIL, hilti::Attribute::Kind::UNTIL_INCLUDING,
+                                        hilti::Attribute::Kind::WHILE}) ) {
             auto f = n->parent<type::unit::item::Field>();
             if ( ! (f && f->isContainer()) )
                 return;

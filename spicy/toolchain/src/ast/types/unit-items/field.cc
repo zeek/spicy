@@ -12,7 +12,7 @@ using namespace spicy;
 using namespace spicy::detail;
 
 std::optional<std::pair<Expression*, QualifiedType*>> type::unit::item::Field::convertExpression() const {
-    if ( auto convert = attributes()->find("&convert") )
+    if ( auto convert = attributes()->find(hilti::Attribute::Kind::CONVERT) )
         return std::make_pair(*convert->valueAsExpression(), nullptr);
 
     auto t = parseType();
@@ -21,7 +21,7 @@ std::optional<std::pair<Expression*, QualifiedType*>> type::unit::item::Field::c
         t = x->dereferencedType();
 
     if ( auto x = t->type()->tryAs<type::Unit>() ) {
-        if ( auto convert = x->attributes()->find("&convert") )
+        if ( auto convert = x->attributes()->find(hilti::Attribute::Kind::CONVERT) )
             return std::make_pair(*convert->valueAsExpression(), t);
     }
 
@@ -40,9 +40,9 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     Expression* result = nullptr;
 
     void operator()(hilti::type::Address* n) final {
-        if ( field.attributes()->has("&ipv4") )
+        if ( field.attributes()->has(hilti::Attribute::Kind::IPV4) )
             result = builder->integer(4U);
-        else if ( field.attributes()->has("&ipv6") )
+        else if ( field.attributes()->has(hilti::Attribute::Kind::IPV6) )
             result = builder->integer(16U);
         else
             hilti::rt::cannot_be_reached();
@@ -53,7 +53,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     void operator()(hilti::type::Bitfield* n) final { result = builder->integer(n->width() / 8U); }
 
     void operator()(hilti::type::Real*) final {
-        auto type = *field.attributes()->find("&type")->valueAsExpression();
+        auto type = *field.attributes()->find(hilti::Attribute::Kind::TYPE)->valueAsExpression();
         result = builder->ternary(builder->equal(type, builder->id("spicy::RealType::IEEE754_Single")),
                                   builder->integer(4U), builder->integer(8U));
     }
@@ -62,7 +62,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
 Expression* spicy::type::unit::item::Field::size(ASTContext* ctx) const {
     Builder builder(ctx);
 
-    if ( const auto& size = attributes()->find("&size") )
+    if ( const auto& size = attributes()->find(hilti::Attribute::Kind::SIZE) )
         return *size->valueAsExpression();
 
     if ( auto size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(),

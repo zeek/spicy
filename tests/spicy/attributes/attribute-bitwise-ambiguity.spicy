@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${SPICYC} -p %INPUT 2> output
+
+# @TEST-DOC: Ensure bitwise AND can be used on locals without ambiguity with attributes
+
+module Test;
+
+function f() {
+    local foo = 9;
+    42&foo;
+    local eod = 4;
+    # TODO: This should probably be valid
+    #42&eod;
+}

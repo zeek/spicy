@@ -1,3 +1,7 @@
+1.12.0-dev.202 | 2024-11-26 18:31:48 +0100
+
+  * GH-1901: Prefer enum over string for attributes. (Evan Typanski, Corelight)
+
 1.12.0-dev.200 | 2024-11-25 16:14:56 +0100
 
   * GH-1920: Fix some inconsistencies in random access docs. (Evan Typanski, Corelight)

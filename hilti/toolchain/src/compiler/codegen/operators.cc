@@ -346,7 +346,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         auto name = op0(n);
 
-        if ( auto a = f->function()->attributes()->find("&cxxname") ) {
+        if ( auto a = f->function()->attributes()->find(hilti::Attribute::Kind::CXXNAME) ) {
             if ( auto s = a->valueAsString() )
                 name = cxx::Expression(*s);
             else

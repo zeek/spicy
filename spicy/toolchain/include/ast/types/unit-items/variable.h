@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
@@ -26,7 +24,7 @@ public:
     auto default_() const { return child<Expression>(1); }
     auto attributes() const { return child<AttributeSet>(2); }
 
-    bool isOptional() const { return attributes()->has("&optional"); }
+    bool isOptional() const { return attributes()->has(hilti::Attribute::Kind::OPTIONAL); }
 
     QualifiedType* itemType() const final { return child<QualifiedType>(0); }
 

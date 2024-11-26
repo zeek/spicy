@@ -5,8 +5,7 @@
 
 module Foo {
 
-function void f1(string s &bogus_attr) {}
-function void f2(string s &requires-type-feature) {}
-function void f3(string s &requires-type-feature=1) {}
+function void f1(string s &requires-type-feature) {}
+function void f2(string s &requires-type-feature=1) {}
 
 }
