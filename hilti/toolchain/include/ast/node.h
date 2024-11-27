@@ -240,7 +240,15 @@ public:
     virtual ~Node();
 
     /** Returns the node tag associated with the instance's class. */
-    auto nodeTag() const { return _node_tags.back(); }
+    node::Tag nodeTag() const {
+        // Get the last non-zero tag. The last element(s) may be unset
+        for ( auto it = _node_tags.rbegin(); it != _node_tags.rend(); it++ ) {
+            if ( *it != 0 )
+                return *it;
+        }
+
+        return 0;
+    }
 
     /** Returns true if the node has a parent (i.e., it's part of an AST). */
     bool hasParent() const { return _parent; }

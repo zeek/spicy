@@ -45,6 +45,13 @@ public:
     void checkTypeArguments(const node::Range<Expression>& have, const node::Set<type::function::Parameter>& want,
                             Node* n, bool allow_no_arguments = false, bool do_not_check_types = false);
 
+    /**
+     * Ensures that the node represented by tag can have all of the provided
+     * attributes. This does not use any context, if more information is needed,
+     * then do the check elsewhere.
+     */
+    void checkNodeAttributes(node::Tag tag, AttributeSet* attributes, const std::string_view& where);
+
 private:
     Builder* _builder;
     int _errors = 0;
