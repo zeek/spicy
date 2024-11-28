@@ -24,7 +24,7 @@ public:
     auto default_() const { return child<Expression>(1); }
     auto attributes() const { return child<AttributeSet>(2); }
 
-    bool isOptional() const { return attributes()->has(hilti::Attribute::Kind::OPTIONAL); }
+    bool isOptional() const { return attributes()->has(hilti::Attribute::Kind::Optional); }
 
     QualifiedType* itemType() const final { return child<QualifiedType>(0); }
 

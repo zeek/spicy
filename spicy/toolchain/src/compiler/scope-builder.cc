@@ -70,8 +70,8 @@ struct VisitorScopeBuilder : visitor::PostOrder {
 
     void operator()(hilti::Attribute* n) final {
         if ( hilti::Attribute::isOneOf(n->kind(),
-                                       {hilti::Attribute::Kind::UNTIL, hilti::Attribute::Kind::UNTIL_INCLUDING,
-                                        hilti::Attribute::Kind::WHILE}) ) {
+                                       {hilti::Attribute::Kind::Until, hilti::Attribute::Kind::UntilIncluding,
+                                        hilti::Attribute::Kind::While}) ) {
             auto f = n->parent<type::unit::item::Field>();
             if ( ! (f && f->isContainer()) )
                 return;

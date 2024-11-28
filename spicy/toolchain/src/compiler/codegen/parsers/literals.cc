@@ -60,7 +60,7 @@ struct Visitor : public visitor::PreOrder {
         bool needs_check = false;
 
         if ( auto field = lp->production->meta().field();
-             field && field->attributes()->find(hilti::Attribute::Kind::SYNCHRONIZE) )
+             field && field->attributes()->find(hilti::Attribute::Kind::Synchronize) )
             needs_check = true;
         else {
             auto tokens = pb()->cg()->astInfo().look_aheads_in_use;
@@ -141,10 +141,10 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::ctor::Coerced* n) final { dispatch(n->coercedCtor()); }
 
     void operator()(hilti::ctor::RegExp* n) final {
-        auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::ANCHOR)});
+        auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::Anchor)});
 
         if ( ! state().captures )
-            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::NOSUB));
+            attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::Nosub));
 
         auto re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->value(), attrs));
 
