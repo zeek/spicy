@@ -39,7 +39,7 @@ bool UnqualifiedType::isOnHeap() const {
 
 ID UnqualifiedType::cxxID() const {
     if ( auto decl = typeDeclaration() ) {
-        if ( auto a = decl->attributes()->find(hilti::Attribute::Kind::CXXNAME) )
+        if ( auto a = decl->attributes()->find(hilti::Attribute::Kind::Cxxname) )
             return ID{*a->valueAsString()};
     }
 

@@ -36,20 +36,20 @@ bool supportsLiterals(QualifiedType* t) {
 // Helper to make sure a field's attributes are consistent. This is type-independent.
 hilti::Result<hilti::Nothing> checkFieldAttributes(type::unit::item::Field* f) {
     // Can't combine ipv4 and ipv6
-    auto v4 = f->attributes()->find(hilti::Attribute::Kind::IPV4);
-    auto v6 = f->attributes()->find(hilti::Attribute::Kind::IPV6);
+    auto v4 = f->attributes()->find(hilti::Attribute::Kind::IPv4);
+    auto v6 = f->attributes()->find(hilti::Attribute::Kind::IPv6);
 
     if ( v4 && v6 )
         return hilti::result::Error("field cannot have both &ipv4 and &ipv6 attributes");
 
     // Termination conditions cannot be combined in certain ways
-    auto eod_attr = f->attributes()->find(hilti::Attribute::Kind::EOD);
-    auto until_attr = f->attributes()->find(hilti::Attribute::Kind::UNTIL);
-    auto until_including_attr = f->attributes()->find(hilti::Attribute::Kind::UNTIL_INCLUDING);
-    auto parse_at_attr = f->attributes()->find(hilti::Attribute::Kind::PARSE_AT);
-    auto parse_from_attr = f->attributes()->find(hilti::Attribute::Kind::PARSE_FROM);
-    auto size_attr = f->attributes()->find(hilti::Attribute::Kind::SIZE);
-    auto max_size_attr = f->attributes()->find(hilti::Attribute::Kind::MAX_SIZE);
+    auto eod_attr = f->attributes()->find(hilti::Attribute::Kind::Eod);
+    auto until_attr = f->attributes()->find(hilti::Attribute::Kind::Until);
+    auto until_including_attr = f->attributes()->find(hilti::Attribute::Kind::UntilIncluding);
+    auto parse_at_attr = f->attributes()->find(hilti::Attribute::Kind::ParseAt);
+    auto parse_from_attr = f->attributes()->find(hilti::Attribute::Kind::ParseFrom);
+    auto size_attr = f->attributes()->find(hilti::Attribute::Kind::Size);
+    auto max_size_attr = f->attributes()->find(hilti::Attribute::Kind::MaxSize);
 
     std::vector<hilti::Attribute::Kind> start_attrs_present;
     for ( const auto& i : {parse_from_attr, parse_at_attr} ) {
@@ -95,9 +95,9 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
         if ( f->ctor() )
             return hilti::Nothing();
 
-        const auto required_one_of = {hilti::Attribute::Kind::EOD,        hilti::Attribute::Kind::PARSE_AT,
-                                      hilti::Attribute::Kind::PARSE_FROM, hilti::Attribute::Kind::SIZE,
-                                      hilti::Attribute::Kind::UNTIL,      hilti::Attribute::Kind::UNTIL_INCLUDING};
+        const auto required_one_of = {hilti::Attribute::Kind::Eod,       hilti::Attribute::Kind::ParseAt,
+                                      hilti::Attribute::Kind::ParseFrom, hilti::Attribute::Kind::Size,
+                                      hilti::Attribute::Kind::Until,     hilti::Attribute::Kind::UntilIncluding};
 
         // Make sure we have one of the required attributes
         for ( const auto& attr : required_one_of ) {
@@ -112,8 +112,8 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
     }
 
     if ( pt->type()->isA<hilti::type::Address>() ) {
-        auto v4 = f->attributes()->find(hilti::Attribute::Kind::IPV4);
-        auto v6 = f->attributes()->find(hilti::Attribute::Kind::IPV6);
+        auto v4 = f->attributes()->find(hilti::Attribute::Kind::IPv4);
+        auto v6 = f->attributes()->find(hilti::Attribute::Kind::IPv6);
 
         if ( ! (v4 || v6) )
             return hilti::result::Error("address field must come with either &ipv4 or &ipv6 attribute");
@@ -122,7 +122,7 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
     }
 
     if ( pt->type()->isA<hilti::type::Real>() ) {
-        auto type = f->attributes()->find(hilti::Attribute::Kind::TYPE);
+        auto type = f->attributes()->find(hilti::Attribute::Kind::Type);
 
         if ( type ) {
             if ( const auto& t = (*type->valueAsExpression())->type(); ! isEnumType(t, "spicy::RealType") )
@@ -152,7 +152,7 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
     if ( pt->type()->isA<hilti::type::Void>() ) {
         if ( f->attributes() ) {
             for ( const auto& a : f->attributes()->attributes() ) {
-                if ( a->kind() != hilti::Attribute::Kind::REQUIRES )
+                if ( a->kind() != hilti::Attribute::Kind::Requires )
                     return hilti::result::Error("no parsing attributes supported for void field");
             }
         }
@@ -240,8 +240,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
             if ( auto attr = n->parent<hilti::Attribute>() ) {
                 auto kind = attr->kind();
-                if ( kind == hilti::Attribute::Kind::UNTIL || kind == hilti::Attribute::Kind::UNTIL_INCLUDING ||
-                     kind == hilti::Attribute::Kind::WHILE )
+                if ( kind == hilti::Attribute::Kind::Until || kind == hilti::Attribute::Kind::UntilIncluding ||
+                     kind == hilti::Attribute::Kind::While )
                     // $$ inside these attributes is ok
                     return;
             }
@@ -494,15 +494,15 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::declaration::Hook* n) final {
         int count = 0;
         for ( const auto& a : n->attributes()->attributes() ) {
-            if ( a->kind() == hilti::Attribute::Kind::FOREACH ) {
+            if ( a->kind() == hilti::Attribute::Kind::Foreach ) {
                 if ( auto field = n->parent<spicy::type::unit::item::Field>(); field && ! field->isContainer() )
                     error("'foreach' can only be used with containers", n);
 
                 ++count;
             }
-            else if ( a->kind() == hilti::Attribute::Kind::ERROR )
+            else if ( a->kind() == hilti::Attribute::Kind::Error )
                 ++count;
-            else if ( a->kind() == hilti::Attribute::Kind::DEBUG || a->kind() == hilti::Attribute::Kind::PRIORITY ) {
+            else if ( a->kind() == hilti::Attribute::Kind::Debug || a->kind() == hilti::Attribute::Kind::Priority ) {
                 // ok on any hook
             }
             else
@@ -540,15 +540,15 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         };
 
         if ( hilti::Attribute::isOneOf(n->kind(),
-                                       {hilti::Attribute::Kind::SIZE, hilti::Attribute::Kind::MAX_SIZE,
-                                        hilti::Attribute::Kind::BYTE_ORDER_, hilti::Attribute::Kind::CONVERT,
-                                        hilti::Attribute::Kind::UNTIL, hilti::Attribute::Kind::WHILE,
-                                        hilti::Attribute::Kind::UNTIL_INCLUDING, hilti::Attribute::Kind::PARSE_FROM,
-                                        hilti::Attribute::Kind::PARSE_AT, hilti::Attribute::Kind::REQUIRES}) &&
+                                       {hilti::Attribute::Kind::Size, hilti::Attribute::Kind::MaxSize,
+                                        hilti::Attribute::Kind::ByteOrder, hilti::Attribute::Kind::Convert,
+                                        hilti::Attribute::Kind::Until, hilti::Attribute::Kind::While,
+                                        hilti::Attribute::Kind::UntilIncluding, hilti::Attribute::Kind::ParseFrom,
+                                        hilti::Attribute::Kind::ParseAt, hilti::Attribute::Kind::Requires}) &&
              ! n->hasValue() )
             error(fmt("%s must provide an expression", n->attributeName()), n);
 
-        else if ( n->kind() == hilti::Attribute::Kind::DEFAULT ) {
+        else if ( n->kind() == hilti::Attribute::Kind::Default ) {
             if ( get_attr_field(n) ) {
                 if ( ! n->hasValue() )
                     error("&default requires an argument", n);
@@ -562,7 +562,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             }
         }
 
-        else if ( n->kind() == hilti::Attribute::Kind::EOD ) {
+        else if ( n->kind() == hilti::Attribute::Kind::Eod ) {
             if ( auto f = get_attr_field(n) ) {
                 if ( ! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
                         f->parseType()->type()->isA<hilti::type::Vector>()) ||
@@ -572,8 +572,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( hilti::Attribute::isOneOf(n->kind(),
-                                            {hilti::Attribute::Kind::WHILE, hilti::Attribute::Kind::UNTIL_INCLUDING,
-                                             hilti::Attribute::Kind::UNTIL}) ) {
+                                            {hilti::Attribute::Kind::While, hilti::Attribute::Kind::UntilIncluding,
+                                             hilti::Attribute::Kind::Until}) ) {
             if ( auto f = get_attr_field(n) ) {
                 if ( ! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
                         f->parseType()->type()->isA<hilti::type::Vector>()) )
@@ -581,25 +581,25 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             }
         }
 
-        else if ( n->kind() == hilti::Attribute::Kind::CHUNKED ) {
+        else if ( n->kind() == hilti::Attribute::Kind::Chunked ) {
             if ( auto f = get_attr_field(n) ) {
                 if ( ! f->parseType()->type()->isA<hilti::type::Bytes>() || f->ctor() )
                     error("&chunked is only valid for bytes fields", n);
                 else if ( n->hasValue() )
                     error("&chunked cannot have an expression", n);
-                else if ( ! (f->attributes()->has(hilti::Attribute::Kind::EOD) ||
-                             f->attributes()->has(hilti::Attribute::Kind::SIZE) ||
-                             f->attributes()->has(hilti::Attribute::Kind::UNTIL) ||
-                             f->attributes()->has(hilti::Attribute::Kind::UNTIL_INCLUDING)) )
+                else if ( ! (f->attributes()->has(hilti::Attribute::Kind::Eod) ||
+                             f->attributes()->has(hilti::Attribute::Kind::Size) ||
+                             f->attributes()->has(hilti::Attribute::Kind::Until) ||
+                             f->attributes()->has(hilti::Attribute::Kind::UntilIncluding)) )
                     error("&chunked must be used with &eod, &until, &until-including or &size", n);
             }
         }
 
-        else if ( n->kind() == hilti::Attribute::Kind::TRANSIENT )
+        else if ( n->kind() == hilti::Attribute::Kind::Transient )
             error("&transient is no longer available, use an anonymous field instead to achieve the same effect", n);
 
         else if ( hilti::Attribute::isOneOf(n->kind(),
-                                            {hilti::Attribute::Kind::PARSE_FROM, hilti::Attribute::Kind::PARSE_AT}) ) {
+                                            {hilti::Attribute::Kind::ParseFrom, hilti::Attribute::Kind::ParseAt}) ) {
             if ( get_attr_field(n) ) {
                 if ( auto e = n->valueAsExpression();
                      e && ! hilti::type::same((*e)->type()->type(), builder.typeStreamIterator()) &&
@@ -610,7 +610,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             }
         }
 
-        else if ( n->kind() == hilti::Attribute::Kind::REQUIRES ) {
+        else if ( n->kind() == hilti::Attribute::Kind::Requires ) {
             if ( auto e = n->valueAsExpression(); e && ! hilti::type::same((*e)->type()->type(), builder.typeBool()) )
                 error(fmt("&requires expression must be of type bool, but is of type %d ", *(*e)->type()), n);
         }
@@ -651,11 +651,11 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
     void operator()(spicy::type::Unit* n) final {
         if ( auto attrs = n->attributes() ) {
-            if ( attrs->has(hilti::Attribute::Kind::SIZE) && attrs->has(hilti::Attribute::Kind::MAX_SIZE) )
+            if ( attrs->has(hilti::Attribute::Kind::Size) && attrs->has(hilti::Attribute::Kind::MaxSize) )
                 error(("attributes cannot be combined: &size, &max-size"), n);
 
             for ( const auto& a : attrs->attributes() ) {
-                if ( a->kind() == hilti::Attribute::Kind::SIZE || a->kind() == hilti::Attribute::Kind::MAX_SIZE ) {
+                if ( a->kind() == hilti::Attribute::Kind::Size || a->kind() == hilti::Attribute::Kind::MaxSize ) {
                     if ( ! a->hasValue() )
                         error(fmt("%s must provide an expression", a->attributeName()), n);
                     else {
@@ -673,7 +673,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     }
                 }
 
-                else if ( a->kind() == hilti::Attribute::Kind::REQUIRES ) {
+                else if ( a->kind() == hilti::Attribute::Kind::Requires ) {
                     auto e = a->valueAsExpression();
                     if ( ! e )
                         error(e.error(), n);
@@ -683,7 +683,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                                   n);
                     }
                 }
-                else if ( a->kind() == hilti::Attribute::Kind::BYTE_ORDER_ ) {
+                else if ( a->kind() == hilti::Attribute::Kind::ByteOrder ) {
                     auto e = a->valueAsExpression();
                     if ( ! e )
                         error(e.error(), n);
@@ -694,7 +694,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                                   n);
                     }
                 }
-                else if ( a->kind() == hilti::Attribute::Kind::CONVERT ) {
+                else if ( a->kind() == hilti::Attribute::Kind::Convert ) {
                     if ( ! a->hasValue() )
                         error("&convert must provide an expression", n);
                 }
@@ -764,8 +764,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         for ( const auto& attr : attrs->attributes() ) {
             if ( ! hilti::Attribute::isOneOf(attr->kind(),
-                                             {hilti::Attribute::Kind::SIZE, hilti::Attribute::Kind::PARSE_AT,
-                                              hilti::Attribute::Kind::PARSE_FROM}) )
+                                             {hilti::Attribute::Kind::Size, hilti::Attribute::Kind::ParseAt,
+                                              hilti::Attribute::Kind::ParseFrom}) )
                 error(fmt("attribute '%s' is not supported here", attr->attributeName()), n);
         }
     }
@@ -778,7 +778,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::type::unit::item::Field* n) final {
-        const auto count_attr = n->attributes()->find(hilti::Attribute::Kind::COUNT);
+        const auto count_attr = n->attributes()->find(hilti::Attribute::Kind::Count);
         const auto repeat = n->repeatCount();
 
         if ( n->isSkip() ) {
@@ -789,8 +789,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( count_attr && (repeat && ! repeat->type()->type()->isA<hilti::type::Null>()) )
             error("cannot have both `[..]` and &count", n);
 
-        if ( n->attributes()->has(hilti::Attribute::Kind::CONVERT) &&
-             n->attributes()->has(hilti::Attribute::Kind::CHUNKED) )
+        if ( n->attributes()->has(hilti::Attribute::Kind::Convert) &&
+             n->attributes()->has(hilti::Attribute::Kind::Chunked) )
             hilti::logger().deprecated(
                 "usage of &convert on &chunked field is ill-defined and deprecated; support will be "
                 "removed in future versions",
@@ -840,18 +840,18 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     continue;
 
                 if ( hilti::Attribute::isOneOf(a,
-                                               {hilti::Attribute::Kind::CONVERT, hilti::Attribute::Kind::SIZE,
-                                                hilti::Attribute::Kind::MAX_SIZE, hilti::Attribute::Kind::PARSE_AT,
-                                                hilti::Attribute::Kind::PARSE_FROM, hilti::Attribute::Kind::TYPE,
-                                                hilti::Attribute::Kind::UNTIL, hilti::Attribute::Kind::UNTIL_INCLUDING,
-                                                hilti::Attribute::Kind::WHILE}) )
+                                               {hilti::Attribute::Kind::Convert, hilti::Attribute::Kind::Size,
+                                                hilti::Attribute::Kind::MaxSize, hilti::Attribute::Kind::ParseAt,
+                                                hilti::Attribute::Kind::ParseFrom, hilti::Attribute::Kind::Type,
+                                                hilti::Attribute::Kind::Until, hilti::Attribute::Kind::UntilIncluding,
+                                                hilti::Attribute::Kind::While}) )
                     error(fmt("'%s' can be used at most once", hilti::Attribute::kindToString(a)), n);
             }
         }
 
         if ( auto t = n->itemType()->type()->tryAs<hilti::type::Bitfield>() ) {
             for ( const auto& b : t->bits() ) {
-                if ( b->attributes()->has(hilti::Attribute::Kind::BIT_ORDER) )
+                if ( b->attributes()->has(hilti::Attribute::Kind::BitOrder) )
                     hilti::logger().deprecated(fmt("&bit-order on bitfield item '%s' has no effect and is deprecated",
                                                    b->id()),
                                                b->meta().location());
@@ -934,7 +934,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                         }
                     }
 
-                    if ( f->attributes()->find(hilti::Attribute::Kind::SYNCHRONIZE) )
+                    if ( f->attributes()->find(hilti::Attribute::Kind::Synchronize) )
                         error(fmt("unit switch branches cannot be &synchronize"), n);
 
                     seen_fields.emplace_back(f);
@@ -954,7 +954,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         if ( auto attrs = n->attributes() ) {
             for ( const auto& attr : attrs->attributes() ) {
-                if ( attr->kind() != hilti::Attribute::Kind::OPTIONAL )
+                if ( attr->kind() != hilti::Attribute::Kind::Optional )
                     error(fmt("attribute '%s' not supported for unit variables", attr->attributeName()), n);
             }
         }

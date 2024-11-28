@@ -907,8 +907,8 @@ unit_hook_id: { driver->enableHookIDMode(); }
               { driver->disableHookIDMode(); } { $$ = hilti::ID(hilti::util::replace($2, "%", "0x25_")); }
 
 unit_hook_attribute
-              : FOREACH                          { $$ = builder->attribute(hilti::Attribute::Kind::FOREACH, __loc__); }
-              | PRIORITY '=' expr                { $$ = builder->attribute(hilti::Attribute::Kind::PRIORITY, std::move($3), __loc__); }
+              : FOREACH                          { $$ = builder->attribute(hilti::Attribute::Kind::Foreach, __loc__); }
+              | PRIORITY '=' expr                { $$ = builder->attribute(hilti::Attribute::Kind::Priority, std::move($3), __loc__); }
               | PROPERTY                         { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
                                                      $$ = builder->attribute(*attr_kind, __loc__);
                                                    else

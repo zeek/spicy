@@ -115,7 +115,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::Attribute* n) final {
-        if ( n->kind() == hilti::Attribute::Kind::SIZE || n->kind() == hilti::Attribute::Kind::MAX_SIZE ) {
+        if ( n->kind() == hilti::Attribute::Kind::Size || n->kind() == hilti::Attribute::Kind::MaxSize ) {
             if ( ! n->hasValue() )
                 // Caught elsewhere, we don't want to report it here again.
                 return;
@@ -318,7 +318,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 if ( ! attr )
                     continue;
 
-                if ( attr->kind() != hilti::Attribute::Kind::CONVERT )
+                if ( attr->kind() != hilti::Attribute::Kind::Convert )
                     return;
 
                 // The direct parent of the attribute set containing the attribute should be the unit.
@@ -420,8 +420,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     void operator()(hilti::type::Bitfield* n) final {
         if ( auto field = n->parent(2)->tryAs<type::unit::item::Field>() ) {
             // Transfer any "&bitorder" attribute over to the type.
-            if ( auto a = field->attributes()->find(hilti::Attribute::Kind::BIT_ORDER);
-                 a && ! n->attributes()->find(hilti::Attribute::Kind::BIT_ORDER) ) {
+            if ( auto a = field->attributes()->find(hilti::Attribute::Kind::BitOrder);
+                 a && ! n->attributes()->find(hilti::Attribute::Kind::BitOrder) ) {
                 recordChange(n, "transfer &bitorder attribute");
                 n->attributes()->add(context(), a);
             }
@@ -429,8 +429,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
         if ( auto decl = n->parent(2)->tryAs<hilti::declaration::Type>() ) {
             // Transfer any "&bitorder" attribute over to the type.
-            if ( auto a = decl->attributes()->find(hilti::Attribute::Kind::BIT_ORDER);
-                 a && ! n->attributes()->find(hilti::Attribute::Kind::BIT_ORDER) ) {
+            if ( auto a = decl->attributes()->find(hilti::Attribute::Kind::BitOrder);
+                 a && ! n->attributes()->find(hilti::Attribute::Kind::BitOrder) ) {
                 recordChange(n, "transfer &bitorder attribute");
                 n->attributes()->add(context(), a);
             }
@@ -509,7 +509,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 if ( x->second ) {
                     // Unit-level convert on the sub-item.
                     auto u = x->second->type()->as<type::Unit>();
-                    auto a = u->attributes()->find(hilti::Attribute::Kind::CONVERT);
+                    auto a = u->attributes()->find(hilti::Attribute::Kind::Convert);
                     assert(a);
                     auto e = *a->valueAsExpression();
                     if ( e->isResolved() )
@@ -564,7 +564,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             size_t ok_attrs = 0;
             const auto& attrs = n->attributes()->attributes();
             for ( const auto& a : attrs ) {
-                if ( a->kind() == hilti::Attribute::Kind::REQUIRES )
+                if ( a->kind() == hilti::Attribute::Kind::Requires )
                     ok_attrs++;
             }
 
@@ -593,7 +593,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // subitem so that we have our recursive machinery available
                 // (which we don't have for pure types).
                 if ( auto unit_type = t->type()->type()->tryAs<type::Unit>();
-                     unit_type && unit_type->attributes()->has(hilti::Attribute::Kind::CONVERT) ) {
+                     unit_type && unit_type->attributes()->has(hilti::Attribute::Kind::Convert) ) {
                     auto inner_field =
                         builder()->typeUnitItemField({}, tt, false, n->arguments(), {}, {}, {}, {}, {}, n->meta());
                     inner_field->setIndex(*n->index());

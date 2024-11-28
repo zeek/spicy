@@ -1,3 +1,14 @@
+1.12.0-dev.204 | 2024-11-28 13:57:57 +0100
+
+  * Spell all `Attribute::Kind` values in Pascal case. (Benjamin Bannier, Corelight)
+
+    We are not 100% consistent, but we seem to prefer PascalCase over
+    SNAKE_UPPERCASE for enum values. Rename the recently introduced
+    `Attribute::Kind` values to that style.
+
+    An intended side effect of this is that we now avoid collisions with a
+    possibly defined `DEBUG` macro (e.g., Zeek defines it).
+
 1.12.0-dev.202 | 2024-11-26 18:31:48 +0100
 
   * GH-1901: Prefer enum over string for attributes. (Evan Typanski, Corelight)

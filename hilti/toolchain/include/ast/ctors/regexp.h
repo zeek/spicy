@@ -21,7 +21,7 @@ public:
     /**
      * Returns true if this pattern does not need support for capturing groups.
      */
-    bool isNoSub() const { return attributes()->find(hilti::Attribute::Kind::NOSUB) != nullptr; }
+    bool isNoSub() const { return attributes()->find(hilti::Attribute::Kind::Nosub) != nullptr; }
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
