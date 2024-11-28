@@ -106,6 +106,9 @@ public:
     auto ctorResult(Expression* expr, const Meta& meta = {}) {
         return hilti::ctor::Result::create(context(), expr, meta);
     }
+    auto ctorResult(QualifiedType* type, const Meta& meta = {}) {
+        return hilti::ctor::Result::create(context(), type, meta);
+    }
     auto ctorSet(Expressions exprs, Meta meta = {}) {
         return hilti::ctor::Set::create(context(), std::move(exprs), std::move(meta));
     }

@@ -6,8 +6,11 @@
 #include <utility>
 
 #include <hilti/ast/ctor.h>
+#include <hilti/ast/ctors/error.h>
 #include <hilti/ast/expression.h>
+#include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/error.h>
 #include <hilti/ast/types/result.h>
 
@@ -36,20 +39,24 @@ public:
             return {};
     }
 
-    QualifiedType* type() const final {
-        if ( auto e = child<QualifiedType>(0) )
-            return e;
-        else
-            return child<Expression>(1)->type();
-    }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     static auto create(ASTContext* ctx, Expression* expr, const Meta& meta = {}) {
         return ctx->make<Result>(ctx,
                                  {
-                                     nullptr,
+                                     QualifiedType::createAuto(ctx, meta),
                                      expr,
+                                 },
+                                 meta);
+    }
+
+    static auto create(ASTContext* ctx, QualifiedType* type, const Meta& meta = {}) {
+        return ctx->make<Result>(ctx,
+                                 {
+                                     type,
+                                     expression::Ctor::create(ctx, ctor::Error::create(ctx, "<not set>", meta), meta),
                                  },
                                  meta);
     }

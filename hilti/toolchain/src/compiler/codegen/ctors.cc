@@ -168,7 +168,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(ctor::Result* n) final {
         auto t = cg->compile(n->type(), codegen::TypeUsage::Storage);
 
-        if ( n->value()->type()->type()->isA<type::Null>() )
+        if ( n->type()->type()->isA<type::Void>() )
             result = fmt("::hilti::rt::Nothing{}");
         else if ( auto e = n->value() )
             result = fmt("%s(%s)", t, cg->compile(e));

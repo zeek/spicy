@@ -71,7 +71,7 @@ struct VisitorCtor : visitor::PreOrder {
         }
 
         if ( auto t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() ) {
-            result = builder->ctorResult(builder->expressionCtor(builder->ctorNull()));
+            result = builder->ctorResult(t->dereferencedType());
             return;
         }
 
