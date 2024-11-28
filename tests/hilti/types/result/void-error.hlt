@@ -1,0 +1,11 @@
+# @TEST-EXEC-FAIL: hiltic -j %INPUT 2>output
+# @TEST-EXEC:      btest-diff output
+#
+# @TEST-DOC: Check that we catch invalid deref of `result<void>`.
+
+module foo {
+
+global result<void> x;
+*x;
+
+}
