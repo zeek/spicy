@@ -497,7 +497,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, cid, context); x != flows.end() )
                 resp_state = &x->second;
 
-            if ( ! (orig_state && resp_state) ) {
+            if ( ! (orig_state || resp_state) ) {
                 // cannot get parsers, ignore
                 flows.erase(orig_id);
                 flows.erase(resp_id);
@@ -580,13 +580,15 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
             if ( auto s = connections.find(cid); s != connections.end() ) {
                 try {
-                    s->second.orig_state->finish();
+                    if ( s->second.orig_state )
+                        s->second.orig_state->finish();
                 } catch ( const hilti::rt::Exception& e ) {
                     std::cout << hilti::rt::fmt("error for ID %s: %s\n", s->second.orig_id, e.what());
                 }
 
                 try {
-                    s->second.resp_state->finish();
+                    if ( s->second.resp_state )
+                        s->second.resp_state->finish();
                 } catch ( const hilti::rt::Exception& e ) {
                     std::cout << hilti::rt::fmt("error for ID %s: %s\n", s->second.resp_id, e.what());
                 }

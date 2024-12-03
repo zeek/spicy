@@ -31,6 +31,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"library-path", required_argument, nullptr, 'L'},
                                               {"list-parsers", no_argument, nullptr, 'l'},
                                               {"parser", required_argument, nullptr, 'p'},
+                                              {"parser-alias", required_argument, nullptr, 'P'},
                                               {"report-times", required_argument, nullptr, 'R'},
                                               {"show-backtraces", required_argument, nullptr, 'B'},
                                               {"skip-dependencies", no_argument, nullptr, 'S'},
@@ -60,6 +61,7 @@ public:
     bool opt_input_is_batch = false;
     std::string opt_file = "/dev/stdin";
     std::string opt_parser;
+    std::vector<std::string> opt_parser_aliases;
 
     void fatalError(const std::string& msg) {
         hilti::logger().error(msg);
@@ -90,30 +92,32 @@ void SpicyDriver::usage() {
            "\n"
            "Options:\n"
            "\n"
-           "  -c | --require-accept           Return failure exit code if parser did not call accept_input(), or "
+           "  -c | --require-accept               Return failure exit code if parser did not call accept_input(), or "
            "called "
            "decline_input().\n"
-           "  -d | --debug                    Include debug instrumentation into generated code.\n"
-           "  -g | --disable-optimizations    Disable HILTI-side optimizations of the generated code.\n"
-           "  -i | --increment <i>            Feed data incrementally in chunks of size n.\n"
-           "  -f | --file <path>              Read input from <path> instead of stdin.\n"
-           "  -l | --list-parsers             List available parsers and exit; use twice to include aliases.\n"
-           "  -p | --parser <name>            Use parser <name> to process input. Only needed if more than one parser "
+           "  -d | --debug                        Include debug instrumentation into generated code.\n"
+           "  -g | --disable-optimizations        Disable HILTI-side optimizations of the generated code.\n"
+           "  -i | --increment <i>                Feed data incrementally in chunks of size n.\n"
+           "  -f | --file <path>                  Read input from <path> instead of stdin.\n"
+           "  -l | --list-parsers                 List available parsers and exit; use twice to include aliases.\n"
+           "  -p | --parser <name>                Use parser <name> to process input. Only needed if more than one "
+           "parser "
            "is available.\n"
-           "  -v | --version                  Print version information.\n"
-           "  -A | --abort-on-exceptions      When executing compiled code, abort() instead of throwing HILTI "
+           "  -v | --version                      Print version information.\n"
+           "  -A | --abort-on-exceptions          When executing compiled code, abort() instead of throwing HILTI "
            "exceptions.\n"
-           "  -B | --show-backtraces          Include backtraces when reporting unhandled exceptions.\n"
-           "  -D | --compiler-debug <streams> Activate compile-time debugging output for given debug streams "
+           "  -B | --show-backtraces              Include backtraces when reporting unhandled exceptions.\n"
+           "  -D | --compiler-debug <streams>     Activate compile-time debugging output for given debug streams "
            "(comma-separated; 'help' for list).\n"
-           "  -F | --batch-file <path>        Read Spicy batch input from <path>; see docs for description of "
+           "  -F | --batch-file <path>            Read Spicy batch input from <path>; see docs for description of "
            "format.\n"
-           "  -L | --library-path <path>      Add path to list of directories to search when importing modules.\n"
-           "  -R | --report-times             Report a break-down of compiler's execution time.\n"
-           "  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.\n"
-           "  -U | --report-resource-usage    Print summary of runtime resource usage.\n"
-           "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation\n"
-           "  -Z | --enable-profiling         Report profiling statistics after execution.\n"
+           "  -L | --library-path <path>          Add path to list of directories to search when importing modules.\n"
+           "  -P | --parser-alias <alias>=<name>  Add alias name for parser of existing name.\n"
+           "  -R | --report-times                 Report a break-down of compiler's execution time.\n"
+           "  -S | --skip-dependencies            Do not automatically compile dependencies during JIT.\n"
+           "  -U | --report-resource-usage        Print summary of runtime resource usage.\n"
+           "  -X | --debug-addl <addl>            Implies -d and adds selected additional instrumentation\n"
+           "  -Z | --enable-profiling             Report profiling statistics after execution.\n"
            "(comma-separated; see 'help' for list).\n"
            "\n"
            "Environment variables:\n"
@@ -136,7 +140,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABcD:f:F:ghdJX:Vlp:i:SRL:UZ", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABcD:f:F:ghdJX:Vlp:P:i:SRL:UZ", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -226,6 +230,8 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 
             case 'p': opt_parser = optarg; break;
 
+            case 'P': opt_parser_aliases.emplace_back(optarg); break;
+
             case 'R': driver_options.report_times = true; break;
 
             case 'S': driver_options.skip_dependencies = true; break;
@@ -278,6 +284,17 @@ int main(int argc, char** argv) {
     try {
         if ( auto x = driver.initRuntime(); ! x )
             driver.fatalError(x.error());
+
+        for ( const auto& parser : driver.opt_parser_aliases ) {
+            auto m = hilti::util::transform(hilti::util::split(parser, "="),
+                                            [](const auto& x) { return hilti::util::trim(x); });
+
+            if ( m.size() != 2 )
+                driver.fatalError("invalid alias specification: must be of form '<alias>=<parser-name>'");
+
+            if ( auto rc = spicy::rt::registerParserAlias(m[1], m[0]); ! rc )
+                driver.fatalError(fmt("invalid alias specification: %s", rc.error()));
+        }
 
         if ( driver.opt_list_parsers )
             driver.listParsers(std::cout, driver.opt_list_parsers > 1);
