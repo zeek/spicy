@@ -1,12 +1,14 @@
-# @TEST-EXEC: HILTI_CXX_FLAGS=-DRETURN_VALUE=42 ${HILTIC} -j %INPUT my-test.cc
+# @TEST-EXEC: HILTI_CXX_FLAGS="-DVALUE=1 -DVALUE2=2" ${HILTIC} -j %INPUT my-test.cc
 #
-# @TEST-DOC: Ensure hiltic honors the environment variable HILTI_CXX_INCLUDE_DIRS
+# @TEST-DOC: Ensure hiltic honors the environment variable HILTI_CXX_FLAGS
 
 module Test {
 
-declare public int<64> test_cc() &cxxname="test_cc";
+declare public int<64> test1() &cxxname="test1";
+declare public int<64> test2() &cxxname="test2";
 
-assert(test_cc() == 42);
+assert(test1() == 1);
+assert(test2() == 2);
 
 }
 
@@ -15,6 +17,7 @@ assert(test_cc() == 42);
 #include <cstdint>
 #include <hilti/rt/types/integer.h>
 
-hilti::rt::integer::safe<int64_t> test_cc() { return RETURN_VALUE; }
+hilti::rt::integer::safe<int64_t> test1() { return VALUE; }
+hilti::rt::integer::safe<int64_t> test2() { return VALUE2; }
 
 @TEST-END-FILE
