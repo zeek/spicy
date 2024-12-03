@@ -37,6 +37,19 @@ inline UnqualifiedType* widestTypeUnsigned(Builder* builder, const Expressions& 
     return builder->typeUnsignedInteger(std::max(w1, w2));
 }
 
+inline void validateShiftAmount(expression::ResolvedOperator* n) {
+    if ( auto expr = n->op1()->tryAs<expression::Ctor>() ) {
+        auto ctor = expr->ctor();
+        if ( auto coerced = ctor->tryAs<ctor::Coerced>() )
+            ctor = coerced->coercedCtor();
+
+        if ( auto i = ctor->tryAs<ctor::UnsignedInteger>() ) {
+            if ( i->value() >= n->op0()->type()->type()->as<type::UnsignedInteger>()->width() )
+                n->addError("shift amount must be smaller than operand's width", n->location());
+        }
+    }
+}
+
 class DecrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -682,6 +695,8 @@ public:
         };
     }
 
+    void validate(expression::ResolvedOperator* n) const override { validateShiftAmount(n); }
+
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
     }
@@ -703,6 +718,8 @@ public:
             .doc = "Shifts the integer to the right by the given number of bits.",
         };
     }
+
+    void validate(expression::ResolvedOperator* n) const override { validateShiftAmount(n); }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         return operands[0]->type();
