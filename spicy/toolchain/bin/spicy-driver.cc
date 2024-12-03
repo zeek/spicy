@@ -55,7 +55,7 @@ public:
     void parseOptions(int argc, char** argv);
     void usage();
 
-    bool opt_list_parsers = false;
+    int opt_list_parsers = 0;
     int opt_increment = 0;
     bool opt_input_is_batch = false;
     std::string opt_file = "/dev/stdin";
@@ -97,7 +97,7 @@ void SpicyDriver::usage() {
            "  -g | --disable-optimizations    Disable HILTI-side optimizations of the generated code.\n"
            "  -i | --increment <i>            Feed data incrementally in chunks of size n.\n"
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
-           "  -l | --list-parsers             List available parsers and exit.\n"
+           "  -l | --list-parsers             List available parsers and exit; use twice to include aliases.\n"
            "  -p | --parser <name>            Use parser <name> to process input. Only needed if more than one parser "
            "is available.\n"
            "  -v | --version                  Print version information.\n"
@@ -222,7 +222,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
                 opt_increment = atoi(optarg); // NOLINT
                 break;
 
-            case 'l': opt_list_parsers = true; break;
+            case 'l': ++opt_list_parsers; break;
 
             case 'p': opt_parser = optarg; break;
 
@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
             driver.fatalError(x.error());
 
         if ( driver.opt_list_parsers )
-            driver.listParsers(std::cout);
+            driver.listParsers(std::cout, driver.opt_list_parsers > 1);
 
         else {
             std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);

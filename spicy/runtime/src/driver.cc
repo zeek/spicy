@@ -101,7 +101,7 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
                      num_stacks, cached_stacks, max_stacks, max_stack_size));
 }
 
-Result<Nothing> Driver::listParsers(std::ostream& out) {
+Result<Nothing> Driver::listParsers(std::ostream& out, bool verbose) {
     if ( ! hilti::rt::isInitialized() )
         return Error("runtime not initialized");
 
@@ -129,6 +129,27 @@ Result<Nothing> Driver::listParsers(std::ostream& out) {
             ports = fmt(" %s", p->ports);
 
         out << fmt("  %15s %s%s%s\n", p->name, description, ports, mime_types);
+    }
+
+    if ( verbose ) {
+        bool first = true;
+        for ( const auto& [name, parsers] : spicy::rt::parserNames() ) {
+            std::set<std::string_view> aliases;
+
+            for ( const auto* p : parsers ) {
+                if ( p->name != name )
+                    aliases.insert(p->name);
+            }
+
+            if ( ! aliases.empty() ) {
+                if ( first ) {
+                    out << "\nAvailable alias names:\n\n";
+                    first = false;
+                }
+
+                out << fmt("  %15s -> %s\n", name, hilti::rt::join(aliases, ", "));
+            }
+        }
     }
 
     out << "\n";

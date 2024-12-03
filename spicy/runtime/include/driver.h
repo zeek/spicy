@@ -214,9 +214,10 @@ public:
      * the Spicy runtime system.
      *
      * @param out stream to print the summary to
+     * @param verbose if true, will include alias names in output a well
      * @return an error if the list cannot be retrieved
      */
-    hilti::rt::Result<hilti::rt::Nothing> listParsers(std::ostream& out);
+    hilti::rt::Result<hilti::rt::Nothing> listParsers(std::ostream& out, bool verbose = false);
 
     /**
      * Retrieves a parser by its name.

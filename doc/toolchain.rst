@@ -124,9 +124,15 @@ if a unit defines ``%port = 80/tcp``, you can use ``spicy-driver -p
 tagged with an ``&originator`` or ``&responder`` attribute,
 respectively, will be considered. If a unit defines ``%mime-type =
 application/test``, you can select it through ``spicy-driver -p
-application/test``. (Note that there must be exactly one unit with a
-matching property for this all to work, otherwise you'll get an error
-message.)
+application/test``.
+
+.. versionadded:: 1.13 Verbose mode for ``list-parsers``
+
+Internally, these port-based arguments for ``-p`` are alias names for
+existing parsers. You can see all aliases by running ``spicy-driver``
+with ``-ll`` (i.e., ``--list-parsers`` twice).
+
+.. _spicy-driver-batch:
 
 Batch input
 -----------
