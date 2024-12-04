@@ -1107,14 +1107,17 @@ on the whole bitfield:
 
     module WebSocket;
 
+    import spicy;
+
     public type Header= unit {
-      : bitfield(32) {
-        fin: 0;
-        rsv: 1..3;
-        opcode: 4..7;
-        mask: 8;
-        payload_len: 9..15;
-    } &bit-order=spicy::BitOrder::MSB0
+        : bitfield(32) {
+            fin: 0;
+            rsv: 1..3;
+            opcode: 4..7;
+            mask: 8;
+            payload_len: 9..15;
+        } &bit-order=spicy::BitOrder::MSB0;
+    };
 
 The way to think about this is that the most significant bit of an integer in
 network byte order is always the most left bit and the least significant bit
