@@ -954,13 +954,13 @@ map_elem      : expr_no_or_error ':' expr        { $$ = builder->ctorMapElement(
 
 
 attribute     : ATTRIBUTE                        { try {
-                                                       $$ = builder->attribute(hilti::attribute_kind::from_string($1), __loc__);
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, "unknown attribute");
                                                    }
                                                  }
               | ATTRIBUTE '=' expr               { try {
-                                                       $$ = builder->attribute(hilti::attribute_kind::from_string($1), std::move($3), __loc__);
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), std::move($3), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, "unknown attribute");
                                                    }

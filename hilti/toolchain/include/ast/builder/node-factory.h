@@ -24,10 +24,10 @@ public:
     /** Returns the AST context in use for creating nodes. */
     ASTContext* context() const { return _context; }
 
-    auto attribute(hilti::Attribute::Kind kind, Expression* v, const Meta& m = Meta()) {
+    auto attribute(hilti::attribute::Kind kind, Expression* v, const Meta& m = Meta()) {
         return hilti::Attribute::create(context(), kind, v, m);
     }
-    auto attribute(hilti::Attribute::Kind kind, const Meta& m = Meta()) {
+    auto attribute(hilti::attribute::Kind kind, const Meta& m = Meta()) {
         return hilti::Attribute::create(context(), kind, m);
     }
     auto attributeSet(Attributes attrs = {}, Meta m = Meta()) {

@@ -74,7 +74,7 @@ std::string Attribute::_dump() const { return ""; }
 
 std::string AttributeSet::_dump() const { return ""; }
 
-Attribute* AttributeSet::find(Attribute::Kind kind) const {
+Attribute* AttributeSet::find(attribute::Kind kind) const {
     for ( const auto& a : attributes() )
         if ( a->kind() == kind )
             return a;
@@ -82,7 +82,7 @@ Attribute* AttributeSet::find(Attribute::Kind kind) const {
     return {};
 }
 
-hilti::node::Set<Attribute> AttributeSet::findAll(Attribute::Kind kind) const {
+hilti::node::Set<Attribute> AttributeSet::findAll(attribute::Kind kind) const {
     hilti::node::Set<Attribute> result;
 
     for ( const auto& a : attributes() )
@@ -92,7 +92,7 @@ hilti::node::Set<Attribute> AttributeSet::findAll(Attribute::Kind kind) const {
     return result;
 }
 
-void AttributeSet::remove(Attribute::Kind kind) {
+void AttributeSet::remove(attribute::Kind kind) {
     while ( const auto& a = find(kind) )
         removeChild(a);
 }

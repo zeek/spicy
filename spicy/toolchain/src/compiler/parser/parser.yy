@@ -910,16 +910,16 @@ unit_hook_id: { driver->enableHookIDMode(); }
               { driver->disableHookIDMode(); } { $$ = hilti::ID(hilti::util::replace($2, "%", "0x25_")); }
 
 unit_hook_attribute
-              : FOREACH                          { $$ = builder->attribute(hilti::Attribute::Kind::Foreach, __loc__); }
-              | PRIORITY '=' expr                { $$ = builder->attribute(hilti::Attribute::Kind::Priority, std::move($3), __loc__); }
+              : FOREACH                          { $$ = builder->attribute(hilti::attribute::Kind::Foreach, __loc__); }
+              | PRIORITY '=' expr                { $$ = builder->attribute(hilti::attribute::Kind::Priority, std::move($3), __loc__); }
               | PROPERTY                         { try {
-                                                       $$ = builder->attribute(hilti::attribute_kind::from_string($1), __loc__);
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, "unknown attribute");
                                                    }
                                                  }
               | ATTRIBUTE                        { try {
-                                                       $$ = builder->attribute(hilti::attribute_kind::from_string($1), __loc__);
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, "unknown attribute");
                                                    }
@@ -1190,13 +1190,13 @@ map_elem      : expr_no_or_error ':' expr        { $$ = builder->ctorMapElement(
 /* Attributes */
 
 attribute     : ATTRIBUTE                       { try {
-                                                       $$ = builder->attribute(hilti::attribute_kind::from_string($1), __loc__);
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, "unknown attribute");
                                                    }
                                                 }
               | ATTRIBUTE '=' expr              { try {
-                                                       $$ = builder->attribute(hilti::attribute_kind::from_string($1), std::move($3), __loc__);
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), std::move($3), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, "unknown attribute");
                                                    }

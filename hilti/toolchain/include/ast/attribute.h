@@ -16,54 +16,114 @@
 
 namespace hilti {
 
+namespace attribute {
+
+enum class Kind {
+    Eod,
+    Until,
+    UntilIncluding,
+    ParseAt,
+    ParseFrom,
+    Size,
+    MaxSize,
+    IPv4,
+    IPv6,
+    Type,
+    Count,
+    Synchronize,
+    Default,
+    Anonymous,
+    Internal,
+    Optional,
+    Static,
+    NoEmit,
+    OnHeap,
+    Nosub,
+    Cxxname,
+    HavePrototype,
+    Priority,
+    Convert,
+    While,
+    Requires,
+    ByteOrder,
+    BitOrder,
+    Chunked,
+    Originator,
+    Responder,
+    Try,
+    NeededByFeature,
+    RequiresTypeFeature,
+    AlwaysEmit,
+    Transient,
+    Anchor,
+
+    // Hooks
+    Debug,
+    Error,
+    Foreach,
+};
+
+namespace detail {
+constexpr util::enum_::Value<Kind> AttributeKinds[] = {
+    {Kind::Eod, "&eod"},
+    {Kind::Until, "&until"},
+    {Kind::UntilIncluding, "&until-including"},
+    {Kind::ParseAt, "&parse-at"},
+    {Kind::ParseFrom, "&parse-from"},
+    {Kind::Size, "&size"},
+    {Kind::MaxSize, "&max-size"},
+    {Kind::IPv4, "&ipv4"},
+    {Kind::IPv6, "&ipv6"},
+    {Kind::Type, "&type"},
+    {Kind::Count, "&count"},
+    {Kind::Synchronize, "&synchronize"},
+    {Kind::Default, "&default"},
+    {Kind::Anonymous, "&anonymous"},
+    {Kind::Internal, "&internal"},
+    {Kind::Optional, "&optional"},
+    {Kind::Static, "&static"},
+    {Kind::NoEmit, "&no-emit"},
+    {Kind::OnHeap, "&on-heap"},
+    {Kind::Nosub, "&nosub"},
+    {Kind::Cxxname, "&cxxname"},
+    {Kind::HavePrototype, "&have_prototype"},
+    {Kind::Priority, "&priority"},
+    {Kind::Convert, "&convert"},
+    {Kind::While, "&while"},
+    {Kind::Requires, "&requires"},
+    {Kind::ByteOrder, "&byte-order"},
+    {Kind::BitOrder, "&bit-order"},
+    {Kind::Chunked, "&chunked"},
+    {Kind::Originator, "&originator"},
+    {Kind::Responder, "&responder"},
+    {Kind::Try, "&try"},
+    {Kind::NeededByFeature, "&needed-by-feature"},
+    {Kind::RequiresTypeFeature, "&requires-type-feature"},
+    {Kind::AlwaysEmit, "&always-emit"},
+    {Kind::Transient, "&transient"},
+    {Kind::Anchor, "&anchor"},
+    {Kind::Debug, "%debug"},
+    {Kind::Error, "%error"},
+    {Kind::Foreach, "foreach"},
+};
+}
+
+constexpr auto to_string(Kind kind) { return util::enum_::to_string(kind, detail::AttributeKinds); }
+
+/** Returns whether `kind` is in `kinds` */
+inline bool isOneOf(Kind kind, std::initializer_list<Kind> kinds) {
+    return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
+}
+
+namespace kind {
+constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string(s, detail::AttributeKinds); }
+} // namespace kind
+
+} // namespace attribute
+
 /** AST node for an attribute. */
 class Attribute : public Node {
 public:
-    enum class Kind {
-        Eod,
-        Until,
-        UntilIncluding,
-        ParseAt,
-        ParseFrom,
-        Size,
-        MaxSize,
-        IPv4,
-        IPv6,
-        Type,
-        Count,
-        Synchronize,
-        Default,
-        Anonymous,
-        Internal,
-        Optional,
-        Static,
-        NoEmit,
-        OnHeap,
-        Nosub,
-        Cxxname,
-        HavePrototype,
-        Priority,
-        Convert,
-        While,
-        Requires,
-        ByteOrder,
-        BitOrder,
-        Chunked,
-        Originator,
-        Responder,
-        Try,
-        NeededByFeature,
-        RequiresTypeFeature,
-        AlwaysEmit,
-        Transient,
-        Anchor,
-
-        // Hooks
-        Debug,
-        Error,
-        Foreach,
-    };
-
     /** Returns the kind of the attribute, derived from its tag. */
     const auto& kind() const { return _kind; }
 
@@ -116,11 +176,6 @@ public:
      */
     Result<bool> coerceValueTo(Builder* builder, QualifiedType* dst);
 
-    /** Returns whether `kind` is in `kinds` */
-    static bool isOneOf(Kind kind, std::initializer_list<Kind> kinds) {
-        return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
-    }
-
     node::Properties properties() const final {
         auto p = node::Properties{{"tag", std::string{to_string(kind())}}};
         return Node::properties() + p;
@@ -134,7 +189,7 @@ public:
      * @param v node representing the argument to associate with the attribute; must be an expression
      * @param m meta data to associate with the node
      */
-    static auto create(ASTContext* ctx, Kind kind, Expression* v, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, attribute::Kind kind, Expression* v, const Meta& m = Meta()) {
         return ctx->make<Attribute>(ctx, {v}, kind, m);
     }
 
@@ -144,10 +199,12 @@ public:
      * @param kind the attribute's internal representation
      * @param m meta data to associate with the node
      */
-    static auto create(ASTContext* ctx, Kind kind, const Meta& m = Meta()) { return create(ctx, kind, nullptr, m); }
+    static auto create(ASTContext* ctx, attribute::Kind kind, const Meta& m = Meta()) {
+        return create(ctx, kind, nullptr, m);
+    }
 
 protected:
-    Attribute(ASTContext* ctx, Nodes children, Kind kind, Meta m = Meta())
+    Attribute(ASTContext* ctx, Nodes children, attribute::Kind kind, Meta m = Meta())
         : Node(ctx, NodeTags, std::move(children), std::move(m)), _kind(kind) {}
 
     std::string _dump() const override;
@@ -155,59 +212,8 @@ protected:
     HILTI_NODE_0(Attribute, final);
 
 private:
-    Kind _kind;
+    attribute::Kind _kind;
 };
-
-namespace detail {
-constexpr util::enum_::Value<Attribute::Kind> AttributeKinds[] = {
-    {Attribute::Kind::Eod, "&eod"},
-    {Attribute::Kind::Until, "&until"},
-    {Attribute::Kind::UntilIncluding, "&until-including"},
-    {Attribute::Kind::ParseAt, "&parse-at"},
-    {Attribute::Kind::ParseFrom, "&parse-from"},
-    {Attribute::Kind::Size, "&size"},
-    {Attribute::Kind::MaxSize, "&max-size"},
-    {Attribute::Kind::IPv4, "&ipv4"},
-    {Attribute::Kind::IPv6, "&ipv6"},
-    {Attribute::Kind::Type, "&type"},
-    {Attribute::Kind::Count, "&count"},
-    {Attribute::Kind::Synchronize, "&synchronize"},
-    {Attribute::Kind::Default, "&default"},
-    {Attribute::Kind::Anonymous, "&anonymous"},
-    {Attribute::Kind::Internal, "&internal"},
-    {Attribute::Kind::Optional, "&optional"},
-    {Attribute::Kind::Static, "&static"},
-    {Attribute::Kind::NoEmit, "&no-emit"},
-    {Attribute::Kind::OnHeap, "&on-heap"},
-    {Attribute::Kind::Nosub, "&nosub"},
-    {Attribute::Kind::Cxxname, "&cxxname"},
-    {Attribute::Kind::HavePrototype, "&have_prototype"},
-    {Attribute::Kind::Priority, "&priority"},
-    {Attribute::Kind::Convert, "&convert"},
-    {Attribute::Kind::While, "&while"},
-    {Attribute::Kind::Requires, "&requires"},
-    {Attribute::Kind::ByteOrder, "&byte-order"},
-    {Attribute::Kind::BitOrder, "&bit-order"},
-    {Attribute::Kind::Chunked, "&chunked"},
-    {Attribute::Kind::Originator, "&originator"},
-    {Attribute::Kind::Responder, "&responder"},
-    {Attribute::Kind::Try, "&try"},
-    {Attribute::Kind::NeededByFeature, "&needed-by-feature"},
-    {Attribute::Kind::RequiresTypeFeature, "&requires-type-feature"},
-    {Attribute::Kind::AlwaysEmit, "&always-emit"},
-    {Attribute::Kind::Transient, "&transient"},
-    {Attribute::Kind::Anchor, "&anchor"},
-    {Attribute::Kind::Debug, "%debug"},
-    {Attribute::Kind::Error, "%error"},
-    {Attribute::Kind::Foreach, "foreach"},
-};
-}
-
-constexpr auto to_string(Attribute::Kind kind) { return util::enum_::to_string(kind, detail::AttributeKinds); }
-
-namespace attribute_kind {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string(s, detail::AttributeKinds); }
-} // namespace attribute_kind
 
 /** AST node holding a set of `Attribute` nodes. */
 class AttributeSet : public Node {
@@ -221,21 +227,21 @@ public:
      *
      * @return attribute if found
      */
-    Attribute* find(Attribute::Kind kind) const;
+    Attribute* find(attribute::Kind kind) const;
 
     /**
      * Retrieves all attributes with a given kind from the set.
      *
      * @return all attributes with matching kind
      */
-    hilti::node::Set<Attribute> findAll(Attribute::Kind kind) const;
+    hilti::node::Set<Attribute> findAll(attribute::Kind kind) const;
 
     /**
      * Returns true if there's an attribute with a given kind in the set.
      *
      * @param true if found
      */
-    bool has(Attribute::Kind kind) const { return find(kind) != nullptr; }
+    bool has(attribute::Kind kind) const { return find(kind) != nullptr; }
 
     /** Adds an attribute to the set. */
     void add(ASTContext* ctx, Attribute* a) {
@@ -245,7 +251,7 @@ public:
     }
 
     /** Removes all attributes of the given kind. */
-    void remove(Attribute::Kind kind);
+    void remove(attribute::Kind kind);
 
     /** Returns true if the set has at least one element. */
     operator bool() const { return ! attributes().empty(); }
