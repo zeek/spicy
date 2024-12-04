@@ -121,9 +121,6 @@ public:
         return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
     }
 
-    /** Transforms a tag name into the appropriate enum value. */
-    static std::optional<Kind> tagToKind(std::string_view tag);
-
     /** Transforms a kind into its name for diagnostics. */
     static std::string_view kindToString(Kind kind);
 

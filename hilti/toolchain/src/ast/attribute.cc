@@ -70,13 +70,6 @@ Result<bool> Attribute::coerceValueTo(Builder* builder, QualifiedType* dst) {
         return result::Error("cannot coerce non-expression attribute value");
 }
 
-std::optional<Attribute::Kind> Attribute::tagToKind(std::string_view tag) {
-    if ( auto found = _attr_map.find(tag); found != _attr_map.end() )
-        return found->second;
-
-    return {};
-}
-
 std::string_view Attribute::kindToString(Kind kind) {
     for ( auto&& [name, tag] : _attr_map ) {
         if ( tag == kind )
