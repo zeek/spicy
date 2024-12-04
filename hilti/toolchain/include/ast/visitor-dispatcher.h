@@ -100,6 +100,7 @@ public:
     virtual void operator()(hilti::expression::Member*) {}
     virtual void operator()(hilti::expression::Move*) {}
     virtual void operator()(hilti::expression::Name*) {}
+    virtual void operator()(hilti::expression::ConditionTest*) {}
     virtual void operator()(hilti::expression::PendingCoerced*) {}
     virtual void operator()(hilti::expression::ResolvedOperator*) {}
     virtual void operator()(hilti::expression::Ternary*) {}

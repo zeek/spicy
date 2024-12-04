@@ -1,0 +1,30 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test the condition-test operator.
+
+module Foo {
+
+import hilti;
+
+global result<void> r1 = True : error("my-error");
+assert r1;
+hilti::print(r1);
+
+global result<void> r2 = 1 : error("my-error"); # coerce expr to void
+assert r2;
+hilti::print(r2);
+
+global r3 = False : error("my-error");
+assert !r3;
+assert r3.error().description() == "my-error";
+hilti::print(r3);
+
+global result<void> r4 = False : "my-error"; # coerce constant string to error
+assert !r4;
+hilti::print(r4);
+
+global result<void> r5 = False : "my-%s" % "error"; # coerce runtime string to error
+assert !r5;
+hilti::print(r5);
+}

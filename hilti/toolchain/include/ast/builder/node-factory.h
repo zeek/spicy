@@ -106,6 +106,9 @@ public:
     auto ctorResult(Expression* expr, const Meta& meta = {}) {
         return hilti::ctor::Result::create(context(), expr, meta);
     }
+    auto ctorResult(QualifiedType* type, const Meta& meta = {}) {
+        return hilti::ctor::Result::create(context(), type, meta);
+    }
     auto ctorSet(Expressions exprs, Meta meta = {}) {
         return hilti::ctor::Set::create(context(), std::move(exprs), std::move(meta));
     }
@@ -326,6 +329,9 @@ public:
     }
     auto expressionName(const hilti::ID& id, const Meta& meta = {}) {
         return hilti::expression::Name::create(context(), id, meta);
+    }
+    auto expressionConditionTest(Expression* cond, Expression* error, Meta meta = {}) {
+        return hilti::expression::ConditionTest::create(context(), cond, error, std::move(meta));
     }
     auto expressionPendingCoerced(Expression* expr, QualifiedType* type, Meta meta = {}) {
         return hilti::expression::PendingCoerced::create(context(), expr, type, std::move(meta));

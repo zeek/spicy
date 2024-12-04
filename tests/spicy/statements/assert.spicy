@@ -1,10 +1,13 @@
-# @TEST-EXEC: ${SPICYC} -j %INPUT >>output 2>&1
-# @TEST-EXEC-FAIL: ${SPICYC} -j fail.spicy >>output 2>&1
-# @TEST-EXEC-FAIL: ${SPICYC} -j fail2.spicy >>output 2>&1
+# @TEST-EXEC: spicyc -j %INPUT >>output 2>&1
+# @TEST-EXEC-FAIL: spicyc -j fail.spicy >>output 2>&1
+# @TEST-EXEC-FAIL: spicyc -j fail2.spicy >>output 2>&1
+# @TEST-EXEC-FAIL: spicyc -j fail3.spicy >>output 2>&1
+# @TEST-EXEC-FAIL: spicyc -j fail4.spicy >>output 2>&1
 # @TEST-EXEC: btest-diff output
 
 module Foo;
 assert 1 == 1;
+assert 1 == 1 : error"my error";
 
 @TEST-START-FILE fail.spicy
 
@@ -17,5 +20,20 @@ assert 1 == 0;
 
 module Foo;
 assert 1 == 0 : "my error";
+
+@TEST-END-FILE
+
+@TEST-START-FILE fail3.spicy
+
+module Foo;
+assert 1 == 0 : error"my error";
+
+@TEST-END-FILE
+
+@TEST-START-FILE fail4.spicy
+
+module Foo;
+global x = 0 : "foo";
+assert x;
 
 @TEST-END-FILE

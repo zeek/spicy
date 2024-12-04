@@ -457,6 +457,10 @@ public:
         return expressionTernary(cond, true_, false_, m);
     }
 
+    auto conditionTest(Expression* value, Expression* error, const Meta& m = Meta()) {
+        return expressionConditionTest(value, error, m);
+    }
+
     auto min(Expression* e1, Expression* e2, const Meta& m = Meta()) {
         return ternary(lowerEqual(e1, e2, m), e1, e2, m);
     }

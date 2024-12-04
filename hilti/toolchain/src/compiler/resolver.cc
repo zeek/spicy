@@ -1251,6 +1251,24 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(expression::ConditionTest* n) final {
+        if ( n->condition()->isResolved() && ! n->condition()->type()->type()->isA<type::Bool>() ) {
+            if ( auto x = coerceTo(n, n->condition(), builder()->qualifiedType(builder()->typeBool(), Constness::Const),
+                                   true, false) ) {
+                recordChange(n, x, "condition");
+                n->setCondition(context(), x);
+            }
+        }
+
+        if ( n->error()->isResolved() && ! n->error()->type()->type()->isA<type::Error>() ) {
+            if ( auto x = coerceTo(n, n->error(), builder()->qualifiedType(builder()->typeError(), Constness::Const),
+                                   true, false) ) {
+                recordChange(n, x, "error");
+                n->setError(context(), x);
+            }
+        }
+    }
+
     void operator()(expression::PendingCoerced* n) final {
         if ( auto ner = hilti::coerceExpression(builder(), n->expression(), n->type()); ner.coerced ) {
             if ( ner.nexpr )
@@ -1489,7 +1507,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(statement::Assert* n) final {
-        if ( ! n->expectException() ) {
+        if ( ! n->expectException() && ! n->expression()->type()->type()->isA<type::Result>() ) {
             if ( auto x = coerceTo(n, n->expression(),
                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
                 recordChange(n, x, "expression");

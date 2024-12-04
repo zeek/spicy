@@ -71,7 +71,7 @@ struct VisitorCtor : visitor::PreOrder {
         }
 
         if ( auto t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() ) {
-            result = builder->ctorResult(builder->expressionCtor(builder->ctorNull()));
+            result = builder->ctorResult(t->dereferencedType());
             return;
         }
 
@@ -246,6 +246,13 @@ struct VisitorCtor : visitor::PreOrder {
                 result = builder->ctorUnsignedInteger(u, t->width(), n->meta());
                 return;
             }
+        }
+    }
+
+    void operator()(ctor::String* n) final {
+        if ( dst->type()->isA<type::Error>() && (style & CoercionStyle::ContextualConversion) ) {
+            result = builder->ctorError(n->value(), n->meta());
+            return;
         }
     }
 
@@ -527,6 +534,13 @@ struct VisitorType : visitor::PreOrder {
             if ( type::same(n->dereferencedType(), dst) ) {
                 result = dst;
             }
+        }
+    }
+
+    void operator()(type::String* n) final {
+        if ( dst->type()->isA<type::Error>() && (style & CoercionStyle::ContextualConversion) ) {
+            result = dst;
+            return;
         }
     }
 

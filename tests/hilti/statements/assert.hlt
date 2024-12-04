@@ -1,7 +1,11 @@
-# @TEST-EXEC: ${HILTIC} -j true.hlt >>output 2>&1
-# @TEST-EXEC-FAIL: ${HILTIC} -j false1.hlt >>output 2>&1
-# @TEST-EXEC-FAIL: ${HILTIC} -j false2.hlt >>output 2>&1
-# @TEST-EXEC-FAIL: ${HILTIC} -j false3.hlt >>output 2>&1
+# @TEST-EXEC: hiltic -j true.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: hiltic -j false1.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: hiltic -j false2.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: hiltic -j false3.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: hiltic -j false4.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: hiltic -j false5.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: hiltic -j false6.hlt >>output 2>&1
+# @TEST-EXEC-FAIL: hiltic -j false7.hlt >>output 2>&1
 #
 # Since the output might contain compiler diagnostics for generated code, strip
 # out anything but the assertion messages under test.
@@ -15,6 +19,7 @@ module Foo {
 assert True;
 assert 4 == 4;
 assert 4 == 4 : "This is a message";
+assert 4 == 4 : error("This is a message");
 
 global iterator<bytes> i;
 assert-exception *i : "No exception!";
@@ -31,5 +36,34 @@ module Foo { assert 5 == 6 : "Test message"; }
 @TEST-END-FILE
 
 @TEST-START-FILE false3.hlt
-module Foo { assert-exception ("all good" != ""): "Test message for missing exception"; }
+module Foo { assert-exception "all good": "Test message for missing exception"; }
+@TEST-END-FILE
+
+@TEST-START-FILE false4.hlt
+module Foo { assert 5 == 6 : error("Test message"); }
+@TEST-END-FILE
+
+@TEST-START-FILE false5.hlt
+module Foo {
+global auto x = False : "original";
+assert x;
+}
+@TEST-END-FILE
+
+@TEST-START-FILE false6.hlt
+module Foo {
+global auto x = False : "original";
+assert x: "overloaded";
+}
+@TEST-END-FILE
+
+@TEST-START-FILE false7.hlt
+module Foo {
+function result<string> foo() {
+    return error("asdasd");
+}
+
+assert foo(); # produces error with above message.
+}
+
 @TEST-END-FILE

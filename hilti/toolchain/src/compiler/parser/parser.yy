@@ -35,7 +35,7 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 112
+%expect 113
 %expect-rr 209
 
 %{
@@ -248,8 +248,8 @@ static int _field_width = 0;
 %type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
 %type <hilti::QualifiedType*>                 qtype
 %type <hilti::Ctor*>                          ctor tuple struct_ list regexp map set
-%type <hilti::Expression*>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_func_default_expr
-%type <hilti::Expressions>                      opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments
+%type <hilti::Expression*>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_func_default_expr expr_no_or_error
+%type <hilti::Expressions>                      opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments case_exprs
 %type <hilti::Function*>                      function_with_body method_with_body hook_with_body function_without_body
 %type <hilti::type::function::Parameter*>     func_param
 %type <hilti::parameter::Kind>                  opt_func_param_kind
@@ -508,10 +508,10 @@ stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | TRY block try_catches
                                                  { $$ = builder->statementTry(std::move($2), std::move($3), __loc__); }
               | ASSERT expr ';'                  { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
-              | ASSERT expr ':' expr ';'         { $$ = builder->statementAssert(std::move($2), std::move($4), __loc__); }
-              | ASSERT_EXCEPTION expr ';'        { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
-              | ASSERT_EXCEPTION expr ':' expr ';'
+              | ASSERT_EXCEPTION expr_no_or_error ':' expr ';'
                                                  { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, std::move($4), __loc__); }
+              | ASSERT_EXCEPTION expr_no_or_error ';'
+                                                 { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, {}, __loc__); }
 
               | ADD expr ';'                     { auto op = $2->tryAs<hilti::expression::UnresolvedOperator>();
                                                    if ( ! (op && op->kind() == hilti::operator_::Kind::Index) )
@@ -549,8 +549,11 @@ opt_switch_cases
 switch_cases  : switch_cases switch_case         { $$ = std::move($1); $$.push_back(std::move($2)); }
               | switch_case                      { $$ = hilti::statement::switch_::Cases({std::move($1)}); }
 
-switch_case   : CASE exprs ':' block             { $$ = builder->statementSwitchCase(std::move($2), std::move($4), __loc__); }
+switch_case   : CASE case_exprs ':' block             { $$ = builder->statementSwitchCase(std::move($2), std::move($4), __loc__); }
               | DEFAULT ':' block                { $$ = builder->statementSwitchCase(hilti::statement::switch_::Default(), std::move($3), __loc__); }
+
+case_exprs    : case_exprs ',' expr_no_or_error  { $$ = std::move($1); $$.push_back(std::move($3)); }
+              | expr_no_or_error                 { $$ = hilti::Expressions{std::move($1)}; }
 
 try_catches   : try_catches try_catch            { $$ = std::move($1); $$.push_back(std::move($2)); }
               | try_catch                        { $$ = hilti::statement::try_::Catches({ std::move($1) }); }
@@ -729,6 +732,9 @@ bitfield_bit_range
 expr          : expr_0                           { $$ = std::move($1); }
               ;
 
+expr_no_or_error
+              : expr_1                           { $$ = std::move($1); }
+
 opt_exprs     : exprs                            { $$ = std::move($1); }
               | /* empty */                      { $$ = hilti::Expressions(); }
 
@@ -736,6 +742,7 @@ exprs         : exprs ',' expr                   { $$ = std::move($1); $$.push_b
               | expr                             { $$ = hilti::Expressions{std::move($1)}; }
 
 expr_0        : expr_1                           { $$ = std::move($1); }
+              | expr_1 ':' expr                  { $$ = builder->expressionConditionTest(std::move($1), std::move($3), __loc__); }
               ;
 
 expr_1        : expr_2 '=' expr_1                { $$ = builder->expressionAssign(std::move($1), std::move($3), __loc__); }
@@ -743,7 +750,7 @@ expr_1        : expr_2 '=' expr_1                { $$ = builder->expressionAssig
               | expr_2 PLUSASSIGN expr_1         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SumAssign, {std::move($1), std::move($3)}, __loc__); }
               | expr_2 TIMESASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MultipleAssign, {std::move($1), std::move($3)}, __loc__); }
               | expr_2 DIVIDEASSIGN expr_1       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DivisionAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 '?' expr_1 ':' expr_1     { $$ = builder->expressionTernary(std::move($1), std::move($3), std::move($5), __loc__); }
+              | expr_2 '?' expr_1 ':' expr       { $$ = builder->expressionTernary(std::move($1), std::move($3), std::move($5), __loc__); }
               | expr_2                           { $$ = std::move($1); }
 
 expr_2        : expr_2 OR expr_3                 { $$ = builder->expressionLogicalOr(std::move($1), std::move($3), __loc__); }
@@ -943,7 +950,7 @@ opt_map_elems : map_elems                        { $$ = std::move($1); }
 map_elems     : map_elems ',' map_elem           { $$ = std::move($1); $$.push_back(std::move($3)); }
               | map_elem                         { $$ = hilti::ctor::map::Elements(); $$.push_back(std::move($1)); }
 
-map_elem      : expr ':' expr                    { $$ = builder->ctorMapElement($1, $3, __loc__); }
+map_elem      : expr_no_or_error ':' expr        { $$ = builder->ctorMapElement($1, $3, __loc__); }
 
 
 attribute     : ATTRIBUTE                        { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )

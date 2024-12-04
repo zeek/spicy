@@ -57,9 +57,8 @@ struct Visitor : public hilti::visitor::PreOrder {
     }
 
     void operator()(type::Error* n) final {
-        if ( dst->type()->isA<type::Result>() ) {
+        if ( dst->type()->isA<type::Result>() )
             result = fmt("%s(%s)", cg->compile(dst, codegen::TypeUsage::Storage), expr);
-        }
 
         else
             logger().internalError(fmt("codegen: unexpected type coercion from error to %s", dst->type()->typename_()));
@@ -132,6 +131,11 @@ struct Visitor : public hilti::visitor::PreOrder {
         else
             logger().internalError(
                 fmt("codegen: unexpected type coercion from %s to %s", *n, dst->type()->typename_()));
+    }
+
+    void operator()(type::String* n) final {
+        if ( dst->type()->isA<type::Error>() )
+            result = fmt("%s(%s)", cg->compile(dst, codegen::TypeUsage::Storage), expr);
     }
 
     void operator()(type::Time* n) final {

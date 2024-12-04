@@ -437,8 +437,8 @@ Enforcing Parsing Constraints
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Fields may use an attribute ``&requires=EXPR`` to enforce additional
-constraints on their values. ``EXPR`` must be a boolean expression
-that will be evaluated after the parsing for the field has finished,
+constraints on their values. ``EXPR`` must yield a boolean value
+and will be evaluated after the parsing for the field has finished,
 but before any hooks execute. If ``EXPR`` returns ``False``, the
 parsing process will abort with an error, just as if the field had
 been unparsable in the first place (incl. executing any :ref:`%error
@@ -465,6 +465,28 @@ Example:
     :show-with: foo.spicy
 
 .. spicy-output:: parse-requires.spicy 2
+    :exec: printf '\010' | spicy-driver %INPUT
+    :show-with: foo.spicy
+    :expect-failure:
+
+.. versionadded:: 1.12 Custom error messages
+
+Instead of computing a boolean value directly, ``EXPR`` can also
+leverage the :ref:`condition test operator <operator_condition_test>`
+to provide a custom error message when the condition fails. Example:
+
+.. spicy-code:: parse-requires-with-error.spicy
+
+    module Test;
+
+    import spicy;
+
+    public type Foo = unit {
+        x: int8 &requires=($$ < 5 : "x is too large"); # custom error message
+        on %done { print self; }
+    };
+
+.. spicy-output:: parse-requires-with-error.spicy
     :exec: printf '\010' | spicy-driver %INPUT
     :show-with: foo.spicy
     :expect-failure:

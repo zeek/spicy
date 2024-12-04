@@ -27,6 +27,11 @@ public:
         return operands[0]->type()->type()->dereferencedType();
     }
 
+    void validate(hilti::expression::ResolvedOperator* n) const final {
+        if ( n->type()->type()->isA<type::Void>() )
+            n->addError("value of type result<void> cannot be dereferenced");
+    }
+
     HILTI_OPERATOR(hilti, result::Deref)
 };
 HILTI_OPERATOR_IMPLEMENTATION(Deref);

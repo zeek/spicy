@@ -1,3 +1,58 @@
+1.12.0-dev.210 | 2024-12-04 12:08:31 +0100
+
+  * Fix issue with type inference for `result` constructor. (Robin Sommer, Corelight)
+
+    `global x = result("foo");` would end up having type `string` instead
+    of `result<string>`.
+
+  * GH-1856: Disallow dereferencing a `result<void>` value. (Robin Sommer, Corelight)
+
+    Closes #1856.
+
+  * GH-1856: Teach `&requires` to accept condition-tests expressions. (Robin Sommer, Corelight)
+
+    This now allows creating custom error messages when a `&require`
+    condition fails. Example:
+
+        type Foo = unit {
+            x: uint8 &requires=($$ == 1 : error"Deep trouble!'");
+
+            # or, shorter:
+            y: uint8 &requires=($$ == 1 : "Deep trouble!'");
+        };
+
+    Internally, `&requires` now always wants a condition-test expression.
+    That remains transparent to the user, however, because the resolver
+    knows how to coerce a pure boolean `&requires` expression into a
+    condition test, crafting an error message that happens to look like
+    what we used to produce in the past.
+
+    Closes #1856.
+
+  * Teach `assert` to accept an `result<void>` value. (Robin Sommer, Corelight)
+
+    This allows to use the new condition-test operator with assert:
+
+        assert 3 == 4 : error"not equal"
+
+    Because of the RHS of a condition test coercing a `string` to `error`
+    automatically, this now also covers the existing syntax for `assert`.
+    So the above is now (externally and internally) the same as:
+
+        assert 3 == 4 : "not equal"
+
+  * Add new "condition-test" operator. (Robin Sommer, Corelight)
+
+    This adds a new expression operator to both HILTI and Spicy:
+
+        `COND : ERROR`
+
+    where `COND` is a boolean expression, and `ERROR` is an expression of
+    type `error`. When evaluated, the new operator yields a value of type
+    `result<void>`, which will be true if the `COND` is true, and set to
+    `ERROR` if `COND` is false. In other words, this is a short-cut to
+    both test a condition and provide an error message in case it fails.
+
 1.12.0-dev.204 | 2024-11-28 13:57:57 +0100
 
   * Spell all `Attribute::Kind` values in Pascal case. (Benjamin Bannier, Corelight)

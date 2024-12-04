@@ -611,8 +611,18 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->kind() == hilti::Attribute::Kind::Requires ) {
-            if ( auto e = n->valueAsExpression(); e && ! hilti::type::same((*e)->type()->type(), builder.typeBool()) )
-                error(fmt("&requires expression must be of type bool, but is of type %d ", *(*e)->type()), n);
+            if ( ! n->hasValue() )
+                error("&requires must provide an expression", n);
+            else {
+                auto e = *n->valueAsExpression();
+                assert(e);
+
+                if ( auto result = e->type()->type()->tryAs<hilti::type::Result>();
+                     ! result || ! result->dereferencedType()->type()->isA<hilti::type::Void>() )
+                    error(fmt("&requires expression must be of type bool or result<void>, but is of type %d",
+                              *e->type()),
+                          n);
+            }
         }
     }
 
@@ -678,8 +688,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     if ( ! e )
                         error(e.error(), n);
                     else {
-                        if ( ! hilti::type::same((*e)->type()->type(), builder()->typeBool()) )
-                            error(fmt("&requires expression must be of type bool, but is of type %s ", *(*e)->type()),
+                        if ( auto result = (*e)->type()->type()->tryAs<hilti::type::Result>();
+                             ! result || ! result->dereferencedType()->type()->isA<hilti::type::Void>() )
+                            error(fmt("&requires expression must be of type bool or result<void>, but is of type %s",
+                                      *(*e)->type()),
                                   n);
                     }
                 }

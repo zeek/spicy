@@ -31,3 +31,9 @@ import spicy;
 global err: spicy::Error;
 err = error"abc";
 assert err.description() == "abc";
+
+global x = True : error"my-error";
+assert x;
+global y = False : "my-error";
+assert !y;
+assert y.error() == error"my-error";

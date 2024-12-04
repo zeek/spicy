@@ -28,6 +28,12 @@ doesn't, an exception gets thrown that will typically abort execution.
 coercion into it. If ``MSG`` is specified, it must be a string and
 will be carried along with the exception.
 
+.. note::
+
+    Technically, the version providing a ``MSG`` isn't a separate
+    syntax but just leveraging the :ref:`condition test
+    <operator_condition_test>` operator.
+
 .. _operator_begin:
 
 ``begin``
@@ -316,3 +322,38 @@ to be a :ref:`type_string`. ``throw`` aborts parsing.
 boolean ``COND`` evaluates to true. The second form initializes a new
 local variable ``IDENT`` with ``EXPR``, and makes it available inside
 both ``COND`` and ``BLOCK``.
+
+.. _operator_condition_test:
+
+``:`` (Condition Test)
+----------------------
+
+::
+
+    COND : ERROR
+
+The *condition test* operator expects a boolean value as ``COND`` on
+the left-hand-side, and a value of type :ref:`error <type_error>` on
+the right-hand-side. It returns a value of type ``result<void>`` that
+will be set (i.e., evaluate to true) if ``COND`` is true; whereas it
+will instead have its error set to the provided error value if
+``COND`` is false.
+
+Example:
+
+::
+
+    global x: result<void> = (4 == 5 : error"4 is not 5");
+    assert !x; # x holds error result
+
+
+``ERROR`` can also be given as a string, which will automatically be
+converted to an ``error`` value. So this expression is equivalent to
+the one above:
+
+::
+
+    4 == 5 : "4 is not 5"
+
+Such condition tests are used with :ref:`assert <statement_assert>`
+and :ref:`&requires <attribute_requires>`.

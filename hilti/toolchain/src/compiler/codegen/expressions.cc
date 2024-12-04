@@ -215,6 +215,12 @@ struct Visitor : hilti::visitor::PreOrder {
         result = {cxx::ID(n->id()), Side::LHS};
     }
 
+    void operator()(expression::ConditionTest* n) final {
+        auto type = cg->compile(n->type()->type()->as<type::Result>()->dereferencedType(), codegen::TypeUsage::Storage);
+        result = fmt("(%s ? ::hilti::rt::make_result(::hilti::rt::Nothing{}) : %s)", cg->compile(n->condition()),
+                     cg->compile(n->error()));
+    }
+
     void operator()(expression::ResolvedOperator* n) final { result = cg->compile(n, lhs); }
 
     void operator()(expression::Ternary* n) final {
