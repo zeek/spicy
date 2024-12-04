@@ -6,11 +6,13 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include <hilti/ast/expression.h>
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
+#include <hilti/base/util.h>
 
 namespace hilti {
 
@@ -163,49 +165,58 @@ protected:
 
 private:
     Kind _kind;
-    static inline std::map<std::string_view, Kind> _attr_map{
-        {"&eod", Attribute::Kind::Eod},
-        {"&until", Attribute::Kind::Until},
-        {"&until-including", Attribute::Kind::UntilIncluding},
-        {"&parse-at", Attribute::Kind::ParseAt},
-        {"&parse-from", Attribute::Kind::ParseFrom},
-        {"&size", Attribute::Kind::Size},
-        {"&max-size", Attribute::Kind::MaxSize},
-        {"&ipv4", Attribute::Kind::IPv4},
-        {"&ipv6", Attribute::Kind::IPv6},
-        {"&type", Attribute::Kind::Type},
-        {"&count", Attribute::Kind::Count},
-        {"&synchronize", Attribute::Kind::Synchronize},
-        {"&default", Attribute::Kind::Default},
-        {"&anonymous", Attribute::Kind::Anonymous},
-        {"&internal", Attribute::Kind::Internal},
-        {"&optional", Attribute::Kind::Optional},
-        {"&static", Attribute::Kind::Static},
-        {"&no-emit", Attribute::Kind::NoEmit},
-        {"&on-heap", Attribute::Kind::OnHeap},
-        {"&nosub", Attribute::Kind::Nosub},
-        {"&cxxname", Attribute::Kind::Cxxname},
-        {"&have_prototype", Attribute::Kind::HavePrototype},
-        {"&priority", Attribute::Kind::Priority},
-        {"&convert", Attribute::Kind::Convert},
-        {"&while", Attribute::Kind::While},
-        {"&requires", Attribute::Kind::Requires},
-        {"&byte-order", Attribute::Kind::ByteOrder},
-        {"&bit-order", Attribute::Kind::BitOrder},
-        {"&chunked", Attribute::Kind::Chunked},
-        {"&originator", Attribute::Kind::Originator},
-        {"&responder", Attribute::Kind::Responder},
-        {"&try", Attribute::Kind::Try},
-        {"&needed-by-feature", Attribute::Kind::NeededByFeature},
-        {"&requires-type-feature", Attribute::Kind::RequiresTypeFeature},
-        {"&always-emit", Attribute::Kind::AlwaysEmit},
-        {"&transient", Attribute::Kind::Transient},
-        {"&anchor", Attribute::Kind::Anchor},
-        {"%debug", Attribute::Kind::Debug},
-        {"%error", Attribute::Kind::Error},
-        {"foreach", Attribute::Kind::Foreach},
-    };
 };
+
+namespace detail {
+constexpr util::enum_::Value<Attribute::Kind> AttributeKinds[] = {
+    {Attribute::Kind::Eod, "&eod"},
+    {Attribute::Kind::Until, "&until"},
+    {Attribute::Kind::UntilIncluding, "&until-including"},
+    {Attribute::Kind::ParseAt, "&parse-at"},
+    {Attribute::Kind::ParseFrom, "&parse-from"},
+    {Attribute::Kind::Size, "&size"},
+    {Attribute::Kind::MaxSize, "&max-size"},
+    {Attribute::Kind::IPv4, "&ipv4"},
+    {Attribute::Kind::IPv6, "&ipv6"},
+    {Attribute::Kind::Type, "&type"},
+    {Attribute::Kind::Count, "&count"},
+    {Attribute::Kind::Synchronize, "&synchronize"},
+    {Attribute::Kind::Default, "&default"},
+    {Attribute::Kind::Anonymous, "&anonymous"},
+    {Attribute::Kind::Internal, "&internal"},
+    {Attribute::Kind::Optional, "&optional"},
+    {Attribute::Kind::Static, "&static"},
+    {Attribute::Kind::NoEmit, "&no-emit"},
+    {Attribute::Kind::OnHeap, "&on-heap"},
+    {Attribute::Kind::Nosub, "&nosub"},
+    {Attribute::Kind::Cxxname, "&cxxname"},
+    {Attribute::Kind::HavePrototype, "&have_prototype"},
+    {Attribute::Kind::Priority, "&priority"},
+    {Attribute::Kind::Convert, "&convert"},
+    {Attribute::Kind::While, "&while"},
+    {Attribute::Kind::Requires, "&requires"},
+    {Attribute::Kind::ByteOrder, "&byte-order"},
+    {Attribute::Kind::BitOrder, "&bit-order"},
+    {Attribute::Kind::Chunked, "&chunked"},
+    {Attribute::Kind::Originator, "&originator"},
+    {Attribute::Kind::Responder, "&responder"},
+    {Attribute::Kind::Try, "&try"},
+    {Attribute::Kind::NeededByFeature, "&needed-by-feature"},
+    {Attribute::Kind::RequiresTypeFeature, "&requires-type-feature"},
+    {Attribute::Kind::AlwaysEmit, "&always-emit"},
+    {Attribute::Kind::Transient, "&transient"},
+    {Attribute::Kind::Anchor, "&anchor"},
+    {Attribute::Kind::Debug, "%debug"},
+    {Attribute::Kind::Error, "%error"},
+    {Attribute::Kind::Foreach, "foreach"},
+};
+}
+
+constexpr auto to_string(Attribute::Kind kind) { return util::enum_::to_string(kind, detail::AttributeKinds); }
+
+namespace attribute_kind {
+constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string(s, detail::AttributeKinds); }
+} // namespace attribute_kind
 
 /** AST node holding a set of `Attribute` nodes. */
 class AttributeSet : public Node {
