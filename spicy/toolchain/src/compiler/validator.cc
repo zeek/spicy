@@ -74,7 +74,7 @@ hilti::Result<hilti::Nothing> checkFieldAttributes(type::unit::item::Field* f) {
             // Transform attribute kinds into strings for the diagnostic
             std::vector<std::string> attr_strings(attrs_present->size());
             std::transform(attrs_present->begin(), attrs_present->end(), attr_strings.begin(),
-                           [](const hilti::Attribute::Kind kind) { return hilti::Attribute::kindToString(kind); });
+                           [](const hilti::Attribute::Kind kind) { return to_string(kind); });
             return hilti::result::Error(
                 fmt("attributes cannot be combined: %s", hilti::util::join(attr_strings, ", ")));
         }
@@ -107,7 +107,7 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
 
         std::vector<std::string> attr_strings(required_one_of.size());
         std::transform(required_one_of.begin(), required_one_of.end(), attr_strings.begin(),
-                       [](const hilti::Attribute::Kind kind) { return hilti::Attribute::kindToString(kind); });
+                       [](const hilti::Attribute::Kind kind) { return to_string(kind); });
         return hilti::result::Error(fmt("bytes field requires one of %s", hilti::util::join(attr_strings, ", ")));
     }
 
@@ -506,7 +506,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 // ok on any hook
             }
             else
-                error(fmt("unknown hook type '%s'", a->attributeName()), n);
+                error(fmt("unknown hook type '%s'", to_string(a->kind())), n);
         }
 
         if ( count > 1 )
@@ -546,7 +546,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                                         hilti::Attribute::Kind::UntilIncluding, hilti::Attribute::Kind::ParseFrom,
                                         hilti::Attribute::Kind::ParseAt, hilti::Attribute::Kind::Requires}) &&
              ! n->hasValue() )
-            error(fmt("%s must provide an expression", n->attributeName()), n);
+            error(fmt("%s must provide an expression", to_string(n->kind())), n);
 
         else if ( n->kind() == hilti::Attribute::Kind::Default ) {
             if ( get_attr_field(n) ) {
@@ -577,7 +577,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             if ( auto f = get_attr_field(n) ) {
                 if ( ! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
                         f->parseType()->type()->isA<hilti::type::Vector>()) )
-                    error(fmt("%s is only valid for fields of type bytes or vector", n->attributeName()), n);
+                    error(fmt("%s is only valid for fields of type bytes or vector", to_string(n->kind())), n);
             }
         }
 
@@ -605,7 +605,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                      e && ! hilti::type::same((*e)->type()->type(), builder.typeStreamIterator()) &&
                      ! hilti::type::same((*e)->type()->type(), builder.typeBytes()) )
                     error(fmt("%s must have an expression of type either bytes or iterator<stream>",
-                              n->attributeName()),
+                              to_string(n->kind())),
                           n);
             }
         }
@@ -667,7 +667,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             for ( const auto& a : attrs->attributes() ) {
                 if ( a->kind() == hilti::Attribute::Kind::Size || a->kind() == hilti::Attribute::Kind::MaxSize ) {
                     if ( ! a->hasValue() )
-                        error(fmt("%s must provide an expression", a->attributeName()), n);
+                        error(fmt("%s must provide an expression", to_string(a->kind())), n);
                     else {
                         auto v = visitor::PreOrder();
                         for ( auto i : visitor::range(v, a->value(), {}) )
@@ -676,7 +676,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                                 error(fmt("%s expression cannot use 'self' since it is only available after "
                                           "parsing of "
                                           "unit has started",
-                                          a->attributeName()),
+                                          to_string(a->kind())),
                                       n);
                                 break;
                             }
@@ -711,7 +711,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                         error("&convert must provide an expression", n);
                 }
                 else
-                    error(fmt("attribute %s not supported for unit types", a->attributeName()), n);
+                    error(fmt("attribute %s not supported for unit types", to_string(a->kind())), n);
             }
         }
 
@@ -857,7 +857,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                                                 hilti::Attribute::Kind::ParseFrom, hilti::Attribute::Kind::Type,
                                                 hilti::Attribute::Kind::Until, hilti::Attribute::Kind::UntilIncluding,
                                                 hilti::Attribute::Kind::While}) )
-                    error(fmt("'%s' can be used at most once", hilti::Attribute::kindToString(a)), n);
+                    error(fmt("'%s' can be used at most once", to_string(a)), n);
             }
         }
 

@@ -123,7 +123,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( auto x = n->coerceValueTo(builder(), builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                                                hilti::Constness::Const)) ) {
                 if ( *x )
-                    recordChange(n, std::string{n->attributeName()});
+                    recordChange(n, to_string(n->kind()));
             }
             else
                 n->addError(x.error());

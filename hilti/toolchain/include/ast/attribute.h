@@ -121,14 +121,8 @@ public:
         return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
     }
 
-    /** Transforms a kind into its name for diagnostics. */
-    static std::string_view kindToString(Kind kind);
-
-    /** A non-static alternative to get an attribute's string representation. */
-    std::string_view attributeName() const { return kindToString(_kind); }
-
     node::Properties properties() const final {
-        auto p = node::Properties{{"tag", std::string{attributeName()}}};
+        auto p = node::Properties{{"tag", std::string{to_string(kind())}}};
         return Node::properties() + p;
     }
 
