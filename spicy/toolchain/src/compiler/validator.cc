@@ -799,7 +799,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         if ( count_attr && (repeat && ! repeat->type()->type()->isA<hilti::type::Null>()) )
-            error("cannot have both `[..]` and &count", n);
+            error("cannot have both '[..]' and &count", n);
+
+        if ( count_attr )
+            hilti::logger().deprecated("&count=N is deprecated, prefer '[N]' syntax", count_attr->meta().location());
 
         if ( n->attributes()->has(hilti::Attribute::Kind::Convert) &&
              n->attributes()->has(hilti::Attribute::Kind::Chunked) )
