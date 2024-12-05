@@ -173,7 +173,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     void operator()(Function* n) final {
         if ( auto attrs = n->attributes() ) {
-            if ( auto prio = attrs->find(hilti::Attribute::Kind::Priority) ) {
+            if ( auto prio = attrs->find(hilti::attribute::Kind::Priority) ) {
                 if ( n->ftype()->flavor() != type::function::Flavor::Hook )
                     error("only hooks can have priorities", n);
 
@@ -263,7 +263,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( n->type()->isWildcard() ) {
             if ( auto d = n->parent(4)->tryAs<declaration::Function>() ) {
-                if ( ! d->function()->attributes()->has(hilti::Attribute::Kind::Cxxname) )
+                if ( ! d->function()->attributes()->has(hilti::attribute::Kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
                               "functions declared with &cxxname",
                               n->id()),
@@ -271,7 +271,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
 
             if ( auto d = n->parent(4)->tryAs<declaration::Type>() ) {
-                if ( ! d->attributes()->has(hilti::Attribute::Kind::Cxxname) )
+                if ( ! d->attributes()->has(hilti::attribute::Kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
                               "library structs declared with &cxxname",
                               n->id()),
@@ -281,8 +281,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( auto attrs = n->attributes() )
             for ( const auto& attr : attrs->attributes() ) {
-                if ( attr->kind() != hilti::Attribute::Kind::RequiresTypeFeature )
-                    error(fmt("invalid attribute '%s' for function parameter", attr->attributeName()), n);
+                if ( attr->kind() != hilti::attribute::Kind::RequiresTypeFeature )
+                    error(fmt("invalid attribute '%s' for function parameter", to_string(attr->kind())), n);
 
                 else {
                     if ( auto x = attr->valueAsString(); ! x )
