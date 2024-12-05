@@ -1,3 +1,7 @@
+1.12.0-dev.212 | 2024-12-05 10:31:19 +0100
+
+  * Fix doc code snippet that won't compile. (Evan Typanski, Corelight)
+
 1.12.0-dev.210 | 2024-12-04 12:08:31 +0100
 
   * Fix issue with type inference for `result` constructor. (Robin Sommer, Corelight)
