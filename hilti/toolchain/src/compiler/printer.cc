@@ -252,7 +252,7 @@ struct Printer : visitor::PreOrder {
     void operator()(ctor::RegExp* n) final {
         _out << std::make_pair(util::transform(n->value(), [](const auto& p) { return fmt("/%s/", p); }), " |");
 
-        if ( auto* attrs = n->attributes() )
+        if ( auto* attrs = n->attributes(); *attrs )
             _out << ' ' << std::make_pair(attrs->attributes(), " ");
     }
 

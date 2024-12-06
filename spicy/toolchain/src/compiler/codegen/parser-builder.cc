@@ -978,9 +978,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // Store the regexp as a global constant to avoid recomputing the
         // regexp on each runtime pass through the calling context.
-        auto re = pb->cg()->addGlobalConstant(
-            builder()->ctorRegExp(c->value(),
-                                  builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::Anchor)})));
+        auto re = pb->cg()->addGlobalConstant(builder()->ctorRegExp(c->value()));
 
         auto ncur = builder()->addTmp("ncur", state().cur);
         auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
@@ -1099,8 +1097,7 @@ struct ProductionVisitor : public production::Visitor {
 
                 auto re = pb->cg()->addGlobalConstant(
                     builder()->ctorRegExp(flattened, builder()->attributeSet(
-                                                         {builder()->attribute(hilti::Attribute::Kind::Anchor),
-                                                          builder()->attribute(hilti::Attribute::Kind::Nosub)})));
+                                                         {builder()->attribute(hilti::Attribute::Kind::Nosub)})));
                 // Create the token matcher state.
                 builder()->addLocal(ID("ncur"), state().cur);
                 auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));

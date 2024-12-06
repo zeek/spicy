@@ -141,7 +141,7 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::ctor::Coerced* n) final { dispatch(n->coercedCtor()); }
 
     void operator()(hilti::ctor::RegExp* n) final {
-        auto attrs = builder()->attributeSet({builder()->attribute(hilti::Attribute::Kind::Anchor)});
+        auto attrs = builder()->attributeSet();
 
         if ( ! state().captures )
             attrs->add(context(), builder()->attribute(hilti::Attribute::Kind::Nosub));

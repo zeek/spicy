@@ -7,7 +7,7 @@ module Foo {
 
 import hilti;
 
-global auto re1 = /1234ABCDEF*/ &nosub &anchor;
+global auto re1 = /1234ABCDEF*/ &nosub;
 global auto m1 = re1.token_matcher();
 global hilti::MatchState m2;
 
