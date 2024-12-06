@@ -379,7 +379,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             if ( n->expression() )
                 error("%random-access does not accept an argument", n);
 
-            hilti::logger().deprecated("%random-access is no longer needed and deprecated", n->meta().location());
+            deprecated("%random-access is no longer needed and deprecated", n->meta().location());
         }
 
         else if ( n->id().str() == "%filter" ) {
@@ -802,14 +802,14 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             error("cannot have both '[..]' and &count", n);
 
         if ( count_attr )
-            hilti::logger().deprecated("&count=N is deprecated, prefer '[N]' syntax", count_attr->meta().location());
+            deprecated("&count=N is deprecated, prefer '[N]' syntax", count_attr->meta().location());
 
         if ( n->attributes()->has(hilti::Attribute::Kind::Convert) &&
              n->attributes()->has(hilti::Attribute::Kind::Chunked) )
-            hilti::logger().deprecated(
+            deprecated(
                 "usage of &convert on &chunked field is ill-defined and deprecated; support will be "
                 "removed in future versions",
-                n);
+                n->meta().location());
 
         if ( n->sinks().size() && ! n->parseType()->type()->isA<hilti::type::Bytes>() )
             error("only a bytes field can have sinks attached", n);
@@ -867,9 +867,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( auto t = n->itemType()->type()->tryAs<hilti::type::Bitfield>() ) {
             for ( const auto& b : t->bits() ) {
                 if ( b->attributes()->has(hilti::Attribute::Kind::BitOrder) )
-                    hilti::logger().deprecated(fmt("&bit-order on bitfield item '%s' has no effect and is deprecated",
-                                                   b->id()),
-                                               b->meta().location());
+                    deprecated(fmt("&bit-order on bitfield item '%s' has no effect and is deprecated", b->id()),
+                               b->meta().location());
             }
         }
 

@@ -60,6 +60,10 @@
 using namespace hilti;
 using util::fmt;
 
+void hilti::validator::VisitorMixIn::deprecated(const std::string& msg, const Location& l) const {
+    hilti::logger().deprecated(msg, l);
+}
+
 void validator::VisitorMixIn::error(std::string msg, Node* n, node::ErrorPriority priority) {
     n->addError(std::move(msg), n->location(), priority);
     ++_errors;
