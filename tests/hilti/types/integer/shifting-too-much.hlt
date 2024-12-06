@@ -1,0 +1,53 @@
+# @TEST-EXEC-FAIL: hiltic -jd %INPUT 2>>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-EXEC: hiltic -jd runtime-fail-1.hlt 2>>stderr; grep -q hilti::rt::Overflow stderr
+# @TEST-EXEC: hiltic -jd runtime-fail-2.hlt 2>>stderr; grep -q hilti::rt::Overflow stderr
+#
+# @TEST-DOC: Check that we catch shifting integers beyond their width, both at compile-time and runtime.
+
+module Test {
+
+uint8(0)<<8;
+uint16(0)<<16;
+uint32(0)<<32;
+uint64(0)<<64;
+
+int8(0)<<8;
+int16(0)<<16;
+int32(0)<<32;
+int64(0)<<64;
+
+uint8(0)>>8;
+uint16(0)>>16;
+uint32(0)>>32;
+uint64(0)>>64;
+
+int8(0)>>8;
+int16(0)>>16;
+int32(0)>>32;
+int64(0)>>64;
+
+}
+
+# @TEST-START-FILE runtime-fail-1.hlt
+
+module Test {
+
+global x = 128;
+uint64(0)<<x; # caught at runtime by SafeInt as an overflow
+
+}
+
+# @TEST-END-FILE
+
+# @TEST-START-FILE runtime-fail-2.hlt
+
+module Test {
+
+global x = 8;
+int8(0)>>x; # caught at runtime by SafeInt as an overflow
+
+}
+
+# @TEST-END-FILE
