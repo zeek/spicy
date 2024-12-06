@@ -5,18 +5,18 @@ The Spicy domain for Sphinx.
 """
 
 import os.path
+import subprocess
+
 from docutils import nodes
 from docutils.parsers.rst import directives
-from sphinx.util.nodes import make_refnode, logging
-from sphinx.util.console import darkgreen, red
-from sphinx.roles import XRefRole
-from sphinx.locale import _
-from sphinx.domains import Domain, ObjType
-from sphinx.directives.code import CodeBlock, LiteralInclude
+from sphinx import addnodes, version_info
 from sphinx.directives import ObjectDescription
-from sphinx import version_info
-from sphinx import addnodes
-import subprocess
+from sphinx.directives.code import CodeBlock, LiteralInclude
+from sphinx.domains import Domain, ObjType
+from sphinx.locale import _
+from sphinx.roles import XRefRole
+from sphinx.util.console import darkgreen, red
+from sphinx.util.nodes import logging, make_refnode
 
 
 def setup(Sphinx):
@@ -50,9 +50,11 @@ class SpicyGeneric(ObjectDescription):
             if key in objects:
                 self.env.warn(
                     self.env.docname,
-                    f"duplicate description of {self.objtype} {name}, "
-                    + "other instance in "
-                    + self.env.doc2path(objects[key]),
+                    (
+                        f"duplicate description of {self.objtype} {name}, ",
+                        "other instance in ",
+                        self.env.doc2path(objects[key]),
+                    ),
                     self.lineno,
                 )
             objects[key] = self.env.docname
@@ -285,7 +287,7 @@ class SpicyCode(CodeBlock):
             old = ""
 
         if text != old:
-            self.message("updating %s" % darkgreen(self.file[0]))
+            self.message(f"updating {darkgreen(self.file[0])}")
             f = open(self.file[1], "w")
             f.write(
                 "# Automatically generated; edit in Sphinx source code, not here.\n"
@@ -344,14 +346,11 @@ class SpicyOutput(LiteralInclude):
             if "prefix" not in options:
                 self.prefix = None
 
-        self.content_hash = (
-            "# Automatically generated; do not edit. -- <HASH> %s/%s/%s"
-            % (self.exec_, self.show_as, self.expect_failure)
-        )
+        self.content_hash = f"# Automatically generated; do not edit. -- <HASH> {self.exec_}/{self.show_as}/{self.expect_failure}"
 
         source_orig = args[1][0]
         file = "_" + source_orig
-        index = "_%s" % args[1][1] if len(args[1]) > 1 else ""
+        index = f"_{args[1][1]}" if len(args[1]) > 1 else ""
         output = f"examples/{file}.output{index}"
         args = list(args)
         args[1] = [output]
@@ -360,7 +359,7 @@ class SpicyOutput(LiteralInclude):
         super(LiteralInclude, self).__init__(*args, **kwargs)
 
         source = self.env.relfn2path(os.path.join("examples/", file))[0]
-        self.update(source_orig, source, source + ".output%s" % index, self.exec_)
+        self.update(source_orig, source, source + f".output{index}", self.exec_)
 
     def run(self):
         literal = LiteralInclude.run(self)
@@ -389,9 +388,7 @@ class SpicyOutput(LiteralInclude):
         # Abort if that's not the case.
         if "CI" in os.environ:
             self.error(
-                "error during CI: {} is not up to date in repository".format(
-                    destination
-                )
+                f"error during CI: {destination} is not up to date in repository"
             )
             return
 
@@ -406,7 +403,7 @@ class SpicyOutput(LiteralInclude):
             one_cmd = one_cmd.strip()
 
             one_cmd = one_cmd.replace("%INPUT", source)
-            self.message("executing %s" % darkgreen(one_cmd))
+            self.message(f"executing {darkgreen(one_cmd)}")
 
             try:
                 output = subprocess.check_output(
@@ -437,7 +434,7 @@ class SpicyOutput(LiteralInclude):
                     out.write(b"\n")
 
                 if show_as:
-                    one_cmd = "# %s\n" % show_as[0].strip()
+                    one_cmd = f"# {show_as[0].strip()}\n"
                     one_cmd = one_cmd.replace(
                         "%INPUT", self.show_with if self.show_with else source_orig
                     )
