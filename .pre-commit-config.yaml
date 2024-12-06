@@ -103,6 +103,6 @@ repos:
   rev: v3.19.0
   hooks:
   - id: pyupgrade
-    args: ["--py37-plus"]
+    args: ["--py39-plus"]
 
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)

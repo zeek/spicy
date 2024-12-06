@@ -14,7 +14,7 @@ import re
 import sys
 import textwrap
 
-from typing import Dict, List, Pattern, Set
+from re import Pattern
 
 
 def fatalError(message: str):
@@ -365,8 +365,8 @@ try:
 except ValueError as e:
     fatalError(f"cannot parse input: {e}")
 
-operators: Dict[str, List[Operator]] = {}
-methods: Dict[str, List[Method]] = {}
+operators: dict[str, list[Operator]] = {}
+methods: dict[str, list[Method]] = {}
 
 for op in meta:
     if op["kind"] == "MemberCall":
@@ -416,7 +416,7 @@ for ns in sorted(keys):
     # example is the vector's index operators for constant and non-constant
     # instances, respectively. Other duplications are coming from joining
     # namespaces for integers.
-    already_recorded: Set[str] = set()
+    already_recorded: set[str] = set()
 
     def print_unique(out, s):
         if s not in already_recorded:
