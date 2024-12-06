@@ -8,12 +8,11 @@ import argparse
 import copy
 import filecmp
 import json
-import os.path
 import os
+import os.path
 import re
 import sys
 import textwrap
-
 from re import Pattern
 
 

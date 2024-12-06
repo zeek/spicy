@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
 import re
+import sys
 
 for f in sys.argv[1:]:
     with open(f) as input:

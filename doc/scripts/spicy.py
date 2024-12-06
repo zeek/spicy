@@ -5,18 +5,18 @@ The Spicy domain for Sphinx.
 """
 
 import os.path
+import subprocess
+
 from docutils import nodes
 from docutils.parsers.rst import directives
-from sphinx.util.nodes import make_refnode, logging
-from sphinx.util.console import darkgreen, red
-from sphinx.roles import XRefRole
-from sphinx.locale import _
-from sphinx.domains import Domain, ObjType
-from sphinx.directives.code import CodeBlock, LiteralInclude
+from sphinx import addnodes, version_info
 from sphinx.directives import ObjectDescription
-from sphinx import version_info
-from sphinx import addnodes
-import subprocess
+from sphinx.directives.code import CodeBlock, LiteralInclude
+from sphinx.domains import Domain, ObjType
+from sphinx.locale import _
+from sphinx.roles import XRefRole
+from sphinx.util.console import darkgreen, red
+from sphinx.util.nodes import logging, make_refnode
 
 
 def setup(Sphinx):

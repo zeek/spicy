@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Helper scripts to identify baselines without matching test"""
 
-import subprocess
 import os
 import re
+import subprocess
 import sys
 
 TEST_DIR = os.path.realpath(__file__ + "/../../")
