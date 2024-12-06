@@ -1,3 +1,26 @@
+1.12.0-dev.216 | 2024-12-06 10:34:31 +0100
+
+  * Introduce `deprecated` helper function in Spicy validator. (Benjamin Bannier, Corelight)
+
+  * Add test for using both `[]` and `&count`. (Benjamin Bannier, Corelight)
+
+  * GH-1938: Deprecate `&count` attribute. (Benjamin Bannier, Corelight)
+
+    The preferred way to indicate how many elements should be parsed for a
+    vector has been vector syntax over `&count` for a long time, e.g.,
+
+    ```
+    type X = unit {
+        : uint8[] &count=42; # AVOID.
+        : uint8[42];         # PREFER.
+    };
+    ```
+
+    With this patch `&count` is now deprecated and we emit a warning. We
+    will remove support for `&count` in a future release.
+
+    Closes #1938.
+
 1.12.0-dev.212 | 2024-12-05 10:31:19 +0100
 
   * Fix doc code snippet that won't compile. (Evan Typanski, Corelight)

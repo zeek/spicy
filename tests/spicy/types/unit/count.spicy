@@ -1,4 +1,4 @@
-# @TEST-EXEC: printf '\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\02' | spicy-driver %INPUT >output
+# @TEST-EXEC: printf '\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\02' | spicy-driver %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 
 # `count` accepts unsigned arguments.

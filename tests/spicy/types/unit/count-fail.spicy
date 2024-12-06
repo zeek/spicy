@@ -25,3 +25,10 @@ public type U3 = unit() {
   a: uint16;
   b: int64[] &count = 0.5;
 };
+
+# @TEST-START-NEXT
+module testing;
+
+public type U4 = unit () {
+  a: int64[47] &count = 11;
+};

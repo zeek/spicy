@@ -22,6 +22,9 @@ public:
     /** Returns the AST context associated with the validator. */
     auto context() const { return _builder->context(); }
 
+    /* Emit a deprecation warning with the given node. */
+    void deprecated(const std::string& msg, const Location& l) const;
+
     /* Record error with given node. */
     void error(std::string msg, Node* n, node::ErrorPriority priority = node::ErrorPriority::Normal);
 
