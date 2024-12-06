@@ -56,7 +56,7 @@ public:
     void usage();
 
     bool opt_json = false;
-    bool opt_list_parsers = false;
+    int opt_list_parsers = 0;
     bool opt_enable_print = false;
     std::string opt_file = "/dev/stdin";
     std::string opt_parser;
@@ -77,7 +77,7 @@ void SpicyDump::usage() {
            "\n"
            "  -d | --debug                    Include debug instrumentation into generated code.\n"
            "  -f | --file <path>              Read input from <path> instead of stdin.\n"
-           "  -l | --list-parsers             List available parsers and exit.\n"
+           "  -l | --list-parsers             List available parsers and exit; use twice to include aliases.\n"
            "  -p | --parser <name>            Use parser <name> to process input. Only needed if more than one parser "
            "is available.\n"
            "  -v | --version                  Print version information.\n"
@@ -185,7 +185,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
                 output_options.include_offsets = true;
                 break;
 
-            case 'l': opt_list_parsers = true; break;
+            case 'l': ++opt_list_parsers; break;
 
             case 'p': opt_parser = optarg; break;
 
@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
             fatalError(x.error().description());
 
         if ( driver.opt_list_parsers )
-            driver.listParsers(std::cout);
+            driver.listParsers(std::cout, driver.opt_list_parsers > 1);
 
         else {
             auto parser = driver.lookupParser(driver.opt_parser);

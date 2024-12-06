@@ -17,6 +17,7 @@
 #include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/vector.h>
 
+#include <spicy/rt/driver.h>
 #include <spicy/rt/filter.h>
 #include <spicy/rt/init.h>
 #include <spicy/rt/parser.h>
@@ -194,6 +195,35 @@ TEST_CASE("registerParser") {
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
     }
+}
+
+TEST_CASE("registerParserAlias") {
+    done(); // ensure no parsers are registered yet
+    REQUIRE(detail::globalState()->parsers.empty());
+
+    Parser parser;
+    parser.name = "parser";
+    parser.is_public = true;
+    detail::registerParser(parser, "xyz", UnitRef<int>());
+    detail::__global_state->runtime_is_initialized = false;
+    init(); // populates the alias table
+
+    Driver driver;
+    auto parser_ = driver.lookupParser("parser");
+    CHECK(parser_);
+
+    CHECK(registerParserAlias("parser", "alias1"));
+    CHECK_EQ(driver.lookupParser("alias1"), parser_);
+    CHECK_EQ(driver.lookupParser("alias1%orig"), parser_);
+    CHECK_EQ(driver.lookupParser("alias1%resp"), parser_);
+
+    CHECK(registerParserAlias("parser", "alias2%orig"));
+    CHECK_EQ(driver.lookupParser("alias2%orig"), parser_);
+    CHECK_FALSE(driver.lookupParser("alias2%resp"));
+    CHECK_FALSE(driver.lookupParser("alias2"));
+
+    CHECK_FALSE(registerParserAlias("does-not-exist", "alias3"));
+    CHECK_FALSE(registerParserAlias("parser", ""));
 }
 
 TEST_CASE("waitForEod") {
