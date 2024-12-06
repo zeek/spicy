@@ -10,14 +10,12 @@ TEST_DIR = os.path.realpath(__file__ + "/../../")
 
 if __name__ == "__main__":
     try:
-        available_tests = set(
-            map(
-                lambda x: x.decode("utf-8"),
-                subprocess.check_output(
-                    ["btest", "-l", "-c", TEST_DIR + "/btest.cfg"]
-                ).splitlines(),
-            )
-        )
+        available_tests = {
+            x.decode("utf-8")
+            for x in subprocess.check_output(
+                ["btest", "-l", "-c", TEST_DIR + "/btest.cfg"]
+            ).splitlines()
+        }
 
         test_baselines = set(os.listdir(TEST_DIR + "/Baseline"))
     except subprocess.CalledProcessError:
@@ -30,11 +28,9 @@ if __name__ == "__main__":
         sys.exit(0)
 
     stray_tests = sorted(
-        list(
-            filter(
-                lambda cand: not re.match("\\d$", cand.split("-")[-1]),
-                test_baselines.difference(available_tests),
-            )
+        filter(
+            lambda cand: not re.match("\\d$", cand.split("-")[-1]),
+            test_baselines.difference(available_tests),
         )
     )
 

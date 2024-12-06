@@ -8,5 +8,6 @@ exclude = [
 
 [lint]
 select = [
+    "C4",
     "UP",
 ]
