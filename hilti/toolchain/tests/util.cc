@@ -8,7 +8,7 @@
 #include <doctest/doctest.h>
 
 #include <cstdlib>
-#include <sstream>
+#include <vector>
 
 #include <hilti/rt/filesystem.h>
 
@@ -24,7 +24,7 @@ constexpr hilti::util::enum_::Value<Foo> values[] = {
     {Foo::CCC, "ccc"},
 };
 
-constexpr auto from_string(const std::string_view& s) { return hilti::util::enum_::from_string<Foo>(s, values); }
+constexpr static auto from_string(const std::string_view& s) { return hilti::util::enum_::from_string<Foo>(s, values); }
 
 TEST_SUITE_BEGIN("util");
 
@@ -87,6 +87,22 @@ TEST_CASE("removeDuplicates") {
     CHECK_EQ(hilti::util::removeDuplicates(std::vector<int>{}), std::vector<int>{});
     CHECK_EQ(hilti::util::removeDuplicates(std::vector<int>{4, 3, 2, 1}), std::vector<int>{4, 3, 2, 1});
     CHECK_EQ(hilti::util::removeDuplicates(std::vector<int>{7, 8, 3, 8, 3, 5, 0, 7}), std::vector<int>{7, 8, 3, 5, 0});
+}
+
+TEST_CASE("split_shell_unsafe") {
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"()"), std::vector<std::string>{});
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"(1)"), std::vector<std::string>{"1"});
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"(1 2 3)"), std::vector<std::string>{"1", "2", "3"});
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"('1 2 3')"), std::vector<std::string>{"1 2 3"});
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"('1 2' 3)"), std::vector<std::string>{"1 2", "3"});
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"("1 2" 3)"), std::vector<std::string>{"1 2", "3"});
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"("\"1" 2\" 3)"), std::vector<std::string>{R"("1)", R"(2")", "3"});
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"(\\"1 2\\" 3)"), std::vector<std::string>{R"(\1 2\)", "3"});
+
+    // Command substitutions are supported.
+    CHECK_EQ(hilti::util::split_shell_unsafe(R"(1 `true`)"), std::vector<std::string>{R"(1)"});
+
+    CHECK(! hilti::util::split_shell_unsafe(R"($SHELL_VARIABLE_WHICH_IS_EXTREMELY_LIKELY_TO_BE_UNDEFINED)").hasValue());
 }
 
 TEST_SUITE_END();

@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <utf8proc/utf8proc.h>
+#include <wordexp.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -65,6 +66,23 @@ std::pair<std::string, std::string> util::rsplit1(std::string s, const std::stri
         return std::make_pair(s.substr(0, i), s.substr(i + delim.size()));
 
     return std::make_pair("", std::move(s));
+}
+
+Result<std::vector<std::string>> util::split_shell_unsafe(const std::string& s) {
+    // On FreeBSD running `wordexp` on an empty string errors with
+    // `WRDE_SYNTAX`; construct the result by hand.
+    if ( s.empty() )
+        return {std::vector<std::string>{}};
+
+    wordexp_t we;
+
+    if ( wordexp(s.c_str(), &we, WRDE_UNDEF) != 0 )
+        return result::Error("could not split string");
+
+    std::vector<std::string> result{we.we_wordv, we.we_wordv + we.we_wordc};
+    wordfree(&we);
+
+    return {std::move(result)};
 }
 
 std::string util::replace(const std::string& s, const std::string& o, const std::string& n) {

@@ -144,6 +144,20 @@ extern std::pair<std::string, std::string> split1(std::string s, const std::stri
 extern std::pair<std::string, std::string> rsplit1(std::string s, const std::string& delim = " ");
 
 /**
+ * Perform shell-style string splitting.
+ *
+ * The input string will be passed to a shell for splitting so that variable
+ * expansion and command substitution should be supported. If an unknown
+ * variable is encountered an error should be returned.
+ *
+ * This function is marked unsafe since the string is passed verbatim to a
+ * shell, allowing e.g., execution of arbitrary commands in its context.
+ *
+ * Returns a vector of substrings, or an error.
+ */
+Result<std::vector<std::string>> split_shell_unsafe(const std::string& s);
+
+/**
  * Returns a subrange of a vector, specified through zero-based indices. If
  * indices are out of range, they are cut back to start/end of input.
  *
