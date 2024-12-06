@@ -214,7 +214,7 @@ class Operator:
             sig = Operators[self.kind](self)
         except KeyError:
             print(
-                "error: " f"operator {self.kind} not supported by spicy-doc-to-rst yet",
+                f"error: operator {self.kind} not supported by spicy-doc-to-rst yet",
                 file=sys.stderr,
             )
             sys.exit(1)

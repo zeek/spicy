@@ -50,9 +50,11 @@ class SpicyGeneric(ObjectDescription):
             if key in objects:
                 self.env.warn(
                     self.env.docname,
-                    f"duplicate description of {self.objtype} {name}, "
-                    + "other instance in "
-                    + self.env.doc2path(objects[key]),
+                    (
+                        f"duplicate description of {self.objtype} {name}, ",
+                        "other instance in ",
+                        self.env.doc2path(objects[key]),
+                    ),
                     self.lineno,
                 )
             objects[key] = self.env.docname
