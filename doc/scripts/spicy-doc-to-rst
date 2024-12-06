@@ -58,10 +58,7 @@ def binary(token):
 
 
 Operators = {
-    "Add": lambda op: "add <sp> {}[{}]".format(
-        op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False),
-    ),
+    "Add": lambda op: f"add <sp> {op.operands[0].rst(in_operator=True)}[{op.operands[1].rst(in_operator=True, markup=False)}]",
     "Begin": call("begin"),
     "BitAnd": binary("&"),
     "BitOr": binary("|"),
@@ -75,13 +72,8 @@ Operators = {
         TypedType.sub("\\1", op.operands[1].rst(in_operator=True, markup=False)),
         op.operands[0].rst(in_operator=True, markup=False),
     ),
-    "CustomAssign": lambda op: "{} = {}".format(
-        op.operands[0].rst(in_operator=True), op.operands[1].rst(in_operator=True)
-    ),
-    "Delete": lambda op: "delete <sp> {}[{}]".format(
-        op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False),
-    ),
+    "CustomAssign": lambda op: f"{op.operands[0].rst(in_operator=True)} = {op.operands[1].rst(in_operator=True)}",
+    "Delete": lambda op: f"delete <sp> {op.operands[0].rst(in_operator=True)}[{op.operands[1].rst(in_operator=True, markup=False)}]",
     "Deref": unary("*"),
     "DecrPostfix": unary("", "--"),
     "DecrPrefix": unary("++"),
@@ -98,15 +90,8 @@ Operators = {
     "HasMember": binary("?."),
     "TryMember": binary(".?"),
     "Member": binary("."),
-    "Index": lambda op: "{}[{}]".format(
-        op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False),
-    ),
-    "IndexAssign": lambda op: "{}[{}] = {}".format(
-        op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False),
-        op.operands[2].rst(in_operator=True, markup=False),
-    ),
+    "Index": lambda op: f"{op.operands[0].rst(in_operator=True)}[{op.operands[1].rst(in_operator=True, markup=False)}]",
+    "IndexAssign": lambda op: f"{op.operands[0].rst(in_operator=True)}[{op.operands[1].rst(in_operator=True, markup=False)}] = {op.operands[2].rst(in_operator=True, markup=False)}",
     "IncrPostfix": unary("", "++"),
     "IncrPrefix": unary("++"),
     "LogicalAnd": binary("&&"),
@@ -121,10 +106,7 @@ Operators = {
     "Pack": keyword("pack"),
     "Power": binary("**"),
     "Unpack": keyword("unpack"),
-    "Unset": lambda op: "unset <sp> {}.{}".format(
-        op.operands[0].rst(in_operator=True),
-        op.operands[1].rst(in_operator=True, markup=False),
-    ),
+    "Unset": lambda op: f"unset <sp> {op.operands[0].rst(in_operator=True)}.{op.operands[1].rst(in_operator=True, markup=False)}",
     "SignNeg": unary("-"),
     "Size": unary("|", "|"),
     "ShiftLeft": binary("<<"),
@@ -239,12 +221,9 @@ class Operator:
             sys.exit(1)
 
         result = fmtType(self.rtype)
-        return ".. spicy:operator:: " "{ns}::{kind} {result} {sig}\n\n{doc}".format(
-            ns=self.namespace,
-            kind=self.kind,
-            result=result,
-            sig=sig,
-            doc=fmtDoc(self.doc),
+        return (
+            ".. spicy:operator:: "
+            f"{self.namespace}::{self.kind} {result} {sig}\n\n{fmtDoc(self.doc)}"
         )
 
     def __lt__(self, other):
@@ -278,15 +257,7 @@ class Method:
         result = fmtType(self.rtype)
         sig = (
             ".. spicy:method:: "
-            "{ns}::{id} {self} {id} {const} {result} ({args})\n\n{doc}".format(
-                ns=self.namespace,
-                result=result,
-                self=self_,
-                const=const,
-                id=self.id,
-                args=args,
-                doc=fmtDoc(self.doc),
-            )
+            f"{self.namespace}::{self.id} {self_} {self.id} {const} {result} ({args})\n\n{fmtDoc(self.doc)}"
         )
         return sig
 

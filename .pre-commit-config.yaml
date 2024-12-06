@@ -99,10 +99,4 @@ repos:
     args: [ --fix ]
   - id: ruff-format
 
-- repo: https://github.com/asottile/pyupgrade
-  rev: v3.19.0
-  hooks:
-  - id: pyupgrade
-    args: ["--py39-plus"]
-
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)
