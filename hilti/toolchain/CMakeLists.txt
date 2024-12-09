@@ -12,6 +12,9 @@ flex_target(scanner_hilti src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner
 bison_target_pp(parser_hilti src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc DEFINES_FILE
                 ${AUTOGEN_CC}/__parser.h)
 
+set_source_files_properties(${FLEX_scanner_hilti_OUTPUTS} PROPERTIES SKIP_LINTING ON)
+set_source_files_properties(${BISON_parser_hilti_OUTPUTS} PROPERTIES SKIP_LINTING ON)
+
 bison_source(src/compiler/plugin.cc ${AUTOGEN_CC})
 bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
 bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
