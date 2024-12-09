@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -321,8 +322,12 @@ hilti::Result<Nothing> JIT::_compile() {
             }
         }
 
-        if ( auto flags = hilti::rt::getenv("HILTI_CXX_FLAGS") )
-            args.push_back(*flags);
+        if ( auto flags_ = hilti::rt::getenv("HILTI_CXX_FLAGS") ) {
+            if ( auto flags = util::split_shell_unsafe(*flags_) )
+                args.insert(args.end(), std::make_move_iterator(flags->begin()), std::make_move_iterator(flags->end()));
+            else
+                return {util::fmt("invalid HILTI_CXX_FLAGS '%s': %s", *flags_, flags.error().description())};
+        }
 
         // We explicitly create the object file in the temporary directory.
         // This ensures that we use a temp path for object files created for
