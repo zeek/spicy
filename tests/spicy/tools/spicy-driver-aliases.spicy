@@ -1,16 +1,13 @@
 # @TEST-EXEC: spicyc -d -j -o test.hlto %INPUT
-# @TEST-EXEC: spicy-driver -ll %INPUT >>output
-# @TEST-EXEC: HILTI_DEBUG=spicy-driver:libspicy spicy-driver -F test.dat -U test.hlto >>output
+# @TEST-EXEC: spicy-driver -ll -P 80/tcp=Test::X -P application/foo=Test::X -P 1234/tcp%orig=Test::X %INPUT >>output
+# @TEST-EXEC: HILTI_DEBUG=spicy-driver:libspicy spicy-driver -F test.dat test.hlto -P 80/tcp=Test::X -P application/foo=Test::X >>output
 # @TEST-EXEC: btest-diff output
-# @TEST-EXEC: grep -q "^# user_time" .stderr
-# @TEST-EXEC: test "$BUILD" = "release" || TEST_DIFF_CANONIFIER=${SCRIPTS}/canonify-spicy-debug btest-diff .stderr
+#
+# @TEST-DOC: Exercise parser aliases for spicy-driver batch processing.
 
 module Test;
 
 public type X = unit {
-    %port = 80/tcp;
-    %mime-type = "application/foo";
-
     data: bytes &eod;
 
     on %done { print self; }
