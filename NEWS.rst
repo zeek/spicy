@@ -72,11 +72,82 @@ Version 1.12 (in progress)
 
         on Test::b(msg: string) %error { ... }
 
+ - GH-1856: We added support for specifying a dedicated error message for ``requires`` failures.
+
+   This now allows creating custom error messages when a ``&require``
+   condition fails. Example:
+
+   .. code-block:: spicy
+
+       type Foo = unit {
+           x: uint8 &requires=($$ == 1 : error"Deep trouble!'");
+
+           # or, shorter:
+           y: uint8 &requires=($$ == 1 : "Deep trouble!'");
+       };
+
+   This is powered by a new condition test expression ``COND : MESSAGE``.
+
+ - We reworked C++ code generation so now many parsers should compile faster.
+   This is accomplished by both improved dependency tracking when emitting C++
+   code for a module as well as by a couple of new peephole optimization passes
+   which additionally reduced the emitted code.
+
 .. rubric:: Changed Functionality
+
+  * Add CMAKE_CXX_FLAGS to HILTI_CONFIG_RUNTIME_LD_FLAGS.
+  * Speed up compilation of many parsers by streamlining generated C++ code.
+  * Add ``starts_with`` ``split``, ``split1``, ``lower`` and ``upper`` methods to ``string``.
+  * GH-1874: Add new library function ``spicy::bytes_to_mac``.
+  * Optimize ``spicy::bytes_to_hexstring`` and ``spicy::bytes_to_mac``.
+  * Improve validation of attributes so incompatible or invalid attributes should be rejected more reliably.
+  * Optimize parsing for ``bytes`` of fixed size as well as literals.
+  * Add a couple of peephole optimizations to reduce emitted C++ code.
+  * GH-1790: Provide proper error message when trying access an unknown unit field.
+  * GH-1792: Prioritize error message reporting unknown field.
+  * GH-1803: Fix namespacing of ``hilti`` IDs in Spicy-side diagnostic output.
+  * GH-1895: Do no longer escape backslashes when printing strings or bytes.
+  * GH-1857: Support ``&requires`` for individual vector items.
+  * GH-1859: Improve error message when a unit parameter is used as a field.
+  * GH-1898: Disallow attributes on "type aliases".
+  * GH-1938: Deprecate ``&count`` attribute.
 
 .. rubric:: Bug fixes
 
+  * GH-1815: Disallow expanding limited ``View``'s again with ``limit``.
+  * Fix to_uint(ByteOrder) for empty byte ranges.
+  * Fix undefined shifts of 32bit integer in toInt().
+  * GH-1817: Prevent null ptr dereference when looking on nodes without ``Scope``.
+  * Fix use of move'd from variable.
+  * GH-1823: Don't qualify magic linker symbols with C++ namespace.
+  * Fix diagnostics seen when compiling with GCC.
+  * GH-1852: Fix ``skip`` with units.
+  * GH-1832: Fail for vectors with bytes but no stop.
+  * GH-1860: Fix parsing for vectors of literals.
+  * GH-1847: Fix resynchronization issue with trimmed input.
+  * GH-1844: Fix nested look-ahead parsing.
+  * GH-1842: Fix when input redirection becomes visible.
+  * GH-1846: Fix bug with captures groups.
+  * GH-1875: Fix potential nullptr dereference when comparing streams.
+  * GH-1867: Fix infinite loops with recursive types.
+  * GH-1868: Associate source code locations with current fiber instead of current thread.
+  * GH-1871: Fix ``&max-size`` on unit containing a ``switch``.
+  * GH-1791: Fix usage of ``&convert`` with unit's requiring parameters.
+  * GH-1858: Fix the literals parsers not following coercions.
+  * GH-1893: Encompass child node's location in parent.
+  * GH-1919: Validate that sets are sortable.
+  * GH-1918: Fix potential segfault with stream iterators.
+  * GH-1856: Disallow dereferencing a ``result<void>`` value.
+  * Fix issue with type inference for ``result`` constructor.
+
 .. rubric:: Documentation
+
+  * Redo error handling docs
+  * Document ``continue`` statements.
+  * GH-1063: Document arguments to ``new`` operator.
+  * Updates <bytes>.to_int() <bytes>.to_uint() documentation.
+  * GH-1914: Make ``$$`` documentation more precise.
+  * Fix doc code snippet that won't compile.
 
 Version 1.11
 ============
