@@ -1,3 +1,17 @@
+1.12.0-dev.223 | 2024-12-09 11:54:03 +0100
+
+  * Fix ruff 'ISC' lints. (Benjamin Bannier, Corelight)
+
+  * Fix ruff 'I' lints. (Benjamin Bannier, Corelight)
+
+  * Fix ruff 'C4' lints. (Benjamin Bannier, Corelight)
+
+  * Migrate Python linting to ruff. (Benjamin Bannier, Corelight)
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
+  * Upgrade Python to 3.9 with pyupgrade. (Benjamin Bannier, Corelight)
+
 1.12.0-dev.216 | 2024-12-06 10:34:31 +0100
 
   * Introduce `deprecated` helper function in Spicy validator. (Benjamin Bannier, Corelight)

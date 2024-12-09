@@ -13,8 +13,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-import sys
 import subprocess
+import sys
 
 sys.path.insert(0, os.path.abspath("scripts"))
 
@@ -54,7 +54,7 @@ todo_include_todos = True
 
 # Extlinks extension
 extlinks = {
-    "repo": ("https://github.com/zeek/spicy/blob/v%s/%%s" % release, "#%s"),
+    "repo": (f"https://github.com/zeek/spicy/blob/v{release}/%s", "#%s"),
     "issue": ("https://github.com/zeek/spicy/issues/%s", "#%s"),
     "pr": ("https://github.com/zeek/spicy/pulls/%s", "#%s"),
     "zeek": ("https://docs.zeek.org/en/master/%s", "%s"),
@@ -72,16 +72,15 @@ extlinks = {
         "%s",
     ),
     "package-release-tgz": (
-        "https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.tar.gz"
-        % release,
+        f"https://github.com/zeek/spicy/releases/download/v{release}/spicy_%s.tar.gz",
         "%s",
     ),
     "package-release-rpm": (
-        "https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.rpm" % release,
+        f"https://github.com/zeek/spicy/releases/download/v{release}/spicy_%s.rpm",
         "%s",
     ),
     "package-release-deb": (
-        "https://github.com/zeek/spicy/releases/download/v%s/spicy_%%s.deb" % release,
+        f"https://github.com/zeek/spicy/releases/download/v{release}/spicy_%s.deb",
         "%s",
     ),
 }
