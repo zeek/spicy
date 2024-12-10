@@ -354,6 +354,15 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     void operator()(ctor::Null* n) final {}
 
+    void operator()(ctor::RegExp* n) final {
+        if ( n->attributes()->has(hilti::Attribute::Kind::Anchor) )
+            // This can end up reporting the same location multiple times,
+            // which seems fine. Otherwise we'd need to explicitly track what's
+            // reported already.
+            deprecated("&anchor is deprecated; it already had no visible effect and can just be removed",
+                       n->meta().location());
+    }
+
     void operator()(ctor::SignedInteger* n) final {
         auto [min, max] = util::signedIntegerRange(n->width());
 

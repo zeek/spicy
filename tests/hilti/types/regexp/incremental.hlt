@@ -5,7 +5,7 @@ module Foo {
 
 import hilti;
 
-global auto re1 = /1234ABCDEF*/ &nosub &anchor;
+global auto re1 = /1234ABCDEF*/ &nosub;
 global auto m = re1.token_matcher();
 
 function void feed(bytes data, bool is_final = False) {

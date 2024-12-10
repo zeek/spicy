@@ -486,11 +486,7 @@ differences and extensions:
 - ``{#<number>}`` associates a numerical ID with a regular expression
   (useful for set matching).
 
-Regular expression constants support two optional attributes:
-
-``&anchor``
-    Implicitly anchor the expression, meaning it must match at the
-    beginning of the data.
+Regular expression constants support the following optional attribute:
 
 ``&nosub``
     Compile without support for capturing subexpressions, which makes
