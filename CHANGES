@@ -1,3 +1,55 @@
+1.12.0-dev.238 | 2024-12-10 14:53:29 +0100
+
+  * Update tutorial to use spicy-driver's batch mode. (Robin Sommer, Corelight)
+
+  * Allow defining parser alias names when running spicy-driver. (Robin Sommer, Corelight)
+
+    ``--parser-alias <alias>=<name>`` now makes the parser of name
+    `<name>` accessible under an additional name `<alias>`. The option can
+    be used multiple times.
+
+    This is particularly useful when using input batches: by adding an
+    alias of the form `PORT/PROTOCOL` (e.g., `--parser-alias
+    80/tcp=MyHTTP::Message`), this allows to define a parser to use on for
+    connections on that port (because the batch processing interprets any
+    ports in the trace as strings and tries to lookup a parser of the
+    corresponding name). Adding `%orig` or `%resp` to the alias name
+    limits it to the corresponding direction (e.g., ``--parser-alias
+    80/tcp%orig=MyHTTP::Request``).
+
+    See the `spicy-driver` documentation for more details on how to use
+    this with batches.
+
+  * Let `spicy-{dump,driver}` print out parser alias names with ``-ll``. (Robin Sommer, Corelight)
+
+    ``-list-parsers`` prints the direct names of all known parsers.
+    However, internally, we sometimes register additional alias names that
+    can also be used to lookup a parser (e.g., if there's a `%mime-type`
+    or `%port` property). If one specifies ``-list-parsers`` twice now,
+    those aliases are printed as well.
+  * GH-1829: Catch integer shifts exceeding the width of the operand. (Robin Sommer, Corelight)
+
+    For constants, we now reject such shifts at compile time. At runtime,
+    we catch them by having the forked version of `SafeInt` throw an
+    overflow exception.
+
+  * Change `SafeInt` submodule to a fork including a fix. (Robin Sommer, Corelight)
+
+    We now use a fork of `SafeInt` that includes
+    https://github.com/dcleblanc/SafeInt/pull/64 (as well as general bump
+    to upstream `master`).
+
+  * Add `max-lines` option to Sphinx' `spicy-output` directive. (Robin Sommer, Corelight)
+
+    This limits the lines of output shown to the given number, adding a
+    `...` marker if truncated.
+
+  * GH-1928: Deprecate `&anchor` with regular expression constructors. (Robin Sommer, Corelight)
+
+  * Update auto-generated architecture diagram. (Robin Sommer, Corelight)
+
+    Looks like some dependency upgrade changed the content slightly.
+
 1.12.0-dev.226 | 2024-12-09 17:28:27 +0100
 
   * Fix `HILTI_CXX_FLAGS` for when multiple flags are passed. (Benjamin Bannier, Corelight)
