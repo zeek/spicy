@@ -18,3 +18,10 @@ on Test1::x(msg: string, x: bool) %error { # wrong parameter number
 
 on Test1::x %error foreach { # cannot use  both
 }
+
+public type Multiple = unit {
+    x1: uint8[] %error %error {}
+    x2: uint8[] foreach foreach {}
+    x3: uint8[] %error %error foreach {}
+    x4: uint8[] %error %error foreach foreach {}
+};
