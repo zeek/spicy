@@ -68,8 +68,10 @@ foreach (lib hilti-rt hilti-rt-debug)
 
     add_dependencies(${lib}-objects fiber)
     target_include_directories(
-        ${lib}-objects PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
-                               ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include)
+        ${lib}-objects
+        PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
+                ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include
+                ${PROJECT_SOURCE_DIR}/3rdparty/utfcpp/source)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
