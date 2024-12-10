@@ -1,41 +1,43 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #include <utf8proc/utf8proc.h>
+#include <utfcpp/source/utf8.h>
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/string.h>
 
 using namespace hilti::rt;
 
-integer::safe<uint64_t> string::size(const std::string& s, DecodeErrorStrategy errors) {
-    auto p = reinterpret_cast<const unsigned char*>(s.data());
-    auto e = p + s.size();
+integer::safe<uint64_t> string::size(const std::string& s, unicode::DecodeErrorStrategy errors) {
+    auto p = s.begin();
+    auto e = s.end();
 
     uint64_t len = 0;
 
     while ( p < e ) {
-        utf8proc_int32_t cp;
-        auto n = utf8proc_iterate(p, e - p, &cp);
-
-        if ( n < 0 ) {
+        try {
+            // `utf8::next` is for iterating UTF-8 strings.
+            utf8::next(p, s.end());
+            ++len;
+        } catch ( const utf8::exception& ) {
             switch ( errors.value() ) {
-                case DecodeErrorStrategy::IGNORE: break;
-                case DecodeErrorStrategy::REPLACE: ++len; break;
-                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                case unicode::DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                case unicode::DecodeErrorStrategy::REPLACE: {
+                    ++len;
+                }
+                    [[fallthrough]];
+                case unicode::DecodeErrorStrategy::IGNORE: {
+                    p = std::next(p);
+                    break;
+                }
             }
-
-            p += 1;
-            continue;
         }
-
-        ++len;
-        p += n;
     }
 
     return len;
 }
 
-std::string string::upper(std::string_view s, DecodeErrorStrategy errors) {
+std::string string::upper(std::string_view s, unicode::DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -48,9 +50,9 @@ std::string string::upper(std::string_view s, DecodeErrorStrategy errors) {
 
         if ( n < 0 ) {
             switch ( errors.value() ) {
-                case DecodeErrorStrategy::IGNORE: break;
-                case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
-                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                case unicode::DecodeErrorStrategy::IGNORE: break;
+                case unicode::DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
+                case unicode::DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
             }
 
             p += 1;
@@ -65,7 +67,7 @@ std::string string::upper(std::string_view s, DecodeErrorStrategy errors) {
     return rval;
 }
 
-std::string string::lower(std::string_view s, DecodeErrorStrategy errors) {
+std::string string::lower(std::string_view s, unicode::DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -78,9 +80,9 @@ std::string string::lower(std::string_view s, DecodeErrorStrategy errors) {
 
         if ( n < 0 ) {
             switch ( errors.value() ) {
-                case DecodeErrorStrategy::IGNORE: break;
-                case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
-                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                case unicode::DecodeErrorStrategy::IGNORE: break;
+                case unicode::DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
+                case unicode::DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
             }
 
             p += 1;
