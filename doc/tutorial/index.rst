@@ -97,7 +97,7 @@ Let's walk through:
       :ref:`&byte-order <attribute_order>` attribute).
 
     - ``[4]`` The filename is a null-terminated byte sequence, which
-      we can express directly as such in Spicy: The ``filename`` field
+      we can express directly as such in Spicy: the ``filename`` field
       will accumulate bytes until a null byte is encountered. Note
       that even though the specification of a Read Request shows the
       ``0`` as separate element inside the packet, we don't create a
@@ -124,34 +124,35 @@ executable parser and then feeds it with the data it is receiving on
 standard input. The output of ``spicy-driver`` is the result of our
 ``print`` statement executing at the end.
 
-What would we do with a more complex protocol where we cannot easily use
-``printf`` to create some dummy payload? We would probably have access
-to some protocol traffic in pcap traces, however we can't just feed
-those into ``spicy-driver`` directly as they will contain all the
+.. _testing-with-batch-mode:
+
+What would we do with a more complex protocol where we cannot easily
+use ``printf`` to create some dummy payload? We would probably have
+access to some protocol traffic in pcap traces, however we can't just
+feed those into ``spicy-driver`` directly as they will contain all the
 other network layers as well that our grammar does not handle (e.g.,
 IP and UDP). One way to test with a trace would be proceeding with
 Zeek integration at this point, so that we could let Zeek strip off
-the base layers and then feed our parser only the TFTP payload.
-However, during development it is often easier at first to extract
-application-layer protocol data from the traces ourselves, write it
-into files, and then feed those files into ``spicy-driver``.
+the lower layers and then feed our parser only the TFTP application
+payload. However, during development it is often easier to avoid
+Zeek's additional complexity at first, and stay with ``spicy-driver``
+until the protocol parsing is mostly in place.
 
-We can leverage Zeek for doing this extraction into files. If we had a
-TCP-based protocol, doing so would be trivial because Zeek has that
-functionality built in: When you run Zeek on a pcap trace and add
-``Conn::default_extract=T`` to the command line, it will write out all
-the TCP streams into individual files. As TFTP is UDP-based, however,
-we will use a custom script, :download:`udp-contents.zeek
-<examples/udp-contents.zeek>`. When you run Zeek with that script on
-trace, you will get one file per UDP packet each containing the
-corresponding application-layer UDP payload (make sure to use this
-with small traces only ...).
+To facilitate that, ``spicy-driver`` offers a :ref:`batch mode
+<spicy-driver-batch>`, which allows feeding connection-based,
+bi-directional packet payloads into a parser, just as Zeek (or any
+other network application) would do after stripping off the lower
+layers. In this mode, ``spicy-driver`` reads input from a
+specially-crafted batch file that retains the packet structure of the
+underlying network communication as well as (just) the payload data
+that we want parse.
 
-Let's use the UDP script with :download:`tftp_rrq.pcap
-<examples/tftp_rrq.pcap>`, a tiny TFTP trace containing a single file
-download from `Wireshark's pcap archive
-<https://wiki.wireshark.org/SampleCaptures#tftp>`_. ``tcpdump`` shows
-us that the first packet indeed contains a Read Request:
+To create such a batch input file, we can leverage Zeek itself: it
+comes with a corresponding script that turns any PCAP trace into a
+``spicy-driver`` batch file. Let's use that script with a tiny TFTP
+trace, ``tftp_rrq.pcap``, borrowed from `Wireshark's pcap archive
+<https://wiki.wireshark.org/SampleCaptures#tftp>`_. First, we confirm
+with ``tcpdump`` that the trace contains a single file download:
 
 .. code::
 
@@ -161,28 +162,61 @@ us that the first packet indeed contains a Read Request:
     1367411052.081790 IP 192.168.0.253.50618 > 192.168.0.10.3445: UDP, length 4
     [...]
 
-Running Zeek on the trace with the ``udp-contents`` scripts produces
-the expected content files:
+We now run Zeek on that trace to perform the batch conversion:
 
 .. code::
 
-    # zeek -r tftp_rrq.pcap udp-contents
-    # ls udp-contents.orig.*
-    udp-contents.orig.1367411051.972852.dat
-    udp-contents.orig.1367411052.077243.dat
-    udp-contents.orig.1367411052.086300.dat
-    udp-contents.orig.1367411052.088995.dat
-    udp-contents.orig.1367411052.091675.dat
-    [...]
+    # zeek -r tftp_rrq.pcap policy/frameworks/spicy/record-spicy-batch SpicyBatch::filename=tftp_rrq.dat
+    tracking [orig_h=192.168.0.253, orig_p=50618/udp, resp_h=192.168.0.10, resp_p=69/udp]
+    tracking [orig_h=192.168.0.10, orig_p=3445/udp, resp_h=192.168.0.253, resp_p=50618/udp]
+    recorded 2 sessions total
+    output in tftp_rrq.dat
 
-Per the timestamps included with the names, the first file is the one
-containing our Read Request. We can pass that into our Spicy parser:
+This leaves a new ``spicy-driver`` batch file in ``tftp_rrq.dat`` (if
+we had left off the ``SpicyBatch::filename`` argument, the default
+output name is ``batch.dat``).
+
+Now we can pass that batch file into ``spicy-driver``:
 
 .. spicy-output:: rrq.spicy 2
-    :exec: cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest tftp.spicy
 
-That gives us an easy way to test our TFTP parser.
+The one additional piece here is that we need to tell ``spicy-driver``
+on which packets inside the batch file to deploy our parser (because,
+in principle, the batch could contain many different protocols
+distributed over independent connections). We achieve that through
+``-P 69/udp%orig=TFTP::ReadRequest``, which specifies that we want to
+use the ``TFTP::ReadRequest`` on all originator-side UDP packets for
+any connections on port ``69/udp``. See :ref:`spicy-driver
+documentation <spicy-driver-batch>` for more on that syntax.
+
+.. note::
+
+    .. versionadded:: 1.13 parser aliases
+
+    That option ``-P`` (aka ``--parser-alias``) is a feature added to
+    Spicy in version 1.13. An alternative to using that option---which
+    works with older Spicy version as well---is providing a
+    :ref:`%port <unit_meta_data>` property inside the
+    ``TFTP::ReadRequest`` unit; the two mechanisms have the
+    same effect.
+
+Altogether, this gives us an easy way to test our TFTP parser with
+actual packet data, without needing to switch to full Zeek integration
+yet.
+
+The batch mode  of ``spicy-driver`` is generally worth keeping in mind
+while developing a new analyzer: even if the eventual goal is to
+create a Zeek analyzer, it is usually easier to work with
+``spicy-driver`` for as long as possible before transitioning to the
+Zeek-side glue layer later. The same observation applies to debugging:
+tracking down why a parser isn't quite doing what you would expect is
+normally quicker with Zeek out of the picture. You can even *craft*
+input for ``spicy-driver`` manually if you need to test specific edge
+cases, for example by simply editing the payload data inside an
+existing batch file, tweaking it the way you need it.
+
 
 Generalizing to More Packet Types
 ---------------------------------
@@ -206,8 +240,22 @@ just the opcode:
     };
 
 .. spicy-output:: tftp-1.spicy
-    :exec: cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :max-lines: 6
+
+As you see, we now use ``-P 69/udp=TFTP::Packet`` because we no longer
+need to worry about the direction: from now on, the same ``Packet``
+unit handles both originator and responder sides. However, because the
+way TFTP works, we need an additional parser mapping for the data
+connection that's part of the PCAP as well, because that happens on a
+different port: ``-P 50618/udp=TFTP::Packet``. The handling of such
+dynamic, non-standard ports is something that normally the host
+application (e.g., Zeek) would handle on its side. With
+``spicy-driver``, we need to do it manually ourselves.
+
+With this in place we now, in fact, see output for all the packets
+that the original PCAP contains.
 
 Next we create a separate type to parse the fields that are specific
 to a Read Request:
@@ -246,12 +294,18 @@ parse it as a sub-unit:
     # %hide-end%
 
 .. spicy-output:: tftp-2.spicy
-    :exec: cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :max-lines: 6
 
 However, this does not help us much yet: it still resembles our
 original version in that it continues to hardcode one specific packet
-type. But the direction of using sub-units is promising, we only need
+type. Indeed, we are now getting error messages for packets of other
+opcodes because we told ``spicy-driver`` to use ``Packet`` for them as
+well, even though our current definition of ``Packet`` cannot actually
+parse them successfully.
+
+But the direction of using sub-units remains promising, we only need
 to instruct the parser to leverage the ``opcode`` to decide what
 particular sub-unit to use. Spicy provides a ``switch`` construct for
 such dispatching:
@@ -278,24 +332,20 @@ such dispatching:
     # %hide-end%
 
 .. spicy-output:: tftp-3.spicy 1
-    :exec: cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :max-lines: 6
 
 The ``self`` keyword always refers to the unit instance currently
 being parsed, and we use that to get to the opcode for switching on.
-If it is ``1``, we descend down into a Read Request.
+If it is ``1``, we descend down into a Read Request. We are still
+getting error messages for other opcodes, but now ``spicy-driver`` is
+no longer complaining that it can't parse it them as a Read Request.
+Instead, we're rightfully being told that our ``switch`` statement
+doesn't provide the alternatives for other opcodes yet.
 
-What happens if it is something other than ``1``? Let's try it with
-the first server-side packet, which contains a TFTP acknowledgment
-(opcode 4):
-
-.. spicy-output:: tftp-3.spicy 2
-    :exec: cat tutorial/examples/udp-contents.resp.1367411052.081790.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.resp.1367411052.081790.dat | spicy-driver tftp.spicy
-    :expect-failure:
-
-Of course it is now easy to add another unit type for handling such
-acknowledgments:
+Of course, it is now easy to add more unit types for handling other
+opcodes. Let's start with acknowledgments:
 
 .. spicy-code:: tftp-4.spicy
 
@@ -326,17 +376,20 @@ acknowledgments:
     # %hide-end%
 
 .. spicy-output:: tftp-4.spicy
-    :exec: cat tutorial/examples/udp-contents.resp.1367411052.081790.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.resp.1367411052.081790.dat | spicy-driver tftp.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :max-lines: 6
 
-As expected, the output shows that our TFTP parser now descended into
-the ``ack`` sub-unit while leaving ``rrq`` unset.
+As expected, the output shows that for opcode 4, our TFTP parser now
+descends into the ``ack`` field while leaving ``rrq`` unset. Now
+opcode 3 is the only one remaining in our input that is not handled
+yet, hence the remaining error messages.
 
-TFTP defines three more opcodes for other packet types: ``2`` is a
-Write Request, ``3`` is file data being sent, and ``5`` is an error.
-We will add these to our grammar as well, so that we get the whole
-protocol covered (please refer to the RFC for specifics of each packet
-type):
+In total, TFTP defines three more opcodes for other packet types:
+``2`` is a Write Request, ``3`` is file data being sent, and ``5`` is
+an error. Let's add these to our grammar as well, so that we get the
+whole protocol covered (please refer to the RFC for specifics of each
+opcode type):
 
 .. spicy-code:: tftp-complete-1.spicy
 
@@ -380,6 +433,12 @@ type):
         msg:  bytes &until=b"\x00";
     };
 
+.. spicy-output:: tftp-complete-1.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :max-lines: 6
+
+Now we are finally error-free.
 
 This grammar works well already, but we can improve it a bit more.
 
@@ -480,8 +539,9 @@ and hence can be used with our updated switch statement. You can see
 the new type for ``opcode`` in the output as well:
 
 .. spicy-output:: tftp-enum.spicy
-    :exec: cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :max-lines: 6
 
 See :ref:`attribute_convert` for more on ``&convert``, and
 :ref:`type_enum` for more on the ``enum`` type.
@@ -564,8 +624,9 @@ statement, so that we can see how that boolean becomes available
 through the ``is_read`` unit parameter:
 
 .. spicy-output:: tftp-unified-request.spicy
-    :exec: cat tutorial/examples/udp-contents.orig.1367411051.972852.dat | spicy-driver %INPUT
-    :show-as: cat udp-contents.orig.1367411051.972852.dat | spicy-driver tftp.spicy
+    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :max-lines: 6
 
 Admittedly, the unit parameter is almost overkill in this
 example, but it proves very useful in more complex grammars where one

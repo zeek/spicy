@@ -37,6 +37,33 @@ void spicy::rt::decline_input(const std::string& reason) {
         (*hook)(reason);
 }
 
+hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const std::string& parser,
+                                                                     const std::string& alias) {
+    if ( parser.empty() )
+        return hilti::rt::result::Error("empty parser name");
+
+    if ( alias.empty() )
+        return hilti::rt::result::Error("empty parser alias name");
+
+    for ( const auto& p : globalState()->parsers ) {
+        if ( ! p->is_public )
+            continue;
+
+        if ( p->name == parser ) {
+            globalState()->parsers_by_name[alias].emplace_back(p);
+
+            if ( alias.find('%') == std::string::npos ) {
+                globalState()->parsers_by_name[alias + "%orig"].emplace_back(p);
+                globalState()->parsers_by_name[alias + "%resp"].emplace_back(p);
+            }
+
+            return hilti::rt::Nothing();
+        }
+    }
+
+    return hilti::rt::result::Error(hilti::rt::fmt("unknown parser '%s'", parser));
+}
+
 void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
                               const hilti::rt::stream::View& cur, int64_t lahead,

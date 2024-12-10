@@ -124,9 +124,15 @@ if a unit defines ``%port = 80/tcp``, you can use ``spicy-driver -p
 tagged with an ``&originator`` or ``&responder`` attribute,
 respectively, will be considered. If a unit defines ``%mime-type =
 application/test``, you can select it through ``spicy-driver -p
-application/test``. (Note that there must be exactly one unit with a
-matching property for this all to work, otherwise you'll get an error
-message.)
+application/test``.
+
+.. versionadded:: 1.13 Verbose mode for ``list-parsers``
+
+Internally, these port-based arguments for ``-p`` are alias names for
+existing parsers. You can see all aliases by running ``spicy-driver``
+with ``-ll`` (i.e., ``--list-parsers`` twice).
+
+.. _spicy-driver-batch:
 
 Batch input
 -----------
@@ -160,12 +166,26 @@ into a Spicy batch file::
 You will now have a file ``batch.dat`` that you can use with
 ``spicy-driver -F batch.data ...``.
 
-The batch created by the Zeek script will select parsers for the
+By default, the batch created by the Zeek script will select parsers for the
 contained sessions through well-known ports. That means your units
 need to have a ``%port`` property matching the responder port of the
 sessions you want them to parse. So for the HTTP trace above, our
 Spicy source code would need to provide a public unit with property
 ``%port = 80/tcp;``.
+
+.. versionadded:: 1.13 ``--parser-alias``
+
+Alternatively, you can run ``spicy-driver`` with ``--parser-alias
+PORT=PARSER`` to tell it explicitly which parsers to use for
+connections on a particular port. Here, ``PORT`` must be of the form
+``<port>/<protocol>`` (e.g., ``80/tcp``), and ``PARSER`` is the name
+of the parser to use (as shown by ``spicy-driver --list-parsers``). By
+default, the parser will be applied to both directions of all
+connections that are using that responder port. You can limit the
+direction by appending either ``%orig`` or ``%resp`` to ``PORT``
+(e.g., ``80/tcp%orig`` to attach the parser only to originator-side
+flows). ``--parser-alias`` can be used multiple times to specify
+further mappings.
 
 In case you want to create batches yourself, we document the batch
 format in the following. A batch needs to start with a line

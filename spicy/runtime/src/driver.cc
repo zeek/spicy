@@ -101,7 +101,7 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
                      num_stacks, cached_stacks, max_stacks, max_stack_size));
 }
 
-Result<Nothing> Driver::listParsers(std::ostream& out) {
+Result<Nothing> Driver::listParsers(std::ostream& out, bool verbose) {
     if ( ! hilti::rt::isInitialized() )
         return Error("runtime not initialized");
 
@@ -129,6 +129,27 @@ Result<Nothing> Driver::listParsers(std::ostream& out) {
             ports = fmt(" %s", p->ports);
 
         out << fmt("  %15s %s%s%s\n", p->name, description, ports, mime_types);
+    }
+
+    if ( verbose ) {
+        bool first = true;
+        for ( const auto& [name, parsers] : spicy::rt::parserNames() ) {
+            std::set<std::string_view> aliases;
+
+            for ( const auto* p : parsers ) {
+                if ( p->name != name )
+                    aliases.insert(p->name);
+            }
+
+            if ( ! aliases.empty() ) {
+                if ( first ) {
+                    out << "\nAvailable alias names:\n\n";
+                    first = false;
+                }
+
+                out << fmt("  %15s -> %s\n", name, hilti::rt::join(aliases, ", "));
+            }
+        }
     }
 
     out << "\n";
@@ -476,7 +497,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, cid, context); x != flows.end() )
                 resp_state = &x->second;
 
-            if ( ! (orig_state && resp_state) ) {
+            if ( ! (orig_state || resp_state) ) {
                 // cannot get parsers, ignore
                 flows.erase(orig_id);
                 flows.erase(resp_id);
@@ -559,13 +580,15 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
             if ( auto s = connections.find(cid); s != connections.end() ) {
                 try {
-                    s->second.orig_state->finish();
+                    if ( s->second.orig_state )
+                        s->second.orig_state->finish();
                 } catch ( const hilti::rt::Exception& e ) {
                     std::cout << hilti::rt::fmt("error for ID %s: %s\n", s->second.orig_id, e.what());
                 }
 
                 try {
-                    s->second.resp_state->finish();
+                    if ( s->second.resp_state )
+                        s->second.resp_state->finish();
                 } catch ( const hilti::rt::Exception& e ) {
                     std::cout << hilti::rt::fmt("error for ID %s: %s\n", s->second.resp_id, e.what());
                 }

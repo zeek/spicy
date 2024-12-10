@@ -309,6 +309,18 @@ inline auto parsers() {
     return public_parsers;
 }
 
+/** Returns all available public parser names and aliases. */
+inline const auto& parserNames() { return detail::globalState()->parsers_by_name; }
+
+/**
+ * Records an alias name for an already registered parser. The alias
+ * name will then be recognized by `Driver::lookupParser()`.
+ *
+ * @param parser name of the parser to register the alias for
+ * @param alias alias name to register the parser under
+ * @return success if the alias was registered successfully, or a suitable error message if it failed
+ */
+hilti::rt::Result<hilti::rt::Nothing> registerParserAlias(const std::string& parser, const std::string& alias);
 
 /**
  * Exception thrown by generated parser code when an parsing failed.

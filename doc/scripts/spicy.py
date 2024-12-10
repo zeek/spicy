@@ -326,6 +326,7 @@ class SpicyOutput(LiteralInclude):
         "show-as": directives.unchanged,
         "show-with": directives.unchanged,
         "expect-failure": bool,
+        "max-lines": int,
     }
 
     def __init__(self, *args, **kwargs):
@@ -336,6 +337,7 @@ class SpicyOutput(LiteralInclude):
         self.show_as = ""
         self.show_with = ""
         self.expect_failure = "expect-failure" in options
+        self.max_lines = options.get("max-lines", 0)
 
         if "show-with" in options:
             self.show_with = options["show-with"]
@@ -424,6 +426,13 @@ class SpicyOutput(LiteralInclude):
                     all_good = False
 
             if all_good:
+                if self.max_lines > 0:
+                    lines = output.split(b"\n")
+                    if len(lines) > self.max_lines:
+                        output = (
+                            b"\n".join(lines[: self.max_lines - 1]) + "\n[⋯]\n".encode()
+                        )
+
                 out = None
                 if first:
                     out = open(destination, "wb")
