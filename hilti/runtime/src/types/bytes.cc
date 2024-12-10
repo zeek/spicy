@@ -46,9 +46,9 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const c
     }
 }
 
-Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors) {
+Bytes::Bytes(std::string s, unicode::Charset cs, unicode::DecodeErrorStrategy errors) {
     switch ( cs.value() ) {
-        case bytes::Charset::UTF8: {
+        case unicode::Charset::UTF8: {
             // Data supposedly is already in UTF-8, but let's validate it.
             std::string t;
 
@@ -61,9 +61,10 @@ Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors) {
 
                 if ( n < 0 ) {
                     switch ( errors.value() ) {
-                        case DecodeErrorStrategy::IGNORE: break;
-                        case DecodeErrorStrategy::REPLACE: t += "\ufffd"; break;
-                        case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                        case unicode::DecodeErrorStrategy::IGNORE: break;
+                        case unicode::DecodeErrorStrategy::REPLACE: t += "\ufffd"; break;
+                        case unicode::DecodeErrorStrategy::STRICT:
+                            throw RuntimeError("illegal UTF8 sequence in string");
                     }
 
                     p += 1;
@@ -78,16 +79,17 @@ Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors) {
             return;
         }
 
-        case bytes::Charset::ASCII: {
+        case unicode::Charset::ASCII: {
             std::string t;
             for ( const auto& c : s ) {
                 if ( c >= 32 && c < 0x7f )
                     t += static_cast<char>(c);
                 else {
                     switch ( errors.value() ) {
-                        case DecodeErrorStrategy::IGNORE: break;
-                        case DecodeErrorStrategy::REPLACE: t += '?'; break;
-                        case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal ASCII character in string");
+                        case unicode::DecodeErrorStrategy::IGNORE: break;
+                        case unicode::DecodeErrorStrategy::REPLACE: t += '?'; break;
+                        case unicode::DecodeErrorStrategy::STRICT:
+                            throw RuntimeError("illegal ASCII character in string");
                     }
                 }
             }
@@ -96,28 +98,29 @@ Bytes::Bytes(std::string s, bytes::Charset cs, DecodeErrorStrategy errors) {
             return;
         }
 
-        case bytes::Charset::Undef: throw RuntimeError("unknown character set for encoding");
+        case unicode::Charset::Undef: throw RuntimeError("unknown character set for encoding");
     }
 
     cannot_be_reached();
 }
 
-std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) const {
+std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) const {
     switch ( cs.value() ) {
-        case bytes::Charset::UTF8:
+        case unicode::Charset::UTF8:
             // Data is already in UTF-8, but let's validate it.
             return Bytes(str(), cs, errors).str();
 
-        case bytes::Charset::ASCII: {
+        case unicode::Charset::ASCII: {
             std::string s;
             for ( auto c : str() ) {
                 if ( c >= 32 && c < 0x7f )
                     s += c;
                 else {
                     switch ( errors.value() ) {
-                        case DecodeErrorStrategy::IGNORE: break;
-                        case DecodeErrorStrategy::REPLACE: s += "?"; break;
-                        case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal ASCII character in string");
+                        case unicode::DecodeErrorStrategy::IGNORE: break;
+                        case unicode::DecodeErrorStrategy::REPLACE: s += "?"; break;
+                        case unicode::DecodeErrorStrategy::STRICT:
+                            throw RuntimeError("illegal ASCII character in string");
                     }
                 }
             }
@@ -125,7 +128,7 @@ std::string Bytes::decode(bytes::Charset cs, bytes::DecodeErrorStrategy errors) 
             return s;
         }
 
-        case bytes::Charset::Undef: throw RuntimeError("unknown character set for decoding");
+        case unicode::Charset::Undef: throw RuntimeError("unknown character set for decoding");
     }
 
     cannot_be_reached();
@@ -247,26 +250,6 @@ void Bytes::append(const stream::View& view) {
 namespace hilti::rt::detail::adl {
 std::string to_string(const Bytes& x, tag /*unused*/) {
     return fmt("b\"%s\"", escapeBytes(x.str(), render_style::Bytes::EscapeQuotes));
-}
-
-std::string to_string(const bytes::Charset& x, tag /*unused*/) {
-    switch ( x.value() ) {
-        case bytes::Charset::ASCII: return "Charset::ASCII";
-        case bytes::Charset::UTF8: return "Charset::UTF8";
-        case bytes::Charset::Undef: return "Charset::Undef";
-    }
-
-    cannot_be_reached();
-}
-
-std::string to_string(const bytes::DecodeErrorStrategy& x, tag /*unused*/) {
-    switch ( x.value() ) {
-        case bytes::DecodeErrorStrategy::IGNORE: return "DecodeErrorStrategy::IGNORE";
-        case bytes::DecodeErrorStrategy::REPLACE: return "DecodeErrorStrategy::REPLACE";
-        case bytes::DecodeErrorStrategy::STRICT: return "DecodeErrorStrategy::STRICT";
-    }
-
-    cannot_be_reached();
 }
 
 std::string to_string(const bytes::Side& x, tag /*unused*/) {

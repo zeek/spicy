@@ -18,6 +18,7 @@
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
+#include <hilti/rt/unicode.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -37,12 +38,6 @@ HILTI_RT_ENUM_WITH_DEFAULT(Side, Left,
                            Right, // right side
                            Both   // left and right side
 );
-
-/** For bytes decoding, which character set to use. */
-HILTI_RT_ENUM(Charset, Undef, UTF8, ASCII);
-
-/** For bytes decoding, how to handle decoding errors. */
-using DecodeErrorStrategy = string::DecodeErrorStrategy;
 
 /**
  * Safe bytes iterator traversing the content of an instance.
@@ -265,7 +260,8 @@ public:
      * @param errors how to handle errors when decoding the data
      * @return bytes instances encoding *s* in character set *cs*
      */
-    Bytes(std::string s, bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE);
+    Bytes(std::string s, unicode::Charset cs,
+          unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
     Bytes(Base&& str) : Base(std::move(str)) {}
     Bytes(const Bytes& xs) : Base(xs) {}
@@ -442,8 +438,8 @@ public:
      * @param errors how to handle errors when decoding the data
      * @return UTF8 string
      */
-    std::string decode(bytes::Charset cs,
-                       bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const;
+    std::string decode(unicode::Charset cs,
+                       unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const;
 
     /** Returns true if the data begins with a given, other bytes instance. */
     bool startsWith(const Bytes& b) const { return hilti::rt::startsWith(*this, b); }
@@ -457,7 +453,8 @@ public:
      * @param errors how to handle errors when decoding/encoding the data
      * @return an upper case version of the instance
      */
-    Bytes upper(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const {
+    Bytes upper(unicode::Charset cs,
+                unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const {
         return Bytes(hilti::rt::string::upper(decode(cs, errors), errors), cs, errors);
     }
 
@@ -468,7 +465,8 @@ public:
      * @param errors how to handle errors when decoding/encoding the data
      * @return a lower case version of the instance
      */
-    Bytes lower(bytes::Charset cs, bytes::DecodeErrorStrategy errors = bytes::DecodeErrorStrategy::REPLACE) const {
+    Bytes lower(unicode::Charset cs,
+                unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const {
         return Bytes(hilti::rt::string::lower(decode(cs, errors), errors), cs, errors);
     }
 
@@ -685,8 +683,6 @@ inline std::string detail::to_string_for_print<Bytes>(const Bytes& x) {
 namespace detail::adl {
 std::string to_string(const Bytes& x, adl::tag /*unused*/);
 std::string to_string(const bytes::Side& x, adl::tag /*unused*/);
-std::string to_string(const bytes::Charset& x, adl::tag /*unused*/);
-std::string to_string(const bytes::DecodeErrorStrategy& x, adl::tag /*unused*/);
 } // namespace detail::adl
 
 } // namespace hilti::rt

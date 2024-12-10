@@ -7,7 +7,7 @@
 
 using namespace hilti::rt;
 
-integer::safe<uint64_t> string::size(const std::string& s, DecodeErrorStrategy errors) {
+integer::safe<uint64_t> string::size(const std::string& s, unicode::DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -19,9 +19,9 @@ integer::safe<uint64_t> string::size(const std::string& s, DecodeErrorStrategy e
 
         if ( n < 0 ) {
             switch ( errors.value() ) {
-                case DecodeErrorStrategy::IGNORE: break;
-                case DecodeErrorStrategy::REPLACE: ++len; break;
-                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                case unicode::DecodeErrorStrategy::IGNORE: break;
+                case unicode::DecodeErrorStrategy::REPLACE: ++len; break;
+                case unicode::DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
             }
 
             p += 1;
@@ -35,7 +35,7 @@ integer::safe<uint64_t> string::size(const std::string& s, DecodeErrorStrategy e
     return len;
 }
 
-std::string string::upper(std::string_view s, DecodeErrorStrategy errors) {
+std::string string::upper(std::string_view s, unicode::DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -48,9 +48,9 @@ std::string string::upper(std::string_view s, DecodeErrorStrategy errors) {
 
         if ( n < 0 ) {
             switch ( errors.value() ) {
-                case DecodeErrorStrategy::IGNORE: break;
-                case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
-                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                case unicode::DecodeErrorStrategy::IGNORE: break;
+                case unicode::DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
+                case unicode::DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
             }
 
             p += 1;
@@ -65,7 +65,7 @@ std::string string::upper(std::string_view s, DecodeErrorStrategy errors) {
     return rval;
 }
 
-std::string string::lower(std::string_view s, DecodeErrorStrategy errors) {
+std::string string::lower(std::string_view s, unicode::DecodeErrorStrategy errors) {
     auto p = reinterpret_cast<const unsigned char*>(s.data());
     auto e = p + s.size();
 
@@ -78,9 +78,9 @@ std::string string::lower(std::string_view s, DecodeErrorStrategy errors) {
 
         if ( n < 0 ) {
             switch ( errors.value() ) {
-                case DecodeErrorStrategy::IGNORE: break;
-                case DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
-                case DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
+                case unicode::DecodeErrorStrategy::IGNORE: break;
+                case unicode::DecodeErrorStrategy::REPLACE: rval += "\ufffd"; break;
+                case unicode::DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
             }
 
             p += 1;
