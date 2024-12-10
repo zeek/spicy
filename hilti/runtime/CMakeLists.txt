@@ -46,6 +46,7 @@ set(SOURCES
     src/types/stream.cc
     src/types/string.cc
     src/types/time.cc
+    src/unicode.cc
     src/util.cc
     src/version.cc
     ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c)
