@@ -4,6 +4,9 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <iterator>
+#include <string>
+#include <string_view>
 
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
@@ -79,6 +82,34 @@ Bytes::Bytes(std::string s, unicode::Charset cs, unicode::DecodeErrorStrategy er
             return;
         }
 
+        case unicode::Charset::UTF16: {
+            // FIXME(bbannier): this has a lot of copy/paste from above case, clean up.
+            std::u16string t;
+
+            auto p = s.begin();
+            auto e = s.end();
+
+            while ( p < e ) {
+                try {
+                    auto cp = utf8::next16(p, e);
+                    utf8::append16(cp, t);
+                } catch ( const utf8::exception& ) {
+                    switch ( errors.value() ) {
+                        case unicode::DecodeErrorStrategy::IGNORE: break;
+                        case unicode::DecodeErrorStrategy::REPLACE: {
+                            utf8::append(0xFFFD, s);
+                            break;
+                        }
+                        case unicode::DecodeErrorStrategy::STRICT:
+                            throw RuntimeError("illegal UTF8 sequence in string");
+                    }
+                }
+            }
+
+            *this = utf8::utf16to8(t);
+            return;
+        }
+
         case unicode::Charset::ASCII: {
             std::string t;
             for ( const auto& c : s ) {
@@ -109,6 +140,29 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
         case unicode::Charset::UTF8:
             // Data is already in UTF-8, but let's validate it.
             return Bytes(str(), cs, errors).str();
+        case unicode::Charset::UTF16: {
+            std::u16string t;
+
+            auto p = this->str().begin();
+            auto e = this->str().end();
+            while ( p < e ) {
+                try {
+                    auto cp = utf8::next16(p, e);
+                    utf8::append16(cp, t);
+                } catch ( const utf8::exception& ) {
+                    switch ( errors.value() ) {
+                        case unicode::DecodeErrorStrategy::IGNORE: break;
+                        case unicode::DecodeErrorStrategy::REPLACE: utf8::append16(unicode::REPLACEMENT_CHARACTER, t);
+                        case unicode::DecodeErrorStrategy::STRICT:
+                            throw RuntimeError("illegal UTF-16 character in string");
+                    }
+
+                    p = std::next(p);
+                }
+            }
+
+            return utf8::utf16to8(t);
+        }
 
         case unicode::Charset::ASCII: {
             std::string s;

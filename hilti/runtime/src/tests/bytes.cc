@@ -43,6 +43,7 @@ TEST_CASE("construct") {
     CHECK_EQ(Bytes("123", Enum(unicode::Charset::ASCII)).str(), "123");
     CHECK_EQ(Bytes("abc", Enum(unicode::Charset::ASCII)).str(), "abc");
     CHECK_EQ(Bytes("abc", Enum(unicode::Charset::UTF8)).str(), "abc");
+    CHECK_EQ(Bytes("abc", Enum(unicode::Charset::UTF16)).str(), "abc");
 
     CHECK_EQ(Bytes("\xF0\x9F\x98\x85", Enum(unicode::Charset::UTF8)).str(), "\xF0\x9F\x98\x85");
     CHECK_EQ(Bytes("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::REPLACE).str(), "\ufffd(");
@@ -60,6 +61,8 @@ TEST_CASE("construct") {
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS(Bytes("123", Enum(unicode::Charset::Undef)), "unknown character set for encoding",
                          const RuntimeError&);
+
+    // FIXME(bbannier): add test case for invalid UTF-16.
 }
 
 TEST_CASE("decode") {
@@ -78,6 +81,8 @@ TEST_CASE("decode") {
     CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "(");
     CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
+
+    // FIXME(bbannier): add test cases decoding from valid and invalid UTF-16.
 
     CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
@@ -215,6 +220,8 @@ TEST_CASE("lower") {
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.lower(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
+
+    // FIXME(bbannier): check that lowering an UTF-16 bytes produces a lowercase UTF-16 bytes.
 }
 
 TEST_CASE("match") {
@@ -514,6 +521,8 @@ TEST_CASE("upper") {
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.upper(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
+
+    // FIXME(bbannier): check that upping an UTF-16 bytes produces an uppercase UTF-16 bytes.
 }
 
 TEST_CASE("append") {

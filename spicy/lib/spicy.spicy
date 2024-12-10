@@ -33,7 +33,8 @@ public type ByteOrder = enum {
 ## Specifies the character set for bytes encoding/decoding.
 public type Charset = enum {
     ASCII,
-    UTF8
+    UTF8,
+    UTF16,
 } &cxxname="hilti::rt::unicode::Charset";
 
 ## Specifies how data is handled that's not representable in a specified character set.
