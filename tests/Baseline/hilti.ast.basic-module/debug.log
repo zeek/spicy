@@ -323,7 +323,7 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::Protocol"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Charset" declaration="D9" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] (hilti.hlt:14:1-14:80) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Charset" declaration="D9" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] (hilti.hlt:14:1-14:82) [@d:XXX]
 [debug/ast-final]           | ASCII -> declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D21" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -353,13 +353,13 @@
 [debug/ast-final]                   - type::enum_::Label <id="Undef" value="-1"> [parent @c:XXX] (hilti.hlt:14:23-14:42) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:14:30-14:34) [@q:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
-[debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:14:43-14:79) [@a:XXX]
-[debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:14:43-14:79) [@a:XXX]
+[debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:14:43-14:81) [@a:XXX]
+[debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:14:43-14:81) [@a:XXX]
 [debug/ast-final]             - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
-[debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::bytes::Charset"> [parent @e:XXX] [@c:XXX]
+[debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::unicode::Charset"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D10" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] (hilti.hlt:15:1-15:116) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D10" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] (hilti.hlt:15:1-15:118) [@d:XXX]
 [debug/ast-final]           | IGNORE -> declaration::Constant <canonical-id="hilti::IGNORE" declaration="-" fqid="hilti::DecodeErrorStrategy::IGNORE" id="IGNORE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | REPLACE -> declaration::Constant <canonical-id="hilti::REPLACE" declaration="D22" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | STRICT -> declaration::Constant <canonical-id="hilti::STRICT" declaration="-" fqid="hilti::DecodeErrorStrategy::STRICT" id="STRICT" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -398,10 +398,10 @@
 [debug/ast-final]                   - type::enum_::Label <id="Undef" value="-1"> [parent @c:XXX] (hilti.hlt:15:35-15:66) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:15:42-15:47) [@q:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
-[debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:15:67-15:115) [@a:XXX]
-[debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:15:67-15:115) [@a:XXX]
+[debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:15:67-15:117) [@a:XXX]
+[debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:15:67-15:117) [@a:XXX]
 [debug/ast-final]             - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
-[debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::bytes::DecodeErrorStrategy"> [parent @e:XXX] [@c:XXX]
+[debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::unicode::DecodeErrorStrategy"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::Captures" declaration="D11" fqid="hilti::Captures" id="Captures" linkage="public"> [parent @d:XXX] (hilti.hlt:16:1-16:37) [@d:XXX]
@@ -928,8 +928,8 @@
 [debug/ast-final]   [D6] hilti::AddressFamily [declaration::Type] (hilti.hlt:11:1-11:84)
 [debug/ast-final]   [D7] hilti::RealType [declaration::Type] (hilti.hlt:12:1-12:96)
 [debug/ast-final]   [D8] hilti::Protocol [declaration::Type] (hilti.hlt:13:1-13:78)
-[debug/ast-final]   [D9] hilti::Charset [declaration::Type] (hilti.hlt:14:1-14:80)
-[debug/ast-final]   [D10] hilti::DecodeErrorStrategy [declaration::Type] (hilti.hlt:15:1-15:116)
+[debug/ast-final]   [D9] hilti::Charset [declaration::Type] (hilti.hlt:14:1-14:82)
+[debug/ast-final]   [D10] hilti::DecodeErrorStrategy [declaration::Type] (hilti.hlt:15:1-15:118)
 [debug/ast-final]   [D11] hilti::Captures [declaration::Type] (hilti.hlt:16:1-16:37)
 [debug/ast-final]   [D12] hilti::Profiler [declaration::Type] (hilti.hlt:17:1-17:61)
 [debug/ast-final]   [D13] hilti::MatchState [declaration::Type] (hilti.hlt:19:1-21:43)

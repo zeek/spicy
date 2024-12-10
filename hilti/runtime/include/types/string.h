@@ -9,18 +9,12 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/vector.h>
+#include <hilti/rt/unicode.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
 
 namespace string {
-
-/* When processing UTF8, how to handle invalid data not representing UTF8 codepoints. */
-HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
-                           IGNORE,  // skip data
-                           REPLACE, // replace with a place-holder
-                           STRICT   // throw a runtime error
-);
 
 /**
  * Computes the length of a UTF8 string in number of codepoints.
@@ -30,7 +24,8 @@ HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
  * @return the length of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-integer::safe<uint64_t> size(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+integer::safe<uint64_t> size(const std::string& s,
+                             unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 /**
  * Computes a lower-case version of an UTF8 string.
@@ -40,7 +35,7 @@ integer::safe<uint64_t> size(const std::string& s, DecodeErrorStrategy errors = 
  * @return a lower-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string lower(std::string_view s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+std::string lower(std::string_view s, unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 /**
  * Computes a upper-case version of an UTF8 string.
@@ -50,7 +45,7 @@ std::string lower(std::string_view s, DecodeErrorStrategy errors = DecodeErrorSt
  * @return a upper-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string upper(std::string_view s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+std::string upper(std::string_view s, unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 /**
  * Splits the string at sequences of whitespace.
