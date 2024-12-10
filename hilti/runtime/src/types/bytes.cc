@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <utf8proc/utf8proc.h>
+#include <utfcpp/source/utf8.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -12,6 +12,7 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/stream.h>
+#include <hilti/rt/unicode.h>
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;
@@ -55,27 +56,26 @@ Bytes::Bytes(std::string s, unicode::Charset cs, unicode::DecodeErrorStrategy er
             // Data supposedly is already in UTF-8, but let's validate it.
             std::string t;
 
-            auto p = reinterpret_cast<const unsigned char*>(s.data());
-            auto e = p + s.size();
+            auto p = s.begin();
+            auto e = s.end();
 
             while ( p < e ) {
-                utf8proc_int32_t cp;
-                auto n = utf8proc_iterate(p, e - p, &cp);
-
-                if ( n < 0 ) {
+                try {
+                    auto cp = utf8::next(p, e);
+                    utf8::append(cp, t);
+                } catch ( const utf8::exception& ) {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
-                        case unicode::DecodeErrorStrategy::REPLACE: t += "\ufffd"; break;
+                        case unicode::DecodeErrorStrategy::REPLACE: {
+                            utf8::append(unicode::REPLACEMENT_CHARACTER, t);
+                            break;
+                        }
                         case unicode::DecodeErrorStrategy::STRICT:
                             throw RuntimeError("illegal UTF8 sequence in string");
                     }
 
-                    p += 1;
-                    continue;
+                    p = std::next(p);
                 }
-
-                t += std::string(reinterpret_cast<const char*>(p), n);
-                p += n;
             }
 
             *this = std::move(t);

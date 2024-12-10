@@ -9,6 +9,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
+#include <hilti/rt/unicode.h>
 
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
