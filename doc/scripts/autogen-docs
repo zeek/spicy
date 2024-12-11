@@ -8,6 +8,17 @@
 set -o errexit
 set -o nounset
 
+# GNU `sort` sorts case-insensitive while macOS `sed` sorts case-sensitive which
+# we want. Force GNU sed into case-sensitive mode.
+export LC_COLLATE=C
+
+# We expect a GNU sed. If we find `gsed` use that instead since we are likely
+# on macOS which by default provides a BSD sed.
+SED="sed"
+if command -v gsed >/dev/null 2>&1; then
+    SED=gsed
+fi
+
 ROOTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/../.."
 BUILDDIR="${ROOTDIR}/build"
 SPICYDOC="${BUILDDIR}/bin/spicy-doc"
@@ -15,14 +26,29 @@ SPICYDTR="${ROOTDIR}/doc/scripts/spicy-doc-to-rst"
 AUTOGEN_FINAL="${ROOTDIR}/doc/autogen"
 AUTOGEN_STAGE=$(mktemp -d -t spicy-autogen-docs.XXXXXXXXXX)
 
+update_architecture_diagram() {
+    # autogen-architecture-diagram needs the diagrams package and dot.
+    if ! python3 -c "import diagrams" >/dev/null 2>&1; then
+        >&2 echo "Warning: Need Python diagrams to run autogen-docs, skipping"
+        return
+    fi
+    if ! command -v dot >/dev/null 2>&1; then
+        >&2 echo "Warning: Need 'dot' to run autogen-docs, skipping"
+        return
+    fi
+
+    "${ROOTDIR}/doc/scripts/autogen-architecture-diagram" "${AUTOGEN_STAGE}/architecture" || exit 1
+
+    # Remove comments and titles from SVG to make content stable.
+    ${SED} -i"" -e '/<!--/d' -e '/-->/d' "${AUTOGEN_STAGE}/architecture.svg"
+    ${SED} -i"" -e '/<title/d' -e '/title>/d' "${AUTOGEN_STAGE}/architecture.svg"
+
+    # Delete unstable DOT and PDF outputs.
+    rm -f "${AUTOGEN_STAGE}/architecture.dot" "${AUTOGEN_STAGE}/architecture.pdf"
+}
+
 if ! command -v rsync >/dev/null 2>&1; then
     >&2 echo "Warning: Need rsync to run autogen-docs, aborting"
-    exit 0
-fi
-
-# autogen-architecture-diagram needs the diagrams package
-if ! command -v python -c 'import diagrams' >/dev/null 2>&1; then
-    >&2 echo "Warning: Need Python diagrams to run autogen-docs, aborting"
     exit 0
 fi
 
@@ -49,15 +75,7 @@ cat ${ROOTDIR}/spicy/toolchain/src/compiler/parser/scanner.ll \
     | awk '{print $1}' \
     | sort >${AUTOGEN_STAGE}/reserved-keywords.txt
 
-# Render architecture diagram.
-"${ROOTDIR}/doc/scripts/autogen-architecture-diagram" "${AUTOGEN_STAGE}/architecture" || exit 1
-
-# Remove comments and titles from SVG to make content stable.
-gsed -i"" -e '/<!--/d' -e '/-->/d' "${AUTOGEN_STAGE}/architecture.svg"
-gsed -i"" -e '/<title/d' -e '/title>/d' "${AUTOGEN_STAGE}/architecture.svg"
-
-# Delete unstable DOT and PDF outputs.
-rm -f "${AUTOGEN_STAGE}/architecture.dot" "${AUTOGEN_STAGE}/architecture.pdf"
+update_architecture_diagram
 
 # All done, move staged files to final location where changed.
     # "-rlpgo" is "-a" minus "-tD".
