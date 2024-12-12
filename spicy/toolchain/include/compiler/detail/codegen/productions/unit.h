@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
@@ -45,6 +45,22 @@ public:
     }
 
     QualifiedType* type() const final { return _type; };
+
+    Expression* parseSize(Builder* builder) const final {
+        Expression* size = nullptr;
+        for ( const auto& f : _fields ) {
+            auto psize = f->parseSize(builder);
+            if ( ! psize )
+                return nullptr;
+
+            if ( ! size )
+                size = psize;
+            else
+                size = builder->sum(size, psize);
+        }
+
+        return size;
+    }
 
     std::string dump() const final {
         return hilti::util::join(hilti::util::transform(_fields, [](const auto& p) { return p->symbol(); }), " ");

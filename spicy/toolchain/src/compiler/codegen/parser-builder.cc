@@ -1690,6 +1690,56 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
+    // Determines if a sync group has a fixed size. If so, returns an
+    // expression that yields that size.
+    Expression* parseSizeOfSynchronizationGroup(const production::Unit* p, const std::vector<uint64_t>& field_indices) {
+        Expression* group_size = nullptr;
+
+        for ( auto i : field_indices ) {
+            const auto& field_production = p->fields()[i];
+
+            if ( ! field_production->meta().field() )
+                return nullptr;
+
+            auto* field_attributes = field_production->meta().field()->attributes();
+
+            if ( field_attributes->has(attribute::kind::ParseFrom) ||
+                 field_attributes->has(attribute::kind::ParseAt) ) {
+                // These don't affect the size of the group.
+                if ( ! group_size )
+                    group_size = builder()->integer(0);
+
+                continue;
+            }
+
+            if ( field_attributes->has(attribute::kind::Eod) )
+                // Cannot determine the size of the group.
+                return nullptr;
+
+            Expression* field_parse_size = nullptr;
+
+            if ( auto* size_attr = field_attributes->find(attribute::kind::Size) )
+                field_parse_size = *size_attr->valueAsExpression();
+            else if ( auto* production_size = field_production->parseSize(builder()) )
+                field_parse_size = production_size;
+            else
+                // Cannot determine the size of the group.
+                return nullptr;
+
+            if ( ! field_parse_size->isConstant() )
+                // Size of the group isn't fixed, meaning the amount may differ
+                // depending on when we evaluate it.
+                return nullptr;
+
+            if ( group_size )
+                group_size = builder()->sum(group_size, field_parse_size);
+            else
+                group_size = field_parse_size;
+        }
+
+        return group_size;
+    }
+
     void operator()(const production::Unit* p) final {
         auto pstate = pb->state();
         pstate.self = destination();
@@ -1937,7 +1987,10 @@ struct ProductionVisitor : public production::Visitor {
         if ( const auto& ctor = p->ctor() )
             pb->skipLiteral(*ctor);
 
-        else if ( const auto& size = p->field()->size(context()) )
+        else if ( const auto& size = p->field()->attributes()->find(attribute::kind::Size) )
+            pb->skip(*size->valueAsExpression(), p->location());
+
+        else if ( const auto& size = p->parseSize(builder()) )
             pb->skip(size, p->location());
 
         else if ( p->field()->parseType()->type()->isA<hilti::type::Bytes>() ) {
