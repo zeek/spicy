@@ -417,13 +417,6 @@ public:
     void advanceInput(Expression* i);
 
     /**
-     * Generates code that sets the current view.
-     *
-     * @param i expression that's the new view to use.
-     */
-    void setInput(Expression* i);
-
-    /**
      * Generates code that saves the current parsing position inside the
      * current parse object. This only has an effect for unit types that
      * support random access, it's a no-op for others.

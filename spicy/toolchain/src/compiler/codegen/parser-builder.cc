@@ -2816,8 +2816,6 @@ void ParserBuilder::advanceInput(Expression* i) {
     trimInput();
 }
 
-void ParserBuilder::setInput(Expression* i) { builder()->addAssign(state().cur, i); }
-
 void ParserBuilder::beforeHook() {
     // Forward the current trial mode state into the unit so hooks see the
     // correct state should they invoke e.g., `reject`.
