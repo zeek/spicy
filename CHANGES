@@ -1,3 +1,7 @@
+1.12.0-dev.240 | 2024-12-12 13:09:05 +0100
+
+  * Make sure autogen-docs pre-commit hook can always run in CI. (Benjamin Bannier, Corelight)
+
 1.12.0-dev.238 | 2024-12-10 14:53:29 +0100
 
   * Update tutorial to use spicy-driver's batch mode. (Robin Sommer, Corelight)
