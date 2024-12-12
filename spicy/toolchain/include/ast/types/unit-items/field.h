@@ -78,12 +78,6 @@ public:
     /** Get the `&convert` expression, if any. */
     std::optional<std::pair<Expression*, QualifiedType*>> convertExpression() const;
 
-    /**
-     * Returns an expression representing the number of bytes the fields
-     * consumes, if known.
-     */
-    Expression* size(ASTContext* ctx) const;
-
     void setForwarding(bool is_forwarding) { _is_forwarding = is_forwarding; }
     void setTransient(bool is_transient) { _is_transient = is_transient; }
     void setDDType(ASTContext* ctx, QualifiedType* t);
@@ -93,6 +87,8 @@ public:
     void setSkip(bool skip) { _is_skip = skip; }
 
     QualifiedType* itemType() const final { return child<QualifiedType>(3); }
+
+    Expression* parseSize(Builder* builder) const;
 
     bool isResolved(hilti::node::CycleDetector* cd) const final {
         return type() || item() || itemType()->isResolved(cd);

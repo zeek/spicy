@@ -1659,6 +1659,49 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
+    // Determines if a sync group has a fixed size. If so, returns an
+    // expression that yields that size.
+    Expression* parseSizeOfSynchronizationGroup(const production::Unit* p, const std::vector<uint64_t>& field_indices) {
+        Expression* group_size = nullptr;
+
+        auto add_to_group_size = [&group_size, this](Expression* size) {
+            if ( group_size )
+                group_size = builder()->sum(group_size, size);
+            else
+                group_size = size;
+        };
+
+        for ( auto i : field_indices ) {
+            const auto& field_production = p->fields()[i];
+
+            if ( ! field_production->meta().field() )
+                return nullptr;
+
+            auto* field_attributes = field_production->meta().field()->attributes();
+
+            if ( field_attributes->has(hilti::Attribute::Kind::ParseFrom) ||
+                 field_attributes->has(hilti::Attribute::Kind::ParseAt) ) {
+                // These don't affect the size of the group.
+                add_to_group_size(builder()->integer(0));
+                continue;
+            }
+
+            if ( field_attributes->has(hilti::Attribute::Kind::Eod) )
+                // Cannot determine the size of the group.
+                return nullptr;
+
+            if ( auto* size_attr = field_attributes->find(hilti::Attribute::Kind::Size) )
+                add_to_group_size(*size_attr->valueAsExpression());
+            else if ( auto* production_size = field_production->parseSize(builder()) )
+                add_to_group_size(production_size);
+            else
+                // Cannot determine the size of the group.
+                return nullptr;
+        }
+
+        return group_size;
+    }
+
     void operator()(const production::Unit* p) final {
         auto pstate = pb->state();
         pstate.self = destination();
@@ -1902,7 +1945,7 @@ struct ProductionVisitor : public production::Visitor {
         if ( const auto& ctor = p->ctor() )
             pb->skipLiteral(*ctor);
 
-        else if ( const auto& size = p->field()->size(context()) )
+        else if ( const auto& size = p->parseSize(builder()) )
             pb->skip(size, p->location());
 
         else if ( p->field()->parseType()->type()->isA<hilti::type::Bytes>() ) {
