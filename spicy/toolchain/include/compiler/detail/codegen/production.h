@@ -180,16 +180,20 @@ public:
     virtual QualifiedType* type() const { return nullptr; };
 
     /**
-     * Returns an expression yielding the raw number of bytes that parsing this
-     * production will consume. The expression must evaluate to a constant
-     * value of type `uint64`. Returns null if the size isn't constant, or
-     * cannot be computed.
+     * Returns an expression representing the number of bytes the production
+     * consumes, if known. Returns null if the size cannot be computed.
      *
-     * This does not take any field parsing attributes into account (e.g.,
-     * `&size`). It's up to the caller to apply those if needed.
+     * The resulting expression does not take any type-independent field
+     * parsing attributes into account (e.g., `&size`). It's up to the caller
+     * to apply those if needed. However, the expression will (and must) take
+     * type-specific attributes into account (e.g., `&ipv4` for an address).
+     *
+     * Note that the returned expression may not be a constant: it can depend
+     * on other values not known at compile time.
      *
      * @param builder builder to use for creating the expression
-     * @return expression yielding the size, or null if not available
+     * @return expression yielding the size, or null if not available; must
+     * evaluate to a value of type `uint64`.
      */
     virtual Expression* parseSize(Builder* builder) const = 0;
 
