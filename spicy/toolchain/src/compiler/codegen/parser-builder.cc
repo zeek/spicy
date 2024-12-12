@@ -1933,68 +1933,73 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Skip* p) final {
-        if ( auto* c = p->field()->condition() )
-            pushBuilder(builder()->addIf(c));
+        const auto& production = p->production();
+        const auto* field = production->meta().field();
 
-        if ( const auto& ctor = p->ctor() )
+        if ( field && field->condition() )
+            pushBuilder(builder()->addIf(field->condition()));
+
+        if ( const auto& ctor = production->tryAs<production::Ctor>() )
             pb->skipLiteral(*ctor);
 
-        else if ( const auto& size = p->field()->size(context()) )
-            pb->skip(size, p->location());
+        else if ( field ) {
+            if ( const auto& size = p->bytesConsumed(context()) )
+                pb->skip(size, p->location()); // we know the number of bytes to skip
 
-        else if ( p->field()->parseType()->type()->isA<hilti::type::Bytes>() ) {
-            auto* eod_attr = p->field()->attributes()->find(attribute::kind::Eod);
-            auto* until_attr = p->field()->attributes()->find(attribute::kind::Until);
-            if ( ! until_attr )
-                until_attr = p->field()->attributes()->find(attribute::kind::UntilIncluding);
+            else if ( field->parseType()->type()->isA<hilti::type::Bytes>() ) {
+                auto* eod_attr = field->attributes()->find(attribute::kind::Eod);
+                auto* until_attr = field->attributes()->find(attribute::kind::Until);
+                if ( ! until_attr )
+                    until_attr = field->attributes()->find(attribute::kind::UntilIncluding);
 
-            if ( eod_attr ) {
-                builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
-                auto loop = builder()->addWhile(pb->waitForInputOrEod());
-                pushBuilder(std::move(loop), [&]() { pb->advanceInput(builder()->size(state().cur)); });
-                pb->advanceInput(builder()->size(state().cur));
-            }
+                if ( eod_attr ) {
+                    builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
+                    auto loop = builder()->addWhile(pb->waitForInputOrEod());
+                    pushBuilder(std::move(loop), [&]() { pb->advanceInput(builder()->size(state().cur)); });
+                    pb->advanceInput(builder()->size(state().cur));
+                }
 
-            else if ( until_attr ) {
-                Expression* until_expr =
-                    builder()->coerceTo(pb->evaluateAttributeExpression(until_attr, "until"),
-                                        builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Const));
-                auto* until_bytes_var = builder()->addTmp("until_bytes", until_expr);
-                auto* until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
+                else if ( until_attr ) {
+                    Expression* until_expr =
+                        builder()->coerceTo(pb->evaluateAttributeExpression(until_attr, "until"),
+                                            builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Const));
+                    auto* until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+                    auto* until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
 
-                auto body = builder()->addWhile(builder()->bool_(true));
-                pushBuilder(std::move(body), [&]() {
-                    pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
-                                     until_expr->meta());
+                    auto body = builder()->addWhile(builder()->bool_(true));
+                    pushBuilder(std::move(body), [&]() {
+                        pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
+                                         until_expr->meta());
 
-                    auto* find = builder()->memberCall(state().cur, "find", {until_bytes_var});
-                    auto found_id = ID("found");
-                    auto it_id = ID("it");
-                    auto* found = builder()->id(found_id);
-                    auto* it = builder()->id(it_id);
-                    builder()->addLocal(std::move(found_id),
-                                        builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
-                    builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
-                                                                                   hilti::Constness::Mutable));
-                    builder()->addAssign(builder()->tuple({found, it}), find);
+                        auto* find = builder()->memberCall(state().cur, "find", {until_bytes_var});
+                        auto found_id = ID("found");
+                        auto it_id = ID("it");
+                        auto* found = builder()->id(found_id);
+                        auto* it = builder()->id(it_id);
+                        builder()->addLocal(std::move(found_id),
+                                            builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
+                        builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
+                                                                                       hilti::Constness::Mutable));
+                        builder()->addAssign(builder()->tuple({found, it}), find);
 
-                    auto [found_branch, not_found_branch] = builder()->addIfElse(found);
+                        auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
-                    pushBuilder(std::move(found_branch), [&]() {
-                        auto* new_it = builder()->sum(it, until_bytes_size_var);
-                        pb->advanceInput(new_it);
-                        builder()->addBreak();
+                        pushBuilder(std::move(found_branch), [&]() {
+                            auto* new_it = builder()->sum(it, until_bytes_size_var);
+                            pb->advanceInput(new_it);
+                            builder()->addBreak();
+                        });
+
+                        pushBuilder(std::move(not_found_branch), [&]() { pb->advanceInput(it); });
                     });
-
-                    pushBuilder(std::move(not_found_branch), [&]() { pb->advanceInput(it); });
-                });
+                }
             }
         }
 
         else
             hilti::logger().internalError("unexpected skip production");
 
-        if ( p->field()->condition() )
+        if ( field && field->condition() )
             popBuilder();
     }
 

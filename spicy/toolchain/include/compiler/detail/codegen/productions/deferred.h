@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 
 #include <spicy/compiler/detail/codegen/production.h>
@@ -35,6 +34,7 @@ public:
     bool isLiteral() const final { return false; }
     bool isNullable() const final { return false; }
     bool isTerminal() const final { return false; }
+    Expression* _bytesConsumed(ASTContext* context) const final { return nullptr; }
     int64_t tokenID() const final { return _resolved ? _resolved->tokenID() : -1; };
 
     std::string dump() const final {

@@ -13,7 +13,10 @@
 
 namespace spicy::detail::codegen::production {
 
-/** A production executing until interrupted by a foreach hook. */
+/**
+ * A production looping over a series of elements until explicitly interrupted
+ * by some external terminating condition.
+ */
 class ForEach : public Production {
 public:
     ForEach(ASTContext* /* ctx */, const std::string& symbol, std::unique_ptr<Production> body, bool eod_ok,
@@ -29,6 +32,8 @@ public:
     bool isTerminal() const final { return false; };
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
+
+    Expression* _bytesConsumed(ASTContext* context) const final { return nullptr; }
 
     std::string dump() const override { return hilti::util::fmt("foreach: %s", _body->symbol()); }
 

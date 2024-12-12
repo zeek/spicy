@@ -503,7 +503,7 @@ struct VisitorType : visitor::PreOrder {
                 if ( ! n->baseType() )
                     break;
 
-                if ( auto x = n->baseType()->tryAs<type::Name>() )
+                if ( auto* x = n->baseType()->tryAs<type::Name>() )
                     n = x->resolvedType()->as<type::Exception>();
                 else
                     n = t->baseType()->as<type::Exception>();

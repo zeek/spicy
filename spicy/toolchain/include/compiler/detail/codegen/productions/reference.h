@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <spicy/compiler/detail/codegen/production.h>
@@ -38,6 +36,7 @@ public:
     std::vector<std::vector<Production*>> rhss() const final { return _production->rhss(); }
     Expression* expression() const final { return _production->expression(); }
     QualifiedType* type() const final { return _production->type(); }
+    Expression* _bytesConsumed(ASTContext* context) const final { return _production->_bytesConsumed(context); }
     int64_t tokenID() const final { return _production->tokenID(); };
 
     std::string dump() const final { return hilti::util::fmt("ref(%s)", _production->dump()); }

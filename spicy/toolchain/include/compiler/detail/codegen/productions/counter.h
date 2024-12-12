@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
@@ -33,6 +34,16 @@ public:
     Expression* expression() const final { return _expression; }
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
+
+    Expression* _bytesConsumed(ASTContext* context) const final {
+        auto* size = _body->bytesConsumed(context);
+        if ( ! size )
+            return nullptr;
+
+        return hilti::expression::UnresolvedOperator::create(context, hilti::operator_::Kind::Multiple,
+                                                             {_expression, size});
+    }
+
     std::string dump() const override { return hilti::util::fmt("counter(%s): %s", *_expression, _body->symbol()); }
 
     SPICY_PRODUCTION

@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
-#include <utility>
 
 #include <hilti/ast/expressions/ctor.h>
 
@@ -29,9 +27,9 @@ public:
     bool isNullable() const final { return false; };
     bool isTerminal() const final { return true; };
 
-    // std::vector<std::vector<Production*>> rhss() const final { return {}; };
     Expression* expression() const final { return _ctor; }
     QualifiedType* type() const final { return _ctor->type(); };
+    Expression* _bytesConsumed(ASTContext* context) const final;
 
     int64_t tokenID() const final {
         return static_cast<int64_t>(Production::tokenID(hilti::util::fmt("%s|%s", *_ctor, *_ctor->type())));

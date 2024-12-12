@@ -156,7 +156,7 @@ void Chain::appendGap(size_t size) {
 void Chain::debugPrint(std::ostream& out) const {
     out << fmt("chain %p, head_offset: %" PRIu64, this, _head_offset) << '\n';
     int i = 0;
-    auto c = _head.get();
+    auto* c = _head.get();
     while ( c ) {
         out << fmt("  #%d/%p: ", i++, c);
         c->debugPrint(out);

@@ -9,6 +9,7 @@
 
 #include <hilti/base/util.h>
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
@@ -33,6 +34,23 @@ public:
 
     std::vector<std::vector<Production*>> rhss() const final {
         return {hilti::util::transform(_prods, [](const auto& p) { return p.get(); })};
+    }
+
+    Expression* _bytesConsumed(ASTContext* context) const final {
+        Expression* size = nullptr;
+        for ( const auto& p : _prods ) {
+            auto* psize = p->bytesConsumed(context);
+            if ( ! psize )
+                return nullptr;
+
+            if ( ! size )
+                size = psize;
+            else
+                size =
+                    hilti::expression::UnresolvedOperator::create(context, hilti::operator_::Kind::Sum, {size, psize});
+        }
+
+        return size;
     }
 
     std::string dump() const final {
