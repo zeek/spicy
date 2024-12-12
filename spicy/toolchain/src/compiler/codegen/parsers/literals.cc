@@ -212,7 +212,7 @@ struct Visitor : public visitor::PreOrder {
                 builder()->addAssign(result, builder()->memberCall(state().cur, "sub", {builder()->begin(ncur)}));
             }
 
-            pb()->setInput(ncur);
+            builder()->addAssign(state().cur, ncur);
 
             if ( trim )
                 pb()->trimInput();
