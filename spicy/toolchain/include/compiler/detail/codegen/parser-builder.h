@@ -402,17 +402,17 @@ public:
     Expression* atEod();
 
     /**
-     * Generates code that advances the current view to the next position which is not a gap.
-     * This implicitly calls advancedInput() afterwards.
+     * Generates code that advances the current view to the next position which
+     * is not a gap. This implicitly calls `trimInput()` afterwards.
      */
     void advanceToNextData();
 
     /**
      * Generates code that advances the current view to a new start position.
-     * This implicitly calls advancedInput() afterwards.
+     * This implicitly calls `trimInput()` afterwards.
      *
-     * @param i expression that's either the number of bytes to move ahead,
-     * a stream iterator to move to, or a new stream view to use from now on.
+     * @param i expression that's either the number of bytes to move ahead or a
+     * stream iterator to move to.
      */
     void advanceInput(Expression* i);
 
