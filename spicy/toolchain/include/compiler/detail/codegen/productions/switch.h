@@ -47,6 +47,7 @@ public:
 
     Expression* expression() const final { return _expression; }
     std::vector<std::vector<Production*>> rhss() const final;
+    Expression* _bytesConsumed(ASTContext* context) const final { return nullptr; }
 
     std::string dump() const final;
 

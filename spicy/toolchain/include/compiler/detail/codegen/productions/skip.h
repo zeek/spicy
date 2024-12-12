@@ -17,48 +17,38 @@ namespace spicy::detail::codegen::production {
 /** A production simply skipping input data. */
 class Skip : public Production {
 public:
-    Skip(ASTContext* ctx, const std::string& symbol, type::unit::item::Field* field, std::unique_ptr<Production> ctor,
+    Skip(ASTContext* ctx, const std::string& symbol, std::unique_ptr<Production> production,
          const Location& l = location::None)
         : Production(symbol, l),
-          _field(field),
-          _ctor(std::move(ctor)),
+          _production(std::move(production)),
           _void(QualifiedType::create(ctx, hilti::type::Void::create(ctx), hilti::Constness::Const)) {
-        auto m = meta();
-        m.setField(field, true);
-        setMeta(m);
+        assert(_production);
+        setMeta(_production->meta());
     }
 
-    const auto& field() const { return _field; }
-    const auto& ctor() const { return _ctor; }
+    const auto& production() const { return _production; }
 
-    bool isAtomic() const final { return _ctor ? _ctor->isAtomic() : true; };
-    bool isEodOk() const final { return _ctor ? _ctor->isEodOk() : _field->attributes()->has(attribute::kind::Eod); };
-    bool isLiteral() const final { return _ctor ? _ctor->isLiteral() : false; };
-    bool isNullable() const final { return _ctor ? _ctor->isNullable() : false; };
-    bool isTerminal() const final { return _ctor ? _ctor->isTerminal() : true; };
-    int64_t tokenID() const final { return _ctor ? _ctor->tokenID() : -1; };
+    bool isAtomic() const final { return _production->isAtomic(); };
+    bool isEodOk() const final { return _production->isEodOk(); };
+    bool isLiteral() const final { return _production->isLiteral(); };
+    bool isNullable() const final { return _production->isNullable(); };
+    bool isTerminal() const final { return _production->isTerminal(); };
+    int64_t tokenID() const final { return _production->tokenID(); };
 
-    std::vector<std::vector<Production*>> rhss() const final {
-        if ( _ctor )
-            return _ctor->rhss();
-        else
-            return {};
-    };
+    std::vector<std::vector<Production*>> rhss() const final { return _production->rhss(); };
 
-
-    Expression* expression() const final { return _ctor ? _ctor->expression() : nullptr; }
+    Expression* expression() const final { return _production->expression(); }
 
     QualifiedType* type() const final { return _void; };
 
-    std::string dump() const override {
-        return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : _field->print());
-    }
+    Expression* _bytesConsumed(ASTContext* context) const final { return _production->bytesConsumed(context); }
+
+    std::string dump() const override { return hilti::util::fmt("skip: %s", _production->print()); }
 
     SPICY_PRODUCTION
 
 private:
-    type::unit::item::Field* _field = nullptr; // stores a shallow copy of the reference passed into ctor
-    std::unique_ptr<Production> _ctor;
+    std::unique_ptr<Production> _production;
     QualifiedType* _void = nullptr;
 };
 

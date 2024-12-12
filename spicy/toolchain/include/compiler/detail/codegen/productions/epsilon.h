@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
 
@@ -21,6 +21,10 @@ public:
     bool isLiteral() const final { return false; };
     bool isNullable() const final { return true; };
     bool isTerminal() const final { return true; };
+
+    Expression* _bytesConsumed(ASTContext* context) const final {
+        return hilti::expression::Ctor::create(context, hilti::ctor::UnsignedInteger::create(context, 0, 64));
+    }
 
     std::string dump() const final { return "()"; }
 

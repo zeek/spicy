@@ -180,6 +180,23 @@ public:
     virtual QualifiedType* type() const { return nullptr; };
 
     /**
+     * Returns an expression representing the number of bytes the production
+     * consumes when being parsed, if known. Returns null if the number cannot
+     * be determined, or cannot be captured as an expression.
+     *
+     * The resulting expression takes any field parsing attributes into account
+     * (e.g., `&size`). Note that the expression may not be a constant, meaning
+     * that, depending on evaluation time and context, it might not always
+     * yield the same value (e.g., if the expression depends on external state,
+     * or has side effects itself).
+     *
+     * @param builder builder to use for creating the expression
+     * @return expression yielding the size, or null if not available; the
+     * expression returned will evaluate to a value of type `uint64`.
+     */
+    Expression* bytesConsumed(ASTContext* context) const;
+
+    /**
      * Returns a ID for this literal that's guaranteed to be globally unique
      * for the literal's value, including across grammars. Returns a negative
      * if called for a non-literal.
@@ -286,6 +303,20 @@ protected:
      * infrastructure use only.
      */
     void setMetaInstance(std::shared_ptr<production::Meta> m) { _meta = std::move(m); }
+
+    /**
+     * Polymorphic backend for `bytesConsumed`, with similar semantics. The
+     * main difference is that implementations should *not* take any
+     * type-independent field parsing attributes into account (e.g., `&size`)
+     * as those will be handled generically by the frontend method. However,
+     * the return expression must take any type-*specific* attributes into
+     * account (e.g., `&ipv4` for an address).
+     *
+     * @param builder builder to use for creating the expression
+     * @return expression yielding the size, or null if not available; the
+     * expression returned must evaluate to a value of type `uint64`.
+     */
+    virtual Expression* _bytesConsumed(ASTContext* context) const = 0;
 
 private:
     std::string _symbol;

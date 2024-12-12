@@ -76,12 +76,6 @@ public:
     /** Get the `&convert` expression, if any. */
     std::optional<std::pair<Expression*, QualifiedType*>> convertExpression() const;
 
-    /**
-     * Returns an expression representing the number of bytes the fields
-     * consumes, if known.
-     */
-    Expression* size(ASTContext* ctx) const;
-
     void setForwarding(bool is_forwarding) { _is_forwarding = is_forwarding; }
     void setTransient(bool is_transient) { _is_transient = is_transient; }
     void setDDType(ASTContext* ctx, QualifiedType* t);

@@ -72,6 +72,8 @@ public:
     /** Returns the loop expression if passed into the corresponding constructor. */
     Expression* expression() const final { return _expression; }
 
+    Expression* _bytesConsumed(ASTContext* context) const final { return nullptr; }
+
     std::string dump() const final;
 
     SPICY_PRODUCTION
