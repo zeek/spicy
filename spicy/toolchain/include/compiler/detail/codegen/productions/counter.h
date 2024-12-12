@@ -34,10 +34,8 @@ public:
     Expression* expression() const final { return _expression; }
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
-    Expression* parseSize(Builder* builder) const final {
-        if ( ! _expression->isConstant() )
-            return nullptr;
 
+    Expression* parseSize(Builder* builder) const final {
         auto size = _body->parseSize(builder);
         if ( ! size )
             return nullptr;

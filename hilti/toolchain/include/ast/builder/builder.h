@@ -430,6 +430,7 @@ public:
     auto division(Expression* op1, Expression* op2, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::Division, {op1, op2}, m);
     }
+
     auto multiple(Expression* op1, Expression* op2, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::Multiple, {op1, op2}, m);
     }

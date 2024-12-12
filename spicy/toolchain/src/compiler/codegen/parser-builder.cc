@@ -1664,13 +1664,6 @@ struct ProductionVisitor : public production::Visitor {
     Expression* parseSizeOfSynchronizationGroup(const production::Unit* p, const std::vector<uint64_t>& field_indices) {
         Expression* group_size = nullptr;
 
-        auto add_to_group_size = [&group_size, this](Expression* size) {
-            if ( group_size )
-                group_size = builder()->sum(group_size, size);
-            else
-                group_size = size;
-        };
-
         for ( auto i : field_indices ) {
             const auto& field_production = p->fields()[i];
 
@@ -1682,7 +1675,9 @@ struct ProductionVisitor : public production::Visitor {
             if ( field_attributes->has(hilti::Attribute::Kind::ParseFrom) ||
                  field_attributes->has(hilti::Attribute::Kind::ParseAt) ) {
                 // These don't affect the size of the group.
-                add_to_group_size(builder()->integer(0));
+                if ( ! group_size )
+                    group_size = builder()->integer(0);
+
                 continue;
             }
 
@@ -1690,13 +1685,25 @@ struct ProductionVisitor : public production::Visitor {
                 // Cannot determine the size of the group.
                 return nullptr;
 
+            Expression* field_parse_size = nullptr;
+
             if ( auto* size_attr = field_attributes->find(hilti::Attribute::Kind::Size) )
-                add_to_group_size(*size_attr->valueAsExpression());
+                field_parse_size = *size_attr->valueAsExpression();
             else if ( auto* production_size = field_production->parseSize(builder()) )
-                add_to_group_size(production_size);
+                field_parse_size = production_size;
             else
                 // Cannot determine the size of the group.
                 return nullptr;
+
+            if ( ! field_parse_size->isConstant() )
+                // Size of the group isn't fixed, meaning the amount may differ
+                // depending on when we evaluate it.
+                return nullptr;
+
+            if ( group_size )
+                group_size = builder()->sum(group_size, field_parse_size);
+            else
+                group_size = field_parse_size;
         }
 
         return group_size;
@@ -1763,6 +1770,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // Group adjacent fields with same sync point.
         std::vector<std::pair<std::vector<uint64_t>, std::optional<uint64_t>>> groups;
+
         for ( uint64_t i = 0; i < sync_points.size(); ++i ) {
             const auto& sync_point = sync_points[i];
             if ( ! groups.empty() && groups.back().second == sync_point )
@@ -1794,6 +1802,12 @@ struct ProductionVisitor : public production::Visitor {
                     parseField(p->fields()[field]);
 
             else {
+                // Determine if the group has a fixed size. If so, remember it's start position.
+                Expression* group_begin = nullptr;
+                Expression* group_size = parseSizeOfSynchronizationGroup(p, fields);
+                if ( group_size )
+                    group_begin = builder()->addTmp("sync_group_begin", state().cur);
+
                 auto try_ = builder()->addTry();
 
                 pushBuilder(try_.first, [&]() {
@@ -1804,18 +1818,31 @@ struct ProductionVisitor : public production::Visitor {
                 pushBuilder(try_.second.addCatch(
                                 builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
                             [&]() {
-                                // There is a sync point; run its production w/o consuming input until parsing
-                                // succeeds or we run out of data.
                                 builder()->addDebugMsg("spicy-verbose",
                                                        fmt("failed to parse, will try to synchronize at '%s'",
                                                            p->fields()[*sync_point]->meta().field()->id()));
 
-                                // Remember the original error so we can report it in case the sync failed.
+                                // Remember the original error so we can report it in case the sync never gets
+                                // confirmed. This is also what marks that we are in trial mode.
                                 builder()->addAssign(state().error, builder()->id("e"));
+
+                                if ( group_size )
+                                    builder()->addMemberCall(state().self, "__on_0x25_synced", {},
+                                                             p->fields()[*sync_point]->location());
                             });
 
-                startSynchronize(*p->fields()[*sync_point]);
-                ++trial_loops;
+                if ( group_size ) {
+                    // When the whole group is of fixed size, we know directly where
+                    // to continue parsing, and can just jump there. We prefer this
+                    // over pattern-based synchronization.
+                    builder()->addAssign(state().cur, builder()->memberCall(group_begin, "advance", {group_size}));
+                    pb->trimInput();
+                }
+                else {
+                    // Start searching for the sync point.
+                    startSynchronize(*p->fields()[*sync_point]);
+                    ++trial_loops;
+                }
             }
         }
 

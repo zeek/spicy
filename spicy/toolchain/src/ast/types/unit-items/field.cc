@@ -48,8 +48,6 @@ struct SizeVisitor : hilti::visitor::PreOrder {
             hilti::rt::cannot_be_reached();
     }
 
-    void operator()(hilti::type::SignedInteger* n) final { result = builder->integer(n->width() / 8U); }
-    void operator()(hilti::type::UnsignedInteger* n) final { result = builder->integer(n->width() / 8U); }
     void operator()(hilti::type::Bitfield* n) final { result = builder->integer(n->width() / 8U); }
 
     void operator()(hilti::type::Real*) final {
@@ -58,6 +56,8 @@ struct SizeVisitor : hilti::visitor::PreOrder {
                                   builder->integer(4U), builder->integer(8U));
     }
 
+    void operator()(hilti::type::SignedInteger* n) final { result = builder->integer(n->width() / 8U); }
+    void operator()(hilti::type::UnsignedInteger* n) final { result = builder->integer(n->width() / 8U); }
     void operator()(hilti::type::Void* n) final { result = builder->integer(0U); }
 };
 

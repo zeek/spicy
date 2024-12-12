@@ -5,9 +5,6 @@
 #include <string>
 #include <utility>
 
-#include <hilti/ast/ctors/integer.h>
-#include <hilti/ast/expressions/ctor.h>
-
 #include <spicy/ast/builder/builder.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
