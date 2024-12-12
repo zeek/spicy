@@ -2805,11 +2805,14 @@ void ParserBuilder::advanceToNextData() {
 }
 
 void ParserBuilder::advanceInput(Expression* i) {
-    if ( i->type()->type()->isA<hilti::type::stream::View>() )
-        builder()->addAssign(state().cur, i);
-    else
-        builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance", {i}));
+    // A previous version allowed to pass in a view, which however didn't work
+    // reliably (because the expression might not have been resolved yet, which
+    // would mislead the type check). We assert on that old usage of the API
+    // just in case there's still a place out there where it happened to be
+    // working previously.
+    assert(! i->type()->type()->isA<hilti::type::stream::View>());
 
+    builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance", {i}));
     trimInput();
 }
 
