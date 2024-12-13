@@ -60,6 +60,18 @@
 using namespace hilti;
 using util::fmt;
 
+/**
+ * A mapping of node tags to any attributes that node allows. When a new
+ * attribute is added, this map must be updated to accept that attribute on any
+ * nodes it applies to.
+ */
+static std::unordered_map<node::Tag, std::unordered_set<Attribute::Kind>> allowed_attributes{
+    {node::tag::Function,
+     {Attribute::Kind::Cxxname, Attribute::Kind::HavePrototype, Attribute::Kind::Priority, Attribute::Kind::Static,
+      Attribute::Kind::NeededByFeature, Attribute::Kind::Debug, Attribute::Kind::Foreach, Attribute::Kind::Error}},
+    {node::tag::declaration::Parameter, {Attribute::Kind::RequiresTypeFeature}},
+};
+
 void hilti::validator::VisitorMixIn::deprecated(const std::string& msg, const Location& l) const {
     hilti::logger().deprecated(msg, l);
 }
@@ -124,6 +136,30 @@ struct VisitorPre : visitor::PreOrder, public validator::VisitorMixIn {
 struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     using hilti::validator::VisitorMixIn::VisitorMixIn;
 
+    // Ensures that the node represented by tag is allowed to have all of the
+    // provided attributes. This does not use any context, if more information
+    // is needed, then do the check elsewhere.
+    void checkNodeAttributes(node::Tag tag, AttributeSet* attributes, const std::string_view& where) {
+        if ( ! attributes )
+            return;
+
+        auto it = allowed_attributes.find(tag);
+
+        if ( it == allowed_attributes.end() ) {
+            if ( ! attributes->attributes().empty() )
+                error(hilti::util::fmt("No attributes expected in %s", where), attributes);
+
+            return;
+        }
+
+        auto allowed = it->second;
+
+        for ( const auto& attr : attributes->attributes() ) {
+            if ( allowed.find(attr->kind()) == allowed.end() )
+                error(hilti::util::fmt("invalid attribute '%s' in %s", attr->attributeName(), where), attr);
+        }
+    }
+
     // Returns an error if the given type cannot be used for ordering at
     // runtime.
     Result<Nothing> isSortable(QualifiedType* t) {
@@ -176,6 +212,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(Function* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "function");
+
         if ( auto attrs = n->attributes() ) {
             if ( auto prio = attrs->find(hilti::Attribute::Kind::Priority) ) {
                 if ( n->ftype()->flavor() != type::function::Flavor::Hook )
@@ -260,6 +298,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(declaration::Parameter* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), n->displayName());
+
         if ( ! n->type()->type()->isA<type::Auto>() ) {
             if ( ! n->type()->type()->isAllocable() && ! n->type()->type()->isA<type::Any>() )
                 error(fmt("type '%s' cannot be used for function parameter", *n->type()), n);
@@ -285,10 +325,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( auto attrs = n->attributes() )
             for ( const auto& attr : attrs->attributes() ) {
-                if ( attr->kind() != hilti::Attribute::Kind::RequiresTypeFeature )
-                    error(fmt("invalid attribute '%s' for function parameter", attr->attributeName()), n);
-
-                else {
+                if ( attr->kind() == hilti::Attribute::Kind::RequiresTypeFeature ) {
                     if ( auto x = attr->valueAsString(); ! x )
                         error(x.error(), n);
                 }

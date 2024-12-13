@@ -8,8 +8,6 @@
 [error] <...>/attr-multiple-fail.spicy:21:5-21:89: '&type' can be used at most once
 [error] <...>/attr-multiple-fail.spicy:23:5-23:44: '&until' can be used at most once
 [error] <...>/attr-multiple-fail.spicy:24:5-24:64: '&until-including' can be used at most once
-[error] <...>/attr-multiple-fail.spicy:25:5-25:45: '&while' can be used at most once
+[error] <...>/attr-multiple-fail.spicy:27:11-27:38: attributes cannot be combined: &size, &max-size
 [error] <...>/attr-multiple-fail.spicy:28:11-28:38: attributes cannot be combined: &size, &max-size
-[error] <...>/attr-multiple-fail.spicy:29:11-29:38: attributes cannot be combined: &size, &max-size
-[error] <...>/attr-multiple-fail.spicy:33:5-33:27: field cannot have both &ipv4 and &ipv6 attributes
 [error] spicyc: aborting after errors

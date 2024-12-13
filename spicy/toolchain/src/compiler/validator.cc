@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <unordered_set>
+
 #include <spicy/rt/mime.h>
 
 #include <hilti/ast/ast-context.h>
@@ -21,6 +23,61 @@ using namespace spicy;
 using hilti::util::fmt;
 
 namespace {
+/**
+ * A mapping of node tags to any attributes that node allows. When a new
+ * attribute is added, this map must be updated to accept that attribute on any
+ * nodes it applies to.
+ *
+ * This also includes many types that cannot themselves contain attributes. Those
+ * types ensure that they can be within a field with the provided attributes.
+ */
+std::unordered_map<node::Tag, std::unordered_set<hilti::Attribute::Kind>> allowed_attributes{
+    {hilti::node::tag::declaration::Hook,
+     {hilti::Attribute::Kind::Foreach, hilti::Attribute::Kind::Error, hilti::Attribute::Kind::Debug,
+      hilti::Attribute::Kind::Priority}},
+    {hilti::node::tag::declaration::Type, {hilti::Attribute::Kind::Cxxname, hilti::Attribute::Kind::BitOrder}},
+    {hilti::node::tag::type::Enum, {hilti::Attribute::Kind::Cxxname}},
+    {hilti::node::tag::type::Unit,
+     {hilti::Attribute::Kind::ByteOrder, hilti::Attribute::Kind::Convert, hilti::Attribute::Kind::Size,
+      hilti::Attribute::Kind::MaxSize, hilti::Attribute::Kind::Requires}},
+    {hilti::node::tag::type::unit::item::Variable, {hilti::Attribute::Kind::Optional}},
+    {hilti::node::tag::type::unit::item::Field,
+     {hilti::Attribute::Kind::Count,       hilti::Attribute::Kind::Convert,        hilti::Attribute::Kind::Chunked,
+      hilti::Attribute::Kind::Synchronize, hilti::Attribute::Kind::Size,           hilti::Attribute::Kind::ParseAt,
+      hilti::Attribute::Kind::MaxSize,     hilti::Attribute::Kind::ParseFrom,      hilti::Attribute::Kind::Type,
+      hilti::Attribute::Kind::Until,       hilti::Attribute::Kind::UntilIncluding, hilti::Attribute::Kind::While,
+      hilti::Attribute::Kind::IPv4,        hilti::Attribute::Kind::IPv6,           hilti::Attribute::Kind::Eod,
+      hilti::Attribute::Kind::ByteOrder,   hilti::Attribute::Kind::BitOrder,       hilti::Attribute::Kind::Requires,
+      hilti::Attribute::Kind::Try,         hilti::Attribute::Kind::Nosub,          hilti::Attribute::Kind::Default}},
+    {hilti::node::tag::type::unit::item::Block,
+     {hilti::Attribute::Kind::Size, hilti::Attribute::Kind::ParseAt, hilti::Attribute::Kind::ParseFrom}},
+    {hilti::node::tag::type::unit::item::Switch,
+     {hilti::Attribute::Kind::Size, hilti::Attribute::Kind::ParseAt, hilti::Attribute::Kind::ParseFrom}},
+    {hilti::node::tag::type::unit::item::Property,
+     {hilti::Attribute::Kind::Originator, hilti::Attribute::Kind::Responder}},
+
+    // The following apply only to types within a field
+    {hilti::node::tag::type::Address,
+     {hilti::Attribute::Kind::IPv4, hilti::Attribute::Kind::IPv6, hilti::Attribute::Kind::ByteOrder}},
+    {hilti::node::tag::type::Bitfield, {hilti::Attribute::Kind::ByteOrder, hilti::Attribute::Kind::BitOrder}},
+    {hilti::node::tag::type::Bytes,
+     {hilti::Attribute::Kind::Eod, hilti::Attribute::Kind::Until, hilti::Attribute::Kind::UntilIncluding,
+      hilti::Attribute::Kind::Chunked, hilti::Attribute::Kind::Nosub}},
+    {hilti::node::tag::type::Real, {hilti::Attribute::Kind::Type, hilti::Attribute::Kind::ByteOrder}},
+    {hilti::node::tag::type::RegExp, {hilti::Attribute::Kind::Nosub}},
+    {hilti::node::tag::type::SignedInteger, {hilti::Attribute::Kind::ByteOrder, hilti::Attribute::Kind::BitOrder}},
+    {hilti::node::tag::type::Unit, {hilti::Attribute::Kind::ParseAt}},
+    {hilti::node::tag::type::UnsignedInteger, {hilti::Attribute::Kind::ByteOrder, hilti::Attribute::Kind::BitOrder}},
+    {hilti::node::tag::type::Vector,
+     {hilti::Attribute::Kind::UntilIncluding, hilti::Attribute::Kind::While, hilti::Attribute::Kind::Until,
+      hilti::Attribute::Kind::Count, hilti::Attribute::Kind::Eod}},
+};
+
+std::unordered_set<hilti::Attribute::Kind> allowed_attributes_for_any_field =
+    {hilti::Attribute::Kind::Synchronize, hilti::Attribute::Kind::Convert, hilti::Attribute::Kind::Requires,
+     hilti::Attribute::Kind::Default,     hilti::Attribute::Kind::Size,    hilti::Attribute::Kind::MaxSize,
+     hilti::Attribute::Kind::Try,         hilti::Attribute::Kind::ParseAt, hilti::Attribute::Kind::ParseFrom};
+
 
 bool isEnumType(QualifiedType* t, const char* expected_id) {
     return t->type()->typeID() && t->type()->typeID() == ID(expected_id);
@@ -36,8 +93,8 @@ bool supportsLiterals(QualifiedType* t) {
 // Helper to make sure a field's attributes are consistent. This is type-independent.
 hilti::Result<hilti::Nothing> checkFieldAttributes(type::unit::item::Field* f) {
     // Can't combine ipv4 and ipv6
-    auto v4 = f->attributes()->find(hilti::Attribute::Kind::IPv4);
-    auto v6 = f->attributes()->find(hilti::Attribute::Kind::IPv6);
+    auto v4 = f->attributes()->has(hilti::Attribute::Kind::IPv4);
+    auto v6 = f->attributes()->has(hilti::Attribute::Kind::IPv6);
 
     if ( v4 && v6 )
         return hilti::result::Error("field cannot have both &ipv4 and &ipv6 attributes");
@@ -112,8 +169,8 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
     }
 
     if ( pt->type()->isA<hilti::type::Address>() ) {
-        auto v4 = f->attributes()->find(hilti::Attribute::Kind::IPv4);
-        auto v6 = f->attributes()->find(hilti::Attribute::Kind::IPv6);
+        auto v4 = f->attributes()->has(hilti::Attribute::Kind::IPv4);
+        auto v6 = f->attributes()->has(hilti::Attribute::Kind::IPv6);
 
         if ( ! (v4 || v6) )
             return hilti::result::Error("address field must come with either &ipv4 or &ipv6 attribute");
@@ -149,16 +206,9 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
         return hilti::Nothing();
     }
 
-    if ( pt->type()->isA<hilti::type::Void>() ) {
-        if ( f->attributes() ) {
-            for ( const auto& a : f->attributes()->attributes() ) {
-                if ( a->kind() != hilti::Attribute::Kind::Requires )
-                    return hilti::result::Error("no parsing attributes supported for void field");
-            }
-        }
-
+    if ( pt->type()->isA<hilti::type::Void>() )
+        // Already validated that Void only has allowed attributes
         return hilti::Nothing();
-    }
 
     // A vector can contain a sub-item
     if ( f->item() ) {
@@ -198,6 +248,50 @@ struct VisitorPre : visitor::PreOrder, hilti::validator::VisitorMixIn {
 };
 
 struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
+    // Ensures that the node represented by tag is allowed to have all of the
+    // provided attributes. This does not use any context, if more information
+    // is needed, then do the check elsewhere.
+    void checkNodeAttributes(node::Tag tag, AttributeSet* attributes, const std::string_view& where) {
+        if ( ! attributes )
+            return;
+
+        auto it = allowed_attributes.find(tag);
+
+        if ( it == allowed_attributes.end() ) {
+            if ( ! attributes->attributes().empty() )
+                error(hilti::util::fmt("No attributes expected in %s", where), attributes);
+
+            return;
+        }
+
+        auto allowed = it->second;
+
+        for ( const auto& attr : attributes->attributes() )
+            if ( allowed.find(attr->kind()) == allowed.end() )
+                error(hilti::util::fmt("invalid attribute '%s' in %s", attr->attributeName(), where), attr);
+    }
+
+    // Ensures that the type represented by typeTag can be within a field with
+    // the provided attributes. This is necessary since most attributes will apply
+    // to the field but not its type, so this gives a bit more context-sensitive
+    // validation for a common case.
+    void validateFieldTypeAttributes(node::Tag typeTag, AttributeSet* attributes, const std::string_view& clazz) {
+        if ( ! attributes )
+            return;
+
+        std::unordered_set<hilti::Attribute::Kind> type_specific_attrs = {};
+        auto it = allowed_attributes.find(typeTag);
+        if ( it != allowed_attributes.end() )
+            type_specific_attrs = it->second;
+
+        for ( const auto& attr : attributes->attributes() ) {
+            if ( allowed_attributes_for_any_field.find(attr->kind()) == allowed_attributes_for_any_field.end() &&
+                 type_specific_attrs.find(attr->kind()) == type_specific_attrs.end() )
+                error(hilti::util::fmt("invalid attribute '%s' for field with type '%s'", attr->attributeName(), clazz),
+                      attr);
+        }
+    }
+
     using hilti::validator::VisitorMixIn::VisitorMixIn;
 
     template<typename GlobalOrLocalVariable>
@@ -368,6 +462,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(hilti::declaration::Type* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "type declaration");
+
         if ( n->linkage() == hilti::declaration::Linkage::Public && n->type()->alias() ) {
             if ( n->type()->alias()->resolvedDeclaration()->linkage() != hilti::declaration::Linkage::Public )
                 error("public unit alias cannot refer to a non-public type", n);
@@ -375,6 +471,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::type::unit::item::Property* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "unit property");
+
         if ( n->id().str() == "%random-access" ) {
             if ( n->expression() )
                 error("%random-access does not accept an argument", n);
@@ -492,25 +590,33 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::declaration::Hook* n) final {
-        int count = 0;
-        for ( const auto& a : n->attributes()->attributes() ) {
-            if ( a->kind() == hilti::Attribute::Kind::Foreach ) {
-                if ( auto field = n->parent<spicy::type::unit::item::Field>(); field && ! field->isContainer() )
-                    error("'foreach' can only be used with containers", n);
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "hook declaration");
 
-                ++count;
+        if ( auto field = n->parent<spicy::type::unit::item::Field>();
+             field && n->attributes()->has(hilti::Attribute::Kind::Foreach) && ! field->isContainer() )
+            error("'foreach' can only be used with containers", n);
+
+        if ( n->attributes()->has(hilti::Attribute::Kind::Foreach) &&
+             n->attributes()->has(hilti::Attribute::Kind::Error) )
+            error("hook cannot have both 'foreach' and '%error'", n);
+
+        // Ensure we only have one foreach or one %error
+        int foreach_count = 0;
+        int err_count = 0;
+        if ( auto attrs = n->attributes() ) {
+            for ( const auto& attr : attrs->attributes() ) {
+                if ( attr->kind() == hilti::Attribute::Kind::Foreach )
+                    foreach_count++;
+                else if ( attr->kind() == hilti::Attribute::Kind::Error )
+                    err_count++;
             }
-            else if ( a->kind() == hilti::Attribute::Kind::Error )
-                ++count;
-            else if ( a->kind() == hilti::Attribute::Kind::Debug || a->kind() == hilti::Attribute::Kind::Priority ) {
-                // ok on any hook
-            }
-            else
-                error(fmt("unknown hook type '%s'", a->attributeName()), n);
         }
 
-        if ( count > 1 )
-            error("hook cannot have be both types, 'foreach' and '%error'", n);
+        if ( foreach_count > 1 )
+            error("hook can only have one 'foreach'", n);
+
+        if ( err_count > 1 )
+            error("hook can only have one '%error'", n);
     }
 
     void operator()(spicy::type::unit::item::UnitHook* n) final {
@@ -660,6 +766,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::type::Unit* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "unit type");
+
         if ( auto attrs = n->attributes() ) {
             if ( attrs->has(hilti::Attribute::Kind::Size) && attrs->has(hilti::Attribute::Kind::MaxSize) )
                 error(("attributes cannot be combined: &size, &max-size"), n);
@@ -710,8 +818,6 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     if ( ! a->hasValue() )
                         error("&convert must provide an expression", n);
                 }
-                else
-                    error(fmt("attribute %s not supported for unit types", a->attributeName()), n);
             }
         }
 
@@ -769,35 +875,27 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             error("units cannot be compared with !=", n);
     }
 
-    // Check attributes for items containing sequence of sub-items (Block, Switch).
-    void checkAttributesForAggregateItem(spicy::type::unit::Item* n, AttributeSet* attrs) {
-        if ( ! attrs )
-            return;
-
-        for ( const auto& attr : attrs->attributes() ) {
-            if ( ! hilti::Attribute::isOneOf(attr->kind(),
-                                             {hilti::Attribute::Kind::Size, hilti::Attribute::Kind::ParseAt,
-                                              hilti::Attribute::Kind::ParseFrom}) )
-                error(fmt("attribute '%s' is not supported here", attr->attributeName()), n);
-        }
-    }
-
     void operator()(spicy::type::unit::item::Block* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "unit block");
+
         if ( n->condition() && ! n->condition()->type()->type()->isA<hilti::type::Bool>() )
             error("block condition must be of type bool", n);
-
-        checkAttributesForAggregateItem(n, n->attributes());
     }
 
     void operator()(spicy::type::unit::item::Field* n) final {
-        const auto count_attr = n->attributes()->find(hilti::Attribute::Kind::Count);
-        const auto repeat = n->repeatCount();
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "field");
+
+        auto type = n->parseType()->type();
+        validateFieldTypeAttributes(type->nodeTag(), n->attributes(), type->typeClass());
 
         if ( n->isSkip() ) {
             if ( ! n->sinks().empty() )
                 error("skip field cannot have sinks attached", n);
         }
 
+
+        const auto count_attr = n->attributes()->find(hilti::Attribute::Kind::Count);
+        const auto repeat = n->repeatCount();
         if ( count_attr && (repeat && ! repeat->type()->type()->isA<hilti::type::Null>()) )
             error("cannot have both '[..]' and &count", n);
 
@@ -811,7 +909,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 "removed in future versions",
                 n->meta().location());
 
-        if ( n->sinks().size() && ! n->parseType()->type()->isA<hilti::type::Bytes>() )
+        if ( n->sinks().size() && ! type->isA<hilti::type::Bytes>() )
             error("only a bytes field can have sinks attached", n);
 
         for ( auto* s : n->sinks() ) {
@@ -901,6 +999,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::type::unit::item::Switch* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "unit switch");
+
         if ( n->cases().empty() ) {
             error("switch without cases", n);
             return;
@@ -948,7 +1048,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                         }
                     }
 
-                    if ( f->attributes()->find(hilti::Attribute::Kind::Synchronize) )
+                    if ( f->attributes()->has(hilti::Attribute::Kind::Synchronize) )
                         error(fmt("unit switch branches cannot be &synchronize"), n);
 
                     seen_fields.emplace_back(f);
@@ -958,26 +1058,23 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         if ( defaults > 1 )
             error("more than one default case", n);
-
-        checkAttributesForAggregateItem(n, n->attributes());
     }
 
     void operator()(spicy::type::unit::item::Variable* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "unit variable");
+
         if ( ! n->parent()->isA<spicy::type::Unit>() )
             error("unit variables must be declared at the top-level of a unit", n);
-
-        if ( auto attrs = n->attributes() ) {
-            for ( const auto& attr : attrs->attributes() ) {
-                if ( attr->kind() != hilti::Attribute::Kind::Optional )
-                    error(fmt("attribute '%s' not supported for unit variables", attr->attributeName()), n);
-            }
-        }
 
         if ( n->itemType()->type()->isA<type::Sink>() )
             error(
                 "cannot use type 'sink' for unit variables; use either a 'sink' item or a reference to a sink "
                 "('sink&')",
                 n);
+    }
+
+    void operator()(spicy::type::unit::item::Sink* n) final {
+        checkNodeAttributes(n->nodeTag(), n->attributes(), "unit sink");
     }
 
     void operator()(spicy::declaration::UnitHook* n) final {

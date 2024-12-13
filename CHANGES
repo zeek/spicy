@@ -1,3 +1,16 @@
+1.12.0-dev.242 | 2024-12-13 09:26:36 +0100
+
+  * GH-1901: Add consistent validation for attributes. (Evan Typanski, Corelight)
+
+    This updates attribute validation to see if attributes are in the
+    right places. The goal here is to have one place (ie a big set) to
+    answer the question "Can I use X attribute on Y node?"
+
+    There are a lot more moving parts with attribute validation, but those
+    generally have to do with behavior. A lot of that requires extra context
+    in the validator, which is exactly what the validator is meant to do.
+    Much of that is pretty ad-hoc, so it could get cleaned up as well.
+
 1.12.0-dev.240 | 2024-12-12 13:09:05 +0100
 
   * Make sure autogen-docs pre-commit hook can always run in CI. (Benjamin Bannier, Corelight)

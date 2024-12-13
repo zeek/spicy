@@ -1,0 +1,17 @@
+# @TEST-DOC: Checks that only certain types can get certain attributes, otherwise there is an error
+#
+# @TEST-EXEC-FAIL: spicyc -d -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+module foo;
+
+import spicy;
+
+public type X = unit {
+    n1: uint8 &ipv4;
+    n2: uint8 &ipv6;
+    n3: uint8 &ipv4 &ipv6;
+    n4: bytes &type=spicy::RealType::IEEE754_Single &size=1;
+    n5: bytes &byte-order=spicy::ByteOrder::Little;
+    n6: void &ipv4;
+};
