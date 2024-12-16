@@ -1,13 +1,39 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/unicode.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::bytes::literals;
 
 TEST_SUITE_BEGIN("string");
+
+TEST_CASE("encode") {
+    CHECK_EQ(string::encode("123", Enum(unicode::Charset::ASCII)), "123"_b);
+    CHECK_EQ(string::encode("abc", Enum(unicode::Charset::ASCII)), "abc"_b);
+    CHECK_EQ(string::encode("abc", Enum(unicode::Charset::UTF8)), "abc"_b);
+
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::UTF8)), "\xF0\x9F\x98\x85"_b);
+    CHECK_EQ(string::encode("\xc3\x28", Enum(unicode::Charset::UTF8)), "\ufffd("_b);
+    CHECK_EQ(string::encode("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::IGNORE), "("_b);
+    CHECK_THROWS_WITH_AS(string::encode("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::STRICT),
+                         "illegal UTF8 sequence in string", const RuntimeError&);
+
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII), unicode::DecodeErrorStrategy::REPLACE),
+             "????"_b);
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII), unicode::DecodeErrorStrategy::IGNORE),
+             ""_b);
+    CHECK_THROWS_WITH_AS(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII),
+                                        unicode::DecodeErrorStrategy::STRICT),
+                         "illegal ASCII character in string", const RuntimeError&);
+
+    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
+    CHECK_THROWS_WITH_AS(string::encode("123", Enum(unicode::Charset::Undef)), "unknown character set for encoding",
+                         const RuntimeError&);
+}
 
 TEST_CASE("lower") {
     CHECK_EQ(string::lower(""), "");

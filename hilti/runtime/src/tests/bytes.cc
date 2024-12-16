@@ -39,29 +39,6 @@ TEST_CASE("at") {
     CHECK_THROWS_WITH_AS(*b.at(5), "index 5 out of bounds", const IndexError&);
 }
 
-TEST_CASE("construct") {
-    CHECK_EQ(Bytes("123", Enum(unicode::Charset::ASCII)).str(), "123");
-    CHECK_EQ(Bytes("abc", Enum(unicode::Charset::ASCII)).str(), "abc");
-    CHECK_EQ(Bytes("abc", Enum(unicode::Charset::UTF8)).str(), "abc");
-
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", Enum(unicode::Charset::UTF8)).str(), "\xF0\x9F\x98\x85");
-    CHECK_EQ(Bytes("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::REPLACE).str(), "\ufffd(");
-    CHECK_EQ(Bytes("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::IGNORE).str(), "(");
-    CHECK_THROWS_WITH_AS(Bytes("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::STRICT).str(),
-                         "illegal UTF8 sequence in string", const RuntimeError&);
-
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII), unicode::DecodeErrorStrategy::REPLACE).str(),
-             "????");
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII), unicode::DecodeErrorStrategy::IGNORE).str(), "");
-    CHECK_THROWS_WITH_AS(Bytes("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII), unicode::DecodeErrorStrategy::STRICT)
-                             .str(),
-                         "illegal ASCII character in string", const RuntimeError&);
-
-    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS(Bytes("123", Enum(unicode::Charset::Undef)), "unknown character set for encoding",
-                         const RuntimeError&);
-}
-
 TEST_CASE("decode") {
     CHECK_EQ("123"_b.decode(unicode::Charset::ASCII), "123");
     CHECK_EQ("abc"_b.decode(unicode::Charset::ASCII), "abc");
