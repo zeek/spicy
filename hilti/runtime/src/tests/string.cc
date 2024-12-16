@@ -12,26 +12,26 @@ using namespace hilti::rt::bytes::literals;
 TEST_SUITE_BEGIN("string");
 
 TEST_CASE("encode") {
-    CHECK_EQ(string::encode("123", Enum(unicode::Charset::ASCII)), "123"_b);
-    CHECK_EQ(string::encode("abc", Enum(unicode::Charset::ASCII)), "abc"_b);
-    CHECK_EQ(string::encode("abc", Enum(unicode::Charset::UTF8)), "abc"_b);
+    CHECK_EQ(string::encode("123", unicode::Charset::ASCII), "123"_b);
+    CHECK_EQ(string::encode("abc", unicode::Charset::ASCII), "abc"_b);
+    CHECK_EQ(string::encode("abc", unicode::Charset::UTF8), "abc"_b);
 
-    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::UTF8)), "\xF0\x9F\x98\x85"_b);
-    CHECK_EQ(string::encode("\xc3\x28", Enum(unicode::Charset::UTF8)), "\ufffd("_b);
-    CHECK_EQ(string::encode("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::IGNORE), "("_b);
-    CHECK_THROWS_WITH_AS(string::encode("\xc3\x28", Enum(unicode::Charset::UTF8), unicode::DecodeErrorStrategy::STRICT),
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", unicode::Charset::UTF8), "\xF0\x9F\x98\x85"_b);
+    CHECK_EQ(string::encode("\xc3\x28", unicode::Charset::UTF8), "\ufffd("_b);
+    CHECK_EQ(string::encode("\xc3\x28", unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "("_b);
+    CHECK_THROWS_WITH_AS(string::encode("\xc3\x28", unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 
-    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII), unicode::DecodeErrorStrategy::REPLACE),
+
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE),
              "????"_b);
-    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII), unicode::DecodeErrorStrategy::IGNORE),
-             ""_b);
-    CHECK_THROWS_WITH_AS(string::encode("\xF0\x9F\x98\x85", Enum(unicode::Charset::ASCII),
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE), ""_b);
+    CHECK_THROWS_WITH_AS(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII,
                                         unicode::DecodeErrorStrategy::STRICT),
                          "illegal ASCII character in string", const RuntimeError&);
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS(string::encode("123", Enum(unicode::Charset::Undef)), "unknown character set for encoding",
+    CHECK_THROWS_WITH_AS(string::encode("123", unicode::Charset::Undef), "unknown character set for encoding",
                          const RuntimeError&);
 }
 
