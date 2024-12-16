@@ -10,6 +10,7 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 
+using namespace std::string_literals;
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
@@ -55,6 +56,33 @@ TEST_CASE("decode") {
     CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "(");
     CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
+
+    CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc");
+    CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc");
+
+    // Our `decode` of UTF-16 bytes returns UTF8 string with BOM if they do not fit into ASCII, see e.g.,
+    // https://stackoverflow.com/questions/2223882/whats-the-difference-between-utf-8-and-utf-8-with-bom.
+    // To compute the expected results in Python encode with `utf_8_sig` encoding.
+    //
+    // LHS is an UTF16 encoding of '東京', RHS UTF8 with BOM.
+    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
+
+    // Decoding of UTF16 with BOM. The byte order in the charset is just a hint, but we still decode as UTF16.
+    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
+
+    // Decoding of too few bytes for UTF16 (expected even number, provided uneven).
+    CHECK_THROWS_WITH_AS(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
+                         "illegal UTF16 character in string", const RuntimeError&);
+    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab");
+    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE), "ab\ufffd");
+
+    // Our UTF16 implementation seems to differ in what it considers invalid encodings, e.g., `\x00\xd8` is rejected by
+    // python-3.1[1-3], but accepted by us.
+    //
+    // TODO(bbannier): Test rejection of invalid UTF16 (but with even length).
+    CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "");
 
     CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
@@ -192,6 +220,13 @@ TEST_CASE("lower") {
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.lower(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
+
+    // No case change expected for these Japanese codepoints.
+    const auto tokio8 = "東京"_b;
+    CHECK_EQ(tokio8.lower(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio8);
+
+    const auto tokio16 = "\xff\xfeqg\xacN"_b; // 東京 in UTF16LE.
+    CHECK_EQ(tokio16.lower(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio16);
 }
 
 TEST_CASE("match") {
@@ -488,9 +523,19 @@ TEST_CASE("upper") {
     CHECK_EQ("Gänsefüßchen"_b.upper(unicode::Charset::UTF8).str(), "GÄNSEFÜẞCHEN");
     CHECK_EQ("Gänsefüßchen"_b.upper(unicode::Charset::ASCII).str(), "G??NSEF????CHEN");
 
+    CHECK_EQ(Bytes("a\0b\0c\0"s).upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
+             Bytes("A\0B\0C\0"s).upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT));
+
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS("123"_b.upper(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
+
+    // No case change expected for these Japanese codepoints.
+    const auto tokio8 = "東京"_b;
+    CHECK_EQ(tokio8.upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio8);
+
+    const auto tokio16 = "\xff\xfeqg\xacN"_b; // 東京 in UTF16LE.
+    CHECK_EQ(tokio16.upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio16);
 }
 
 TEST_CASE("append") {

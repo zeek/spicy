@@ -18,6 +18,8 @@ std::string to_string(const unicode::Charset& x, tag /*unused*/) {
     switch ( x.value() ) {
         case unicode::Charset::ASCII: return "Charset::ASCII";
         case unicode::Charset::UTF8: return "Charset::UTF8";
+        case unicode::Charset::UTF16BE: return "Charset::UTF16BE";
+        case unicode::Charset::UTF16LE: return "Charset::UTF16LE";
         case unicode::Charset::Undef: return "Charset::Undef";
     }
 

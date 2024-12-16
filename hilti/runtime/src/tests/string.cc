@@ -12,6 +12,7 @@ using namespace hilti::rt::bytes::literals;
 TEST_SUITE_BEGIN("string");
 
 TEST_CASE("encode") {
+    CHECK_EQ(string::encode("", unicode::Charset::ASCII), ""_b);
     CHECK_EQ(string::encode("123", unicode::Charset::ASCII), "123"_b);
     CHECK_EQ(string::encode("abc", unicode::Charset::ASCII), "abc"_b);
     CHECK_EQ(string::encode("abc", unicode::Charset::UTF8), "abc"_b);
@@ -29,6 +30,11 @@ TEST_CASE("encode") {
     CHECK_THROWS_WITH_AS(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII,
                                         unicode::DecodeErrorStrategy::STRICT),
                          "illegal ASCII character in string", const RuntimeError&);
+
+    CHECK_EQ(string::encode("abc", unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "a\0b\0c\0"_b);
+    CHECK_EQ(string::encode("abc", unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "\0a\0b\0c"_b);
+    CHECK_EQ(string::encode("東京", unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "qg\xacN"_b);
+    CHECK_EQ(string::encode("東京", unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "gqN\xac"_b);
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
     CHECK_THROWS_WITH_AS(string::encode("123", unicode::Charset::Undef), "unknown character set for encoding",

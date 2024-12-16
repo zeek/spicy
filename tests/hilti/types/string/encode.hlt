@@ -9,8 +9,12 @@ import hilti;
 
 hilti::print("testing".encode(hilti::Charset::ASCII));
 hilti::print("testüng\n".encode(hilti::Charset::ASCII));
+
 hilti::print("testüng".encode(hilti::Charset::UTF8));
 assert "testüng".encode(hilti::Charset::UTF8) == "testüng".encode(); # Check default
+
+assert "foo".encode(hilti::Charset::UTF16LE) == b"f\x00o\x00o\x00";
+assert "foo".encode(hilti::Charset::UTF16BE) == b"\x00f\x00o\x00o";
 
 assert b"testüng".decode().encode() == b"testüng"; # Check round-trip.
 

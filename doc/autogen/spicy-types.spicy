@@ -54,8 +54,10 @@ Specifies the character set for bytes encoding/decoding.
 .. spicy-code::
 
     type Charset = enum {
-        ASCII,
-        UTF8
+        ASCII,    # ASCII encoding
+        UTF8,     # UTF8 encoding
+        UTF16LE,  # UTF16 little endian encoding
+        UTF16BE,  # UTF16 big endian encoding
     };
 
 .. _spicy_decodeerrorstrategy:
@@ -67,9 +69,9 @@ Specifies how data is handled that's not representable in a specified character 
 .. spicy-code::
 
     type DecodeErrorStrategy = enum {
-        IGNORE,  # data is skipped but processing continues
-        REPLACE, # data is replaced with a valid place-holder and processing continues
-        STRICT   # runtime error is triggered
+        IGNORE,   # data is skipped but processing continues
+        REPLACE,  # data is replaced with a valid place-holder and processing continues
+        STRICT    # runtime error is triggered
     };
 
 .. _spicy_matchstate:
