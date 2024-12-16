@@ -252,18 +252,10 @@ public:
     using C = std::shared_ptr<const Base*>;
 
     /**
-     * Creates a bytes instance from a raw string representation
-     * encoded in a specified character set.
-     *
-     * @param s raw data
-     * @param cs character set the raw data is assumed to be encoded in
-     * @param errors how to handle errors when decoding the data
-     * @return bytes instances encoding *s* in character set *cs*
+     * Creates a bytes instance from a raw string representation.
      */
-    Bytes(std::string s, unicode::Charset cs,
-          unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
+    Bytes(Base s) : Base(std::move(s)) {}
 
-    Bytes(Base&& str) : Base(std::move(str)) {}
     Bytes(const Bytes& xs) : Base(xs) {}
     Bytes(Bytes&& xs) noexcept : Base(std::move(xs)) {}
 
@@ -455,7 +447,7 @@ public:
      */
     Bytes upper(unicode::Charset cs,
                 unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const {
-        return Bytes(hilti::rt::string::upper(decode(cs, errors), errors), cs, errors);
+        return hilti::rt::string::encode(hilti::rt::string::upper(decode(cs, errors), errors), cs, errors);
     }
 
     /**
@@ -467,7 +459,7 @@ public:
      */
     Bytes lower(unicode::Charset cs,
                 unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const {
-        return Bytes(hilti::rt::string::lower(decode(cs, errors), errors), cs, errors);
+        return hilti::rt::string::encode(hilti::rt::string::lower(decode(cs, errors), errors), cs, errors);
     }
 
     /**

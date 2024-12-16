@@ -14,6 +14,8 @@
 
 namespace hilti::rt {
 
+class Bytes;
+
 namespace string {
 
 /**
@@ -82,6 +84,18 @@ std::tuple<std::string, std::string> split1(const std::string& s);
  * @return a tuple with elements before and after the separator
  */
 std::tuple<std::string, std::string> split1(const std::string& s, const std::string& sep);
+
+/**
+ * Creates a bytes instance from a raw string representation
+ * encoded in a specified character set.
+ *
+ * @param s raw data
+ * @param cs character set the raw data is assumed to be encoded in
+ * @param errors how to handle errors when decoding the data
+ * @return bytes instances encoding *s* in character set *cs*
+ */
+rt::Bytes encode(std::string s, unicode::Charset cs,
+                 unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 } // namespace string
 
