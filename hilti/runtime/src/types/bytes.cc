@@ -241,6 +241,10 @@ Bytes Bytes::strip(bytes::Side side) const {
     cannot_be_reached();
 }
 
+Bytes Bytes::upper(unicode::Charset cs, unicode::DecodeErrorStrategy errors) const {
+    return string::encode(string::upper(decode(cs, errors), errors), cs, errors);
+}
+
 integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
     int64_t x = 0;
     if ( hilti::rt::atoi_n(str().begin(), str().end(), base, &x) == str().end() )
@@ -313,6 +317,10 @@ double Bytes::toReal() const {
     }
 
     return d;
+}
+
+Bytes Bytes::lower(unicode::Charset cs, unicode::DecodeErrorStrategy errors) const {
+    return string::encode(string::lower(decode(cs, errors), errors), cs, errors);
 }
 
 Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
