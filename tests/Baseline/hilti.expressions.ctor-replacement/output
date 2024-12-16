@@ -317,38 +317,56 @@
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::Protocol"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="hilti::Charset" declaration="D8" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] (hilti.hlt:14:1-14:82) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="hilti::Charset" declaration="D8" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] (hilti.hlt:14:1-14:100) [@d:XXX]
 [debug/ast-final]           | ASCII -> declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | UTF16BE -> declaration::Constant <canonical-id="hilti::UTF16BE" declaration="-" fqid="hilti::Charset::UTF16BE" id="UTF16BE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | UTF16LE -> declaration::Constant <canonical-id="hilti::UTF16LE" declaration="-" fqid="hilti::Charset::UTF16LE" id="UTF16LE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D20" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:14:23-14:42) [@q:XXX]
-[debug/ast-final]           - type::Enum <declaration="D8" type="T7" unified="name(hilti::Charset)" wildcard="false"> [parent @q:XXX] (hilti.hlt:14:23-14:42) (resolved) [@t:XXX]
+[debug/ast-final]         - QualifiedType <const="false" side="rhs"> [parent @d:XXX] (hilti.hlt:14:23-14:60) [@q:XXX]
+[debug/ast-final]           - type::Enum <declaration="D8" type="T7" unified="name(hilti::Charset)" wildcard="false"> [parent @q:XXX] (hilti.hlt:14:23-14:60) (resolved) [@t:XXX]
 [debug/ast-final]               | ASCII -> declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | UTF16BE -> declaration::Constant <canonical-id="hilti::UTF16BE" declaration="-" fqid="hilti::Charset::UTF16BE" id="UTF16BE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | UTF16LE -> declaration::Constant <canonical-id="hilti::UTF16LE" declaration="-" fqid="hilti::Charset::UTF16LE" id="UTF16LE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D20" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]             - declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:42) [@d:XXX]
+[debug/ast-final]             - declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:60) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - ctor::Enum [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                   - type::enum_::Label <id="ASCII" value="0"> [parent @c:XXX] (hilti.hlt:14:30-14:34) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:14:30-14:34) [@q:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
-[debug/ast-final]             - declaration::Constant <canonical-id="hilti::UTF8" declaration="D20" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:42) [@d:XXX]
+[debug/ast-final]             - declaration::Constant <canonical-id="hilti::UTF8" declaration="D20" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:60) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - ctor::Enum [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                   - type::enum_::Label <id="UTF8" value="1"> [parent @c:XXX] (hilti.hlt:14:37-14:40) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:14:30-14:34) [@q:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
-[debug/ast-final]             - declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:42) [@d:XXX]
+[debug/ast-final]             - declaration::Constant <canonical-id="hilti::UTF16LE" declaration="-" fqid="hilti::Charset::UTF16LE" id="UTF16LE" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:60) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - ctor::Enum [parent @e:XXX] [@c:XXX]
-[debug/ast-final]                   - type::enum_::Label <id="Undef" value="-1"> [parent @c:XXX] (hilti.hlt:14:23-14:42) [@t:XXX]
+[debug/ast-final]                   - type::enum_::Label <id="UTF16LE" value="2"> [parent @c:XXX] (hilti.hlt:14:43-14:49) [@t:XXX]
 [debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:14:30-14:34) [@q:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
-[debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:14:43-14:81) [@a:XXX]
-[debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:14:43-14:81) [@a:XXX]
+[debug/ast-final]             - declaration::Constant <canonical-id="hilti::UTF16BE" declaration="-" fqid="hilti::Charset::UTF16BE" id="UTF16BE" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:60) [@d:XXX]
+[debug/ast-final]               - <empty>
+[debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
+[debug/ast-final]                 - ctor::Enum [parent @e:XXX] [@c:XXX]
+[debug/ast-final]                   - type::enum_::Label <id="UTF16BE" value="3"> [parent @c:XXX] (hilti.hlt:14:52-14:58) [@t:XXX]
+[debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:14:30-14:34) [@q:XXX]
+[debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
+[debug/ast-final]             - declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:60) [@d:XXX]
+[debug/ast-final]               - <empty>
+[debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
+[debug/ast-final]                 - ctor::Enum [parent @e:XXX] [@c:XXX]
+[debug/ast-final]                   - type::enum_::Label <id="Undef" value="-1"> [parent @c:XXX] (hilti.hlt:14:23-14:60) [@t:XXX]
+[debug/ast-final]                     - QualifiedType <const="false" side="rhs"> [parent @t:XXX] (hilti.hlt:14:30-14:34) [@q:XXX]
+[debug/ast-final]                   - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
+[debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:14:61-14:99) [@a:XXX]
+[debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:14:61-14:99) [@a:XXX]
 [debug/ast-final]             - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
 [debug/ast-final]               - ctor::String <is_literal="true" value="::hilti::rt::unicode::Charset"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                 - QualifiedType <const="true" side="rhs"> [parent @c:XXX] [@q:XXX]
@@ -921,7 +939,7 @@
 [debug/ast-final]   [D5] hilti::AddressFamily [declaration::Type] (hilti.hlt:11:1-11:84)
 [debug/ast-final]   [D6] hilti::RealType [declaration::Type] (hilti.hlt:12:1-12:96)
 [debug/ast-final]   [D7] hilti::Protocol [declaration::Type] (hilti.hlt:13:1-13:78)
-[debug/ast-final]   [D8] hilti::Charset [declaration::Type] (hilti.hlt:14:1-14:82)
+[debug/ast-final]   [D8] hilti::Charset [declaration::Type] (hilti.hlt:14:1-14:100)
 [debug/ast-final]   [D9] hilti::DecodeErrorStrategy [declaration::Type] (hilti.hlt:15:1-15:118)
 [debug/ast-final]   [D10] hilti::Captures [declaration::Type] (hilti.hlt:16:1-16:37)
 [debug/ast-final]   [D11] hilti::Profiler [declaration::Type] (hilti.hlt:17:1-17:61)
@@ -933,7 +951,7 @@
 [debug/ast-final]   [D17] hilti::RecoverableFailure [declaration::Type] (hilti.hlt:56:1-56:98)
 [debug/ast-final]   [D18] hilti::MissingData [declaration::Type] (hilti.hlt:59:1-59:84)
 [debug/ast-final]   [D19] hilti [declaration::Module] (hilti.hlt:3:1-68:1)
-[debug/ast-final]   [D20] hilti::UTF8 [declaration::Constant] (hilti.hlt:14:23-14:42)
+[debug/ast-final]   [D20] hilti::UTF8 [declaration::Constant] (hilti.hlt:14:23-14:60)
 [debug/ast-final]   [D21] hilti::REPLACE [declaration::Constant] (hilti.hlt:15:35-15:66)
 [debug/ast-final]   [T1] hilti::BitOrder [type::Enum] (hilti.hlt:8:24-8:42)
 [debug/ast-final]   [T2] hilti::ByteOrder [type::Enum] (hilti.hlt:9:25-9:59)
@@ -941,7 +959,7 @@
 [debug/ast-final]   [T4] hilti::AddressFamily [type::Enum] (hilti.hlt:11:29-11:47)
 [debug/ast-final]   [T5] hilti::RealType [type::Enum] (hilti.hlt:12:24-12:62)
 [debug/ast-final]   [T6] hilti::Protocol [type::Enum] (hilti.hlt:13:24-13:46)
-[debug/ast-final]   [T7] hilti::Charset [type::Enum] (hilti.hlt:14:23-14:42)
+[debug/ast-final]   [T7] hilti::Charset [type::Enum] (hilti.hlt:14:23-14:60)
 [debug/ast-final]   [T8] hilti::DecodeErrorStrategy [type::Enum] (hilti.hlt:15:35-15:66)
 [debug/ast-final]   [T9] hilti::MatchState [type::Struct] (hilti.hlt:19:26-21:1)
 [debug/ast-final]   [T10] hilti::StreamStatistics [type::Struct] (hilti.hlt:23:32-28:1)

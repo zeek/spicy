@@ -110,6 +110,8 @@ TEST_CASE("integer::BitOrder") {
 TEST_CASE("bytes::Charset") {
     CHECK_EQ(to_string(Enum(unicode::Charset::ASCII)), "Charset::ASCII");
     CHECK_EQ(to_string(Enum(unicode::Charset::UTF8)), "Charset::UTF8");
+    CHECK_EQ(to_string(Enum(unicode::Charset::UTF16BE)), "Charset::UTF16BE");
+    CHECK_EQ(to_string(Enum(unicode::Charset::UTF16LE)), "Charset::UTF16LE");
     CHECK_EQ(to_string(Enum(unicode::Charset::Undef)), "Charset::Undef");
 }
 
