@@ -15,7 +15,6 @@
 #include <hilti/rt/json-fwd.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
-#include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/unicode.h>
@@ -445,10 +444,7 @@ public:
      * @param errors how to handle errors when decoding/encoding the data
      * @return an upper case version of the instance
      */
-    Bytes upper(unicode::Charset cs,
-                unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const {
-        return hilti::rt::string::encode(hilti::rt::string::upper(decode(cs, errors), errors), cs, errors);
-    }
+    Bytes upper(unicode::Charset cs, unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const;
 
     /**
      * Returns an upper-case version of the instance.
@@ -457,10 +453,7 @@ public:
      * @param errors how to handle errors when decoding/encoding the data
      * @return a lower case version of the instance
      */
-    Bytes lower(unicode::Charset cs,
-                unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const {
-        return hilti::rt::string::encode(hilti::rt::string::lower(decode(cs, errors), errors), cs, errors);
-    }
+    Bytes lower(unicode::Charset cs, unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const;
 
     /**
      * Removes leading and/or trailing sequences of all characters of a set
