@@ -39,7 +39,7 @@ namespace linkage {
  *
  * @exception `std::out_of_range` if the string does not map to a linkage
  */
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Linkage>(s, detail::Linkages); }
+constexpr auto from_string(std::string_view s) { return util::enum_::from_string<Linkage>(s, detail::Linkages); }
 } // namespace linkage
 } // namespace declaration
 
