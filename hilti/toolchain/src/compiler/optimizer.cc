@@ -1530,7 +1530,7 @@ struct MemberVisitor : OptimizerVisitor {
                 assert(tokens.size() == 3);
 
                 auto type_id = ID(tokens[1]);
-                auto feature = tokens[2];
+                const auto& feature = tokens[2];
                 auto is_active = n->value()->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value();
 
                 type_id = ID(util::replace(type_id, "@@", "::"));
