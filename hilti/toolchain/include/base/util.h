@@ -9,6 +9,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <map>
 #include <optional>
@@ -515,18 +516,18 @@ std::vector<T>& append(std::vector<T>& v1, const std::vector<T>& v2) {
     return v1;
 }
 
-/** Remov duplicates from a vector without changing order. */
+/** Remove duplicates from a vector without changing order. */
 template<typename T>
 std::vector<T> removeDuplicates(std::vector<T> v) {
     std::set<T> seen;
     std::vector<T> out;
 
-    for ( auto&& i : v ) {
-        if ( seen.find(i) != seen.end() )
+    for ( auto it = std::make_move_iterator(v.begin()); it != std::make_move_iterator(v.end()); ++it ) {
+        if ( seen.find(*it) != seen.end() )
             continue;
 
-        seen.insert(i);
-        out.emplace_back(std::move(i));
+        seen.insert(*it);
+        out.emplace_back(*it);
     }
 
     return out;
