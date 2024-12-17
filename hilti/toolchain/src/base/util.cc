@@ -275,7 +275,7 @@ std::string util::prefixParts(const std::string& in, const std::string& prefix, 
             return x;
     });
 
-    return join(filter(x, [](auto s) -> bool { return s.size(); }), " ");
+    return join(filter(x, [](const auto& s) -> bool { return s.size(); }), " ");
 }
 
 std::vector<std::string> util::flattenParts(const std::vector<std::string>& in) {
