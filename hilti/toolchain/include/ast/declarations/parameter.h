@@ -2,10 +2,9 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/declaration.h>

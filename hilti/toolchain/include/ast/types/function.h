@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <memory>
+#include <string_view>
 #include <utility>
 
 #include <hilti/ast/declaration.h>

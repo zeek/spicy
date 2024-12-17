@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <list>
-#include <sstream>
 #include <string>
 
 #include <hilti/autogen/config.h>

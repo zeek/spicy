@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include <hilti/ast/builder/builder.h>
 

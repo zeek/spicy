@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/struct.h>
