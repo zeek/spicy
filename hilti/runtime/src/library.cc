@@ -85,14 +85,14 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
     return version;
 }
 
-hilti::rt::Result<void*> hilti::rt::Library::symbol(std::string_view name) const {
+hilti::rt::Result<void*> hilti::rt::Library::symbol(const char* name) const {
     if ( ! _handle )
         return result::Error(fmt("library %s has not been opened", _path));
 
     // Clear any library errors.
     ::dlerror();
 
-    auto* symbol = ::dlsym(_handle, name.data());
+    auto* symbol = ::dlsym(_handle, name);
 
     if ( ::dlerror() )
         return result::Error(fmt("symbol '%s' not found", name));
