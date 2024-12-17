@@ -17,7 +17,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/hello-world.hlt:10:1-10:29");
-    ::hilti::rt::print(std::string("Hello, world!"), ::hilti::rt::Bool(true));
+    ::hilti::rt::print("Hello, world!"s, ::hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr, nullptr}); }

@@ -44,4 +44,7 @@ assert "Ü𝔫𝔦𝔠𝔬𝔡𝔢".lower() == "ü𝔫𝔦𝔠𝔬𝔡𝔢";
 assert "abc123DEF".upper() == "ABC123DEF";
 assert "ü𝔫𝔦𝔠𝔬𝔡𝔢".upper() == "Ü𝔫𝔦𝔠𝔬𝔡𝔢";
 
+# Strings can contain null bytes.
+assert |"\x00ABC"| == 4;
+
 }

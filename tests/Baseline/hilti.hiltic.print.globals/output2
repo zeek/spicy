@@ -20,7 +20,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X.reset();; }
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X = std::string("Hello, world!"); }
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::X = "Hello, world!"s; }
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/globals.hlt:16:1-16:15");
