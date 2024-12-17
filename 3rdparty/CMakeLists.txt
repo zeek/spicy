@@ -1,3 +1,10 @@
+# If we run clang-tidy as part of CMake we never want to check files in this
+# directory. We specify this in addition to the local `.clang-tidy` in this
+# directory since it is only valid in subdirectories which do not provided
+# their on `.clang-tidy` config.
+set(CMAKE_C_CLANG_TIDY "")
+set(CMAKE_CXX_CLANG_TIDY "")
+
 # Note that most of the subdirectories here don't need to be known
 # to CMake because we directly pick out the pieces where we need
 # them.
@@ -6,7 +13,6 @@ option(DOCTEST_NO_INSTALL "Skip the installation process" ON)
 add_subdirectory(doctest)
 
 add_subdirectory(justrx)
-
 
 # Use the configured C compiler as ASM compiler as well. This prevents that we
 # e.g., use a Clang as C compiler, but e.g., GCC as assembler which leads to
