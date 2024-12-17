@@ -48,10 +48,10 @@ public:
     }
 
 protected:
-    Block(ASTContext* ctx, int else_start, Nodes children, Meta meta)
+    Block(ASTContext* ctx, int else_start, const Nodes& children, Meta meta)
         : unit::Item(ctx, NodeTags,
                      node::flatten(QualifiedType::create(ctx, hilti::type::Void::create(ctx), hilti::Constness::Const),
-                                   std::move(children)),
+                                   children),
                      ID(), std::move(meta)),
           _else_start(else_start) {}
 

@@ -71,7 +71,7 @@ protected:
         }
 
         removeChildren(_end_exprs, {});
-        addChildren(ctx, std::move(exprs));
+        addChildren(ctx, exprs);
     }
 
     std::string _dump() const final;
