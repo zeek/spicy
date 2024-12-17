@@ -273,7 +273,7 @@ public:
      * @param builder builder to use for modifications
      * @param dbg debug stream to log modifications to
      */
-    MutatingVisitor(Builder* builder, logging::DebugStream dbg)
+    MutatingVisitor(Builder* builder, const logging::DebugStream& dbg)
         : MutatingVisitorBase(contextFromBuilder(builder), dbg), _builder(builder) {}
 
     using visitor::MutatingVisitorBase::MutatingVisitorBase;

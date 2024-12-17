@@ -69,12 +69,12 @@ public:
         return Ctor::properties() + node::WithUniqueID::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, struct_::Fields fields, QualifiedType* t, Meta meta = {}) {
-        return ctx->make<Struct>(ctx, node::flatten(t, std::move(fields)), std::move(meta));
+    static auto create(ASTContext* ctx, const struct_::Fields& fields, QualifiedType* t, Meta meta = {}) {
+        return ctx->make<Struct>(ctx, node::flatten(t, fields), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, struct_::Fields fields, const Meta& meta = {}) {
-        return ctx->make<Struct>(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), std::move(fields)), meta);
+    static auto create(ASTContext* ctx, const struct_::Fields& fields, const Meta& meta = {}) {
+        return ctx->make<Struct>(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), fields), meta);
     }
 
 protected:
