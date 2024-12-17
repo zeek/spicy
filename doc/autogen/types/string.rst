@@ -1,6 +1,6 @@
 .. rubric:: Methods
 
-.. spicy:method:: string::encode string encode False bytes ([ charset: spicy::Charset = spicy::Charset::UTF8 ])
+.. spicy:method:: string::encode string encode False bytes ([ charset: spicy::Charset = spicy::Charset::UTF8 ], [ errors: spicy::DecodeErrorStrategy = spicy::DecodeErrorStrategy::REPLACE ])
 
     Converts the string into a binary representation encoded with the
     given character set.

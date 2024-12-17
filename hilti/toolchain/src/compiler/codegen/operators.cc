@@ -774,7 +774,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::string::Encode* n) final {
         auto [self, args] = methodArguments(n);
-        result = fmt("::hilti::rt::Bytes(%s, %s)", self, args[0]);
+        result = fmt("::hilti::rt::string::encode(%s, %s, %s)", self, args[0], args[1]);
     }
 
     void operator()(operator_::string::Modulo* n) final {
