@@ -37,7 +37,7 @@ constexpr util::enum_::Value<Kind> Kinds[] = {
 constexpr auto to_string(Kind k) { return util::enum_::to_string(k, detail::Kinds); }
 
 namespace kind {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Kind>(s, detail::Kinds); }
+constexpr auto from_string(std::string_view s) { return util::enum_::from_string<Kind>(s, detail::Kinds); }
 } // namespace kind
 
 } // namespace hilti::parameter
