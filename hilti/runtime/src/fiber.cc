@@ -2,6 +2,7 @@
 
 #include <fiber/fiber.h>
 
+#include <algorithm>
 #include <memory>
 
 #include <hilti/rt/autogen/config.h>
@@ -219,8 +220,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             ++_total_fibers;
             ++_current_fibers;
 
-            if ( _current_fibers > _max_fibers )
-                _max_fibers = _current_fibers;
+            _max_fibers = std::max(_current_fibers, _max_fibers);
         }
 
         case Type::SwitchTrampoline:
@@ -652,8 +652,8 @@ void detail::trackStack() {
         return;
 
     if ( fiber->type() == Fiber::Type::IndividualStack || fiber->type() == Fiber::Type::SharedStack ) {
-        if ( auto size = fiber->stackBuffer().activeSize(); size > detail::Fiber::_max_stack_size )
-            detail::Fiber::_max_stack_size = size;
+        detail::Fiber::_max_stack_size =
+            std::max<uint64_t>(fiber->stackBuffer().activeSize(), detail::Fiber::_max_stack_size);
     }
 }
 

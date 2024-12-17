@@ -176,11 +176,9 @@ std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
     if ( end < 0 )
         end = v.size() + end + 1;
 
-    if ( begin < 0 )
-        begin = 0;
+    begin = std::max(begin, 0);
 
-    if ( end < 0 )
-        end = 0;
+    end = std::max(end, 0);
 
     if ( static_cast<size_t>(end) > v.size() )
         end = v.size();
