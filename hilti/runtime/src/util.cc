@@ -50,7 +50,7 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
     auto fibers = detail::Fiber::statistics();
 
     const auto to_seconds = [](const timeval& t) {
-        return static_cast<double>(t.tv_sec) + static_cast<double>(t.tv_usec) / 1e6;
+        return static_cast<double>(t.tv_sec) + (static_cast<double>(t.tv_usec) / 1e6);
     };
 
     stats.user_time = to_seconds(r.ru_utime) - detail::globalState()->resource_usage_init.user_time;

@@ -24,7 +24,7 @@ inline static uint64_t _getClock() {
 #else
     clock_gettime(CLOCK_MONOTONIC, &t); // POSIX
 #endif
-    return static_cast<uint64_t>(1000000000) * t.tv_sec + t.tv_nsec;
+    return (static_cast<uint64_t>(1000000000) * t.tv_sec) + t.tv_nsec;
 #endif
 }
 

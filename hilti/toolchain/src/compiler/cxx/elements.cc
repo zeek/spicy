@@ -146,7 +146,7 @@ std::optional<std::string> cxx::normalizeID(std::string_view id) {
         // Fast-path: no special-characters, no leading digits.
         return std::nullopt;
 
-    auto buffer_size = id.size() * 6 + 1;
+    auto buffer_size = (id.size() * 6) + 1;
     char* buffer = reinterpret_cast<char*>(alloca(buffer_size)); // max possible size of modified string
     char* p = buffer;
 
