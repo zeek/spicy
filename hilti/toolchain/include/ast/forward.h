@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <iterator>
 #include <memory>
 #include <vector>
 
@@ -761,8 +762,8 @@ public:
     template<typename T>
     Nodes(NodeVector<T> m) {
         reserve(m.size());
-        for ( auto* x : m )
-            emplace_back(x);
+        for ( auto it = std::make_move_iterator(m.begin()); it != std::make_move_iterator(m.end()); ++it )
+            emplace_back(*it);
     }
 
     Nodes() = default;

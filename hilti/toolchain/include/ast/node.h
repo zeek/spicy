@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cinttypes>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <optional>
@@ -1117,8 +1118,8 @@ template<typename T>
 Nodes flatten(std::vector<T> t) {
     Nodes v;
     v.reserve(t.size());
-    for ( const auto& i : t )
-        v.emplace_back(std::move(i));
+    for ( auto it = std::make_move_iterator(t.begin()); it != std::make_move_iterator(t.end()); ++it )
+        v.emplace_back(*it);
 
     return v;
 }
@@ -1164,7 +1165,7 @@ inline Nodes flatten() { return Nodes(); }
  */
 template<typename T, typename... Ts, std::enable_if_t<(0 != sizeof...(Ts))>* = nullptr>
 Nodes flatten(T t, Ts... ts) {
-    return util::concat(std::move(flatten(t)), flatten(std::move(ts)...));
+    return util::concat(std::move(flatten(std::move(t))), flatten(std::move(ts)...));
 }
 
 /**
