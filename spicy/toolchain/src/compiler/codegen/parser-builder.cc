@@ -1659,6 +1659,56 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
+    // Determines if a sync group has a fixed size. If so, returns an
+    // expression that yields that size.
+    Expression* parseSizeOfSynchronizationGroup(const production::Unit* p, const std::vector<uint64_t>& field_indices) {
+        Expression* group_size = nullptr;
+
+        for ( auto i : field_indices ) {
+            const auto& field_production = p->fields()[i];
+
+            if ( ! field_production->meta().field() )
+                return nullptr;
+
+            auto* field_attributes = field_production->meta().field()->attributes();
+
+            if ( field_attributes->has(hilti::Attribute::Kind::ParseFrom) ||
+                 field_attributes->has(hilti::Attribute::Kind::ParseAt) ) {
+                // These don't affect the size of the group.
+                if ( ! group_size )
+                    group_size = builder()->integer(0);
+
+                continue;
+            }
+
+            if ( field_attributes->has(hilti::Attribute::Kind::Eod) )
+                // Cannot determine the size of the group.
+                return nullptr;
+
+            Expression* field_parse_size = nullptr;
+
+            if ( auto* size_attr = field_attributes->find(hilti::Attribute::Kind::Size) )
+                field_parse_size = *size_attr->valueAsExpression();
+            else if ( auto* production_size = field_production->parseSize(builder()) )
+                field_parse_size = production_size;
+            else
+                // Cannot determine the size of the group.
+                return nullptr;
+
+            if ( ! field_parse_size->isConstant() )
+                // Size of the group isn't fixed, meaning the amount may differ
+                // depending on when we evaluate it.
+                return nullptr;
+
+            if ( group_size )
+                group_size = builder()->sum(group_size, field_parse_size);
+            else
+                group_size = field_parse_size;
+        }
+
+        return group_size;
+    }
+
     void operator()(const production::Unit* p) final {
         auto pstate = pb->state();
         pstate.self = destination();
@@ -1720,6 +1770,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // Group adjacent fields with same sync point.
         std::vector<std::pair<std::vector<uint64_t>, std::optional<uint64_t>>> groups;
+
         for ( uint64_t i = 0; i < sync_points.size(); ++i ) {
             const auto& sync_point = sync_points[i];
             if ( ! groups.empty() && groups.back().second == sync_point )
@@ -1751,6 +1802,12 @@ struct ProductionVisitor : public production::Visitor {
                     parseField(p->fields()[field]);
 
             else {
+                // Determine if the group has a fixed size. If so, remember it's start position.
+                Expression* group_begin = nullptr;
+                Expression* group_size = parseSizeOfSynchronizationGroup(p, fields);
+                if ( group_size )
+                    group_begin = builder()->addTmp("sync_group_begin", state().cur);
+
                 auto try_ = builder()->addTry();
 
                 pushBuilder(try_.first, [&]() {
@@ -1761,18 +1818,31 @@ struct ProductionVisitor : public production::Visitor {
                 pushBuilder(try_.second.addCatch(
                                 builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
                             [&]() {
-                                // There is a sync point; run its production w/o consuming input until parsing
-                                // succeeds or we run out of data.
                                 builder()->addDebugMsg("spicy-verbose",
                                                        fmt("failed to parse, will try to synchronize at '%s'",
                                                            p->fields()[*sync_point]->meta().field()->id()));
 
-                                // Remember the original error so we can report it in case the sync failed.
+                                // Remember the original error so we can report it in case the sync never gets
+                                // confirmed. This is also what marks that we are in trial mode.
                                 builder()->addAssign(state().error, builder()->id("e"));
+
+                                if ( group_size )
+                                    builder()->addMemberCall(state().self, "__on_0x25_synced", {},
+                                                             p->fields()[*sync_point]->location());
                             });
 
-                startSynchronize(*p->fields()[*sync_point]);
-                ++trial_loops;
+                if ( group_size ) {
+                    // When the whole group is of fixed size, we know directly where
+                    // to continue parsing, and can just jump there. We prefer this
+                    // over pattern-based synchronization.
+                    builder()->addAssign(state().cur, builder()->memberCall(group_begin, "advance", {group_size}));
+                    pb->trimInput();
+                }
+                else {
+                    // Start searching for the sync point.
+                    startSynchronize(*p->fields()[*sync_point]);
+                    ++trial_loops;
+                }
             }
         }
 
@@ -1902,7 +1972,7 @@ struct ProductionVisitor : public production::Visitor {
         if ( const auto& ctor = p->ctor() )
             pb->skipLiteral(*ctor);
 
-        else if ( const auto& size = p->field()->size(context()) )
+        else if ( const auto& size = p->parseSize(builder()) )
             pb->skip(size, p->location());
 
         else if ( p->field()->parseType()->type()->isA<hilti::type::Bytes>() ) {
@@ -2770,15 +2840,16 @@ void ParserBuilder::advanceToNextData() {
 }
 
 void ParserBuilder::advanceInput(Expression* i) {
-    if ( i->type()->type()->isA<hilti::type::stream::View>() )
-        builder()->addAssign(state().cur, i);
-    else
-        builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance", {i}));
+    // A previous version allowed to pass in a view, which however didn't work
+    // reliably (because the expression might not have been resolved yet, which
+    // would mislead the type check). We assert on that old use of the API just
+    // in case there's still a place out there where it happened to be working
+    // previously.
+    assert(! i->type()->type()->isA<hilti::type::stream::View>());
 
+    builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance", {i}));
     trimInput();
 }
-
-void ParserBuilder::setInput(Expression* i) { builder()->addAssign(state().cur, i); }
 
 void ParserBuilder::beforeHook() {
     // Forward the current trial mode state into the unit so hooks see the
