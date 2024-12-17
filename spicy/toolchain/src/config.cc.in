@@ -50,7 +50,7 @@ void set_precompiled_header(const hilti::Configuration& config, bool debug, std:
 } // namespace
 
 template<class T>
-inline auto join(const std::vector<T>& v1, const std::vector<T>& v2) {
+inline static auto join(const std::vector<T>& v1, const std::vector<T>& v2) {
     std::vector<T> n;
 
     n.reserve(v1.size() + v2.size());

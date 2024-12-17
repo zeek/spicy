@@ -211,8 +211,9 @@ void cxx::Block::addComment(const std::string& stmt, bool sep_before, bool sep_a
     _stmts.emplace_back(fmt("// %s", stmt), Block(), f);
 }
 
-inline std::string fmtDeclaration(const cxx::ID& id, const cxx::Type& type, const std::vector<cxx::Expression>& args,
-                                  std::string linkage = "", std::optional<cxx::Expression> init = {}) {
+inline static std::string fmtDeclaration(const cxx::ID& id, const cxx::Type& type,
+                                         const std::vector<cxx::Expression>& args, std::string linkage = "",
+                                         std::optional<cxx::Expression> init = {}) {
     std::string sinit;
 
     if ( init )

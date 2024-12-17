@@ -16,7 +16,7 @@
 using Ps = std::vector<std::unique_ptr<spicy::detail::codegen::Production>>;
 
 template<class... Args>
-auto make_prods(Args... args) {
+static auto make_prods(Args... args) {
     std::vector<std::unique_ptr<spicy::detail::codegen::Production>> rv;
     (rv.emplace_back(std::move(args)), ...);
     return rv;

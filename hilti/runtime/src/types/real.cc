@@ -27,7 +27,7 @@ Bytes real::pack(double d, real::Type type, ByteOrder fmt) {
 }
 
 template<typename T>
-Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder fmt) {
+static Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder fmt) {
     switch ( type.value() ) {
         case real::Type::IEEE754_Single: {
             if ( data.size() < 4 )

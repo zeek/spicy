@@ -45,7 +45,7 @@ inline const DebugStream OptimizerCollect("optimizer-collect");
 } // namespace logging::debug
 
 // Helper function to extract innermost type, removing any wrapping in reference or container types.
-QualifiedType* innermostType(QualifiedType* type) {
+static QualifiedType* innermostType(QualifiedType* type) {
     if ( type->type()->isReferenceType() )
         return innermostType(type->type()->dereferencedType());
 
@@ -55,10 +55,10 @@ QualifiedType* innermostType(QualifiedType* type) {
     return type;
 }
 
-bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
+static bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
 
 // Helper to extract `(ID, feature)` from a feature constant.
-auto idFeatureFromConstant(const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
+static auto idFeatureFromConstant(const ID& featureConstant) -> std::optional<std::pair<ID, std::string>> {
     const auto& id = featureConstant.local();
 
     if ( ! isFeatureFlag(id) )

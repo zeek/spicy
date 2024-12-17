@@ -927,7 +927,7 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
 
 // If an expression is a reference, dereference it; otherwise return the
 // expression itself.
-Expression* skipReferenceValue(Builder* builder, Expression* op) {
+static Expression* skipReferenceValue(Builder* builder, Expression* op) {
     static auto value_reference_deref = operator_::get("value_reference::Deref");
     static auto strong_reference_deref = operator_::get("strong_reference::Deref");
     static auto weak_reference_deref = operator_::get("weak_reference::Deref");
