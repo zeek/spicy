@@ -27,11 +27,11 @@ HILTI_PRE_INIT(__hlt::Bar::__register_module)
 
 extern void __hlt::Bar::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar.reset();; }
 
-extern void __hlt::Bar::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar = std::string("Bar!"); }
+extern void __hlt::Bar::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar = "Bar!"s; }
 
 extern void __hlt::Bar::__init_module() {
       __location__("bar.hlt:10:1-10:38");
-    ::hilti::rt::print(std::string("Hello, world from Bar!"), ::hilti::rt::Bool(true));
+    ::hilti::rt::print("Hello, world from Bar!"s, ::hilti::rt::Bool(true));
       __location__("bar.hlt:11:1-11:22");
     ::hilti::rt::print((*__hlt::Foo::foo), ::hilti::rt::Bool(true));
       __location__("bar.hlt:12:1-12:17");
@@ -64,11 +64,11 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo.reset();; }
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo = std::string("Foo!"); }
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo = "Foo!"s; }
 
 extern void __hlt::Foo::__init_module() {
       __location__("foo.hlt:10:1-10:38");
-    ::hilti::rt::print(std::string("Hello, world from Foo!"), ::hilti::rt::Bool(true));
+    ::hilti::rt::print("Hello, world from Foo!"s, ::hilti::rt::Bool(true));
       __location__("foo.hlt:11:1-11:17");
     ::hilti::rt::print((*__hlt::Foo::foo), ::hilti::rt::Bool(true));
       __location__("foo.hlt:12:1-12:22");
