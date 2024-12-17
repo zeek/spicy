@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void usage() {
+static void usage() {
     std::cerr << R"(
 Usage: hilti-config [options]
 
@@ -45,7 +45,7 @@ Available options:
 }
 
 template<typename U, typename V>
-void join(std::vector<U>& a, const std::vector<V>& b) {
+static void join(std::vector<U>& a, const std::vector<V>& b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 

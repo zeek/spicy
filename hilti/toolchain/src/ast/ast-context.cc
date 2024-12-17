@@ -532,7 +532,8 @@ declaration::module::UID ASTContext::_addModuleToAST(declaration::Module* module
 }
 
 template<typename PluginMember, typename... Args>
-Result<Nothing> _runHook(const Plugin& plugin, PluginMember hook, const std::string& description, const Args&... args) {
+static Result<Nothing> _runHook(const Plugin& plugin, PluginMember hook, const std::string& description,
+                                const Args&... args) {
     if ( ! (plugin.*hook) )
         return Nothing();
 
@@ -548,8 +549,8 @@ Result<Nothing> _runHook(const Plugin& plugin, PluginMember hook, const std::str
 }
 
 template<typename PluginMember, typename... Args>
-Result<Nothing> _runHook(bool* modified, const Plugin& plugin, PluginMember hook, const std::string& description,
-                         const Args&... args) {
+static Result<Nothing> _runHook(bool* modified, const Plugin& plugin, PluginMember hook, const std::string& description,
+                                const Args&... args) {
     if ( ! (plugin.*hook) )
         return Nothing();
 

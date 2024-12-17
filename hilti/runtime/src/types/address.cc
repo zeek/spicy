@@ -148,7 +148,7 @@ Bytes Address::pack(ByteOrder fmt) const {
 }
 
 template<typename T>
-Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, ByteOrder fmt) {
+static Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, ByteOrder fmt) {
     switch ( family.value() ) {
         case AddressFamily::IPv4: {
             if ( data.size() < 4 )
