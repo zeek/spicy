@@ -19,6 +19,7 @@ static void usage(const char* prog) {
 }
 
 namespace hilti {
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 int main(int argc, char** argv);
 } // namespace hilti
 
