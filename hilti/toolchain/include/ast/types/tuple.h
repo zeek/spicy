@@ -61,8 +61,8 @@ public:
     bool isResolved(node::CycleDetector* cd) const final;
     bool isSortable() const final { return true; }
 
-    static auto create(ASTContext* ctx, type::tuple::Elements elements, Meta meta = {}) {
-        return ctx->make<Tuple>(ctx, std::move(elements), std::move(meta));
+    static auto create(ASTContext* ctx, const type::tuple::Elements& elements, Meta meta = {}) {
+        return ctx->make<Tuple>(ctx, elements, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, const QualifiedTypes& types, Meta meta = {}) {

@@ -17,9 +17,9 @@ public:
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    void setTypeArguments(ASTContext* ctx, Expressions exprs) {
+    void setTypeArguments(ASTContext* ctx, const Expressions& exprs) {
         removeChildren(1, {});
-        addChildren(ctx, std::move(exprs));
+        addChildren(ctx, exprs);
     }
 
     /** Constructs a default value of a given type. */
@@ -31,10 +31,9 @@ public:
      * Constructs a default value of a given type, passing specified arguments to
      * types with parameters.
      */
-    static auto create(ASTContext* ctx, UnqualifiedType* type, Expressions type_args, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, UnqualifiedType* type, const Expressions& type_args, const Meta& meta = {}) {
         return ctx->make<Default>(ctx,
-                                  node::flatten(QualifiedType::create(ctx, type, Constness::Const, meta),
-                                                std::move(type_args)),
+                                  node::flatten(QualifiedType::create(ctx, type, Constness::Const, meta), type_args),
                                   meta);
     }
 

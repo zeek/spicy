@@ -662,13 +662,13 @@ public:
         return std::make_pair(_newBuilder(true_), _newBuilder(false_));
     }
 
-    auto newBlock(Meta m = Meta()) {
-        auto body = Builder::statementBlock(std::move(m));
+    auto newBlock(const Meta& m = Meta()) {
+        auto body = Builder::statementBlock(m);
         return _newBuilder(body);
     }
 
-    auto addBlock(Meta m = Meta()) {
-        auto body = Builder::statementBlock(std::move(m));
+    auto addBlock(const Meta& m = Meta()) {
+        auto body = Builder::statementBlock(m);
         Builder::block()->_add(Builder::context(), body);
         return _newBuilder(body);
     }
