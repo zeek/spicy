@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/parameter.h>

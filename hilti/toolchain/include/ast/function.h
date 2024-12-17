@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
