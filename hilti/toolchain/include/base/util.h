@@ -587,7 +587,7 @@ constexpr auto from_string(std::string_view name, const Value<Enum> (&values)[Si
         if ( v.name == name )
             return v.value;
 
-    throw std::out_of_range(name.data());
+    throw std::out_of_range(std::string(name.begin(), name.size()));
 };
 
 /**
