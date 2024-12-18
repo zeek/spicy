@@ -166,6 +166,12 @@ function run_configure {
 
     echo "${clang_format}" >${build}/.clang_format
     echo "${clang_tidy}" >${build}/.clang_tidy
+
+    if [ -x "${clang_tidy}" ]; then
+        pushd "${build}" >/dev/null || exit 1
+        cmake -DCMAKE_CXX_CLANG_TIDY="${clang_tidy}" -DCMAKE_C_CLANG_TIDY="${clang_tidy}" ..
+        popd >/dev/null || exit 1
+    fi
 }
 
 function run_build {
@@ -233,37 +239,10 @@ function run_test_btest {
     execute_btest "Spicy" "tests" "${alternative}"
 }
 
-function run_test_clang_tidy {
-    clang_tidy=$(cat ${build}/.clang_tidy 2>/dev/null)
-
-    if [ ! -x ${clang_tidy} ]; then
-        log_warning "clang-tidy not available, skipping"
-        return 0
-    fi
-
-    log_stage "Running clang-tidy ..."
-
-    export CLANG_TIDY=${clang_tidy}
-
-    if ${root}/scripts/run-clang-tidy --fixit -j 3 ${build}; then
-        echo "clang-tidy run passed"
-        return 0
-    else
-        git diff | tee ${artifacts}/clang-tidy.diff
-        log_diag "Patch to what can be fixed automatically in 'clang-tidy.diff'"
-        log_error "clang-tidy has failed"
-        return 1
-    fi
-}
-
 function run_test_code {
     rc=0
 
     pre-commit run -a --show-diff-on-failure || rc=1
-
-    pushd $(pwd) >/dev/null
-    run_test_clang_tidy || rc=1
-    popd >/dev/null
 
     return ${rc}
 }
