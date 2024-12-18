@@ -40,10 +40,10 @@ RUN apt-get update \
  # GCC.
  && apt-get install -y --no-install-recommends g++ gcc \
  # LLVM toolchain.
- && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main' >> /etc/apt/sources.list.d/llvm18.list \
- && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main' >> /etc/apt/sources.list.d/llvm18.list \
+ && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main' >> /etc/apt/sources.list.d/llvm19.list \
+ && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main' >> /etc/apt/sources.list.d/llvm19.list \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
- && apt-get install -y --no-install-recommends llvm-18-dev clang-18 libclang-18-dev clang-format-18 clang-tidy-18 libclang-rt-18-dev \
+ && apt-get install -y --no-install-recommends llvm-19-dev clang-19 libclang-19-dev clang-format-19 clang-tidy-19 libclang-rt-19-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
