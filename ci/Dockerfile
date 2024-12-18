@@ -14,7 +14,6 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
     bison \
     ccache \
-    cmake \
     doxygen \
     flex \
     g++ \
@@ -45,5 +44,11 @@ RUN apt-get update \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
  && apt-get install -y --no-install-recommends llvm-19-dev clang-19 libclang-19-dev clang-format-19 clang-tidy-19 libclang-rt-19-dev \
+ # Install a recent CMake for `SKIP_LINTING` support.
+ && test -f /usr/share/doc/kitware-archive-keyring/copyright || \
+    curl https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
+ && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends kitware-archive-keyring cmake \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
