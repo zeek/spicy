@@ -45,5 +45,10 @@ RUN apt-get update \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
  && apt-get install -y --no-install-recommends llvm-19-dev clang-19 libclang-19-dev clang-format-19 clang-tidy-19 libclang-rt-19-dev \
+ # Install a recent CMake for `SKIP_LINTING` support.
+ && mkdir -p /opt/cmake \
+ && curl -L https://github.com/Kitware/CMake/releases/download/v3.30.6/cmake-3.30.6-Linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/opt/cmake/bin:${PATH}"
