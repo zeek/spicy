@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
@@ -17,8 +16,8 @@ class Print : public Statement {
 public:
     auto expressions() const { return children<hilti::Expression>(0, {}); }
 
-    static auto create(ASTContext* ctx, Expressions expressions, Meta meta = {}) {
-        return ctx->make<Print>(ctx, std::move(expressions), std::move(meta));
+    static auto create(ASTContext* ctx, const Expressions& expressions, Meta meta = {}) {
+        return ctx->make<Print>(ctx, expressions, std::move(meta));
     }
 
 protected:

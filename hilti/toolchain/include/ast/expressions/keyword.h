@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/declaration.h>
@@ -30,7 +29,7 @@ constexpr util::enum_::Value<Kind> Kinds[] = {{Kind::Self, "self"},
 } // namespace detail
 
 namespace kind {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Kind>(s, detail::Kinds); }
+constexpr auto from_string(std::string_view s) { return util::enum_::from_string<Kind>(s, detail::Kinds); }
 } // namespace kind
 
 constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::Kinds); }

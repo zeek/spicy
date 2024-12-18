@@ -19,9 +19,9 @@ test:
 	$(MAKE) -C tests test
 
 tidy:
-	./scripts/run-clang-tidy -j 10 build
+	run-clang-tidy -j 10 -p build
 
 tidy-fixit:
-	./scripts/run-clang-tidy -j 10 --fixit build
+	run-clang-tidy -j 10 -fix -p build
 
 check: test format tidy

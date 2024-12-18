@@ -1,0 +1,10 @@
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
+---
+# We want to disable clang-tidy checks for all files under this directory, but
+# clang-tidy cannot run with all checks disabled. Instead enable an inexpensive
+# check and configure it so it matches nothing, see
+# https://stackoverflow.com/a/58379342/176922.
+Checks: '-*,misc-definitions-in-headers'
+CheckOptions:
+  - { key: HeaderFileExtensions,          value: "x" }

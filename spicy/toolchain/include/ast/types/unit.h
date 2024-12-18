@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -106,8 +105,8 @@ public:
     }
 
     /** Adds a number of new items to the unit. */
-    void addItems(ASTContext* ctx, unit::Items items) {
-        addChildren(ctx, std::move(items));
+    void addItems(ASTContext* ctx, const unit::Items& items) {
+        addChildren(ctx, items);
         _assignItemIndices();
     }
 
@@ -134,7 +133,7 @@ public:
         return hilti::UnqualifiedType::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& params, type::unit::Items items,
+    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& params, const type::unit::Items& items,
                        AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = hilti::AttributeSet::create(ctx);
@@ -142,8 +141,7 @@ public:
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        auto t =
-            ctx->make<Unit>(ctx, node::flatten(nullptr, attrs, nullptr, params, std::move(items)), std::move(meta));
+        auto t = ctx->make<Unit>(ctx, node::flatten(nullptr, attrs, nullptr, params, items), std::move(meta));
 
         t->_setSelf(ctx);
         return t;

@@ -7,12 +7,12 @@
 
 #include <hilti/rt/util.h>
 
-void error(const std::string& msg) {
+static void error(const std::string& msg) {
     std::cerr << "error: " << msg << '\n';
     exit(1);
 }
 
-void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& out) {
+static void processPreBatchedInput(std::string needle, std::istream& in, std::ostream& out) {
     std::string magic;
     std::getline(in, magic);
 

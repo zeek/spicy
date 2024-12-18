@@ -373,7 +373,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                             patch = parse_number(v[2]);
 
                         // This must match the computation in the toplevel `CMakeLists.txt` file.
-                        auto version = major * 10000 + minor * 100 + patch;
+                        auto version = (major * 10000) + (minor * 100) + patch;
                         if ( hilti::configuration().version_number < version )
                             error(fmt("module %s requires at least Spicy version %s (have %s)", n->id(), s->value(),
                                       hilti::configuration().version_string),

@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/result.h>
@@ -93,7 +92,7 @@ public:
     //
     // @param name name of the symbol
     // @return a valid pointer to the symbol or an error
-    hilti::rt::Result<void*> symbol(std::string_view name) const;
+    hilti::rt::Result<void*> symbol(const char* name) const;
 
     /*
      * Remove the file corresponding to this library without unloading it.

@@ -5,7 +5,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -107,8 +106,8 @@ public:
     std::string_view branchTag() const final { return _uid.process_extension.native(); }
 
     static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
-                       Statements stmts, Meta meta = {}) {
-        Nodes nodes = {statement::Block::create(ctx, std::move(stmts), meta)};
+                       const Statements& stmts, Meta meta = {}) {
+        Nodes nodes = {statement::Block::create(ctx, stmts, meta)};
         for ( auto d : decls )
             nodes.push_back(d);
 

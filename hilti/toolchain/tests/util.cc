@@ -24,7 +24,7 @@ constexpr hilti::util::enum_::Value<Foo> values[] = {
     {Foo::CCC, "ccc"},
 };
 
-constexpr static auto from_string(const std::string_view& s) { return hilti::util::enum_::from_string<Foo>(s, values); }
+constexpr static auto from_string(std::string_view s) { return hilti::util::enum_::from_string<Foo>(s, values); }
 
 TEST_SUITE_BEGIN("util");
 
