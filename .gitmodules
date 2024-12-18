@@ -24,7 +24,7 @@
 	url = https://github.com/rsmmr/justrx.git
 [submodule "3rdparty/filesystem"]
 	path = 3rdparty/filesystem
-	url = https://github.com/gulrak/filesystem.git
+	url = https://github.com/bbannier/filesystem.git
 [submodule "3rdparty/fiber"]
 	path = 3rdparty/fiber
 	url = https://github.com/simonfxr/fiber.git
