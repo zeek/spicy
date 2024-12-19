@@ -241,12 +241,13 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::String* n) final {
+        // Generate C++ string literals for both literal and non-literals
+        // strings to ensure correct C++ code for strings containing literal
+        // null bytes.
         if ( n->isLiteral() )
-            result = fmt("std::string_view(\"%s\")",
-                         util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
+            result = fmt("\"%s\"sv", util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
         else
-            result =
-                fmt("std::string(\"%s\")", util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
+            result = fmt("\"%s\"s", util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
     }
 
     void operator()(ctor::Tuple* n) final {

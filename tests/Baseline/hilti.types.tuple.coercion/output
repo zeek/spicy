@@ -26,6 +26,6 @@ extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModul
 static auto __hlt::Foo::f() -> std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string> {
     ::hilti::rt::detail::checkStack();
       __location__("<...>/coercion.hlt:11:5-11:24");
-    return std::make_tuple(::hilti::rt::integer::safe<std::uint64_t>{123U}, std::string("abc"));
+    return std::make_tuple(::hilti::rt::integer::safe<std::uint64_t>{123U}, "abc"s);
 }
 
