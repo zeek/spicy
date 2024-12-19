@@ -32,16 +32,18 @@ public type ByteOrder = enum {
 
 ## Specifies the character set for bytes encoding/decoding.
 public type Charset = enum {
-    ASCII,
-    UTF8
-} &cxxname="hilti::rt::bytes::Charset";
+    ASCII,    # ASCII encoding
+    UTF8,     # UTF8 encoding
+    UTF16LE,  # UTF16 little endian encoding
+    UTF16BE,  # UTF16 big endian encoding
+} &cxxname="hilti::rt::unicode::Charset";
 
 ## Specifies how data is handled that's not representable in a specified character set.
 public type DecodeErrorStrategy = enum {
-    IGNORE,  # data is skipped but processing continues
-    REPLACE, # data is replaced with a valid place-holder and processing continues
-    STRICT   # runtime error is triggered
-} &cxxname="hilti::rt::bytes::DecodeErrorStrategy";
+    IGNORE,   # data is skipped but processing continues
+    REPLACE,  # data is replaced with a valid place-holder and processing continues
+    STRICT    # runtime error is triggered
+} &cxxname="hilti::rt::unicode::DecodeErrorStrategy";
 
 ## Represents the error value of ``result<T>`` instances. Use ``error"My error message"``
 ## to create an error value of this type.

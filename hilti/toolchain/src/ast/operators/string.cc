@@ -116,6 +116,9 @@ public:
                          .param0 = {.name = "charset",
                                     .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
                                     .default_ = builder->expressionName("hilti::Charset::UTF8")},
+                         .param1 = {.name = "errors",
+                                    .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
+                                    .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE")},
                          .result = {Constness::Const, builder->typeBytes()},
                          .ns = "string",
                          .doc =
