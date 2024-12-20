@@ -42,7 +42,7 @@ lint_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-19 --clang-format `which clang-format-19` --clang-tidy `which clang-tidy-19`
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-19 --clang-tidy `which clang-tidy-19`
   build_script:       ./ci/run-ci -b build build
   test_code_script:   ./ci/run-ci -b build test-code
 
@@ -77,7 +77,7 @@ clang19_ubuntu_debug_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-19 --clang-format `which clang-format-19`
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-19
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   install_script:     ./ci/run-ci -b build install
@@ -118,7 +118,7 @@ clang19_lts_ubuntu_release_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-19 --clang-format `which clang-format-19`
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-19
   build_script:          ./ci/run-ci -b build build
   test_build_script:     ./ci/run-ci -b build test-build
   install_script:        ./ci/run-ci -b build install
@@ -159,7 +159,7 @@ clang19_lts_ubuntu_release_static_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-19 --clang-format `which clang-format-19`
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-19
   build_script:          ./ci/run-ci -b build build
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup
