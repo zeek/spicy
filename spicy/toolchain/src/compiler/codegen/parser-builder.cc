@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <numeric>
 #include <optional>
-#include <sstream>
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
@@ -53,7 +52,8 @@ ParserState::ParserState(Builder* builder, type::Unit* unit, const Grammar& gram
       data(data),
       begin(builder->begin(cur)),
       cur(cur),
-      lahead(builder->integer(look_ahead::None)) {}
+      lahead(builder->integer(look_ahead::None)),
+      end_of_production(builder->null()) {}
 
 void ParserState::printDebug(Builder* builder) const {
     builder->addCall("spicy_rt::printParserState",
@@ -62,6 +62,63 @@ void ParserState::printDebug(Builder* builder) const {
 }
 
 namespace spicy::detail::codegen {
+
+/*
+
+void parse_Foo(inout optional<iterator<stream>> __eop) {
+
+    Case 1: we know the size of the data to parse
+    if ( __eop )
+        __eop = __cur + 42;
+
+    parse_it({});
+
+    Case 2: we do not know the size of the data to parse
+    parse_it({});
+
+*/
+
+class RecordEndOfProduction {
+public:
+    RecordEndOfProduction(ParserBuilder* pb, Expression* eop) : _pb(pb) {
+        assert(pb->state().end_of_production);
+
+        auto state = pb->state();
+        _dst_for_eop = state.end_of_production;
+        state.end_of_production = pb->builder()->null();
+        pb->pushState(std::move(state));
+
+        setEop(eop);
+    }
+
+    // Sets the size of the production.
+    void update(Expression* eop) { setEop(eop); }
+
+    // Returns true if the size of the production has been set.
+    operator bool() const { return _eop != nullptr; }
+
+    ~RecordEndOfProduction() { _pb->popState(); }
+
+    RecordEndOfProduction& operator=(RecordEndOfProduction&& other) = default;
+
+    RecordEndOfProduction& operator=(const RecordEndOfProduction& other) = delete;
+    RecordEndOfProduction(const RecordEndOfProduction& other) = delete;
+    RecordEndOfProduction(RecordEndOfProduction&& other) = delete;
+
+private:
+    void setEop(Expression* eop) {
+        if ( eop ) {
+            auto have_eop = _pb->builder()->addIf(_dst_for_eop);
+            _pb->pushBuilder(have_eop, [&]() { _pb->builder()->addAssign(_dst_for_eop, eop); });
+        }
+
+        _eop = eop;
+    }
+
+    ParserBuilder* _pb;
+    Expression* _eop = nullptr;
+    Expression* _dst_for_eop = nullptr;
+};
 
 struct ProductionVisitor : public production::Visitor {
     ProductionVisitor(ParserBuilder* pb, const Grammar& g) : pb(pb), grammar(g) {}
@@ -295,6 +352,7 @@ struct ProductionVisitor : public production::Visitor {
                     pstate.lahead = builder()->id("__lah");
                     pstate.lahead_end = builder()->id("__lahe");
                     pstate.error = builder()->id("__error");
+                    pstate.end_of_production = builder()->id("__eop");
 
                     std::optional<PathTracker> path_tracker;
                     Expression* profiler = nullptr;
@@ -332,8 +390,8 @@ struct ProductionVisitor : public production::Visitor {
                     build_parse_stage1_logic();
 
                     // Call stage 2.
-                    Expressions args = {state().data,   state().begin,      state().cur,  state().trim,
-                                        state().lahead, state().lahead_end, state().error};
+                    Expressions args = {state().data,   state().begin,      state().cur,   state().trim,
+                                        state().lahead, state().lahead_end, state().error, state().end_of_production};
 
                     if ( addl_param )
                         args.push_back(builder()->id(addl_param->id()));
@@ -447,6 +505,7 @@ struct ProductionVisitor : public production::Visitor {
                     pstate.lahead = builder()->id("__lah");
                     pstate.lahead_end = builder()->id("__lahe");
                     pstate.error = builder()->id("__error");
+                    pstate.end_of_production = builder()->id("__eop");
 
                     std::optional<PathTracker> path_tracker;
 
@@ -511,8 +570,8 @@ struct ProductionVisitor : public production::Visitor {
                 return id_stage1;
             });
 
-        Expressions args = {state().data,   state().begin,      state().cur,  state().trim,
-                            state().lahead, state().lahead_end, state().error};
+        Expressions args = {state().data,   state().begin,      state().cur,   state().trim,
+                            state().lahead, state().lahead_end, state().error, state().end_of_production};
 
         if ( ! unit && p.meta().field() )
             args.push_back(destination());
@@ -641,8 +700,9 @@ struct ProductionVisitor : public production::Visitor {
             else if ( auto unit = p->tryAs<production::Unit>(); unit && ! top_level ) {
                 // Parsing a different unit type. We call the other unit's parse
                 // function, but don't have to create it here.
-                Expressions args = {pb->state().data,   pb->state().begin,      pb->state().cur,  pb->state().trim,
-                                    pb->state().lahead, pb->state().lahead_end, pb->state().error};
+                Expressions args = {pb->state().data,  pb->state().begin,        pb->state().cur,
+                                    pb->state().trim,  pb->state().lahead,       pb->state().lahead_end,
+                                    pb->state().error, state().end_of_production};
 
                 Location location;
                 Expressions type_args;
@@ -1322,13 +1382,15 @@ struct ProductionVisitor : public production::Visitor {
             return;
         }
 
-        for ( const auto& p : *tokens ) {
-            if ( ! p->isLiteral() ) {
-                hilti::logger().error("&synchronize cannot be used on field, look-ahead contains non-literals",
-                                      p->location());
-                return;
-            }
-        }
+        // TODO: Re-enable this, or move somewhere else.
+        //
+        // for ( const auto& p : *tokens ) {
+        //     if ( ! p->isLiteral() ) {
+        //         hilti::logger().error("&synchronize cannot be used on field, look-ahead contains non-literals",
+        //                               p->location());
+        //         return;
+        //     }
+        // }
 
         state().printDebug(builder());
 
@@ -1526,6 +1588,8 @@ struct ProductionVisitor : public production::Visitor {
 
     void operator()(const production::Block* p) final {
         auto build_block_productions = [this, p](const auto& productions) {
+            RecordEndOfProduction end_of_production(pb, nullptr); // TODO: compute this
+
             auto ncur = preAggregate(p, p->attributes());
 
             for ( const auto& i : productions )
@@ -1557,6 +1621,8 @@ struct ProductionVisitor : public production::Visitor {
     void operator()(const production::Epsilon* /* p */) final {}
 
     void operator()(const production::Counter* p) final {
+        RecordEndOfProduction end_of_production(pb, nullptr);
+
         auto body = builder()->addWhile(builder()->local("__i",
                                                          builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                                                   hilti::Constness::Mutable),
@@ -1606,6 +1672,8 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::ForEach* p) final {
+        RecordEndOfProduction end_of_production(pb, nullptr);
+
         Expression* cond = nullptr;
 
         if ( p->isEodOk() )
@@ -1624,12 +1692,12 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Deferred* p) final {
-        abort();
-        auto x = grammar.resolved(p);
-        parseProduction(*x);
+        abort(); // should have been resolved by now.
     }
 
     void operator()(const production::Switch* p) final {
+        RecordEndOfProduction end_of_production(pb, nullptr);
+
         if ( auto* condition = p->condition() )
             pushBuilder(builder()->addIf(condition));
 
@@ -1779,109 +1847,144 @@ struct ProductionVisitor : public production::Visitor {
                 groups.push_back({{i}, sync_point});
         }
 
-        auto parseField = [&](const auto& fieldProduction) {
-            parseProduction(*fieldProduction);
+        {
+            RecordEndOfProduction end_of_production(pb, nullptr);
 
-            if ( const auto& skip = p->unitType()->propertyItem("%skip") )
-                skipRegExp(skip->expression());
-        };
+            auto parseField = [&](const auto& fields, size_t field_index) {
+                const auto& production = fields[field_index];
 
-        int trial_loops = 0;
+                if ( ! end_of_production && ! p->unitType()->propertyItem("%skip") ) {
+                    // See if from this field onward, we can compute the total
+                    // size of all remaining fields.
+                    Expression* total_size = nullptr;
+                    for ( auto i = field_index; i < fields.size(); i++ ) {
+                        if ( auto field_size = fields[i]->parseSize(builder()) ) {
+                            if ( total_size )
+                                total_size = builder()->sum(total_size, field_size);
+                            else
+                                total_size = field_size;
+                        }
+                        else {
+                            total_size = nullptr;
+                            break;
+                        }
+                    }
 
-        // Process fields in groups of same sync point.
-        for ( const auto& group : groups ) {
-            const auto& fields = group.first;
-            const auto& sync_point = group.second;
-
-            assert(! fields.empty());
-
-            auto maybe_try = std::optional<decltype(std::declval<Builder>().addTry())>();
-
-            if ( ! sync_point )
-                for ( auto field : fields )
-                    parseField(p->fields()[field]);
-
-            else {
-                // Determine if the group has a fixed size. If so, remember it's start position.
-                Expression* group_begin = nullptr;
-                Expression* group_size = parseSizeOfSynchronizationGroup(p, fields);
-                if ( group_size )
-                    group_begin = builder()->addTmp("sync_group_begin", state().cur);
-
-                auto try_ = builder()->addTry();
-
-                pushBuilder(try_.first, [&]() {
-                    for ( auto field : fields )
-                        parseField(p->fields()[field]);
-                });
-
-                pushBuilder(try_.second.addCatch(
-                                builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                            [&]() {
-                                builder()->addDebugMsg("spicy-verbose",
-                                                       fmt("failed to parse, will try to synchronize at '%s'",
-                                                           p->fields()[*sync_point]->meta().field()->id()));
-
-                                // Remember the original error so we can report it in case the sync never gets
-                                // confirmed. This is also what marks that we are in trial mode.
-                                builder()->addAssign(state().error, builder()->id("e"));
-
-                                if ( group_size ) {
-                                    pb->beforeHook();
-                                    builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
-                                    builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p->location());
-                                    pb->afterHook();
-                                }
-                            });
-
-                if ( group_size ) {
-                    // When the whole group is of fixed size, we know directly where
-                    // to continue parsing, and can just jump there. We prefer this
-                    // over pattern-based synchronization.
-                    builder()->addAssign(state().cur, builder()->memberCall(group_begin, "advance", {group_size}));
-                    pb->trimInput();
+                    if ( total_size ) {
+                        auto eop = builder()->sum(builder()->begin(state().cur), total_size);
+                        end_of_production.update(eop);
+                    }
                 }
+
+                parseProduction(*production);
+
+                if ( const auto& skip = p->unitType()->propertyItem("%skip") )
+                    skipRegExp(skip->expression());
+            };
+
+            int trial_loops = 0;
+
+            // Process fields in groups of same sync point.
+            for ( const auto& group : groups ) {
+                const auto& fields = group.first;
+                const auto& sync_point = group.second;
+
+                assert(! fields.empty());
+
+                auto maybe_try = std::optional<decltype(std::declval<Builder>().addTry())>();
+
+                if ( ! sync_point )
+                    for ( auto field : fields )
+                        parseField(p->fields(), field);
+
                 else {
-                    // Start searching for the sync point.
-                    startSynchronize(*p->fields()[*sync_point]);
-                    ++trial_loops;
+                    // Determine if the group has a fixed size. If so, remember it's start position.
+                    Expression* group_begin = nullptr;
+                    Expression* group_size = parseSizeOfSynchronizationGroup(p, fields);
+                    if ( group_size )
+                        group_begin = builder()->addTmp("sync_group_begin", state().cur);
+
+                    auto try_ = builder()->addTry();
+
+                    pushBuilder(try_.first, [&]() {
+                        for ( auto field : fields )
+                            parseField(p->fields(), field);
+                    });
+
+                    pushBuilder(try_.second.addCatch(
+                                    builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
+                                [&]() {
+                                    builder()->addDebugMsg("spicy-verbose",
+                                                           fmt("failed to parse, will try to synchronize at '%s'",
+                                                               p->fields()[*sync_point]->meta().field()->id()));
+
+                                    // Remember the original error so we can report it in case the sync never gets
+                                    // confirmed. This is also what marks that we are in trial mode.
+                                    builder()->addAssign(state().error, builder()->id("e"));
+
+                                    if ( group_size ) {
+                                        pb->beforeHook();
+                                        builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
+                                        builder()->addMemberCall(state().self, "__on_0x25_synced", {},
+                                                                 p->fields()[*sync_point]->location());
+                                        pb->afterHook();
+                                    }
+                                });
+
+                    if ( group_size ) {
+                        // When the whole group is of fixed size, we know directly where
+                        // to continue parsing, and can just jump there. We prefer this
+                        // over pattern-based synchronization.
+                        builder()->addAssign(state().cur, builder()->memberCall(group_begin, "advance", {group_size}));
+                        pb->trimInput();
+                    }
+                    else {
+                        // Start searching for the sync point.
+                        startSynchronize(*p->fields()[*sync_point]);
+                        ++trial_loops;
+                    }
+                }
+
+                if ( const auto& skipPost = p->unitType()->propertyItem("%skip-post") )
+                    skipRegExp(skipPost->expression());
+
+                pb->finalizeUnit(true, p->location());
+
+                for ( int i = 0; i < trial_loops; ++i )
+                    finishSynchronize();
+
+                if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::MaxSize) ) {
+                    // Check that we did not read into the sentinel byte.
+                    auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
+                                                        builder()->memberCall(state().ncur, "offset"));
+                    auto exceeded = builder()->addIf(cond);
+                    pushBuilder(exceeded,
+                                [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
+
+                    // Restore parser state.
+                    auto ncur = state().ncur;
+                    popState();
+                    builder()->addAssign(state().cur, ncur);
+                }
+
+                else if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::Size);
+                          a && ! p->unitType()->attributes()->find(hilti::Attribute::Kind::Eod) ) {
+                    auto ncur = state().ncur;
+                    _checkSizeAmount(a, ncur);
+                    popState();
+                    builder()->addAssign(state().cur, ncur);
                 }
             }
-        }
-
-        if ( const auto& skipPost = p->unitType()->propertyItem("%skip-post") )
-            skipRegExp(skipPost->expression());
-
-        pb->finalizeUnit(true, p->location());
-
-        for ( int i = 0; i < trial_loops; ++i )
-            finishSynchronize();
-
-        if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::MaxSize) ) {
-            // Check that we did not read into the sentinel byte.
-            auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
-                                                builder()->memberCall(state().ncur, "offset"));
-            auto exceeded = builder()->addIf(cond);
-            pushBuilder(exceeded, [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
-
-            // Restore parser state.
-            auto ncur = state().ncur;
-            popState();
-            builder()->addAssign(state().cur, ncur);
-        }
-
-        else if ( auto a = p->unitType()->attributes()->find(hilti::Attribute::Kind::Size);
-                  a && ! p->unitType()->attributes()->find(hilti::Attribute::Kind::Eod) ) {
-            auto ncur = state().ncur;
-            _checkSizeAmount(a, ncur);
-            popState();
-            builder()->addAssign(state().cur, ncur);
         }
 
         popState();
     }
 
-    void operator()(const production::Ctor* p) final { pb->parseLiteral(*p, destination()); }
+    void operator()(const production::Ctor* p) final {
+        auto* size = p->parseSize(builder());
+        RecordEndOfProduction end_of_production(pb, size);
+        pb->parseLiteral(*p, destination());
+    }
 
     auto parseLookAhead(const production::LookAhead& p) {
         if ( auto c = p.condition() )
@@ -1892,6 +1995,8 @@ struct ProductionVisitor : public production::Visitor {
         pushBuilder(true_);
         getLookAhead(p);
         popBuilder();
+
+        builder()->addComment(state().end_of_production->print());
 
         // Now use the freshly set look-ahead symbol to switch accordingly.
         auto& lahs = p.lookAheads();
@@ -1950,6 +2055,8 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::LookAhead* p) final {
+        RecordEndOfProduction end_of_production(pb, nullptr);
+
         auto [builder_alt1, builder_alt2, builder_default] = parseLookAhead(*p);
 
         pushBuilder(builder_alt1);
@@ -1964,11 +2071,15 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Sequence* p) final {
+        RecordEndOfProduction end_of_production(pb, nullptr); // TODO: Compute this
+
         for ( const auto& i : p->sequence() )
             parseProduction(*i);
     }
 
     void operator()(const production::Skip* p) final {
+        RecordEndOfProduction end_of_production(pb, nullptr); // TODO: Implement this
+
         if ( auto c = p->field()->condition() )
             pushBuilder(builder()->addIf(c));
 
@@ -2035,6 +2146,8 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Variable* p) final {
+        RecordEndOfProduction end_of_production(pb, nullptr); // TODO: Implement this
+
         pb->parseType(p->type()->type(), p->meta(), destination(), TypesMode::Default);
     }
 
@@ -2058,6 +2171,16 @@ struct ProductionVisitor : public production::Visitor {
                     std::tie(builder_alt1, builder_alt2, builder_default) = parseLookAhead(*lah_prod);
                 };
 
+                auto dst_end_of_production =
+                    builder()->addTmp("end_of_production",
+                                      builder()->typeOptional(builder()->qualifiedType(builder()->typeStreamIterator(),
+                                                                                       hilti::Constness::Const)),
+                                      builder()->begin(state().cur));
+
+                auto state_ = pb->state();
+                state_.end_of_production = dst_end_of_production;
+                pushState(state_);
+
                 // If the list field generating this While is a synchronization point, set up a try/catch block
                 // for internal list synchronization (failure to parse a list element tries to synchronize at
                 // the next possible list element).
@@ -2065,7 +2188,11 @@ struct ProductionVisitor : public production::Visitor {
                      field && field->attributes() && field->attributes()->find(hilti::Attribute::Kind::Synchronize) ) {
                     auto try_ = builder()->addTry();
 
-                    pushBuilder(try_.first, [&]() { parse(); });
+                    pushBuilder(try_.first, [&]() {
+                        RecordEndOfProduction end_of_production(pb, nullptr);
+                        builder()->addComment(pb->state().end_of_production->print());
+                        parse();
+                    });
 
                     pushBuilder(try_.second.addCatch(
                                     builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
@@ -2077,7 +2204,18 @@ struct ProductionVisitor : public production::Visitor {
                                                            "failed to parse list element, will try to "
                                                            "synchronize at next possible element");
 
-                                    syncProductionNext(*p);
+                                    auto [have_eop, no_eop] =
+                                        builder()->addIfElse(builder()->greater(builder()->deref(dst_end_of_production),
+                                                                                builder()->begin(state().cur)));
+                                    pushBuilder(have_eop, [&]() {
+                                        pb->advanceInput(builder()->deref(dst_end_of_production));
+                                        pb->beforeHook();
+                                        builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
+                                        builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p->location());
+                                        pb->afterHook();
+                                    });
+
+                                    pushBuilder(no_eop, [&]() { syncProductionNext(*p); });
                                 });
 
                     pushBuilder(builder_default,
@@ -2099,17 +2237,21 @@ struct ProductionVisitor : public production::Visitor {
 
                 pushBuilder(builder_alt2, [&]() {
                     // Parse body.
+                    builder()->addComment(state().end_of_production->print());
                     auto cookie = pb->initLoopBody();
+                    builder()->addComment(state().end_of_production->print());
                     auto stop = parseProduction(*p->body());
                     auto b = builder()->addIf(stop);
                     b->addBreak();
 
                     pb->finishLoopBody(cookie, p->location());
                 });
+
+                popState();
             });
         };
     }
-}; // namespace spicy::detail::codegen
+};
 
 } // namespace spicy::detail::codegen
 
@@ -2146,6 +2288,10 @@ hilti::type::Function* ParserBuilder::parseMethodFunctionType(hilti::type::funct
                                  builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
                                                           hilti::Constness::Const)),
                              hilti::parameter::Kind::Copy),
+        builder()->parameter("__eop",
+                             builder()->typeOptional(
+                                 builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Const)),
+                             hilti::parameter::Kind::InOut),
     };
 
     if ( addl_param )

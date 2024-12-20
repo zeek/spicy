@@ -42,7 +42,8 @@ public:
     static auto create(ASTContext* ctx, QualifiedType* type, const Meta& meta = {}) {
         return ctx->make<Optional>(ctx,
                                    {
-                                       QualifiedType::create(ctx, type::Optional::create(ctx, type), Constness::Const),
+                                       QualifiedType::create(ctx, type::Optional::create(ctx, type),
+                                                             Constness::Mutable),
                                        nullptr,
                                    },
                                    meta);

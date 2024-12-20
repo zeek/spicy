@@ -177,6 +177,19 @@ struct ParserState {
      * Expression* holding the last parse error if any. This field is set only in sync or trial mode.
      */
     Expression* error = nullptr;
+
+    /**
+     * If set, expression referencing an optional iterator to set while parsing a
+     * production as soon as parsing knows the end of the bytes data the
+     * production will consume. Once this is set, upper-level error recovery
+     * might use that information to jump there for continuing parsing.
+     *
+     * To work with this, before a production starts parsing, it needs to call
+     * ParserBuilder::setEndOfProduction(), either with a specific iterator
+     * where the production will end parsing, or with a null value to indicate
+     * that it cannot know.
+     */
+    Expression* end_of_production = nullptr;
 };
 
 /** Generates the parsing logic for a unit type. */
