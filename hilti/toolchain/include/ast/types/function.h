@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <memory>
+#include <string_view>
 #include <utility>
 
 #include <hilti/ast/declaration.h>
@@ -40,7 +40,7 @@ constexpr util::enum_::Value<Flavor> Flavors[] = {
 constexpr auto to_string(Flavor f) { return util::enum_::to_string(f, detail::Flavors); }
 
 namespace flavor {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Flavor>(s, detail::Flavors); }
+constexpr auto from_string(std::string_view s) { return util::enum_::from_string<Flavor>(s, detail::Flavors); }
 } // namespace flavor
 
 } // namespace function

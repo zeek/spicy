@@ -123,7 +123,7 @@ public:
 
     // Output lists.
     template<typename T>
-    Stream& operator<<(std::pair<T, const char*> p) {
+    Stream& operator<<(const std::pair<T, const char*>& p) {
         bool first = true;
         for ( const auto& i : p.first ) {
             _flush_pending();

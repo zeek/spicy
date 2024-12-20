@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
@@ -20,24 +19,24 @@ public:
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    void setValue(ASTContext* ctx, Expressions exprs) {
+    void setValue(ASTContext* ctx, const Expressions& exprs) {
         removeChildren(0, {});
         addChild(ctx, QualifiedType::createAuto(ctx, meta()));
-        addChildren(ctx, std::move(exprs));
+        addChildren(ctx, exprs);
     }
 
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    static auto create(ASTContext* ctx, QualifiedType* etype, Expressions exprs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, QualifiedType* etype, const Expressions& exprs, Meta meta = {}) {
         auto stype = QualifiedType::create(ctx, type::List::create(ctx, etype, meta), Constness::Const, meta);
-        return ctx->make<List>(ctx, node::flatten(stype, std::move(exprs)), std::move(meta));
+        return ctx->make<List>(ctx, node::flatten(stype, exprs), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Expressions exprs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, const Expressions& exprs, Meta meta = {}) {
         // Bool is just an arbitrary place-holder type for empty values.
         auto etype = exprs.empty() ? QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const, meta) :
                                      QualifiedType::createAuto(ctx, meta);
-        return create(ctx, etype, std::move(exprs), std::move(meta));
+        return create(ctx, etype, exprs, std::move(meta));
     }
 
 protected:

@@ -45,7 +45,6 @@ Global options:
 Configure options:
 
     --build-toolchain={yes,no}     Build the Spicy compiler toolchain [default: yes]
-    --clang-format <path>          Path to clang-format to use (default: found in PATH)
     --clang-tidy <path>            Path to clang-tidy to use   (default: found in PATH)
     --cxx-compiler <path>          Path to C++ compiler to use (default: found by cmake)
     --disable-precompiled-headers  Disable use of precompiled headers for developer tests
@@ -92,7 +91,6 @@ function run_configure {
     mkdir -p ${install}
     configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache --with-hilti-compiler-launcher=ccache"
 
-    clang_format=$(which clang-format 2>/dev/null)
     clang_tidy=$(which clang-tidy 2>/dev/null)
 
     if [ "${build_type}" == "release" ]; then
@@ -108,13 +106,6 @@ function run_configure {
             --cxx-compiler)
                 test $# -gt 0 || usage
                 configure="${configure} --with-cxx-compiler=$2"
-                shift 2;
-                ;;
-
-            --clang-format)
-                test $# -gt 0 || usage
-                clang_format="$2"
-                test -x ${clang_format} || error "clang-format not found in $2"
                 shift 2;
                 ;;
 
@@ -153,7 +144,6 @@ function run_configure {
         error "Build directory ${build} already exists, delete first"
     fi
 
-    test -z "${clang_format}" && log_stage "Warning: No clang-format found, will skip any related tests"
     test -z "${clang_tidy}" && log_stage "Warning: No clang-tidy found, will skip any related tests"
 
     # Looks like Cirrus CI doesn't fetch tags.
@@ -164,8 +154,13 @@ function run_configure {
     ${configure} || exit 1
     mkdir -p ${artifacts}
 
-    echo "${clang_format}" >${build}/.clang_format
     echo "${clang_tidy}" >${build}/.clang_tidy
+
+    if [ -x "${clang_tidy}" ]; then
+        pushd "${build}" >/dev/null || exit 1
+        cmake -DCMAKE_CXX_CLANG_TIDY="${clang_tidy}" -DCMAKE_C_CLANG_TIDY="${clang_tidy}" ..
+        popd >/dev/null || exit 1
+    fi
 }
 
 function run_build {
@@ -233,37 +228,10 @@ function run_test_btest {
     execute_btest "Spicy" "tests" "${alternative}"
 }
 
-function run_test_clang_tidy {
-    clang_tidy=$(cat ${build}/.clang_tidy 2>/dev/null)
-
-    if [ ! -x ${clang_tidy} ]; then
-        log_warning "clang-tidy not available, skipping"
-        return 0
-    fi
-
-    log_stage "Running clang-tidy ..."
-
-    export CLANG_TIDY=${clang_tidy}
-
-    if ${root}/scripts/run-clang-tidy --fixit -j 3 ${build}; then
-        echo "clang-tidy run passed"
-        return 0
-    else
-        git diff | tee ${artifacts}/clang-tidy.diff
-        log_diag "Patch to what can be fixed automatically in 'clang-tidy.diff'"
-        log_error "clang-tidy has failed"
-        return 1
-    fi
-}
-
 function run_test_code {
     rc=0
 
     pre-commit run -a --show-diff-on-failure || rc=1
-
-    pushd $(pwd) >/dev/null
-    run_test_clang_tidy || rc=1
-    popd >/dev/null
 
     return ${rc}
 }

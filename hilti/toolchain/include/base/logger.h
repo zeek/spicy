@@ -65,7 +65,7 @@ constexpr util::enum_::Value<Level> Levels[] = {
 constexpr auto to_string(Level m) { return util::enum_::to_string(m, detail::Levels); }
 
 namespace level {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string<Level>(s, detail::Levels); }
+constexpr auto from_string(std::string_view s) { return util::enum_::from_string<Level>(s, detail::Levels); }
 } // namespace level
 
 /** Ostream-variant that forwards output to the central logger. */

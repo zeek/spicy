@@ -248,8 +248,8 @@ public:
     /** Returns true if the set has at least one element. */
     operator bool() const { return ! attributes().empty(); }
 
-    static auto create(ASTContext* ctx, Attributes attrs = {}, Meta m = Meta()) {
-        return ctx->make<AttributeSet>(ctx, std::move(attrs), std::move(m));
+    static auto create(ASTContext* ctx, const Attributes& attrs = {}, Meta m = Meta()) {
+        return ctx->make<AttributeSet>(ctx, attrs, std::move(m));
     }
 
 protected:

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/statement.h>
@@ -22,8 +21,8 @@ public:
     /** Internal method for use by builder API only. */
     auto _lastStatement() { return children().back()->as<Statement>(); }
 
-    static auto create(ASTContext* ctx, Statements stmts, Meta meta = {}) {
-        return ctx->make<Block>(ctx, std::move(stmts), std::move(meta));
+    static auto create(ASTContext* ctx, const Statements& stmts, Meta meta = {}) {
+        return ctx->make<Block>(ctx, stmts, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) { return create(ctx, {}, meta); }
