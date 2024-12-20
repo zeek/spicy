@@ -10,6 +10,7 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 
+using namespace std::string_literals;
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
@@ -39,46 +40,51 @@ TEST_CASE("at") {
     CHECK_THROWS_WITH_AS(*b.at(5), "index 5 out of bounds", const IndexError&);
 }
 
-TEST_CASE("construct") {
-    CHECK_EQ(Bytes("123", Enum(bytes::Charset::ASCII)).str(), "123");
-    CHECK_EQ(Bytes("abc", Enum(bytes::Charset::ASCII)).str(), "abc");
-    CHECK_EQ(Bytes("abc", Enum(bytes::Charset::UTF8)).str(), "abc");
-
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", Enum(bytes::Charset::UTF8)).str(), "\xF0\x9F\x98\x85");
-    CHECK_EQ(Bytes("\xc3\x28", Enum(bytes::Charset::UTF8), bytes::DecodeErrorStrategy::REPLACE).str(), "\ufffd(");
-    CHECK_EQ(Bytes("\xc3\x28", Enum(bytes::Charset::UTF8), bytes::DecodeErrorStrategy::IGNORE).str(), "(");
-    CHECK_THROWS_WITH_AS(Bytes("\xc3\x28", Enum(bytes::Charset::UTF8), bytes::DecodeErrorStrategy::STRICT).str(),
-                         "illegal UTF8 sequence in string", const RuntimeError&);
-
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", Enum(bytes::Charset::ASCII), bytes::DecodeErrorStrategy::REPLACE).str(), "????");
-    CHECK_EQ(Bytes("\xF0\x9F\x98\x85", Enum(bytes::Charset::ASCII), bytes::DecodeErrorStrategy::IGNORE).str(), "");
-    CHECK_THROWS_WITH_AS(Bytes("\xF0\x9F\x98\x85", Enum(bytes::Charset::ASCII), bytes::DecodeErrorStrategy::STRICT)
-                             .str(),
-                         "illegal ASCII character in string", const RuntimeError&);
-
-    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS(Bytes("123", Enum(bytes::Charset::Undef)), "unknown character set for encoding",
-                         const RuntimeError&);
-}
-
 TEST_CASE("decode") {
-    CHECK_EQ("123"_b.decode(bytes::Charset::ASCII), "123");
-    CHECK_EQ("abc"_b.decode(bytes::Charset::ASCII), "abc");
-    CHECK_EQ("abc"_b.decode(bytes::Charset::UTF8), "abc");
-    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::UTF8), "\xF0\x9F\x98\x85");
-    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(bytes::Charset::ASCII), "????");
+    CHECK_EQ("123"_b.decode(unicode::Charset::ASCII), "123");
+    CHECK_EQ("abc"_b.decode(unicode::Charset::ASCII), "abc");
+    CHECK_EQ("abc"_b.decode(unicode::Charset::UTF8), "abc");
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(unicode::Charset::UTF8), "\xF0\x9F\x98\x85");
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(unicode::Charset::ASCII), "????");
 
-    CHECK_EQ("€100"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::REPLACE), "???100");
-    CHECK_EQ("€100"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::IGNORE), "100");
-    CHECK_THROWS_WITH_AS("123ä4"_b.decode(bytes::Charset::ASCII, bytes::DecodeErrorStrategy::STRICT),
+    CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE), "???100");
+    CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE), "100");
+    CHECK_THROWS_WITH_AS("123ä4"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::STRICT),
                          "illegal ASCII character in string", const RuntimeError&);
 
-    CHECK_EQ("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::REPLACE), "\ufffd(");
-    CHECK_EQ("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::IGNORE), "(");
-    CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(bytes::Charset::UTF8, bytes::DecodeErrorStrategy::STRICT),
+    CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE), "\ufffd(");
+    CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "(");
+    CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 
-    CHECK_THROWS_WITH_AS("123"_b.decode(bytes::Charset::Undef), "unknown character set for decoding",
+    CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc");
+    CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc");
+
+    // Our `decode` of UTF-16 bytes returns UTF8 string with BOM if they do not fit into ASCII, see e.g.,
+    // https://stackoverflow.com/questions/2223882/whats-the-difference-between-utf-8-and-utf-8-with-bom.
+    // To compute the expected results in Python encode with `utf_8_sig` encoding.
+    //
+    // LHS is an UTF16 encoding of '東京', RHS UTF8 with BOM.
+    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
+
+    // Decoding of UTF16 with BOM. The byte order in the charset is just a hint, but we still decode as UTF16.
+    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
+
+    // Decoding of too few bytes for UTF16 (expected even number, provided uneven).
+    CHECK_THROWS_WITH_AS(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
+                         "illegal UTF16 character in string", const RuntimeError&);
+    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab");
+    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE), "ab\ufffd");
+
+    // Our UTF16 implementation seems to differ in what it considers invalid encodings, e.g., `\x00\xd8` is rejected by
+    // python-3.1[1-3], but accepted by us.
+    //
+    // TODO(bbannier): Test rejection of invalid UTF16 (but with even length).
+    CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "");
+
+    CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
 }
 
@@ -206,14 +212,21 @@ TEST_CASE("join") {
 }
 
 TEST_CASE("lower") {
-    CHECK_EQ("ABC123"_b.lower(bytes::Charset::UTF8).str(), "abc123");
-    CHECK_EQ("ABC123"_b.lower(bytes::Charset::ASCII).str(), "abc123");
-    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::UTF8).str(), "gänsefüßchen");
-    CHECK_EQ("Gänsefüßchen"_b.lower(bytes::Charset::ASCII).str(), "g??nsef????chen");
+    CHECK_EQ("ABC123"_b.lower(unicode::Charset::UTF8).str(), "abc123");
+    CHECK_EQ("ABC123"_b.lower(unicode::Charset::ASCII).str(), "abc123");
+    CHECK_EQ("Gänsefüßchen"_b.lower(unicode::Charset::UTF8).str(), "gänsefüßchen");
+    CHECK_EQ("Gänsefüßchen"_b.lower(unicode::Charset::ASCII).str(), "g??nsef????chen");
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS("123"_b.lower(bytes::Charset::Undef), "unknown character set for decoding",
+    CHECK_THROWS_WITH_AS("123"_b.lower(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
+
+    // No case change expected for these Japanese codepoints.
+    const auto tokio8 = "東京"_b;
+    CHECK_EQ(tokio8.lower(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio8);
+
+    const auto tokio16 = "\xff\xfeqg\xacN"_b; // 東京 in UTF16LE.
+    CHECK_EQ(tokio16.lower(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio16);
 }
 
 TEST_CASE("match") {
@@ -505,14 +518,24 @@ TEST_CASE("toTime") {
 }
 
 TEST_CASE("upper") {
-    CHECK_EQ("abc123"_b.upper(bytes::Charset::UTF8).str(), "ABC123");
-    CHECK_EQ("abc123"_b.upper(bytes::Charset::ASCII).str(), "ABC123");
-    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::UTF8).str(), "GÄNSEFÜẞCHEN");
-    CHECK_EQ("Gänsefüßchen"_b.upper(bytes::Charset::ASCII).str(), "G??NSEF????CHEN");
+    CHECK_EQ("abc123"_b.upper(unicode::Charset::UTF8).str(), "ABC123");
+    CHECK_EQ("abc123"_b.upper(unicode::Charset::ASCII).str(), "ABC123");
+    CHECK_EQ("Gänsefüßchen"_b.upper(unicode::Charset::UTF8).str(), "GÄNSEFÜẞCHEN");
+    CHECK_EQ("Gänsefüßchen"_b.upper(unicode::Charset::ASCII).str(), "G??NSEF????CHEN");
+
+    CHECK_EQ(Bytes("a\0b\0c\0"s).upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
+             Bytes("A\0B\0C\0"s).upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT));
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS("123"_b.upper(bytes::Charset::Undef), "unknown character set for decoding",
+    CHECK_THROWS_WITH_AS("123"_b.upper(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
+
+    // No case change expected for these Japanese codepoints.
+    const auto tokio8 = "東京"_b;
+    CHECK_EQ(tokio8.upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio8);
+
+    const auto tokio16 = "\xff\xfeqg\xacN"_b; // 東京 in UTF16LE.
+    CHECK_EQ(tokio16.upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), tokio16);
 }
 
 TEST_CASE("append") {

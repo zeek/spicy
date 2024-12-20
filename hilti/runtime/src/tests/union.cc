@@ -6,6 +6,7 @@
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/types/union.h>
 
 using namespace hilti::rt;

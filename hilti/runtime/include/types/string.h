@@ -9,18 +9,14 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/vector.h>
+#include <hilti/rt/unicode.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
 
-namespace string {
+class Bytes;
 
-/* When processing UTF8, how to handle invalid data not representing UTF8 codepoints. */
-HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
-                           IGNORE,  // skip data
-                           REPLACE, // replace with a place-holder
-                           STRICT   // throw a runtime error
-);
+namespace string {
 
 /**
  * Computes the length of a UTF8 string in number of codepoints.
@@ -30,7 +26,8 @@ HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
  * @return the length of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-integer::safe<uint64_t> size(const std::string& s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+integer::safe<uint64_t> size(const std::string& s,
+                             unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 /**
  * Computes a lower-case version of an UTF8 string.
@@ -40,7 +37,7 @@ integer::safe<uint64_t> size(const std::string& s, DecodeErrorStrategy errors = 
  * @return a lower-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string lower(std::string_view s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+std::string lower(std::string_view s, unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 /**
  * Computes a upper-case version of an UTF8 string.
@@ -50,7 +47,7 @@ std::string lower(std::string_view s, DecodeErrorStrategy errors = DecodeErrorSt
  * @return a upper-case version of the input string
  * @throws RuntimeError if the input is not a valid UTF8 string
  */
-std::string upper(std::string_view s, DecodeErrorStrategy errors = DecodeErrorStrategy::REPLACE);
+std::string upper(std::string_view s, unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 /**
  * Splits the string at sequences of whitespace.
@@ -87,6 +84,18 @@ std::tuple<std::string, std::string> split1(const std::string& s);
  * @return a tuple with elements before and after the separator
  */
 std::tuple<std::string, std::string> split1(const std::string& s, const std::string& sep);
+
+/**
+ * Creates a bytes instance from a raw string representation
+ * encoded in a specified character set.
+ *
+ * @param s raw data
+ * @param cs character set the raw data is assumed to be encoded in
+ * @param errors how to handle errors when decoding the data
+ * @return bytes instances encoding *s* in character set *cs*
+ */
+rt::Bytes encode(std::string s, unicode::Charset cs,
+                 unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 } // namespace string
 

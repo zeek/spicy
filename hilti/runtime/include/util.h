@@ -240,7 +240,7 @@ std::string replace(std::string s, std::string_view o, std::string_view n);
  *
  * \note This function is not UTF8-aware.
  */
-bool startsWith(const std::string& s, const std::string& prefix);
+bool startsWith(std::string_view s, std::string_view prefix);
 
 /**
  * Python-style enumerate() that returns an iterable yielding pairs `(index,

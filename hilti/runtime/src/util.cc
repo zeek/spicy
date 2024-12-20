@@ -381,17 +381,7 @@ std::string hilti::rt::replace(std::string s, std::string_view o, std::string_vi
     return s;
 }
 
-bool hilti::rt::startsWith(const std::string& s, const std::string& prefix) {
-    if ( s.size() < prefix.size() )
-        return false;
-
-    for ( size_t i = 0; i < prefix.size(); ++i ) {
-        if ( s[i] != prefix[i] )
-            return false;
-    }
-
-    return true;
-}
+bool hilti::rt::startsWith(std::string_view s, std::string_view prefix) { return s.substr(0, prefix.size()) == prefix; }
 
 hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
 #ifdef LITTLE_ENDIAN
