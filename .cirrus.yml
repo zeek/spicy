@@ -42,7 +42,7 @@ lint_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-19 --clang-format `which clang-format-19` --clang-tidy `which clang-tidy-19` --run-clang-tidy `which run-clang-tidy-19`
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-19 --clang-format `which clang-format-19` --clang-tidy `which clang-tidy-19`
   build_script:       ./ci/run-ci -b build build
   test_code_script:   ./ci/run-ci -b build test-code
 
