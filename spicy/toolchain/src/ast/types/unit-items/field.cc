@@ -48,8 +48,6 @@ struct SizeVisitor : hilti::visitor::PreOrder {
             hilti::rt::cannot_be_reached();
     }
 
-    void operator()(hilti::type::SignedInteger* n) final { result = builder->integer(n->width() / 8U); }
-    void operator()(hilti::type::UnsignedInteger* n) final { result = builder->integer(n->width() / 8U); }
     void operator()(hilti::type::Bitfield* n) final { result = builder->integer(n->width() / 8U); }
 
     void operator()(hilti::type::Real*) final {
@@ -57,15 +55,17 @@ struct SizeVisitor : hilti::visitor::PreOrder {
         result = builder->ternary(builder->equal(type, builder->id("spicy::RealType::IEEE754_Single")),
                                   builder->integer(4U), builder->integer(8U));
     }
+
+    void operator()(hilti::type::SignedInteger* n) final { result = builder->integer(n->width() / 8U); }
+    void operator()(hilti::type::UnsignedInteger* n) final { result = builder->integer(n->width() / 8U); }
+    void operator()(hilti::type::Void* n) final { result = builder->integer(0U); }
 };
 
-Expression* spicy::type::unit::item::Field::size(ASTContext* ctx) const {
-    Builder builder(ctx);
-
+Expression* spicy::type::unit::item::Field::parseSize(Builder* builder) const {
     if ( const auto& size = attributes()->find(hilti::Attribute::Kind::Size) )
         return *size->valueAsExpression();
 
-    if ( auto size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(),
+    if ( auto size = hilti::visitor::dispatch(SizeVisitor(builder, *this), parseType()->type(),
                                               [](const auto& v) { return v.result; }) )
         return size;
 

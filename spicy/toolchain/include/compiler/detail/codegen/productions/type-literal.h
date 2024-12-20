@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
-#include <utility>
 
 #include <hilti/ast/expressions/type.h>
 
@@ -31,6 +29,8 @@ public:
 
     Expression* expression() const final { return _expr; }
     QualifiedType* type() const final { return _type; };
+    Expression* parseSize(Builder* builder) const final { return nullptr; }
+
     int64_t tokenID() const final { return static_cast<int64_t>(Production::tokenID(_type->print())); }
 
     std::string dump() const final { return _type->print(); }

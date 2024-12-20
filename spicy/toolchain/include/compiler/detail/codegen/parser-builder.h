@@ -177,6 +177,19 @@ struct ParserState {
      * Expression* holding the last parse error if any. This field is set only in sync or trial mode.
      */
     Expression* error = nullptr;
+
+    /**
+     * If set, expression referencing an optional iterator to set while parsing a
+     * production as soon as parsing knows the end of the bytes data the
+     * production will consume. Once this is set, upper-level error recovery
+     * might use that information to jump there for continuing parsing.
+     *
+     * To work with this, before a production starts parsing, it needs to call
+     * ParserBuilder::setEndOfProduction(), either with a specific iterator
+     * where the production will end parsing, or with a null value to indicate
+     * that it cannot know.
+     */
+    Expression* end_of_production = nullptr;
 };
 
 /** Generates the parsing logic for a unit type. */
@@ -402,26 +415,19 @@ public:
     Expression* atEod();
 
     /**
-     * Generates code that advances the current view to the next position which is not a gap.
-     * This implicitly calls advancedInput() afterwards.
+     * Generates code that advances the current view to the next position which
+     * is not a gap. This implicitly calls `trimInput()` afterwards.
      */
     void advanceToNextData();
 
     /**
      * Generates code that advances the current view to a new start position.
-     * This implicitly calls advancedInput() afterwards.
+     * This implicitly calls `trimInput()` afterwards.
      *
-     * @param i expression that's either the number of bytes to move ahead,
-     * a stream iterator to move to, or a new stream view to use from now on.
+     * @param i expression that's either the number of bytes to move ahead or a
+     * stream iterator to move to.
      */
     void advanceInput(Expression* i);
-
-    /**
-     * Generates code that sets the current view.
-     *
-     * @param i expression that's the new view to use.
-     */
-    void setInput(Expression* i);
 
     /**
      * Generates code that saves the current parsing position inside the

@@ -853,7 +853,9 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
         switch ( op->kind() ) {
             case parameter::Kind::In:
             case parameter::Kind::Copy: needs_mutable = false; break;
-            case parameter::Kind::InOut: needs_mutable = true; break;
+            case parameter::Kind::InOut:
+                needs_mutable = false;
+                break; // TODO: should be true, but doesn't work with optional inputs
             case parameter::Kind::Unknown: logger().internalError("unknown operand kind"); break;
         }
 

@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
-#include <utility>
+
+#include <hilti/ast/ctors/integer.h>
+#include <hilti/ast/expressions/ctor.h>
 
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
@@ -29,6 +30,13 @@ public:
     bool isTerminal() const final { return true; };
 
     QualifiedType* type() const final { return _type; };
+
+    Expression* parseSize(Builder* builder) const final {
+        if ( auto* field = meta().field() )
+            return field->parseSize(builder);
+        else
+            return nullptr;
+    }
 
     std::string dump() const final { return hilti::util::fmt("%s", *_type); }
 
