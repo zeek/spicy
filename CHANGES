@@ -1,3 +1,15 @@
+1.12.0 | 2025-01-06 14:32:35 +0100
+
+  * Keep test `spicy.rt.time` working for the next 200 years. (Benjamin Bannier, Corelight)
+
+    This test still compares the current time against hardcoded times to
+    check ordering. Extend the upper value so this test passes for the next
+    ~200 years.
+
+    (cherry picked from commit 93c2cc86e51c1b66b821c091095842cb22ba2a94)
+
+  * Add 1.12 release notes [skip CI]. (Benjamin Bannier, Corelight)
+
 1.12.0-dev.240 | 2024-12-12 13:09:05 +0100
 
   * Make sure autogen-docs pre-commit hook can always run in CI. (Benjamin Bannier, Corelight)
