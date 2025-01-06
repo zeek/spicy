@@ -148,7 +148,7 @@ TEST_CASE("createTemporaryFile") {
         SUBCASE("custom prefix") {
             auto prefix = "1234567890";
             tmp = createTemporaryFile(prefix).valueOrThrow();
-            CHECK(startsWith(tmp.filename(), prefix));
+            CHECK(startsWith(tmp.filename().string(), prefix));
         }
 
         CAPTURE(tmp);

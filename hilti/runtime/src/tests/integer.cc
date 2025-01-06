@@ -10,6 +10,7 @@
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/types/tuple.h>
 
 using namespace hilti::rt;

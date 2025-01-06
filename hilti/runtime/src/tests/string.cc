@@ -1,12 +1,45 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/types/vector.h>
+#include <hilti/rt/unicode.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::bytes::literals;
 
 TEST_SUITE_BEGIN("string");
+
+TEST_CASE("encode") {
+    CHECK_EQ(string::encode("", unicode::Charset::ASCII), ""_b);
+    CHECK_EQ(string::encode("123", unicode::Charset::ASCII), "123"_b);
+    CHECK_EQ(string::encode("abc", unicode::Charset::ASCII), "abc"_b);
+    CHECK_EQ(string::encode("abc", unicode::Charset::UTF8), "abc"_b);
+
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", unicode::Charset::UTF8), "\xF0\x9F\x98\x85"_b);
+    CHECK_EQ(string::encode("\xc3\x28", unicode::Charset::UTF8), "\ufffd("_b);
+    CHECK_EQ(string::encode("\xc3\x28", unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "("_b);
+    CHECK_THROWS_WITH_AS(string::encode("\xc3\x28", unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
+                         "illegal UTF8 sequence in string", const RuntimeError&);
+
+
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE),
+             "????"_b);
+    CHECK_EQ(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE), ""_b);
+    CHECK_THROWS_WITH_AS(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII,
+                                        unicode::DecodeErrorStrategy::STRICT),
+                         "illegal ASCII character in string", const RuntimeError&);
+
+    CHECK_EQ(string::encode("abc", unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "a\0b\0c\0"_b);
+    CHECK_EQ(string::encode("abc", unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "\0a\0b\0c"_b);
+    CHECK_EQ(string::encode("東京", unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "qg\xacN"_b);
+    CHECK_EQ(string::encode("東京", unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "gqN\xac"_b);
+
+    // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
+    CHECK_THROWS_WITH_AS(string::encode("123", unicode::Charset::Undef), "unknown character set for encoding",
+                         const RuntimeError&);
+}
 
 TEST_CASE("lower") {
     CHECK_EQ(string::lower(""), "");
@@ -14,15 +47,15 @@ TEST_CASE("lower") {
     CHECK_EQ(string::lower("GÄNSEFÜẞCHEN"), "gänsefüßchen");
     CHECK_EQ(string::lower("\xc3\x28"
                            "aBcD",
-                           string::DecodeErrorStrategy::REPLACE),
+                           unicode::DecodeErrorStrategy::REPLACE),
              "\ufffd(abcd");
     CHECK_EQ(string::lower("\xc3\x28"
                            "aBcD",
-                           string::DecodeErrorStrategy::IGNORE),
+                           unicode::DecodeErrorStrategy::IGNORE),
              "(abcd");
     CHECK_THROWS_WITH_AS(string::lower("\xc3\x28"
                                        "aBcD",
-                                       string::DecodeErrorStrategy::STRICT),
+                                       unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 }
 
@@ -32,15 +65,15 @@ TEST_CASE("size") {
     CHECK_EQ(string::size("Gänsefüßchen"), 12U);
     CHECK_EQ(string::size("\xc3\x28"
                           "aBcD",
-                          string::DecodeErrorStrategy::REPLACE),
+                          unicode::DecodeErrorStrategy::REPLACE),
              6U);
     CHECK_EQ(string::size("\xc3\x28"
                           "aBcD",
-                          string::DecodeErrorStrategy::IGNORE),
+                          unicode::DecodeErrorStrategy::IGNORE),
              5U);
     CHECK_THROWS_WITH_AS(string::size("\xc3\x28"
                                       "aBcD",
-                                      string::DecodeErrorStrategy::STRICT),
+                                      unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 }
 
@@ -50,15 +83,15 @@ TEST_CASE("upper") {
     CHECK_EQ(string::upper("Gänsefüßchen"), "GÄNSEFÜẞCHEN");
     CHECK_EQ(string::upper("\xc3\x28"
                            "aBcD",
-                           string::DecodeErrorStrategy::REPLACE),
+                           unicode::DecodeErrorStrategy::REPLACE),
              "\ufffd(ABCD");
     CHECK_EQ(string::upper("\xc3\x28"
                            "aBcD",
-                           string::DecodeErrorStrategy::IGNORE),
+                           unicode::DecodeErrorStrategy::IGNORE),
              "(ABCD");
     CHECK_THROWS_WITH_AS(string::upper("\xc3\x28"
                                        "aBcD",
-                                       string::DecodeErrorStrategy::STRICT),
+                                       unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 }
 
