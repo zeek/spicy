@@ -1832,7 +1832,7 @@
 
     A chain now retains one previously used but no longer needed chunk for
     reuse, so that we can avoid constant cycles of creating/destructing
-    chunks (and their paylaod memory) in the common case of a parser
+    chunks (and their payload memory) in the common case of a parser
     consuming full chunks without yielding. The caching is also geared
     towards owning/non-owning semantics staying consistent across
     subsequent append operations.
