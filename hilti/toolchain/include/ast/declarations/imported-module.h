@@ -62,7 +62,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, Meta meta = {}) {
-        return ctx->make<ImportedModule>(ctx, std::move(id), std::move(path), path.extension(), ID{}, std::move(meta));
+        auto extension = path.extension();
+        return ctx->make<ImportedModule>(ctx, std::move(id), std::move(path), std::move(extension), ID{},
+                                         std::move(meta));
     }
 
 protected:
