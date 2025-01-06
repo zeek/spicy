@@ -285,7 +285,7 @@ public:
     auto builder() const { return _builder; }
 
 private:
-    Builder* _builder; // may be null if not passed to constructor
+    Builder* _builder = nullptr; // may be null if not passed to constructor
 };
 
 } // namespace visitor

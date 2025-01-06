@@ -137,8 +137,8 @@ private:
             throw InvalidValue("type info value expired");
     }
 
-    const void* _ptr;
-    const TypeInfo* _ti;
+    const void* _ptr = nullptr;
+    const TypeInfo* _ti = nullptr;
     std::weak_ptr<bool> _parent_handle;
 };
 
