@@ -6,4 +6,4 @@ module Test;
 import spicy;
 
 global t = spicy::current_time();
-assert t > time(1564617600) && t < time(1735689600);
+assert t > time(1000000000) && t < time(8000000000);
