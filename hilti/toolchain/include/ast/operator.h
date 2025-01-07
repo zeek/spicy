@@ -329,10 +329,10 @@ public:
     auto op2() const { return operands()[2]; }
 
     /** Returns the operator's meta information. */
-    auto meta() const { return _meta; }
+    const auto& meta() const { return _meta; }
 
     /** Returns the operator's documentation string. */
-    auto doc() const { return signature().doc; }
+    const auto& doc() const { return signature().doc; }
 
     /**
      * Returns the C++-level name of the operator's class. Should be used only

@@ -32,7 +32,7 @@ public:
      */
     explicit DebugStream(const std::string& name);
     bool operator<(const DebugStream& other) const { return _id < other._id; }
-    auto name() const { return _name; }
+    const auto& name() const { return _name; }
 
     /** Returns the names of all available debug streams. */
     static std::vector<std::string> all();

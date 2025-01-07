@@ -22,8 +22,8 @@ namespace spicy::type::unit::item {
  */
 class UnresolvedField : public unit::Item {
 public:
-    auto fieldID() const { return id(); }
-    auto unresolvedID() const { return _unresolved_id; }
+    const auto& fieldID() const { return id(); }
+    const auto& unresolvedID() const { return _unresolved_id; }
     const auto& index() const { return _index; }
 
     // Only one of these will have return value.

@@ -74,7 +74,7 @@ public:
     bool save(std::ostream& out) const;
 
     /** Returns C++ code as a string. */
-    auto code() const { return _code; }
+    const auto& code() const { return _code; }
 
     /** Returns true if this instance has been initialized with any C++ code. */
     auto isLoaded() const { return _code.has_value(); }
