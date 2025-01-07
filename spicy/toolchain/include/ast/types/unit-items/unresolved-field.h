@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
@@ -53,7 +51,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"index", _index}};
-        return unit::Item::properties() + p;
+        return unit::Item::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, ID id, QualifiedType* type, bool skip, Expressions args, Expression* repeat,

@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <algorithm>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -27,11 +25,8 @@ public:
     auto expression() const { return child<Expression>(0); }
 
     node::Properties properties() const final {
-        auto p = node::Properties{
-            {"id", _id},
-        };
-
-        return Node::properties() + p;
+        auto p = node::Properties{{"id", _id}};
+        return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const ID& id, Expression* expr, Meta meta = Meta()) {

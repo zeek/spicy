@@ -51,7 +51,7 @@ hilti::node::Properties UnqualifiedType::properties() const {
                                {"type", to_string(_type_index)},
                                {"declaration", to_string(_declaration_index)},
                                {"wildcard", _is_wildcard}}};
-    return Node::properties() + p;
+    return Node::properties() + std::move(p);
 }
 
 std::string UnqualifiedType::_dump() const {

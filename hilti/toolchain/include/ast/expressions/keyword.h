@@ -46,7 +46,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{{"kind", to_string(_kind)}}};
-        return Expression::properties() + p;
+        return Expression::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, keyword::Kind kind, QualifiedType* type, Meta meta = {}) {

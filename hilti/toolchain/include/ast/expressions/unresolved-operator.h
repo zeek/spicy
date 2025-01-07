@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -46,7 +45,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"kind", to_string(_kind)}};
-        return Expression::properties() + p;
+        return Expression::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, operator_::Kind kind, Expressions operands, const Meta& meta = {}) {

@@ -119,7 +119,7 @@ public:
                                   {"fqid", _fqid},
                                   {"canonical-id", _canonical_id}};
 
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     Declaration(const Declaration& other) : Node(other), node::WithDocString(other) {

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
@@ -29,7 +28,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"expect_exception", _expect_exception}};
-        return Statement::properties() + p;
+        return Statement::properties() + std::move(p);
     }
 
     void setExpression(ASTContext* ctx, hilti::Expression* c) { setChild(ctx, 0, c); }

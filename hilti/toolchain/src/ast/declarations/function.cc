@@ -14,5 +14,5 @@ node::Properties declaration::Function::properties() const {
                               {"linked-declaration", to_string(_linked_declaration_index)},
                               {"linked-prototype", to_string(_linked_prototype_index)}};
 
-    return Declaration::properties() + p;
+    return Declaration::properties() + std::move(p);
 }

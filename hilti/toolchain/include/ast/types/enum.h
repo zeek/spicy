@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/constant.h>
@@ -30,7 +28,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"id", _id}, {"value", _value}};
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const ID& id, int value, Meta meta = {}) {

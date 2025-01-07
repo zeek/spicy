@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -28,7 +27,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"cxx_name", _cxx_name}};
-        return UnqualifiedType::properties() + p;
+        return UnqualifiedType::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const std::string& cxx_name, Meta meta = {}) {

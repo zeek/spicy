@@ -61,5 +61,5 @@ node::Properties expression::Name::properties() const {
     else
         p["resolved-unified"] = "-";
 
-    return Expression::properties() + p;
+    return Expression::properties() + std::move(p);
 }

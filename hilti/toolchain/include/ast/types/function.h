@@ -73,7 +73,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"flavor", to_string(_flavor)}};
-        return UnqualifiedType::properties() + p;
+        return UnqualifiedType::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, QualifiedType* result, const declaration::Parameters& params,

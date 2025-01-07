@@ -21,7 +21,7 @@ public:
 
     node::Properties properties() const override {
         auto p = node::Properties{{"id", _id}};
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, ID id, Expression* expr, Meta meta = {}) {
@@ -66,7 +66,7 @@ public:
     /** Implements the node interface. */
     node::Properties properties() const override {
         auto p = node::Properties{};
-        return Ctor::properties() + node::WithUniqueID::properties() + p;
+        return Ctor::properties() + node::WithUniqueID::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const struct_::Fields& fields, QualifiedType* t, Meta meta = {}) {

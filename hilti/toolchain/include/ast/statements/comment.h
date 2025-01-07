@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -33,7 +32,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"comment", _comment}, {"separator", to_string(_separator)}};
-        return Statement::properties() + p;
+        return Statement::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, std::string comment, comment::Separator separator = comment::Separator::Before,

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,7 +47,7 @@ public:
             {"dirs", util::join(_dirs)},
             {"uid", _uid ? _uid->str() : std::string("<n/a>")},
         };
-        return Declaration::properties() + p;
+        return Declaration::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, ID id, const std::string& parse_extension, Meta meta = {}) {

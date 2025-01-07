@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
@@ -18,7 +17,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"id", _id}};
-        return UnqualifiedType::properties() + p;
+        return UnqualifiedType::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const ID& id, Meta meta = {}) {

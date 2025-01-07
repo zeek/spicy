@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
-
 #include <hilti/ast/operators/common.h>
 
 namespace hilti::operator_ {
@@ -27,7 +24,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"auto", _is_coercion}};
-        return expression::ResolvedOperator::properties() + p;
+        return expression::ResolvedOperator::properties() + std::move(p);
     }
 
 private:

@@ -27,7 +27,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", util::join(_value, " | ")}};
-        return Ctor::properties() + p;
+        return Ctor::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, std::vector<std::string> v, AttributeSet* attrs, const Meta& meta = {}) {

@@ -61,7 +61,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"kind", to_string(_kind)}, {"is_type_param", _is_type_param}};
-        return Declaration::properties() + p;
+        return Declaration::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,

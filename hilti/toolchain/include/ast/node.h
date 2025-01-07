@@ -1239,6 +1239,6 @@ inline std::ostream& operator<<(std::ostream& out, const Node& n) {
 } // namespace hilti
 
 inline hilti::node::Properties operator+(hilti::node::Properties p1, hilti::node::Properties p2) {
-    p1.merge(p2);
+    p1.merge(std::move(p2));
     return p1;
 }

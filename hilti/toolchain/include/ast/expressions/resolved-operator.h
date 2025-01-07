@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -42,7 +41,7 @@ public:
 
     node::Properties properties() const override {
         auto p = node::Properties{{"kind", to_string(_operator->kind())}};
-        return Expression::properties() + p;
+        return Expression::properties() + std::move(p);
     }
 
     HILTI_NODE_1(expression::ResolvedOperator, Expression, override);

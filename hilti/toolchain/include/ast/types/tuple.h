@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -24,7 +23,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"id", _id}};
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, ID id, QualifiedType* type, Meta meta = {}) {

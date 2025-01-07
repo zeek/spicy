@@ -130,7 +130,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"public", _public}, {"may_have_filter", _may_have_filter}};
-        return hilti::UnqualifiedType::properties() + p;
+        return hilti::UnqualifiedType::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const hilti::declaration::Parameters& params, const type::unit::Items& items,
