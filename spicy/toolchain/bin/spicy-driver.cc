@@ -253,7 +253,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
         }
     }
 
-    setCompilerOptions(compiler_options);
+    setCompilerOptions(std::move(compiler_options));
     setDriverOptions(std::move(driver_options));
 
     initialize();

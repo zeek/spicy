@@ -134,7 +134,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                         offsets[field.name] = std::move(o);
                 }
 
-                j["__offsets"] = offsets;
+                j["__offsets"] = std::move(offsets);
             }
 
             return j;

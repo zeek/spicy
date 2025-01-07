@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
         jop["operands"] = json::array();
 
         if ( auto rtype = op.signature().result_doc; ! rtype.empty() )
-            jop["rtype"] = rtype;
+            jop["rtype"] = std::move(rtype);
         else
             jop["rtype"] = formatType(op.result(&builder, {}, hilti::Meta())->type());
 
