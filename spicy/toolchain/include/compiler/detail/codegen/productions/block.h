@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -10,6 +9,7 @@
 
 #include <hilti/base/util.h>
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
@@ -52,6 +52,27 @@ public:
             rhss.push_back(hilti::util::transform(_else_prods, [](const auto& p) { return p.get(); }));
 
         return rhss;
+    }
+
+    Expression* parseSize(Builder* builder) const final {
+        if ( _condition || ! _else_prods.empty() )
+            return nullptr;
+
+        // TODO: What about attributes()?
+
+        Expression* size = nullptr;
+        for ( const auto& p : _prods ) {
+            auto psize = p->parseSize(builder);
+            if ( ! psize )
+                return nullptr;
+
+            if ( ! size )
+                size = psize;
+            else
+                size = builder->sum(size, psize);
+        }
+
+        return size;
     }
 
     std::string dump() const final {

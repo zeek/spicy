@@ -52,6 +52,15 @@ public:
 
     QualifiedType* type() const final { return _void; };
 
+    Expression* parseSize(Builder* builder) const final {
+        if ( _ctor )
+            return _ctor->parseSize(builder);
+        else {
+            assert(_field);
+            return _field->parseSize(builder);
+        }
+    }
+
     std::string dump() const override {
         return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : _field->print());
     }

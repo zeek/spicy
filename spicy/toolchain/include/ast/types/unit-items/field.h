@@ -79,10 +79,10 @@ public:
     std::optional<std::pair<Expression*, QualifiedType*>> convertExpression() const;
 
     /**
-     * Returns an expression representing the number of bytes the fields
+     * Returns an expression representing the number of bytes the field
      * consumes, if known.
      */
-    Expression* size(ASTContext* ctx) const;
+    Expression* parseSize(Builder* builder) const;
 
     void setForwarding(bool is_forwarding) { _is_forwarding = is_forwarding; }
     void setTransient(bool is_transient) { _is_transient = is_transient; }
