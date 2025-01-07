@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
 #include <hilti/rt/filesystem.h>

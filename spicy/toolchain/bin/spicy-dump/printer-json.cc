@@ -2,8 +2,6 @@
 
 #include "printer-json.h"
 
-#include <string>
-
 #include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
 
