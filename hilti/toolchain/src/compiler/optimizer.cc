@@ -1341,6 +1341,8 @@ public:
                 // Collect feature requirements associated with type.
                 for ( const auto& requirement : n->attributes()->findAll(hilti::attribute::Kind::RequiresTypeFeature) )
                     _features[n->typeID()][*requirement->valueAsString()] = true;
+
+                break;
             }
 
             case Stage::TRANSFORM: {
