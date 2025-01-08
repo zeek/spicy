@@ -910,17 +910,19 @@ unit_hook_id: { driver->enableHookIDMode(); }
               { driver->disableHookIDMode(); } { $$ = hilti::ID(hilti::util::replace($2, "%", "0x25_")); }
 
 unit_hook_attribute
-              : FOREACH                          { $$ = builder->attribute(hilti::Attribute::Kind::Foreach, __loc__); }
-              | PRIORITY '=' expr                { $$ = builder->attribute(hilti::Attribute::Kind::Priority, std::move($3), __loc__); }
-              | PROPERTY                         { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
-                                                     $$ = builder->attribute(*attr_kind, __loc__);
-                                                   else
-                                                     hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+              : FOREACH                          { $$ = builder->attribute(hilti::attribute::Kind::Foreach, __loc__); }
+              | PRIORITY '=' expr                { $$ = builder->attribute(hilti::attribute::Kind::Priority, std::move($3), __loc__); }
+              | PROPERTY                         { try {
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
+                                                   } catch ( std::out_of_range& e ) {
+                                                       error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                   }
                                                  }
-              | ATTRIBUTE                        { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
-                                                     $$ = builder->attribute(*attr_kind, __loc__);
-                                                   else
-                                                     hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+              | ATTRIBUTE                        { try {
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
+                                                   } catch ( std::out_of_range& e ) {
+                                                       error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                   }
                                                  }
 
 unit_switch   : SWITCH opt_unit_switch_expr '{' unit_switch_cases '}' opt_attributes opt_unit_field_condition ';'
@@ -1187,19 +1189,17 @@ map_elem      : expr_no_or_error ':' expr        { $$ = builder->ctorMapElement(
 
 /* Attributes */
 
-attribute     : ATTRIBUTE                       { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
-                                                    $$ = builder->attribute(*attr_kind, __loc__);
-                                                  else {
-                                                    hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
-                                                    $$ = {};
-                                                  }
+attribute     : ATTRIBUTE                       { try {
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
+                                                   } catch ( std::out_of_range& e ) {
+                                                       error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                   }
                                                 }
-              | ATTRIBUTE '=' expr              { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
-                                                    $$ = builder->attribute(*attr_kind, std::move($3), __loc__);
-                                                  else {
-                                                    hilti::logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
-                                                    $$ = {};
-                                                  }
+              | ATTRIBUTE '=' expr              { try {
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), std::move($3), __loc__);
+                                                   } catch ( std::out_of_range& e ) {
+                                                       error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                   }
                                                 }
 
 opt_attributes

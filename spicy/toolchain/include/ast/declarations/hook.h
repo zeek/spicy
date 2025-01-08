@@ -73,22 +73,22 @@ public:
     auto unitFieldIndex() { return _unit_field_index; }
 
     hilti::Expression* priority() const {
-        if ( auto attr = attributes()->find(hilti::Attribute::Kind::Priority) )
+        if ( auto attr = attributes()->find(hilti::attribute::Kind::Priority) )
             return *attr->valueAsExpression();
         else
             return nullptr;
     }
 
     hook::Type hookType() const {
-        if ( attributes()->has(hilti::Attribute::Kind::Foreach) )
+        if ( attributes()->has(hilti::attribute::Kind::Foreach) )
             return hook::Type::ForEach;
-        else if ( attributes()->has(hilti::Attribute::Kind::Error) )
+        else if ( attributes()->has(hilti::attribute::Kind::Error) )
             return hook::Type::Error;
         else
             return hook::Type::Standard;
     }
 
-    auto isDebug() const { return attributes()->has(hilti::Attribute::Kind::Debug); }
+    auto isDebug() const { return attributes()->has(hilti::attribute::Kind::Debug); }
 
     void setUnitTypeIndex(hilti::ast::TypeIndex index) {
         assert(index);

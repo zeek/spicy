@@ -33,7 +33,7 @@ public:
 
     bool isAtomic() const final { return _ctor ? _ctor->isAtomic() : true; };
     bool isEodOk() const final {
-        return _ctor ? _ctor->isEodOk() : _field->attributes()->has(hilti::Attribute::Kind::Eod);
+        return _ctor ? _ctor->isEodOk() : _field->attributes()->has(hilti::attribute::Kind::Eod);
     };
     bool isLiteral() const final { return _ctor ? _ctor->isLiteral() : false; };
     bool isNullable() const final { return _ctor ? _ctor->isNullable() : false; };

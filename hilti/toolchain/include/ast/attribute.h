@@ -3,65 +3,126 @@
 #pragma once
 
 #include <algorithm>
-#include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include <hilti/ast/expression.h>
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
+#include <hilti/base/util.h>
 
 namespace hilti {
+
+namespace attribute {
+
+enum class Kind {
+    Eod,
+    Until,
+    UntilIncluding,
+    ParseAt,
+    ParseFrom,
+    Size,
+    MaxSize,
+    IPv4,
+    IPv6,
+    Type,
+    Count,
+    Synchronize,
+    Default,
+    Anonymous,
+    Internal,
+    Optional,
+    Static,
+    NoEmit,
+    OnHeap,
+    Nosub,
+    Cxxname,
+    HavePrototype,
+    Priority,
+    Convert,
+    While,
+    Requires,
+    ByteOrder,
+    BitOrder,
+    Chunked,
+    Originator,
+    Responder,
+    Try,
+    NeededByFeature,
+    RequiresTypeFeature,
+    AlwaysEmit,
+    Transient,
+    Anchor,
+
+    // Hooks
+    Debug,
+    Error,
+    Foreach,
+};
+
+namespace detail {
+constexpr util::enum_::Value<Kind> AttributeKinds[] = {
+    {Kind::Eod, "&eod"},
+    {Kind::Until, "&until"},
+    {Kind::UntilIncluding, "&until-including"},
+    {Kind::ParseAt, "&parse-at"},
+    {Kind::ParseFrom, "&parse-from"},
+    {Kind::Size, "&size"},
+    {Kind::MaxSize, "&max-size"},
+    {Kind::IPv4, "&ipv4"},
+    {Kind::IPv6, "&ipv6"},
+    {Kind::Type, "&type"},
+    {Kind::Count, "&count"},
+    {Kind::Synchronize, "&synchronize"},
+    {Kind::Default, "&default"},
+    {Kind::Anonymous, "&anonymous"},
+    {Kind::Internal, "&internal"},
+    {Kind::Optional, "&optional"},
+    {Kind::Static, "&static"},
+    {Kind::NoEmit, "&no-emit"},
+    {Kind::OnHeap, "&on-heap"},
+    {Kind::Nosub, "&nosub"},
+    {Kind::Cxxname, "&cxxname"},
+    {Kind::HavePrototype, "&have_prototype"},
+    {Kind::Priority, "&priority"},
+    {Kind::Convert, "&convert"},
+    {Kind::While, "&while"},
+    {Kind::Requires, "&requires"},
+    {Kind::ByteOrder, "&byte-order"},
+    {Kind::BitOrder, "&bit-order"},
+    {Kind::Chunked, "&chunked"},
+    {Kind::Originator, "&originator"},
+    {Kind::Responder, "&responder"},
+    {Kind::Try, "&try"},
+    {Kind::NeededByFeature, "&needed-by-feature"},
+    {Kind::RequiresTypeFeature, "&requires-type-feature"},
+    {Kind::AlwaysEmit, "&always-emit"},
+    {Kind::Transient, "&transient"},
+    {Kind::Anchor, "&anchor"},
+    {Kind::Debug, "%debug"},
+    {Kind::Error, "%error"},
+    {Kind::Foreach, "foreach"},
+};
+}
+
+constexpr auto to_string(Kind kind) { return util::enum_::to_string(kind, detail::AttributeKinds); }
+
+/** Returns whether `kind` is in `kinds` */
+inline bool isOneOf(Kind kind, std::initializer_list<Kind> kinds) {
+    return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
+}
+
+namespace kind {
+constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string(s, detail::AttributeKinds); }
+} // namespace kind
+
+} // namespace attribute
 
 /** AST node for an attribute. */
 class Attribute : public Node {
 public:
-    enum class Kind {
-        Eod,
-        Until,
-        UntilIncluding,
-        ParseAt,
-        ParseFrom,
-        Size,
-        MaxSize,
-        IPv4,
-        IPv6,
-        Type,
-        Count,
-        Synchronize,
-        Default,
-        Anonymous,
-        Internal,
-        Optional,
-        Static,
-        NoEmit,
-        OnHeap,
-        Nosub,
-        Cxxname,
-        HavePrototype,
-        Priority,
-        Convert,
-        While,
-        Requires,
-        ByteOrder,
-        BitOrder,
-        Chunked,
-        Originator,
-        Responder,
-        Try,
-        NeededByFeature,
-        RequiresTypeFeature,
-        AlwaysEmit,
-        Transient,
-        Anchor,
-
-        // Hooks
-        Debug,
-        Error,
-        Foreach,
-    };
-
     /** Returns the kind of the attribute, derived from its tag. */
     const auto& kind() const { return _kind; }
 
@@ -114,22 +175,8 @@ public:
      */
     Result<bool> coerceValueTo(Builder* builder, QualifiedType* dst);
 
-    /** Returns whether `kind` is in `kinds` */
-    static bool isOneOf(Kind kind, std::initializer_list<Kind> kinds) {
-        return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
-    }
-
-    /** Transforms a tag name into the appropriate enum value. */
-    static std::optional<Kind> tagToKind(std::string_view tag);
-
-    /** Transforms a kind into its name for diagnostics. */
-    static std::string_view kindToString(Kind kind);
-
-    /** A non-static alternative to get an attribute's string representation. */
-    std::string_view attributeName() const { return kindToString(_kind); }
-
     node::Properties properties() const final {
-        auto p = node::Properties{{"tag", std::string{attributeName()}}};
+        auto p = node::Properties{{"tag", to_string(kind())}};
         return Node::properties() + std::move(p);
     }
 
@@ -141,7 +188,7 @@ public:
      * @param v node representing the argument to associate with the attribute; must be an expression
      * @param m meta data to associate with the node
      */
-    static auto create(ASTContext* ctx, Kind kind, Expression* v, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, attribute::Kind kind, Expression* v, const Meta& m = Meta()) {
         return ctx->make<Attribute>(ctx, {v}, kind, m);
     }
 
@@ -151,10 +198,12 @@ public:
      * @param kind the attribute's internal representation
      * @param m meta data to associate with the node
      */
-    static auto create(ASTContext* ctx, Kind kind, const Meta& m = Meta()) { return create(ctx, kind, nullptr, m); }
+    static auto create(ASTContext* ctx, attribute::Kind kind, const Meta& m = Meta()) {
+        return create(ctx, kind, nullptr, m);
+    }
 
 protected:
-    Attribute(ASTContext* ctx, Nodes children, Kind kind, Meta m = Meta())
+    Attribute(ASTContext* ctx, Nodes children, attribute::Kind kind, Meta m = Meta())
         : Node(ctx, NodeTags, std::move(children), std::move(m)), _kind(kind) {}
 
     std::string _dump() const override;
@@ -162,49 +211,7 @@ protected:
     HILTI_NODE_0(Attribute, final);
 
 private:
-    Kind _kind;
-    static inline std::map<std::string_view, Kind> _attr_map{
-        {"&eod", Attribute::Kind::Eod},
-        {"&until", Attribute::Kind::Until},
-        {"&until-including", Attribute::Kind::UntilIncluding},
-        {"&parse-at", Attribute::Kind::ParseAt},
-        {"&parse-from", Attribute::Kind::ParseFrom},
-        {"&size", Attribute::Kind::Size},
-        {"&max-size", Attribute::Kind::MaxSize},
-        {"&ipv4", Attribute::Kind::IPv4},
-        {"&ipv6", Attribute::Kind::IPv6},
-        {"&type", Attribute::Kind::Type},
-        {"&count", Attribute::Kind::Count},
-        {"&synchronize", Attribute::Kind::Synchronize},
-        {"&default", Attribute::Kind::Default},
-        {"&anonymous", Attribute::Kind::Anonymous},
-        {"&internal", Attribute::Kind::Internal},
-        {"&optional", Attribute::Kind::Optional},
-        {"&static", Attribute::Kind::Static},
-        {"&no-emit", Attribute::Kind::NoEmit},
-        {"&on-heap", Attribute::Kind::OnHeap},
-        {"&nosub", Attribute::Kind::Nosub},
-        {"&cxxname", Attribute::Kind::Cxxname},
-        {"&have_prototype", Attribute::Kind::HavePrototype},
-        {"&priority", Attribute::Kind::Priority},
-        {"&convert", Attribute::Kind::Convert},
-        {"&while", Attribute::Kind::While},
-        {"&requires", Attribute::Kind::Requires},
-        {"&byte-order", Attribute::Kind::ByteOrder},
-        {"&bit-order", Attribute::Kind::BitOrder},
-        {"&chunked", Attribute::Kind::Chunked},
-        {"&originator", Attribute::Kind::Originator},
-        {"&responder", Attribute::Kind::Responder},
-        {"&try", Attribute::Kind::Try},
-        {"&needed-by-feature", Attribute::Kind::NeededByFeature},
-        {"&requires-type-feature", Attribute::Kind::RequiresTypeFeature},
-        {"&always-emit", Attribute::Kind::AlwaysEmit},
-        {"&transient", Attribute::Kind::Transient},
-        {"&anchor", Attribute::Kind::Anchor},
-        {"%debug", Attribute::Kind::Debug},
-        {"%error", Attribute::Kind::Error},
-        {"foreach", Attribute::Kind::Foreach},
-    };
+    attribute::Kind _kind;
 };
 
 /** AST node holding a set of `Attribute` nodes. */
@@ -219,21 +226,21 @@ public:
      *
      * @return attribute if found
      */
-    Attribute* find(Attribute::Kind kind) const;
+    Attribute* find(attribute::Kind kind) const;
 
     /**
      * Retrieves all attributes with a given kind from the set.
      *
      * @return all attributes with matching kind
      */
-    hilti::node::Set<Attribute> findAll(Attribute::Kind kind) const;
+    hilti::node::Set<Attribute> findAll(attribute::Kind kind) const;
 
     /**
      * Returns true if there's an attribute with a given kind in the set.
      *
      * @param true if found
      */
-    bool has(Attribute::Kind kind) const { return find(kind) != nullptr; }
+    bool has(attribute::Kind kind) const { return find(kind) != nullptr; }
 
     /** Adds an attribute to the set. */
     void add(ASTContext* ctx, Attribute* a) {
@@ -243,7 +250,7 @@ public:
     }
 
     /** Removes all attributes of the given kind. */
-    void remove(Attribute::Kind kind);
+    void remove(attribute::Kind kind);
 
     /** Returns true if the set has at least one element. */
     operator bool() const { return ! attributes().empty(); }

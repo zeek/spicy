@@ -73,14 +73,14 @@ struct Visitor : public visitor::PreOrder {
         const auto& loc = n->location();
         const auto& field = pf->currentField();
         auto id = pf->cg->uniquer()->get(field->id());
-        auto eod = field->attributes()->find(hilti::Attribute::Kind::Eod);
-        auto count = field->attributes()->find(hilti::Attribute::Kind::Count);
-        auto size = field->attributes()->find(hilti::Attribute::Kind::Size);
-        auto parse_at = field->attributes()->find(hilti::Attribute::Kind::ParseAt);
-        auto parse_from = field->attributes()->find(hilti::Attribute::Kind::ParseFrom);
-        auto until = field->attributes()->find(hilti::Attribute::Kind::Until);
-        auto until_including = field->attributes()->find(hilti::Attribute::Kind::UntilIncluding);
-        auto while_ = field->attributes()->find(hilti::Attribute::Kind::While);
+        auto eod = field->attributes()->find(hilti::attribute::Kind::Eod);
+        auto count = field->attributes()->find(hilti::attribute::Kind::Count);
+        auto size = field->attributes()->find(hilti::attribute::Kind::Size);
+        auto parse_at = field->attributes()->find(hilti::attribute::Kind::ParseAt);
+        auto parse_from = field->attributes()->find(hilti::attribute::Kind::ParseFrom);
+        auto until = field->attributes()->find(hilti::attribute::Kind::Until);
+        auto until_including = field->attributes()->find(hilti::attribute::Kind::UntilIncluding);
+        auto while_ = field->attributes()->find(hilti::attribute::Kind::While);
         auto repeat = field->repeatCount();
 
         auto m = sub->meta();
@@ -164,9 +164,9 @@ struct Visitor : public visitor::PreOrder {
 
             else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
                 // Bytes with fixed size already handled above.
-                auto eod_attr = n->attributes()->find(hilti::Attribute::Kind::Eod);
-                auto until_attr = n->attributes()->find(hilti::Attribute::Kind::Until);
-                auto until_including_attr = n->attributes()->find(hilti::Attribute::Kind::UntilIncluding);
+                auto eod_attr = n->attributes()->find(hilti::attribute::Kind::Eod);
+                auto until_attr = n->attributes()->find(hilti::attribute::Kind::Until);
+                auto until_including_attr = n->attributes()->find(hilti::attribute::Kind::UntilIncluding);
 
                 if ( eod_attr || until_attr || until_including_attr )
                     skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
@@ -176,8 +176,8 @@ struct Visitor : public visitor::PreOrder {
             if ( n->repeatCount() )
                 skip.reset();
 
-            auto convert_attr = n->attributes()->find(hilti::Attribute::Kind::Convert);
-            auto requires_attr = n->attributes()->find(hilti::Attribute::Kind::Requires);
+            auto convert_attr = n->attributes()->find(hilti::attribute::Kind::Convert);
+            auto requires_attr = n->attributes()->find(hilti::attribute::Kind::Requires);
             if ( convert_attr || requires_attr )
                 skip.reset();
 
