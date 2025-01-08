@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
@@ -21,7 +20,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"id", _id}};
-        return Expression::properties() + p;
+        return Expression::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, QualifiedType* member_type, const hilti::ID& id, Meta meta = {}) {

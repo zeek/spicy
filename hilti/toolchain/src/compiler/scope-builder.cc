@@ -72,7 +72,7 @@ struct Visitor : visitor::PostOrder {
     void operator()(declaration::ImportedModule* n) final {
         // If we know the imported module already, insert it into the
         // containing module's scope so that we can look it up.
-        if ( auto uid = n->uid() ) {
+        if ( const auto& uid = n->uid() ) {
             auto imported_module = builder->context()->module(*uid);
             assert(imported_module);
             if ( auto index = imported_module->declarationIndex() ) {

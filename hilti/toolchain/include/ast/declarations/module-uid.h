@@ -63,8 +63,8 @@ struct UID {
           in_memory(true) {
         assert(this->id && ! this->parse_extension.empty() && ! this->process_extension.empty());
         //  just make up a path
-        path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s", unique, ++_no_file_counter, process_extension,
-                         parse_extension);
+        path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s", unique, ++_no_file_counter, this->process_extension,
+                         this->parse_extension);
     }
 
     UID(const UID& other) = default;

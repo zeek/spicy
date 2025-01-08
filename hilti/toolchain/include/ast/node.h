@@ -154,7 +154,7 @@ struct Error {
     std::string message;                            /**< main error message to report  */
     Location location;                              /**< location associated with the error */
     std::vector<std::string> context;               /**< additional lines to print along with error as context */
-    ErrorPriority priority = ErrorPriority::Normal; /**< priortity of error */
+    ErrorPriority priority = ErrorPriority::Normal; /**< priority of error */
 
     // Comparison considers message & location, so that we can unique based
     // on those two.
@@ -1239,6 +1239,6 @@ inline std::ostream& operator<<(std::ostream& out, const Node& n) {
 } // namespace hilti
 
 inline hilti::node::Properties operator+(hilti::node::Properties p1, hilti::node::Properties p2) {
-    p1.merge(p2);
+    p1.merge(std::move(p2));
     return p1;
 }

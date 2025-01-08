@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/type.h>
 
@@ -22,7 +20,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"width", _width}};
-        return UnqualifiedType::properties() + p;
+        return UnqualifiedType::properties() + std::move(p);
     }
 
 protected:

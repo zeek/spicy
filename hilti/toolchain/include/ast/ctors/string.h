@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -21,7 +20,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", _value}, {"is_literal", _is_literal}};
-        return Ctor::properties() + p;
+        return Ctor::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, std::string value, bool is_literal, const Meta& meta = {}) {

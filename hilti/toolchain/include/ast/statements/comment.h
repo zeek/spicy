@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -28,12 +27,12 @@ constexpr auto to_string(Separator cc) { return util::enum_::to_string(cc, detai
 /** AST node for an comment that will be passed through code generation.. */
 class Comment : public Statement {
 public:
-    auto comment() const { return _comment; }
+    const auto& comment() const { return _comment; }
     auto separator() const { return _separator; }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"comment", _comment}, {"separator", to_string(_separator)}};
-        return Statement::properties() + p;
+        return Statement::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, std::string comment, comment::Separator separator = comment::Separator::Before,

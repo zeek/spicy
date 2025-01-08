@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/rt/types/port.h>
@@ -21,7 +20,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", to_string(_value)}};
-        return Ctor::properties() + p;
+        return Ctor::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, hilti::rt::Port v, const Meta& meta = {}) {

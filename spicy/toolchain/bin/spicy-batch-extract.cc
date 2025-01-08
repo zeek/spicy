@@ -112,6 +112,6 @@ int main(int argc, char** argv) {
     }
 
     auto id = std::string(argv[1]);
-    processPreBatchedInput(id, std::cin, std::cout);
+    processPreBatchedInput(std::move(id), std::cin, std::cout);
     return 0;
 }

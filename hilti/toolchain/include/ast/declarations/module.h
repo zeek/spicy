@@ -100,7 +100,7 @@ public:
                                   {"scope", _scope_path},
                                   {"dependencies", util::join(_dependencies, ", ")},
                                   {"skip-implementation", _skip_implementation}};
-        return hilti::Declaration::properties() + p;
+        return hilti::Declaration::properties() + std::move(p);
     }
 
     std::string_view branchTag() const final { return _uid.process_extension.native(); }

@@ -205,7 +205,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
         }
     }
 
-    setCompilerOptions(hilti_compiler_options);
+    setCompilerOptions(std::move(hilti_compiler_options));
     setSpicyCompilerOptions(spicy_compiler_options);
     setDriverOptions(std::move(driver_options));
 
@@ -239,7 +239,7 @@ int main(int argc, char** argv) {
         if ( ! driver.opt_enable_print )
             config.cout.reset();
 
-        hilti::rt::configuration::set(config);
+        hilti::rt::configuration::set(std::move(config));
 
         if ( auto x = driver.initRuntime(); ! x )
             fatalError(x.error().description());

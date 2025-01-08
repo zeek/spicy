@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
@@ -106,7 +104,7 @@ public:
                                   {"forwarding", _is_forwarding},
                                   {"index", _index},
                                   {"skip", _is_skip}};
-        return unit::Item::properties() + p;
+        return unit::Item::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const ID& id, QualifiedType* type, bool skip, Expressions args,

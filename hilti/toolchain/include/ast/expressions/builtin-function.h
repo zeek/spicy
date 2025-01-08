@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -25,7 +24,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"name", _name}, {"cxxname", _cxxname}};
-        return Expression::properties() + p;
+        return Expression::properties() + std::move(p);
     }
 
     void setArguments(ASTContext* ctx, const Expressions& args) {

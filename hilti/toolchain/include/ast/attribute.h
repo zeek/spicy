@@ -130,7 +130,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"tag", std::string{attributeName()}}};
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     /**

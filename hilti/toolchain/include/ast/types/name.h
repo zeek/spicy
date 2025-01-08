@@ -13,7 +13,7 @@ namespace hilti::type {
 /** AST node for type referenced by Name. */
 class Name : public UnqualifiedType {
 public:
-    auto id() const { return _id; }
+    const auto& id() const { return _id; }
     bool isBuiltIn() const { return _builtin; }
 
     // resolves recursively

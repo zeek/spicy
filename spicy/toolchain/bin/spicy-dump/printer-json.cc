@@ -2,8 +2,6 @@
 
 #include "printer-json.h"
 
-#include <string>
-
 #include <hilti/rt/json.h>
 #include <hilti/rt/libhilti.h>
 
@@ -134,7 +132,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                         offsets[field.name] = std::move(o);
                 }
 
-                j["__offsets"] = offsets;
+                j["__offsets"] = std::move(offsets);
             }
 
             return j;

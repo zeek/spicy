@@ -42,7 +42,7 @@ public:
             {"field_width", _field_width},
         };
 
-        return Declaration::properties() + p;
+        return Declaration::properties() + std::move(p);
     }
 
     void setItemType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
@@ -128,7 +128,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"width", _width}};
-        return UnqualifiedType::properties() + node::WithUniqueID::properties() + p;
+        return UnqualifiedType::properties() + node::WithUniqueID::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, unsigned int width, const type::bitfield::BitRanges& bits, AttributeSet* attrs,

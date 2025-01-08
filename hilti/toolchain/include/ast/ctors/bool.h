@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
@@ -19,7 +18,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"value", _value}};
-        return Ctor::properties() + p;
+        return Ctor::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, bool v, const Meta& meta = {}) {

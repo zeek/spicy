@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/type.h>
 
@@ -18,7 +16,7 @@ namespace hilti::type {
  */
 class DocOnly : public UnqualifiedType {
 public:
-    auto description() const { return _description; }
+    const auto& description() const { return _description; }
 
     static auto create(ASTContext* ctx, const std::string& description, Meta meta = {}) {
         // Note: We allow (i.e., must support) `ctx` being null.

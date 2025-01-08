@@ -58,7 +58,7 @@ public:
 
     node::Properties properties() const override {
         auto p = node::Properties{{"id", _id}, {"cc", to_string(_cc)}};
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const ID& id, type::Function* ftype, Statement* body,

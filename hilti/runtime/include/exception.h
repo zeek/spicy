@@ -59,10 +59,10 @@ public:
     ~Exception() override;
 
     /** Returns the message associated with the exception. */
-    auto description() const { return _description; }
+    const auto& description() const { return _description; }
 
     /** Returns the location associated with the exception. */
-    auto location() const { return _location; }
+    const auto& location() const { return _location; }
 
     /**
      * Returns a stack backtrace captured at the time the exception was

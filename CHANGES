@@ -1,3 +1,21 @@
+1.13.0-dev.43 | 2025-01-08 09:39:45 +0100
+
+  * Drop unused includes. (Benjamin Bannier, Corelight)
+
+  * Move temporaries instead of creating copies. (Benjamin Bannier, Corelight)
+
+  * Avoid copies in implementation of trivial getters. (Benjamin Bannier, Corelight)
+
+  * Avoid copy when constructing node properties. (Benjamin Bannier, Corelight)
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
+  * Always initialize enum member to reasonable default. (Benjamin Bannier, Corelight)
+
+  * Always initialize pointer members. (Benjamin Bannier, Corelight)
+
+  * Fix use-after-move. (Benjamin Bannier, Corelight)
+
 1.13.0-dev.34 | 2025-01-08 09:39:11 +0100
 
   * Bump `3rdparty/filesystem` to pick up fixes for clang-tidy-19. (Benjamin Bannier, Corelight)
@@ -1927,7 +1945,7 @@
 
     A chain now retains one previously used but no longer needed chunk for
     reuse, so that we can avoid constant cycles of creating/destructing
-    chunks (and their paylaod memory) in the common case of a parser
+    chunks (and their payload memory) in the common case of a parser
     consuming full chunks without yielding. The caching is also geared
     towards owning/non-owning semantics staying consistent across
     subsequent append operations.

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/expression.h>
@@ -25,7 +24,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"catch_exception", _catch_exception}};
-        return Expression::properties() + p;
+        return Expression::properties() + std::move(p);
     }
 
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 1, t); }

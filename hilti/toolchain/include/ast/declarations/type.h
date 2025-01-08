@@ -35,7 +35,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{};
-        return Declaration::properties() + p;
+        return Declaration::properties() + std::move(p);
     }
 
     std::string_view displayName() const final { return "type"; }

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,11 +22,11 @@ public:
     auto kind() const { return _kind; }
     auto isOptional() const { return _optional; }
     auto default_() const { return child<Expression>(1); }
-    auto doc() const { return _doc; }
+    const auto& doc() const { return _doc; }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"id", _id}, {"optional", _optional}, {"kind", to_string(_kind)}, {"doc", _doc}};
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type, bool optional = false,

@@ -36,7 +36,7 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{{"look-ahead", _look_ahead}, {"default", isDefault()}};
-        return Node::properties() + p;
+        return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const Expressions& exprs, type::unit::item::Block* block,
