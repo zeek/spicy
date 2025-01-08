@@ -918,7 +918,7 @@ void ASTContext::_dumpStats(const logging::DebugStream& stream, std::string_view
 
     logger().debugPushIndent(stream);
     for ( const auto& [type, num] : live_by_type ) {
-        if ( static_cast<double>(num) / static_cast<double>(live) > 0.01 )
+        if ( live != 0 && static_cast<double>(num) / static_cast<double>(live) > 0.01 )
             HILTI_DEBUG(stream, fmt("- %s: %" PRIu64, type, num));
     }
     logger().debugPopIndent(stream);
