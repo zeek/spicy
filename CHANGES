@@ -1,3 +1,98 @@
+1.13.0-dev.34 | 2025-01-08 09:39:11 +0100
+
+  * Bump `3rdparty/filesystem` to pick up fixes for clang-tidy-19. (Benjamin Bannier, Corelight)
+
+  * Drop unused clang-format integration in `./ci/run-ci`. (Benjamin Bannier, Corelight)
+
+    This was already unused since we moved clang-format to a pre-commit
+    hook.
+
+  * Move `./ci/run-ci`'s clang-tidy check to CMake. (Benjamin Bannier, Corelight)
+
+    Instead of implementing this ourself instea use CMake with
+    `CMAKE_CXX_CLANG_TIDY`/`CMAKE_C_CLANG_TIDY`.
+
+  * Update CMake version in CI for clang-tidy. (Benjamin Bannier, Corelight)
+
+  * Bump LLVM toolchain used in CI. (Benjamin Bannier, Corelight)
+
+  * Fix up APIs in AST API which were not actually moving. (Benjamin Bannier, Corelight)
+
+    Many functions in the AST API were moving arguments only for them to
+    ultimately be copied; `clang-tidy` diagnosed most of these.
+    This patch cleans up the flagged useless passes by value and `std::move`
+    without effect.
+
+  * Fix up container helpers to ensure moving. (Benjamin Bannier, Corelight)
+
+    It is not immediately clear to me when the previous implementation could
+    move their values over. `clang-tidy` ended up flagging many of these as
+    not moving and forcing copies.
+
+    This patch rewrites the loops in these helpers to enforce iteration with
+    move.
+
+  * Disable clang-tidy on generated lexer/parser files. (Benjamin Bannier, Corelight)
+
+  * Reformat code not recognized as C++ by pre-commit hook. (Benjamin Bannier, Corelight)
+
+  * Remove some unneeded includes. (Benjamin Bannier, Corelight)
+
+  * Parenthesize expression when arithmetic mixes difference precedences. (Benjamin Bannier, Corelight)
+
+    `clang-tidy` suggests adding extra parentheses when mixing e.g.,
+    addition and multiplication. Apply these suggestions (automatically).
+
+  * Consistently pass `std::string_view` by value. (Benjamin Bannier, Corelight)
+
+    `std::string_view` is a type which is designed to be (very) cheap to
+    copy.
+
+  * Remove unneeded copies. (Benjamin Bannier, Corelight)
+
+  * Fix APIs taking `std::string_view` assuming them to be null-terminated. (Benjamin Bannier, Corelight)
+
+    In general `std::string_view` values do not need to be null-terminated,
+    e.g., if they reference subranges in a bigger null-terminated string. We
+    were previously passing `std::string_view` in a few places where we
+    assumed them to be null-terminated, e.g., for passing them on to C APIs
+    expecting null-terminated `const char*`. These worked well enough for us
+    for now, but these APIs were generally unsafe.
+
+    This patch switches to instead passing either `const char*` signalling
+    proper, null-terminated strings, or by passing in a `const std::string&`
+    where it should already be present in the caller.
+
+  * Consistently mark functions and values not exposed `static`. (Benjamin Bannier, Corelight)
+
+  * Locally suppress `clang-tidy` diagnostic. (Benjamin Bannier, Corelight)
+
+    This suppresses a `clang-tidy` lint suggesting to mark our default
+    `main` function as not exported. This function is shipped as part of
+    libhilti and intended to be available as a weak symbol.
+
+  * Prefer `std::max` over ad hoc implementations. (Benjamin Bannier, Corelight)
+
+  * Fix APIs where we assumed a string_view was null-terminated. (Benjamin Bannier, Corelight)
+
+    This either switches to using `const char*` to signify guaranteed null
+    termination, or locally suppress clang-tidy warnings about assuming
+    null-terminated string_views.
+
+  * Bring configuration for `clang-tidy` up-to-date. (Benjamin Bannier, Corelight)
+
+    This patch brings our clang-tidy setup up to date. Much of this was
+    built with `./ci/run-ci` `in mind with extra suppressions hardcoded
+    e.g., in `.clang-tidy.ignore`. With this patch we instead configure
+    `.clang-tidy` files so they can suppress diagnostics from certain
+    directories. We also set up 3rdparty code to work with CMake's
+    `clang-tidy` integration[1].
+
+    We also globally suppress some diagnostics which we have no intention of
+    addressing.
+
+    [^1]: https://cmake.org/cmake/help/latest/prop_tgt/LANG_CLANG_TIDY.html#prop_tgt:%3CLANG%3E_CLANG_TIDY
+
 1.13.0-dev.14 | 2025-01-06 16:29:53 +0100
 
   * Do not require owning strings for `startsWith`. (Benjamin Bannier, Corelight)

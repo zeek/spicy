@@ -200,7 +200,7 @@ void util::abortWithBacktrace() {
 double util::currentTime() {
     struct timeval tv{};
     gettimeofday(&tv, nullptr);
-    return static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec) / 1e6;
+    return static_cast<double>(tv.tv_sec) + (static_cast<double>(tv.tv_usec) / 1e6);
 }
 
 std::string util::toIdentifier(std::string s) {
@@ -211,7 +211,7 @@ std::string util::toIdentifier(std::string s) {
         // Fast-path: no special-characters, no leading digits.
         return s;
 
-    auto buffer_size = s.size() * 3 + 1;
+    auto buffer_size = (s.size() * 3) + 1;
     char* buffer = reinterpret_cast<char*>(alloca(buffer_size)); // max possible size of modified string
     char* p = buffer;
 
@@ -275,7 +275,7 @@ std::string util::prefixParts(const std::string& in, const std::string& prefix, 
             return x;
     });
 
-    return join(filter(x, [](auto s) -> bool { return s.size(); }), " ");
+    return join(filter(x, [](const auto& s) -> bool { return s.size(); }), " ");
 }
 
 std::vector<std::string> util::flattenParts(const std::vector<std::string>& in) {

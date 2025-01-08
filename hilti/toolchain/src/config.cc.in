@@ -105,23 +105,23 @@ void Configuration::init(bool use_build_directory) {
         library_paths = flatten({".", prefix("${HILTI_CONFIG_LIBRARY_DIRS}", "", installation_tag)});
     }
 
-    hilti_library_paths = util::transform(library_paths, [](auto s) { return hilti::rt::filesystem::path(s); });
+    hilti_library_paths = util::transform(library_paths, [](const auto& s) { return hilti::rt::filesystem::path(s); });
 
     runtime_cxx_include_paths =
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+                        [](const auto& s) { return hilti::rt::filesystem::path(s); });
 
     runtime_cxx_library_paths =
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+                        [](const auto& s) { return hilti::rt::filesystem::path(s); });
 
     toolchain_cxx_include_paths =
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+                        [](const auto& s) { return hilti::rt::filesystem::path(s); });
 
     toolchain_cxx_library_paths =
         util::transform(hilti::util::split(prefix("${HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS}", "", installation_tag)),
-                        [](auto s) { return hilti::rt::filesystem::path(s); });
+                        [](const auto& s) { return hilti::rt::filesystem::path(s); });
 
     // We hardcode the main compiler flags here instead of injecting them from
     // CMake to make it clear that they are really independent on what CMake
@@ -140,9 +140,10 @@ void Configuration::init(bool use_build_directory) {
     //
     // (3) it helps the optimizer to know that symbols won't be accessed
     // externally.
-    runtime_cxx_flags_debug = flatten({"-fPIC", "-std=c++17", "-g", "-O0", "-fvisibility=hidden", "-Wno-invalid-offsetof",
-                                       prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
-                                       prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
+    runtime_cxx_flags_debug =
+        flatten({"-fPIC", "-std=c++17", "-g", "-O0", "-fvisibility=hidden", "-Wno-invalid-offsetof",
+                 prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
+                 prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
 
     runtime_cxx_flags_release =
         flatten({"-fPIC", "-std=c++17", "-g", "-O3", "-DNDEBUG", "-fvisibility=hidden", "-Wno-invalid-offsetof",

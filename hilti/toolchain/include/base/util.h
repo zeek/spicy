@@ -9,6 +9,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <map>
 #include <optional>
@@ -176,11 +177,9 @@ std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
     if ( end < 0 )
         end = v.size() + end + 1;
 
-    if ( begin < 0 )
-        begin = 0;
+    begin = std::max(begin, 0);
 
-    if ( end < 0 )
-        end = 0;
+    end = std::max(end, 0);
 
     if ( static_cast<size_t>(end) > v.size() )
         end = v.size();
@@ -517,18 +516,18 @@ std::vector<T>& append(std::vector<T>& v1, const std::vector<T>& v2) {
     return v1;
 }
 
-/** Remov duplicates from a vector without changing order. */
+/** Remove duplicates from a vector without changing order. */
 template<typename T>
 std::vector<T> removeDuplicates(std::vector<T> v) {
     std::set<T> seen;
     std::vector<T> out;
 
-    for ( auto&& i : v ) {
-        if ( seen.find(i) != seen.end() )
+    for ( auto it = std::make_move_iterator(v.begin()); it != std::make_move_iterator(v.end()); ++it ) {
+        if ( seen.find(*it) != seen.end() )
             continue;
 
-        seen.insert(i);
-        out.emplace_back(std::move(i));
+        seen.insert(*it);
+        out.emplace_back(*it);
     }
 
     return out;
@@ -589,7 +588,7 @@ constexpr auto from_string(std::string_view name, const Value<Enum> (&values)[Si
         if ( v.name == name )
             return v.value;
 
-    throw std::out_of_range(name.data());
+    throw std::out_of_range(std::string(name.begin(), name.size()));
 };
 
 /**

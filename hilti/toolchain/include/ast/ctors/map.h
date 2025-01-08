@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>
@@ -65,23 +63,23 @@ public:
 
     void setType(ASTContext* ctx, QualifiedType* type) { setChild(ctx, 0, type); }
 
-    void setValue(ASTContext* ctx, map::Elements exprs) {
+    void setValue(ASTContext* ctx, const map::Elements& exprs) {
         removeChildren(1, {});
-        addChildren(ctx, std::move(exprs));
+        addChildren(ctx, exprs);
     }
 
-    static auto create(ASTContext* ctx, QualifiedType* key, QualifiedType* value, map::Elements elements,
+    static auto create(ASTContext* ctx, QualifiedType* key, QualifiedType* value, const map::Elements& elements,
                        Meta meta = {}) {
         auto mtype = QualifiedType::create(ctx, type::Map::create(ctx, key, value, meta), Constness::Mutable, meta);
-        return ctx->make<Map>(ctx, node::flatten(mtype, std::move(elements)), std::move(meta));
+        return ctx->make<Map>(ctx, node::flatten(mtype, elements), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, map::Elements elements, Meta meta = {}) {
+    static auto create(ASTContext* ctx, const map::Elements& elements, Meta meta = {}) {
         // bool is just an arbitrary place-holder type for empty values.
         auto mtype = elements.empty() ?
                          QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Mutable, meta) :
                          QualifiedType::createAuto(ctx, meta);
-        return ctx->make<Map>(ctx, node::flatten(mtype, std::move(elements)), std::move(meta));
+        return ctx->make<Map>(ctx, node::flatten(mtype, elements), std::move(meta));
     }
 
 protected:

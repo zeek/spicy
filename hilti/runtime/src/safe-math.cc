@@ -5,7 +5,7 @@
 
 using namespace hilti::rt;
 
-[[noreturn]] inline void safe_math_fail(const char* msg) { throw OutOfRange("integer value out of range"); }
+[[noreturn]] inline static void safe_math_fail(const char* msg) { throw OutOfRange("integer value out of range"); }
 
 #define SAFE_MATH_FAIL_DEFINED
 extern "C" {

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/declaration.h>
@@ -64,11 +63,12 @@ public:
     bool isNameType() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final;
 
-    static auto create(ASTContext* ctx, const declaration::Parameters& params, Declarations fields, Meta meta = {}) {
+    static auto create(ASTContext* ctx, const declaration::Parameters& params, const Declarations& fields,
+                       Meta meta = {}) {
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        return ctx->make<Union>(ctx, node::flatten(params, std::move(fields)), -1, std::move(meta));
+        return ctx->make<Union>(ctx, node::flatten(params, fields), -1, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, const Declarations& fields, Meta meta = {}) {
@@ -76,8 +76,8 @@ public:
     }
 
     union AnonymousUnion {};
-    static auto create(ASTContext* ctx, AnonymousUnion _, Declarations fields, Meta meta = {}) {
-        return ctx->make<Union>(ctx, std::move(fields), ++anon_union_counter, std::move(meta));
+    static auto create(ASTContext* ctx, AnonymousUnion _, const Declarations& fields, Meta meta = {}) {
+        return ctx->make<Union>(ctx, fields, ++anon_union_counter, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, Meta meta = {}) {

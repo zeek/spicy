@@ -219,6 +219,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             ++_total_fibers;
             ++_current_fibers;
 
+            // NOLINTNEXTLINE(readability-use-std-min-max)
             if ( _current_fibers > _max_fibers )
                 _max_fibers = _current_fibers;
         }
@@ -652,6 +653,7 @@ void detail::trackStack() {
         return;
 
     if ( fiber->type() == Fiber::Type::IndividualStack || fiber->type() == Fiber::Type::SharedStack ) {
+        // NOLINTNEXTLINE(readability-use-std-min-max)
         if ( auto size = fiber->stackBuffer().activeSize(); size > detail::Fiber::_max_stack_size )
             detail::Fiber::_max_stack_size = size;
     }

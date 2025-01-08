@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/declaration.h>
@@ -65,11 +64,12 @@ public:
     bool isNameType() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final;
 
-    static auto create(ASTContext* ctx, const declaration::Parameters& params, Declarations fields, Meta meta = {}) {
+    static auto create(ASTContext* ctx, const declaration::Parameters& params, const Declarations& fields,
+                       Meta meta = {}) {
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, params, std::move(fields)), std::move(meta));
+        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, params, fields), std::move(meta));
         t->_setSelf(ctx);
         return t;
     }
@@ -81,8 +81,8 @@ public:
     }
 
     struct AnonymousStruct {};
-    static auto create(ASTContext* ctx, AnonymousStruct _, Declarations fields, Meta meta = {}) {
-        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, std::move(fields)), std::move(meta));
+    static auto create(ASTContext* ctx, AnonymousStruct _, const Declarations& fields, Meta meta = {}) {
+        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, fields), std::move(meta));
         t->_setSelf(ctx);
         return t;
     }

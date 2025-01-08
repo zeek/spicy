@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/declarations/expression.h>
@@ -133,13 +131,13 @@ public:
         return UnqualifiedType::properties() + node::WithUniqueID::properties() + p;
     }
 
-    static auto create(ASTContext* ctx, unsigned int width, type::bitfield::BitRanges bits, AttributeSet* attrs,
+    static auto create(ASTContext* ctx, unsigned int width, const type::bitfield::BitRanges& bits, AttributeSet* attrs,
                        const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         auto value = bitfield::BitRange::create(ctx, ID("__value__"), 0, width - 1, width, {}, m);
-        return ctx->make<Bitfield>(ctx, node::flatten(attrs, std::move(bits), value), width, m);
+        return ctx->make<Bitfield>(ctx, node::flatten(attrs, bits, value), width, m);
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {

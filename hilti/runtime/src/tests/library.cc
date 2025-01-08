@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include <cstdlib>
-#include <memory>
 #include <ostream>
 #include <sstream>
 #include <stdexcept>

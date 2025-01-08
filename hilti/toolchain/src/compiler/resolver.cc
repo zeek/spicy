@@ -291,7 +291,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     // expressions or the type aren't fully resolved yet. Returns an error if a
     // coercion failed with a hard error.
     template<typename Container1, typename Container2>
-    Result<std::optional<Expressions>> coerceCallArguments(Container1 exprs, Container2 params) {
+    Result<std::optional<Expressions>> coerceCallArguments(Container1 exprs, const Container2& params) {
         // Build a tuple to coerce expression according to an OperandList.
         for ( const auto& e : exprs ) {
             if ( ! e->isResolved() )
@@ -554,7 +554,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 if ( auto x = n->typeArguments(); x.size() ) {
                     if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
                         recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
-                        n->setTypeArguments(context(), std::move(**coerced));
+                        n->setTypeArguments(context(), **coerced);
                     }
                 }
             }

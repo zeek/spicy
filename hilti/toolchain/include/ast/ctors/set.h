@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/ctor.h>
@@ -22,22 +21,22 @@ public:
 
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
-    void setValue(ASTContext* ctx, Expressions exprs) {
+    void setValue(ASTContext* ctx, const Expressions& exprs) {
         removeChildren(1, {});
-        addChildren(ctx, std::move(exprs));
+        addChildren(ctx, exprs);
     }
 
-    static auto create(ASTContext* ctx, QualifiedType* etype, Expressions exprs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, QualifiedType* etype, const Expressions& exprs, Meta meta = {}) {
         auto stype = QualifiedType::create(ctx, type::Set::create(ctx, etype, meta), Constness::Mutable, meta);
-        return ctx->make<Set>(ctx, node::flatten(stype, std::move(exprs)), std::move(meta));
+        return ctx->make<Set>(ctx, node::flatten(stype, exprs), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Expressions exprs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, const Expressions& exprs, Meta meta = {}) {
         // bool is just an arbitrary place-holder type for empty values.
         auto etype = exprs.empty() ?
                          QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Mutable, meta) :
                          QualifiedType::createAuto(ctx, meta);
-        return create(ctx, etype, std::move(exprs), std::move(meta));
+        return create(ctx, etype, exprs, std::move(meta));
     }
 
 protected:
