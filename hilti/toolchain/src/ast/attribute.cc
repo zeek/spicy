@@ -1,7 +1,5 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
-#include <optional>
-
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/ctors/integer.h>
@@ -16,28 +14,28 @@ using namespace hilti;
 
 Result<Expression*> Attribute::valueAsExpression() const {
     if ( ! hasValue() )
-        return result::Error(hilti::util::fmt("attribute '%s' requires an expression", attributeName()));
+        return result::Error(hilti::util::fmt("attribute '%s' requires an expression", to_string(kind())));
 
     if ( ! value()->isA<Expression>() )
-        return result::Error(hilti::util::fmt("value for attribute '%s' must be an expression", attributeName()));
+        return result::Error(hilti::util::fmt("value for attribute '%s' must be an expression", to_string(kind())));
 
     return {value()->as<Expression>()};
 }
 
 Result<std::string> Attribute::valueAsString() const {
     if ( ! hasValue() )
-        return result::Error(hilti::util::fmt("attribute '%s' requires a string", attributeName()));
+        return result::Error(hilti::util::fmt("attribute '%s' requires a string", to_string(kind())));
 
     if ( auto e = value()->tryAs<expression::Ctor>() )
         if ( auto s = e->ctor()->tryAs<ctor::String>() )
             return s->value();
 
-    return result::Error(hilti::util::fmt("value for attribute '%s' must be a string", attributeName()));
+    return result::Error(hilti::util::fmt("value for attribute '%s' must be a string", to_string(kind())));
 }
 
 Result<int64_t> Attribute::valueAsInteger() const {
     if ( ! hasValue() )
-        return result::Error(hilti::util::fmt("attribute '%s' requires an integer", attributeName()));
+        return result::Error(hilti::util::fmt("attribute '%s' requires an integer", to_string(kind())));
 
     if ( auto e = value()->tryAs<expression::Ctor>() ) {
         if ( auto s = e->ctor()->tryAs<ctor::SignedInteger>() )
@@ -47,7 +45,7 @@ Result<int64_t> Attribute::valueAsInteger() const {
             return static_cast<int64_t>(s->value());
     }
 
-    return result::Error(hilti::util::fmt("value for attribute '%s' must be an integer", attributeName()));
+    return result::Error(hilti::util::fmt("value for attribute '%s' must be an integer", to_string(kind())));
 }
 
 Result<bool> Attribute::coerceValueTo(Builder* builder, QualifiedType* dst) {
@@ -58,7 +56,7 @@ Result<bool> Attribute::coerceValueTo(Builder* builder, QualifiedType* dst) {
         auto ne = coerceExpression(builder, *e, dst);
         if ( ! ne.coerced )
             return result::Error(hilti::util::fmt("cannot coerce attribute's expression from type '%s' to '%s' (%s)",
-                                                  *(*e)->type(), *dst, attributeName()));
+                                                  *(*e)->type(), *dst, to_string(kind())));
 
         if ( ! ne.nexpr )
             return false;
@@ -70,27 +68,11 @@ Result<bool> Attribute::coerceValueTo(Builder* builder, QualifiedType* dst) {
         return result::Error("cannot coerce non-expression attribute value");
 }
 
-std::optional<Attribute::Kind> Attribute::tagToKind(std::string_view tag) {
-    if ( auto found = _attr_map.find(tag); found != _attr_map.end() )
-        return found->second;
-
-    return {};
-}
-
-std::string_view Attribute::kindToString(Kind kind) {
-    for ( auto&& [name, tag] : _attr_map ) {
-        if ( tag == kind )
-            return name;
-    }
-
-    util::cannotBeReached();
-}
-
 std::string Attribute::_dump() const { return ""; }
 
 std::string AttributeSet::_dump() const { return ""; }
 
-Attribute* AttributeSet::find(Attribute::Kind kind) const {
+Attribute* AttributeSet::find(attribute::Kind kind) const {
     for ( const auto& a : attributes() )
         if ( a->kind() == kind )
             return a;
@@ -98,7 +80,7 @@ Attribute* AttributeSet::find(Attribute::Kind kind) const {
     return {};
 }
 
-hilti::node::Set<Attribute> AttributeSet::findAll(Attribute::Kind kind) const {
+hilti::node::Set<Attribute> AttributeSet::findAll(attribute::Kind kind) const {
     hilti::node::Set<Attribute> result;
 
     for ( const auto& a : attributes() )
@@ -108,7 +90,7 @@ hilti::node::Set<Attribute> AttributeSet::findAll(Attribute::Kind kind) const {
     return result;
 }
 
-void AttributeSet::remove(Attribute::Kind kind) {
+void AttributeSet::remove(attribute::Kind kind) {
     while ( const auto& a = find(kind) )
         removeChild(a);
 }

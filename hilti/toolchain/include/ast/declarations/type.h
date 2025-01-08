@@ -18,7 +18,7 @@ public:
 
     bool isOnHeap() const {
         if ( auto x = attributes() )
-            return x->find(hilti::Attribute::Kind::OnHeap) != nullptr;
+            return x->find(hilti::attribute::Kind::OnHeap) != nullptr;
         else
             return false;
     }

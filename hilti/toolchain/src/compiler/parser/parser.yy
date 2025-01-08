@@ -953,15 +953,17 @@ map_elems     : map_elems ',' map_elem           { $$ = std::move($1); $$.push_b
 map_elem      : expr_no_or_error ':' expr        { $$ = builder->ctorMapElement($1, $3, __loc__); }
 
 
-attribute     : ATTRIBUTE                        { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
-                                                     $$ = builder->attribute(*attr_kind, __loc__);
-                                                   else
-                                                     logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+attribute     : ATTRIBUTE                        { try {
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
+                                                   } catch ( std::out_of_range& e ) {
+                                                       error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                   }
                                                  }
-              | ATTRIBUTE '=' expr               { if ( auto attr_kind = hilti::Attribute::tagToKind($1) )
-                                                     $$ = builder->attribute(*attr_kind, std::move($3), __loc__);
-                                                   else
-                                                     logger().error(hilti::util::fmt("invalid attribute '%s'", $1), __loc__.location());
+              | ATTRIBUTE '=' expr               { try {
+                                                       $$ = builder->attribute(hilti::attribute::kind::from_string($1), std::move($3), __loc__);
+                                                   } catch ( std::out_of_range& e ) {
+                                                       error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                   }
                                                  }
 
 opt_attributes
