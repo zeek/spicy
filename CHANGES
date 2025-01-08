@@ -1,3 +1,7 @@
+1.13.0-dev.47 | 2025-01-08 17:48:23 +0100
+
+  * Fix update Fedora links in installation docs. (Benjamin Bannier, Corelight)
+
 1.13.0-dev.45 | 2025-01-08 17:15:06 +0100
 
   * GH-1936: Migrate `Attribute::Kind` to enum stringification framework. (Benjamin Bannier, Corelight)
