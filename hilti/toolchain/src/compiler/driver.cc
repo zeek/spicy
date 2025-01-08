@@ -15,6 +15,7 @@
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/operator-registry.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/ast-dumper.h>
 #include <hilti/compiler/driver.h>
 #include <hilti/compiler/plugin.h>
@@ -745,9 +746,7 @@ Result<Nothing> Driver::run() {
         return result::Error(fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
     }
 
-    _ctx = nullptr;
-
-    return {};
+    util::cannotBeReached();
 }
 
 Result<Nothing> Driver::compile() {
