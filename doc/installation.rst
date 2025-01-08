@@ -91,15 +91,15 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-deb:`DEB <docker_debian12>`
       - :repo:`Dockerfile <docker/Dockerfile.debian-12>`
 
-    * - Fedora 38
-      - :package-release-rpm:`RPM <linux_fedora38>`
-      - :package-dev-rpm:`RPM <docker_fedora38>`
-      - :repo:`Dockerfile <docker/Dockerfile.fedora-38>`
+    * - Fedora 40
+      - :package-release-rpm:`RPM <linux_fedora40>`
+      - :package-dev-rpm:`RPM <docker_fedora40>`
+      - :repo:`Dockerfile <docker/Dockerfile.fedora-40>`
 
-    * - Fedora 39
-      - :package-release-rpm:`RPM <linux_fedora39>`
-      - :package-dev-rpm:`RPM <docker_fedora39>`
-      - :repo:`Dockerfile <docker/Dockerfile.fedora-39>`
+    * - Fedora 41
+      - :package-release-rpm:`RPM <linux_fedora41>`
+      - :package-dev-rpm:`RPM <docker_fedora41>`
+      - :repo:`Dockerfile <docker/Dockerfile.fedora-41>`
 
     * - Ubuntu 20
       - :package-release-deb:`DEB <linux_ubuntu20>`
