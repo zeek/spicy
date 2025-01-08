@@ -166,7 +166,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
 
             if ( ! hook_id ) {
-                hook_id = canon_id;
+                hook_id = std::move(canon_id);
                 hook_type = ftype;
             }
             else {
@@ -848,7 +848,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             declaration::Type* linked_type = nullptr;
             Declaration* linked_prototype = nullptr;
 
-            if ( auto resolved = scope::lookupID<declaration::Type>(ns, n, "struct type") ) {
+            if ( auto resolved = scope::lookupID<declaration::Type>(std::move(ns), n, "struct type") ) {
                 linked_type = resolved->first;
 
                 for ( const auto& field : linked_type->type()->type()->as<type::Struct>()->fields(n->id().local()) ) {
@@ -1226,7 +1226,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             else
                 id = n->id();
 
-            auto resolved = scope::lookupID<Declaration>(id, scope_node, "declaration");
+            auto resolved = scope::lookupID<Declaration>(std::move(id), scope_node, "declaration");
             if ( resolved ) {
                 auto index = context()->register_(resolved->first);
                 n->setResolvedDeclarationIndex(context(), index);
@@ -1360,7 +1360,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             if ( n->kind() == operator_::Kind::MemberCall ) {
                 if ( auto stype = match->op0()->type()->type()->tryAs<type::Struct>() ) {
-                    auto id = match->op1()->as<expression::Member>()->id();
+                    const auto& id = match->op1()->as<expression::Member>()->id();
                     if ( auto field = stype->field(id) ) {
                         auto ftype = field->type()->type()->as<type::Function>();
                         recordAutoParameters(*ftype, match->op2());

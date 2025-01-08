@@ -986,7 +986,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::type::unit::item::UnresolvedField* n) final {
         if ( auto id = n->unresolvedID() ) {
             // Re-lookup ID to see if it exists at all.
-            if ( auto resolved = hilti::scope::lookupID<hilti::Declaration>(id, n, "field"); ! resolved )
+            if ( auto resolved = hilti::scope::lookupID<hilti::Declaration>(std::move(id), n, "field"); ! resolved )
                 error(resolved.error(), n, node::ErrorPriority::High);
 
             if ( n->hasErrors() )

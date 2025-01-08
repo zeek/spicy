@@ -88,7 +88,8 @@ struct Visitor : hilti::visitor::PreOrder {
 cxx::Expression CodeGen::pack(Expression* data, const Expressions& args) {
     auto cxx_args = util::transform(args, [&](const auto& e) { return compile(e, false); });
     auto v = Visitor(this, Visitor::Kind::Pack, nullptr, compile(data), cxx_args);
-    if ( auto result = hilti::visitor::dispatch(v, data->type()->type(), [](const auto& v) { return v.result; }) )
+    if ( auto result =
+             hilti::visitor::dispatch(v, data->type()->type(), [](const auto& v) -> const auto& { return v.result; }) )
         return cxx::Expression(*result);
 
     logger().internalError("pack failed to compile", data->type());
@@ -96,7 +97,7 @@ cxx::Expression CodeGen::pack(Expression* data, const Expressions& args) {
 
 cxx::Expression CodeGen::pack(QualifiedType* t, const cxx::Expression& data, const std::vector<cxx::Expression>& args) {
     auto v = Visitor(this, Visitor::Kind::Pack, nullptr, data, args);
-    if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; }) )
+    if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; }) )
         return cxx::Expression(*result);
 
     logger().internalError("pack failed to compile", t);
@@ -106,7 +107,7 @@ cxx::Expression CodeGen::unpack(QualifiedType* t, QualifiedType* data_type, Expr
                                 bool throw_on_error) {
     auto cxx_args = util::transform(args, [&](const auto& e) { return compile(e, false); });
     auto v = Visitor(this, Visitor::Kind::Unpack, data_type, compile(data), cxx_args);
-    if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; }) ) {
+    if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; }) ) {
         if ( throw_on_error )
             return cxx::Expression(util::fmt("%s.valueOrThrow()", *result));
         else
@@ -119,7 +120,7 @@ cxx::Expression CodeGen::unpack(QualifiedType* t, QualifiedType* data_type, Expr
 cxx::Expression CodeGen::unpack(QualifiedType* t, QualifiedType* data_type, const cxx::Expression& data,
                                 const std::vector<cxx::Expression>& args, bool throw_on_error) {
     auto v = Visitor(this, Visitor::Kind::Unpack, data_type, data, args);
-    if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; }) ) {
+    if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; }) ) {
         if ( throw_on_error )
             return cxx::Expression(util::fmt("%s.valueOrThrow<::hilti::rt::InvalidValue>()", *result));
         else

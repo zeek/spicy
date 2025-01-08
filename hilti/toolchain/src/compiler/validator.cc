@@ -588,7 +588,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             // Customized error message for calls to methods.
             std::vector<std::string> context;
 
-            if ( auto candidates = operator_::registry().byMethodID(n->op1()->as<expression::Member>()->id());
+            if ( const auto& candidates = operator_::registry().byMethodID(n->op1()->as<expression::Member>()->id());
                  ! candidates.empty() ) {
                 // Apply heuristic on op0 to limit the candidates reported.
                 std::vector<std::string> cands;

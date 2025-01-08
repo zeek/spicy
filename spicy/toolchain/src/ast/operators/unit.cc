@@ -14,7 +14,7 @@ namespace {
 namespace unit {
 
 void checkName(hilti::expression::ResolvedOperator* op) {
-    auto id = op->op1()->as<hilti::expression::Member>()->id();
+    const auto& id = op->op1()->as<hilti::expression::Member>()->id();
     auto i = op->op0()->type()->type()->as<type::Unit>()->itemByName(id);
 
     if ( ! i )
@@ -24,7 +24,7 @@ void checkName(hilti::expression::ResolvedOperator* op) {
 
 QualifiedType* itemType(hilti::Builder* builder, const Expressions& operands) {
     auto unit = operands[0]->type()->type()->as<type::Unit>();
-    auto id = operands[1]->as<hilti::expression::Member>()->id();
+    const auto& id = operands[1]->as<hilti::expression::Member>()->id();
 
     if ( auto item = unit->itemByName(id) )
         return item->itemType();

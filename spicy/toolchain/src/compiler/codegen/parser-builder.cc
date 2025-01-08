@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <numeric>
 #include <optional>
-#include <sstream>
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
@@ -75,7 +74,7 @@ struct ProductionVisitor : public production::Visitor {
 
     auto cg() { return pb->cg(); }
     auto context() { return cg()->context(); }
-    auto state() { return pb->state(); }
+    const auto& state() { return pb->state(); }
 
     void pushState(ParserState p) { pb->pushState(std::move(p)); }
     void popState() { pb->popState(); }
@@ -166,7 +165,7 @@ struct ProductionVisitor : public production::Visitor {
         auto missing =
             builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(ncur, "offset"));
         auto insufficient = builder()->addIf(missing);
-        pushBuilder(insufficient, [&]() {
+        pushBuilder(std::move(insufficient), [&]() {
             if ( field && ! field->isAnonymous() && ! field->isSkip() )
                 // Clear the field in case the type parsing has started
                 // to fill it.
@@ -185,7 +184,7 @@ struct ProductionVisitor : public production::Visitor {
         // We wrap the parsing of a non-atomic production into a new
         // function that's cached and reused. This ensures correct
         // operation for productions that recurse.
-        auto id = parse_functions.getOrCreate(
+        const auto& id = parse_functions.getOrCreate(
             p.symbol(), [&]() { return unit ? ID("__parse_stage1") : ID(fmt("__parse_%s_stage1", p.symbol())); },
             [&](auto& id) {
                 auto id_stage1 = id;
@@ -242,7 +241,7 @@ struct ProductionVisitor : public production::Visitor {
                     auto catch_ =
                         try_->addCatch(builder()->parameter("__except", builder()->typeName("hilti::SystemException")));
 
-                    pushBuilder(catch_, [&]() {
+                    pushBuilder(std::move(catch_), [&]() {
                         pb->finalizeUnit(false, p.location());
                         run_finally();
                         builder()->addRethrow();
@@ -356,7 +355,7 @@ struct ProductionVisitor : public production::Visitor {
                                                                   {state().self, state().data, state().cur}));
 
                             auto have_filter = builder()->addIf(filtered);
-                            pushBuilder(have_filter);
+                            pushBuilder(std::move(have_filter));
 
                             auto args2 = args;
 
@@ -391,7 +390,7 @@ struct ProductionVisitor : public production::Visitor {
                     }
 
                     auto not_have_filter = builder()->addIf(builder()->not_(builder()->id("filtered")));
-                    pushBuilder(not_have_filter);
+                    pushBuilder(std::move(not_have_filter));
                     builder()->addAssign(store_result, builder()->memberCall(state().self, id_stage2, args));
                     popBuilder();
 
@@ -653,8 +652,8 @@ struct ProductionVisitor : public production::Visitor {
                 }
 
                 if ( meta.field() ) {
-                    Expression* default_ =
-                        builder()->default_(builder()->typeName(unit->unitType()->typeID()), type_args, location);
+                    Expression* default_ = builder()->default_(builder()->typeName(unit->unitType()->typeID()),
+                                                               std::move(type_args), std::move(location));
                     builder()->addAssign(destination(), default_);
                 }
 
@@ -689,7 +688,7 @@ struct ProductionVisitor : public production::Visitor {
             auto catch_ =
                 try_->second.addCatch(builder()->parameter("__except", builder()->typeName("hilti::SystemException")));
 
-            pushBuilder(catch_, [&]() {
+            pushBuilder(std::move(catch_), [&]() {
                 auto what = builder()->call("hilti::exception_what", {builder()->id("__except")});
                 builder()->addMemberCall(state().self, ID(fmt("__on_%s_error", field->id().local())), {what},
                                          field->meta());
@@ -858,7 +857,7 @@ struct ProductionVisitor : public production::Visitor {
             auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
                                                 builder()->memberCall(state().ncur, "offset"));
             auto exceeded = builder()->addIf(cond);
-            pushBuilder(exceeded, [&]() {
+            pushBuilder(std::move(exceeded), [&]() {
                 // We didn't finish parsing the data, which is an error.
                 if ( ! field->isAnonymous() && ! field->isSkip() )
                     // Clear the field in case the type parsing has started to fill it.
@@ -983,7 +982,7 @@ struct ProductionVisitor : public production::Visitor {
         auto ncur = builder()->addTmp("ncur", state().cur);
         auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
         auto body = builder()->addWhile(ms, builder()->bool_(true));
-        pushBuilder(body);
+        pushBuilder(std::move(body));
 
         auto rc = builder()->addTmp("rc", builder()->typeSignedInteger(32));
         builder()->addAssign(builder()->tuple({rc, ncur}),
@@ -993,7 +992,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // Match possible with additional data, continue matching.
         auto no_match_try_again = switch_.addCase(builder()->integer(-1));
-        pushBuilder(no_match_try_again);
+        pushBuilder(std::move(no_match_try_again));
         auto pstate = pb->state();
         pstate.cur = ncur;
         pb->pushState(std::move(pstate));
@@ -1004,13 +1003,13 @@ struct ProductionVisitor : public production::Visitor {
 
         // No match found, leave `cur` unchanged.
         auto no_match = switch_.addCase(builder()->integer(0));
-        pushBuilder(no_match);
+        pushBuilder(std::move(no_match));
         builder()->addBreak();
         popBuilder();
 
         // Match found, update `cur`.
         auto match = switch_.addDefault();
-        pushBuilder(match);
+        pushBuilder(std::move(match));
         builder()->addAssign(state().cur, ncur);
         pb->trimInput();
         builder()->addBreak();
@@ -1037,7 +1036,7 @@ struct ProductionVisitor : public production::Visitor {
         auto [true_, false_] = builder()->addIfElse(pb->atEod());
         true_->addAssign(state().lahead, builder()->integer(look_ahead::Eod));
 
-        pushBuilder(false_);
+        pushBuilder(std::move(false_));
 
         // Collect all expected terminals.
         auto regexps = std::vector<Production*>();
@@ -1072,7 +1071,7 @@ struct ProductionVisitor : public production::Visitor {
                                 builder()->addContinue();
                             });
 
-                return pushBuilder(body);
+                return pushBuilder(std::move(body));
             };
 
             // Parse regexps in parallel.
@@ -1096,8 +1095,8 @@ struct ProductionVisitor : public production::Visitor {
                 }
 
                 auto re = pb->cg()->addGlobalConstant(
-                    builder()->ctorRegExp(flattened, builder()->attributeSet(
-                                                         {builder()->attribute(hilti::attribute::Kind::Nosub)})));
+                    builder()->ctorRegExp(std::move(flattened), builder()->attributeSet({builder()->attribute(
+                                                                    hilti::attribute::Kind::Nosub)})));
                 // Create the token matcher state.
                 builder()->addLocal(ID("ncur"), state().cur);
                 auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
@@ -1186,7 +1185,7 @@ struct ProductionVisitor : public production::Visitor {
                     auto ambiguous = true_->addIf(
                         builder()->and_(builder()->unequal(state().lahead, builder()->integer(look_ahead::None)),
                                         builder()->equal(builder()->id("i"), state().lahead_end)));
-                    pushBuilder(ambiguous);
+                    pushBuilder(std::move(ambiguous));
                     pb->parseError("ambiguous look-ahead token match", location);
                     popBuilder();
 
@@ -1215,8 +1214,8 @@ struct ProductionVisitor : public production::Visitor {
                     parse();
 
                     auto [if_, else_] = builder()->addIfElse(builder()->or_(pb->atEod(), state().lahead));
-                    pushBuilder(if_, [&]() { builder()->addBreak(); });
-                    pushBuilder(else_, [&]() { pb->advanceToNextData(); });
+                    pushBuilder(std::move(if_), [&]() { builder()->addBreak(); });
+                    pushBuilder(std::move(else_), [&]() { pb->advanceToNextData(); });
                 });
 
                 break;
@@ -1301,7 +1300,7 @@ struct ProductionVisitor : public production::Visitor {
                 // `%synchronize-[at|after]`, so temporarily set a new value.
                 auto pstate = state();
                 pstate.lahead = builder()->addTmp("sync_lahead", builder()->id("__lah"));
-                pushState(pstate);
+                pushState(std::move(pstate));
 
                 getLookAhead({ctor.get()}, id, ctor->location(), LiteralMode::Search);
                 validateSearchResult();
@@ -1436,7 +1435,7 @@ struct ProductionVisitor : public production::Visitor {
         // for all subsequent fields is executed in this loop. For that reason
         // the loop bpdy needs to execute at least one time.
         auto while_ = builder()->addWhile(builder()->bool_(true));
-        pushBuilder(while_);
+        pushBuilder(std::move(while_));
 
         // Variable storing whether we actually entered trial mode.
         auto is_trial_mode = builder()->addTmp("is_trial_mode", builder()->bool_(false));
@@ -1473,7 +1472,7 @@ struct ProductionVisitor : public production::Visitor {
                         builder()->addContinue();
                     });
 
-        pushBuilder(body);
+        pushBuilder(std::move(body));
     }
 
     /** End sync and trial mode. */
@@ -1614,7 +1613,7 @@ struct ProductionVisitor : public production::Visitor {
             cond = builder()->bool_(true);
 
         auto body = builder()->addWhile(cond);
-        pushBuilder(body);
+        pushBuilder(std::move(body));
         auto cookie = pb->initLoopBody();
         auto stop = parseProduction(*p->body());
         auto b = builder()->addIf(stop);
@@ -1639,16 +1638,16 @@ struct ProductionVisitor : public production::Visitor {
 
         for ( const auto& [exprs, prod] : p->cases() ) {
             auto case_ = switch_.addCase(exprs, prod->location());
-            pushBuilder(case_, [&, &prod = prod]() { parseProduction(*prod); });
+            pushBuilder(std::move(case_), [&, &prod = prod]() { parseProduction(*prod); });
         }
 
         if ( auto prod = p->default_() ) {
             auto default_ = switch_.addDefault(prod->location());
-            pushBuilder(default_, [&]() { parseProduction(*prod); });
+            pushBuilder(std::move(default_), [&]() { parseProduction(*prod); });
         }
         else {
             auto default_ = switch_.addDefault(p->location());
-            pushBuilder(default_, [&]() {
+            pushBuilder(std::move(default_), [&]() {
                 pb->parseError("no matching case in switch statement for value '%s'", {p->expression()}, p->location());
             });
         }
@@ -1789,7 +1788,8 @@ struct ProductionVisitor : public production::Visitor {
             auto cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
                                                 builder()->memberCall(state().ncur, "offset"));
             auto exceeded = builder()->addIf(cond);
-            pushBuilder(exceeded, [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
+            pushBuilder(std::move(exceeded),
+                        [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
 
             // Restore parser state.
             auto ncur = state().ncur;
@@ -1816,7 +1816,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // If we don't have a look-ahead symbol pending, get one.
         auto true_ = builder()->addIf(builder()->not_(state().lahead));
-        pushBuilder(true_);
+        pushBuilder(std::move(true_));
         getLookAhead(p);
         popBuilder();
 
@@ -1863,7 +1863,7 @@ struct ProductionVisitor : public production::Visitor {
 
         if ( ! eod_handled ) {
             auto builder_eod = switch_.addCase(builder()->integer(look_ahead::Eod));
-            pushBuilder(builder_eod);
+            pushBuilder(std::move(builder_eod));
             pb->parseError("expected look-ahead token, but reached end-of-data", p.location());
             popBuilder();
         }
@@ -1879,15 +1879,16 @@ struct ProductionVisitor : public production::Visitor {
     void operator()(const production::LookAhead* p) final {
         auto [builder_alt1, builder_alt2, builder_default] = parseLookAhead(*p);
 
-        pushBuilder(builder_alt1);
+        pushBuilder(std::move(builder_alt1));
         parseProduction(*p->alternatives().first);
         popBuilder();
 
-        pushBuilder(builder_alt2);
+        pushBuilder(std::move(builder_alt2));
         parseProduction(*p->alternatives().second);
         popBuilder();
 
-        pushBuilder(builder_default, [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
+        pushBuilder(std::move(builder_default),
+                    [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
     }
 
     void operator()(const production::Sequence* p) final {
@@ -1914,7 +1915,7 @@ struct ProductionVisitor : public production::Visitor {
             if ( eod_attr ) {
                 builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
                 auto loop = builder()->addWhile(pb->waitForInputOrEod());
-                pushBuilder(loop, [&]() { pb->advanceInput(builder()->size(state().cur)); });
+                pushBuilder(std::move(loop), [&]() { pb->advanceInput(builder()->size(state().cur)); });
                 pb->advanceInput(builder()->size(state().cur));
             }
 
@@ -1926,7 +1927,7 @@ struct ProductionVisitor : public production::Visitor {
                 auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
 
                 auto body = builder()->addWhile(builder()->bool_(true));
-                pushBuilder(body, [&]() {
+                pushBuilder(std::move(body), [&]() {
                     pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
                                      until_expr->meta());
 
@@ -1935,21 +1936,21 @@ struct ProductionVisitor : public production::Visitor {
                     auto it_id = ID("it");
                     auto found = builder()->id(found_id);
                     auto it = builder()->id(it_id);
-                    builder()->addLocal(found_id,
+                    builder()->addLocal(std::move(found_id),
                                         builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
-                    builder()->addLocal(it_id, builder()->qualifiedType(builder()->typeStreamIterator(),
-                                                                        hilti::Constness::Mutable));
+                    builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
+                                                                                   hilti::Constness::Mutable));
                     builder()->addAssign(builder()->tuple({found, it}), find);
 
                     auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
-                    pushBuilder(found_branch, [&]() {
+                    pushBuilder(std::move(found_branch), [&]() {
                         auto new_it = builder()->sum(it, until_bytes_size_var);
                         pb->advanceInput(new_it);
                         builder()->addBreak();
                     });
 
-                    pushBuilder(not_found_branch, [&]() { pb->advanceInput(it); });
+                    pushBuilder(std::move(not_found_branch), [&]() { pb->advanceInput(it); });
                 });
             }
         }
@@ -1971,7 +1972,7 @@ struct ProductionVisitor : public production::Visitor {
         else {
             // Look-ahead based loop.
             auto body = builder()->addWhile(builder()->bool_(true));
-            pushBuilder(body, [&]() {
+            pushBuilder(std::move(body), [&]() {
                 // If we don't have any input right now, we suspend because
                 // we might get an EOD next, in which case we need to abort the loop.
                 builder()->addExpression(pb->waitForInputOrEod(builder()->integer(1)));
@@ -2013,18 +2014,18 @@ struct ProductionVisitor : public production::Visitor {
                 else {
                     parse();
 
-                    pushBuilder(builder_default, [&]() {
+                    pushBuilder(std::move(builder_default), [&]() {
                         // Terminate loop.
                         builder()->addBreak();
                     });
                 }
 
-                pushBuilder(builder_alt1, [&]() {
+                pushBuilder(std::move(builder_alt1), [&]() {
                     // Terminate loop.
                     builder()->addBreak();
                 });
 
-                pushBuilder(builder_alt2, [&]() {
+                pushBuilder(std::move(builder_alt2), [&]() {
                     // Parse body.
                     auto cookie = pb->initLoopBody();
                     auto stop = parseProduction(*p->body());
@@ -2729,7 +2730,7 @@ void ParserBuilder::skip(Expression* size, const Meta& location) {
 
     auto n = builder()->addTmp("skip", size);
     auto loop = builder()->addWhile(builder()->greater(n, builder()->integer(0U)));
-    pushBuilder(loop, [&]() {
+    pushBuilder(std::move(loop), [&]() {
         waitForInput(builder()->integer(1U), "not enough bytes for skipping", location);
         auto consume = builder()->addTmp("consume", builder()->min(builder()->size(state().cur), n));
         advanceInput(consume);
@@ -2854,12 +2855,12 @@ void ParserBuilder::initBacktracking() {
     auto try_cur = builder()->addTmp("try_cur", state().cur);
     auto [body, try_] = builder()->addTry();
     auto catch_ = try_.addCatch(builder()->parameter(ID("e"), builder()->typeName("spicy_rt::Backtrack")));
-    pushBuilder(catch_, [&]() { builder()->addAssign(state().cur, try_cur); });
+    pushBuilder(std::move(catch_), [&]() { builder()->addAssign(state().cur, try_cur); });
 
     auto pstate = state();
     pstate.trim = builder()->bool_(false);
     pushState(std::move(pstate));
-    pushBuilder(body);
+    pushBuilder(std::move(body));
 }
 
 void ParserBuilder::finishBacktracking() {

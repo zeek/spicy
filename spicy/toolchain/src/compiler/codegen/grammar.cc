@@ -57,7 +57,7 @@ hilti::Result<hilti::Nothing> Grammar::setRoot(std::unique_ptr<Production> p) {
     if ( _root )
         return hilti::result::Error("root production is already set");
 
-    auto symbol = p->symbol();
+    const auto& symbol = p->symbol();
 
     if ( symbol.empty() )
         return hilti::result::Error("root production must have a symbol");
@@ -164,14 +164,14 @@ bool Grammar::_add(std::map<std::string, std::set<std::string>>* tbl, Production
     auto t = tbl->find(idx);
     assert(t != tbl->end());
 
-    auto set = t->second;
+    const auto& set = t->second;
     auto union_ = hilti::util::setUnion(set, src);
 
     if ( union_.size() == set.size() )
         // All in there already.
         return changed;
 
-    (*tbl)[idx] = union_;
+    (*tbl)[idx] = std::move(union_);
     return true;
 }
 

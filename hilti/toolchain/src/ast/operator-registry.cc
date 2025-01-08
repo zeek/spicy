@@ -36,7 +36,7 @@ void Registry::initPending(Builder* builder) {
         if ( op->hasOperands() ) { // only register if to be instantiated by the resolver through its operands
             _operators_by_kind[op->kind()].push_back(op.get());
             if ( op->kind() == Kind::MemberCall ) {
-                auto id = op->signature().operands->op1()->type()->type()->as<type::Member>()->id();
+                const auto& id = op->signature().operands->op1()->type()->type()->as<type::Member>()->id();
                 _operators_by_method[id].push_back(op.get());
             }
 

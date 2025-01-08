@@ -76,7 +76,7 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
             if ( i >= end )
                 return std::make_pair(hilti::rt::stream::View(begin, end), "");
 
-            return std::make_pair(hilti::rt::stream::View(begin, i), "...");
+            return std::make_pair(hilti::rt::stream::View(begin, std::move(i)), "...");
         };
 
         auto na = hilti::rt::Stream("n/a");

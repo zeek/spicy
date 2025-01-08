@@ -317,7 +317,7 @@ cxx::Expression CodeGen::coerce(const cxx::Expression& e, QualifiedType* src, Qu
         return e;
 
     auto v = Visitor(this, e, src, dst);
-    if ( auto nt = hilti::visitor::dispatch(v, src->type(), [](const auto& v) { return v.result; }) )
+    if ( auto nt = hilti::visitor::dispatch(v, src->type(), [](const auto& v) -> const auto& { return v.result; }) )
         return *nt;
 
     logger().internalError(fmt("codegen: type %s unhandled for coercion", src->type()->typename_()));

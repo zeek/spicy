@@ -51,7 +51,7 @@ public:
     node::Properties properties() const final {
         auto p =
             node::Properties{{"id", _id}, {"builtin", _builtin}, {"resolved-type", to_string(_resolved_type_index)}};
-        return UnqualifiedType::properties() + p;
+        return UnqualifiedType::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const ID& id, Meta meta = {}) {

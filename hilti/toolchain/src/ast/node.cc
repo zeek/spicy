@@ -64,9 +64,10 @@ std::string Node::renderSelf(bool include_location) const {
     if ( ! props.empty() )
         sprops = util::fmt(" <%s>", util::join(props, " "));
 
-    auto location = (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().dump(true)) : "";
+    const auto& location =
+        (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().dump(true)) : "";
     auto no_inherit_scope = (inheritScope() ? "" : " (no-inherit-scope)");
-    auto parent = (_parent ? util::fmt(" [parent %s]", identity(_parent)) : " [no parent]");
+    const auto& parent = (_parent ? util::fmt(" [parent %s]", identity(_parent)) : " [no parent]");
 
     auto s = util::fmt("%s%s%s%s%s", name(this), sprops, parent, no_inherit_scope, location);
 

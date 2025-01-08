@@ -205,7 +205,7 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
 Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
                                                         const std::string& extension) {
     auto template_ = fmt("%s.XXXXXX.%s", name_hint, extension);
-    auto name = template_;
+    auto name = std::move(template_);
     auto fd = mkstemp(name.data());
 
     if ( fd < 0 )
@@ -957,7 +957,7 @@ Result<Nothing> Driver::initRuntime() {
     config.show_backtraces = _driver_options.show_backtraces;
     config.report_resource_usage = _driver_options.report_resource_usage;
     config.enable_profiling = _driver_options.enable_profiling;
-    hilti::rt::configuration::set(config);
+    hilti::rt::configuration::set(std::move(config));
 
     try {
         HILTI_DEBUG(logging::debug::Driver, "initializing runtime");

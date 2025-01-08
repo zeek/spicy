@@ -70,7 +70,7 @@ struct VisitorASTInfo : public visitor::PreOrder {
                 return;
             }
 
-            auto lahs = unit->grammar().lookAheadsInUse();
+            const auto& lahs = unit->grammar().lookAheadsInUse();
             info->look_aheads_in_use.insert(lahs.begin(), lahs.end());
 
             for ( const auto& [id, p] : unit->grammar().productions() ) {

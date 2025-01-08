@@ -153,7 +153,7 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         auto l = cxx::declaration::Local(cxx::ID(d->id()), cg->compile(d->type(), codegen::TypeUsage::Storage),
-                                         std::move(args), init);
+                                         std::move(args), std::move(init));
 
         block->addLocal(l);
     }
@@ -187,14 +187,14 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( ! init.empty() && ! cond.empty() )
             head = fmt("%s; %s", init, cond);
         else if ( ! init.empty() )
-            head = init;
+            head = std::move(init);
         else
-            head = cond;
+            head = std::move(cond);
 
         if ( ! n->false_() )
-            block->addIf(head, cg->compile(n->true_()));
+            block->addIf(std::move(head), cg->compile(n->true_()));
         else
-            block->addIf(head, cg->compile(n->true_()), cg->compile(n->false_()));
+            block->addIf(std::move(head), cg->compile(n->true_()), cg->compile(n->false_()));
     }
 
     void operator()(statement::For* n) final {
@@ -258,11 +258,11 @@ struct Visitor : hilti::visitor::PreOrder {
             auto body = cg->compile(c->body());
 
             if ( first ) {
-                block->addIf(fmt("%s %s = %s", cxx_type, cxx_id, cxx_init), cond, body);
+                block->addIf(fmt("%s %s = %s", cxx_type, cxx_id, cxx_init), std::move(cond), body);
                 first = false;
             }
             else
-                block->addElseIf(cond, body);
+                block->addElseIf(std::move(cond), std::move(body));
         }
 
         cxx::Block default_;
@@ -272,7 +272,7 @@ struct Visitor : hilti::visitor::PreOrder {
         else
             default_.addStatement(
                 fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")",
-                    (first ? cxx_init : cxx_id), n->meta().location()));
+                    (first ? cxx_init : std::move(cxx_id)), n->meta().location()));
 
         if ( first )
             block->addBlock(std::move(default_));
@@ -338,9 +338,9 @@ struct Visitor : hilti::visitor::PreOrder {
             else_.addStatement("break");
 
             if ( n->condition() || ! init )
-                inner_wrapper.addIf(fmt("! (%s)", cg->compile(n->condition())), else_);
+                inner_wrapper.addIf(fmt("! (%s)", cg->compile(n->condition())), std::move(else_));
             else
-                inner_wrapper.addIf(fmt("! %s", init->id()), else_);
+                inner_wrapper.addIf(fmt("! %s", init->id()), std::move(else_));
 
             inner_wrapper.appendFromBlock(cg->compile(n->body()));
 
@@ -356,7 +356,7 @@ struct Visitor : hilti::visitor::PreOrder {
             }
 
             outer_wrapper.addWhile(cxx::Expression("true"), inner_wrapper);
-            block->addBlock(outer_wrapper);
+            block->addBlock(std::move(outer_wrapper));
             return;
         }
 
@@ -389,7 +389,7 @@ struct Visitor : hilti::visitor::PreOrder {
         else
             // C++ doesn't support having both init and cond in a while-loop.
             // Use a for-loop instead.
-            block->addFor(sinit, cond, "", body);
+            block->addFor(std::move(sinit), std::move(cond), "", body);
     }
 
     void operator()(statement::Yield* n) final {

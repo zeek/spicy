@@ -869,7 +869,7 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
         auto n = _types_by_index[idx];
         assert(n->isRetained());
 
-        auto id = n->typeID() ? n->typeID() : ID("<no-type-id>");
+        const auto& id = n->typeID() ? n->typeID() : ID("<no-type-id>");
         HILTI_DEBUG(stream,
                     fmt("[%s] %s [%s] (%s)", ast::TypeIndex(idx), id, n->typename_(), n->location().dump(true)));
     }

@@ -29,8 +29,8 @@ void cxx::Linker::add(const linker::MetaData& md) {
         joins.push_back(j);
     }
 
-    if ( auto idx = md.globals_index; ! idx.id.empty() )
-        _globals.insert(std::move(idx));
+    if ( const auto& idx = md.globals_index; ! idx.id.empty() )
+        _globals.insert(idx);
 }
 
 void cxx::Linker::finalize() {
@@ -65,7 +65,7 @@ void cxx::Linker::finalize() {
         hash = rt::hashCombine(hash, std::hash<std::string>()(content));
     }
 
-    auto cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
+    const auto& cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
     auto scope = hilti::rt::fmt("%" PRIx64, hash);
     unit->add(fmt("const char HILTI_WEAK * %s_hlto_scope = \"%s\";", cxx_namespace, scope));
 

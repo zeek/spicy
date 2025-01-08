@@ -31,7 +31,7 @@ struct TypeParser {
 
     Expression* buildParser(UnqualifiedType* t);
 
-    auto state() { return pb->state(); }
+    const auto& state() { return pb->state(); }
     auto builder() { return pb->builder(); }
     auto context() { return pb->context(); }
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb->pushBuilder(std::move(b)); }
@@ -71,7 +71,7 @@ struct TypeParser {
             auto result = dst ? dst : builder()->addTmp("result", builder()->typeResult(qt));
 
             auto true_ = builder()->addIf(has_data);
-            pushBuilder(true_);
+            pushBuilder(std::move(true_));
             auto unpacked = builder()->deref(builder()->unpack(qt, unpack_args));
             builder()->addAssign(builder()->tuple({result, state().cur}), unpacked);
             popBuilder();
@@ -169,7 +169,7 @@ struct Visitor : public visitor::PreOrder {
 
                 if ( pb()->options().debug ) {
                     auto have_value = builder()->addIf(builder()->hasMember(target, "__value__"));
-                    pushBuilder(have_value, [&]() {
+                    pushBuilder(std::move(have_value), [&]() {
                         // Print all the bit ranges individually so that we can include
                         // their IDs, which the standard tuple output wouldn't show.
                         builder()->addDebugMsg("spicy", fmt("%s = %%s", tp->meta.field()->id()),
@@ -303,11 +303,11 @@ struct Visitor : public visitor::PreOrder {
 
                     if ( chunked_attr ) {
                         auto loop = builder()->addWhile(builder()->bool_(true));
-                        pushBuilder(loop, [&]() {
+                        pushBuilder(std::move(loop), [&]() {
                             builder()->addLocal("more_data", pb()->waitForInputOrEod(builder()->integer(1)));
 
                             auto have_data = builder()->addIf(builder()->size(state().cur));
-                            pushBuilder(have_data, [&]() {
+                            pushBuilder(std::move(have_data), [&]() {
                                 builder()->addAssign(target, state().cur);
                                 pb()->advanceInput(builder()->size(state().cur));
 
@@ -359,7 +359,7 @@ struct Visitor : public visitor::PreOrder {
 
                     builder()->addAssign(target, builder()->bytes(""));
                     auto body = builder()->addWhile(builder()->bool_(true));
-                    pushBuilder(body, [&]() {
+                    pushBuilder(std::move(body), [&]() {
                         // Helper to add a new chunk of data to the field's value,
                         // behaving slightly different depending on whether we have
                         // &chunked or not.
@@ -384,20 +384,20 @@ struct Visitor : public visitor::PreOrder {
                         auto it_id = ID("it");
                         auto found = builder()->id(found_id);
                         auto it = builder()->id(it_id);
-                        builder()->addLocal(found_id,
+                        builder()->addLocal(std::move(found_id),
                                             builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
-                        builder()->addLocal(it_id, builder()->qualifiedType(builder()->typeStreamIterator(),
-                                                                            hilti::Constness::Mutable));
+                        builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
+                                                                                       hilti::Constness::Mutable));
                         builder()->addAssign(builder()->tuple({found, it}), find);
 
                         Expression* match = builder()->memberCall(state().cur, "sub", {it});
 
                         auto non_empty_match = builder()->addIf(builder()->size(match));
-                        pushBuilder(non_empty_match, [&]() { add_match_data(target, match); });
+                        pushBuilder(std::move(non_empty_match), [&]() { add_match_data(target, match); });
 
                         auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
-                        pushBuilder(found_branch, [&]() {
+                        pushBuilder(std::move(found_branch), [&]() {
                             auto new_it = builder()->sum(it, until_bytes_size_var);
 
                             if ( until_including_attr )
@@ -407,7 +407,7 @@ struct Visitor : public visitor::PreOrder {
                             builder()->addBreak();
                         });
 
-                        pushBuilder(not_found_branch, [&]() { pb()->advanceInput(it); });
+                        pushBuilder(std::move(not_found_branch), [&]() { pb()->advanceInput(it); });
                     });
 
                     result = target;

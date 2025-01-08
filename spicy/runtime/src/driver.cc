@@ -242,7 +242,7 @@ void driver::ParsingStateForDriver::debug(const std::string& msg) {
 }
 
 void driver::ParsingState::debug(const std::string& msg, size_t size, const char* data) {
-    auto escaped =
+    const auto& escaped =
         data ? hilti::rt::escapeBytes(std::string(data, std::min(size_t(40), size))) : fmt("<gap length=%d>", size);
     debug(hilti::rt::fmt("%s: |%s%s|", msg, escaped, size > 40 ? "..." : ""));
 }
@@ -494,7 +494,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 context = std::move(ctx);
             }
 
-            if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, cid, context); x != flows.end() )
+            if ( auto [x, ctx] = create_state(type, resp_parser_name, resp_id, cid, std::move(context));
+                 x != flows.end() )
                 resp_state = &x->second;
 
             if ( ! (orig_state || resp_state) ) {

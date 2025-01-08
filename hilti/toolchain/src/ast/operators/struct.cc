@@ -1,7 +1,6 @@
 // Copyright (c) 2021-2023 by the Zeek Project. See LICENSE for details.
 
 #include <string>
-#include <vector>
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/expressions/member.h>
@@ -59,7 +58,7 @@ QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
 }
 
 void _checkName(expression::ResolvedOperator* op, bool check_optional = false) {
-    auto id = op->op1()->as<expression::Member>()->id();
+    const auto& id = op->op1()->as<expression::Member>()->id();
     auto t = op->op0()->type()->type();
 
     if ( auto x = t->tryAs<type::ValueReference>() )

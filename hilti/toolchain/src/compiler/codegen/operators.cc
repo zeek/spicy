@@ -110,14 +110,14 @@ struct Visitor : hilti::visitor::PreOrder {
     /// Bitfield
 
     void operator()(operator_::bitfield::Member* n) final {
-        auto id = n->op1()->as<expression::Member>()->id();
+        const auto& id = n->op1()->as<expression::Member>()->id();
         auto elem = n->op0()->type()->type()->as<type::Bitfield>()->bitsIndex(id);
         assert(elem);
         result = {fmt("(::hilti::rt::optional::value(std::get<%u>(%s.value)))", *elem, op0(n)), Side::RHS};
     }
 
     void operator()(operator_::bitfield::HasMember* n) final {
-        auto id = n->op1()->as<expression::Member>()->id();
+        const auto& id = n->op1()->as<expression::Member>()->id();
         auto elem = n->op0()->type()->type()->as<type::Bitfield>()->bitsIndex(id);
         assert(elem);
         result = {fmt("std::get<%u>(%s.value).has_value()", *elem, op0(n)), Side::RHS};
@@ -195,7 +195,7 @@ struct Visitor : hilti::visitor::PreOrder {
         std::string x;
 
         if ( auto side = optionalArgument(args, 1); ! side.empty() )
-            x = side;
+            x = std::move(side);
 
         if ( auto set = optionalArgument(args, 0); ! set.empty() ) {
             if ( x.size() )
@@ -843,7 +843,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     cxx::Expression structMember(const expression::ResolvedOperator* o) {
         const auto& op0 = o->op0();
-        auto id = o->op1()->as<expression::Member>()->id();
+        const auto& id = o->op1()->as<expression::Member>()->id();
         auto attr = memberAccess(o, id);
 
         auto type = op0->type()->type();
@@ -866,7 +866,7 @@ struct Visitor : hilti::visitor::PreOrder {
             return fmt("::hilti::rt::optional::value(%s)", attr);
         }
 
-        return {attr, Side::LHS};
+        return {std::move(attr), Side::LHS};
     }
 
     void operator()(operator_::struct_::MemberConst* n) final { result = structMember(n); }
@@ -879,7 +879,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         auto ft = fdecl->type()->type()->as<type::Function>();
         auto args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
-        auto id = n->op1()->as<expression::Member>()->id();
+        const auto& id = n->op1()->as<expression::Member>()->id();
 
         std::vector<std::pair<Expression*, bool>> zipped;
 
@@ -898,7 +898,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::struct_::HasMember* n) final {
-        auto id = n->op1()->as<expression::Member>()->id();
+        const auto& id = n->op1()->as<expression::Member>()->id();
 
         if ( auto f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() )
             result = fmt("%s.has_value()", memberAccess(n, id));
@@ -907,7 +907,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::struct_::TryMember* n) final {
-        auto id = n->op1()->as<expression::Member>()->id();
+        const auto& id = n->op1()->as<expression::Member>()->id();
         assert(! lhs);
 
         if ( auto f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() ) {
@@ -930,7 +930,7 @@ struct Visitor : hilti::visitor::PreOrder {
     /// Union
 
     unsigned int unionFieldIndex(Expression* op0, Expression* op1) {
-        auto id = op1->as<expression::Member>()->id();
+        const auto& id = op1->as<expression::Member>()->id();
         return op0->type()->type()->as<type::Union>()->index(id);
     }
 
@@ -1103,7 +1103,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::tuple::Member* n) final {
-        auto id = n->op1()->as<expression::Member>()->id();
+        const auto& id = n->op1()->as<expression::Member>()->id();
         auto elem = n->op0()->type()->type()->as<type::Tuple>()->elementByID(id);
         assert(elem);
         result = {fmt("std::get<%u>(%s)", elem->first, op0(n)), Side::LHS};
@@ -1293,7 +1293,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
 cxx::Expression CodeGen::compile(expression::ResolvedOperator* o, bool lhs) {
     auto v = Visitor(this, lhs);
-    if ( auto x = hilti::visitor::dispatch(v, o, [](const auto& v) { return v.result; }) )
+    if ( auto x = hilti::visitor::dispatch(v, o, [](const auto& v) -> const auto& { return v.result; }) )
         return lhs ? _makeLhs(*x, o->type()) : *x;
 
     std::cerr << o->dump();

@@ -1,6 +1,5 @@
 // Copyright (c) 2021-2023 by the Zeek Project. See LICENSE for details.
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -119,7 +118,7 @@ public:
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        auto id = operands[1]->as<expression::Member>()->id();
+        const auto& id = operands[1]->as<expression::Member>()->id();
         auto tt = operands[0]->type()->type()->tryAs<type::Tuple>();
         if ( ! tt )
             return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
@@ -132,7 +131,7 @@ public:
     }
 
     void validate(expression::ResolvedOperator* n) const final {
-        auto id = n->op1()->as<expression::Member>()->id();
+        const auto& id = n->op1()->as<expression::Member>()->id();
         auto tt = n->op0()->type()->type()->tryAs<type::Tuple>();
         if ( ! tt ) {
             n->addError("unknown tuple element");
