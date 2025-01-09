@@ -72,7 +72,11 @@ Driver::Driver(std::string name, const hilti::rt::filesystem::path& argv0) : _na
 
 Driver::~Driver() {
     if ( _driver_options.report_times )
-        util::timing::summary(std::cerr);
+        try {
+            util::timing::summary(std::cerr);
+        } catch ( ... ) {
+            // Nothing.
+        }
 
     if ( ! _driver_options.keep_tmps ) {
         for ( const auto& t : _tmp_files )
