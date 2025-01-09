@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath("scripts"))
 # -- Project information -----------------------------------------------------
 
 project = "Spicy"
-copyright = "2024 by the Zeek Project"
+copyright = "by the Zeek Project"
 author = "Zeek Project"
 
 version = open("../VERSION").readline()
