@@ -264,8 +264,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     }
 }
 
-// NOLINTNEXTLINE(bugprone-exception-escape)
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     hilti::init();
     spicy::init();
 
@@ -281,50 +280,44 @@ int main(int argc, char** argv) {
     if ( auto x = driver.compile(); ! x )
         driver.fatalError(x.error());
 
-    try {
-        if ( auto x = driver.initRuntime(); ! x )
-            driver.fatalError(x.error());
+    if ( auto x = driver.initRuntime(); ! x )
+        driver.fatalError(x.error());
 
-        for ( const auto& parser : driver.opt_parser_aliases ) {
-            auto m = hilti::util::transform(hilti::util::split(parser, "="),
-                                            [](const auto& x) { return hilti::util::trim(x); });
+    for ( const auto& parser : driver.opt_parser_aliases ) {
+        auto m =
+            hilti::util::transform(hilti::util::split(parser, "="), [](const auto& x) { return hilti::util::trim(x); });
 
-            if ( m.size() != 2 )
-                driver.fatalError("invalid alias specification: must be of form '<alias>=<parser-name>'");
+        if ( m.size() != 2 )
+            driver.fatalError("invalid alias specification: must be of form '<alias>=<parser-name>'");
 
-            if ( auto rc = spicy::rt::registerParserAlias(m[1], m[0]); ! rc )
-                driver.fatalError(fmt("invalid alias specification: %s", rc.error()));
-        }
-
-        if ( driver.opt_list_parsers )
-            driver.listParsers(std::cout, driver.opt_list_parsers > 1);
-
-        else {
-            std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
-
-            if ( ! in.is_open() )
-                driver.fatalError("cannot open input for reading");
-
-            if ( driver.opt_input_is_batch ) {
-                if ( auto x = driver.processPreBatchedInput(in); ! x )
-                    driver.fatalError(x.error());
-            }
-            else {
-                auto parser = driver.lookupParser(driver.opt_parser);
-                if ( ! parser )
-                    driver.fatalError(parser.error());
-
-                if ( auto x = driver.processInput(**parser, in, driver.opt_increment); ! x )
-                    driver.fatalError(x.error());
-            }
-        }
-
-        driver.finishRuntime();
-
-    } catch ( const std::exception& e ) {
-        driver.fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
-                                           hilti::util::demangle(typeid(e).name()), e.what()));
+        if ( auto rc = spicy::rt::registerParserAlias(m[1], m[0]); ! rc )
+            driver.fatalError(fmt("invalid alias specification: %s", rc.error()));
     }
+
+    if ( driver.opt_list_parsers )
+        driver.listParsers(std::cout, driver.opt_list_parsers > 1);
+
+    else {
+        std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
+
+        if ( ! in.is_open() )
+            driver.fatalError("cannot open input for reading");
+
+        if ( driver.opt_input_is_batch ) {
+            if ( auto x = driver.processPreBatchedInput(in); ! x )
+                driver.fatalError(x.error());
+        }
+        else {
+            auto parser = driver.lookupParser(driver.opt_parser);
+            if ( ! parser )
+                driver.fatalError(parser.error());
+
+            if ( auto x = driver.processInput(**parser, in, driver.opt_increment); ! x )
+                driver.fatalError(x.error());
+        }
+    }
+
+    driver.finishRuntime();
 
     if ( driver.driverOptions().report_times )
         hilti::util::timing::summary(std::cerr);
@@ -335,4 +328,7 @@ int main(int argc, char** argv) {
         return 1;
 
     return 0;
+} catch ( const std::exception& e ) {
+    SpicyDriver().fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
+                                              hilti::util::demangle(typeid(e).name()), e.what()));
 }

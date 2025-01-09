@@ -1,5 +1,7 @@
 // Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
 
+#include <exception>
+
 #include <hilti/rt/json.h>
 
 #include <hilti/ast/builder/builder.h>
@@ -113,8 +115,7 @@ public:
     }
 };
 
-// NOLINTNEXTLINE(bugprone-exception-escape)
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     hilti::init();
     spicy::init();
 
@@ -205,4 +206,7 @@ int main(int argc, char** argv) {
 
     std::cout << all_operators.dump(4) << '\n';
     return 0;
+} catch ( const std::exception& e ) {
+    hilti::logger().fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
+                                                hilti::util::demangle(typeid(e).name()), e.what()));
 }
