@@ -439,8 +439,9 @@ void ASTContext::replace(Declaration* old, Declaration* new_) {
     _declarations_by_index[index.value()] = new_;
     new_->setDeclarationIndex(index);
 
-    if ( auto n = new_->tryAs<declaration::Type>() ) {
-        auto o = old->tryAs<declaration::Type>();
+    auto* n = new_->tryAs<declaration::Type>();
+    auto* o = old->tryAs<declaration::Type>();
+    if ( n && o ) {
         n->type()->type()->setDeclarationIndex(index);
         replace(o->type()->type(), n->type()->type());
     }

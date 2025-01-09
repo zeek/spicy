@@ -169,7 +169,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 hook_id = std::move(canon_id);
                 hook_type = ftype;
             }
-            else {
+            else if ( hook_type ) {
                 if ( canon_id != hook_id || ! type::same(ftype, hook_type) )
                     return false;
             }

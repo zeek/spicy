@@ -3,6 +3,7 @@
 #include <hilti/ast/types/name.h>
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/visitor.h>
+#include <hilti/base/logger.h>
 
 #include <spicy/ast/builder/builder.h>
 #include <spicy/ast/types/unit-items/field.h>
@@ -53,9 +54,13 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     void operator()(hilti::type::Bitfield* n) final { result = builder->integer(n->width() / 8U); }
 
     void operator()(hilti::type::Real*) final {
-        auto type = *field.attributes()->find(hilti::attribute::Kind::Type)->valueAsExpression();
-        result = builder->ternary(builder->equal(type, builder->id("spicy::RealType::IEEE754_Single")),
-                                  builder->integer(4U), builder->integer(8U));
+        auto* type = field.attributes()->find(hilti::attribute::Kind::Type);
+        if ( ! type )
+            hilti::logger().internalError("real value must have a &type attribute");
+
+        result =
+            builder->ternary(builder->equal(*type->valueAsExpression(), builder->id("spicy::RealType::IEEE754_Single")),
+                             builder->integer(4U), builder->integer(8U));
     }
 };
 
