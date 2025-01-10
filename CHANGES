@@ -1,3 +1,39 @@
+1.13.0-dev.64 | 2025-01-10 09:55:22 +0100
+
+  * Address a FIXME. (Benjamin Bannier, Corelight)
+
+  * Prevent exception in generic `noexcept` function. (Benjamin Bannier, Corelight)
+
+  * Avoid theoretical exception in widely used helper function. (Benjamin Bannier, Corelight)
+
+  * Prevent destructor from throwing. (Benjamin Bannier, Corelight)
+
+  * Avoid throwing never handled exception in low-level helper function. (Benjamin Bannier, Corelight)
+
+  * Prevent exception escape. (Benjamin Bannier, Corelight)
+
+  * Drop dereference of end iterator. (Benjamin Bannier, Corelight)
+
+  * Prevent potential nullptr dereference. (Benjamin Bannier, Corelight)
+
+  * Prevent copies in various places. (Benjamin Bannier, Corelight)
+
+    This patch removes copies in different places by e.g., leveraging const
+    lifetime expansion or move semantics. We also clean up getters to return
+    new values less often.
+
+  * Prevent division by zero which is UB. (Benjamin Bannier, Corelight)
+
+  * Clearly mark up unreachable code. (Benjamin Bannier, Corelight)
+
+  * Add missing `break` in `switch` case. (Benjamin Bannier, Corelight)
+
+  * Drop redundant string copy. (Benjamin Bannier, Corelight)
+
+  * Remove copyright end year in source files [skip CI]. (Benjamin Bannier, Corelight)
+
+  * Remove copyright years [skip CI]. (Evan Typanski, Corelight)
+
 1.13.0-dev.47 | 2025-01-08 17:48:23 +0100
 
   * Fix update Fedora links in installation docs. (Benjamin Bannier, Corelight)

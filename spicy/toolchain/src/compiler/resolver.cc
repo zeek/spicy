@@ -47,8 +47,8 @@ auto resolveField(Builder* builder, type::unit::item::UnresolvedField* u, T t) {
 
     u->removeChildren(0, {});
 
-    auto field = builder->typeUnitItemField(u->fieldID(), std::move(t), u->isSkip(), arguments, repeat_count, sinks,
-                                            attributes, condition, std::move(hooks), u->meta());
+    auto field = builder->typeUnitItemField(u->fieldID(), std::move(t), u->isSkip(), std::move(arguments), repeat_count,
+                                            std::move(sinks), attributes, condition, std::move(hooks), u->meta());
     assert(u->index());
     field->setIndex(*u->index());
     return field;
@@ -151,7 +151,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             // Implicitly create an error message from the condition itself.
             auto msg = hilti::util::fmt("&requires failed: %s", hilti::util::replace(cond->print(), "__dd", "$$"));
             auto new_cond =
-                builder()->conditionTest(*ne.coerced, builder()->expression(builder()->ctorError(msg)), cond->meta());
+                builder()->conditionTest(*ne.coerced, builder()->expression(builder()->ctorError(std::move(msg))),
+                                         cond->meta());
             n->replaceChild(context(), cond, new_cond);
             recordChange(n, std::string(to_string(n->kind())));
         }
@@ -225,7 +226,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                         // Produce a tailored error message if `%XXX` is used on a unit field.
                         if ( auto id = ns.namespace_(); id && hilti::util::startsWith(n->id().local(), "0x25_") ) {
                             if ( auto resolved =
-                                     hilti::scope::lookupID<hilti::declaration::Type>(id, n, "unit type") ) {
+                                     hilti::scope::lookupID<hilti::declaration::Type>(std::move(id), n, "unit type") ) {
                                 if ( auto utype = resolved->first->template as<hilti::declaration::Type>()
                                                       ->type()
                                                       ->type()
@@ -365,7 +366,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(operator_::unit::HasMember* n) final {
         auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
-        auto id = n->op1()->tryAs<hilti::expression::Member>()->id();
+        const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we got an anonymous bitfield with a member of that
@@ -383,7 +384,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(operator_::unit::MemberConst* n) final {
         auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
-        auto id = n->op1()->tryAs<hilti::expression::Member>()->id();
+        const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we got an anonymous bitfield with a member of that
@@ -404,7 +405,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(operator_::unit::MemberNonConst* n) final {
         auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
-        auto id = n->op1()->tryAs<hilti::expression::Member>()->id();
+        const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we got an anonymous bitfield with a member of that
@@ -425,7 +426,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(operator_::unit::TryMember* n) final {
         auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
-        auto id = n->op1()->tryAs<hilti::expression::Member>()->id();
+        const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we we got an anonymous bitfield with a member of that

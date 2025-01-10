@@ -19,7 +19,7 @@ public:
     void hookFinishRuntime() override { spicy::rt::done(); }
 };
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     hilti::init();
     spicy::init();
 
@@ -40,4 +40,7 @@ int main(int argc, char** argv) {
         driver.finishRuntime();
         return 1;
     }
+} catch ( const std::exception& e ) {
+    hilti::logger().fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
+                                                hilti::util::demangle(typeid(e).name()), e.what()));
 }

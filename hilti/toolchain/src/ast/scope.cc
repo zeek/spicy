@@ -84,7 +84,7 @@ std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, boo
 
         std::string nt;
         std::tie(h, nt) = util::rsplit1(h, "::");
-        t = (! t.empty() && ! nt.empty() && t != "$ $" ? util::fmt("%s::%s", nt, t) : nt);
+        t = (! t.empty() && ! nt.empty() && t != "$ $" ? util::fmt("%s::%s", nt, t) : std::move(nt));
     }
 }
 

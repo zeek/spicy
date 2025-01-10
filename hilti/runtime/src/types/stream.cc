@@ -251,7 +251,7 @@ View View::advanceToNextData() const {
 
     // If the position is already not in a gap we can directly compute a view at it.
     if ( c && ! c->isGap() )
-        return View(i, _end);
+        return View(std::move(i), _end);
 
     std::optional<Offset> last_end; // Offset of the end of the last seen chunk.
 

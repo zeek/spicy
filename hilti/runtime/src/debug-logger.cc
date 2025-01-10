@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <type_traits>
+
 #include <hilti/rt/logging.h>
 #include <hilti/rt/util.h>
 
@@ -42,7 +44,12 @@ void detail::DebugLogger::print(std::string_view stream, std::string_view msg) {
         }
     }
 
-    auto indent = std::string(i->second * 2, ' ');
+    // Theoretically the ident computation could overflow, but in that case we
+    // would have already run into trouble elsewhere (e.g., giant strings from
+    // huge ident widths). Instead perform the computation with overflow which
+    // for unsigned integers is defined and wraps around.
+    static_assert(std::is_unsigned_v<std::remove_reference_t<decltype(i->second.Ref())>>);
+    auto indent = std::string(i->second.Ref() * 2, ' ');
     (*_output) << fmt("[%s] %s%s", stream, indent, msg) << '\n';
     _output->flush();
 }

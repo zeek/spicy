@@ -28,7 +28,7 @@ QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
 }
 
 void _checkName(expression::ResolvedOperator* op) {
-    auto id = op->op1()->as<expression::Member>()->id();
+    const auto& id = op->op1()->as<expression::Member>()->id();
     if ( ! op->op0()->type()->type()->as<type::Bitfield>()->bits(id) )
         op->addError(util::fmt("bitfield type does not have attribute '%s'", id));
 }

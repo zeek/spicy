@@ -2,7 +2,6 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/ctors/bool.h>
@@ -202,7 +201,8 @@ public:
         else if ( data_type->isA<type::Bitfield>() ) {
             if ( args.size() >= 2 && args.size() <= 3 ) {
                 auto arg1 = args[1]->type()->type()->cxxID();
-                auto arg2 = (args.size() > 2 ? args[2]->type()->type()->cxxID() : ID("::hilti::rt::integer::BitOrder"));
+                const auto& arg2 =
+                    (args.size() > 2 ? args[2]->type()->type()->cxxID() : ID("::hilti::rt::integer::BitOrder"));
                 if ( arg1 && arg1 == ID("::hilti::rt::ByteOrder") && arg2 &&
                      arg2 == ID("::hilti::rt::integer::BitOrder") )
                     return;

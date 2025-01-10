@@ -98,8 +98,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     else
                         default_ = cg->typeDefaultValue(p->type());
 
-                    auto arg = cxx::declaration::Argument(cxx::ID(fmt("__p_%s", p->id())), type, std::move(default_),
-                                                          internal_type);
+                    auto arg = cxx::declaration::Argument(cxx::ID(fmt("__p_%s", p->id())), std::move(type),
+                                                          std::move(default_), std::move(internal_type));
                     args.emplace_back(std::move(arg));
                 }
 
@@ -234,8 +234,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     // Do not pass a default value here since initialization of
                     // the member happens (and needs to happen) via the ctor
                     // block above to guarantee we have a block.
-                    auto x =
-                        cxx::declaration::Local(cxx::ID(f->id()), t, {}, {}, (f->isStatic() ? "inline static" : ""));
+                    auto x = cxx::declaration::Local(cxx::ID(f->id()), std::move(t), {}, {},
+                                                     (f->isStatic() ? "inline static" : ""));
 
 
                     fields.emplace_back(std::move(x));
@@ -289,12 +289,12 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
         std::vector<cxx::type::union_::Member> fields;
         for ( const auto& f : n->fields() ) {
             auto t = cg->compile(f->type(), codegen::TypeUsage::Storage);
-            auto x = cxx::declaration::Local(cxx::ID(f->id()), t);
+            auto x = cxx::declaration::Local(cxx::ID(f->id()), std::move(t));
             fields.emplace_back(std::move(x));
         }
 
         auto t = cxx::type::Union{.members = std::move(fields), .type_name = cxx::ID(id.local())};
-        result = cxx::declaration::Type(id, t);
+        result = cxx::declaration::Type(std::move(id), t);
     }
 
     void operator()(type::Vector* n) final {
@@ -314,7 +314,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
         auto id = cxx::ID(scope, sid);
         auto labels = util::transform(n->labels(), [](auto l) { return std::make_pair(cxx::ID(l->id()), l->value()); });
         auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
-        auto decl = cxx::declaration::Type(id, t, {}, true);
+        auto decl = cxx::declaration::Type(std::move(id), t, {}, true);
         dependencies.push_back(decl);
         result = decl;
     }
@@ -978,7 +978,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
 cxx::Type CodeGen::compile(QualifiedType* t, codegen::TypeUsage usage) {
     auto v = VisitorStorage(this, t, &_cache_types_storage, usage);
-    auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; });
+    auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; });
     if ( ! x ) {
         std::cerr << t->dump();
         logger().internalError(fmt("codegen: type %s does not have a visitor", *t), t);
@@ -1068,7 +1068,7 @@ cxx::Type CodeGen::compile(QualifiedType* t, codegen::TypeUsage usage) {
 
 std::optional<cxx::Expression> CodeGen::typeDefaultValue(hilti::QualifiedType* t) {
     auto v = VisitorStorage(this, t, &_cache_types_storage, codegen::TypeUsage::None);
-    auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; });
+    auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; });
     if ( ! x ) {
         std::cerr << t->dump();
         logger().internalError(fmt("codegen: type %s does not have a visitor", *t), t);
@@ -1088,7 +1088,7 @@ std::optional<cxx::declaration::Type> CodeGen::typeDeclaration(QualifiedType* t)
         return {};
 
     auto v = VisitorDeclaration(this, t, &_cache_types_declarations);
-    return hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; });
+    return hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; });
 };
 
 const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
@@ -1116,7 +1116,8 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
         [&]() {
             auto v = VisitorTypeInfoPredefined(this);
 
-            if ( auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; }); x && *x )
+            if ( auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; });
+                 x && *x )
                 return CxxTypeInfo{.predefined = true, .reference = fmt("&%s", *x)};
 
             auto forward = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", {}, "extern");
@@ -1129,11 +1130,11 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
                 return ti;
 
             auto v = VisitorTypeInfoDynamic(this, t);
-            auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) { return v.result; });
+            auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; });
             if ( ! x )
                 logger().internalError(fmt("codegen: type %s does not have a dynamic type info visitor", *t), t);
 
-            auto id_init = (t->type()->typeID() ? fmt("\"%s\"", t->type()->typeID()) : std::string("{}"));
+            const auto& id_init = (t->type()->typeID() ? fmt("\"%s\"", t->type()->typeID()) : std::string("{}"));
             auto init = fmt("{ %s, \"%s\", new %s }", id_init,
                             util::escapeUTF8(display.str(), util::render_style::UTF8::EscapeQuotes), *x);
 

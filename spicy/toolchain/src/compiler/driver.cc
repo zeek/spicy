@@ -8,7 +8,7 @@ using namespace spicy;
 spicy::Options Driver::spicyCompilerOptions() const {
     spicy::Options options;
 
-    auto hilti_options = hiltiOptions();
+    const auto& hilti_options = hiltiOptions();
     options.track_offsets = hilti_options.getAuxOption<bool>("spicy.track_offsets", false);
     return options;
 }

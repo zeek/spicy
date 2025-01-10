@@ -45,7 +45,7 @@ struct Visitor : public visitor::PreOrder {
     Expression* result = nullptr;
 
     auto pb() { return lp->pb; }
-    auto state() { return pb()->state(); }
+    const auto& state() { return pb()->state(); }
     auto builder() { return pb()->builder(); }
     auto context() { return pb()->context(); }
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb()->pushBuilder(std::move(b)); }
@@ -84,7 +84,7 @@ struct Visitor : public visitor::PreOrder {
                 if ( check_for_look_ahead ) {
                     auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                    pushBuilder(have_lah);
+                    pushBuilder(std::move(have_lah));
 
                     pushBuilder(builder()->addIf(
                         builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
@@ -104,7 +104,7 @@ struct Visitor : public visitor::PreOrder {
                     pb()->consumeLookAhead();
                     popBuilder();
 
-                    pushBuilder(no_lah);
+                    pushBuilder(std::move(no_lah));
                 }
 
                 auto expect_bytes_literal =
@@ -156,7 +156,7 @@ struct Visitor : public visitor::PreOrder {
             if ( check_for_look_ahead ) {
                 auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                pushBuilder(have_lah);
+                pushBuilder(std::move(have_lah));
 
                 pushBuilder(builder()->addIf(
                     builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
@@ -166,13 +166,13 @@ struct Visitor : public visitor::PreOrder {
                 pb()->consumeLookAhead(result);
                 popBuilder();
 
-                pushBuilder(no_lah);
+                pushBuilder(std::move(no_lah));
             }
 
             auto ncur = builder()->addTmp(ID("ncur"), state().cur);
             auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
             auto body = builder()->addWhile(ms, builder()->bool_(true));
-            pushBuilder(body);
+            pushBuilder(std::move(body));
 
             auto rc = builder()->addTmp(ID("rc"), builder()->qualifiedType(builder()->typeSignedInteger(32),
                                                                            hilti::Constness::Mutable));
@@ -183,7 +183,7 @@ struct Visitor : public visitor::PreOrder {
             auto switch_ = builder()->addSwitch(rc, n->meta());
 
             auto no_match_try_again = switch_.addCase(builder()->integer(-1));
-            pushBuilder(no_match_try_again);
+            pushBuilder(std::move(no_match_try_again));
             auto pstate = pb()->state();
             pstate.self = builder()->expressionName(ID("self"));
             pstate.cur = ncur;
@@ -197,12 +197,12 @@ struct Visitor : public visitor::PreOrder {
             popBuilder();
 
             auto no_match_error = switch_.addCase(builder()->integer(0));
-            pushBuilder(no_match_error);
+            pushBuilder(std::move(no_match_error));
             pb()->parseError("failed to match regular expression", n->meta());
             popBuilder();
 
             auto match = switch_.addDefault();
-            pushBuilder(match);
+            pushBuilder(std::move(match));
 
             if ( state().literal_mode != LiteralMode::Skip ) {
                 if ( state().captures )
@@ -258,7 +258,7 @@ struct Visitor : public visitor::PreOrder {
                 if ( check_for_look_ahead ) {
                     auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                    pushBuilder(have_lah);
+                    pushBuilder(std::move(have_lah));
 
                     pushBuilder(builder()->addIf(
                         builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
@@ -268,7 +268,7 @@ struct Visitor : public visitor::PreOrder {
                     pb()->consumeLookAhead();
                     popBuilder();
 
-                    pushBuilder(no_lah);
+                    pushBuilder(std::move(no_lah));
                 }
 
                 auto old_cur = builder()->addTmp("ocur", state().cur);
@@ -281,7 +281,7 @@ struct Visitor : public visitor::PreOrder {
                                                builder()->unequal(x, expected));
 
                 auto error = builder()->addIf(no_match);
-                pushBuilder(error);
+                pushBuilder(std::move(error));
                 builder()->addAssign(state().cur, old_cur);
                 pb()->parseError(fmt("expecting %u", *expected), meta);
                 popBuilder();
@@ -332,7 +332,7 @@ struct Visitor : public visitor::PreOrder {
                 if ( check_for_look_ahead ) {
                     auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                    pushBuilder(have_lah);
+                    pushBuilder(std::move(have_lah));
 
                     pushBuilder(builder()->addIf(
                         builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
@@ -346,7 +346,7 @@ struct Visitor : public visitor::PreOrder {
                     pb()->consumeLookAhead();
                     popBuilder();
 
-                    pushBuilder(no_lah);
+                    pushBuilder(std::move(no_lah));
                 }
 
                 auto old_cur = builder()->addTmp("ocur", state().cur);
@@ -384,13 +384,13 @@ struct Visitor : public visitor::PreOrder {
                 auto new_cur = builder()->addTmp("ncur", state().cur);
 
                 auto match = builder()->addIf(builder()->unequal(offset(old_cur), offset(new_cur)));
-                pushBuilder(match);
+                pushBuilder(std::move(match));
                 builder()->addAssign(state().cur, old_cur); // restore, because we must not move cur when in sync mode
 
                 // Check that the bit values match what we expect.
                 for ( const auto& b : n->bits() ) {
                     auto error = builder()->addIf(builder()->unequal(builder()->member(bf, b->id()), b->expression()));
-                    pushBuilder(error);
+                    pushBuilder(std::move(error));
                     builder()->addAssign(new_cur, old_cur); // reset to old position
                     popBuilder();
                 }

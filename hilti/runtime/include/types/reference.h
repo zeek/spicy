@@ -261,13 +261,13 @@ public:
      */
     ValueReference& operator=(ValueReference&& other) noexcept {
         if ( &other != this ) {
-            // We can't move the actual value as other references may be
-            // referring to it.
-            *_get() = *other._get();
-
-            // Some implementations for `std::variant` do not have a `noexpect`
-            // move assignment operator.
+            // Not all types wrapped in a `ValueReference` might have a
+            // `noexcept` (move) assignment operator.
             try {
+                // We can't move the actual value as other references may be
+                // referring to it.
+                *_get() = *other._get();
+
                 other._ptr = nullptr;
             } catch ( ... ) {
                 cannot_be_reached();

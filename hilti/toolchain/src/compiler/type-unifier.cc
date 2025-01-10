@@ -187,7 +187,7 @@ public:
         if ( unifier.isAborted() )
             return;
 
-        auto serial = unifier.serialization();
+        const auto& serial = unifier.serialization();
         if ( serial.empty() ) {
             std::cerr << n->dump();
             logger().internalError("empty type _serialization for unification, type not implemented?");

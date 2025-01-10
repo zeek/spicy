@@ -15,6 +15,7 @@
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/operator-registry.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/ast-dumper.h>
 #include <hilti/compiler/driver.h>
 #include <hilti/compiler/plugin.h>
@@ -71,7 +72,11 @@ Driver::Driver(std::string name, const hilti::rt::filesystem::path& argv0) : _na
 
 Driver::~Driver() {
     if ( _driver_options.report_times )
-        util::timing::summary(std::cerr);
+        try {
+            util::timing::summary(std::cerr);
+        } catch ( ... ) {
+            // Nothing.
+        }
 
     if ( ! _driver_options.keep_tmps ) {
         for ( const auto& t : _tmp_files )
@@ -204,7 +209,7 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
 Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
                                                         const std::string& extension) {
     auto template_ = fmt("%s.XXXXXX.%s", name_hint, extension);
-    auto name = template_;
+    auto name = std::move(template_);
     auto fd = mkstemp(name.data());
 
     if ( fd < 0 )
@@ -745,9 +750,7 @@ Result<Nothing> Driver::run() {
         return result::Error(fmt("uncaught exception of type %s: %s", util::demangle(typeid(e).name()), e.what()));
     }
 
-    _ctx = nullptr;
-
-    return {};
+    util::cannotBeReached();
 }
 
 Result<Nothing> Driver::compile() {
@@ -958,7 +961,7 @@ Result<Nothing> Driver::initRuntime() {
     config.show_backtraces = _driver_options.show_backtraces;
     config.report_resource_usage = _driver_options.report_resource_usage;
     config.enable_profiling = _driver_options.enable_profiling;
-    hilti::rt::configuration::set(config);
+    hilti::rt::configuration::set(std::move(config));
 
     try {
         HILTI_DEBUG(logging::debug::Driver, "initializing runtime");

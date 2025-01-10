@@ -83,7 +83,7 @@ void Unit::_addModuleInitFunction() {
         if ( _preinit_module )
             register_.addStatement(fmt("__preinit_module()"));
 
-        auto id = addInitFunction(context().get(), register_, "__register_module");
+        auto id = addInitFunction(context().get(), std::move(register_), "__register_module");
         add(fmt("HILTI_PRE_INIT(%s)", id));
     }
 }

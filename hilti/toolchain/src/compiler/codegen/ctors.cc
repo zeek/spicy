@@ -340,7 +340,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
 cxx::Expression CodeGen::compile(Ctor* c, bool lhs) {
     auto v = Visitor(this);
-    if ( auto x = hilti::visitor::dispatch(v, c, [](const auto& v) { return v.result; }) )
+    if ( auto x = hilti::visitor::dispatch(v, c, [](const auto& v) -> const auto& { return v.result; }) )
         return lhs ? _makeLhs(*x, c->type()) : *x;
 
     logger().internalError(fmt("ctor %s failed to compile", c->typename_()), c);

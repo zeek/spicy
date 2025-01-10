@@ -439,8 +439,9 @@ void ASTContext::replace(Declaration* old, Declaration* new_) {
     _declarations_by_index[index.value()] = new_;
     new_->setDeclarationIndex(index);
 
-    if ( auto n = new_->tryAs<declaration::Type>() ) {
-        auto o = old->tryAs<declaration::Type>();
+    auto* n = new_->tryAs<declaration::Type>();
+    auto* o = old->tryAs<declaration::Type>();
+    if ( n && o ) {
         n->type()->type()->setDeclarationIndex(index);
         replace(o->type()->type(), n->type()->type());
     }
@@ -869,7 +870,7 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
         auto n = _types_by_index[idx];
         assert(n->isRetained());
 
-        auto id = n->typeID() ? n->typeID() : ID("<no-type-id>");
+        const auto& id = n->typeID() ? n->typeID() : ID("<no-type-id>");
         HILTI_DEBUG(stream,
                     fmt("[%s] %s [%s] (%s)", ast::TypeIndex(idx), id, n->typename_(), n->location().dump(true)));
     }
@@ -918,7 +919,7 @@ void ASTContext::_dumpStats(const logging::DebugStream& stream, std::string_view
 
     logger().debugPushIndent(stream);
     for ( const auto& [type, num] : live_by_type ) {
-        if ( static_cast<double>(num) / static_cast<double>(live) > 0.01 )
+        if ( live != 0 && static_cast<double>(num) / static_cast<double>(live) > 0.01 )
             HILTI_DEBUG(stream, fmt("- %s: %" PRIu64, type, num));
     }
     logger().debugPopIndent(stream);

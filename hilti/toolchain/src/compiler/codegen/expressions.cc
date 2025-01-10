@@ -149,7 +149,7 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         auto decl = n->resolvedDeclaration();
-        auto fqid = decl->fullyQualifiedID();
+        const auto& fqid = decl->fullyQualifiedID();
         assert(fqid);
 
         if ( decl->isA<declaration::GlobalVariable>() ) {
@@ -251,7 +251,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
 cxx::Expression CodeGen::compile(Expression* e, bool lhs) {
     auto v = Visitor(this, lhs);
-    if ( auto x = hilti::visitor::dispatch(v, e, [](const auto& v) { return v.result; }) )
+    if ( auto x = hilti::visitor::dispatch(v, e, [](const auto& v) -> const auto& { return v.result; }) )
         return lhs ? _makeLhs(*x, e->type()) : *x;
 
     logger().internalError(fmt("expression failed to compile ('%s' / %s)", *e, e->typename_()), e);

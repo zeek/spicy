@@ -217,8 +217,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
     }
 }
 
-// NOLINTNEXTLINE(bugprone-exception-escape)
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     hilti::init();
     spicy::init();
 
@@ -233,50 +232,47 @@ int main(int argc, char** argv) {
         // user so we're just reporting a generic message here.
         fatalError("aborting after errors");
 
-    try {
-        auto config = hilti::rt::configuration::get();
+    auto config = hilti::rt::configuration::get();
 
-        if ( ! driver.opt_enable_print )
-            config.cout.reset();
+    if ( ! driver.opt_enable_print )
+        config.cout.reset();
 
-        hilti::rt::configuration::set(std::move(config));
+    hilti::rt::configuration::set(std::move(config));
 
-        if ( auto x = driver.initRuntime(); ! x )
-            fatalError(x.error().description());
+    if ( auto x = driver.initRuntime(); ! x )
+        fatalError(x.error().description());
 
-        if ( driver.opt_list_parsers )
-            driver.listParsers(std::cout, driver.opt_list_parsers > 1);
+    if ( driver.opt_list_parsers )
+        driver.listParsers(std::cout, driver.opt_list_parsers > 1);
 
+    else {
+        auto parser = driver.lookupParser(driver.opt_parser);
+        if ( ! parser )
+            fatalError(parser.error());
+
+        std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
+
+        if ( ! in.is_open() )
+            fatalError("cannot open stdin for reading");
+
+        auto unit = driver.processInput(**parser, in);
+        if ( ! unit )
+            fatalError(unit.error());
+
+        if ( driver.opt_json )
+            JSONPrinter(std::cout, driver.output_options).print(unit->value());
         else {
-            auto parser = driver.lookupParser(driver.opt_parser);
-            if ( ! parser )
-                fatalError(parser.error());
-
-            std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
-
-            if ( ! in.is_open() )
-                fatalError("cannot open stdin for reading");
-
-            auto unit = driver.processInput(**parser, in);
-            if ( ! unit )
-                fatalError(unit.error());
-
-            if ( driver.opt_json )
-                JSONPrinter(std::cout, driver.output_options).print(unit->value());
-            else {
-                TextPrinter(std::cout, driver.output_options).print(unit->value());
-                std::cout << '\n';
-            }
+            TextPrinter(std::cout, driver.output_options).print(unit->value());
+            std::cout << '\n';
         }
-
-        driver.finishRuntime();
-
-    } catch ( const std::exception& e ) {
-        std::cerr << hilti::util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
-                                      hilti::util::demangle(typeid(e).name()), e.what())
-                  << '\n';
-        exit(1);
     }
 
+    driver.finishRuntime();
+
     return 0;
+} catch ( const std::exception& e ) {
+    std::cerr << hilti::util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
+                                  hilti::util::demangle(typeid(e).name()), e.what())
+              << '\n';
+    exit(1);
 }

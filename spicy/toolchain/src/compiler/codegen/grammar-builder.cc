@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <cassert>
+
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/base/cache.h>
@@ -323,7 +325,9 @@ struct Visitor : public visitor::PreOrder {
         auto unit = std::make_unique<production::Unit>(context(), pid, n, args, std::move(items), n->meta().location());
 
         // This takes ownership of the unit production, storing it inside the grammar.
-        pf->grammar->resolve(dynamic_cast<production::Deferred*>(unresolved.get()), std::move(unit));
+        auto* deferred = dynamic_cast<production::Deferred*>(unresolved.get());
+        assert(deferred);
+        pf->grammar->resolve(deferred, std::move(unit));
 
         result = std::move(unresolved);
     }

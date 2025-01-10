@@ -433,12 +433,13 @@ std::string hilti::rt::strftime(const std::string& format, const hilti::rt::Time
 
 hilti::rt::Time hilti::rt::strptime(const std::string& buf, const std::string& format) {
     tm time;
-    auto end = ::strptime(buf.c_str(), format.c_str(), &time);
+    const char* end = ::strptime(buf.data(), format.c_str(), &time);
 
     if ( ! end )
         throw InvalidArgument("could not parse time string");
 
-    if ( end != &*buf.end() )
+    auto consumed = std::distance(buf.data(), end);
+    if ( static_cast<decltype(buf.size())>(consumed) != buf.size() )
         throw InvalidArgument(hilti::rt::fmt("unparsed remainder after parsing time string: %s", end));
 
     // If the struct tm object was obtained from POSIX strptime or equivalent

@@ -465,7 +465,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         checkNodeAttributes(n->nodeTag(), n->attributes(), "type declaration");
 
         if ( n->linkage() == hilti::declaration::Linkage::Public && n->type()->alias() ) {
-            if ( n->type()->alias()->resolvedDeclaration()->linkage() != hilti::declaration::Linkage::Public )
+            if ( auto* resolved = n->type()->alias()->resolvedDeclaration();
+                 resolved && resolved->linkage() != hilti::declaration::Linkage::Public )
                 error("public unit alias cannot refer to a non-public type", n);
         }
     }
@@ -986,7 +987,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::type::unit::item::UnresolvedField* n) final {
         if ( auto id = n->unresolvedID() ) {
             // Re-lookup ID to see if it exists at all.
-            if ( auto resolved = hilti::scope::lookupID<hilti::Declaration>(id, n, "field"); ! resolved )
+            if ( auto resolved = hilti::scope::lookupID<hilti::Declaration>(std::move(id), n, "field"); ! resolved )
                 error(resolved.error(), n, node::ErrorPriority::High);
 
             if ( n->hasErrors() )

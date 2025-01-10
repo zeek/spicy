@@ -70,7 +70,7 @@ struct VisitorASTInfo : public visitor::PreOrder {
                 return;
             }
 
-            auto lahs = unit->grammar().lookAheadsInUse();
+            const auto& lahs = unit->grammar().lookAheadsInUse();
             info->look_aheads_in_use.insert(lahs.begin(), lahs.end());
 
             for ( const auto& [id, p] : unit->grammar().productions() ) {
@@ -626,7 +626,14 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
         }
     }
 
+    auto assert_field = [&]() {
+        if ( ! field )
+            hilti::logger().internalError(fmt("cannot find field '%s' in unit '%'", id, unit.typeID()));
+    };
+
     if ( type == declaration::hook::Type::ForEach ) {
+        assert_field();
+
         params.push_back(
             builder()->parameter("__dd", field->ddType()->type()->elementType()->type(), hilti::parameter::Kind::In));
         params.push_back(builder()->parameter("__stop", builder()->typeBool(), hilti::parameter::Kind::InOut));
@@ -636,6 +643,8 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
             params.push_back(builder()->parameter("__excpt", builder()->typeString(), hilti::parameter::Kind::In));
     }
     else if ( original_field_type ) {
+        assert_field();
+
         params.push_back(builder()->parameter("__dd", field->itemType()->type(), hilti::parameter::Kind::In));
 
         // Pass on captures for fields of type regexp, which are the only

@@ -265,7 +265,7 @@ void regexp::detail::CompiledRegExp::_compileOne(std::string pattern, int idx) {
 }
 
 RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) {
-    auto key = (patterns.empty() ? std::string() : join(patterns, "|") + "|" + flags.cacheKey());
+    const auto& key = (patterns.empty() ? std::string() : join(patterns, "|") + "|" + flags.cacheKey());
     auto& ptr = detail::globalState()->regexp_cache[key];
 
     if ( ! ptr )

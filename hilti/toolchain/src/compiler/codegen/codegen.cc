@@ -93,7 +93,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         body.addStatement("return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index)");
 
         auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "auto", {ns, "__globals"}, {},
-                                                    "static", cxx::declaration::Function::Inline(), body);
+                                                    "static", cxx::declaration::Function::Inline(), std::move(body));
 
         unit->add(body_decl);
     }
@@ -136,7 +136,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         cg->popCxxBlock();
 
-        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", id,
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", std::move(id),
                                                     {{"ctx", "::hilti::rt::Context*"}}, "extern", std::move(body));
         unit->add(body_decl);
     }
@@ -160,7 +160,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             body.addStatement(fmt("::%s.reset();", g.id));
         }
 
-        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", id,
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", std::move(id),
                                                     {{"ctx", "::hilti::rt::Context*"}}, "extern", std::move(body));
         unit->add(body_decl);
     }
@@ -283,7 +283,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         auto id_class = n->id().sub(-2);
         auto id_local = n->id().sub(-1);
-        auto id_struct_type = (id_module != current_module ? ID(id_module, id_class) : id_class);
+        const auto& id_struct_type = (id_module != current_module ? ID(id_module, id_class) : id_class);
 
         cxx::ID cid;
         if ( ! is_hook ) {
@@ -335,7 +335,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
             // Adapt the function we generate.
             d.linkage = "extern";
-            d.id = id_hook_impl;
+            d.id = std::move(id_hook_impl);
             d.ftype = cxx::declaration::Function::Free;
 
             // TODO(robin): This should compile the struct type, not hardcode
@@ -586,14 +586,14 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                 // Add a call to this to the module's initialization code.
                 cxx::Block call_init_func;
                 call_init_func.addStatement(fmt("%s()", d.id));
-                cg->unit()->addInitialization(call_init_func);
+                cg->unit()->addInitialization(std::move(call_init_func));
             }
 
             if ( n->linkage() == declaration::Linkage::PreInit ) {
                 // Add a call to this to the module's pre-initialization code.
                 cxx::Block call_preinit_func;
                 call_preinit_func.addStatement(fmt("%s()", d.id));
-                cg->unit()->addPreInitialization(call_preinit_func);
+                cg->unit()->addPreInitialization(std::move(call_preinit_func));
             }
         }
     }
@@ -860,7 +860,7 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
         auto x = fmt("::hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
 
         if ( auto a = b->attributes()->find(hilti::attribute::Kind::Convert) ) {
-            pushDollarDollar(x);
+            pushDollarDollar(std::move(x));
             bits.emplace_back(compile(*a->valueAsExpression()));
             popDollarDollar();
         }

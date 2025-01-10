@@ -1,7 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <string>
-#include <utility>
 #include <vector>
 
 #include <hilti/ast/builder/builder.h>
@@ -25,7 +23,7 @@ QualifiedType* itemType(Builder* builder, const Expressions& operands) {
 }
 
 void checkName(expression::ResolvedOperator* op) {
-    auto id = op->op1()->as<expression::Member>()->id();
+    const auto& id = op->op1()->as<expression::Member>()->id();
     if ( ! op->op0()->type()->type()->as<type::Union>()->field(id) )
         op->addError(util::fmt("type does not have field '%s'", id));
 }

@@ -5,6 +5,7 @@
 
 #include <getopt.h>
 
+#include <exception>
 #include <iostream>
 
 #include <hilti/rt/libhilti.h>
@@ -51,4 +52,7 @@ int HILTI_WEAK hilti::main(int argc, char** argv) {
     return 0;
 }
 
-int HILTI_WEAK main(int argc, char** argv) { return hilti::main(argc, argv); }
+int HILTI_WEAK main(int argc, char** argv) try { return hilti::main(argc, argv); } catch ( const std::exception& e ) {
+    hilti::rt::fatalError(hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
+                                         hilti::rt::demangle(typeid(e).name()), e.what()));
+}

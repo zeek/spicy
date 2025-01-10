@@ -444,7 +444,7 @@ struct FunctionVisitor : OptimizerVisitor {
             return;
 
         auto decl = n->op0()->as<expression::Name>()->resolvedDeclaration();
-        auto function_id = decl->fullyQualifiedID();
+        const auto& function_id = decl->fullyQualifiedID();
         assert(function_id);
 
         switch ( _stage ) {
@@ -754,7 +754,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
             case Stage::PRUNE_DECLS: return;
             case Stage::PRUNE_USES: {
                 auto decl = n->resolvedDeclaration();
-                auto id = decl->fullyQualifiedID();
+                const auto& id = decl->fullyQualifiedID();
                 assert(id);
 
                 if ( const auto& constant = _constants.find(id); constant != _constants.end() ) {
@@ -1241,7 +1241,7 @@ public:
             if ( ! util::startsWith(id, "__feat") )
                 return {};
 
-            const auto& tokens = util::split(id, "%");
+            const auto& tokens = util::split(std::move(id), "%");
             assert(tokens.size() == 3);
 
             auto type_id = ID(util::replace(tokens[1], "@@", "::"));
@@ -1341,6 +1341,8 @@ public:
                 // Collect feature requirements associated with type.
                 for ( const auto& requirement : n->attributes()->findAll(hilti::attribute::Kind::RequiresTypeFeature) )
                     _features[n->typeID()][*requirement->valueAsString()] = true;
+
+                break;
             }
 
             case Stage::TRANSFORM: {
@@ -1490,7 +1492,7 @@ struct MemberVisitor : OptimizerVisitor {
                 if ( ! type_id )
                     break;
 
-                auto member_id = util::join({type_id, n->id()}, "::");
+                auto member_id = util::join({std::move(type_id), n->id()}, "::");
 
                 // Record the member as used.
                 _used[member_id] = true;
@@ -1550,7 +1552,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
     const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");
-    const auto passes_ =
+    const auto& passes_ =
         passes__ ? std::optional(util::split(*passes__, ":")) : std::optional<std::vector<std::string>>();
     auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
                             std::optional<std::set<std::string>>();

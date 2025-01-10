@@ -99,13 +99,11 @@ void Configuration::init(bool use_build_directory) {
 
     std::vector<std::string> library_paths;
 
-    if ( auto path = std::getenv("SPICY_PATH") ) {
-        library_paths =
-            hilti::util::transform(hilti::util::split(path, ":"), [](auto s) { return std::string(std::move(s)); });
-    }
-    else {
+    if ( auto path = std::getenv("SPICY_PATH") )
+        library_paths = hilti::util::split(path, ":");
+
+    else
         library_paths = flatten({".", prefix("${SPICY_CONFIG_LIBRARY_DIRS}", "", installation_tag)});
-    }
 
     spicy_library_paths =
         hilti::util::transform(library_paths, [](const auto& s) { return hilti::rt::filesystem::path(s); });

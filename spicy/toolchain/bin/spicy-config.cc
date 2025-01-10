@@ -2,11 +2,13 @@
 //
 // Outputs paths and flags for using Spicy.
 
+#include <exception>
 #include <iostream>
 #include <list>
 #include <string>
 
 #include <hilti/autogen/config.h>
+#include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 
 #include <spicy/autogen/config.h>
@@ -52,8 +54,7 @@ static void join(std::vector<U>& a, const std::vector<V>& b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 
-// NOLINTNEXTLINE(bugprone-exception-escape)
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     bool want_debug = false;
     bool want_dynamic_linking = false;
 
@@ -248,4 +249,7 @@ int main(int argc, char** argv) {
     cout << hilti::util::join(result.begin(), result.end(), " ") << '\n';
 
     return 0;
+} catch ( const std::exception& e ) {
+    hilti::logger().fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
+                                                hilti::util::demangle(typeid(e).name()), e.what()));
 }

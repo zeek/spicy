@@ -208,7 +208,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::build() {
 }
 
 hilti::Result<Nothing> JIT::_checkCompiler() {
-    auto cxx = hilti::configuration().cxx;
+    const auto& cxx = hilti::configuration().cxx;
 
     // We ignore the output, just see if running the compiler works. `-dumpversion`
     // works with both GCC and clang, but unlikely to be supported by something
@@ -290,7 +290,7 @@ hilti::Result<Nothing> JIT::_compile() {
 
         cc_files.push_back(cc);
         if ( ! keep_tmps )
-            cc_files_generated.add(cc);
+            cc_files_generated.add(std::move(cc));
     }
 
     // Compile all C++ files.
@@ -342,7 +342,7 @@ hilti::Result<Nothing> JIT::_compile() {
         args.push_back(hilti::rt::filesystem::canonical(path));
 
         auto cxx = hilti::configuration().cxx;
-        if ( const auto launcher = hilti::configuration().cxx_launcher; launcher && ! launcher->empty() ) {
+        if ( const auto& launcher = hilti::configuration().cxx_launcher; launcher && ! launcher->empty() ) {
             args.insert(args.begin(), cxx);
             cxx = *launcher;
         }
