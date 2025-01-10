@@ -45,9 +45,7 @@ std::vector<std::string> util::split(std::string s, const std::string& delim) {
 
         l.push_back(s.substr(0, p));
 
-        // FIXME: Don't understand why directly assigning to s doesn't work.
-        std::string t = s.substr(p + delim.size(), std::string::npos);
-        s = std::move(t);
+        s = s.substr(p + delim.size(), std::string::npos);
     }
 
     l.push_back(s);
