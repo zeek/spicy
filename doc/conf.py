@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath("scripts"))
 # -- Project information -----------------------------------------------------
 
 project = "Spicy"
-copyright = "2024 by the Zeek Project"
+copyright = "by the Zeek Project"
 author = "Zeek Project"
 
 version = open("../VERSION").readline()

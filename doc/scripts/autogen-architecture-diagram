@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (c) 2020-2024 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 # Graphviz shapes: https://graphviz.gitlab.io/doc/info/shapes.html
 # Graphviz attributes: https://www.graphviz.org/doc/info/attrs.html

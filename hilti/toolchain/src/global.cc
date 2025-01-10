@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #ifdef HILTI_HAVE_ASAN
 // This following injects ASAN options. Note that this works on macOS, but

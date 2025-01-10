@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 // Our uses of `visitor::range` below trigger false positives from >=gcc-13's
 // dangling-reference check, see //

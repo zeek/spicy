@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 by the Zeek Project. See LICENSE for details.
+// Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <spicy/ast/builder/builder.h>
 #include <spicy/compiler/detail/parser/driver.h>

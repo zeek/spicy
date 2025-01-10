@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 add_executable(spicy-dump main.cc printer-text.cc printer-json.cc)
 target_compile_options(spicy-dump PRIVATE "-Wall")
