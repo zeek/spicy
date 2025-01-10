@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 # Note: beware of https://github.com/readthedocs/sphinx_rtd_theme/issues/1115
 # and broken behavior with docutils 0.17.
