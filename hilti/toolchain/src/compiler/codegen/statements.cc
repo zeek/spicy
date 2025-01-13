@@ -348,8 +348,10 @@ struct Visitor : hilti::visitor::PreOrder {
 
             if ( init ) {
                 if ( n->condition() )
-                    outer_wrapper.addLocal(
-                        {cxx::ID(init->id()), cg->compile(init->type(), codegen::TypeUsage::Storage), {}, cxx_init});
+                    outer_wrapper.addLocal({cxx::ID(init->id()),
+                                            cg->compile(init->type(), codegen::TypeUsage::Storage),
+                                            {},
+                                            std::move(cxx_init)});
                 else
                     outer_wrapper.addLocal(
                         {cxx::ID(init->id()), cg->compile(init->type(), codegen::TypeUsage::Storage)});
