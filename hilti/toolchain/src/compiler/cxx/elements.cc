@@ -429,8 +429,8 @@ std::string cxx::type::Struct::str() const {
         auto cassign = fmt("%s& operator=(const %s&) = default;", type_name, type_name);
         auto massign = fmt("%s& operator=(%s&&) = default;", type_name, type_name);
 
-        for ( const auto& x : {dctor, cctor, mctor, cassign, massign} )
-            struct_fields.emplace_back(x);
+        for ( auto x : {std::move(dctor), std::move(cctor), std::move(mctor), std::move(cassign), std::move(massign)} )
+            struct_fields.emplace_back(std::move(x));
 
         auto locals_user = util::filter(members, [](const auto& m) {
             auto l = std::get_if<declaration::Local>(&m);

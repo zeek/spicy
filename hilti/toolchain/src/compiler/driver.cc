@@ -220,7 +220,7 @@ Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const
     close(fd);
 
     if ( ! util::copyStream(in, out) )
-        return error("Error writing to file", std::string(name));
+        return error("Error writing to file", {std::move(name)});
 
     _tmp_files.insert(name);
     return hilti::rt::filesystem::path(name);

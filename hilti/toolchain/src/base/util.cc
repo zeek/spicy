@@ -48,7 +48,7 @@ std::vector<std::string> util::split(std::string s, const std::string& delim) {
         s = s.substr(p + delim.size(), std::string::npos);
     }
 
-    l.push_back(s);
+    l.push_back(std::move(s));
     return l;
 }
 
@@ -285,7 +285,7 @@ std::vector<std::string> util::flattenParts(const std::vector<std::string>& in) 
             if ( s.empty() )
                 continue;
 
-            out.push_back(s);
+            out.push_back(std::move(s));
         }
     }
 

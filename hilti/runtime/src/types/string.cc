@@ -172,7 +172,7 @@ Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStr
         case unicode::Charset::UTF16BE: [[fallthrough]];
         case unicode::Charset::UTF16LE: {
             // HILTI `string` is always UTF-8, but we could be invoked with raw bags of bytes here as well, so validate.
-            auto t8 = string::encode(s, unicode::Charset::UTF8, errors).str();
+            auto t8 = string::encode(std::move(s), unicode::Charset::UTF8, errors).str();
 
             auto t = utf8::utf8to16(t8);
 

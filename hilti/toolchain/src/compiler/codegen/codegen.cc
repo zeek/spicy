@@ -237,7 +237,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         // Record the global for now, final declarations will be added later
         // once the visitor knows all globals.
-        globals.push_back(x);
+        globals.push_back(std::move(x));
     }
 
     void operator()(declaration::Constant* n) final {
@@ -441,9 +441,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
             if ( include_implementation ) {
                 // Tell linker about our implementation.
-                auto hook_join = cxx::linker::Join{.id = id_hook_stub,
+                auto hook_join = cxx::linker::Join{.id = std::move(id_hook_stub),
                                                    .callee = d,
-                                                   .aux_types = aux_types,
+                                                   .aux_types = std::move(aux_types),
                                                    .priority = priority,
                                                    .declare_only = (! f->body())};
 
