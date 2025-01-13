@@ -1,3 +1,9 @@
+1.13.0-dev.68 | 2025-01-13 22:54:50 +0100
+
+  * GH-1958: Prevent copies in various places. (Benjamin Bannier, Corelight)
+
+    This adds a change incorrectly dropped from #1958.
+
 1.13.0-dev.66 | 2025-01-13 22:09:19 +0100
 
   * Prevent copies in various places. (Benjamin Bannier, Corelight)
