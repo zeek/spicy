@@ -83,7 +83,7 @@ int main(int argc, char** argv) try {
             continue;
         }
 
-        options.push_back(opt);
+        options.push_back(std::move(opt));
     }
 
     hilti::configuration().initLocation(hilti::util::currentExecutable());

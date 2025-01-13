@@ -505,8 +505,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 continue;
             }
 
-            connections[cid] = driver::ConnectionState{.orig_id = orig_id,
-                                                       .resp_id = resp_id,
+            connections[cid] = driver::ConnectionState{.orig_id = std::move(orig_id),
+                                                       .resp_id = std::move(resp_id),
                                                        .orig_state = orig_state,
                                                        .resp_state = resp_state};
             _total_connections++;

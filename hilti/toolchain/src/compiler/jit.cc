@@ -337,7 +337,7 @@ hilti::Result<Nothing> JIT::_compile() {
 
         args.emplace_back("-o");
         args.push_back(obj);
-        _objects.push_back(obj);
+        _objects.push_back(std::move(obj));
 
         args.push_back(hilti::rt::filesystem::canonical(path));
 

@@ -153,7 +153,7 @@ inline Bytes pack(integer::safe<T> i, ByteOrder fmt) {
 template<typename T, typename D>
 inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
     if ( fmt == ByteOrder::Host )
-        return unpack<T>(b, systemByteOrder());
+        return unpack<T>(std::move(b), systemByteOrder());
 
     if ( b.size() < static_cast<int64_t>(sizeof(T)) )
         return result::Error("insufficient data to unpack integer");

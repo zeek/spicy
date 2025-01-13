@@ -28,7 +28,7 @@ void Formatter::pushNamespace(std::string relative_ns) {
         f.eol();
     }
 
-    _namespaces.push_back(relative_ns);
+    _namespaces.push_back(std::move(relative_ns));
 }
 
 void Formatter::enterNamespace(const std::string& absolute_ns) {

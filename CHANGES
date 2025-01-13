@@ -1,3 +1,7 @@
+1.13.0-dev.66 | 2025-01-13 22:09:19 +0100
+
+  * Prevent copies in various places. (Benjamin Bannier, Corelight)
+
 1.13.0-dev.64 | 2025-01-10 09:55:22 +0100
 
   * Address a FIXME. (Benjamin Bannier, Corelight)

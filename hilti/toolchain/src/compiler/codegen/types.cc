@@ -187,9 +187,9 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                             }
 
                             d.ftype = cxx::declaration::Function::Free;
-                            auto hook = cxx::linker::Join{.id = cxx::ID(id_hook),
+                            auto hook = cxx::linker::Join{.id = cxx::ID(std::move(id_hook)),
                                                           .callee = d,
-                                                          .aux_types = aux_types,
+                                                          .aux_types = std::move(aux_types),
                                                           .declare_only = true};
 
                             auto vref =
