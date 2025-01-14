@@ -3,7 +3,6 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <cinttypes>
 #include <cstring>
 #include <memory>
@@ -108,21 +107,18 @@ void hilti::rt::detail::registerModule(HiltiModule module) {
     globalState()->hilti_modules.emplace_back(module);
 }
 
-static std::unique_ptr<std::vector<void (*)()>> _registered_preinit_functions;
-
-RegisterManualPreInit::RegisterManualPreInit(void (*f)()) {
-    if ( ! _registered_preinit_functions )
-        _registered_preinit_functions = std::make_unique<std::vector<void (*)()>>();
-
-    _registered_preinit_functions->emplace_back(f);
+static auto* registered_preinit_functions() {
+    static std::vector<void (*)()> _registered_preinit_functions;
+    return &_registered_preinit_functions;
 }
 
-void hilti::rt::executeManualPreInits() {
-    if ( ! _registered_preinit_functions )
-        return;
+RegisterManualPreInit::RegisterManualPreInit(void (*f)()) { registered_preinit_functions()->emplace_back(f); }
 
-    for ( const auto& f : *_registered_preinit_functions )
+void hilti::rt::executeManualPreInits() {
+    auto* functions = registered_preinit_functions();
+
+    for ( const auto& f : *functions )
         (*f)();
 
-    _registered_preinit_functions.reset();
+    functions->clear();
 }
