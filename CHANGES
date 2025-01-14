@@ -1,3 +1,18 @@
+1.13.0-dev.71 | 2025-01-14 17:26:02 +0100
+
+  * Prevent unneeded copy in setting up unit `parseX` functions. (Benjamin Bannier, Corelight)
+
+  * Used fixed initialization for order for global static. (Benjamin Bannier, Corelight)
+
+    The `HILTI_PRE_INIT` macros work on the global
+    `_registered_preinit_functions` container. Since uses of the macro and
+    the global container are likely in different translation units their
+    initialization order can be undetermined (even though we have some
+    manual checks whether the `unique_ptr<vector>>` is null).
+
+    This patch cleans up initialization of the global so it should always be
+    fully initialized when accessed.
+
 1.13.0-dev.68 | 2025-01-13 22:54:50 +0100
 
   * GH-1958: Prevent copies in various places. (Benjamin Bannier, Corelight)

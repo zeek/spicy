@@ -48,7 +48,7 @@ extern void registerModule(HiltiModule module);
  * Macro to schedule a global function to be called at startup time. Execution
  * will happen either automatically through a static constructor (default), or
  * if `HILTI_MANUAL_PREINIT` is defined, be triggered through a call to
- * `executeCustomPreInits()`.
+ * `executeManualPreInits()`.
  */
 #ifdef HILTI_MANUAL_PREINIT
 #define HILTI_PRE_INIT(func) static ::hilti::rt::detail::RegisterManualPreInit __pre_init_##__COUNTER__(func);
@@ -62,7 +62,7 @@ public:
     ExecutePreInit(void (*f)()) { (*f)(); }
 };
 
-/** Helper class to register a global function to execute through `executeCustomPreInits`. */
+/** Helper class to register a global function to execute through `executeManualPreInits`. */
 class RegisterManualPreInit {
 public:
     RegisterManualPreInit(void (*f)());

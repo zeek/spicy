@@ -538,8 +538,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                 cb.addReturn("::hilti::rt::Nothing()");
             }
 
-            body.addLambda("cb", "[args_on_heap](::hilti::rt::resumable::Handle* r) -> ::hilti::rt::any",
-                           std::move(cb));
+            body.addLambda(
+                "cb", "[args_on_heap = std::move(args_on_heap)](::hilti::rt::resumable::Handle* r) -> ::hilti::rt::any",
+                std::move(cb));
             body.addLocal({"r", "auto", {}, "std::make_unique<::hilti::rt::Resumable>(std::move(cb))"});
             body.addStatement("r->run()");
             body.addReturn("std::move(*r)");
