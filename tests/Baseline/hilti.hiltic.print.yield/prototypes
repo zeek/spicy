@@ -2,6 +2,7 @@
 // Prototypes for module Foo
 
 #ifndef HILTI_PROTOTYPES_FOO_H
+#define HILTI_PROTOTYPES_FOO_H
 
 #include <hilti/rt/libhilti.h>
 
