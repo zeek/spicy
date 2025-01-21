@@ -76,11 +76,8 @@ down to the interesting parts, it looks like this for our example:
 
 .. literalinclude:: examples/my_http-excerpt.h
 
-.. todo:: The ``struct`` declarations should move into the public
-   namespace.
-
-You can see the ``struct`` definitions corresponding to the two unit
-types, as well as a set of parsing functions with three different
+You can see the ``struct`` definition corresponding to the public unit
+type, as well as a set of parsing functions with three different
 signatures:
 
 ``parse1``
