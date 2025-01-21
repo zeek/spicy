@@ -260,11 +260,13 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
         return result::Error("cannot generate prototypes for module");
 
     auto f = Formatter();
+    auto guard = fmt("HILTI_PROTOTYPES_%s_H", util::toupper(_module_id));
 
     f << separator();
     f << comment(fmt("Prototypes for module %s", _module_id));
     f << separator();
-    f << fmt("#ifndef HILTI_PROTOTYPES_%s_H", util::toupper(_module_id)) << eol();
+    f << fmt("#ifndef %s", guard) << eol();
+    f << fmt("#define %s", guard) << eol();
     f << separator();
 
     _generateCode(f, true, false);
