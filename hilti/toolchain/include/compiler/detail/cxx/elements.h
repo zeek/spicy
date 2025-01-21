@@ -220,9 +220,14 @@ struct Type : public DeclarationBase {
     cxx::Type type;
     std::string code;
     bool no_using = false; // turned on automatically for types starting with "struct"
+    bool public_ = false;  // declare the type in a public section of the generated C++ code
 
-    Type(cxx::ID id = {}, cxx::Type type = {}, std::string code = {}, bool no_using = false)
-        : DeclarationBase(std::move(id)), type(std::move(type)), code(std::move(code)), no_using(no_using) {}
+    Type(cxx::ID id = {}, cxx::Type type = {}, std::string code = {}, bool no_using = false, bool public_ = false)
+        : DeclarationBase(std::move(id)),
+          type(std::move(type)),
+          code(std::move(code)),
+          no_using(no_using),
+          public_(public_) {}
 
     void emit(Formatter& f) const final;
 

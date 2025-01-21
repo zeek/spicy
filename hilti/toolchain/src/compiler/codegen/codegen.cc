@@ -255,8 +255,12 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         assert(n->typeID());
 
         auto t = cg->compile(n->type(), codegen::TypeUsage::Storage);
-        if ( auto dt = cg->typeDeclaration(n->type()) )
+        if ( auto dt = cg->typeDeclaration(n->type()) ) {
+            if ( n->linkage() == declaration::Linkage::Public )
+                dt->public_ = true;
+
             unit->add(*dt);
+        }
 
         if ( include_implementation )
             cg->addTypeInfoDefinition(n->type());

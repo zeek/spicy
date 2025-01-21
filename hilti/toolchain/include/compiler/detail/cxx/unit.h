@@ -104,7 +104,19 @@ protected:
     Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code = {});
 
 private:
-    enum class Phase { Includes, Forwards, Enums, Types, Constants, Globals, Functions, TypeInfos, Implementations };
+    enum class Phase {
+        Includes,
+        Forwards,
+        Enums,
+        Types,
+        PublicAliases,
+        Constants,
+        Globals,
+        Functions,
+        TypeInfos,
+        Implementations
+    };
+
     using cxxDeclaration = std::variant<declaration::IncludeFile, declaration::Global, declaration::Constant,
                                         declaration::Type, declaration::Function>;
 
