@@ -27,6 +27,7 @@ static struct option long_options[] = {{"abort-on-exceptions", required_argument
                                        {"debug", no_argument, nullptr, 'd'},
                                        {"debug-addl", required_argument, nullptr, 'X'},
                                        {"enable-print", no_argument, nullptr, 'P'},
+                                       {"enable-profiling", no_argument, nullptr, 'Z'},
                                        {"file", required_argument, nullptr, 'f'},
                                        {"help", no_argument, nullptr, 'h'},
                                        {"json", no_argument, nullptr, 'J'},
@@ -94,6 +95,7 @@ void SpicyDump::usage() {
            "  -S | --skip-dependencies        Do not automatically compile dependencies during JIT.\n"
            "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
+           "  -Z | --enable-profiling         Report profiling statistics after execution.\n"
            "\n"
            "Environment variables:\n"
            "\n"
@@ -117,7 +119,7 @@ void SpicyDump::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "BAD:f:hdX:QVlp:PSRL:J", long_options, nullptr);
+        int c = getopt_long(argc, argv, "BAD:f:hdX:QVlp:PSRL:JZ", long_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -196,6 +198,11 @@ void SpicyDump::parseOptions(int argc, char** argv) {
             case 'S': driver_options.skip_dependencies = true; break;
 
             case 'v': std::cerr << "spicy-dump v" << hilti::configuration().version_string_long << '\n'; exit(0);
+
+            case 'Z':
+                hilti_compiler_options.enable_profiling = true;
+                driver_options.enable_profiling = true;
+                break;
 
             case 'h': usage(); exit(0);
 
