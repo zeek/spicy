@@ -101,6 +101,7 @@ preprocessor @[a-zA-Z_][a-zA-Z_0-9-]*
 {doc_field}           yylloc->lines(countNewLines(yytext, yyleng)); driver->docField(std::string(yytext)); yylloc->step();
 {doc_text}            yylloc->lines(countNewLines(yytext, yyleng)); driver->docText(std::string(yytext)); yylloc->step();
 __library_type        return token::LIBRARY_TYPE;
+__library_type_const  return token::LIBRARY_TYPE_CONST;
 addr                  return token::ADDRESS;
 add                   return token::ADD;
 any                   return token::ANY;
@@ -184,6 +185,7 @@ timer                 return token::TIMER;
 try                   return token::TRY;
 tuple                 return token::TUPLE;
 type                  return token::TYPE;
+typeinfo              return token::TYPEINFO;
 uint16                return token::UINT16;
 uint32                return token::UINT32;
 uint64                return token::UINT64;

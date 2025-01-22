@@ -1,9 +1,11 @@
 # Automatically generated; edit in Sphinx source code, not here.
-global x: optional<uint64>;  # Unset.
-global b1: bool = x;         # False.
-global b2 = cast<bool>(x);   # False.
+type S = struct {
+    a: int32;
+    b: int32;
+};
 
-if ( x )
-    print "'x' was set";     # Never runs.
-if ( ! x )
-    print "'x' was unset";   # Always runs.
+global s1: type = typeinfo(bool);
+global s2: type = typeinfo(S);
+global s3: type = S;
+
+print s1, s2, s3; # will output "bool, X::S, X::S"

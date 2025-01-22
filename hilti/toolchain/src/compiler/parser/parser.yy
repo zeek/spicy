@@ -177,6 +177,7 @@ static int _field_width = 0;
 %token CONST_ITERATOR "const_iterator"
 %token LEQ "<="
 %token LIBRARY_TYPE "library type"
+%token LIBRARY_TYPE_CONST "const library type"
 %token LIST "list"
 %token LOCAL "local"
 %token MAP "map"
@@ -585,6 +586,7 @@ base_type_no_attrs
               | STREAM                           { $$ = builder->typeStream(__loc__); }
               | STRING                           { $$ = builder->typeString(__loc__); }
               | TIME                             { $$ = builder->typeTime(__loc__); }
+              | TYPE                             { $$ = builder->typeTypeInfo(__loc__); }
               | VOID                             { $$ = builder->typeVoid(__loc__); }
 
               | INT type_param_begin CUINTEGER type_param_end            { $$ = builder->typeSignedInteger($3, __loc__); }
@@ -616,6 +618,8 @@ base_type_no_attrs
               | '[' EXCEPTION ':' type ']'       { $$ = builder->typeException(std::move($4), __loc__); }
 
               | LIBRARY_TYPE '(' CSTRING ')'     { $$ = builder->typeLibrary(std::move($3), __loc__); }
+              | LIBRARY_TYPE_CONST '(' CSTRING ')'
+                                                 { $$ = builder->typeLibrary(Constness::Const, std::move($3), __loc__); }
 
               | tuple_type                       { $$ = std::move($1); }
               | struct_type                      { $$ = std::move($1); }

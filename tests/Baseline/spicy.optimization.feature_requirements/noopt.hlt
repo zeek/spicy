@@ -488,7 +488,7 @@ method extern method view<stream> foo::X0::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X0::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:13:11-15:1"
     local value_ref<X0> __unit = value_ref(default<const X0>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X0));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X0);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -542,7 +542,7 @@ method extern method view<stream> foo::X0::parse2(inout value_ref<X0> __unit, in
 init function void __register_foo_X0() {
 
     if ( ::__feat%foo@@X0%is_filter || ::__feat%foo@@X0%supports_sinks ) {
-        foo::X0::__parser = [$name="foo::X0", $is_public=False, $parse1=foo::X0::parse1, $parse2=foo::X0::parse2, $parse3=foo::X0::parse3, $context_new=Null, $type_info=typeinfo(X0), $description="", $mime_types=vector(), $ports=vector()];
+        foo::X0::__parser = [$name="foo::X0", $is_public=False, $parse1=foo::X0::parse1, $parse2=foo::X0::parse2, $parse3=foo::X0::parse3, $context_new=Null, $type_=X0, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::X0::__parser, $scope, Null);
     }
 
@@ -738,7 +738,7 @@ method extern method view<stream> foo::X1::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X1::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:18:11-20:1"
     local value_ref<X1> __unit = value_ref(default<const X1>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X1));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X1);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -792,7 +792,7 @@ method extern method view<stream> foo::X1::parse2(inout value_ref<X1> __unit, in
 init function void __register_foo_X1() {
 
     if ( ::__feat%foo@@X1%is_filter || ::__feat%foo@@X1%supports_sinks ) {
-        foo::X1::__parser = [$name="foo::X1", $is_public=False, $parse1=foo::X1::parse1, $parse2=foo::X1::parse2, $parse3=foo::X1::parse3, $context_new=Null, $type_info=typeinfo(X1), $description="", $mime_types=vector(), $ports=vector()];
+        foo::X1::__parser = [$name="foo::X1", $is_public=False, $parse1=foo::X1::parse1, $parse2=foo::X1::parse2, $parse3=foo::X1::parse3, $context_new=Null, $type_=X1, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::X1::__parser, $scope, Null);
     }
 
@@ -984,7 +984,7 @@ method extern method view<stream> foo::X2::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:23:11-23:17"
     local value_ref<X2> __unit = value_ref(default<const X2>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X2));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X2);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1038,7 +1038,7 @@ method extern method view<stream> foo::X2::parse2(inout value_ref<X2> __unit, in
 init function void __register_foo_X2() {
 
     if ( ::__feat%foo@@X2%is_filter || ::__feat%foo@@X2%supports_sinks ) {
-        foo::X2::__parser = [$name="foo::X2", $is_public=False, $parse1=foo::X2::parse1, $parse2=foo::X2::parse2, $parse3=foo::X2::parse3, $context_new=Null, $type_info=typeinfo(X2), $description="", $mime_types=vector(), $ports=vector()];
+        foo::X2::__parser = [$name="foo::X2", $is_public=False, $parse1=foo::X2::parse1, $parse2=foo::X2::parse2, $parse3=foo::X2::parse3, $context_new=Null, $type_=X2, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::X2::__parser, $scope, Null);
     }
 
@@ -1238,7 +1238,7 @@ method extern method view<stream> foo::X3::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:26:11-28:1"
     local value_ref<X3> __unit = value_ref(default<const X3>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X3));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X3);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1292,7 +1292,7 @@ method extern method view<stream> foo::X3::parse2(inout value_ref<X3> __unit, in
 init function void __register_foo_X3() {
 
     if ( ::__feat%foo@@X3%is_filter || ::__feat%foo@@X3%supports_sinks ) {
-        foo::X3::__parser = [$name="foo::X3", $is_public=False, $parse1=foo::X3::parse1, $parse2=foo::X3::parse2, $parse3=foo::X3::parse3, $context_new=Null, $type_info=typeinfo(X3), $description="", $mime_types=vector(), $ports=vector()];
+        foo::X3::__parser = [$name="foo::X3", $is_public=False, $parse1=foo::X3::parse1, $parse2=foo::X3::parse2, $parse3=foo::X3::parse3, $context_new=Null, $type_=X3, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::X3::__parser, $scope, Null);
     }
 
@@ -1492,7 +1492,7 @@ method extern method view<stream> foo::X4::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:32:11-34:1"
     local value_ref<X4> __unit = value_ref(default<const X4>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X4));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X4);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1546,7 +1546,7 @@ method extern method view<stream> foo::X4::parse2(inout value_ref<X4> __unit, in
 init function void __register_foo_X4() {
 
     if ( ::__feat%foo@@X4%is_filter || ::__feat%foo@@X4%supports_sinks ) {
-        foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_info=typeinfo(X4), $description="", $mime_types=vector(), $ports=vector()];
+        foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_=X4, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::X4::__parser, $scope, Null);
     }
 
@@ -1742,7 +1742,7 @@ method extern method view<stream> foo::X5::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:36:18-40:1"
     local value_ref<X5> __unit = value_ref(default<const X5>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X5));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X5);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1794,7 +1794,7 @@ method extern method view<stream> foo::X5::parse2(inout value_ref<X5> __unit, in
 }
 
 init function void __register_foo_X5() {
-    foo::X5::__parser = [$name="foo::X5", $is_public=True, $parse1=foo::X5::parse1, $parse2=foo::X5::parse2, $parse3=foo::X5::parse3, $context_new=Null, $type_info=typeinfo(X5), $description="", $mime_types=vector(), $ports=vector()];
+    foo::X5::__parser = [$name="foo::X5", $is_public=True, $parse1=foo::X5::parse1, $parse2=foo::X5::parse2, $parse3=foo::X5::parse3, $context_new=Null, $type_=X5, $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::X5::__parser, $scope, Null);
 }
 
@@ -1990,7 +1990,7 @@ method extern method view<stream> foo::X6::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X6::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:43:11-46:1"
     local value_ref<X6> __unit = value_ref(default<const X6>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X6));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X6);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2044,7 +2044,7 @@ method extern method view<stream> foo::X6::parse2(inout value_ref<X6> __unit, in
 init function void __register_foo_X6() {
 
     if ( ::__feat%foo@@X6%is_filter || ::__feat%foo@@X6%supports_sinks ) {
-        foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_info=typeinfo(X6), $description="", $mime_types=vector(), $ports=vector()];
+        foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_=X6, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::X6::__parser, $scope, Null);
     }
 
@@ -2238,7 +2238,7 @@ method extern method view<stream> foo::X7::parse1(inout value_ref<stream> __data
 method extern method view<stream> foo::X7::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:49:11-51:1"
     local value_ref<X7> __unit = value_ref(default<const X7>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(X7));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, X7);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2292,7 +2292,7 @@ method extern method view<stream> foo::X7::parse2(inout value_ref<X7> __unit, in
 init function void __register_foo_X7() {
 
     if ( ::__feat%foo@@X7%is_filter || ::__feat%foo@@X7%supports_sinks ) {
-        foo::X7::__parser = [$name="foo::X7", $is_public=False, $parse1=foo::X7::parse1, $parse2=foo::X7::parse2, $parse3=foo::X7::parse3, $context_new=Null, $type_info=typeinfo(X7), $description="", $mime_types=vector(), $ports=vector()];
+        foo::X7::__parser = [$name="foo::X7", $is_public=False, $parse1=foo::X7::parse1, $parse2=foo::X7::parse2, $parse3=foo::X7::parse3, $context_new=Null, $type_=X7, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::X7::__parser, $scope, Null);
     }
 

@@ -19,8 +19,8 @@ public:
     QualifiedType* type() const final { return child<QualifiedType>(1); }
 
     static auto create(ASTContext* ctx, Expression* expr, Meta meta = {}) {
-        auto ti =
-            QualifiedType::create(ctx, type::Library::create(ctx, "hilti::rt::TypeInfo const*"), Constness::Const);
+        auto ti = QualifiedType::create(ctx, type::Library::create(ctx, Constness::Const, "hilti::rt::TypeInfo*"),
+                                        Constness::Const);
         return ctx->make<TypeInfo>(ctx, {expr, ti}, std::move(meta));
     }
 
