@@ -497,8 +497,11 @@ public:
         return hilti::type::Function::create(context(), _, m);
     }
     auto typeInterval(Meta meta = {}) { return hilti::type::Interval::create(context(), std::move(meta)); }
-    auto typeLibrary(const std::string& cxx_name, Meta meta = {}) {
-        return hilti::type::Library::create(context(), cxx_name, std::move(meta));
+    auto typeLibrary(std::string cxx_name, Meta meta = {}) {
+        return hilti::type::Library::create(context(), Constness::Mutable, std::move(cxx_name), std::move(meta));
+    }
+    auto typeLibrary(Constness const_, std::string cxx_name, Meta meta = {}) {
+        return hilti::type::Library::create(context(), const_, std::move(cxx_name), std::move(meta));
     }
     auto typeList(QualifiedType* t, const Meta& meta = {}) { return hilti::type::List::create(context(), t, meta); }
     auto typeList(type::Wildcard _, const Meta& m = Meta()) { return hilti::type::List::create(context(), _, m); }

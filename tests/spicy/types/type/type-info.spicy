@@ -1,0 +1,29 @@
+# @TEST-EXEC: spicyc -dj %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Exercises type `type`.
+
+module X;
+
+type S = struct {
+    a: int32;
+    b: int32;
+};
+
+function f(ty: type) {
+    print "in f:", ty;
+}
+
+function calls_f() {
+    f(S);
+}
+
+global s1: type = S;
+global s2: type = typeinfo(S);
+global s3: type = typeinfo(bool);
+global s4 = typeinfo(0.5);
+
+print s1, s2, s3, s4;
+print typeinfo(True);
+
+f(S);

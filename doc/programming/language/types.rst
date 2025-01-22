@@ -686,6 +686,41 @@ identifier names. Tuple elements are immutable.
 
 .. _type_unit:
 
+.. _type_type:
+
+Type
+----
+
+``type`` stores a reference to a given Spicy type. To initialize a
+``type`` instance, either use the :ref:`operator_typeinfo` operator
+or, as a shortcut, directly assign any global type ID (note that you
+cannot directly assign a non-named type).
+
+Inside Spicy code, there's not much more to do with such ``type``
+references than printing them out (which will output a readable
+representation of the type). However, host applications can leverage
+``type`` to facilitate configuration of types to operate on.
+
+.. rubric:: Type
+
+- ``type``
+
+.. rubric:: Usage
+
+.. spicy-code:: type-type.spicy
+
+  type S = struct {
+      a: int32;
+      b: int32;
+  };
+
+  global s1: type = typeinfo(bool);
+  global s2: type = typeinfo(S);
+  global s3: type = S;
+  global s4: type = typeinfo(0.5);
+
+  print s1, s2, s3, s4; # will output "bool, X::S, X::S, real"
+
 Unit
 ----
 

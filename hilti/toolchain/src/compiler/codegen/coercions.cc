@@ -203,7 +203,12 @@ struct Visitor : public hilti::visitor::PreOrder {
                 fmt("codegen: unexpected type coercion from view<stream> to %s", dst->type()->typename_()));
     }
 
-    void operator()(type::Type_* n) final { result = cg->coerce(expr, n->typeValue(), dst); }
+    void operator()(type::Type_* n) final {
+        if ( auto lt = dst->type()->tryAs<type::Library>(); lt && lt->cxxName() == "::hilti::rt::TypeInfo*" )
+            result = cg->typeInfo(n->typeValue());
+        else
+            result = cg->coerce(expr, n->typeValue(), dst);
+    }
 
     void operator()(type::Tuple* n) final {
         if ( auto x = dst->type()->tryAs<type::Tuple>() ) {

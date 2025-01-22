@@ -461,7 +461,7 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
              builder()->ctorStructField(ID("parse2"), _pb.parseMethodExternalOverload2(*unit)),
              builder()->ctorStructField(ID("parse3"), parse3),
              builder()->ctorStructField(ID("context_new"), context_new),
-             builder()->ctorStructField(ID("type_info"), builder()->typeinfo(builder()->id(unit->typeID()))),
+             builder()->ctorStructField(ID("type_"), builder()->id(unit->typeID())),
              // We emit different string types for generated and user-provided strings. The distinction
              // is whether they have a location, so set a dummy location so both branches behave
              // identically.

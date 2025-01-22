@@ -500,7 +500,10 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = fmt("%s", t)};
     }
 
-    void operator()(type::Library* n) final { result = CxxTypes{.base_type = fmt("%s", n->cxxName())}; }
+    void operator()(type::Library* n) final {
+        result = CxxTypes{.base_type = fmt("%s%s", (n->isConstant() ? "const " : ""), n->cxxName()),
+                          .param_in = fmt("const %s %s &", n->cxxName(), (n->isConstant() ? "const " : ""))};
+    }
 
     void operator()(type::List* n) final {
         std::string t;
@@ -826,7 +829,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
     void operator()(type::Function* n) final { result = "::hilti::rt::type_info::Function()"; }
 
-    void operator()(type::Library* n) final { result = "::hilti::rt::type_info::Library()"; }
+    void operator()(type::Library* n) final { result = fmt("::hilti::rt::type_info::Library(\"%s\")", n->cxxName()); }
 
     void operator()(type::Map* n) final {
         auto ktype = cg->compile(n->keyType(), codegen::TypeUsage::Storage);

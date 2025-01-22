@@ -10,14 +10,16 @@
 namespace hilti::type {
 
 /**
- * AST node for a generic type defined just by the runtime library. A library
- * type remains mostly opaque to the HILTI language and can't be access
- * directly from a HILTI program. Usually, there'll be HILTI-side typedef
- * making it accessible in the `hilti::*` namespace. HILTI assumes the
- * library type to be mutable.
+ * AST node for a generic type defined just by the C++ runtime
+ * library. A library type remains mostly opaque to the HILTI language
+ * and can't be accessed directly from a HILTI program. Usually,
+ * there'll be HILTI-side typedef making it accessible in the
+ * `hilti::*` namespace. Depending on the specified constness, HILTI
+ * assumes the C++-side library type to be either mutable or constant.
  */
 class Library : public UnqualifiedType {
 public:
+    bool isConstant() const { return _constness == Constness::Const; }
     const std::string& cxxName() const { return _cxx_name; }
 
     std::string_view typeClass() const final { return "library"; }
@@ -26,17 +28,19 @@ public:
     bool isMutable() const final { return true; }
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"cxx_name", _cxx_name}};
+        auto constness = (_constness == Constness::Const ? "true" : "false");
+        auto p = node::Properties{{"const", constness}, {"cxx_name", _cxx_name}};
         return UnqualifiedType::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, const std::string& cxx_name, Meta meta = {}) {
-        return ctx->make<Library>(ctx, cxx_name, std::move(meta));
+    static auto create(ASTContext* ctx, Constness const_, std::string cxx_name, Meta meta = {}) {
+        return ctx->make<Library>(ctx, const_, std::move(cxx_name), std::move(meta));
     }
 
 private:
-    Library(ASTContext* ctx, std::string cxx_name, Meta meta)
+    Library(ASTContext* ctx, Constness const_, std::string cxx_name, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {util::fmt("library(%s)", cxx_name)}, std::move(meta)),
+          _constness(const_),
           _cxx_name(_normalize(std::move(cxx_name))) {}
 
     HILTI_NODE_1(type::Library, UnqualifiedType, final);
@@ -48,6 +52,7 @@ private:
             return std::string("::") + name;
     }
 
+    Constness _constness = Constness::Const;
     std::string _cxx_name;
 };
 

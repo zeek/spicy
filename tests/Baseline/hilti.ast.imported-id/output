@@ -798,7 +798,7 @@
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:16:37-16:36) [@a:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::Profiler" declaration="D12" fqid="hilti::Profiler" id="Profiler" linkage="public"> [parent @d:XXX] (hilti.hlt:17:1-17:61) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:17:24-17:60) [@q:XXX]
-[debug/ast-final]           - type::Library <cxx_name="::hilti::rt::Profiler" declaration="D12" type="T13" unified="library(hilti::rt::Profiler)" wildcard="false"> [parent @q:XXX] (hilti.hlt:17:24-17:60) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Library <const="false" cxx_name="::hilti::rt::Profiler" declaration="D12" type="T13" unified="library(hilti::rt::Profiler)" wildcard="false"> [parent @q:XXX] (hilti.hlt:17:24-17:60) (resolved) [@t:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:17:61-17:60) [@a:XXX]
 [debug/ast-final]           - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:17:61-17:60) [@a:XXX]
 [debug/ast-final]             - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]

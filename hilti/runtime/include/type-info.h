@@ -518,7 +518,21 @@ class Function : public detail::NotImplementedType {};
 class Interval : public detail::AtomicType<hilti::rt::Interval> {};
 
 /** Auxiliary type information for type ``__library_type`. */
-class Library : public detail::ValueLessType {};
+class Library : public detail::AtomicType<hilti::rt::TypeInfo*> {
+public:
+    /**
+     * Constructor.
+     *
+     * @param cxx_name C++-side name of the type
+     */
+    Library(std::string cxx_name) : cxx_name(std::move(cxx_name)) {}
+
+    /** Returns the C++-side name of the type. */
+    const auto& cxxName() const { return cxx_name; }
+
+private:
+    const std::string cxx_name;
+};
 
 class Map;
 
@@ -1496,6 +1510,14 @@ struct TypeInfo {
         }
     }
 };
+
+inline std::ostream& operator<<(std::ostream& out, const TypeInfo& t) { return out << t.display; }
+inline std::ostream& operator<<(std::ostream& out, const TypeInfo* t) { return out << t->display; }
+
+namespace detail::adl {
+inline std::string to_string(const hilti::rt::TypeInfo& ti, adl::tag /*unused*/) { return ti.display; }
+inline std::string to_string(const hilti::rt::TypeInfo* ti, adl::tag /*unused*/) { return ti->display; }
+} // namespace detail::adl
 
 namespace type_info {
 

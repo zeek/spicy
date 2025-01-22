@@ -298,6 +298,20 @@ there's no matching case.
 Triggers a parse error exception with the message indicated by ``EXPR``. ``EXPR`` needs
 to be a :ref:`type_string`. ``throw`` aborts parsing.
 
+
+.. _operator_typeinfo:
+
+``typeinfo``
+------------
+
+::
+
+    typeinfo(TYPE)
+    typeinfo(EXPR)
+
+Returns a value of type :ref:`type <type_type>`, representing the
+given type, or the type of the given expression, respectively.
+
 .. _operator_unpack:
 
 ``unpack``
