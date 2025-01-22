@@ -2,6 +2,7 @@
 spicy-build [options] <input files>
 
     -d          Build a debug version.
+    -g          Disable HILTI-side optimizations of the generated code.
     -o <file>   Destination name for the compiled executable; default is "a.out".
     -t          Do not delete tmp files (useful for inspecting, and use with debugger)
     -v          Verbose output, display command lines executing.
