@@ -3,30 +3,31 @@ Usage: spicyc [options] <inputs>
 
 Options controlling code generation:
 
-  -c | --output-c++                Print out all generated C++ code (including linker glue by default).
-  -d | --debug                     Include debug instrumentation into generated code.
-  -e | --output-all-dependencies   Output list of dependencies for all compiled modules.
-  -g | --disable-optimizations     Disable HILTI-side optimizations of the generated code.
-  -j | --jit-code                  Fully compile all code, and then execute it unless --output-to gives a file to store it
-  -l | --output-linker             Print out only generated HILTI linker glue code.
-  -o | --output-to <path>          Path for saving output.
-  -p | --output-hilti              Just output parsed HILTI code again.
-  -v | --version                   Print version information.
-  -x | --output-c++-files <prefix> Output generated C++ code into set of files.
-  -A | --abort-on-exceptions       When executing compiled code, abort() instead of throwing HILTI exceptions.
-  -B | --show-backtraces           Include backtraces when reporting unhandled exceptions.
-  -C | --dump-code                 Dump all generated code to disk for debugging.
-  -D | --compiler-debug <streams>  Activate compile-time debugging output for given debug streams (comma-separated; 'help' for list).
-  -E | --output-code-dependencies  Output list of dependencies for all compiled modules that require separate compilation of their own.
-  -L | --library-path <path>       Add path to list of directories to search when importing modules.
-  -P | --output-prototypes         Output C++ header with prototypes for public functionality.
-  -R | --report-times              Report a break-down of compiler's execution time.
-  -S | --skip-dependencies         Do not automatically compile dependencies during JIT.
-  -T | --keep-tmps                 Do not delete any temporary files created.
-  -V | --skip-validation           Don't validate ASTs (for debugging only).
-  -X | --debug-addl <addl>         Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
-  -Z | --enable-profiling          Report profiling statistics after execution.
-       --cxx-link <lib>            Link specified static archive or shared library during JIT or to produced HLTO file. Can be given multiple times.
+  -c | --output-c++                 Print out C++ code generated for module (for debugging; use -x to generate code for external compilation).
+  -d | --debug                      Include debug instrumentation into generated code.
+  -e | --output-all-dependencies    Output list of dependencies for all compiled modules.
+  -g | --disable-optimizations      Disable HILTI-side optimizations of the generated code.
+  -j | --jit-code                   Fully compile all code, and then execute it unless --output-to gives a file to store it
+  -l | --output-linker              Print out only generated HILTI linker glue code (for debugging; use -x to generate code for external compilation).
+  -o | --output-to <path>           Path for saving output.
+  -p | --output-hilti               Just output parsed HILTI code again.
+  -v | --version                    Print version information.
+  -x | --output-c++-files <prefix>  Output generated all C++ code into set of files for external compilation.
+  -A | --abort-on-exceptions        When executing compiled code, abort() instead of throwing HILTI exceptions.
+  -B | --show-backtraces            Include backtraces when reporting unhandled exceptions.
+  -C | --dump-code                  Dump all generated code to disk for debugging.
+  -D | --compiler-debug <streams>   Activate compile-time debugging output for given debug streams (comma-separated; 'help' for list).
+  -E | --output-code-dependencies   Output list of dependencies for all compiled modules that require separate compilation of their own.
+  -L | --library-path <path>        Add path to list of directories to search when importing modules.
+  -P | --output-prototypes <prefix> Output C++ header with prototypes for public functionality.
+  -R | --report-times               Report a break-down of compiler's execution time.
+  -S | --skip-dependencies          Do not automatically compile dependencies during JIT.
+  -T | --keep-tmps                  Do not delete any temporary files created.
+  -V | --skip-validation            Don't validate ASTs (for debugging only).
+  -X | --debug-addl <addl>          Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
+  -Z | --enable-profiling           Report profiling statistics after execution.
+       --cxx-link <lib>             Link specified static archive or shared library during JIT or to produced HLTO file. Can be given multiple times.
+       --skip-standard-imports      Do not automatically import standard library modules (for debugging only).
 
   -Q | --include-offsets          Include stream offsets of parsed data in output.
 

@@ -1,3 +1,11 @@
+1.13.0-dev.75 | 2025-01-23 10:29:10 +0100
+
+  * Regenerate usage documentation. (Benjamin Bannier, Corelight)
+
+  * Clean up minor warts in usage strings of some executables. (Benjamin Bannier, Corelight)
+
+  * Add `spicy-dump` option to enable profiling. (Benjamin Bannier, Corelight)
+
 1.13.0-dev.71 | 2025-01-14 17:26:02 +0100
 
   * Prevent unneeded copy in setting up unit `parseX` functions. (Benjamin Bannier, Corelight)
