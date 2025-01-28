@@ -156,33 +156,6 @@ Result<Nothing> Driver::listParsers(std::ostream& out, bool verbose) {
     return Nothing();
 }
 
-Result<const spicy::rt::Parser*> Driver::lookupParser(const std::string& name) {
-    const auto& parsers = spicy::rt::parsers();
-
-    if ( parsers.empty() )
-        return Error("no parsers available");
-
-    if ( name.empty() ) {
-        if ( const auto& def = detail::globalState()->default_parser )
-            return *def;
-        else
-            return Error("multiple parsers available, need to select one");
-    }
-
-    const auto& parsers_by_name = detail::globalState()->parsers_by_name;
-
-    if ( auto p = parsers_by_name.find(name); p != parsers_by_name.end() ) {
-        assert(! p->second.empty());
-
-        if ( p->second.size() > 1 )
-            return Error("multiple matching parsers found");
-
-        return p->second.front();
-    }
-    else
-        return hilti::rt::result::Error("no matching parser available");
-}
-
 Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& parser, std::istream& in, int increment) {
     if ( ! hilti::rt::isInitialized() )
         return Error("runtime not initialized");
