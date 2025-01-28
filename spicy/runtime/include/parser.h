@@ -314,13 +314,25 @@ inline const auto& parserNames() { return detail::globalState()->parsers_by_name
 
 /**
  * Records an alias name for an already registered parser. The alias
- * name will then be recognized by `Driver::lookupParser()`.
+ * name will then be recognized by `lookupParser()`.
  *
  * @param parser name of the parser to register the alias for
  * @param alias alias name to register the parser under
  * @return success if the alias was registered successfully, or a suitable error message if it failed
  */
 hilti::rt::Result<hilti::rt::Nothing> registerParserAlias(const std::string& parser, const std::string& alias);
+
+/**
+ * Retrieves a parser by its name.
+ *
+ * @param name name of the parser to be retrieved, either as shown in the
+ * output of `listParsers()`; or, alternatively, as a string rendering of a
+ * port or MIME type as defined by a unit's properties. If no name is given
+ * and there's only one parser available, that one is taken automatically.
+ *
+ * @return the parser, or an error if it could not be retrieved
+ */
+hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "");
 
 /**
  * Exception thrown by generated parser code when an parsing failed.
