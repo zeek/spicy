@@ -1,0 +1,29 @@
+# @TEST-DOC: Check that anonymous struct types error.
+#
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+global my_global: enum {};
+
+@TEST-START-NEXT
+module Test;
+
+public type Data = unit {
+    var my_var: enum {};
+};
+
+@TEST-START-NEXT
+module Test;
+
+public type Data = unit {
+    : enum {};
+};
+
+@TEST-START-NEXT
+module Test;
+
+function f() {
+    local my_local: enum {};
+}
