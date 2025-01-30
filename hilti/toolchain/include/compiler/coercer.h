@@ -86,7 +86,7 @@ enum class CoercionStyle {
      * Shortcut style activating possible coercions in the context of
      * function parameter passing, however without allowing any type changes.
      */
-    TryDirectMatchForFunctionCall = (1U << 2U) | (1U << 3U) | (1U << 4U) | (1U << 6U),
+    TryDirectMatchForFunctionCall = (1U << 2U) | (1U << 3U) | (1U << 4U),
 
     /**
      * Shortcut style activating all possible coercions in the context of
