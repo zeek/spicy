@@ -769,6 +769,11 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::type::Unit* n) final {
         checkNodeAttributes(n->nodeTag(), n->attributes(), "unit type");
 
+        if ( ! n->typeID() ) {
+            error("unit types must be named", n);
+            return;
+        }
+
         if ( auto attrs = n->attributes() ) {
             if ( attrs->has(hilti::attribute::Kind::Size) && attrs->has(hilti::attribute::Kind::MaxSize) )
                 error(("attributes cannot be combined: &size, &max-size"), n);
@@ -825,13 +830,11 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( auto contexts = n->propertyItems("%context"); contexts.size() > 1 )
             error("unit cannot have more than one %context", n);
 
-        if ( const auto& type_id = n->typeID() ) {
-            const auto& type_name = type_id.local();
-            for ( const auto& item : n->items() )
-                if ( auto field = item->tryAs<spicy::type::unit::item::Field>(); field && field->id() == type_name )
-                    error(fmt("field name '%s' cannot have name identical to owning unit '%s'", field->id(), type_id),
-                          n);
-        }
+        const auto& type_id = n->typeID();
+        const auto& type_name = type_id.local();
+        for ( const auto& item : n->items() )
+            if ( auto field = item->tryAs<spicy::type::unit::item::Field>(); field && field->id() == type_name )
+                error(fmt("field name '%s' cannot have name identical to owning unit '%s'", field->id(), type_id), n);
 
         if ( n->propertyItem("%synchronize-at") && n->propertyItem("%synchronize-after") )
             error("unit cannot specify both %synchronize-at and %synchronize-after", n);

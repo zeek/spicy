@@ -1,0 +1,11 @@
+# @TEST-DOC: Check that anonymous struct types error.
+#
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Data = unit {
+    var my_var: enum {A, B};
+    : enum {A, B};
+};
