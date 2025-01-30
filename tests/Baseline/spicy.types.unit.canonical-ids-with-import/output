@@ -431,7 +431,7 @@
 [debug/ast-declarations]           - Field "__on_0x25_done" (a::__on_0x25_done)
 [debug/ast-declarations]           - Field "__on_0x25_error" (a::__on_0x25_error)
 [debug/ast-declarations]                 - Parameter "__except" (a::__except)
-[debug/ast-declarations]           - Field "__str__" (a::__str__)
+[debug/ast-declarations]           - Field "__hook_to_string" (a::__hook_to_string)
 [debug/ast-declarations]           - Field "__on_0x25_finally" (a::__on_0x25_finally)
 [debug/ast-declarations]           - Field "__on_0x25_confirmed" (a::__on_0x25_confirmed)
 [debug/ast-declarations]           - Field "__on_0x25_rejected" (a::__on_0x25_rejected)

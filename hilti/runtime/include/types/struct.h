@@ -29,35 +29,22 @@ inline auto& value_or_exception(const std::optional<T>& t) {
 namespace detail::adl {
 
 template<typename>
-constexpr std::false_type has__str__helper(long);
+constexpr std::false_type has_hook_to_string_helper(long);
 
 template<typename T>
-constexpr auto has__str__helper(int) -> decltype(std::declval<T>().__str__(), std::true_type{});
+constexpr auto has_hook_to_string_helper(int) -> decltype(std::declval<T>().__hook_to_string(), std::true_type{});
 
 template<typename T>
-using has__str__ = decltype(has__str__helper<T>(0));
+using has_hook_to_string = decltype(has_hook_to_string_helper<T>(0));
 
 template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isStruct, T>>* = nullptr>
 inline std::string to_string(const T& x, adl::tag /*unused*/) {
-    if constexpr ( has__str__<T>() ) {
-        if ( auto s = T(x).__str__() ) // copy because we need a non-const T
+    if constexpr ( has_hook_to_string<T>() ) {
+        if ( auto s = T(x).__hook_to_string() ) // copy because we need a non-const T
             return *s;
     }
 
-    std::string fields;
-    bool first = true;
-
-    auto render_one = [&](auto k, auto v) {
-        if ( ! first )
-            fields += ", ";
-        else
-            first = false;
-
-        fields += fmt("$%s=%s", k, hilti::rt::to_string(v));
-    };
-
-    x.__visit(render_one);
-    return fmt("[%s]", fields);
+    return x.__to_string();
 }
 
 } // namespace detail::adl

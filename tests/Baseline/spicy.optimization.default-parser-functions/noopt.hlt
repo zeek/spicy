@@ -16,7 +16,7 @@ type P0 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -44,7 +44,7 @@ public type P1 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -78,7 +78,7 @@ public type P2 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";

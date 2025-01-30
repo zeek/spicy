@@ -366,14 +366,14 @@ std::string cxx::declaration::Local::str() const { return fmtDeclaration(id, typ
 std::string cxx::declaration::Global::str() const { return fmtDeclaration(id, type, args, linkage, init); }
 
 std::string cxx::type::Struct::str() const {
-    std::vector<std::string> visitor_calls;
+    std::vector<std::string> to_string_fields;
 
     auto fmt_member = [&](const auto& f) {
         if ( auto x = std::get_if<declaration::Local>(&f) ) {
-            if ( x->isAnonymous() )
-                visitor_calls.emplace_back(fmt("_(\"<anon>\", %s); ", x->id));
-            else if ( ! (x->isInternal() || x->linkage == "inline static") ) // Don't visit internal or static fields.
-                visitor_calls.emplace_back(fmt("_(\"%s\", %s); ", x->id, x->id));
+            if ( auto x = std::get_if<declaration::Local>(&f) ) {
+                auto id = (x->isAnonymous() ? cxx::ID("<anon>") : x->id);
+                to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+            }
 
             // We default initialize any members here that don't have an
             // explicit "init" expression. Those that do will be initialized
@@ -457,8 +457,6 @@ std::string cxx::type::Struct::str() const {
         }
     }
 
-    struct_fields.emplace_back(
-        fmt("template<typename F> void __visit(F _) const { %s}", util::join(visitor_calls, "")));
     auto struct_fields_as_str =
         util::join(util::transform(struct_fields, [&](const auto& x) { return fmt("    %s", x); }), "\n");
 
@@ -466,8 +464,14 @@ std::string cxx::type::Struct::str() const {
     if ( args.size() )
         has_params = ", hilti::rt::trait::hasParameters";
 
-    return fmt("struct %s : ::hilti::rt::trait::isStruct%s, ::hilti::rt::Controllable<%s> {\n%s\n}", type_name,
-               has_params, type_name, struct_fields_as_str);
+    auto to_string = fmt(R"(
+    std::string __to_string() const {
+        return "["s + %s + "]";
+    })",
+                         util::join(to_string_fields, R"( + ", " )"));
+
+    return fmt("struct %s : ::hilti::rt::trait::isStruct%s, ::hilti::rt::Controllable<%s> {\n%s\n%s\n}", type_name,
+               has_params, type_name, struct_fields_as_str, to_string);
 }
 
 std::string cxx::type::Struct::code() const {
@@ -569,18 +573,27 @@ std::string cxx::type::Struct::code() const {
 
 std::string cxx::type::Union::str() const {
     std::vector<std::string> types;
-    std::vector<std::string> visitor_calls;
+    std::vector<std::string> to_string_fields;
 
     for ( const auto&& [idx, member] : util::enumerate(members) ) {
         auto decl = std::get<declaration::Local>(member);
         types.emplace_back(decl.type);
-        visitor_calls.emplace_back(fmt("_(\"%s\", std::get_if<%d>(&this->value)); ", decl.id, idx + 1));
+        to_string_fields.emplace_back(fmt(R"(if ( auto* x = std::get_if<%d>(&this->value) )
+            return "$%s=" + hilti::rt::to_string(*x);
+        else )",
+                                          idx + 1, decl.id));
     }
 
     auto base = fmt("::hilti::rt::Union<%s>", util::join(types, ", "));
     auto header = fmt("    using %s::Union;", base);
-    auto visit = fmt("    template<typename F> void __visit(F _) const { %s}", util::join(visitor_calls, ""));
-    return fmt("struct %s : public %s {\n%s\n%s\n}", type_name, base, header, visit);
+    auto to_string = fmt(R"(
+    std::string __to_string() const {
+        %s
+            return "<unset>";
+    })",
+                         util::join(to_string_fields, ""));
+
+    return fmt("struct %s : public %s {\n%s\n%s\n}", type_name, base, header, to_string);
 }
 
 std::string cxx::type::Enum::str() const {

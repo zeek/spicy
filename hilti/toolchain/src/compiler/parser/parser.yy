@@ -299,7 +299,7 @@ local_id      : IDENT                            { std::string name($1);
                                                    if ( ! driver->builder()->options().skip_validation ) {
                                                        if ( name.find('-') != std::string::npos )
                                                            hilti::logger().error(util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
-                                                       if ( name.substr(0, 2) == "__" && name != "__str__" )
+                                                       if ( name.substr(0, 2) == "__" && name != "__hook_to_string" )
                                                            hilti::logger().error(util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
                                                    }
 

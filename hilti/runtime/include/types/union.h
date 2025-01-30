@@ -97,15 +97,7 @@ public:
 namespace detail::adl {
 template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isUnion, T>>* = nullptr>
 inline std::string to_string(const T& x, adl::tag /*unused*/) {
-    std::string field = "<unset>";
-
-    auto render_one = [&](auto k, auto v) {
-        if ( v )
-            field = fmt("$%s=%s", k, hilti::rt::to_string(*v));
-    };
-
-    x.__visit(render_one);
-    return field;
+    return x.__to_string();
 }
 
 } // namespace detail::adl

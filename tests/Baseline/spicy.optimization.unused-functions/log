@@ -472,7 +472,7 @@
 [debug/optimizer] [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool __feat%foo@@F%uses_sync_advance = False;" -> disabled feature 'uses_sync_advance' of type 'foo::F' since it is not used
 [debug/optimizer] [unused-functions.spicy:13:1-13:16] declaration::Function "function void f1() { }" -> null (removing declaration for unused function)
 [debug/optimizer] [unused-functions.spicy:18:1-18:17] declaration::Type "type A = struct { optional<hilti::RecoverableFailure> __error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__A_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error); } &on-heap;" -> null (removing unused type)
-[debug/optimizer] [unused-functions.spicy:18:10-18:16] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-functions.spicy:18:10-18:16] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-functions.spicy:18:10-18:16] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-functions.spicy:18:10-18:16] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-functions.spicy:18:10-18:16] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -495,7 +495,7 @@
 [debug/optimizer] [unused-functions.spicy:18:10-18:16] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-functions.spicy:18:10-18:16] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-functions.spicy:18:10-18:16] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
-[debug/optimizer] [unused-functions.spicy:21:17-21:23] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-functions.spicy:21:17-21:23] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-functions.spicy:21:17-21:23] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-functions.spicy:21:17-21:23] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-functions.spicy:21:17-21:23] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -521,7 +521,7 @@
 [debug/optimizer] [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
-[debug/optimizer] [unused-functions.spicy:24:10-24:16] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-functions.spicy:24:10-24:16] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-functions.spicy:24:10-24:16] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-functions.spicy:24:10-24:16] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-functions.spicy:24:10-24:16] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -547,7 +547,7 @@
 [debug/optimizer] [unused-functions.spicy:24:10-24:16] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-functions.spicy:24:10-24:16] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-functions.spicy:24:10-24:16] statement::Expression "default<void>();" -> removing default<void> statement
-[debug/optimizer] [unused-functions.spicy:25:17-27:1] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-functions.spicy:25:17-27:1] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-functions.spicy:25:17-27:1] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-functions.spicy:25:17-27:1] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-functions.spicy:25:17-27:1] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -574,7 +574,7 @@
 [debug/optimizer] [unused-functions.spicy:25:17-27:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-functions.spicy:25:17-27:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-functions.spicy:30:1-32:2] declaration::Type "type F = struct { optional<hilti::RecoverableFailure> __error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__F_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error); } &on-heap;" -> null (removing unused type)
-[debug/optimizer] [unused-functions.spicy:30:10-32:1] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-functions.spicy:30:10-32:1] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-functions.spicy:30:10-32:1] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-functions.spicy:30:10-32:1] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-functions.spicy:30:10-32:1] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -597,6 +597,7 @@
 [debug/optimizer] [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer] removing field for unused method foo::A::__hook_to_string
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_error
@@ -610,10 +611,10 @@
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::A::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::A::__parse_stage1
-[debug/optimizer] removing field for unused method foo::A::__str__
 [debug/optimizer] removing field for unused method foo::A::parse1
 [debug/optimizer] removing field for unused method foo::A::parse2
 [debug/optimizer] removing field for unused method foo::A::parse3
+[debug/optimizer] removing field for unused method foo::B::__hook_to_string
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_error
@@ -626,7 +627,7 @@
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_sync_advance
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::B::__on_0x25_undelivered
-[debug/optimizer] removing field for unused method foo::B::__str__
+[debug/optimizer] removing field for unused method foo::C::__hook_to_string
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_error
@@ -639,10 +640,10 @@
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_sync_advance
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::C::__on_0x25_undelivered
-[debug/optimizer] removing field for unused method foo::C::__str__
 [debug/optimizer] removing field for unused method foo::C::parse1
 [debug/optimizer] removing field for unused method foo::C::parse2
 [debug/optimizer] removing field for unused method foo::C::parse3
+[debug/optimizer] removing field for unused method foo::D::__hook_to_string
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_error
@@ -655,7 +656,7 @@
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_sync_advance
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::D::__on_0x25_undelivered
-[debug/optimizer] removing field for unused method foo::D::__str__
+[debug/optimizer] removing field for unused method foo::F::__hook_to_string
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_error
@@ -669,7 +670,6 @@
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::F::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::F::__parse_stage1
-[debug/optimizer] removing field for unused method foo::F::__str__
 [debug/optimizer] removing field for unused method foo::F::parse1
 [debug/optimizer] removing field for unused method foo::F::parse2
 [debug/optimizer] removing field for unused method foo::F::parse3
