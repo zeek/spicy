@@ -2182,7 +2182,7 @@ The batch mode of :ref:`spicy-driver <spicy-driver>` does the same.
     A unit's context value gets set only when a host application uses
     it as the top-level starting point for parsing. If in the above
     example `Foo` wasn't the entry point, but used inside another unit
-    further down during the parsing process, it's context would remain
+    further down during the parsing process, its context would remain
     unset.
 
 As an example, the following grammar---mimicking a request/reply-style
