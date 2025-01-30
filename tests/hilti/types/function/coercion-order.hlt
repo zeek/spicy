@@ -1,0 +1,36 @@
+# @TEST-EXEC: hiltic -d -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that function arguments are coerced only when necessary; regression test for #1968.
+
+module foo {
+
+import hilti;
+
+function void fn(uint<8> x) {
+    hilti::print("8");
+}
+
+function void fn(uint<64> x4) {
+    hilti::print("64");
+}
+
+function void fn(uint<8> x, uint<64> x2) {
+    hilti::print("8/64");
+}
+
+function void fn(uint<8> x, uint<64> x2, uint<64> x3) {
+    hilti::print("8/64/64");
+}
+
+function void fn(uint<8> x, uint<8> x2, uint<64> x3, uint<64> x4) {
+    hilti::print("8/8/64/64");
+}
+
+global uint<8> x = 0;
+fn(x);
+fn(x, x);
+fn(x, x, x);
+fn(x, x, x, x);
+
+}
