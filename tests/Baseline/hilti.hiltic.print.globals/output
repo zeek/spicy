@@ -12,7 +12,10 @@ namespace __hlt::Foo {
     struct __globals_t;
     struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         std::string X{};
-        template<typename F> void __visit(F _) const { _("X", X); }
+
+        std::string __to_string() const {
+            return "["s + "$X=" + hilti::rt::to_string(X) + "]";
+        }
     };
 
     inline unsigned int __globals_index;

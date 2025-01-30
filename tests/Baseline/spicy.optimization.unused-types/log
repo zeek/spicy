@@ -866,7 +866,7 @@
 [debug/optimizer] [unused-types.spicy:10:1-53:30] declaration::Constant "const bool __feat%foo@@Pub3%uses_stream = False;" -> disabled feature 'uses_stream' of type 'foo::Pub3' since it is not used
 [debug/optimizer] [unused-types.spicy:10:1-53:30] declaration::Constant "const bool __feat%foo@@Pub3%uses_sync_advance = False;" -> disabled feature 'uses_sync_advance' of type 'foo::Pub3' since it is not used
 [debug/optimizer] [unused-types.spicy:13:1-13:21] declaration::Type "type Priv1 = struct { optional<hilti::RecoverableFailure> __error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error); } &on-heap;" -> null (removing unused type)
-[debug/optimizer] [unused-types.spicy:13:14-13:20] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:13:14-13:20] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:13:14-13:20] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:13:14-13:20] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:13:14-13:20] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -889,7 +889,7 @@
 [debug/optimizer] [unused-types.spicy:13:14-13:20] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:13:14-13:20] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:13:14-13:20] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
-[debug/optimizer] [unused-types.spicy:16:20-16:26] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:16:20-16:26] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:16:20-16:26] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:16:20-16:26] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:16:20-16:26] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -916,7 +916,7 @@
 [debug/optimizer] [unused-types.spicy:16:20-16:26] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:16:20-16:26] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:19:1-19:21] declaration::Type "type Priv2 = struct { optional<hilti::RecoverableFailure> __error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error); } &on-heap;" -> null (removing unused type)
-[debug/optimizer] [unused-types.spicy:19:14-19:20] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:19:14-19:20] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:19:14-19:20] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:19:14-19:20] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:19:14-19:20] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -940,7 +940,7 @@
 [debug/optimizer] [unused-types.spicy:19:14-19:20] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:19:14-19:20] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:20:1-20:21] declaration::Type "type Priv3 = struct { optional<hilti::RecoverableFailure> __error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv3_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error); } &on-heap;" -> null (removing unused type)
-[debug/optimizer] [unused-types.spicy:20:14-20:20] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:20:14-20:20] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:20:14-20:20] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:20:14-20:20] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:20:14-20:20] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -964,7 +964,7 @@
 [debug/optimizer] [unused-types.spicy:20:14-20:20] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:20:14-20:20] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:21:1-24:2] declaration::Type "type Priv4 = struct { value_ref<Priv2> _anon &optional &anonymous &no-emit; value_ref<Priv3> x &optional; optional<hilti::RecoverableFailure> __error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error); } &on-heap;" -> null (removing unused type)
-[debug/optimizer] [unused-types.spicy:21:14-24:1] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:21:14-24:1] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:21:14-24:1] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:21:14-24:1] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:21:14-24:1] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -991,7 +991,7 @@
 [debug/optimizer] [unused-types.spicy:23:5-23:13] declaration::Field "hook void __on_x_error(string __excpt);" -> null
 [debug/optimizer] [unused-types.spicy:23:5-23:13] operator_::struct_::MemberCall "(*self).__on_x((*self).x)" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unused-types.spicy:23:5-23:13] operator_::struct_::MemberCall "(*self).__on_x_error(hilti::exception_what(__except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
-[debug/optimizer] [unused-types.spicy:27:14-27:20] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:27:14-27:20] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:27:14-27:20] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:27:14-27:20] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:27:14-27:20] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -1017,7 +1017,7 @@
 [debug/optimizer] [unused-types.spicy:27:14-27:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:27:14-27:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:27:14-27:20] statement::Expression "default<void>();" -> removing default<void> statement
-[debug/optimizer] [unused-types.spicy:28:14-28:20] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:28:14-28:20] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:28:14-28:20] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:28:14-28:20] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:28:14-28:20] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -1043,7 +1043,7 @@
 [debug/optimizer] [unused-types.spicy:28:14-28:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:28:14-28:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:28:14-28:20] statement::Expression "default<void>();" -> removing default<void> statement
-[debug/optimizer] [unused-types.spicy:29:20-32:1] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:29:20-32:1] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:29:20-32:1] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:29:20-32:1] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:29:20-32:1] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -1076,7 +1076,7 @@
 [debug/optimizer] [unused-types.spicy:31:5-31:13] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:31:5-31:13] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:35:1-35:30] declaration::Type "type Priv7 = enum { A = 0, B = 1, C = 2 };" -> null (removing unused type)
-[debug/optimizer] [unused-types.spicy:43:22-46:1] declaration::Field "hook optional<string> __str__();" -> null
+[debug/optimizer] [unused-types.spicy:43:22-46:1] declaration::Field "hook optional<string> __hook_to_string();" -> null
 [debug/optimizer] [unused-types.spicy:43:22-46:1] declaration::Field "hook void __on_0x25_confirmed() &needed-by-feature="synchronization";" -> null
 [debug/optimizer] [unused-types.spicy:43:22-46:1] declaration::Field "hook void __on_0x25_done();" -> null
 [debug/optimizer] [unused-types.spicy:43:22-46:1] declaration::Field "hook void __on_0x25_error(string __except);" -> null
@@ -1102,6 +1102,7 @@
 [debug/optimizer] [unused-types.spicy:43:22-46:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:43:22-46:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [unused-types.spicy:43:22-46:1] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer] removing field for unused method foo::Priv10::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_error
@@ -1114,7 +1115,7 @@
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_sync_advance
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::Priv10::__on_0x25_undelivered
-[debug/optimizer] removing field for unused method foo::Priv10::__str__
+[debug/optimizer] removing field for unused method foo::Priv1::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_error
@@ -1128,10 +1129,10 @@
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::Priv1::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv1::__parse_stage1
-[debug/optimizer] removing field for unused method foo::Priv1::__str__
 [debug/optimizer] removing field for unused method foo::Priv1::parse1
 [debug/optimizer] removing field for unused method foo::Priv1::parse2
 [debug/optimizer] removing field for unused method foo::Priv1::parse3
+[debug/optimizer] removing field for unused method foo::Priv2::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_error
@@ -1145,10 +1146,10 @@
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::Priv2::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv2::__parse_stage1
-[debug/optimizer] removing field for unused method foo::Priv2::__str__
 [debug/optimizer] removing field for unused method foo::Priv2::parse1
 [debug/optimizer] removing field for unused method foo::Priv2::parse2
 [debug/optimizer] removing field for unused method foo::Priv2::parse3
+[debug/optimizer] removing field for unused method foo::Priv3::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_error
@@ -1162,10 +1163,10 @@
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::Priv3::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Priv3::__parse_stage1
-[debug/optimizer] removing field for unused method foo::Priv3::__str__
 [debug/optimizer] removing field for unused method foo::Priv3::parse1
 [debug/optimizer] removing field for unused method foo::Priv3::parse2
 [debug/optimizer] removing field for unused method foo::Priv3::parse3
+[debug/optimizer] removing field for unused method foo::Priv4::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv4::__on_0x25_error
@@ -1181,10 +1182,10 @@
 [debug/optimizer] removing field for unused method foo::Priv4::__on_x
 [debug/optimizer] removing field for unused method foo::Priv4::__on_x_error
 [debug/optimizer] removing field for unused method foo::Priv4::__parse_stage1
-[debug/optimizer] removing field for unused method foo::Priv4::__str__
 [debug/optimizer] removing field for unused method foo::Priv4::parse1
 [debug/optimizer] removing field for unused method foo::Priv4::parse2
 [debug/optimizer] removing field for unused method foo::Priv4::parse3
+[debug/optimizer] removing field for unused method foo::Priv5::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_error
@@ -1197,10 +1198,10 @@
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_sync_advance
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::Priv5::__on_0x25_undelivered
-[debug/optimizer] removing field for unused method foo::Priv5::__str__
 [debug/optimizer] removing field for unused method foo::Priv5::parse1
 [debug/optimizer] removing field for unused method foo::Priv5::parse2
 [debug/optimizer] removing field for unused method foo::Priv5::parse3
+[debug/optimizer] removing field for unused method foo::Priv6::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_error
@@ -1213,10 +1214,10 @@
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_sync_advance
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::Priv6::__on_0x25_undelivered
-[debug/optimizer] removing field for unused method foo::Priv6::__str__
 [debug/optimizer] removing field for unused method foo::Priv6::parse1
 [debug/optimizer] removing field for unused method foo::Priv6::parse2
 [debug/optimizer] removing field for unused method foo::Priv6::parse3
+[debug/optimizer] removing field for unused method foo::Pub2::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_error
@@ -1229,7 +1230,7 @@
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_sync_advance
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_synced
 [debug/optimizer] removing field for unused method foo::Pub2::__on_0x25_undelivered
-[debug/optimizer] removing field for unused method foo::Pub2::__str__
+[debug/optimizer] removing field for unused method foo::Pub3::__hook_to_string
 [debug/optimizer] removing field for unused method foo::Pub3::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::Pub3::__on_0x25_done
 [debug/optimizer] removing field for unused method foo::Pub3::__on_0x25_error
@@ -1244,7 +1245,6 @@
 [debug/optimizer] removing field for unused method foo::Pub3::__on_0x25_undelivered
 [debug/optimizer] removing field for unused method foo::Pub3::__on_x
 [debug/optimizer] removing field for unused method foo::Pub3::__on_x_error
-[debug/optimizer] removing field for unused method foo::Pub3::__str__
 [debug/optimizer] removing field for unused method struct_10::parse1
 [debug/optimizer] removing field for unused method struct_10::parse2
 [debug/optimizer] removing field for unused method struct_10::parse3

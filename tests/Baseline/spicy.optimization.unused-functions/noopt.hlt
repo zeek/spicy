@@ -16,7 +16,7 @@ type A = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -44,7 +44,7 @@ public type B = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -72,7 +72,7 @@ type C = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -101,7 +101,7 @@ public type D = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -130,7 +130,7 @@ type F = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
