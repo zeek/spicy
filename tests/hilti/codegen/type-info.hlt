@@ -245,6 +245,8 @@ struct VisitorTypesInit {
         CHECK_EQ(i->first.name, "i");
         CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(fv)->get(fv), 42);
         CHECK(++i == s.end());
+
+        CHECK_EQ(v.to_string(), "[$s=\"string\", $i=42]");
     }
 
     void visit(const hilti::rt::type_info::Value& v) {
@@ -327,6 +329,7 @@ struct VisitorTypesInit {
                 SEEN();
                 CHECK_EQ(type.library->cxxName(), "::hilti::rt::TypeInfo*");
                 CHECK_EQ(std::string(type.library->get(v)->display), "Test::Struct");
+                CHECK_EQ(v.to_string(), "<::hilti::rt::TypeInfo*>");
                 break;
             }
             case TypeInfo::Map: {
@@ -424,6 +427,7 @@ struct VisitorTypesInit {
             case TypeInfo::SignedInteger_int64: {
                 SEEN();
                 CHECK_EQ(type.signed_integer_int64->get(v), -64);
+                CHECK_EQ(v.to_string(), "-64");
                 break;
             }
             case TypeInfo::Stream: {
@@ -488,6 +492,7 @@ struct VisitorTypesInit {
                 auto i = x->value(v);
                 CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(i)->get(i), 42);
                 CHECK_EQ(x->fields().size(), 2);
+                CHECK_EQ(v.to_string(), "$i=42");
                 break;
             }
             case TypeInfo::UnsignedInteger_uint8: {
