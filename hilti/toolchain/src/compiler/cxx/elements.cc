@@ -371,8 +371,10 @@ std::string cxx::type::Struct::str() const {
     auto fmt_member = [&](const auto& f) {
         if ( auto x = std::get_if<declaration::Local>(&f) ) {
             if ( auto x = std::get_if<declaration::Local>(&f) ) {
-                auto id = (x->isAnonymous() ? cxx::ID("<anon>") : x->id);
-                to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                if ( ! (x->isInternal() || x->linkage == "inline static") ) {
+                    auto id = (x->isAnonymous() ? cxx::ID("<anon>") : x->id);
+                    to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                }
             }
 
             // We default initialize any members here that don't have an
