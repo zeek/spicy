@@ -183,6 +183,10 @@ public:
         return declarationFunction(f, linkage, m);
     }
 
+    //////// Types
+
+    auto typeTypeInfo(const Meta& m = Meta()) { return typeLibrary(Constness::Const, "hilti::rt::TypeInfo*", m); }
+
     //////// Expressions
 
     // Constructors.

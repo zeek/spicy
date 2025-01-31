@@ -659,10 +659,10 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     QualifiedType* result = nullptr;
 
     if ( id.local().str() == "0x25_print" ) {
-        // Special-case: We simply translate this into HITLI's __str__ hook.
+        // Special-case: We simply translate this into HILTI's __hook_to_string hook.
         auto string_ = builder()->qualifiedType(builder()->typeString(), hilti::Constness::Const);
         result = builder()->qualifiedType(builder()->typeOptional(string_), hilti::Constness::Const);
-        hid = "__str__";
+        hid = "__hook_to_string";
     }
     else {
         std::string postfix;

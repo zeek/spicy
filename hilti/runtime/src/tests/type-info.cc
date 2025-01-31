@@ -52,13 +52,13 @@ struct X {
 namespace __hlt::type_info {
 namespace {
 const hilti::rt::TypeInfo __ti_Test_X =
-    {"Test::X", "Test::X",
+    {"Test::X", "Test::X", nullptr,
      new hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
          {hilti::rt::type_info::struct_::Field{"i", &hilti::rt::type_info::int32, offsetof(Test::X, i), false, false},
           hilti::rt::type_info::struct_::Field{"s", &hilti::rt::type_info::string, offsetof(Test::X, s), false, false},
           hilti::rt::type_info::struct_::Field{"y", &type_info::__ti_Test_Y, offsetof(Test::X, y), false, false}}))};
 const hilti::rt::TypeInfo __ti_Test_Y =
-    {"Test::Y", "Test::Y",
+    {"Test::Y", "Test::Y", nullptr,
      new hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
          {hilti::rt::type_info::struct_::Field{"b", &hilti::rt::type_info::bool_, offsetof(Test::Y, b), false, false},
           hilti::rt::type_info::struct_::Field{"r", &hilti::rt::type_info::real, offsetof(Test::Y, r), false,
@@ -125,7 +125,7 @@ TEST_CASE("internal fields") {
         bool __internal;
     };
 
-    const TypeInfo ti = {"A", "A",
+    const TypeInfo ti = {"A", "A", nullptr,
                          new type_info::Struct(
                              {type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false, false},
                               type_info::struct_::Field{"f2", &type_info::string, offsetof(A, f2), false, false},
@@ -152,7 +152,7 @@ TEST_CASE("anonymous fields") {
         std::string f1;
     };
 
-    const TypeInfo ti = {"A", "A",
+    const TypeInfo ti = {"A", "A", nullptr,
                          new type_info::Struct(
                              {type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false, true}})};
 

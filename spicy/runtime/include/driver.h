@@ -222,14 +222,11 @@ public:
     /**
      * Retrieves a parser by its name.
      *
-     * @param name name of the parser to be retrieved, either as shown in the
-     * output of `listParsers()`; or, alternatively, as a string rendering of a
-     * port or MIME type as defined by a unit's properties. If no name is given
-     * and there's only one parser available, that one is taken automatically.
-     *
-     * @return the parser, or an error if it could not be retrieved
+     * This just forwards to `spicy::rt::lookupParser()`.
      */
-    hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "");
+    hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "") {
+        return spicy::rt::lookupParser(name);
+    }
 
     /**
      * Feeds a parser with an input stream of data.

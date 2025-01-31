@@ -4,6 +4,7 @@ Null
 True
 __error
 __library_type
+__library_type_const
 add
 addr
 any
@@ -87,6 +88,7 @@ timer
 try
 tuple
 type
+typeinfo
 uint16
 uint32
 uint64

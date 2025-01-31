@@ -5,6 +5,7 @@
 
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/result.h>
 #include <hilti/rt/types/stream.h>
 
 #include <spicy/rt/configuration.h>
@@ -62,6 +63,33 @@ hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const std::
     }
 
     return hilti::rt::result::Error(hilti::rt::fmt("unknown parser '%s'", parser));
+}
+
+hilti::rt::Result<const spicy::rt::Parser*> spicy::rt::lookupParser(const std::string& name) {
+    const auto& parsers = spicy::rt::parsers();
+
+    if ( parsers.empty() )
+        return hilti::rt::result::Error("no parsers available");
+
+    if ( name.empty() ) {
+        if ( const auto& def = detail::globalState()->default_parser )
+            return *def;
+        else
+            return hilti::rt::result::Error("multiple parsers available, need to select one");
+    }
+
+    const auto& parsers_by_name = detail::globalState()->parsers_by_name;
+
+    if ( auto p = parsers_by_name.find(name); p != parsers_by_name.end() ) {
+        assert(! p->second.empty());
+
+        if ( p->second.size() > 1 )
+            return hilti::rt::result::Error("multiple matching parsers found");
+
+        return p->second.front();
+    }
+    else
+        return hilti::rt::result::Error("no matching parser available");
 }
 
 void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,

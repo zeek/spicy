@@ -112,7 +112,6 @@
 [debug/ast-declarations]     - Type "UnitAlreadyConnected" (spicy_rt::UnitAlreadyConnected)
 [debug/ast-declarations]     - Type "SinkState" (spicy_rt::SinkState)
 [debug/ast-declarations]     - Type "ParsedUnit" (spicy_rt::ParsedUnit)
-[debug/ast-declarations]     - Type "TypeInfo" (spicy_rt::TypeInfo)
 [debug/ast-declarations]     - Type "Sink" (spicy_rt::Sink)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self)
 [debug/ast-declarations]           - Field "close" (spicy_rt::close)
@@ -173,11 +172,11 @@
 [debug/ast-declarations]     - Type "UnitContext" (spicy_rt::UnitContext)
 [debug/ast-declarations]     - Function "createContext" (spicy_rt::createContext)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Function "setContext" (spicy_rt::setContext)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_8)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx_2)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_2)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__2)
 [debug/ast-declarations]     - Type "Parser" (spicy_rt::Parser)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self_2)
 [debug/ast-declarations]           - Field "name" (spicy_rt::name)
@@ -186,7 +185,7 @@
 [debug/ast-declarations]           - Field "parse2" (spicy_rt::parse2)
 [debug/ast-declarations]           - Field "parse3" (spicy_rt::parse3)
 [debug/ast-declarations]           - Field "context_new" (spicy_rt::context_new)
-[debug/ast-declarations]           - Field "type_info" (spicy_rt::type_info)
+[debug/ast-declarations]           - Field "type_" (spicy_rt::type__3)
 [debug/ast-declarations]           - Field "description" (spicy_rt::description)
 [debug/ast-declarations]           - Field "mime_types" (spicy_rt::mime_types)
 [debug/ast-declarations]           - Field "ports" (spicy_rt::ports)
@@ -256,7 +255,7 @@
 [debug/ast-declarations]     - Function "initializeParsedUnit" (spicy_rt::initializeParsedUnit)
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_3)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__4)
 [debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
 [debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
 [debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
@@ -398,16 +397,16 @@
 [debug/ast-declarations] - [function] spicy::zlib_decompress -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_finish -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_init -> spicy::ZlibStream
-[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::TypeInfo, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
-[debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort, spicy_rt::TypeInfo
+[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort
 [debug/ast-declarations] - [function] spicy_rt::atEod -> spicy_rt::Filters
-[debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::TypeInfo, spicy_rt::UnitContext
+[debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::UnitContext
 [debug/ast-declarations] - [function] spicy_rt::expectBytesLiteral -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::extractBytes -> spicy_rt::Filters
-[debug/ast-declarations] - [function] spicy_rt::initializeParsedUnit -> spicy_rt::ParsedUnit, spicy_rt::TypeInfo
+[debug/ast-declarations] - [function] spicy_rt::initializeParsedUnit -> spicy_rt::ParsedUnit
 [debug/ast-declarations] - [function] spicy_rt::printParserState -> hilti::Exception, hilti::RecoverableFailure
-[debug/ast-declarations] - [function] spicy_rt::registerParser -> spicy_rt::MIMEType, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::TypeInfo
-[debug/ast-declarations] - [function] spicy_rt::setContext -> spicy_rt::TypeInfo, spicy_rt::UnitContext
+[debug/ast-declarations] - [function] spicy_rt::registerParser -> spicy_rt::MIMEType, spicy_rt::Parser, spicy_rt::ParserPort
+[debug/ast-declarations] - [function] spicy_rt::setContext -> spicy_rt::UnitContext
 [debug/ast-declarations] - [function] spicy_rt::unit_find -> spicy_rt::FindDirection
 [debug/ast-declarations] - [function] spicy_rt::waitForEod -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::waitForInput -> spicy_rt::Filters
@@ -427,7 +426,7 @@
 [debug/ast-declarations]           - Field "__on_0x25_done" (DNS::__on_0x25_done)
 [debug/ast-declarations]           - Field "__on_0x25_error" (DNS::__on_0x25_error)
 [debug/ast-declarations]                 - Parameter "__except" (DNS::__except)
-[debug/ast-declarations]           - Field "__str__" (DNS::__str__)
+[debug/ast-declarations]           - Field "__hook_to_string" (DNS::__hook_to_string)
 [debug/ast-declarations]           - Field "__on_0x25_finally" (DNS::__on_0x25_finally)
 [debug/ast-declarations]           - Field "__on_0x25_confirmed" (DNS::__on_0x25_confirmed)
 [debug/ast-declarations]           - Field "__on_0x25_rejected" (DNS::__on_0x25_rejected)
@@ -495,7 +494,7 @@
 [debug/ast-declarations]           - Field "__on_0x25_done" (DNS::__on_0x25_done_2)
 [debug/ast-declarations]           - Field "__on_0x25_error" (DNS::__on_0x25_error_2)
 [debug/ast-declarations]                 - Parameter "__except" (DNS::__except_2)
-[debug/ast-declarations]           - Field "__str__" (DNS::__str___2)
+[debug/ast-declarations]           - Field "__hook_to_string" (DNS::__hook_to_string_2)
 [debug/ast-declarations]           - Field "__on_0x25_finally" (DNS::__on_0x25_finally_2)
 [debug/ast-declarations]           - Field "__on_0x25_confirmed" (DNS::__on_0x25_confirmed_2)
 [debug/ast-declarations]           - Field "__on_0x25_rejected" (DNS::__on_0x25_rejected_2)
@@ -632,7 +631,7 @@
 [debug/ast-declarations]                                   - Parameter "__cur" (DNS::__cur_23)
 [debug/ast-declarations]                                   - Parameter "__context" (DNS::__context_15)
 [debug/ast-declarations]                             - Field "context_new" (DNS::context_new)
-[debug/ast-declarations]                             - Field "type_info" (DNS::type_info)
+[debug/ast-declarations]                             - Field "type_" (DNS::type_)
 [debug/ast-declarations]                             - Field "description" (DNS::description)
 [debug/ast-declarations]                             - Field "mime_types" (DNS::mime_types)
 [debug/ast-declarations]                             - Field "ports" (DNS::ports)
@@ -716,7 +715,7 @@
 [debug/ast-declarations]                                   - Parameter "__cur" (DNS::__cur_26)
 [debug/ast-declarations]                                   - Parameter "__context" (DNS::__context_18)
 [debug/ast-declarations]                             - Field "context_new" (DNS::context_new_2)
-[debug/ast-declarations]                             - Field "type_info" (DNS::type_info_2)
+[debug/ast-declarations]                             - Field "type_" (DNS::type__2)
 [debug/ast-declarations]                             - Field "description" (DNS::description_2)
 [debug/ast-declarations]                             - Field "mime_types" (DNS::mime_types_2)
 [debug/ast-declarations]                             - Field "ports" (DNS::ports_2)
@@ -825,7 +824,6 @@
 [debug/ast-declarations]     - Type "UnitAlreadyConnected" (spicy_rt::UnitAlreadyConnected)
 [debug/ast-declarations]     - Type "SinkState" (spicy_rt::SinkState)
 [debug/ast-declarations]     - Type "ParsedUnit" (spicy_rt::ParsedUnit)
-[debug/ast-declarations]     - Type "TypeInfo" (spicy_rt::TypeInfo)
 [debug/ast-declarations]     - Type "Sink" (spicy_rt::Sink)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self)
 [debug/ast-declarations]           - Field "close" (spicy_rt::close)
@@ -886,11 +884,11 @@
 [debug/ast-declarations]     - Type "UnitContext" (spicy_rt::UnitContext)
 [debug/ast-declarations]     - Function "createContext" (spicy_rt::createContext)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Function "setContext" (spicy_rt::setContext)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_8)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx_2)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_2)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__2)
 [debug/ast-declarations]     - Type "Parser" (spicy_rt::Parser)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self_2)
 [debug/ast-declarations]           - Field "name" (spicy_rt::name)
@@ -899,7 +897,7 @@
 [debug/ast-declarations]           - Field "parse2" (spicy_rt::parse2)
 [debug/ast-declarations]           - Field "parse3" (spicy_rt::parse3)
 [debug/ast-declarations]           - Field "context_new" (spicy_rt::context_new)
-[debug/ast-declarations]           - Field "type_info" (spicy_rt::type_info)
+[debug/ast-declarations]           - Field "type_" (spicy_rt::type__3)
 [debug/ast-declarations]           - Field "description" (spicy_rt::description)
 [debug/ast-declarations]           - Field "mime_types" (spicy_rt::mime_types)
 [debug/ast-declarations]           - Field "ports" (spicy_rt::ports)
@@ -969,7 +967,7 @@
 [debug/ast-declarations]     - Function "initializeParsedUnit" (spicy_rt::initializeParsedUnit)
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_3)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__4)
 [debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
 [debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
 [debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
@@ -1295,7 +1293,6 @@
 [debug/ast-declarations]     - Type "UnitAlreadyConnected" (spicy_rt::UnitAlreadyConnected)
 [debug/ast-declarations]     - Type "SinkState" (spicy_rt::SinkState)
 [debug/ast-declarations]     - Type "ParsedUnit" (spicy_rt::ParsedUnit)
-[debug/ast-declarations]     - Type "TypeInfo" (spicy_rt::TypeInfo)
 [debug/ast-declarations]     - Type "Sink" (spicy_rt::Sink)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self)
 [debug/ast-declarations]           - Field "close" (spicy_rt::close)
@@ -1350,11 +1347,11 @@
 [debug/ast-declarations]     - Type "UnitContext" (spicy_rt::UnitContext)
 [debug/ast-declarations]     - Function "createContext" (spicy_rt::createContext)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Function "setContext" (spicy_rt::setContext)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_8)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx_2)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_2)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__2)
 [debug/ast-declarations]     - Type "Parser" (spicy_rt::Parser)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self_2)
 [debug/ast-declarations]           - Field "name" (spicy_rt::name)
@@ -1363,7 +1360,7 @@
 [debug/ast-declarations]           - Field "parse2" (spicy_rt::parse2)
 [debug/ast-declarations]           - Field "parse3" (spicy_rt::parse3)
 [debug/ast-declarations]           - Field "context_new" (spicy_rt::context_new)
-[debug/ast-declarations]           - Field "type_info" (spicy_rt::type_info)
+[debug/ast-declarations]           - Field "type_" (spicy_rt::type__3)
 [debug/ast-declarations]           - Field "description" (spicy_rt::description)
 [debug/ast-declarations]           - Field "mime_types" (spicy_rt::mime_types)
 [debug/ast-declarations]           - Field "ports" (spicy_rt::ports)
@@ -1433,7 +1430,7 @@
 [debug/ast-declarations]     - Function "initializeParsedUnit" (spicy_rt::initializeParsedUnit)
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
-[debug/ast-declarations]             - Parameter "ti" (spicy_rt::ti_3)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__4)
 [debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
 [debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
 [debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
@@ -1581,16 +1578,16 @@
 [debug/ast-declarations] - [function] spicy::zlib_decompress -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_finish -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_init -> spicy::ZlibStream
-[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::TypeInfo, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
-[debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort, spicy_rt::TypeInfo
+[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort
 [debug/ast-declarations] - [function] spicy_rt::atEod -> spicy_rt::Filters
-[debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::TypeInfo, spicy_rt::UnitContext
+[debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::UnitContext
 [debug/ast-declarations] - [function] spicy_rt::expectBytesLiteral -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::extractBytes -> spicy_rt::Filters
-[debug/ast-declarations] - [function] spicy_rt::initializeParsedUnit -> spicy_rt::ParsedUnit, spicy_rt::TypeInfo
+[debug/ast-declarations] - [function] spicy_rt::initializeParsedUnit -> spicy_rt::ParsedUnit
 [debug/ast-declarations] - [function] spicy_rt::printParserState -> hilti::Exception, hilti::RecoverableFailure
-[debug/ast-declarations] - [function] spicy_rt::registerParser -> spicy_rt::MIMEType, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::TypeInfo
-[debug/ast-declarations] - [function] spicy_rt::setContext -> spicy_rt::TypeInfo, spicy_rt::UnitContext
+[debug/ast-declarations] - [function] spicy_rt::registerParser -> spicy_rt::MIMEType, spicy_rt::Parser, spicy_rt::ParserPort
+[debug/ast-declarations] - [function] spicy_rt::setContext -> spicy_rt::UnitContext
 [debug/ast-declarations] - [function] spicy_rt::unit_find -> spicy_rt::FindDirection
 [debug/ast-declarations] - [function] spicy_rt::waitForEod -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::waitForInput -> spicy_rt::Filters

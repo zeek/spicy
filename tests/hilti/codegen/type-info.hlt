@@ -1,17 +1,13 @@
 # @TEST-REQUIRES: which spicy-build
 # @TEST-EXEC: spicy-build -d -S %INPUT type-info.cc && ./a.out
 
-# TODO: -  Generated type info is the same as with origin/main, exccept for var names and a couple of string constant values (display).
-#       -  Test itself hasn't changed at all.
-#       -  type-info.{h,cc} in runtime hasn't changed at all either.
-
 module Test {
 
 import hilti;
 
 type Enum = enum { A = 1, B = 2, C = 4 };
 type Exception = exception;
-type TypeInfo = __library_type("hilti::rt::TypeInfo const*");
+type TypeInfo = __library_type_const("hilti::rt::TypeInfo*");
 
 type Struct = struct {
     string s;
@@ -68,6 +64,7 @@ public type TestTypes = struct {
     strong_ref<Struct> sr;
     Struct stru;
     time ti;
+    type ty;
     tuple<a: int<32>, string, c: bool> tu;
     A_Union un;
     uint<8> ui8;
@@ -144,6 +141,7 @@ public function tuple<strong_ref<TestTypes>, strong_ref<TestTypes>, TypeInfo> ma
         $sr = S,
         $stru = *S,
         $ti = time(1295415110.5),
+        $ty = Struct,
         $tu = (123, "string", True),
         $un = U,
         $ui8 = 8,
@@ -228,7 +226,7 @@ void __check_eq(const T& x, const U& y, std::string loc) {
 // "TypesInit".
 struct VisitorTypesInit {
     std::set<TypeInfo::Tag> seen;
-    static inline const int ExpectedVisitorsSeen = 41; // all (44) minus void and function and MatchState (which comes as struct)
+    static inline const int ExpectedVisitorsSeen = 42; // all (45) minus void and function and MatchState (which comes as struct)
 
     // Helper for checking content of a struct of type "S". All our instances
     // of "S" have the same values.
@@ -247,6 +245,8 @@ struct VisitorTypesInit {
         CHECK_EQ(i->first.name, "i");
         CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(fv)->get(fv), 42);
         CHECK(++i == s.end());
+
+        CHECK_EQ(v.to_string(), "[$s=\"string\", $i=42]");
     }
 
     void visit(const hilti::rt::type_info::Value& v) {
@@ -327,6 +327,9 @@ struct VisitorTypesInit {
             }
             case TypeInfo::Library: {
                 SEEN();
+                CHECK_EQ(type.library->cxxName(), "::hilti::rt::TypeInfo*");
+                CHECK_EQ(std::string(type.library->get(v)->display), "Test::Struct");
+                CHECK_EQ(v.to_string(), "<::hilti::rt::TypeInfo*>");
                 break;
             }
             case TypeInfo::Map: {
@@ -424,6 +427,7 @@ struct VisitorTypesInit {
             case TypeInfo::SignedInteger_int64: {
                 SEEN();
                 CHECK_EQ(type.signed_integer_int64->get(v), -64);
+                CHECK_EQ(v.to_string(), "-64");
                 break;
             }
             case TypeInfo::Stream: {
@@ -488,6 +492,7 @@ struct VisitorTypesInit {
                 auto i = x->value(v);
                 CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(i)->get(i), 42);
                 CHECK_EQ(x->fields().size(), 2);
+                CHECK_EQ(v.to_string(), "$i=42");
                 break;
             }
             case TypeInfo::UnsignedInteger_uint8: {
