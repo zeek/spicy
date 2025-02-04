@@ -1,0 +1,16 @@
+# @TEST-DOC: Check that HILTI anonymous enum types error.
+#
+# @TEST-EXEC-FAIL: hiltic -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+global enum {} e;
+}
+
+@TEST-START-NEXT
+
+module Test {
+function void x() {
+    local enum {} e;
+}
+}

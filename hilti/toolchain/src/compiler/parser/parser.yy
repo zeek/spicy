@@ -245,8 +245,8 @@ static int _field_width = 0;
 %type <hilti::ID>                               local_id scoped_id dotted_id function_id scoped_function_id
 %type <hilti::Declaration*>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
 %type <hilti::Declarations>                     struct_fields union_fields opt_union_fields
-%type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
-%type <hilti::QualifiedType*>                 qtype
+%type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type named_type
+%type <hilti::QualifiedType*>                 qtype possibly_named_qtype
 %type <hilti::Ctor*>                          ctor tuple struct_ list regexp map set
 %type <hilti::Expression*>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_func_default_expr expr_no_or_error
 %type <hilti::Expressions>                      opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments case_exprs
@@ -330,7 +330,7 @@ global_scope_decl
               | import_decl                      { $$ = std::move($1); }
               | property_decl                    { $$ = std::move($1); }
 
-type_decl     : opt_linkage TYPE scoped_id '=' qtype opt_attributes ';'
+type_decl     : opt_linkage TYPE scoped_id '=' possibly_named_qtype opt_attributes ';'
                                                  { $$ = builder->declarationType(std::move($3), std::move($5), std::move($6), std::move($1), __loc__); }
 
 constant_decl : opt_linkage CONST scoped_id '=' expr ';'
@@ -618,10 +618,13 @@ base_type_no_attrs
               | LIBRARY_TYPE '(' CSTRING ')'     { $$ = builder->typeLibrary(std::move($3), __loc__); }
 
               | tuple_type                       { $$ = std::move($1); }
-              | struct_type                      { $$ = std::move($1); }
-              | union_type                       { $$ = std::move($1); }
-              | enum_type                        { $$ = std::move($1); }
               | bitfield_type                    { $$ = std::move($1); }
+              ;
+
+// A type which must be bound to a name
+named_type    : struct_type                      { $$ = std::move($1); }
+              | enum_type                        { $$ = std::move($1); }
+              | union_type                       { $$ = std::move($1); }
               ;
 
 base_type     : base_type_no_attrs               { $$ = $1; }
@@ -636,6 +639,12 @@ qtype         : type                             { $$ = builder->qualifiedType(s
               | CONST type                       { $$ = builder->qualifiedType(std::move($2), Constness::Const, __loc__); }
               | AUTO                             { $$ = builder->qualifiedType(builder->typeAuto(__loc__), Constness::Const, __loc__); }
               ;
+
+possibly_named_qtype
+              : qtype { $$ = std::move($1); }
+              | named_type { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable, __loc__); }
+              ;
+
 
 type_param_begin:
               '<'

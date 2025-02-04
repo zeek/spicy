@@ -272,8 +272,8 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::ID>                           local_id scoped_id dotted_id unit_hook_id
 %type <hilti::Declaration*>               local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
 %type <hilti::Declarations>                 struct_fields
-%type <hilti::UnqualifiedType*>           base_type_no_ref base_type type type_no_ref tuple_type struct_type enum_type unit_type bitfield_type reference_type
-%type <hilti::QualifiedType*>             qtype func_result opt_func_result unit_field_base_type
+%type <hilti::UnqualifiedType*>           base_type_no_ref named_type base_type type type_no_ref tuple_type struct_type enum_type unit_type bitfield_type reference_type
+%type <hilti::QualifiedType*>             qtype func_result opt_func_result unit_field_base_type possibly_named_qtype
 %type <hilti::Ctor*>                      ctor tuple struct_ regexp list vector map set unit_field_ctor
 %type <hilti::Expression*>                expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_init_expression opt_unit_field_condition unit_field_repeat opt_unit_field_repeat opt_unit_switch_expr opt_bitfield_range_value expr_no_or_error
 %type <hilti::Expressions>                  opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_unit_field_args opt_unit_field_sinks case_exprs
@@ -379,7 +379,8 @@ global_scope_decl
               | hook_decl                        { $$ = std::move($1); }
 
 type_decl     : opt_linkage TYPE scoped_id '='   { _docs.emplace_back(driver->docGetAndClear()); }
-                qtype opt_attributes ';'         { if ( auto u = $6->type()->tryAs<type::Unit>(); u && $7 && *$7 ) {
+                possibly_named_qtype opt_attributes ';'
+                                                 { if ( auto u = $6->type()->tryAs<type::Unit>(); u && $7 && *$7 ) {
                                                       u->setAttributes(builder->context(), $7);
                                                       $7 = {}; // don't associate with declaration
                                                    }
@@ -652,14 +653,17 @@ base_type_no_ref
               | SINK                             { $$ = builder->typeSink(__loc__); }
 
               | LIBRARY_TYPE '(' CSTRING ')'     { $$ = builder->typeLibrary(std::move($3), __loc__); }
-
-              | tuple_type                       { $$ = std::move($1); }
-              | struct_type                      { $$ = std::move($1); }
-              | enum_type                        { $$ = std::move($1); }
               | bitfield_type                    { $$ = std::move($1); }
-              | unit_type                        { $$ = std::move($1); }
-
+              | tuple_type                       { $$ = std::move($1); }
               ;
+
+// A type which must be bound to a name
+named_type:   struct_type                        { $$ = std::move($1); }
+              | enum_type                        { $$ = std::move($1); }
+              | unit_type                        { $$ = std::move($1); }
+              ;
+
+
 
 /* We split this out from "base_type" because it can lead to ambigitious in some contexts. */
 reference_type: qtype '&'                        { $1->setSide(hilti::Side::LHS);
@@ -687,6 +691,11 @@ qtype         : type_no_ref                      { $$ = builder->qualifiedType(s
               | CONST type_no_ref                { $$ = builder->qualifiedType(std::move($2), hilti::Constness::Const, __loc__); }
               | reference_type                   { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Const, __loc__); }
               | AUTO                             { $$ = builder->qualifiedType(builder->typeAuto(__loc__), hilti::Constness::Const, __loc__); }
+              ;
+
+possibly_named_qtype
+              : qtype { $$ = std::move($1); }
+              | named_type { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable, __loc__); }
               ;
 
 type_param_begin:
