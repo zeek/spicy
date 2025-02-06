@@ -93,8 +93,7 @@ enum class CoercionStyle {
      * Shortcut style activating all possible coercions in the context of
      * function parameter passing.
      */
-    TryAllForFunctionCall =
-        FunctionCall | TryExactMatch | TryConstPromotion | TryCoercion | TryCoercionWithinSameType | TryDeref,
+    TryAllForFunctionCall = TryDirectMatchForFunctionCall | TryCoercion | TryCoercionWithinSameType | TryDeref,
 
     /**
      * Shortcut style allowing for direct matches only in the context of
