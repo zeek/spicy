@@ -606,11 +606,11 @@ docker_fedora41_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_opensuse15_5_task:
+docker_opensuse15_6_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.opensuse-15.5
+    dockerfile: docker/Dockerfile.opensuse-15.6
     cpu: 4
     memory: 12G
 
