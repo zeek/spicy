@@ -80,7 +80,7 @@ enum class CoercionStyle {
      * Shortcut style activating all possible coercions in the context of
      * operator resolution.
      */
-    TryAllForMatching = (1U << 1U) | (1U << 3U) | (1U << 4U) | (1U << 5U) | (1U << 6U),
+    TryAllForMatching = (1U << 3U) | (1U << 4U) | (1U << 5U) | (1U << 6U),
 
     /**
      * Shortcut style activating possible coercions in the context of
@@ -98,7 +98,7 @@ enum class CoercionStyle {
      * Shortcut style allowing for direct matches only in the context of
      * operator resolution.
      */
-    TryDirectForMatching = (1U << 1U) | (1U << 3U) | (1U << 4U) | (1U << 6U)
+    TryDirectForMatching = (1U << 3U) | (1U << 4U) | (1U << 6U)
 };
 
 /**
