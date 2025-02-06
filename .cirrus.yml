@@ -608,7 +608,7 @@ docker_opensuse15_5_task:
 
 freebsd13_task:
   freebsd_instance:
-    image_family: freebsd-13-3
+    image_family: freebsd-13-4
     cpu: 8
     memory: 8GB
 
