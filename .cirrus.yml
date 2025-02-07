@@ -606,11 +606,11 @@ docker_fedora41_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_opensuse15_5_task:
+docker_opensuse15_6_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.opensuse-15.5
+    dockerfile: docker/Dockerfile.opensuse-15.6
     cpu: 4
     memory: 12G
 
@@ -644,8 +644,10 @@ docker_opensuse15_5_task:
     type: application/gzip
 
 freebsd13_task:
+  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
+
   freebsd_instance:
-    image_family: freebsd-13-3
+    image_family: freebsd-13-4
     cpu: 8
     memory: 8GB
 
@@ -681,7 +683,7 @@ freebsd13_task:
 
 freebsd14_task:
   freebsd_instance:
-    image_family: freebsd-14-0
+    image_family: freebsd-14-2
     cpu: 8
     memory: 8GB
 

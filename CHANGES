@@ -1,3 +1,15 @@
+1.13.0-dev.81 | 2025-02-07 09:21:54 +0100
+
+  * Drop freebsd-13 from default CI jobs. (Benjamin Bannier, Corelight)
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
+  * Bump freebsd-14 in CI. (Benjamin Bannier, Corelight)
+
+  * Bump freebsd-13 in CI. (Benjamin Bannier, Corelight)
+
+  * Bump opensuse-15 in CI. (Benjamin Bannier, Corelight)
+
 1.13.0-dev.75 | 2025-01-23 10:29:10 +0100
 
   * Regenerate usage documentation. (Benjamin Bannier, Corelight)
