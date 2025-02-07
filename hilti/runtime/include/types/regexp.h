@@ -12,6 +12,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/vector.h>
+#include <hilti/rt/util.h>
 
 extern "C" {
 struct jrx_regex_t;
@@ -35,6 +36,27 @@ struct Flags {
         return std::string(key, 2);
     }
 };
+
+/**
+ * A single regular expression pattern. A regular expression instance stores
+ * one or more individual patterns.
+ */
+class Pattern {
+public:
+    Pattern(std::string value = "") : _value(std::move(value)) {}
+
+    const auto& value() const { return _value; }
+
+private:
+    std::string _value;
+};
+
+inline std::string to_string(const Pattern& pattern) { return fmt("/%s/", pattern.value()); }
+
+inline std::ostream& operator<<(std::ostream& out, const Pattern& pattern) { return out << to_string(pattern); }
+
+/** A set of individual regular expression patterns. */
+using Patterns = std::vector<Pattern>;
 
 /* Type for passing around the content of extracted capture groups. */
 using Captures = Vector<Bytes>;
@@ -129,7 +151,7 @@ namespace detail {
 // of patterns again.
 class CompiledRegExp {
 public:
-    CompiledRegExp(const std::vector<std::string>& patterns, regexp::Flags flags);
+    CompiledRegExp(const regexp::Patterns& patterns, regexp::Flags flags);
     ~CompiledRegExp() = default;
 
     CompiledRegExp(const CompiledRegExp& other) = delete;
@@ -151,38 +173,41 @@ private:
     };
 
     void _newJrx();
-    void _compileOne(std::string pattern, int idx);
+    void _compileOne(regexp::Pattern pattern, int idx);
 
     regexp::Flags _flags{};
-    std::vector<std::string> _patterns;
+    regexp::Patterns _patterns;
     std::unique_ptr<jrx_regex_t, RegFree> _jrx;
 };
 
 } // namespace detail
 } // namespace regexp
 
-/** A regular expression instance. */
+/**
+ * A regular expression instance. A regular expression can be compiled from one
+ * or more individual patterns. All provided patterns will be matched in
+ * parallel.
+ */
 class RegExp {
 public:
     /**
      * Instantiates a new regular expression instance.
      *
-     * @param pattern regular expression to compile
-     * @param flags compilation flags for the regexp
+     * @param pattern a single regular expression pattern to compile
+     * @param flags compilation flags for the regexp pattern
      * @exception `PatternError` if the pattern cannot be compiled
      */
-    RegExp(std::string pattern, regexp::Flags flags = regexp::Flags());
+    RegExp(regexp::Pattern pattern, regexp::Flags flags = regexp::Flags());
 
     /**
      * Instantiates a new regular expression instance performing parallel set
-     * matching on multiple patterns. Set matching implicitly sets the
-     * `Flags::no_sub` (even if just one pattern is passed in).
+     * matching on multiple patterns.
      *
-     * @param patterns regular expressions to compile jointly
-     * @param flags compilation flags for the regexp
+     * @param patterns regular expression patterns to compile jointly
+     * @param flags compilation flags, affecting all patterns
      * @exception `PatternError` if a pattern cannot be compiled
      */
-    RegExp(const std::vector<std::string>& patterns, regexp::Flags flags = regexp::Flags());
+    RegExp(const regexp::Patterns& patterns, regexp::Flags flags = regexp::Flags());
 
     /**
      * Instantiates an empty regular expression without any patterns. This is

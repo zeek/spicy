@@ -977,7 +977,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // Store the regexp as a global constant to avoid recomputing the
         // regexp on each runtime pass through the calling context.
-        auto re = pb->cg()->addGlobalConstant(builder()->ctorRegExp(c->value()));
+        auto re = pb->cg()->addGlobalConstant(builder()->ctorRegExp(c->patterns()));
 
         auto ncur = builder()->addTmp("ncur", state().cur);
         auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
@@ -1083,15 +1083,15 @@ struct ProductionVisitor : public production::Visitor {
                     return std::make_pair(c->template as<production::Ctor>()
                                               ->ctor()
                                               ->template as<hilti::ctor::RegExp>()
-                                              ->value(),
+                                              ->patterns(),
                                           c->tokenID());
                 });
 
-                auto flattened = std::vector<std::string>();
+                auto flattened = hilti::ctor::regexp::Patterns();
 
                 for ( const auto& p : patterns ) {
                     for ( const auto& r : p.first )
-                        flattened.push_back(hilti::util::fmt("%s{#%" PRId64 "}", r, p.second));
+                        flattened.emplace_back(hilti::util::fmt("%s{#%" PRId64 "}", r.value(), p.second));
                 }
 
                 auto re = pb->cg()->addGlobalConstant(

@@ -246,7 +246,7 @@ public:
         return expressionCtor(ctorRegExp({std::move(p)}, attrs, m), m);
     }
 
-    auto regexp(std::vector<std::string> p, AttributeSet* attrs = {}, const Meta& m = Meta()) {
+    auto regexp(hilti::ctor::regexp::Patterns p, AttributeSet* attrs = {}, const Meta& m = Meta()) {
         return expressionCtor(ctorRegExp(std::move(p), attrs, m), m);
     }
 

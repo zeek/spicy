@@ -100,7 +100,7 @@ public:
     }
     auto ctorPort(hilti::rt::Port v, const Meta& meta = {}) { return hilti::ctor::Port::create(context(), v, meta); }
     auto ctorReal(double v, const Meta& meta = {}) { return hilti::ctor::Real::create(context(), v, meta); }
-    auto ctorRegExp(std::vector<std::string> v, AttributeSet* attrs = nullptr, const Meta& meta = {}) {
+    auto ctorRegExp(hilti::ctor::regexp::Patterns v, AttributeSet* attrs = nullptr, const Meta& meta = {}) {
         return hilti::ctor::RegExp::create(context(), std::move(v), attrs, meta);
     }
     auto ctorResult(Expression* expr, const Meta& meta = {}) {

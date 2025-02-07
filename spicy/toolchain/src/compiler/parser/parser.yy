@@ -299,8 +299,8 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::type::enum_::Labels>          enum_labels
 %type <hilti::type::bitfield::BitRanges>    bitfield_bit_ranges opt_bitfield_bit_ranges
 %type <hilti::type::bitfield::BitRange*>  bitfield_bit_range
-%type <std::vector<std::string>>            re_patterns
-%type <std::string>                         re_pattern_constant
+%type <hilti::ctor::regexp::Patterns> re_patterns
+%type <hilti::ctor::regexp::Pattern>        re_pattern_constant
 %type <hilti::statement::switch_::Case*>  switch_case
 %type <hilti::statement::switch_::Cases>    switch_cases
 
@@ -1180,7 +1180,7 @@ regexp        : re_patterns                      { $$ = builder->ctorRegExp(std:
 
 re_patterns   : re_patterns '|' re_pattern_constant
                                                  { $$ = $1; $$.push_back(std::move($3)); }
-              | re_pattern_constant              { $$ = std::vector<std::string>{std::move($1)}; }
+              | re_pattern_constant              { $$ = hilti::ctor::regexp::Patterns{std::move($1)}; }
 
 re_pattern_constant
               : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/'

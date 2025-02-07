@@ -6,16 +6,26 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/types/regexp.h>
+
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/types/regexp.h>
 
 namespace hilti::ctor {
 
-/** AST node for a regular expression ctor. */
+namespace regexp {
+using Pattern = hilti::rt::regexp::Pattern;
+using Patterns = hilti::rt::regexp::Patterns;
+} // namespace regexp
+
+/**
+ * AST node for a regular expression ctor. A regular expression ctor stores one
+ * or more individual patterns that will all be matched in parallel.
+ */
 class RegExp : public Ctor {
 public:
-    const auto& value() const { return _value; }
+    const auto& patterns() const { return _patterns; }
     auto attributes() const { return child<AttributeSet>(1); }
 
     /**
@@ -26,11 +36,12 @@ public:
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"value", util::join(_value, " | ")}};
+        auto p = node::Properties{
+            {"pattern", util::join(util::transform(_patterns, [](const auto& p) { return to_string(p); }), " | ")}};
         return Ctor::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, std::vector<std::string> v, AttributeSet* attrs, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx, regexp::Patterns v, AttributeSet* attrs, const Meta& meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -40,13 +51,13 @@ public:
     }
 
 protected:
-    RegExp(ASTContext* ctx, Nodes children, std::vector<std::string> v, Meta meta)
-        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)), _value(std::move(v)) {}
+    RegExp(ASTContext* ctx, Nodes children, regexp::Patterns v, Meta meta)
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)), _patterns(std::move(v)) {}
 
     HILTI_NODE_1(ctor::RegExp, Ctor, final);
 
 private:
-    std::vector<std::string> _value;
+    regexp::Patterns _patterns;
 };
 
 } // namespace hilti::ctor
