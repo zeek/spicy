@@ -74,14 +74,19 @@ enum class CoercionStyle {
      * Shortcut style activating all possible coercions in the context of an
      * assignment.
      */
-    TryAllForAssignment =
-        Assignment | TryExactMatch | TryConstPromotion | TryCoercion | TryCoercionWithinSameType | TryDeref,
+    TryAllForAssignment = Assignment | TryExactMatch | TryConstPromotion | TryCoercion | TryDeref,
+
+    /**
+     * Shortcut style allowing for direct matches only in the context of
+     * operator resolution.
+     */
+    TryDirectForMatching = TryExactMatch | TryConstPromotion,
 
     /**
      * Shortcut style activating all possible coercions in the context of
      * operator resolution.
      */
-    TryAllForMatching = TryExactMatch | TryConstPromotion | TryCoercion | TryCoercionWithinSameType,
+    TryAllForMatching = TryDirectForMatching | TryCoercion,
 
     /**
      * Shortcut style activating possible coercions in the context of
@@ -93,13 +98,7 @@ enum class CoercionStyle {
      * Shortcut style activating all possible coercions in the context of
      * function parameter passing.
      */
-    TryAllForFunctionCall = TryDirectMatchForFunctionCall | TryCoercion | TryCoercionWithinSameType | TryDeref,
-
-    /**
-     * Shortcut style allowing for direct matches only in the context of
-     * operator resolution.
-     */
-    TryDirectForMatching = TryExactMatch | TryConstPromotion | TryCoercionWithinSameType
+    TryAllForFunctionCall = TryDirectMatchForFunctionCall | TryCoercion | TryDeref,
 };
 
 /**
