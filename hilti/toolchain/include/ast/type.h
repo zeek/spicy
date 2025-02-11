@@ -488,7 +488,7 @@ public:
 
     /** Factory method creating a copy of the type with "sideness" changed to LHS. */
     auto recreateAsLhs(ASTContext* ctx) const {
-        if ( auto t = _type(); t->isNameType() )
+        if ( auto t = _type(); t->isNameType() && (parent() || t->typeID()) )
             return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::LHS);
         else
             return QualifiedType::create(ctx, t, Constness::Mutable, Side::LHS);
@@ -496,7 +496,7 @@ public:
 
     /** Factory method creating a copy of the type with constness changed to constant. */
     auto recreateAsConst(ASTContext* ctx) const {
-        if ( auto t = _type(); t->isNameType() )
+        if ( auto t = _type(); t->isNameType() && (parent() || t->typeID()) )
             return QualifiedType::createExternal(ctx, t, Constness::Const, Side::RHS);
         else
             return QualifiedType::create(ctx, t, Constness::Const, Side::RHS);
@@ -504,7 +504,7 @@ public:
 
     /** Factory method creating a copy of the type with constness changed to non-constant. */
     auto recreateAsNonConst(ASTContext* ctx) const {
-        if ( auto t = _type(); t->isNameType() )
+        if ( auto t = _type(); t->isNameType() && (parent() || t->typeID()) )
             return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::RHS);
         else
             return QualifiedType::create(ctx, t, Constness::Mutable, Side::RHS);
