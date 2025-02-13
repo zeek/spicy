@@ -1091,7 +1091,7 @@ struct ProductionVisitor : public production::Visitor {
 
                 for ( const auto& p : patterns ) {
                     for ( const auto& r : p.first )
-                        flattened.emplace_back(hilti::util::fmt("%s{#%" PRId64 "}", r.value(), p.second));
+                        flattened.emplace_back(r.value(), p.second);
                 }
 
                 auto re = pb->cg()->addGlobalConstant(

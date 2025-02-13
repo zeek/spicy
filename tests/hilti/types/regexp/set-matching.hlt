@@ -6,7 +6,7 @@ module Foo {
 import hilti;
 
 global auto re1 = /.*Fo*o/ | /.*Ba*r/ | /.*Hu*rz/;
-global auto re2 = /.*Fo*o{#41}/ | /.*Ba*r{#42}/ | /.*Hu*rz{#43}/;
+global auto re2 = /.*Fo*o/$(41) | /.*Ba*r/$(42) | /.*Hu*rz/$(43);
 
 hilti::print(re1.match(b"XXXFooooYYY"));
 hilti::print(re1.match(b"XXXBaaarrYYY"));

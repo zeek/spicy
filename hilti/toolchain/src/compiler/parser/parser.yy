@@ -243,7 +243,7 @@ static int _field_width = 0;
 %token WEAK_REF "weak_ref"
 %token YIELD "yield"
 
-%type <hilti::ID>                               local_id scoped_id dotted_id function_id scoped_function_id
+%type <hilti::ID>                             local_id scoped_id dotted_id function_id scoped_function_id
 %type <hilti::Declaration*>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
 %type <hilti::Declarations>                     struct_fields union_fields opt_union_fields
 %type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
@@ -273,7 +273,7 @@ static int _field_width = 0;
 %type <hilti::type::bitfield::BitRanges>        bitfield_bit_ranges opt_bitfield_bit_ranges
 %type <hilti::type::bitfield::BitRange*>      bitfield_bit_range
 %type <hilti::ctor::regexp::Patterns> re_patterns
-%type <hilti::ctor::regexp::Pattern>        re_pattern_constant
+%type <hilti::ctor::regexp::Pattern>        re_pattern_constant opt_re_pattern_constant_flags
 %type <hilti::statement::switch_::Case*>      switch_case
 %type <hilti::statement::switch_::Cases>        switch_cases opt_switch_cases
 %type <hilti::statement::try_::Catch*>        try_catch
@@ -945,8 +945,19 @@ re_patterns   : re_patterns '|' re_pattern_constant
               | re_pattern_constant              { $$ = hilti::ctor::regexp::Patterns{std::move($1)}; }
 
 re_pattern_constant
-              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/'
-                                                 { $$ = std::move($3); }
+              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $6;
+                                                   $$.setValue($3);
+                                                 }
+
+opt_re_pattern_constant_flags
+              : '$' '(' CUINTEGER ')' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $5;
+                                                   $$.setMatchID($3);
+                                                 }
+              | /* empty */                      { $$ = {}; }
 
 opt_map_elems : map_elems                        { $$ = std::move($1); }
               | /* empty */                      { $$ = hilti::ctor::map::Elements(); }

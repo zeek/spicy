@@ -43,15 +43,23 @@ struct Flags {
  */
 class Pattern {
 public:
-    Pattern(std::string value = "") : _value(std::move(value)) {}
+    Pattern(std::string value = "", uint64_t id = 0) : _value(std::move(value)), _id(id) {}
 
     const auto& value() const { return _value; }
+    auto matchID() const { return _id; }
+
+    void setValue(std::string value) { _value = std::move(value); }
+    void setMatchID(uint64_t id) { _id = id; }
 
 private:
     std::string _value;
+    uint64_t _id;
 };
 
-inline std::string to_string(const Pattern& pattern) { return fmt("/%s/", pattern.value()); }
+inline std::string to_string(const Pattern& pattern) {
+    auto id = (pattern.matchID() ? fmt("$(%" PRIu64 ")", pattern.matchID()) : "");
+    return fmt("/%s/%s", pattern.value(), id);
+}
 
 inline std::ostream& operator<<(std::ostream& out, const Pattern& pattern) { return out << to_string(pattern); }
 

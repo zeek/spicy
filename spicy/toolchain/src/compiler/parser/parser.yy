@@ -300,7 +300,7 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::type::bitfield::BitRanges>    bitfield_bit_ranges opt_bitfield_bit_ranges
 %type <hilti::type::bitfield::BitRange*>  bitfield_bit_range
 %type <hilti::ctor::regexp::Patterns> re_patterns
-%type <hilti::ctor::regexp::Pattern>        re_pattern_constant
+%type <hilti::ctor::regexp::Pattern>        re_pattern_constant opt_re_pattern_constant_flags
 %type <hilti::statement::switch_::Case*>  switch_case
 %type <hilti::statement::switch_::Cases>    switch_cases
 
@@ -1183,8 +1183,19 @@ re_patterns   : re_patterns '|' re_pattern_constant
               | re_pattern_constant              { $$ = hilti::ctor::regexp::Patterns{std::move($1)}; }
 
 re_pattern_constant
-              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/'
-                                                 { $$ = std::move($3); }
+              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $6;
+                                                   $$.setValue($3);
+                                                 }
+
+opt_re_pattern_constant_flags
+              : '$' '(' CUINTEGER ')' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $5;
+                                                   $$.setMatchID($3);
+                                                 }
+              | /* empty */                      { $$ = {}; }
 
 opt_map_elems : map_elems                        { $$ = std::move($1); }
               | /* empty */                      { $$ = hilti::ctor::map::Elements(); }

@@ -464,7 +464,13 @@ call site.
 Regular Expression
 ------------------
 
-Spicy provides POSIX-style regular expressions.
+Spicy provides POSIX-style regular expressions. Regular expression are
+typically of the form ``/PATTERN/[FLAGS]``, where ``PATTERN`` is a
+regular expression to match, and ``FLAGS`` contains optional flags
+modifying the matching behavior. In addition, regular expression
+constants can also consist of multiple patterns, separated by ``|``.
+This creates a single regular expression constant that matches any of
+the patterns.
 
 .. rubric:: Type
 
@@ -473,8 +479,9 @@ Spicy provides POSIX-style regular expressions.
 .. rubric:: Constants
 
 - ``/Foo*bar?/``, ``/X(..)(..)(..)Y/``
+- ``/Foo/$(1) | /Bar/$(2)``
 
-Regular expressions use the extended POSIX syntax, with a few smaller
+Regular expression patterns use the extended POSIX syntax, with a few smaller
 differences and extensions:
 
 - Supported character classes are: ``[:lower:]``, ``[:upper:]``,
@@ -483,8 +490,12 @@ differences and extensions:
   boundary.
 - ``\xXX`` matches a byte with the binary hex value ``XX`` (e.g.,
   ``\xff`` matches a byte of decimal value 255).
-- ``{#<number>}`` associates a numerical ID with a regular expression
-  (useful for set matching).
+
+Patterns support the following optional flags:
+
+``$(ID)`` Associates a numeric ``ID`` with the pattern. When a regular
+  expression consists of multiple patterns, such IDs allow to identify
+  the one that matched.
 
 Regular expression constants support the following optional attribute:
 

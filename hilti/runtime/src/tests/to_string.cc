@@ -27,7 +27,7 @@
 
 using namespace hilti::rt;
 
-inline auto operator ""_p(const char* str, size_t size) { return hilti::rt::regexp::Pattern(std::string(str, size)); }
+inline auto operator""_p(const char* str, size_t size) { return hilti::rt::regexp::Pattern(std::string(str, size)); }
 
 TEST_SUITE_BEGIN("to_string");
 
@@ -250,7 +250,7 @@ TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp({"a"}, regexp::Flags())), "/a/");
     CHECK_EQ(to_string(RegExp({"a"}, regexp::Flags({.no_sub = 1}))), "/a/ &nosub");
     CHECK_EQ(to_string(RegExp({"a"}, regexp::Flags())), "/a/");
-    CHECK_EQ(to_string(RegExp({{"a"}, {"b"}}, regexp::Flags())), "/a/ | /b/");
+    CHECK_EQ(to_string(RegExp({regexp::Pattern{"a"}, regexp::Pattern{"b"}}, regexp::Flags())), "/a/ | /b/");
 
     CHECK_EQ(to_string(RegExp({"/"}, regexp::Flags())), "///");
 

@@ -16,7 +16,7 @@ using namespace hilti::rt::bytes::literals;
 
 TEST_SUITE_BEGIN("RegExp");
 
-inline auto operator ""_p(const char* str, size_t size) { return hilti::rt::regexp::Pattern(std::string(str, size)); }
+inline auto operator""_p(const char* str, size_t size) { return hilti::rt::regexp::Pattern(std::string(str, size)); }
 
 TEST_CASE("match") {
     SUBCASE("min-matcher") {
@@ -160,16 +160,16 @@ TEST_CASE("find") {
 
 TEST_CASE("matchGroups") {
     SUBCASE("min-matcher") {
-        CHECK_THROWS_WITH_AS(RegExp({"abc"_p, "123"_p}).matchGroups("abc"_b), "cannot capture groups during set matching",
-                             const NotSupported&);
+        CHECK_THROWS_WITH_AS(RegExp({"abc"_p, "123"_p}).matchGroups("abc"_b),
+                             "cannot capture groups during set matching", const NotSupported&);
     }
 
     SUBCASE("std-matcher") {
         CHECK_EQ(RegExp(".*abc"_p, regexp::Flags{.use_std = 1}).matchGroups(" abc "_b), Vector<Bytes>({" abc"_b}));
         CHECK_EQ(RegExp("123"_p, regexp::Flags{.use_std = 1}).matchGroups(" abc "_b), Vector<Bytes>());
 
-        CHECK_THROWS_WITH_AS(RegExp({"abc"_p, "123"_p}).matchGroups("abc"_b), "cannot capture groups during set matching",
-                             const NotSupported&);
+        CHECK_THROWS_WITH_AS(RegExp({"abc"_p, "123"_p}).matchGroups("abc"_b),
+                             "cannot capture groups during set matching", const NotSupported&);
 
         CHECK_EQ(RegExp(".*(a)bc"_p, regexp::Flags{.use_std = 1}).matchGroups(" abc "_b),
                  Vector<Bytes>({" abc"_b, "a"_b}));
@@ -270,7 +270,7 @@ TEST_CASE("advance") {
     }
 
     SUBCASE("on set") {
-        const auto patterns = regexp::Patterns({{"a(b+cx){#10}"}, {"a(b+cy){#20}"}});
+        const auto patterns = regexp::Patterns({{"a(b+cx)", 10}, {"a(b+cy)", 20}});
         const auto re_std = RegExp(patterns, regexp::Flags{.use_std = true});
         const auto re_no_sub = RegExp(patterns, regexp::Flags{.no_sub = true});
 
