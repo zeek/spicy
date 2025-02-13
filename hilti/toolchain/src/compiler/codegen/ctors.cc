@@ -191,10 +191,10 @@ struct Visitor : hilti::visitor::PreOrder {
             fmt("::hilti::rt::RegExp({%s}, {%s})",
                 util::join(util::transform(n->patterns(),
                                            [&](const auto& p) {
-                                               return fmt("hilti::rt::regexp::Pattern{\"%s\", %s}",
+                                               return fmt("hilti::rt::regexp::Pattern{\"%s\", %s, %s}",
                                                           util::escapeUTF8(p.value(),
                                                                            hilti::rt::render_style::UTF8::EscapeQuotes),
-                                                          p.matchID());
+                                                          (p.isCaseInsensitive() ? "true" : "false"), p.matchID());
                                            }),
                            ", "),
                 util::join(flags, ", "));

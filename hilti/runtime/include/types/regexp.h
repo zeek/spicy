@@ -43,22 +43,27 @@ struct Flags {
  */
 class Pattern {
 public:
-    Pattern(std::string value = "", uint64_t id = 0) : _value(std::move(value)), _id(id) {}
+    Pattern(std::string value = "", bool case_insensitive = false, uint64_t id = 0)
+        : _value(std::move(value)), _case_insensitive(case_insensitive), _id(id) {}
 
     const auto& value() const { return _value; }
+    auto isCaseInsensitive() const { return _case_insensitive; }
     auto matchID() const { return _id; }
 
     void setValue(std::string value) { _value = std::move(value); }
+    void setCaseInsensitive(bool case_insensitive) { _case_insensitive = case_insensitive; }
     void setMatchID(uint64_t id) { _id = id; }
 
 private:
     std::string _value;
+    bool _case_insensitive;
     uint64_t _id;
 };
 
 inline std::string to_string(const Pattern& pattern) {
+    auto ci = (pattern.isCaseInsensitive() ? "i" : "");
     auto id = (pattern.matchID() ? fmt("$(%" PRIu64 ")", pattern.matchID()) : "");
-    return fmt("/%s/%s", pattern.value(), id);
+    return fmt("/%s/%s%s", pattern.value(), ci, id);
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Pattern& pattern) { return out << to_string(pattern); }

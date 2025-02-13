@@ -257,9 +257,10 @@ void regexp::detail::CompiledRegExp::_newJrx() {
 void regexp::detail::CompiledRegExp::_compileOne(regexp::Pattern pattern, int idx) {
     auto regexp = pattern.value();
 
+    int cflags = (pattern.isCaseInsensitive() ? REG_ICASE : 0);
     auto id = static_cast<jrx_accept_id>(pattern.matchID());
 
-    if ( auto rc = jrx_regset_add2(_jrx.get(), regexp.c_str(), regexp.size(), 0, id); rc != REG_OK ) {
+    if ( auto rc = jrx_regset_add2(_jrx.get(), regexp.c_str(), regexp.size(), cflags, id); rc != REG_OK ) {
         static char err[256];
         jrx_regerror(rc, _jrx.get(), err, sizeof(err));
         throw PatternError(fmt("error compiling pattern '%s': %s", pattern, err));

@@ -478,14 +478,16 @@ the patterns.
 
 .. rubric:: Constants
 
-- ``/Foo*bar?/``, ``/X(..)(..)(..)Y/``
+- ``/Foo*bar?/``, ``/X(..)(..)(..)Y/``, ``/foo/i``
 - ``/Foo/$(1) | /Bar/$(2)``
 
 Regular expression patterns use the extended POSIX syntax, with a few smaller
 differences and extensions:
 
 - Supported character classes are: ``[:lower:]``, ``[:upper:]``,
-  ``[:digit:]``, ``[:blank:]``.
+  ``[:digit:]``, ``[:blank:]``. Note that ``[:lower:]`` and
+  ``[:upper:]`` do not take locales into account, they only match
+  standard ASCII characters.
 - ``\b`` asserts a word-boundary, ``\B`` matches asserts no word
   boundary.
 - ``\xXX`` matches a byte with the binary hex value ``XX`` (e.g.,
@@ -493,9 +495,15 @@ differences and extensions:
 
 Patterns support the following optional flags:
 
-``$(ID)`` Associates a numeric ``ID`` with the pattern. When a regular
-  expression consists of multiple patterns, such IDs allow to identify
-  the one that matched.
+``i``
+  Matches the pattern case-insensitively. Just like ``[:lower:]`` and
+  ``[:upper:]``, this flag only affects standard ASCII characters; it
+  does not consider any locale.
+
+``$(ID)``
+  Associates a numeric ID with the pattern. When a regular expression
+  constant consists of multiple patterns, their IDs identify the one
+  that matched.
 
 Regular expression constants support the following optional attribute:
 

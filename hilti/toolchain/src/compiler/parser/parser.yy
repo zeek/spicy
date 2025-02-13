@@ -952,7 +952,15 @@ re_pattern_constant
                                                  }
 
 opt_re_pattern_constant_flags
-              : '$' '(' CUINTEGER ')' opt_re_pattern_constant_flags
+              : local_id opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $2;
+                                                   if ( $1 == ID("i") )
+                                                       $$.setCaseInsensitive(true);
+                                                   else
+                                                       error(@$, "unknown regular expression flag");
+                                                 }
+              | '$' '(' CUINTEGER ')' opt_re_pattern_constant_flags
                                                  {
                                                    $$ = $5;
                                                    $$.setMatchID($3);

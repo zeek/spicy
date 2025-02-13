@@ -270,7 +270,7 @@ TEST_CASE("advance") {
     }
 
     SUBCASE("on set") {
-        const auto patterns = regexp::Patterns({{"a(b+cx)", 10}, {"a(b+cy)", 20}});
+        const auto patterns = regexp::Patterns({{"a(b+cx)", false, 10}, {"a(b+cy)", false, 20}});
         const auto re_std = RegExp(patterns, regexp::Flags{.use_std = true});
         const auto re_no_sub = RegExp(patterns, regexp::Flags{.no_sub = true});
 

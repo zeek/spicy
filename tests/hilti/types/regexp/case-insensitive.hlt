@@ -1,0 +1,41 @@
+# @TEST-EXEC: hiltic -j %INPUT
+
+module Foo {
+
+import hilti;
+
+global regexp re1_ci = /ghi/i;
+global regexp re1_cs = /ghi/;
+
+assert re1_ci.match(b"GHI") == 1;
+assert re1_ci.match(b"gHi") == 1;
+assert re1_ci.match(b"ghi") == 1;
+
+assert re1_cs.match(b"GHI") == 0;
+assert re1_cs.match(b"gHi") == 0;
+assert re1_ci.match(b"ghi") == 1;
+
+##
+
+global auto re2 = /Fo*o/ | /Ba*r/i | /Hu*rz/;
+
+assert re2.match(b"foo") == 0;
+assert re2.match(b"Foo") > 0;
+
+assert re2.match(b"bar") > 0;
+assert re2.match(b"Bar") > 0;
+
+assert re2.match(b"hurz") == 0;
+assert re2.match(b"Hurz") > 0;
+
+##
+
+global auto re3 = /Fo*o/$(100) | /Ba*r/i$(200) | /Hu*rz/;
+
+assert re3.match(b"foo") == 0;
+assert re3.match(b"Foo") == 100;
+assert re3.match(b"bar") == 200;
+assert re3.match(b"Bar") == 200;
+assert re3.match(b"Hurz") > 0;
+assert re3.match(b"hurz") == 0;
+}
