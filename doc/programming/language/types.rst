@@ -505,12 +505,6 @@ Patterns support the following optional flags:
   constant consists of multiple patterns, their IDs identify the one
   that matched.
 
-Regular expression constants support the following optional attribute:
-
-``&nosub``
-    Compile without support for capturing subexpressions, which makes
-    matching more efficient.
-
 
 .. include:: /autogen/types/regexp.rst
 
