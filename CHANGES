@@ -1,3 +1,24 @@
+1.13.0-dev.91 | 2025-02-18 11:42:52 +0100
+
+  * Remove `TryCoercionWithinSameType` from all shortcut coercion styles. (Robin Sommer, Corelight)
+
+    Seems it wasn't needed anywhere there actually, mostly because it
+    combination with `TryCoercion` it wasn't adding anything.
+
+  * Compose a coercion bit. (Benjamin Bannier, Corelight)
+
+  * Reuse previously declared coercion bits for readability. (Benjamin Bannier, Corelight)
+
+  * Remove unused conversion bit. (Benjamin Bannier, Corelight)
+
+  * GH-1968: Fix coercion of function call arguments. (Robin Sommer, Corelight)
+
+    Before, we could unnecessarily coerce integer types when a direct
+    match was available. The fix takes out the `TryCoercionWithinSameType`
+    style for non-coercing function call arguments, which solves it. I
+    don't recall why that was in there in the first place, but it doesn't
+    seem to break anything to skip it ...
+
 1.13.0-dev.85 | 2025-02-18 10:04:22 +0100
 
   * Fix possessive "it's" in contexts docs. (Evan Typanski, Corelight)

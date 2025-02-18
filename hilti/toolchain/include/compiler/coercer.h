@@ -74,31 +74,31 @@ enum class CoercionStyle {
      * Shortcut style activating all possible coercions in the context of an
      * assignment.
      */
-    TryAllForAssignment = (1U << 0U) | (1U << 3U) | (1U << 4U) | (1U << 5U) | (1U << 6U) | (1U << 9U),
-
-    /**
-     * Shortcut style activating all possible coercions in the context of
-     * operator resolution.
-     */
-    TryAllForMatching = (1U << 1U) | (1U << 3U) | (1U << 4U) | (1U << 5U) | (1U << 6U),
-
-    /**
-     * Shortcut style activating possible coercions in the context of
-     * function parameter passing, however without allowing any type changes.
-     */
-    TryDirectMatchForFunctionCall = (1U << 2U) | (1U << 3U) | (1U << 4U) | (1U << 6U),
-
-    /**
-     * Shortcut style activating all possible coercions in the context of
-     * function parameter passing.
-     */
-    TryAllForFunctionCall = (1U << 2U) | (1U << 3U) | (1U << 4U) | (1U << 5U) | (1U << 6U) | (1U << 9U),
+    TryAllForAssignment = Assignment | TryExactMatch | TryConstPromotion | TryCoercion | TryDeref,
 
     /**
      * Shortcut style allowing for direct matches only in the context of
      * operator resolution.
      */
-    TryDirectForMatching = (1U << 1U) | (1U << 3U) | (1U << 4U) | (1U << 6U)
+    TryDirectForMatching = TryExactMatch | TryConstPromotion,
+
+    /**
+     * Shortcut style activating all possible coercions in the context of
+     * operator resolution.
+     */
+    TryAllForMatching = TryDirectForMatching | TryCoercion,
+
+    /**
+     * Shortcut style activating possible coercions in the context of
+     * function parameter passing, however without allowing any type changes.
+     */
+    TryDirectMatchForFunctionCall = FunctionCall | TryExactMatch | TryConstPromotion,
+
+    /**
+     * Shortcut style activating all possible coercions in the context of
+     * function parameter passing.
+     */
+    TryAllForFunctionCall = TryDirectMatchForFunctionCall | TryCoercion | TryDeref,
 };
 
 /**
