@@ -16,7 +16,7 @@ type Priv1 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -44,7 +44,7 @@ public type Pub2 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -72,7 +72,7 @@ type Priv2 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -100,7 +100,7 @@ type Priv3 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -132,7 +132,7 @@ type Priv4 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -160,7 +160,7 @@ type Priv5 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -188,7 +188,7 @@ type Priv6 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -220,7 +220,7 @@ public type Pub3 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -254,7 +254,7 @@ public type Priv10 = struct {
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
-    hook optional<string> __str__();
+    hook optional<string> __hook_to_string();
     hook void __on_0x25_finally();
     hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
     hook void __on_0x25_rejected() &needed-by-feature="synchronization";
@@ -535,7 +535,7 @@ method extern method view<stream> foo::Priv1::parse1(inout value_ref<stream> __d
 method extern method view<stream> foo::Priv1::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:13:14-13:20"
     local value_ref<Priv1> __unit = value_ref(default<const Priv1>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Priv1));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv1);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -589,7 +589,7 @@ method extern method view<stream> foo::Priv1::parse2(inout value_ref<Priv1> __un
 init function void __register_foo_Priv1() {
 
     if ( ::__feat%foo@@Priv1%is_filter || ::__feat%foo@@Priv1%supports_sinks ) {
-        foo::Priv1::__parser = [$name="foo::Priv1", $is_public=False, $parse1=foo::Priv1::parse1, $parse2=foo::Priv1::parse2, $parse3=foo::Priv1::parse3, $context_new=Null, $type_info=typeinfo(Priv1), $description="", $mime_types=vector(), $ports=vector()];
+        foo::Priv1::__parser = [$name="foo::Priv1", $is_public=False, $parse1=foo::Priv1::parse1, $parse2=foo::Priv1::parse2, $parse3=foo::Priv1::parse3, $context_new=Null, $type_=Priv1, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::Priv1::__parser, $scope, Null);
     }
 
@@ -781,7 +781,7 @@ method extern method view<stream> foo::Pub2::parse1(inout value_ref<stream> __da
 method extern method view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:16:20-16:26"
     local value_ref<Pub2> __unit = value_ref(default<const Pub2>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Pub2));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Pub2);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -833,7 +833,7 @@ method extern method view<stream> foo::Pub2::parse2(inout value_ref<Pub2> __unit
 }
 
 init function void __register_foo_Pub2() {
-    foo::Pub2::__parser = [$name="foo::Pub2", $is_public=True, $parse1=foo::Pub2::parse1, $parse2=foo::Pub2::parse2, $parse3=foo::Pub2::parse3, $context_new=Null, $type_info=typeinfo(Pub2), $description="", $mime_types=vector(), $ports=vector()];
+    foo::Pub2::__parser = [$name="foo::Pub2", $is_public=True, $parse1=foo::Pub2::parse1, $parse2=foo::Pub2::parse2, $parse3=foo::Pub2::parse3, $context_new=Null, $type_=Pub2, $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::Pub2::__parser, $scope, Null);
 }
 
@@ -1023,7 +1023,7 @@ method extern method view<stream> foo::Priv2::parse1(inout value_ref<stream> __d
 method extern method view<stream> foo::Priv2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:19:14-19:20"
     local value_ref<Priv2> __unit = value_ref(default<const Priv2>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Priv2));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv2);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1077,7 +1077,7 @@ method extern method view<stream> foo::Priv2::parse2(inout value_ref<Priv2> __un
 init function void __register_foo_Priv2() {
 
     if ( ::__feat%foo@@Priv2%is_filter || ::__feat%foo@@Priv2%supports_sinks ) {
-        foo::Priv2::__parser = [$name="foo::Priv2", $is_public=False, $parse1=foo::Priv2::parse1, $parse2=foo::Priv2::parse2, $parse3=foo::Priv2::parse3, $context_new=Null, $type_info=typeinfo(Priv2), $description="", $mime_types=vector(), $ports=vector()];
+        foo::Priv2::__parser = [$name="foo::Priv2", $is_public=False, $parse1=foo::Priv2::parse1, $parse2=foo::Priv2::parse2, $parse3=foo::Priv2::parse3, $context_new=Null, $type_=Priv2, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::Priv2::__parser, $scope, Null);
     }
 
@@ -1269,7 +1269,7 @@ method extern method view<stream> foo::Priv3::parse1(inout value_ref<stream> __d
 method extern method view<stream> foo::Priv3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:20:14-20:20"
     local value_ref<Priv3> __unit = value_ref(default<const Priv3>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Priv3));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv3);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1323,7 +1323,7 @@ method extern method view<stream> foo::Priv3::parse2(inout value_ref<Priv3> __un
 init function void __register_foo_Priv3() {
 
     if ( ::__feat%foo@@Priv3%is_filter || ::__feat%foo@@Priv3%supports_sinks ) {
-        foo::Priv3::__parser = [$name="foo::Priv3", $is_public=False, $parse1=foo::Priv3::parse1, $parse2=foo::Priv3::parse2, $parse3=foo::Priv3::parse3, $context_new=Null, $type_info=typeinfo(Priv3), $description="", $mime_types=vector(), $ports=vector()];
+        foo::Priv3::__parser = [$name="foo::Priv3", $is_public=False, $parse1=foo::Priv3::parse1, $parse2=foo::Priv3::parse2, $parse3=foo::Priv3::parse3, $context_new=Null, $type_=Priv3, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::Priv3::__parser, $scope, Null);
     }
 
@@ -1568,7 +1568,7 @@ method extern method view<stream> foo::Priv4::parse1(inout value_ref<stream> __d
 method extern method view<stream> foo::Priv4::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:21:14-24:1"
     local value_ref<Priv4> __unit = value_ref(default<const Priv4>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Priv4));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv4);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1622,7 +1622,7 @@ method extern method view<stream> foo::Priv4::parse2(inout value_ref<Priv4> __un
 init function void __register_foo_Priv4() {
 
     if ( ::__feat%foo@@Priv4%is_filter || ::__feat%foo@@Priv4%supports_sinks ) {
-        foo::Priv4::__parser = [$name="foo::Priv4", $is_public=False, $parse1=foo::Priv4::parse1, $parse2=foo::Priv4::parse2, $parse3=foo::Priv4::parse3, $context_new=Null, $type_info=typeinfo(Priv4), $description="", $mime_types=vector(), $ports=vector()];
+        foo::Priv4::__parser = [$name="foo::Priv4", $is_public=False, $parse1=foo::Priv4::parse1, $parse2=foo::Priv4::parse2, $parse3=foo::Priv4::parse3, $context_new=Null, $type_=Priv4, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::Priv4::__parser, $scope, Null);
     }
 
@@ -1814,7 +1814,7 @@ method extern method view<stream> foo::Priv5::parse1(inout value_ref<stream> __d
 method extern method view<stream> foo::Priv5::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:27:14-27:20"
     local value_ref<Priv5> __unit = value_ref(default<const Priv5>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Priv5));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv5);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1868,7 +1868,7 @@ method extern method view<stream> foo::Priv5::parse2(inout value_ref<Priv5> __un
 init function void __register_foo_Priv5() {
 
     if ( ::__feat%foo@@Priv5%is_filter || ::__feat%foo@@Priv5%supports_sinks ) {
-        foo::Priv5::__parser = [$name="foo::Priv5", $is_public=False, $parse1=foo::Priv5::parse1, $parse2=foo::Priv5::parse2, $parse3=foo::Priv5::parse3, $context_new=Null, $type_info=typeinfo(Priv5), $description="", $mime_types=vector(), $ports=vector()];
+        foo::Priv5::__parser = [$name="foo::Priv5", $is_public=False, $parse1=foo::Priv5::parse1, $parse2=foo::Priv5::parse2, $parse3=foo::Priv5::parse3, $context_new=Null, $type_=Priv5, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::Priv5::__parser, $scope, Null);
     }
 
@@ -2060,7 +2060,7 @@ method extern method view<stream> foo::Priv6::parse1(inout value_ref<stream> __d
 method extern method view<stream> foo::Priv6::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:28:14-28:20"
     local value_ref<Priv6> __unit = value_ref(default<const Priv6>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Priv6));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv6);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2114,7 +2114,7 @@ method extern method view<stream> foo::Priv6::parse2(inout value_ref<Priv6> __un
 init function void __register_foo_Priv6() {
 
     if ( ::__feat%foo@@Priv6%is_filter || ::__feat%foo@@Priv6%supports_sinks ) {
-        foo::Priv6::__parser = [$name="foo::Priv6", $is_public=False, $parse1=foo::Priv6::parse1, $parse2=foo::Priv6::parse2, $parse3=foo::Priv6::parse3, $context_new=Null, $type_info=typeinfo(Priv6), $description="", $mime_types=vector(), $ports=vector()];
+        foo::Priv6::__parser = [$name="foo::Priv6", $is_public=False, $parse1=foo::Priv6::parse1, $parse2=foo::Priv6::parse2, $parse3=foo::Priv6::parse3, $context_new=Null, $type_=Priv6, $description="", $mime_types=vector(), $ports=vector()];
         spicy_rt::registerParser(foo::Priv6::__parser, $scope, Null);
     }
 
@@ -2359,7 +2359,7 @@ method extern method view<stream> foo::Pub3::parse1(inout value_ref<stream> __da
 method extern method view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:29:20-32:1"
     local value_ref<Pub3> __unit = value_ref(default<const Pub3>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Pub3));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Pub3);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2411,7 +2411,7 @@ method extern method view<stream> foo::Pub3::parse2(inout value_ref<Pub3> __unit
 }
 
 init function void __register_foo_Pub3() {
-    foo::Pub3::__parser = [$name="foo::Pub3", $is_public=True, $parse1=foo::Pub3::parse1, $parse2=foo::Pub3::parse2, $parse3=foo::Pub3::parse3, $context_new=Null, $type_info=typeinfo(Pub3), $description="", $mime_types=vector(), $ports=vector()];
+    foo::Pub3::__parser = [$name="foo::Pub3", $is_public=True, $parse1=foo::Pub3::parse1, $parse2=foo::Pub3::parse2, $parse3=foo::Pub3::parse3, $context_new=Null, $type_=Pub3, $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::Pub3::__parser, $scope, Null);
 }
 
@@ -2601,7 +2601,7 @@ method extern method view<stream> foo::Priv10::parse1(inout value_ref<stream> __
 method extern method view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:43:22-46:1"
     local value_ref<Priv10> __unit = value_ref(default<const Priv10>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, typeinfo(Priv10));
+    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv10);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2653,7 +2653,7 @@ method extern method view<stream> foo::Priv10::parse2(inout value_ref<Priv10> __
 }
 
 init function void __register_foo_Priv10() {
-    foo::Priv10::__parser = [$name="foo::Priv10", $is_public=True, $parse1=foo::Priv10::parse1, $parse2=foo::Priv10::parse2, $parse3=foo::Priv10::parse3, $context_new=Null, $type_info=typeinfo(Priv10), $description="", $mime_types=vector(), $ports=vector()];
+    foo::Priv10::__parser = [$name="foo::Priv10", $is_public=True, $parse1=foo::Priv10::parse1, $parse2=foo::Priv10::parse2, $parse3=foo::Priv10::parse3, $context_new=Null, $type_=Priv10, $description="", $mime_types=vector(), $ports=vector()];
     spicy_rt::registerParser(foo::Priv10::__parser, $scope, Null);
 }
 

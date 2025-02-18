@@ -77,6 +77,7 @@ string    \"(\\.|[^\\"])*\"
 
 ~finally              return token::FINALIZE;
 __library_type        return token::LIBRARY_TYPE;
+__library_type_const  return token::LIBRARY_TYPE_CONST;
 addr                  return token::ADDRESS;
 add                   return token::ADD;
 any                   return token::ANY;

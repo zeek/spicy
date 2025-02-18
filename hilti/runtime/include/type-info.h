@@ -127,6 +127,9 @@ public:
     /** Returns the type information associated with the raw pointer. */
     const TypeInfo& type() const { return *_ti; }
 
+    /** Returns a user-facing string representation of the value. */
+    std::string to_string() const;
+
     /** Returns true if the instance is referring to a valid value. */
     operator bool() const { return _ptr != nullptr; }
 
@@ -518,7 +521,21 @@ class Function : public detail::NotImplementedType {};
 class Interval : public detail::AtomicType<hilti::rt::Interval> {};
 
 /** Auxiliary type information for type ``__library_type`. */
-class Library : public detail::ValueLessType {};
+class Library : public detail::AtomicType<hilti::rt::TypeInfo*> {
+public:
+    /**
+     * Constructor.
+     *
+     * @param cxx_name C++-side name of the type
+     */
+    Library(std::string cxx_name) : cxx_name(std::move(cxx_name)) {}
+
+    /** Returns the C++-side name of the type. */
+    const auto& cxxName() const { return cxx_name; }
+
+private:
+    const std::string cxx_name;
+};
 
 class Map;
 
@@ -1207,7 +1224,7 @@ namespace hilti::rt {
  */
 struct TypeInfo {
     std::optional<const char*> id; /**< Spicy-side ID associated with the type, if any. */
-    const char* display;           /**< String rendering of the type. */
+    const char* display = nullptr; /**< String rendering of the type. */
 
     enum Tag {
         Undefined,
@@ -1260,6 +1277,10 @@ struct TypeInfo {
     // Actual storage for the held type.
     std::unique_ptr<const char, void (*)(const char*)> _storage = {nullptr, [](const char*) {}};
 
+    // Callback rendering a value of the type into a string. User-code should
+    // use `Value::to_string()` instead of calling this directly.
+    std::string (*const _to_string)(const void* const) = nullptr;
+
     Tag tag = Tag::Undefined; ///< Tag indicating which field of below union is set.
     union {
         type_info::Address* address;
@@ -1311,10 +1332,13 @@ struct TypeInfo {
     TypeInfo() = default;
 
     template<typename Type>
-    TypeInfo(std::optional<const char*> _id, const char* _display, Type* value)
-        : id(_id), display(_display), _storage(reinterpret_cast<const char*>(value), [](const char* p) {
-              delete reinterpret_cast<const Type*>(p);
-          }) {
+    TypeInfo(std::optional<const char*> _id, const char* _display, std::string (*const to_string)(const void*),
+             Type* value)
+        : id(_id),
+          display(_display),
+          _storage(reinterpret_cast<const char*>(value),
+                   [](const char* p) { delete reinterpret_cast<const Type*>(p); }),
+          _to_string(to_string) {
         if constexpr ( std::is_same_v<Type, type_info::Address> ) {
             tag = Address;
             address = value;
@@ -1497,7 +1521,25 @@ struct TypeInfo {
     }
 };
 
+inline std::ostream& operator<<(std::ostream& out, const TypeInfo& t) { return out << t.display; }
+inline std::ostream& operator<<(std::ostream& out, const TypeInfo* t) { return out << t->display; }
+
+namespace detail::adl {
+inline std::string to_string(const hilti::rt::TypeInfo& ti, adl::tag /*unused*/) { return ti.display; }
+inline std::string to_string(const hilti::rt::TypeInfo* ti, adl::tag /*unused*/) { return ti->display; }
+} // namespace detail::adl
+
 namespace type_info {
+
+inline std::string Value::to_string() const {
+    if ( ! _ti->_to_string )
+        // This should only not happen outside of debugging and testing, but
+        // make sure we catch it. Not using `assert()` to keep this enabled in
+        // production code
+        throw AssertionFailure("type-info has no to_string() callback");
+
+    return _ti->_to_string(pointer());
+}
 
 namespace value {
 /**

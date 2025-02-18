@@ -285,3 +285,13 @@ inline void flush(UnitType<U>& unit) {
 }
 
 } // namespace spicy::rt::filter
+
+namespace hilti::rt::detail::adl {
+inline std::string to_string(const spicy::rt::filter::detail::OneFilter& u, adl::tag /*unused*/) { return "<filter>"; };
+} // namespace hilti::rt::detail::adl
+
+namespace spicy::rt {
+inline std::ostream& operator<<(std::ostream& out, const filter::detail::OneFilter& u) {
+    return out << hilti::rt::to_string(u);
+}
+} // namespace spicy::rt

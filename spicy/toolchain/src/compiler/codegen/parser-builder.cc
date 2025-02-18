@@ -2298,8 +2298,8 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                                                    return p->default_();
                                                                                }))));
 
-            builder()->addCall(ID("spicy_rt::initializeParsedUnit"), {builder()->id("__gunit"), builder()->id("__unit"),
-                                                                      builder()->typeinfo(builder()->id(t->typeID()))});
+            builder()->addCall(ID("spicy_rt::initializeParsedUnit"),
+                               {builder()->id("__gunit"), builder()->id("__unit"), builder()->id(t->typeID())});
             builder()
                 ->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable),
                            builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),

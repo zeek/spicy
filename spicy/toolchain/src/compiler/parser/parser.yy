@@ -35,8 +35,8 @@ namespace spicy { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 101
-%expect-rr 168
+%expect 119
+%expect-rr 170
 
 %{
 
@@ -203,7 +203,8 @@ static std::vector<hilti::DocString> _docs;
 %token ITERATOR
 %token CONST_ITERATOR
 %token LEQ
-%token LIBRARY_TYPE     "library type"
+%token LIBRARY_TYPE
+%token LIBRARY_TYPE_CONST
 %token LIST
 %token LOCAL
 %token MAP
@@ -255,6 +256,7 @@ static std::vector<hilti::DocString> _docs;
 %token TRYATTR
 %token TUPLE
 %token TYPE
+%token TYPEINFO
 %token UINT
 %token UINT16
 %token UINT32
@@ -628,6 +630,7 @@ base_type_no_ref
               | STREAM                           { $$ = builder->typeStream(__loc__); }
               | STRING                           { $$ = builder->typeString(__loc__); }
               | TIME                             { $$ = builder->typeTime(__loc__); }
+              | TYPE                             { $$ = builder->typeTypeInfo(__loc__); }
               | VOID                             { $$ = builder->typeVoid(__loc__); }
 
               | INT8                             { $$ = builder->typeSignedInteger(8, __loc__); }
@@ -652,6 +655,8 @@ base_type_no_ref
               | SINK                             { $$ = builder->typeSink(__loc__); }
 
               | LIBRARY_TYPE '(' CSTRING ')'     { $$ = builder->typeLibrary(std::move($3), __loc__); }
+              | LIBRARY_TYPE_CONST '(' CSTRING ')'
+                                                 { $$ = builder->typeLibrary(hilti::Constness::Const, std::move($3), __loc__); }
 
               | tuple_type                       { $$ = std::move($1); }
               | struct_type                      { $$ = std::move($1); }
@@ -1051,6 +1056,8 @@ expr_e        : CAST type_param_begin qtype type_param_end '(' expr ')'   { $$ =
               | NEW ctor                         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionCtor(std::move($2), __loc__),             builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
               | NEW scoped_id                    { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionName(std::move($2), __loc__), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
               | NEW scoped_id '(' opt_exprs ')'  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionName(std::move($2), __loc__), builder->expressionCtor(builder->ctorTuple(std::move($4), __loc__))}, __loc__); }
+              | TYPEINFO '(' expr ')'            { $$ = builder->expressionTypeInfo(std::move($3), __loc__); }
+              | TYPEINFO '(' base_type ')'       { $$ = builder->expressionTypeInfo(builder->expressionType(builder->qualifiedType(std::move($3), hilti::Constness::Mutable)), __loc__); }
               | expr_f                           { $$ = std::move($1); }
 
 expr_f        : ctor                             { $$ = builder->expressionCtor(std::move($1), __loc__); }

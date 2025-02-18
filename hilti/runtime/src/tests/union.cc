@@ -103,12 +103,13 @@ struct TestUnion : Union<int, std::string> {
     // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
     TestUnion(T&& x) : Union(std::forward<T>(x)) {}
 
-    template<typename F>
-    void __visit(F f) const {
-        switch ( index() ) {
-            case 1: return f("int", &union_::get<1>(*this));
-            case 2: return f("string", &union_::get<2>(*this));
-        }
+    std::string __to_string() const {
+        if ( auto* x = std::get_if<1>(&this->value) )
+            return "$int=" + to_string(*x);
+        else if ( auto* x = std::get_if<2>(&this->value) )
+            return "$string=" + to_string(*x);
+        else
+            return "<unset>";
     }
 };
 

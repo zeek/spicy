@@ -16,7 +16,6 @@ public type UnitAlreadyConnected = exception &cxxname="spicy::rt::UnitAlreadyCon
 public type SinkState = __library_type("spicy::rt::sink::detail::State*");
 
 public type ParsedUnit = __library_type("spicy::rt::ParsedUnit");
-public type TypeInfo = __library_type("hilti::rt::TypeInfo const*");
 
 # Type for a Sink instance. When adding methods here, extend the C++-side spicy::rt::Sink type as well.
 public type Sink = struct {
@@ -53,8 +52,8 @@ declare public void confirm(inout any unit &requires-type-feature="synchronizati
 declare public void reject(inout any unit &requires-type-feature="synchronization") &cxxname="spicy::rt::reject" &have_prototype;
 
 public type UnitContext = __library_type("spicy::rt::UnitContext");
-declare public UnitContext createContext(any ctx, TypeInfo ti) &cxxname="spicy::rt::detail::createContext" &have_prototype;
-declare public void setContext(inout any unit, optional<UnitContext> ctx, TypeInfo ti) &cxxname="spicy::rt::detail::setContext" &have_prototype;
+declare public UnitContext createContext(any ctx, type type_) &cxxname="spicy::rt::detail::createContext" &have_prototype;
+declare public void setContext(inout any unit, optional<UnitContext> ctx, type type_) &cxxname="spicy::rt::detail::setContext" &have_prototype;
 
 # Type for a parser definition. When making changes, adapt the C++-side
 # spicy::rt::Parser as well.
@@ -65,7 +64,7 @@ public type Parser = struct {
     any parse2;
     any parse3;
     any context_new;
-    TypeInfo type_info;
+    type type_;
     string description;
     vector<MIMEType> mime_types;
     vector<ParserPort> ports;
@@ -91,7 +90,7 @@ declare public optional<iterator<stream>> unit_find(iterator<stream> begin_, ite
 
 declare public void backtrack() &cxxname="spicy::rt::detail::backtrack" &have_prototype;
 
-declare public void initializeParsedUnit(inout ParsedUnit punit, any unit, TypeInfo ti) &cxxname="spicy::rt::ParsedUnit::initialize" &have_prototype;
+declare public void initializeParsedUnit(inout ParsedUnit punit, any unit, type type_) &cxxname="spicy::rt::ParsedUnit::initialize" &have_prototype;
 
 declare public bytes extractBytes(inout value_ref<stream> data, view<stream> cur, uint<64> n, bool eod_ok, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::extractBytes" &have_prototype;
 declare public void expectBytesLiteral(inout value_ref<stream> data, view<stream> cur, bytes literal, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::expectBytesLiteral" &have_prototype;

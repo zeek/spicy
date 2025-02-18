@@ -579,7 +579,10 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Type_* n) final {
-        if ( auto t = dst->type()->tryAs<type::Type_>() ) {
+        if ( auto lt = dst->type()->tryAs<type::Library>(); lt && lt->cxxName() == "::hilti::rt::TypeInfo*" )
+            result = dst->recreateAsConst(builder->context());
+
+        else if ( auto t = dst->type()->tryAs<type::Type_>() ) {
             if ( type::sameExceptForConstness(n->typeValue(), t->typeValue()) )
                 result = src;
         }

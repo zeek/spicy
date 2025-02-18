@@ -1,3 +1,79 @@
+1.13.0-dev.99 | 2025-02-18 11:43:18 +0100
+
+  * Add a `to_string()` callback to our custom runtime type information. (Robin Sommer, Corelight)
+
+    Now a host application can render a value into a string that it has
+    retrieved through the runtime introspection API. The
+    `type_info::Value` class gains a `to_string()` method as the
+    user-facing entry point to that.
+
+  * Provide generated, C++-side structs and unions with explicit `__to_string` methods. (Robin Sommer, Corelight)
+
+    This replaces the `__visit` methods we had so far, which we only used
+    for implementing the free-standing ``to_string()`` overloads for structs and units.
+
+    This is primarily cleanup, simplifying our generated code by avoiding
+    the hard-to-read `__visit` indirection, and maybe also speeding up
+    compilation times a bit because we no longer need any templates.
+
+    We also rename the `__str__` method (used for implementing the `on
+    %print` hook) to `__hook_to_string` for consistency.
+
+    Note that external C++ code should continue to call the free-standing
+    `to_string()` function to render a struct/unit, not the new method,
+    because the method doesn't take the `on %print` hook into account.
+
+  * Move runtime function `lookupParser()` into global space. (Robin Sommer, Corelight)
+
+    This used to be a method of the Spicy `Driver` class, but isn't really
+    tied to it, and useful on its own as well. Moving it to global scope,
+    but keeping the existing method for backwards compatibility.
+
+  * Make `type` a type. (Robin Sommer, Corelight)
+
+    This is primarily for making it easier to pass type information to
+    host applications. It contains the following:
+
+        - In HILTI & Spicy, allow to declare variables to have type
+          `type`. These variables then store type information objects.
+
+          Initialization can come from either `typeinfo(TYPE)` (which
+          already existed in HILTI, but not Spicy), or coercion from an
+          existing type ID (e.g., `global T: type = MyStruct);` (which is
+          new in both HILTI and Spicy). Note that coercion from a basic
+          type does not work because of limitations of our Bison parser
+          (it can't parse, e.g., `t = bool`).
+
+          The effect of `type` was already achievable by declaring
+          variables to be of type
+          `__library_type("hilti::rt::TypeInfo*")`, but that was quite
+          hackish/internal.
+
+        - Add an attribute to `type::Library` that records whether the
+          underlying C++ type is always `const`, and needs to be declared
+          as such. We need this for `hilti::rt::TypeInfo`, which is always
+          constant. So far we had just added that `const` to C++-side type
+          itself, but that (1) was just a hack, and (2) could cause
+          trouble if the name was used in places where that `const`
+          confused the C++ compiler.
+
+          To be able to declare a `const` library type from inside
+          HILTI/Spicy, we add a new keyword `__library_type_const`.
+
+        - Include the C++ name of the library type into it's runtime type
+          information.
+
+        - Add `print` support for type information, printing the type's
+          `display` name.
+
+  * Do not include CXX flags into linker flags. (Robin Sommer, Corelight)
+
+    Unnecessary, and may confuse the linker.
+
+  * Map C++ types corresponding to public structs into public namespace in generated C++ prototypes. (Robin Sommer, Corelight)
+
+  * Fix generated C++ prototype header. (Robin Sommer, Corelight)
+
 1.13.0-dev.91 | 2025-02-18 11:42:52 +0100
 
   * Remove `TryCoercionWithinSameType` from all shortcut coercion styles. (Robin Sommer, Corelight)

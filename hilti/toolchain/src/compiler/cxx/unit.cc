@@ -151,6 +151,21 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
             else if ( phase == Phase::Types && ! util::startsWith(d.type, "HILTI_RT_ENUM_WITH_DEFAULT") )
                 f << d;
 
+            else if ( phase == Phase::PublicAliases ) {
+                if ( d.public_ && d.id.sub(0).str() == ctx->options().cxx_namespace_intern ) {
+                    // Add a type alias mapping the internal type into the public namespace.
+                    auto public_id = cxx::ID(ctx->options().cxx_namespace_extern, d.id.sub(1, -1));
+
+                    if ( auto base_type = util::split1(d.type).first; base_type == "struct" || base_type == "union" )
+                        // With structs and unions, we may already use the type name as a namespace for related
+                        // functions, so need to move the type itself one level lower.
+                        public_id = public_id + cxx::ID("Type");
+
+                    f.enterNamespace(public_id.namespace_());
+                    f << fmt("using %s = %s;", public_id.local(), d.id) << eol();
+                }
+            }
+
             else if ( phase == Phase::Functions ) {
                 if ( d.code.size() && ! prototypes_only ) {
                     f << d.code << eol();
@@ -183,8 +198,8 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
 }
 
 void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
-    const Phase phases[] = {Phase::Forwards, Phase::Enums,     Phase::Types,    Phase::Constants,
-                            Phase::Globals,  Phase::Functions, Phase::TypeInfos};
+    const Phase phases[] = {Phase::Forwards,      Phase::Enums,   Phase::Types,     Phase::Constants,
+                            Phase::PublicAliases, Phase::Globals, Phase::Functions, Phase::TypeInfos};
 
     for ( const auto& [_, decl] : _declarations )
         _emitDeclarations(decl, f, Phase::Includes, prototypes_only, include_all_implementations);
@@ -260,11 +275,13 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
         return result::Error("cannot generate prototypes for module");
 
     auto f = Formatter();
+    auto guard = fmt("HILTI_PROTOTYPES_%s_H", util::toupper(_module_id));
 
     f << separator();
     f << comment(fmt("Prototypes for module %s", _module_id));
     f << separator();
-    f << fmt("#ifndef HILTI_PROTOTYPES_%s_H", util::toupper(_module_id)) << eol();
+    f << fmt("#ifndef %s", guard) << eol();
+    f << fmt("#define %s", guard) << eol();
     f << separator();
 
     _generateCode(f, true, false);

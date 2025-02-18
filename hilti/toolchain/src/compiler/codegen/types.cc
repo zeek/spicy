@@ -500,7 +500,10 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = fmt("%s", t)};
     }
 
-    void operator()(type::Library* n) final { result = CxxTypes{.base_type = fmt("%s", n->cxxName())}; }
+    void operator()(type::Library* n) final {
+        result = CxxTypes{.base_type = fmt("%s%s", (n->isConstant() ? "const " : ""), n->cxxName()),
+                          .param_in = fmt("const %s %s &", n->cxxName(), (n->isConstant() ? "const " : ""))};
+    }
 
     void operator()(type::List* n) final {
         std::string t;
@@ -826,7 +829,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
     void operator()(type::Function* n) final { result = "::hilti::rt::type_info::Function()"; }
 
-    void operator()(type::Library* n) final { result = "::hilti::rt::type_info::Library()"; }
+    void operator()(type::Library* n) final { result = fmt("::hilti::rt::type_info::Library(\"%s\")", n->cxxName()); }
 
     void operator()(type::Map* n) final {
         auto ktype = cg->compile(n->keyType(), codegen::TypeUsage::Storage);
@@ -1135,8 +1138,19 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
                 logger().internalError(fmt("codegen: type %s does not have a dynamic type info visitor", *t), t);
 
             const auto& id_init = (t->type()->typeID() ? fmt("\"%s\"", t->type()->typeID()) : std::string("{}"));
-            auto init = fmt("{ %s, \"%s\", new %s }", id_init,
-                            util::escapeUTF8(display.str(), util::render_style::UTF8::EscapeQuotes), *x);
+
+            std::string to_string;
+
+            if ( auto x = t->type()->tryAs<type::Library>() )
+                // Library types cannot be rendered into strings, just hardcode the type's name.
+                to_string = fmt("[](const void *self) { return \"<%s>\"s; }", x->cxxName());
+            else
+                to_string =
+                    fmt("[](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const %s*>(self)); }",
+                        compile(t, codegen::TypeUsage::Storage));
+
+            auto init = fmt("{ %s, \"%s\", %s, new %s }", id_init,
+                            util::escapeUTF8(display.str(), util::render_style::UTF8::EscapeQuotes), to_string, *x);
 
             ti.declaration = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", init, "");
 

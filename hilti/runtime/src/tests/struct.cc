@@ -9,6 +9,7 @@
 #include <hilti/rt/types/struct.h>
 
 using namespace hilti::rt;
+using namespace std::literals::string_literals;
 
 TEST_SUITE_BEGIN("struct");
 
@@ -24,10 +25,11 @@ TEST_CASE("value_or_exception") {
 struct Test : trait::isStruct {
     Test(int x) : _x(x), _y(x + 1) {}
 
-    template<typename F>
-    void __visit(F f) const {
-        f("_x", _x);
-        f("_y", _y);
+    std::string __to_string() const {
+        return "["s + "$_x=" + hilti::rt::to_string(_x) +
+               ", "
+               "$_y=" +
+               hilti::rt::to_string(_y) + "]";
     }
 
     int _x;
@@ -36,10 +38,10 @@ struct Test : trait::isStruct {
 
 struct TestWithCustomStr : public Test {
     using Test::Test;
-    std::optional<std::string> __str__() { return "__str__"; }
+    std::optional<std::string> __hook_to_string() { return "__hook_to_string"; }
 };
 
 TEST_CASE("to_string") { CHECK_EQ(to_string(Test(42)), "[$_x=42, $_y=43]"); }
-TEST_CASE("to_string_custom") { CHECK_EQ(to_string(TestWithCustomStr(42)), "__str__"); }
+TEST_CASE("to_string_custom") { CHECK_EQ(to_string(TestWithCustomStr(42)), "__hook_to_string"); }
 
 TEST_SUITE_END();
