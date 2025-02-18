@@ -1,3 +1,19 @@
+1.13.0-dev.85 | 2025-02-18 10:04:22 +0100
+
+  * Fix possessive "it's" in contexts docs. (Evan Typanski, Corelight)
+
+  * GH-1966: Reject anonymous units in variables and fields. (Evan Typanski, Corelight)
+
+  * Avoid creating external types unnecessarily during AST construction. (Robin Sommer, Corelight)
+
+    We could end up creating external types for freshly created AST nodes
+    just because we wanted them to have a certain constness/sideness. This
+    could then lead to the original types not being validated because they
+    weren't inserted into the AST anywhere.
+
+    This also extends the AST dump output for qualified types to indicate
+    whether it's an internal or external type.
+
 1.13.0-dev.81 | 2025-02-07 09:21:54 +0100
 
   * Drop freebsd-13 from default CI jobs. (Benjamin Bannier, Corelight)

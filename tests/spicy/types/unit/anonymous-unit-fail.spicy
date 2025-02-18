@@ -1,0 +1,17 @@
+# @TEST-DOC: Check that anonymous unit types error.
+#
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+global my_global: unit {};
+
+public type Data = unit {
+    var my_var: unit {};
+    : unit {};
+};
+
+function f() {
+    local my_local: unit {};
+}

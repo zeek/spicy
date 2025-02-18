@@ -1,0 +1,19 @@
+# @TEST-DOC: Check that anonymous struct types error.
+#
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Data = unit {
+    : struct {};
+};
+
+@TEST-START-NEXT
+module Test;
+
+public type Data = unit {
+    # This fails slightly earlier so it stops the above diagnostic. Test it
+    # regardless to make sure nothing bad happens.
+    var my_var: struct {};
+};

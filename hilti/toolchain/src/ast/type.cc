@@ -91,7 +91,8 @@ type::Name* QualifiedType::alias() const { return _type()->tryAs<type::Name>(); 
 hilti::node::Properties QualifiedType::properties() const {
     auto side = (_side == Side::LHS ? "lhs" : "rhs");
     auto constness = (_constness == Constness::Const ? "true" : "false");
-    return {{"const", constness}, {"side", side}};
+    auto external = (_external ? "true" : "false");
+    return {{"const", constness}, {"side", side}, {"extern", external}};
 }
 
 std::string QualifiedType::_dump() const {

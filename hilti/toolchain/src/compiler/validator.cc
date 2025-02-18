@@ -177,6 +177,16 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         return Nothing();
     }
 
+    // Ensures the declaration's type is a valid type.
+    void checkDeclarationType(Declaration* decl, QualifiedType* ty) {
+        if ( ty->type()->isA<hilti::type::Struct>() || ty->type()->isA<hilti::type::Enum>() ||
+             ty->type()->isA<hilti::type::Union>() ) {
+            if ( ! ty->type()->typeID() )
+                error(fmt("%s types must be named in declarations", ty->type()->typeClass()), decl,
+                      node::ErrorPriority::High);
+        }
+    }
+
     void operator()(Node* n) final {
         if ( ! n->scope() )
             return;
@@ -236,6 +246,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(declaration::Constant* n) final {
+        checkDeclarationType(n, n->type());
+
         if ( n->value()->type()->isWildcard() )
             error("cannot use wildcard type for constants", n);
 
@@ -249,6 +261,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         hilti::visitor::visit(VisitExpressions(this), n);
     }
 
+    void operator()(declaration::Field* n) final { checkDeclarationType(n, n->type()); }
+
     void operator()(declaration::Function* n) final {
         if ( ! operator_::registry().byBuiltinFunctionID(n->id().local()).empty() )
             error("function uses reserved ID", n);
@@ -258,6 +272,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(declaration::LocalVariable* n) final {
+        checkDeclarationType(n, n->type());
+
         if ( auto t = n->type()->type();
              ! t->isAllocable() && ! t->isA<type::Unknown>() ) // unknown will be reported elsewhere
             error(fmt("type '%s' cannot be used for variable declaration", *n->type()), n);
@@ -299,6 +315,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     void operator()(declaration::Parameter* n) final {
         checkNodeAttributes(n->nodeTag(), n->attributes(), n->displayName());
+        checkDeclarationType(n, n->type());
 
         if ( ! n->type()->type()->isA<type::Auto>() ) {
             if ( ! n->type()->type()->isAllocable() && ! n->type()->type()->isA<type::Any>() )
@@ -333,6 +350,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(declaration::GlobalVariable* n) final {
+        checkDeclarationType(n, n->type());
+
         if ( auto t = n->type()->type();
              ! t->isAllocable() && ! t->isA<type::Unknown>() ) // unknown will be reported elsewhere
             error(fmt("type '%s' cannot be used for variable declaration", *n->type()), n);
