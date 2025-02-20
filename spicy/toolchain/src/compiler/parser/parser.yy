@@ -299,8 +299,8 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::type::enum_::Labels>          enum_labels
 %type <hilti::type::bitfield::BitRanges>    bitfield_bit_ranges opt_bitfield_bit_ranges
 %type <hilti::type::bitfield::BitRange*>  bitfield_bit_range
-%type <std::vector<std::string>>            re_patterns
-%type <std::string>                         re_pattern_constant
+%type <hilti::ctor::regexp::Patterns> re_patterns
+%type <hilti::ctor::regexp::Pattern>        re_pattern_constant opt_re_pattern_constant_flags
 %type <hilti::statement::switch_::Case*>  switch_case
 %type <hilti::statement::switch_::Cases>    switch_cases
 
@@ -1180,11 +1180,30 @@ regexp        : re_patterns                      { $$ = builder->ctorRegExp(std:
 
 re_patterns   : re_patterns '|' re_pattern_constant
                                                  { $$ = $1; $$.push_back(std::move($3)); }
-              | re_pattern_constant              { $$ = std::vector<std::string>{std::move($1)}; }
+              | re_pattern_constant              { $$ = hilti::ctor::regexp::Patterns{std::move($1)}; }
 
 re_pattern_constant
-              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/'
-                                                 { $$ = std::move($3); }
+              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $6;
+                                                   $$.setValue($3);
+                                                 }
+
+opt_re_pattern_constant_flags
+              : local_id opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $2;
+                                                   if ( $1 == ID("i") )
+                                                       $$.setCaseInsensitive(true);
+                                                   else
+                                                       error(@$, "unknown regular expression flag");
+                                                 }
+              | '$' '(' CUINTEGER ')' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $5;
+                                                   $$.setMatchID($3);
+                                                 }
+              | /* empty */                      { $$ = {}; }
 
 opt_map_elems : map_elems                        { $$ = std::move($1); }
               | /* empty */                      { $$ = hilti::ctor::map::Elements(); }

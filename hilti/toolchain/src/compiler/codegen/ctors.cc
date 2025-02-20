@@ -187,15 +187,17 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->isNoSub() )
             flags.emplace_back(".no_sub = true");
 
-        auto t = (n->value().size() == 1 ? "std::string" : "std::vector<std::string>");
-        result = fmt("::hilti::rt::RegExp(%s{%s}, {%s})", t,
-                     util::join(util::transform(n->value(),
-                                                [&](const auto& s) {
-                                                    return fmt("\"%s\"", util::escapeUTF8(s, hilti::rt::render_style::
-                                                                                                 UTF8::EscapeQuotes));
-                                                }),
-                                ", "),
-                     util::join(flags, ", "));
+        result =
+            fmt("::hilti::rt::RegExp({%s}, {%s})",
+                util::join(util::transform(n->patterns(),
+                                           [&](const auto& p) {
+                                               return fmt("hilti::rt::regexp::Pattern{\"%s\", %s, %s}",
+                                                          util::escapeUTF8(p.value(),
+                                                                           hilti::rt::render_style::UTF8::EscapeQuotes),
+                                                          (p.isCaseInsensitive() ? "true" : "false"), p.matchID());
+                                           }),
+                           ", "),
+                util::join(flags, ", "));
     }
 
     void operator()(ctor::Set* n) final {

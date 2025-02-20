@@ -1,3 +1,44 @@
+1.13.0-dev.105 | 2025-02-20 12:28:40 +0100
+
+  * Remove documentation of ``&nosub``. (Robin Sommer, Corelight)
+
+    Turns out we have never supported that in Spicy (only in HILTI). The
+    reasons seems to be a parsing challenge: cannot easily add attributes
+    to regular expression constants with our Spicy Bison parser.
+
+  * GH-1965: Add support for case-insensitive matching to regular expressions. (Robin Sommer, Corelight)
+
+    By adding an `i` flag to a regular expression pattern, it will no w be
+    matched case-insensitively (e.g. `/foobar/i`).
+
+  * GH-100: Switch regular expressions to new justrx API. (Robin Sommer, Corelight)
+
+    justrx no longer parses group match IDs out of the expression string,
+    but instead now offers an API to set them directly. This switches over
+    to using that new API.
+
+    As a result, setting a match ID inline inside a regexp doesn't work
+    anymore. An example of old syntax was: `/foobar${#100}/`. Instead, we
+    now allow IDs to be provided after the final slash. The new syntax is
+    `/foobar/$(100)`. While this is technically a breaking change, I doubt
+    anybody has been using this, and I don't think it's worth putting any
+    backwards-compatibility in.
+
+    Admittedly, that new ID syntax is bit arbitrary, and mostly chosen so
+    that it can be parsed easily. But it's not something users will
+    commonly use, so that seems fine. The Bison parser for that new syntax
+    already prepares for more pattern flags as well that we will want to
+    support.
+
+  * Bump justrx to pull in new API group matching. (Robin Sommer, Corelight)
+
+  * Refactor regexp patterns. (Robin Sommer, Corelight)
+
+    So far we were storing the regexp patterns as strings directly inside
+    the `RegExp` class. This factors out that storage into a new `Pattern`
+    helper class. Right now, that helper class likewise only stores a
+    string, just as before. But will extend that soon.
+
 1.13.0-dev.99 | 2025-02-18 11:43:18 +0100
 
   * Add a `to_string()` callback to our custom runtime type information. (Robin Sommer, Corelight)

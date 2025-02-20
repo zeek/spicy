@@ -146,7 +146,7 @@ struct Visitor : public visitor::PreOrder {
         if ( ! state().captures )
             attrs->add(context(), builder()->attribute(hilti::attribute::Kind::Nosub));
 
-        auto re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->value(), attrs));
+        auto re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->patterns(), attrs));
 
         auto parse = [&](Expression* result, bool trim) -> Expression* {
             if ( ! result && state().literal_mode != LiteralMode::Skip )

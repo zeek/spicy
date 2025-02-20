@@ -225,7 +225,7 @@ void regexp::detail::CompiledRegExp::RegFree::operator()(jrx_regex_t* j) {
     delete j;
 }
 
-regexp::detail::CompiledRegExp::CompiledRegExp(const std::vector<std::string>& patterns, regexp::Flags flags)
+regexp::detail::CompiledRegExp::CompiledRegExp(const regexp::Patterns& patterns, regexp::Flags flags)
     : _flags(flags), _patterns(patterns) {
     _newJrx();
 
@@ -254,8 +254,13 @@ void regexp::detail::CompiledRegExp::_newJrx() {
     jrx_regset_init(_jrx.get(), -1, cflags);
 }
 
-void regexp::detail::CompiledRegExp::_compileOne(std::string pattern, int idx) {
-    if ( auto rc = jrx_regset_add(_jrx.get(), pattern.c_str(), pattern.size()); rc != REG_OK ) {
+void regexp::detail::CompiledRegExp::_compileOne(regexp::Pattern pattern, int idx) {
+    auto regexp = pattern.value();
+
+    int cflags = (pattern.isCaseInsensitive() ? REG_ICASE : 0);
+    auto id = static_cast<jrx_accept_id>(pattern.matchID());
+
+    if ( auto rc = jrx_regset_add2(_jrx.get(), regexp.c_str(), regexp.size(), cflags, id); rc != REG_OK ) {
         static char err[256];
         jrx_regerror(rc, _jrx.get(), err, sizeof(err));
         throw PatternError(fmt("error compiling pattern '%s': %s", pattern, err));
@@ -264,8 +269,10 @@ void regexp::detail::CompiledRegExp::_compileOne(std::string pattern, int idx) {
     _patterns.push_back(std::move(pattern));
 }
 
-RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) {
-    const auto& key = (patterns.empty() ? std::string() : join(patterns, "|") + "|" + flags.cacheKey());
+RegExp::RegExp(const regexp::Patterns& patterns, regexp::Flags flags) {
+    const auto& key = (patterns.empty() ? std::string() :
+                                          join(transform(patterns, [](const auto& p) { return to_string(p); }), "|") +
+                                              "|" + flags.cacheKey());
     auto& ptr = detail::globalState()->regexp_cache[key];
 
     if ( ! ptr )
@@ -274,10 +281,9 @@ RegExp::RegExp(const std::vector<std::string>& patterns, regexp::Flags flags) {
     _re = ptr;
 }
 
-RegExp::RegExp(std::string pattern, regexp::Flags flags)
-    : RegExp(std::vector<std::string>{std::move(pattern)}, flags) {}
+RegExp::RegExp(regexp::Pattern pattern, regexp::Flags flags) : RegExp(regexp::Patterns{{std::move(pattern)}}, flags) {}
 
-RegExp::RegExp() : RegExp(std::vector<std::string>{}, regexp::Flags{}) {}
+RegExp::RegExp() : RegExp(regexp::Patterns{}, regexp::Flags{}) {}
 
 int32_t RegExp::match(const Bytes& data) const {
     jrx_match_state ms;
@@ -435,8 +441,7 @@ std::string hilti::rt::detail::adl::to_string(const RegExp& x, adl::tag /*unused
     if ( x.patterns().empty() )
         return "<regexp w/o pattern>";
 
-    auto p = join(transform(x.patterns(), [&](const auto& s) { return fmt("/%s/", s); }), " | ");
-
+    auto p = join(transform(x.patterns(), [&](const auto& s) { return to_string(s); }), " | ");
     auto f = std::vector<std::string>();
 
     if ( x.flags().no_sub )

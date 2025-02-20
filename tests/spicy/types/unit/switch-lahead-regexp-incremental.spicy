@@ -3,6 +3,7 @@
 # @TEST-EXEC: echo xaaaXBar | spicy-driver -i 1 %INPUT.hlto >>output
 # @TEST-EXEC: echo xaaaFoo | spicy-driver -i 4 %INPUT.hlto >>output
 # @TEST-EXEC: echo xaaaXBar | spicy-driver -i 4 %INPUT.hlto >>output
+# @TEST-EXEC: echo xaaaxBar | spicy-driver -i 4 %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output
 
 module Mini;
@@ -14,7 +15,7 @@ type A = unit {
 };
 
 type B = unit {
-    x: /xa+X/;
+    x: /XA+X/i;
     y: /Bar/;
     on %done { print "B", self.x, self.y; }
 };

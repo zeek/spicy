@@ -243,7 +243,7 @@ static int _field_width = 0;
 %token WEAK_REF "weak_ref"
 %token YIELD "yield"
 
-%type <hilti::ID>                               local_id scoped_id dotted_id function_id scoped_function_id
+%type <hilti::ID>                             local_id scoped_id dotted_id function_id scoped_function_id
 %type <hilti::Declaration*>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
 %type <hilti::Declarations>                     struct_fields union_fields opt_union_fields
 %type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
@@ -272,8 +272,8 @@ static int _field_width = 0;
 %type <hilti::type::enum_::Labels>              enum_labels
 %type <hilti::type::bitfield::BitRanges>        bitfield_bit_ranges opt_bitfield_bit_ranges
 %type <hilti::type::bitfield::BitRange*>      bitfield_bit_range
-%type <std::vector<std::string>>                re_patterns
-%type <std::string>                             re_pattern_constant
+%type <hilti::ctor::regexp::Patterns> re_patterns
+%type <hilti::ctor::regexp::Pattern>        re_pattern_constant opt_re_pattern_constant_flags
 %type <hilti::statement::switch_::Case*>      switch_case
 %type <hilti::statement::switch_::Cases>        switch_cases opt_switch_cases
 %type <hilti::statement::try_::Catch*>        try_catch
@@ -938,15 +938,34 @@ struct_elems  : struct_elems ',' struct_elem     { $$ = std::move($1); $$.push_b
 
 struct_elem   : '$' local_id  '=' expr           { $$ = builder->ctorStructField(std::move($2), std::move($4)); }
 
-regexp        : re_patterns opt_attributes      { $$ = builder->ctorRegExp(std::move($1), std::move($2), __loc__); }
+regexp        : re_patterns opt_attributes       { $$ = builder->ctorRegExp(std::move($1), std::move($2), __loc__); }
 
 re_patterns   : re_patterns '|' re_pattern_constant
                                                  { $$ = $1; $$.push_back(std::move($3)); }
-              | re_pattern_constant              { $$ = std::vector<std::string>{std::move($1)}; }
+              | re_pattern_constant              { $$ = hilti::ctor::regexp::Patterns{std::move($1)}; }
 
 re_pattern_constant
-              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/'
-                                                 { $$ = std::move($3); }
+              : '/' { driver->enablePatternMode(); } CREGEXP { driver->disablePatternMode(); } '/' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $6;
+                                                   $$.setValue($3);
+                                                 }
+
+opt_re_pattern_constant_flags
+              : local_id opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $2;
+                                                   if ( $1 == ID("i") )
+                                                       $$.setCaseInsensitive(true);
+                                                   else
+                                                       error(@$, "unknown regular expression flag");
+                                                 }
+              | '$' '(' CUINTEGER ')' opt_re_pattern_constant_flags
+                                                 {
+                                                   $$ = $5;
+                                                   $$.setMatchID($3);
+                                                 }
+              | /* empty */                      { $$ = {}; }
 
 opt_map_elems : map_elems                        { $$ = std::move($1); }
               | /* empty */                      { $$ = hilti::ctor::map::Elements(); }

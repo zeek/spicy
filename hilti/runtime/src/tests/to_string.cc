@@ -27,6 +27,8 @@
 
 using namespace hilti::rt;
 
+inline auto operator""_p(const char* str, size_t size) { return hilti::rt::regexp::Pattern(std::string(str, size)); }
+
 TEST_SUITE_BEGIN("to_string");
 
 TEST_CASE("any") { CHECK_EQ(to_string(hilti::rt::any()), "<any value>"); }
@@ -245,17 +247,17 @@ TEST_CASE("real::Type") {
 
 TEST_CASE("RegExp") {
     CHECK_EQ(to_string(RegExp()), "<regexp w/o pattern>");
-    CHECK_EQ(to_string(RegExp("a", regexp::Flags())), "/a/");
-    CHECK_EQ(to_string(RegExp("a", regexp::Flags({.no_sub = 1}))), "/a/ &nosub");
-    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a"}), regexp::Flags())), "/a/");
-    CHECK_EQ(to_string(RegExp(std::vector<std::string>({"a", "b"}), regexp::Flags())), "/a/ | /b/");
+    CHECK_EQ(to_string(RegExp({"a"}, regexp::Flags())), "/a/");
+    CHECK_EQ(to_string(RegExp({"a"}, regexp::Flags({.no_sub = 1}))), "/a/ &nosub");
+    CHECK_EQ(to_string(RegExp({"a"}, regexp::Flags())), "/a/");
+    CHECK_EQ(to_string(RegExp({regexp::Pattern{"a"}, regexp::Pattern{"b"}}, regexp::Flags())), "/a/ | /b/");
 
-    CHECK_EQ(to_string(RegExp("/", regexp::Flags())), "///");
+    CHECK_EQ(to_string(RegExp({"/"}, regexp::Flags())), "///");
 
-    CHECK_EQ(to_string(RegExp("", regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
+    CHECK_EQ(to_string(RegExp({""}, regexp::Flags()).tokenMatcher()), "<regexp-match-state>");
 
     std::stringstream x;
-    x << RegExp("X");
+    x << RegExp({"X"});
     CHECK_EQ(x.str(), "/X/");
 }
 
