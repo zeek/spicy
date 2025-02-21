@@ -1,3 +1,11 @@
+1.13.0-dev.107 | 2025-02-21 11:05:36 +0100
+
+  * Fix possibly-incorrect custom host compile command (Evan Typanski)
+
+    The order of `ldflags` compared to the `-o` output matters - they should
+    be after. As-is, the documentation fails to compile, but with this
+    change, the command succeeds for me.
+
 1.13.0-dev.105 | 2025-02-20 12:28:40 +0100
 
   * Remove documentation of ``&nosub``. (Robin Sommer, Corelight)

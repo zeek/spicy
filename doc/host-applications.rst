@@ -142,7 +142,7 @@ expected.
     one through its ``--cxx`` option. You can even put that directly
     into the build command line::
 
-        # $(spicy-config --cxx --cxxflags --ldflags) -o my_http my_http-host.cc my_http___linker__.cc my_http_MyHTTP.cc
+        # $(spicy-config --cxx) -o my_http my_http-host.cc my_http___linker__.cc my_http_MyHTTP.cc $(spicy-config --cxxflags --ldflags)
 
 When using ``parse1()`` we don't get access to the parsed information.
 If we want that, we can use ``parse2()`` instead and provide it with a
