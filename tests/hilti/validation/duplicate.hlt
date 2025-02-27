@@ -25,3 +25,28 @@ function void f(int<32> i) {}
 global f = 1;
 
 }
+
+# @TEST-START-NEXT
+
+# Functions cannot be defined with the same parameters but different return types.
+module Foo {
+function void fail1() { return; }
+function int<32> fail1() { return 1; }
+
+function void fail2(int<32> i) { return; }
+function int<32> fail2(int<32> not_i) { return 1; }
+}
+
+# @TEST-START-NEXT
+
+module Foo {
+# Ok if different parameters and different return types, but force a failure to get output
+function int<64> succeed(int<64> i, int<64> j) { return i + j; }
+function int<32> succeed(int<32> i) { return i; }
+
+global s1 = succeed(1, 2);
+global s2 = succeed(1);
+
+# Force failure to get output
+assert s1 == s2: "%d == %d" % (s1, s2);
+}

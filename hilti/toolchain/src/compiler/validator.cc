@@ -204,10 +204,19 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 if ( node->location() == first_node->location() )
                     continue;
 
-                // Functions can legitimately be overloaded.
-                if ( node->isA<declaration::Function>() ) {
-                    if ( first_node->tryAs<declaration::Function>() )
+                // Functions can legitimately be overloaded most of the time.
+                if ( auto current_decl = node->tryAs<declaration::Function>() ) {
+                    if ( auto previous_decl = first_node->tryAs<declaration::Function>() ) {
+                        auto current_fn_ty = current_decl->function()->ftype();
+                        auto previous_fn_ty = previous_decl->function()->ftype();
+
+                        if ( ! isValidOverload(current_fn_ty, previous_fn_ty) )
+                            error(fmt("'%s' is not a valid overload; previous definition in %s", id,
+                                      first_node->location()),
+                                  node);
+
                         continue;
+                    }
                 }
 
                 // Modules of the same name can be imported if they come with different scopes.

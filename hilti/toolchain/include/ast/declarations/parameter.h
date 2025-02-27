@@ -133,4 +133,10 @@ inline bool areEquivalent(Parameter* p1, Parameter* p2) {
     return type::same(p1->type(), p2->type());
 }
 
+/** Returns true if two sets of parameters are equivalent, regardless of their ID. */
+inline bool areEquivalent(const node::Set<Parameter>& params1, const node::Set<Parameter>& params2) {
+    return std::equal(params1.begin(), params1.end(), params2.begin(), params2.end(),
+                      [](const auto& p1, const auto& p2) { return areEquivalent(p1, p2); });
+}
+
 } // namespace hilti::declaration
