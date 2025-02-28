@@ -1,0 +1,47 @@
+# @TEST-DOC: Tests &max-size on units when not fully consumed from a field.
+#
+# @TEST-EXEC: printf '123' | spicy-driver -d %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Outer = unit {
+    dat: Inner;
+    b  : bytes &size=2;
+
+    on %done { print self; }
+};
+
+type Inner = unit {
+    b: bytes &size=1;
+} &max-size=1024;
+
+@TEST-START-NEXT
+
+module Test;
+
+public type Outer = unit {
+    dat: Inner[] &size=3;
+
+    on %done { print self; }
+};
+
+type Inner = unit {
+    b: bytes &size=1;
+} &max-size=1024;
+
+@TEST-START-NEXT
+
+module Test;
+
+public type Outer = unit {
+    dat: Inner[];
+       : b"2";
+    x  : bytes &size=1;
+
+    on %done { print self; }
+};
+
+type Inner = unit {
+    b: bytes &size=1;
+} &max-size=1024;

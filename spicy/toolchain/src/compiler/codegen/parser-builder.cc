@@ -879,6 +879,19 @@ struct ProductionVisitor : public production::Visitor {
         return result;
     }
 
+    /**
+     * Advances a view by the amount consumed in the provided limited view, which may not be
+     * fully consumed. The limited view must point into the `cur` stream.
+     */
+    Expression* advanceLimited(Expression* cur, Expression* limited) {
+        // Compute the difference in offset; this is safe since the limited view is into the
+        // original stream `cur` points to.
+        return builder()->memberCall(cur, "advance",
+                                     {builder()->difference(builder()->memberCall(limited, "offset"),
+                                                            builder()->memberCall(cur, "offset"))});
+    }
+
+
     void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset,
                         Expression* ncur, Expression* ncur_max_size) {
         const auto& field = meta.field();
@@ -928,13 +941,7 @@ struct ProductionVisitor : public production::Visitor {
         }
 
         else if ( ncur_max_size )
-            // Compute how far to advance for `&max-size` parsing where we operate on a limited view, but do not
-            // necessarily consume it fully. Since `cur` and `ncur_max_size` point to different views we need
-            // compute the difference in offset; this is safe since the limited view is into the original stream
-            // `cur` points to.
-            ncur = builder()->memberCall(state().cur, "advance",
-                                         {builder()->difference(builder()->memberCall(ncur_max_size, "offset"),
-                                                                builder()->memberCall(state().cur, "offset"))});
+            ncur = advanceLimited(state().cur, ncur_max_size);
 
         if ( ncur )
             builder()->addAssign(state().cur, ncur);
@@ -1792,9 +1799,9 @@ struct ProductionVisitor : public production::Visitor {
                         [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
 
             // Restore parser state.
-            auto ncur = state().ncur;
+            auto limited = state().cur;
             popState();
-            builder()->addAssign(state().cur, ncur);
+            builder()->addAssign(state().cur, advanceLimited(state().cur, limited));
         }
 
         else if ( auto a = p->unitType()->attributes()->find(hilti::attribute::Kind::Size);
