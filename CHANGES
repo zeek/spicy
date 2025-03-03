@@ -1,3 +1,13 @@
+1.13.0-dev.109 | 2025-03-03 17:13:37 +0100
+
+  * GH-1976: Fix unit `&max-size` not returning to proper loc. (Evan Typanski, Corelight)
+
+    Fixes #1976
+
+    &max-size was treated the same as &size - so it was going to the end of
+    the limited view rather than to the proper location based on what was
+    parsed.
+
 1.13.0-dev.107 | 2025-02-21 11:05:36 +0100
 
   * Fix possibly-incorrect custom host compile command (Evan Typanski)
