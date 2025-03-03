@@ -1,3 +1,12 @@
+1.13.0-dev.111 | 2025-03-03 17:15:46 +0100
+
+  * GH-1977: Disallow function redef with different return. (Evan Typanski, Corelight)
+
+    Fixes #1977
+
+    C++ doesn't allow different return types with equivalent parameters, so
+    Spicy should grab that and error before it gets to the C++ error.
+
 1.13.0-dev.109 | 2025-03-03 17:13:37 +0100
 
   * GH-1976: Fix unit `&max-size` not returning to proper loc. (Evan Typanski, Corelight)

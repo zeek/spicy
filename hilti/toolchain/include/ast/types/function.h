@@ -106,14 +106,12 @@ private:
  * identical. This for example allows parameter ID to be different.
  */
 inline bool areEquivalent(Function* f1, Function* f2) {
-    if ( ! type::same(f1->result(), f2->result()) )
-        return false;
-
-    auto p1 = f1->parameters();
-    auto p2 = f2->parameters();
-    return std::equal(std::begin(p1), std::end(p1), std::begin(p2), std::end(p2),
-                      [](const auto& p1, const auto& p2) { return areEquivalent(p1, p2); });
+    return type::same(f1->result(), f2->result()) && areEquivalent(f1->parameters(), f2->parameters());
 }
 
+/** Returns true if the provided function types can be valid overloads of each other. */
+inline bool isValidOverload(Function* f1, Function* f2) {
+    return type::same(f1->result(), f2->result()) || ! areEquivalent(f1->parameters(), f2->parameters());
+}
 
 } // namespace hilti::type
