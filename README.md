@@ -46,7 +46,7 @@ compiler); or ahead-of-time either by creating pre-compiled shared
 libraries, or by giving you generated C++ code that you can link into
 your application.
 
-Spicy comes with a [Zeek plugin](https://github.com/zeek/spicy-plugin)
+Spicy comes with a [Zeek plugin](https://github.com/zeek/zeek/tree/master/src/spicy)
 that enables adding new protocol and file analyzers to
 [Zeek](https://www.zeek.org) without having to write any C++ code. You
 define the grammar, specify which Zeek events to generate, and Spicy
@@ -93,15 +93,10 @@ like to hear from you!
 
 - Report issues on the GitHub [ticket tracker](https://github.com/zeek/spicy/issues).
 
-- Ask the `#spicy` channel [on Zeek's Slack](https://zeek.org/connect).
+- Ask the `#spicy` channel [on Zeek's Slack](https://zeek.org/slack).
 
 - Check out the [Zeek community](https://community.zeek.org) and discuss Spicy under
   the [Spicy tag](https://community.zeek.org/c/spicy/).
-
-- To follow development, subscribe to the [commits mailing
-  list](https://lists.zeek.org/mailman3/lists/spicy-commits.lists.zeek.org) (it can
-  be noisy!).
-
 
 ## License
 

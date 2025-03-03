@@ -1,3 +1,9 @@
+1.13.0-dev.113 | 2025-03-03 17:39:36 +0100
+
+  * GH-1983: Audit links in README. (Benjamin Bannier, Corelight)
+
+    Closes #1983.
+
 1.13.0-dev.111 | 2025-03-03 17:15:46 +0100
 
   * GH-1977: Disallow function redef with different return. (Evan Typanski, Corelight)
