@@ -50,3 +50,23 @@ global s2 = succeed(1);
 # Force failure to get output
 assert s1 == s2: "%d == %d" % (s1, s2);
 }
+
+# @TEST-START-NEXT
+
+module foo {
+
+import hilti;
+
+# Overloads which only differ in defaulted parameters are not allowed. This is
+# roughly in line with the overloads C++ allows.
+function uint<8> fun(uint<8> a) {
+    return uint8(1);
+}
+
+function uint<16> fun(uint<8> a, uint<8> b = uint8(0)) {
+    return uint16(2);
+}
+
+hilti::print(fun(uint8(1)));
+
+}
