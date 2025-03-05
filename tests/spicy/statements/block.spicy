@@ -1,0 +1,28 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Block;
+
+function block() {
+    print "Testing block:";
+    {
+        local x = 1;
+        print x;
+    }
+    local x = "hello :)";
+    print x;
+}
+
+function shadow() {
+    print "\nTesting shadowing:";
+    local shadowed = "outer";
+    print shadowed;
+    {
+        local shadowed = "inner";
+        print shadowed;
+    }
+    print shadowed;
+}
+
+block();
+shadow();

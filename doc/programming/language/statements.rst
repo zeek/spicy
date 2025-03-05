@@ -118,7 +118,7 @@ Examples:
         print i;
     }
 
-    local v = vector("a", "b", "c");
+    global v = vector("a", "b", "c");
 
     for ( i in v )
         print i;

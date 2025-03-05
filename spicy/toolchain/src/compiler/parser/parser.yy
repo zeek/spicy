@@ -36,7 +36,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 119
-%expect-rr 170
+%expect-rr 172
 
 %{
 
@@ -521,8 +521,11 @@ opt_init_expression : '=' expr                   { $$ = std::move($2); }
 
 /* Statements */
 
-block         : braced_block                     { $$ = std::move($1); }
-              | stmt                             { $$ = builder->statementBlock({$1}, __loc__); }
+block         : stmt                             { if ( ! $1->isA<hilti::statement::Block>() )
+                                                     $$ = builder->statementBlock({std::move($1)}, __loc__);
+                                                   else
+                                                     $$ = std::move($1);
+                                                 }
               ;
 
 braced_block  : '{' opt_stmts '}'                { $$ = builder->statementBlock(std::move($2), __loc__); }
@@ -535,6 +538,7 @@ stmts         : stmts stmt                       { $$ = std::move($1); $$.push_b
 
 stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | stmt_decl                        { $$ = std::move($1); }
+              | braced_block                     { $$ = std::move($1); }
               | ASSERT expr ';'                  { $$ = builder->statementAssert(std::move($2), {}, __loc__); }
               | ASSERT_EXCEPTION expr_no_or_error ':' expr ';'
                                                  { $$ = builder->statementAssert(hilti::statement::assert::Exception(), std::move($2), {}, std::move($4), __loc__); }

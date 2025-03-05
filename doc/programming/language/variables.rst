@@ -36,9 +36,41 @@ prefixed with ``local`` this time:
     function f() {
         local x: bytes;
         local y = "Y";
-
     }
 
 Usual scoping rules apply to locals. Just like globals, locals are
 always initialized to a well-defined value: either their default if
 given, or the type's null value.
+
+Local variables can also have their visibility limited to a block
+enclosed by curly braces:
+
+.. spicy-code::
+
+    function f() {
+        {
+            local x = "One";
+            print x;
+        }
+        {
+            local x = "Two";
+            print x;
+        }
+
+        # Shadowing variables also works
+        local shadowed = "Outer";
+        {
+            local shadowed = "Inner";
+            print shadowed;
+        }
+        print shadowed;
+    }
+
+The above function would print:
+
+.. code::
+
+    One
+    Two
+    Inner
+    Outer

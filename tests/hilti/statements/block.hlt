@@ -1,0 +1,31 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Block {
+
+import hilti;
+
+function void block() {
+    hilti::print("Testing block:");
+    {
+        local x = 1;
+        hilti::print(x);
+    }
+    local x = "hello :)";
+    hilti::print(x);
+}
+
+function void shadowed() {
+    hilti::print("\nTesting shadowing:");
+    local shadowed = "outer";
+    hilti::print(shadowed);
+    {
+        local shadowed = "inner";
+        hilti::print(shadowed);
+    }
+    hilti::print(shadowed);
+}
+
+block();
+shadowed();
+}

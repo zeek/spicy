@@ -36,7 +36,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 113
-%expect-rr 209
+%expect-rr 211
 
 %{
 
@@ -467,8 +467,11 @@ opt_func_default_expr : '=' expr                 { $$ = std::move($2); }
 
 /* Statements */
 
-block         : braced_block                     { $$ = std::move($1); }
-              | stmt                             { $$ = builder->statementBlock({$1}, __loc__); }
+block         : stmt                             { if ( ! $1->isA<hilti::statement::Block>() )
+                                                     $$ = builder->statementBlock({std::move($1)}, __loc__);
+                                                   else
+                                                     $$ = std::move($1);
+                                                 }
               ;
 
 braced_block  : '{' opt_stmts '}'                { $$ = builder->statementBlock(std::move($2), __loc__); }
@@ -481,6 +484,7 @@ stmts         : stmts stmt                       { $$ = std::move($1); $$.push_b
 
 stmt          : stmt_expr ';'                    { $$ = std::move($1); }
               | stmt_decl                        { $$ = std::move($1); }
+              | braced_block                     { $$ = std::move($1); }
               | RETURN ';'                       { $$ = builder->statementReturn(__loc__); }
               | RETURN expr ';'                  { $$ = builder->statementReturn(std::move($2), __loc__); }
               | THROW expr ';'                   { $$ = builder->statementThrow(std::move($2), __loc__); }
