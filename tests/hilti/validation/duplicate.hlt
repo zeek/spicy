@@ -35,6 +35,11 @@ function int<32> fail1() { return 1; }
 
 function void fail2(int<32> i) { return; }
 function int<32> fail2(int<32> not_i) { return 1; }
+
+# This should apply even if the others are valid overloads of the first but not each other
+function void fail3(int<32> i) { return; }
+function void fail3(int<32> i, int<32> j) { return; }
+function int<32> fail3(int<32> i, int<32> j) { return 1; }
 }
 
 # @TEST-START-NEXT

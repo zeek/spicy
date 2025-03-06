@@ -196,31 +196,35 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             if ( nodes.size() <= 1 )
                 continue;
 
-            const auto& first_node = *std::min_element(nodes.begin(), nodes.end(), [](const auto& a, const auto& b) {
-                return a->location() < b->location();
-            });
+            auto sorted_nodes = std::vector<Declaration*>(nodes.begin(), nodes.end());
+            std::sort(sorted_nodes.begin(), sorted_nodes.end(),
+                      [](const auto* a, const auto* b) { return a->location() < b->location(); });
 
-            for ( const auto& node : nodes ) {
-                if ( node->location() == first_node->location() )
-                    continue;
+            const auto* first_node = *sorted_nodes.begin();
+            for ( std::size_t i = 1; i < sorted_nodes.size(); i++ ) {
+                const auto& node = sorted_nodes[i];
 
                 // Functions can legitimately be overloaded most of the time.
-                if ( auto current_decl = node->tryAs<declaration::Function>() ) {
-                    if ( auto previous_decl = first_node->tryAs<declaration::Function>() ) {
-                        auto current_fn_ty = current_decl->function()->ftype();
-                        auto previous_fn_ty = previous_decl->function()->ftype();
+                if ( auto current_decl = node->tryAs<declaration::Function>();
+                     current_decl && first_node->isA<declaration::Function>() ) {
+                    // Try all previous nodes and see if this is a valid overload for each
+                    for ( std::size_t j = 0; j < i; j++ ) {
+                        if ( auto previous_decl = sorted_nodes[j]->tryAs<declaration::Function>() ) {
+                            auto current_fn_ty = current_decl->function()->ftype();
+                            auto previous_fn_ty = previous_decl->function()->ftype();
 
-                        if ( current_fn_ty->flavor() == type::function::Flavor::Hook &&
-                             current_fn_ty->flavor() == previous_fn_ty->flavor() )
-                            continue;
+                            if ( current_fn_ty->flavor() == type::function::Flavor::Hook &&
+                                 current_fn_ty->flavor() == previous_fn_ty->flavor() )
+                                continue;
 
-                        if ( auto valid = isValidOverload(current_fn_ty, previous_fn_ty); ! valid )
-                            error(fmt("'%s' is not a valid overload: %s; previous definition in %s", id, valid.error(),
-                                      first_node->location()),
-                                  node);
-
-                        continue;
+                            if ( auto valid = isValidOverload(current_fn_ty, previous_fn_ty); ! valid )
+                                error(fmt("'%s' is not a valid overload: %s; previous definition in %s", id,
+                                          valid.error(), previous_decl->location()),
+                                      node);
+                        }
                     }
+
+                    continue;
                 }
 
                 // Modules of the same name can be imported if they come with different scopes.
