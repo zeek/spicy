@@ -210,6 +210,10 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                         auto current_fn_ty = current_decl->function()->ftype();
                         auto previous_fn_ty = previous_decl->function()->ftype();
 
+                        if ( current_fn_ty->flavor() == type::function::Flavor::Hook &&
+                             current_fn_ty->flavor() == previous_fn_ty->flavor() )
+                            continue;
+
                         if ( ! isValidOverload(current_fn_ty, previous_fn_ty) )
                             error(fmt("'%s' is not a valid overload; previous definition in %s", id,
                                       first_node->location()),

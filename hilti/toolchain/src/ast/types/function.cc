@@ -28,6 +28,9 @@ bool type::Function::isResolved(node::CycleDetector* cd) const {
 }
 
 bool type::isValidOverload(Function* f1, Function* f2) {
+    if ( areEquivalent(f1, f2) )
+        return false;
+
     const auto& params1 = f1->parameters();
     const auto& params2 = f2->parameters();
 

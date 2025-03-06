@@ -70,3 +70,19 @@ function uint<16> fun(uint<8> a, uint<8> b = uint8(0)) {
 hilti::print(fun(uint8(1)));
 
 }
+
+# @TEST-START-NEXT
+
+module Foo {
+
+# Equivalent functions signatures should not be allowed.
+function void fail1() { return; }
+function void fail1() { return; }
+
+function string fail2(uint<8> x, string y) { return "hi!"; }
+function string fail2(uint<8> different, string names) { return "hi!"; }
+
+function uint<8> fail3() { return 1; }
+function uint<8> fail3() { return 2; }
+
+}
