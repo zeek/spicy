@@ -1,6 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <hilti/ast/types/function.h>
+#include "hilti/ast/types/function.h"
+
+#include <algorithm>
+#include <iterator>
 
 using namespace hilti;
 
@@ -22,4 +25,18 @@ bool type::Function::isResolved(node::CycleDetector* cd) const {
         return false;
 
     return true;
+}
+
+bool type::isValidOverload(Function* f1, Function* f2) {
+    const auto& params1 = f1->parameters();
+    const auto& params2 = f2->parameters();
+
+    auto non_defaulted = [](const node::Set<function::Parameter>& p) {
+        node::Set<function::Parameter> r;
+        std::copy_if(p.begin(), p.end(), std::back_inserter(r), [](function::Parameter* p) { return ! p->default_(); });
+        return r;
+    };
+
+    return type::same(f1->result(), f2->result()) ||
+           (! areEquivalent(params1, params2) && ! areEquivalent(non_defaulted(params1), non_defaulted(params2)));
 }

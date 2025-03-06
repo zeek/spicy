@@ -1,3 +1,17 @@
+1.13.0-dev.115 | 2025-03-06 12:00:38 +0100
+
+  * GH-1981: Reject function overloads which only differ in default'd parameters. (Benjamin Bannier, Corelight)
+
+    Resolution of calls to functions who's signatures differ only in
+    defaulted parameters behaved non-intuitively in that when given with
+    less than the maximum possible number of parameters we resolved to the
+    overload with most parameters.
+
+    With this patch we reject such overloads where the only difference is in
+    defaulted parameters.
+
+    Closes #1981.
+
 1.13.0-dev.113 | 2025-03-03 17:39:36 +0100
 
   * GH-1983: Audit links in README. (Benjamin Bannier, Corelight)
