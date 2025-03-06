@@ -214,8 +214,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                              current_fn_ty->flavor() == previous_fn_ty->flavor() )
                             continue;
 
-                        if ( ! isValidOverload(current_fn_ty, previous_fn_ty) )
-                            error(fmt("'%s' is not a valid overload; previous definition in %s", id,
+                        if ( auto valid = isValidOverload(current_fn_ty, previous_fn_ty); ! valid )
+                            error(fmt("'%s' is not a valid overload: %s; previous definition in %s", id, valid.error(),
                                       first_node->location()),
                                   node);
 

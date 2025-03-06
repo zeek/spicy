@@ -109,7 +109,10 @@ inline bool areEquivalent(Function* f1, Function* f2) {
     return type::same(f1->result(), f2->result()) && areEquivalent(f1->parameters(), f2->parameters());
 }
 
-/** Returns true if the provided function types can be valid overloads of each other. */
-bool isValidOverload(Function* f1, Function* f2);
+/**
+ * Determines whether f1 and f2 can exist as valid overloads. If not, returns a
+ * reason describing why they cannot be overloads.
+ */
+hilti::Result<Nothing> isValidOverload(Function* f1, Function* f2);
 
 } // namespace hilti::type
