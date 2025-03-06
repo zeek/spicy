@@ -36,7 +36,7 @@ const c1 = 1;
 const c2: int32 = 2;
 
 ## Function 1.
-function foo1();
+function foo1() {}
 
 ## Function 2.
 function foo2() {}

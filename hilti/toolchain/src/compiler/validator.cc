@@ -234,13 +234,17 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         checkNodeAttributes(n->nodeTag(), n->attributes(), "function");
 
         if ( auto attrs = n->attributes() ) {
+            auto is_hook = n->ftype()->flavor() == type::function::Flavor::Hook;
             if ( auto prio = attrs->find(hilti::attribute::Kind::Priority) ) {
-                if ( n->ftype()->flavor() != type::function::Flavor::Hook )
+                if ( ! is_hook )
                     error("only hooks can have priorities", n);
 
                 else if ( auto x = prio->valueAsInteger(); ! x )
                     error(x.error(), n);
             }
+
+            if ( ! n->body() && ! is_hook && ! attrs->has(hilti::attribute::Kind::Cxxname) )
+                error(fmt("function '%s' must have a body or be declared with &cxxname", n->id()), n);
         }
     }
 

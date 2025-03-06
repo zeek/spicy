@@ -11,7 +11,7 @@ import Bar;
 public type Foo1 = bool;
 public type Foo2 = Bar::Bar1;
 
-declare string foo(Foo1 foo, Bar::Bar1 bar);
+function string foo(Foo1 foo, Bar::Bar1 bar) { return ""; }
 
 }
 
@@ -27,7 +27,7 @@ import Foo;
 public type Bar1 = string;
 public type Bar2 = Foo::Foo1;
 
-declare string bar(Bar1 bar, Foo::Foo1 foo);
+function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; }
 
 }
 

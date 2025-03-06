@@ -1,0 +1,10 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Tests that function prototypes without &cxxname are declined
+
+module Foo {
+
+declare void fail();
+
+}

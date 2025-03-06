@@ -7,6 +7,6 @@ module Foo {
 
 type X = bool;
 
-declare string foo(real bar);
+function string foo(real bar) { return ""; }
 
 }
