@@ -1,3 +1,13 @@
+1.13.0-dev.118 | 2025-03-06 09:05:38 -0500
+
+  * Fix `for` loop snippet to run as-is. (Evan Typanski, Corelight)
+
+  * GH-1538: Implement compound statements (`{...}`). (Evan Typanski, Corelight)
+
+    Closes #1538
+
+    The functionality was there, just not available in the parser.
+
 1.13.0-dev.115 | 2025-03-06 12:00:38 +0100
 
   * GH-1981: Reject function overloads which only differ in default'd parameters. (Benjamin Bannier, Corelight)
