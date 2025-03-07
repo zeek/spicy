@@ -68,11 +68,21 @@ function uint<8> fun(uint<8> a) {
     return uint8(1);
 }
 
-function uint<16> fun(uint<8> a, uint<8> b = uint8(0)) {
-    return uint16(2);
+function uint<8> fun(uint<8> a, uint<8> b = uint8(0)) {
+    return uint8(2);
 }
 
 hilti::print(fun(uint8(1)));
+
+function uint<8> diff_return(uint<8> a) {
+    return uint8(1);
+}
+
+function uint<16> diff_return(uint<8> a, uint<8> b = uint8(0)) {
+    return uint16(2);
+}
+
+hilti::print(diff_return(uint8(1)));
 
 }
 

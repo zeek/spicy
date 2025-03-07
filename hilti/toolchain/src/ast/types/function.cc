@@ -34,18 +34,20 @@ hilti::Result<Nothing> type::isValidOverload(Function* f1, Function* f2) {
     const auto& params1 = f1->parameters();
     const auto& params2 = f2->parameters();
 
+    auto params_equivalent = areEquivalent(params1, params2);
+    // Only differ in return type
+    if ( ! type::same(f1->result(), f2->result()) && params_equivalent )
+        return result::Error("functions cannot differ only in return type");
+
     auto non_defaulted = [](const node::Set<function::Parameter>& p) {
         node::Set<function::Parameter> r;
         std::copy_if(p.begin(), p.end(), std::back_inserter(r), [](function::Parameter* p) { return ! p->default_(); });
         return r;
     };
 
-    if ( ! type::same(f1->result(), f2->result()) ) {
-        if ( areEquivalent(params1, params2) )
-            return result::Error("functions cannot differ only in return type");
-        else if ( areEquivalent(non_defaulted(params1), non_defaulted(params2)) )
-            return result::Error("functions cannot differ only in defaulted parameters");
-    }
+    // Parameters differ but without default params they're equal
+    if ( ! params_equivalent && areEquivalent(non_defaulted(params1), non_defaulted(params2)) )
+        return result::Error("functions cannot differ only in defaulted parameters");
 
     return Nothing();
 }
