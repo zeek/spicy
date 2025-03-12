@@ -36,7 +36,8 @@ global int<32> g2 = int32(2);
 global int<32> g3;
 
 ## Function 1.
-declare function void foo1();
+function void foo1() {
+}
 
 ## Function 2.
 function void foo2() {

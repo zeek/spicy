@@ -27,9 +27,17 @@ bool type::Function::isResolved(node::CycleDetector* cd) const {
     return true;
 }
 
-bool type::isValidOverload(Function* f1, Function* f2) {
+hilti::Result<Nothing> type::isValidOverload(Function* f1, Function* f2) {
+    if ( areEquivalent(f1, f2) )
+        return result::Error("functions are equivalent");
+
     const auto& params1 = f1->parameters();
     const auto& params2 = f2->parameters();
+
+    auto params_equivalent = areEquivalent(params1, params2);
+    // Only differ in return type
+    if ( ! type::same(f1->result(), f2->result()) && params_equivalent )
+        return result::Error("functions cannot differ only in return type");
 
     auto non_defaulted = [](const node::Set<function::Parameter>& p) {
         node::Set<function::Parameter> r;
@@ -37,6 +45,9 @@ bool type::isValidOverload(Function* f1, Function* f2) {
         return r;
     };
 
-    return type::same(f1->result(), f2->result()) ||
-           (! areEquivalent(params1, params2) && ! areEquivalent(non_defaulted(params1), non_defaulted(params2)));
+    // Parameters differ but without default params they're equal
+    if ( ! params_equivalent && areEquivalent(non_defaulted(params1), non_defaulted(params2)) )
+        return result::Error("functions cannot differ only in defaulted parameters");
+
+    return Nothing();
 }

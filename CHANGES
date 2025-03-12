@@ -1,3 +1,24 @@
+1.13.0-dev.124 | 2025-03-12 09:02:38 -0400
+
+  * Fix defaulted params with different return types. (Evan Typanski, Corelight)
+
+    The overload check for equivalent non-defaulted parameters was within a
+    check for non-equivalent return types, so it only applied if return
+    types differed. This fixes that to apply when return types are the same.
+
+  * Fix overload conflicts beyond with the first decl. (Evan Typanski, Corelight)
+
+    Previously it would only compare with the first declaration, but this
+    makes it compare with all previous declarations.
+
+  * Add reasons for rejecting invalid overloads. (Evan Typanski, Corelight)
+
+  * GH-1982: Reject equivalent functions. (Evan Typanski, Corelight)
+
+    Fixes #1982
+
+  * Reject function prototypes without `&cxxname`. (Evan Typanski, Corelight)
+
 1.13.0-dev.118 | 2025-03-06 09:05:38 -0500
 
   * Fix `for` loop snippet to run as-is. (Evan Typanski, Corelight)

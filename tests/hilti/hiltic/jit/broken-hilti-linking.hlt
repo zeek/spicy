@@ -6,7 +6,7 @@
 # compiler, we just check for a keyword being in there.
 module Test {
 
-declare public time does_not_exist();
+declare public time does_not_exist() &cxxname="does_not_exist";
 
 does_not_exist();
 

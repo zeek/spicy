@@ -20,7 +20,7 @@
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
 [debug/resolver] -> [T11] type::Bool <no-type-id> | bool (foo.hlt:6:20-6:23)
-[debug/resolver] [foo.hlt:9:20-9:23] type::Name "Foo1" -> set resolved type to T11
+[debug/resolver] [foo.hlt:9:21-9:24] type::Name "Foo1" -> set resolved type to T11
 [debug/resolver] -> [T12] type::Vector <no-type-id> | vector<bytes> (hilti.hlt:16:24-16:36)
 [debug/resolver] [hilti.hlt:20:12-20:19] type::Name "Captures" -> set resolved type to T12
 [debug/resolver] -> [T13] type::Library <no-type-id> | __library_type("::hilti::rt::Profiler") (hilti.hlt:17:24-17:60)
@@ -47,16 +47,16 @@
 [debug/resolver] [foo.hlt:6:20-6:23] type::Bool "bool" -> set type's declaration to D1
 [debug/resolver] [foo.hlt:7:1-7:29] declaration::Type "public type Foo2 = Bar::Bar1;" -> set declaration's canonical ID to Foo::Foo2
 [debug/resolver] [foo.hlt:7:1-7:29] declaration::Type "public type Foo2 = Bar::Bar1;" -> set declaration's fully qualified ID to Foo::Foo2
-[debug/resolver] [foo.hlt:9:20-9:27] declaration::Parameter "bool foo" -> set declaration's canonical ID to Foo::foo
-[debug/resolver] [foo.hlt:9:20-9:27] declaration::Parameter "bool foo" -> set declaration's fully qualified ID to foo
-[debug/resolver] [foo.hlt:9:30-9:42] declaration::Parameter "Bar::Bar1 bar" -> set declaration's canonical ID to Foo::bar
-[debug/resolver] [foo.hlt:9:30-9:42] declaration::Parameter "Bar::Bar1 bar" -> set declaration's fully qualified ID to bar
-[debug/resolver] [foo.hlt:9:1-9:44] declaration::Function "declare function string foo(bool foo, Bar::Bar1 bar);" -> set declaration's canonical ID to Foo::foo_2
-[debug/resolver] [foo.hlt:9:1-9:44] declaration::Function "declare function string foo(bool foo, Bar::Bar1 bar);" -> set declaration's fully qualified ID to Foo::foo
-[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); }" -> set declaration's fully qualified ID to Foo
-[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); }" -> set module's canonical ID to Foo
-[debug/resolver] -> [D2] declaration::Module Foo | module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); } (foo.hlt:2:1-11:1)
-[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; declare function string foo(bool foo, Bar::Bar1 bar); }" -> set module's declaration index to D2
+[debug/resolver] [foo.hlt:9:21-9:28] declaration::Parameter "bool foo" -> set declaration's canonical ID to Foo::foo
+[debug/resolver] [foo.hlt:9:21-9:28] declaration::Parameter "bool foo" -> set declaration's fully qualified ID to foo
+[debug/resolver] [foo.hlt:9:31-9:43] declaration::Parameter "Bar::Bar1 bar" -> set declaration's canonical ID to Foo::bar
+[debug/resolver] [foo.hlt:9:31-9:43] declaration::Parameter "Bar::Bar1 bar" -> set declaration's fully qualified ID to bar
+[debug/resolver] [foo.hlt:9:1-9:59] declaration::Function "function string foo(bool foo, Bar::Bar1 bar) { return ""; }" -> set declaration's canonical ID to Foo::foo_2
+[debug/resolver] [foo.hlt:9:1-9:59] declaration::Function "function string foo(bool foo, Bar::Bar1 bar) { return ""; }" -> set declaration's fully qualified ID to Foo::foo
+[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; function string foo(bool foo, Bar::Bar1 bar) { return ""; } }" -> set declaration's fully qualified ID to Foo
+[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; function string foo(bool foo, Bar::Bar1 bar) { return ""; } }" -> set module's canonical ID to Foo
+[debug/resolver] -> [D2] declaration::Module Foo | module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; function string foo(bool foo, Bar::Bar1 bar) { return ""; } } (foo.hlt:2:1-11:1)
+[debug/resolver] [foo.hlt:2:1-11:1] declaration::Module "module Foo { import Bar; public type Foo1 = bool; public type Foo2 = Bar::Bar1; function string foo(bool foo, Bar::Bar1 bar) { return ""; } }" -> set module's declaration index to D2
 [debug/resolver] [hilti.hlt:6:1-6:21] declaration::Property "" -> set declaration's canonical ID to hilti::%skip-implementation
 [debug/resolver] [hilti.hlt:6:1-6:21] declaration::Property "" -> set declaration's fully qualified ID to hilti::%skip-implementation
 [debug/resolver] [hilti.hlt:8:24-8:42] declaration::Constant "const enum { LSB0 = 0, MSB0 = 1 } LSB0 = <anon-enum>::LSB0;" -> set declaration's canonical ID to hilti::LSB0
@@ -304,16 +304,16 @@
 [debug/resolver] [bar.hlt:6:20-6:25] type::String "string" -> set type's declaration to D21
 [debug/resolver] [bar.hlt:7:1-7:29] declaration::Type "public type Bar2 = Foo::Foo1;" -> set declaration's canonical ID to Bar::Bar2
 [debug/resolver] [bar.hlt:7:1-7:29] declaration::Type "public type Bar2 = Foo::Foo1;" -> set declaration's fully qualified ID to Bar::Bar2
-[debug/resolver] [bar.hlt:9:20-9:27] declaration::Parameter "Bar1 bar" -> set declaration's canonical ID to Bar::bar
-[debug/resolver] [bar.hlt:9:20-9:27] declaration::Parameter "Bar1 bar" -> set declaration's fully qualified ID to bar
-[debug/resolver] [bar.hlt:9:30-9:42] declaration::Parameter "Foo::Foo1 foo" -> set declaration's canonical ID to Bar::foo
-[debug/resolver] [bar.hlt:9:30-9:42] declaration::Parameter "Foo::Foo1 foo" -> set declaration's fully qualified ID to foo
-[debug/resolver] [bar.hlt:9:1-9:44] declaration::Function "declare function string bar(Bar1 bar, Foo::Foo1 foo);" -> set declaration's canonical ID to Bar::bar_2
-[debug/resolver] [bar.hlt:9:1-9:44] declaration::Function "declare function string bar(Bar1 bar, Foo::Foo1 foo);" -> set declaration's fully qualified ID to Bar::bar
-[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); }" -> set declaration's fully qualified ID to Bar
-[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); }" -> set module's canonical ID to Bar
-[debug/resolver] -> [D22] declaration::Module Bar | module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); } (bar.hlt:2:1-11:1)
-[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; declare function string bar(Bar1 bar, Foo::Foo1 foo); }" -> set module's declaration index to D22
+[debug/resolver] [bar.hlt:9:21-9:28] declaration::Parameter "Bar1 bar" -> set declaration's canonical ID to Bar::bar
+[debug/resolver] [bar.hlt:9:21-9:28] declaration::Parameter "Bar1 bar" -> set declaration's fully qualified ID to bar
+[debug/resolver] [bar.hlt:9:31-9:43] declaration::Parameter "Foo::Foo1 foo" -> set declaration's canonical ID to Bar::foo
+[debug/resolver] [bar.hlt:9:31-9:43] declaration::Parameter "Foo::Foo1 foo" -> set declaration's fully qualified ID to foo
+[debug/resolver] [bar.hlt:9:1-9:59] declaration::Function "function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; }" -> set declaration's canonical ID to Bar::bar_2
+[debug/resolver] [bar.hlt:9:1-9:59] declaration::Function "function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; }" -> set declaration's fully qualified ID to Bar::bar
+[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; } }" -> set declaration's fully qualified ID to Bar
+[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; } }" -> set module's canonical ID to Bar
+[debug/resolver] -> [D22] declaration::Module Bar | module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; } } (bar.hlt:2:1-11:1)
+[debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; } }" -> set module's declaration index to D22
 [debug/compiler]       -> modified
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     [HILTI] building scopes
@@ -322,11 +322,11 @@
 [debug/compiler]     [HILTI] resolving AST
 [debug/resolver] -> [T17] type::String Bar::Bar1 | string (bar.hlt:6:20-6:25)
 [debug/resolver] [foo.hlt:7:20-7:28] type::Name "Bar::Bar1" -> set resolved type to T17
-[debug/resolver] [foo.hlt:9:30-9:38] type::Name "Bar::Bar1" -> set resolved type to T17
+[debug/resolver] [foo.hlt:9:31-9:39] type::Name "Bar::Bar1" -> set resolved type to T17
 [debug/resolver] [bar.hlt:7:20-7:28] type::Name "Foo::Foo1" -> set resolved type to T11
-[debug/resolver] [bar.hlt:9:20-9:23] type::Name "Bar1" -> set resolved type to T17
-[debug/resolver] [bar.hlt:9:30-9:38] type::Name "Foo::Foo1" -> set resolved type to T11
-[debug/resolver] [foo.hlt:9:1-9:44] declaration::Function "declare function string foo(bool foo, string bar);" -> creating function call operator
+[debug/resolver] [bar.hlt:9:21-9:24] type::Name "Bar1" -> set resolved type to T17
+[debug/resolver] [bar.hlt:9:31-9:39] type::Name "Foo::Foo1" -> set resolved type to T11
+[debug/resolver] [foo.hlt:9:1-9:59] declaration::Function "function string foo(bool foo, string bar) { return ""; }" -> creating function call operator
 [debug/resolver] [hilti.hlt:8:24-8:42] declaration::Constant "const hilti::BitOrder LSB0 = hilti::BitOrder::LSB0;" -> set declaration's fully qualified ID to hilti::BitOrder::LSB0
 [debug/resolver] [hilti.hlt:8:24-8:42] declaration::Constant "const hilti::BitOrder MSB0 = hilti::BitOrder::MSB0;" -> set declaration's fully qualified ID to hilti::BitOrder::MSB0
 [debug/resolver] [hilti.hlt:8:24-8:42] declaration::Constant "const hilti::BitOrder Undef = hilti::BitOrder::Undef;" -> set declaration's fully qualified ID to hilti::BitOrder::Undef
@@ -364,7 +364,7 @@
 [debug/resolver] [hilti.hlt:25:5-25:29] declaration::Field "uint<64> num_data_chunks;" -> set declaration's fully qualified ID to hilti::StreamStatistics::num_data_chunks
 [debug/resolver] [hilti.hlt:26:5-26:27] declaration::Field "uint<64> num_gap_bytes;" -> set declaration's fully qualified ID to hilti::StreamStatistics::num_gap_bytes
 [debug/resolver] [hilti.hlt:27:5-27:28] declaration::Field "uint<64> num_gap_chunks;" -> set declaration's fully qualified ID to hilti::StreamStatistics::num_gap_chunks
-[debug/resolver] [bar.hlt:9:1-9:44] declaration::Function "declare function string bar(string bar, bool foo);" -> creating function call operator
+[debug/resolver] [bar.hlt:9:1-9:59] declaration::Function "function string bar(string bar, bool foo) { return ""; }" -> creating function call operator
 [debug/compiler]       -> modified
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
