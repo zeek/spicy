@@ -277,6 +277,13 @@ struct ProductionVisitor : public production::Visitor {
                         pushState(std::move(pstate));
                         pb->initializeUnit(p.location());
                     }
+
+                    if ( p.meta().field() && addl_param ) {
+                        if ( auto a = p.meta().field()->attributes()->find(hilti::attribute::Kind::Size);
+                             a && addl_param->type()->type()->isA<hilti::type::Vector>() )
+                            builder()->addExpression(builder()->memberCall(builder()->id(addl_param->id()), "reserve",
+                                                                           {*a->valueAsExpression()}));
+                    }
                 };
 
                 auto build_parse_stage1 = [&]() {
