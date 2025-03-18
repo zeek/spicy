@@ -1,3 +1,12 @@
+1.13.0-dev.126 | 2025-03-18 09:04:37 +0100
+
+  * Bring back the internal `__visit` method for generated structs. (Robin Sommer)
+
+    This reverts part of cb7336ff8d02a32fc: as it turns out, the Zeek
+    integration still needs `__visit`. I'd like to solve this differently
+    on the Zeek side, but have't quite gotten that to work yet. So
+    reverting this for now so that we don't block.
+
 1.13.0-dev.124 | 2025-03-12 09:02:38 -0400
 
   * Fix defaulted params with different return types. (Evan Typanski, Corelight)
