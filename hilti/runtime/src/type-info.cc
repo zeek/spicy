@@ -30,6 +30,7 @@ const TypeInfo type_info::int8{std::nullopt, "int8", TO_STRING(hilti::rt::intege
                                new type_info::SignedInteger<int8_t>()};
 const TypeInfo type_info::interval{std::nullopt, "interval", TO_STRING(hilti::rt::Interval), new type_info::Interval()};
 const TypeInfo type_info::network{std::nullopt, "network", TO_STRING(hilti::rt::Network), new type_info::Network()};
+const TypeInfo type_info::null{std::nullopt, "null", TO_STRING(hilti::rt::Null), new type_info::Null()};
 const TypeInfo type_info::port{std::nullopt, "port", TO_STRING(hilti::rt::Port), new type_info::Port()};
 const TypeInfo type_info::real{std::nullopt, "real", TO_STRING(double), new type_info::Real()};
 const TypeInfo type_info::regexp{std::nullopt, "regexp", TO_STRING(hilti::rt::RegExp), new type_info::RegExp()};

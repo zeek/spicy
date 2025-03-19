@@ -52,6 +52,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
             Network n = type.network->get(v);
             return json::object({{"prefix", n.prefix()}, {"length", n.length()}});
         }
+        case TypeInfo::Null: return "<null>";
         case TypeInfo::Optional: {
             auto y = type.optional->value(v);
             return y ? convert(y) : json();
