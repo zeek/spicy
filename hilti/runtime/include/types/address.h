@@ -118,10 +118,10 @@ namespace address {
 inline Bytes pack(const Address& addr, ByteOrder fmt) { return addr.pack(fmt); }
 
 /** Unpacks an address from binary representation, following the protocol for `unpack` operator. */
-extern Result<std::tuple<Address, Bytes>> unpack(const Bytes& data, AddressFamily family, ByteOrder fmt);
+extern Result<Tuple<Address, Bytes>> unpack(const Bytes& data, AddressFamily family, ByteOrder fmt);
 
 /** Unpacks an address from binary representation, following the protocol for `unpack` operator. */
-extern Result<std::tuple<Address, stream::View>> unpack(const stream::View& data, AddressFamily family, ByteOrder fmt);
+extern Result<Tuple<Address, stream::View>> unpack(const stream::View& data, AddressFamily family, ByteOrder fmt);
 
 /**
  * Parses an address from a IPv4 or IPv6 string representation.

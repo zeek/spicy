@@ -20,10 +20,10 @@ HILTI_RT_ENUM(Type, Undef, IEEE754_Single, IEEE754_Double);
 extern Bytes pack(double d, Type type, ByteOrder fmt);
 
 /** Unpacks a floatingpoint value from a binary representation, following the protocol for `unpack` operator. */
-extern Result<std::tuple<double, Bytes>> unpack(const Bytes& data, Type type, ByteOrder fmt);
+extern Result<Tuple<double, Bytes>> unpack(const Bytes& data, Type type, ByteOrder fmt);
 
 /** Unpacks a floatingpoint value from a binary representation, following the protocol for `unpack` operator. */
-extern Result<std::tuple<double, stream::View>> unpack(const stream::View& data, Type type, ByteOrder fmt);
+extern Result<Tuple<double, stream::View>> unpack(const stream::View& data, Type type, ByteOrder fmt);
 
 } // namespace real
 

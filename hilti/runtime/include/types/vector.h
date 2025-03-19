@@ -1,7 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 /**
- * A vector that for large part built on std::vector, but adds a couple of things:
+ * A vector that for large part builds on std::vector, but adds a couple of things:
  *
  *     - We record if an element has been set at all.
  *     - We add safe HILTI-side iterators become detectably invalid when the main
@@ -43,16 +43,23 @@ namespace vector {
  *
  * See https://howardhinnant.github.io/allocator_boilerplate.html and
  * https://stackoverflow.com/questions/48061522/create-the-simplest-allocator-with-two-template-arguments
- *
- * We allow defaults with types differing from the allocated type (but
- * implicitly convertible to it) to support allocators over non-basic types,
- * see e.g.,
- * https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1907r1.html.
  */
-template<class T, decltype(auto) Default_>
+template<class T>
 class Allocator {
 public:
     using value_type = T;
+
+    /**
+     * Constructs an allocator that initializes elements with their default
+     * constructor.
+     */
+    Allocator() = default;
+
+    /**
+     * Constructs an allocator that initializes elements with a provided
+     * default value.
+     */
+    Allocator(T default_) : _default(std::move(default_)) {}
 
     value_type* allocate(std::size_t n) { return static_cast<value_type*>(::operator new(n * sizeof(value_type))); }
 
@@ -60,7 +67,10 @@ public:
 
     template<typename U>
     void construct(U* p) noexcept(std::is_nothrow_default_constructible_v<U>) {
-        ::new (static_cast<void*>(p)) U(Default_);
+        if ( _default )
+            ::new (static_cast<void*>(p)) U(*_default);
+        else
+            ::new (static_cast<void*>(p)) U();
     }
 
     template<typename U, typename... Args>
@@ -70,17 +80,19 @@ public:
 
     template<class U>
     struct rebind {
-        using other = Allocator<U, Default_>;
+        using other = Allocator<U>;
     };
+
+    const std::optional<T> _default; // explicitly provided default value
 };
 
-template<class T, decltype(auto) D1, class U, decltype(auto) D2>
-bool operator==(Allocator<T, D1> const&, Allocator<U, D2> const&) noexcept {
+template<class T, class U>
+bool operator==(Allocator<T> const&, Allocator<U> const&) noexcept {
     return true;
 }
 
-template<class T, decltype(auto) D1, class U, decltype(auto) D2>
-bool operator!=(Allocator<T, D1> const&, Allocator<U, D2> const&) noexcept {
+template<class T, class U>
+bool operator!=(Allocator<T> const&, Allocator<U> const&) noexcept {
     return false;
 }
 
@@ -545,26 +557,22 @@ inline bool operator!=(const Empty& /*unused*/, const Vector<T, Allocator>& v) {
     return ! v.empty();
 }
 
-template<typename Allocator, typename C, typename Func>
-auto make(const C& input, Func&& func) {
-    using O = typename std::invoke_result_t<Func, typename C::value_type>;
-    Vector<O, Allocator> output;
-    output.reserve(input.size());
+template<typename Vector, typename Input, typename Func>
+auto make(Vector&& output, const Input& input, Func&& func) {
     for ( auto&& i : input )
         output.emplace_back(func(i));
 
-    return output;
+    return std::forward<Vector>(output);
 }
 
-template<typename Allocator, typename C, typename Func, typename Pred>
-auto make(const C& input, Func&& func, Pred&& pred) {
-    using O = typename std::invoke_result_t<Func, typename C::value_type>;
-    Vector<O, Allocator> output;
-    for ( auto&& i : input )
+template<typename Vector, typename Input, typename Func, typename Pred>
+auto make(Vector&& output, const Input& input, Func&& func, Pred&& pred) {
+    for ( auto&& i : input ) {
         if ( pred(i) )
             output.emplace_back(func(i));
+    }
 
-    return output;
+    return std::forward<Vector>(output);
 }
 
 } // namespace vector

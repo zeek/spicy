@@ -93,7 +93,7 @@ regexp::MatchState::MatchState(MatchState&&) noexcept = default;
 
 regexp::MatchState::~MatchState() = default;
 
-std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View& data) {
+Tuple<integer::safe<int32_t>, stream::View> regexp::MatchState::advance(const stream::View& data) {
     if ( ! _pimpl )
         throw PatternError("no regular expression associated with match state");
 
@@ -112,13 +112,13 @@ std::tuple<int32_t, stream::View> regexp::MatchState::advance(const stream::View
 
     if ( rc >= 0 ) {
         _pimpl->_done = true;
-        return std::make_tuple(rc, std::move(ndata));
+        return std::make_tuple<integer::safe<int32_t>, stream::View>(rc, std::move(ndata));
     }
 
-    return std::make_tuple(rc, std::move(ndata));
+    return {rc, std::move(ndata)};
 }
 
-std::tuple<int32_t, int64_t> regexp::MatchState::advance(const Bytes& data, bool is_final) {
+Tuple<int32_t, int64_t> regexp::MatchState::advance(const Bytes& data, bool is_final) {
     if ( ! _pimpl )
         throw PatternError("no regular expression associated with match state");
 
@@ -129,10 +129,10 @@ std::tuple<int32_t, int64_t> regexp::MatchState::advance(const Bytes& data, bool
 
     if ( rc >= 0 ) {
         _pimpl->_done = true;
-        return std::make_tuple(rc, offset);
+        return {rc, offset};
     }
 
-    return std::make_tuple(rc, offset);
+    return {rc, offset};
 }
 
 std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& data, bool is_final) {
@@ -333,7 +333,7 @@ Vector<Bytes> RegExp::matchGroups(const Bytes& data) const {
     return groups;
 }
 
-std::tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
+Tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
     const auto startp = data.data();
     const auto endp = startp + data.size().Ref();
 
@@ -370,12 +370,12 @@ std::tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
     }
 
     if ( cur_rc > 0 )
-        return std::make_tuple(cur_rc, _subslice(data, cur_so, cur_eo));
+        return {cur_rc, _subslice(data, cur_so, cur_eo)};
 
     if ( cur_rc == 0 )
         cur_rc = -1; // for this method, adding more data may always help
 
-    return std::make_tuple(cur_rc, ""_b);
+    return {cur_rc, ""_b};
 }
 
 regexp::MatchState RegExp::tokenMatcher() const { return regexp::MatchState(*this); }

@@ -18,10 +18,9 @@ assert r2.match_groups(b"X123456Y") == [b"X123456Y", b"12", b"34", b"56"];
 assert r2.match_groups(b"XXXX") == [];
 assert r2.find(b"xxxX123456Yyyy") == (1, b"X123456Y");
 
+global s = stream(b"X123456Y");
 global ms: spicy::MatchState = r2.token_matcher();
-assert ms.advance(stream(b"X12")) == (-1, stream(b""));
-assert ms.advance(stream(b"345")) == (-1, stream(b""));
-
-global x = stream(b"6Y");
-x.freeze();
-assert ms.advance(x) == (1, stream(b""));
+assert ms.advance(s.sub(0, 3)) == (-1, s.sub(3, 3));
+assert ms.advance(s.sub(3, 6)) == (-1, s.sub(6, 6));
+s.freeze();
+assert ms.advance(s.sub(6, 8)) == (1, s.sub(8,8));

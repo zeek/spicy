@@ -65,7 +65,7 @@
 [debug/ast-declarations]     - Function "print" (hilti::print)
 [debug/ast-declarations]             - Parameter "obj" (hilti::obj)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline)
-[debug/ast-declarations]     - Function "printValues" (hilti::printValues)
+[debug/ast-declarations]     - Function "printTuple" (hilti::printTuple)
 [debug/ast-declarations]             - Parameter "t" (hilti::t)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline_2)
 [debug/ast-declarations]     - Function "debug" (hilti::debug)
@@ -376,7 +376,7 @@
 [debug/ast-declarations] - [module] DNS -> DNS::Label, DNS::Pointer
 [debug/ast-declarations] - [type] DNS::Label -> DNS::Label, DNS::Pointer
 [debug/ast-declarations] - [type] DNS::Pointer -> DNS::Label, DNS::Pointer
-[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printValues, hilti::profiler_start, hilti::profiler_stop
+[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop
 [debug/ast-declarations] - [type] hilti::MatchState -> hilti::Captures
 [debug/ast-declarations] - [type] hilti::MissingData -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RecoverableFailure -> hilti::Exception
@@ -775,7 +775,7 @@
 [debug/ast-declarations]     - Function "print" (hilti::print)
 [debug/ast-declarations]             - Parameter "obj" (hilti::obj)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline)
-[debug/ast-declarations]     - Function "printValues" (hilti::printValues)
+[debug/ast-declarations]     - Function "printTuple" (hilti::printTuple)
 [debug/ast-declarations]             - Parameter "t" (hilti::t)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline_2)
 [debug/ast-declarations]     - Function "debug" (hilti::debug)
@@ -1242,7 +1242,7 @@
 [debug/ast-declarations]     - Function "print" (hilti::print)
 [debug/ast-declarations]             - Parameter "obj" (hilti::obj)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline)
-[debug/ast-declarations]     - Function "printValues" (hilti::printValues)
+[debug/ast-declarations]     - Function "printTuple" (hilti::printTuple)
 [debug/ast-declarations]             - Parameter "t" (hilti::t)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline_2)
 [debug/ast-declarations]     - Function "debug" (hilti::debug)
@@ -1553,7 +1553,7 @@
 [debug/ast-declarations] - [function] DNS::DNS::Pointer::__parse_stage1 -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure, hilti::debugIndent
 [debug/ast-declarations] - [type] DNS::Label -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [type] DNS::Pointer -> DNS::Label, DNS::Pointer, hilti::Exception, hilti::RecoverableFailure
-[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printValues, hilti::profiler_start, hilti::profiler_stop
+[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop
 [debug/ast-declarations] - [type] hilti::MatchState -> hilti::Captures
 [debug/ast-declarations] - [type] hilti::MissingData -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RecoverableFailure -> hilti::Exception

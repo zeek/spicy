@@ -125,12 +125,12 @@ Vector<std::string> string::split(std::string_view s, std::string_view sep) {
     return result;
 }
 
-std::tuple<std::string, std::string> string::split1(const std::string& s) {
+Tuple<std::string, std::string> string::split1(const std::string& s) {
     auto pair = hilti::rt::split1(s);
     return {pair.first, pair.second};
 }
 
-std::tuple<std::string, std::string> string::split1(const std::string& s, const std::string& sep) {
+Tuple<std::string, std::string> string::split1(const std::string& s, const std::string& sep) {
     auto pair = hilti::rt::split1(s, sep);
     return {pair.first, pair.second};
 }

@@ -884,6 +884,21 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
     return fmt("::hilti::rt::make_bitfield(%s)", util::join(bits, ", "));
 }
 
+std::pair<std::string, std::string> CodeGen::cxxTypeForVector(QualifiedType* element_type, bool want_iterator) {
+    auto etype = compile(element_type, codegen::TypeUsage::Storage);
+
+    std::string type_addl;
+
+    if ( want_iterator )
+        type_addl = (element_type->isConstant() ? "::const_iterator" : "::iterator");
+
+    if ( auto default_ = typeDefaultValue(element_type) )
+        return std::make_pair(fmt("::hilti::rt::Vector<%s, ::hilti::rt::vector::Allocator<%s>>%s", etype, etype,
+                                  type_addl),
+                              fmt(", {%s}", *default_));
+    else
+        return std::make_pair(fmt("::hilti::rt::Vector<%s>%s", etype, type_addl), std::string(""));
+}
 
 cxx::ID CodeGen::uniqueID(const std::string& prefix, Node* n) {
     if ( ! n->location() )

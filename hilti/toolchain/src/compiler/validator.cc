@@ -749,8 +749,9 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( n->isWildcard() )
             return;
 
-        if ( const auto& t = n->dereferencedType(); ! t->type()->isAllocable() )
-            error(fmt("type %s cannot be used inside optional", *t), n);
+        if ( const auto& t = n->dereferencedType();
+             ! t->type()->isAllocable() && ! n->parent(2)->isA_<type::tuple::Element>() )
+            error(fmt("type %s cannot be used inside optional", *t), n, node::ErrorPriority::Low);
     }
 
     void operator()(type::StrongReference* n) final {

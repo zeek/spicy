@@ -10,7 +10,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -1285,10 +1284,10 @@ public:
      * if no, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*.
      */
-    std::tuple<bool, SafeConstIterator> find(const View& v) const {
+    Tuple<bool, SafeConstIterator> find(const View& v) const {
         _ensureValid();
         auto x = find(v, UnsafeConstIterator());
-        return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
     }
 
     /**
@@ -1301,11 +1300,11 @@ public:
      * if no, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*.
      */
-    std::tuple<bool, SafeConstIterator> find(const View& v, const SafeConstIterator& n) const {
+    Tuple<bool, SafeConstIterator> find(const View& v, const SafeConstIterator& n) const {
         _ensureValid();
         _ensureSameChain(n);
         auto x = find(v, UnsafeConstIterator(n));
-        return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
     }
 
     /**
@@ -1318,7 +1317,7 @@ public:
      * occurrence; if no, the 2nd element points to the first byte so that no
      * earlier position has even a partial match of *v*.
      */
-    std::tuple<bool, UnsafeConstIterator> find(const View& v, UnsafeConstIterator n) const;
+    Tuple<bool, UnsafeConstIterator> find(const View& v, UnsafeConstIterator n) const;
 
     /**
      * Searches for the first occurrence of data, either forward or backward.
@@ -1330,11 +1329,11 @@ public:
      * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*
      */
-    std::tuple<bool, SafeConstIterator> find(const Bytes& v, Direction d = Direction::Forward) const {
+    Tuple<bool, SafeConstIterator> find(const Bytes& v, Direction d = Direction::Forward) const {
         _ensureValid();
         auto i = (d == Direction::Forward ? unsafeBegin() : unsafeEnd());
         auto x = find(v, i, d);
-        return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
     }
 
     /**
@@ -1348,12 +1347,12 @@ public:
      * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*
      */
-    std::tuple<bool, SafeConstIterator> find(const Bytes& v, const SafeConstIterator& n,
-                                             Direction d = Direction::Forward) const {
+    Tuple<bool, SafeConstIterator> find(const Bytes& v, const SafeConstIterator& n,
+                                        Direction d = Direction::Forward) const {
         _ensureValid();
         _ensureSameChain(n);
         auto x = find(v, UnsafeConstIterator(n), d);
-        return std::make_tuple(std::get<0>(x), SafeConstIterator(std::get<1>(x)));
+        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
     }
 
     /**
@@ -1367,8 +1366,8 @@ public:
      * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*
      */
-    std::tuple<bool, UnsafeConstIterator> find(const Bytes& v, UnsafeConstIterator n,
-                                               Direction d = Direction::Forward) const {
+    Tuple<bool, UnsafeConstIterator> find(const Bytes& v, UnsafeConstIterator n,
+                                          Direction d = Direction::Forward) const {
         if ( d == Direction::Forward )
             return _findForward(v, n);
         else
@@ -1610,10 +1609,10 @@ private:
     virtual void _force_vtable(); // force creation of consistent vtable for RTTI; not used otherwise
 
     // Common backend for backward searching.
-    std::tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& needle, UnsafeConstIterator i) const;
+    Tuple<bool, UnsafeConstIterator> _findBackward(const Bytes& needle, UnsafeConstIterator i) const;
 
     // Common backend for forward searching.
-    std::tuple<bool, UnsafeConstIterator> _findForward(const Bytes& v, UnsafeConstIterator n) const;
+    Tuple<bool, UnsafeConstIterator> _findForward(const Bytes& v, UnsafeConstIterator n) const;
 
     SafeConstIterator _begin;
     std::optional<SafeConstIterator> _end;

@@ -23,9 +23,10 @@ struct isBitfield {};
 /// printing.
 template<typename... Ts>
 struct Bitfield : public trait::isBitfield {
-    using value_type = std::tuple<std::optional<Ts>...>;
+    using value_type = Tuple<Ts...>;
 
-    Bitfield(value_type v = {}) : value(std::move(v)) {}
+    /** Construct a bitfield from a tuple. */
+    Bitfield(value_type v = value_type()) : value(std::move(v)) {}
 
     /**
      * Support instantiation from another bitfield type as long as all types
@@ -42,7 +43,7 @@ struct Bitfield : public trait::isBitfield {
 /// Since a bitfield always owns its values this takes all fields by value.
 template<typename... Ts>
 Bitfield<Ts...> make_bitfield(Ts... args) {
-    return {typename Bitfield<Ts...>::value_type(std::move(args)...)};
+    return {tuple::make(std::move(args)...)};
 }
 
 namespace bitfield {

@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -19,6 +18,7 @@
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/struct.h>
+#include <hilti/rt/types/tuple.h>
 #include <hilti/rt/util.h>
 
 #include <spicy/rt/filter.h>
@@ -60,7 +60,8 @@ struct ParserPort {
     Direction direction;
 
     // Constructor used by code generator.
-    ParserPort(std::tuple<hilti::rt::Port, Direction> args) : port(std::get<0>(args)), direction(std::get<1>(args)) {}
+    ParserPort(hilti::rt::Tuple<hilti::rt::Port, Direction> args)
+        : port(hilti::rt::tuple::get<0>(args)), direction(hilti::rt::tuple::get<1>(args)) {}
 };
 
 inline std::ostream& operator<<(std::ostream& out, const ParserPort& p) { return out << hilti::rt::to_string(p); }
@@ -395,7 +396,7 @@ namespace detail {
 template<typename UnitRef>
 inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-references)
                            std::string linker_scope, UnitRef /* not used, just for template instantiation */,
-                           const hilti::rt::TypeInfo /* utype */) {
+                           const hilti::rt::TypeInfo* /* utype */) {
     // Note: This may may be called before spicy::rt::init(), and during
     // hilti::rt::init(). Cannot rely on any library functionality being
     // initialized yet.

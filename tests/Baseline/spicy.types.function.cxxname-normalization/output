@@ -12,7 +12,7 @@
 [debug/resolver] [hilti.hlt:21:3-21:42] Attribute "&cxxname="hilti::rt::regexp::MatchState"" -> Attribute "&cxxname="::hilti::rt::regexp::MatchState""
 [debug/resolver] [hilti.hlt:28:3-28:44] Attribute "&cxxname="hilti::rt::stream::Statistics"" -> Attribute "&cxxname="::hilti::rt::stream::Statistics""
 [debug/resolver] [hilti.hlt:30:57-30:83] Attribute "&cxxname="hilti::rt::print"" -> Attribute "&cxxname="::hilti::rt::print""
-[debug/resolver] [hilti.hlt:31:66-31:98] Attribute "&cxxname="hilti::rt::printValues"" -> Attribute "&cxxname="::hilti::rt::printValues""
+[debug/resolver] [hilti.hlt:31:65-31:98] Attribute "&cxxname="hilti::rt::tuple::print"" -> Attribute "&cxxname="::hilti::rt::tuple::print""
 [debug/resolver] [hilti.hlt:33:55-33:88] Attribute "&cxxname="hilti::rt::debug::print"" -> Attribute "&cxxname="::hilti::rt::debug::print""
 [debug/resolver] [hilti.hlt:34:52-34:86] Attribute "&cxxname="hilti::rt::debug::indent"" -> Attribute "&cxxname="::hilti::rt::debug::indent""
 [debug/resolver] [hilti.hlt:35:52-35:86] Attribute "&cxxname="hilti::rt::debug::dedent"" -> Attribute "&cxxname="::hilti::rt::debug::dedent""

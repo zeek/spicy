@@ -197,6 +197,11 @@ HILTI_EXCEPTION(UnicodeError, RuntimeError)
 HILTI_EXCEPTION(UnsetOptional, RuntimeError)
 
 /**
+ * Exception reflecting an access to an unset tuple element.
+ */
+HILTI_EXCEPTION(UnsetTupleElement, RuntimeError)
+
+/**
  * Exception triggered by member access to fields that don't hold the value.
  */
 HILTI_EXCEPTION(UnsetUnionMember, RuntimeError)
