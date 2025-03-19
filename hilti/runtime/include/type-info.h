@@ -1739,34 +1739,32 @@ const Type* auxType(const type_info::Value& v) {
 
 
 // Forward declare static built-in type information objects.
-extern TypeInfo address;
-extern TypeInfo any;
-extern TypeInfo bool_;
-extern TypeInfo bytes_iterator;
-extern TypeInfo bytes;
-
-extern TypeInfo error;
-extern TypeInfo int16;
-extern TypeInfo int32;
-extern TypeInfo int64;
-extern TypeInfo int8;
-extern TypeInfo interval;
-extern TypeInfo library;
-extern TypeInfo network;
-extern TypeInfo port;
-extern TypeInfo real;
-extern TypeInfo regexp;
-extern TypeInfo stream_iterator;
-extern TypeInfo stream_view;
-extern TypeInfo stream;
-extern TypeInfo string;
-
-extern TypeInfo time;
-extern TypeInfo uint16;
-extern TypeInfo uint32;
-extern TypeInfo uint64;
-extern TypeInfo uint8;
-extern TypeInfo void_;
+extern const TypeInfo address;
+extern const TypeInfo any;
+extern const TypeInfo bool_;
+extern const TypeInfo bytes_iterator;
+extern const TypeInfo bytes;
+extern const TypeInfo error;
+extern const TypeInfo int16;
+extern const TypeInfo int32;
+extern const TypeInfo int64;
+extern const TypeInfo int8;
+extern const TypeInfo interval;
+extern const TypeInfo library;
+extern const TypeInfo network;
+extern const TypeInfo port;
+extern const TypeInfo real;
+extern const TypeInfo regexp;
+extern const TypeInfo stream_iterator;
+extern const TypeInfo stream_view;
+extern const TypeInfo stream;
+extern const TypeInfo string;
+extern const TypeInfo time;
+extern const TypeInfo uint16;
+extern const TypeInfo uint32;
+extern const TypeInfo uint64;
+extern const TypeInfo uint8;
+extern const TypeInfo void_;
 
 } // namespace type_info
 
