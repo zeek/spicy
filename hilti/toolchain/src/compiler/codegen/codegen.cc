@@ -704,6 +704,10 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     for ( const auto& p : params ) {
         Expression* arg = (i < args.size() ? args[i] : p->default_());
         x.emplace_back(compile(arg, p->kind() == parameter::Kind::InOut));
+
+        if ( p->type()->type()->isA<type::Any>() )
+            x.emplace_back(typeInfo(arg->type()));
+
         i++;
     }
 

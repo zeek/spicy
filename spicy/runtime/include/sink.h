@@ -117,21 +117,21 @@ public:
 
     /**
      * Connects a filter unit to the sink. Any input will then pass through the
-     * filter before being forwarded tp parsing. Must not be called when data
+     * filter before being forwarded to parsing. Must not be called when data
      * has been processed already. Multiple filters can be connected and will be
      * chained.
      *
-     * @param filter filter unit to connect to the sink.
+     * @param filter_unit filter unit to connect to the sink.
      * @throws ``SinkError`` if the type cannot be parsed
      */
     template<typename T>
-    void connect_filter(spicy::rt::UnitRef<T> unit) {
+    void connect_filter(spicy::rt::UnitRef<T> filter_unit) {
         if ( _size )
             throw SinkError("cannot connect filter after data has been forwarded already");
 
         SPICY_RT_DEBUG_VERBOSE(
-            hilti::rt::fmt("connecting filter unit %s [%p] to sink %p", T::__parser.name, &*unit, this));
-        spicy::rt::filter::connect(_filter, unit);
+            hilti::rt::fmt("connecting filter unit %s [%p] to sink %p", T::__parser.name, &*filter_unit, this));
+        spicy::rt::filter::detail::connect(_filter, filter_unit);
     }
 
     /**

@@ -35,15 +35,15 @@ TEST_SUITE_BEGIN("hilti");
 TEST_CASE("print") {
     SUBCASE("w/ newline") {
         TestCout cout;
-        print("\x00\x01"_b, true);
-        print(0.5, true);
+        print("\x00\x01"_b, nullptr, true);
+        print(0.5, nullptr, true);
         CHECK_EQ(cout.str(), "\\x00\\x01\n0.5\n");
     }
 
     SUBCASE("w/o newline") {
         TestCout cout;
-        print("\x00\x01"_b, false);
-        print(0.5, false);
+        print("\x00\x01"_b, nullptr, false);
+        print(0.5, nullptr, false);
         CHECK_EQ(cout.str(), "\\x00\\x010.5");
     }
 }

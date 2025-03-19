@@ -103,7 +103,7 @@ inline std::ostream& operator<<(std::ostream& out, State<debug_type_name>& s) {
  * @tparam S type compatible with the attribute's defined by the `State` type.
  */
 template<typename S>
-void disconnect(S& state) {
+void disconnect(S& state, const hilti::rt::TypeInfo* /* ti */) {
     if ( state.__filters ) {
         for ( auto& f : *state.__filters ) {
             SPICY_RT_DEBUG_VERBOSE(
@@ -124,21 +124,13 @@ void disconnect(S& state) {
 }
 
 template<typename U>
-void disconnect(UnitType<U>& unit) {
-    return disconnect(*unit);
+void disconnect(UnitType<U>& unit, const hilti::rt::TypeInfo* ti) {
+    return disconnect(*unit, ti);
 }
 
-/**
- * Connects a filter unit to a unit for transforming parsing. This won't have
- * an observable effect until `filter::init()` is executed (and must be called
- * before that).
- *
- * @tparam S type compatible with the attribute's defined by the `State`
- * type; this is target unit being connected to
- *
- * @tparam F type likewise compatible with `State; this the filter unit
- * doing the transformation
- */
+namespace detail {
+// Internal backend of connect(), see below, that doesn't require the type info
+// (which we don't need anyways).
 template<typename S, typename F>
 void connect(S& state, UnitRef<F> filter_unit) {
     SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- connecting filter unit %s [%p] to unit %s [%p]", F::__parser.name,
@@ -165,9 +157,27 @@ void connect(S& state, UnitRef<F> filter_unit) {
     filter_unit->__forward = (*state.__filters).back().input;
 }
 
+} // namespace detail
+
+/**
+ * Connects a filter unit to a unit for transforming parsing. This won't have
+ * an observable effect until `filter::init()` is executed (and must be called
+ * before that).
+ *
+ * @tparam S type compatible with the attribute's defined by the `State`
+ * type; this is target unit being connected to
+ *
+ * @tparam F type likewise compatible with `State; this the filter unit
+ * doing the transformation
+ */
+template<typename S, typename F>
+void connect(S& state, const hilti::rt::TypeInfo* ti, UnitRef<F> filter_unit) {
+    detail::connect(state, filter_unit);
+}
+
 template<typename U, typename F>
-void connect(UnitType<U>& unit, UnitRef<F> filter_unit) {
-    return connect(*unit, filter_unit);
+void connect(UnitType<U>& unit, const hilti::rt::TypeInfo* ti, UnitRef<F> filter_unit) {
+    detail::connect(*unit, filter_unit);
 }
 
 /**
@@ -178,7 +188,8 @@ void connect(UnitType<U>& unit, UnitRef<F> filter_unit) {
  */
 template<typename S>
 hilti::rt::StrongReference<hilti::rt::Stream> init(
-    S& state,                                           // NOLINT(google-runtime-references)
+    S& state, // NOLINT(google-runtime-references)
+    const hilti::rt::TypeInfo* /* ti */,
     hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
     const hilti::rt::stream::View& cur) {
     if ( ! (state.__filters && (*state.__filters).size()) )
@@ -203,10 +214,11 @@ hilti::rt::StrongReference<hilti::rt::Stream> init(
 
 template<typename U>
 hilti::rt::StrongReference<hilti::rt::Stream> init(
-    UnitType<U>& unit,                                  // NOLINT(google-runtime-references)
+    UnitType<U>& unit, // NOLINT(google-runtime-references)
+    const hilti::rt::TypeInfo* ti,
     hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
     const hilti::rt::stream::View& cur) {
-    return init(*unit, data, cur);
+    return init(*unit, ti, data, cur);
 }
 
 /**
@@ -216,7 +228,7 @@ hilti::rt::StrongReference<hilti::rt::Stream> init(
  * @tparam S type compatible with the attribute's defined by the `State` type.
  */
 template<typename S>
-inline void forward(S& state, const hilti::rt::Bytes& data) {
+inline void forward(S& state, const hilti::rt::TypeInfo* /* ti */, const hilti::rt::Bytes& data) {
     if ( ! state.__forward ) {
         SPICY_RT_DEBUG_VERBOSE(
             hilti::rt::fmt("- filter unit %s [%p] is forwarding \"%s\", but not connected to any unit",
@@ -230,8 +242,8 @@ inline void forward(S& state, const hilti::rt::Bytes& data) {
 }
 
 template<typename U>
-inline void forward(UnitType<U>& unit, const hilti::rt::Bytes& data) {
-    return forward(*unit, data);
+inline void forward(UnitType<U>& unit, const hilti::rt::TypeInfo* ti, const hilti::rt::Bytes& data) {
+    return forward(*unit, ti, data);
 }
 
 /**
@@ -241,7 +253,7 @@ inline void forward(UnitType<U>& unit, const hilti::rt::Bytes& data) {
  * @tparam S type compatible with the attribute's defined by the `State` type.
  */
 template<typename S>
-inline void forward_eod(S& state) {
+inline void forward_eod(S& state, const hilti::rt::TypeInfo* /* ti */) {
     if ( ! state.__forward ) {
         SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- filter unit %s [%p] is forwarding EOD, but not connected to any unit",
                                               S::__parser.name, &state));
@@ -254,8 +266,8 @@ inline void forward_eod(S& state) {
 }
 
 template<typename U>
-inline void forward_eod(UnitType<U>& unit) {
-    return forward_eod(*unit);
+inline void forward_eod(UnitType<U>& unit, const hilti::rt::TypeInfo* ti) {
+    return forward_eod(*unit, ti);
 }
 
 /**
@@ -275,13 +287,13 @@ inline void flush(hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
  * @tparam S type compatible with the attribute's defined by the `State` type.
  */
 template<typename S>
-inline void flush(S& state) {
+inline void flush(S& state, const hilti::rt::TypeInfo* /* ti */) {
     flush(state.__filters);
 }
 
 template<typename U>
-inline void flush(UnitType<U>& unit) {
-    flush(*unit);
+inline void flush(UnitType<U>& unit, const hilti::rt::TypeInfo* ti) {
+    flush(*unit, ti);
 }
 
 } // namespace spicy::rt::filter

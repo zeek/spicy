@@ -11,6 +11,18 @@
 using namespace hilti::rt;
 using namespace spicy::rt;
 
+// Pre-generated type info for `value_ref<uint64_t>`.
+const ::hilti::rt::TypeInfo ti_value_ref_uint_64 =
+    {{},
+     "value_ref<uint<64>>",
+     [](const void* self) {
+         return hilti::rt::to_string(
+             *reinterpret_cast<const ::hilti::rt::ValueReference<::hilti::rt::integer::safe<uint64_t>>*>(self));
+     },
+     new ::hilti::rt::type_info::ValueReference(&::hilti::rt::type_info::uint64,
+                                                ::hilti::rt::type_info::ValueReference::accessor<
+                                                    ::hilti::rt::integer::safe<uint64_t>>())};
+
 TEST_SUITE_BEGIN("ParsedUnit");
 
 TEST_CASE("get") {
@@ -19,21 +31,19 @@ TEST_CASE("get") {
     SUBCASE("uninitialized") { CHECK_THROWS_WITH_AS(p.get<int>(), "parsed unit not set", const NullReference&); }
 
     SUBCASE("initialized") {
-        const auto ref = ValueReference<int>(42);
-        const auto type_info = TypeInfo();
-        ParsedUnit::initialize(p, ref, &type_info);
+        const auto ref = ValueReference<uint64_t>(42);
+        ParsedUnit::initialize(p, ref, &ti_value_ref_uint_64);
 
-        CHECK_EQ(p.get<int>(), 42);
+        CHECK_EQ(p.get<uint64_t>(), 42);
     }
 }
 
 TEST_CASE("initialize") {
     ParsedUnit p;
-    const auto ref = ValueReference<int>(42);
-    const auto type_info = TypeInfo();
-    ParsedUnit::initialize(p, ref, &type_info);
+    const auto ref = ValueReference<uint64_t>(42);
+    ParsedUnit::initialize(p, ref, &ti_value_ref_uint_64);
 
-    CHECK_EQ(p.get<int>(), 42);
+    CHECK_EQ(p.get<uint64_t>(), 42);
 }
 
 TEST_CASE("reset") {
@@ -42,11 +52,10 @@ TEST_CASE("reset") {
     SUBCASE("uninitialized") {}
 
     SUBCASE("initialized") {
-        const auto ref = ValueReference<int>(42);
-        const auto type_info = TypeInfo();
-        ParsedUnit::initialize(p, ref, &type_info);
+        const auto ref = ValueReference<uint64_t>(42);
+        ParsedUnit::initialize(p, ref, &ti_value_ref_uint_64);
 
-        CHECK_NOTHROW(p.get<int>());
+        CHECK_NOTHROW(p.get<uint64_t>());
     }
 
     p.reset();
@@ -59,11 +68,10 @@ TEST_CASE("value") {
     SUBCASE("uninitialized") { CHECK_THROWS_WITH_AS(p.value(), "parsed unit not set", const NullReference&); }
 
     SUBCASE("initialized") {
-        const auto ref = ValueReference<int>(42);
-        const auto type_info = TypeInfo();
-        ParsedUnit::initialize(p, ref, &type_info);
+        const auto ref = ValueReference<uint64_t>(42);
+        ParsedUnit::initialize(p, ref, &ti_value_ref_uint_64);
 
-        CHECK_EQ(p.value(), type_info::Value(ref.get(), &type_info, p));
+        CHECK_EQ(p.value(), type_info::Value(ref.get(), &ti_value_ref_uint_64, p));
     }
 }
 

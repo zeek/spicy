@@ -37,15 +37,16 @@ TEST_CASE("create and set") {
     hilti::rt::StrongReference<hilti::rt::Bytes> __context;
 
     // Set __context
-    spicy::rt::detail::setContext(__context, c, &hilti::rt::type_info::bytes);
+    spicy::rt::detail::setContext(__context, nullptr, c, &hilti::rt::type_info::bytes);
     CHECK_EQ(*__context, "x"_b);
 
     // Unset __context
-    spicy::rt::detail::setContext(__context, {}, &hilti::rt::type_info::bytes);
+    spicy::rt::detail::setContext(__context, nullptr, {}, &hilti::rt::type_info::bytes);
     CHECK(! __context);
 
     // Catch type mismatch
-    CHECK_THROWS_AS(spicy::rt::detail::setContext(__context, c, &hilti::rt::type_info::string), ContextMismatch);
+    CHECK_THROWS_AS(spicy::rt::detail::setContext(__context, nullptr, c, &hilti::rt::type_info::string),
+                    ContextMismatch);
 }
 
 TEST_CASE("to_string") {

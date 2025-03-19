@@ -74,6 +74,9 @@ namespace detail {
  */
 template<typename Context>
 inline UnitContext createContext(Context ctx, const hilti::rt::TypeInfo* ti) {
+    if ( ti->tag == hilti::rt::TypeInfo::Tag::StrongReference )
+        ti = ti->strong_reference->valueType();
+
     return UnitContext(std::move(ctx), ti);
 }
 
@@ -87,8 +90,8 @@ inline UnitContext createContext(Context ctx, const hilti::rt::TypeInfo* ti) {
  * will be thrown
  */
 template<typename Context>
-inline void setContext(hilti::rt::StrongReference<Context>& context, const std::optional<UnitContext>& new_ctx,
-                       const hilti::rt::TypeInfo* ti) {
+inline void setContext(hilti::rt::StrongReference<Context>& context, const hilti::rt::TypeInfo* context_type,
+                       const std::optional<UnitContext>& new_ctx, const hilti::rt::TypeInfo* ti) {
     if ( new_ctx )
         context = new_ctx->as<Context>(ti);
     else

@@ -2306,7 +2306,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                                                }))));
 
             builder()->addCall(ID("spicy_rt::initializeParsedUnit"),
-                               {builder()->id("__gunit"), builder()->id("__unit"), builder()->id(t->typeID())});
+                               {builder()->id("__gunit"), builder()->id("__unit")});
             builder()
                 ->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable),
                            builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),
@@ -2398,8 +2398,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             // Create context_new() body.
             pushBuilder();
             auto obj = builder()->new_(ctx);
-            auto ti = builder()->typeinfo(builder()->qualifiedType(ctx, hilti::Constness::Const));
-            builder()->addReturn(builder()->call("spicy_rt::createContext", {obj, ti}));
+            builder()->addReturn(builder()->call("spicy_rt::createContext", {obj}));
             auto body_ext_context_new = popBuilder();
 
             f_ext_context_new->function()->setBody(context(), body_ext_context_new->block());

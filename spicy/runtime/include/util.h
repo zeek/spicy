@@ -38,7 +38,7 @@ get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::r
 
 /** Confirm a unit in trial mode. */
 template<typename U>
-inline void confirm(U& p) {
+inline void confirm(U& p, const hilti::rt::TypeInfo* /* ti */) {
     // If we are not in trial mode `confirm` is a no-op.
     if ( p.__error ) {
         p.__error.reset();
@@ -53,7 +53,7 @@ inline void confirm(U& p) {
 
 /** Reject a unit in trial or any other mode. */
 template<typename U>
-inline void reject(U& p) {
+inline void reject(U& p, const hilti::rt::TypeInfo* /* ti */) {
     // Only invoke hook if we were actually in trial mode.
     if ( const auto& error = p.__error ) {
         // TODO(bbannier): For consistence we would ideally bracket the hook
