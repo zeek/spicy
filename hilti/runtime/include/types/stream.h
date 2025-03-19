@@ -1619,6 +1619,10 @@ private:
     std::optional<SafeConstIterator> _end;
 };
 
+inline std::string to_string(const View::Block&, hilti::rt::detail::adl::tag /*unused*/) {
+    return "<stream view block>";
+}
+
 inline Size View::size() const {
     // Because our end offset may point beyond what's currently
     // available, we need to take the actual end in account to return

@@ -59,6 +59,10 @@ struct Nothing {};
 inline bool operator==(const Nothing&, const Nothing&) { return true; }
 inline bool operator!=(const Nothing&, const Nothing&) { return false; }
 
+namespace detail::adl {
+inline std::string to_string(const Nothing& n, adl::tag /*unused*/) { return "<nothing>"; };
+} // namespace detail::adl
+
 /**
  * Represents either a successful result from function if it returned one, or
  * reflects an error if the function was unsuccessful.

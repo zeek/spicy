@@ -773,6 +773,7 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder {
     void operator()(type::Error* n) final { result = "::hilti::rt::type_info::error"; }
     void operator()(type::Interval* n) final { result = "::hilti::rt::type_info::interval"; }
     void operator()(type::Network* n) final { result = "::hilti::rt::type_info::network"; }
+    void operator()(type::Null* n) final { result = "::hilti::rt::type_info::null"; }
     void operator()(type::Port* n) final { result = "::hilti::rt::type_info::port"; }
     void operator()(type::Real* n) final { result = "::hilti::rt::type_info::real"; }
     void operator()(type::RegExp* n) final { result = "::hilti::rt::type_info::regexp"; }
@@ -831,6 +832,18 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
     void operator()(type::Library* n) final { result = fmt("::hilti::rt::type_info::Library(\"%s\")", n->cxxName()); }
 
+    void operator()(type::List* n) final {
+        // This generates type information for a vector, as that's how we store lists.
+        auto x = cg->compile(n->elementType(), codegen::TypeUsage::Storage);
+
+        std::string allocator;
+        if ( auto def = cg->typeDefaultValue(n->elementType()) )
+            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
+
+        result = fmt("::hilti::rt::type_info::Vector(%s, ::hilti::rt::type_info::Vector::accessor<%s%s>())",
+                     cg->typeInfo(n->elementType()), x, allocator);
+    }
+
     void operator()(type::Map* n) final {
         auto ktype = cg->compile(n->keyType(), codegen::TypeUsage::Storage);
         auto vtype = cg->compile(n->elementType(), codegen::TypeUsage::Storage);
@@ -855,9 +868,12 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
     }
 
     void operator()(type::Result* n) final {
-        result =
-            fmt("::hilti::rt::type_info::Result(%s, ::hilti::rt::type_info::Result::accessor<%s>())",
-                cg->typeInfo(n->dereferencedType()), cg->compile(n->dereferencedType(), codegen::TypeUsage::Storage));
+        if ( ! n->dereferencedType()->type()->isA<type::Void>() )
+            result = fmt("::hilti::rt::type_info::Result(%s, ::hilti::rt::type_info::Result::accessor<%s>())",
+                         cg->typeInfo(n->dereferencedType()),
+                         cg->compile(n->dereferencedType(), codegen::TypeUsage::Storage));
+        else
+            result = fmt("::hilti::rt::type_info::Result(%s, {})", cg->typeInfo(n->dereferencedType()));
     }
 
     void operator()(type::Set* n) final {

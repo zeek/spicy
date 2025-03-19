@@ -17,6 +17,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/network.h>
+#include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/set.h>
@@ -781,6 +782,9 @@ private:
 /** Auxiliary type information for type ``net`. */
 class Network : public detail::AtomicType<hilti::rt::Network> {};
 
+/** Auxiliary type information for type ``null`. */
+class Null : public detail::ValueLessType {};
+
 /** Auxiliary type information for type ``optional<T>`. */
 class Optional : public detail::DereferenceableType {
 public:
@@ -1243,6 +1247,7 @@ struct TypeInfo {
         Map,
         MapIterator,
         Network,
+        Null,
         Optional,
         Port,
         Real,
@@ -1298,6 +1303,7 @@ struct TypeInfo {
         type_info::Map* map;
         type_info::MapIterator* map_iterator;
         type_info::Network* network;
+        type_info::Null* null;
         type_info::Optional* optional;
         type_info::Port* port;
         type_info::Real* real;
@@ -1398,6 +1404,10 @@ struct TypeInfo {
         else if constexpr ( std::is_same_v<Type, type_info::Network> ) {
             tag = Network;
             network = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Null> ) {
+            tag = Null;
+            null = value;
         }
         else if constexpr ( std::is_same_v<Type, type_info::Optional> ) {
             tag = Optional;
@@ -1615,6 +1625,10 @@ const Type* auxType(const type_info::Value& v) {
         assert(type.tag == TypeInfo::Network);
         return type.network;
     }
+    else if constexpr ( std::is_same_v<Type, type_info::Null> ) {
+        assert(type.tag == TypeInfo::Null);
+        return type.null;
+    }
     else if constexpr ( std::is_same_v<Type, type_info::Optional> ) {
         assert(type.tag == TypeInfo::Optional);
         return type.optional;
@@ -1752,6 +1766,7 @@ extern const TypeInfo int8;
 extern const TypeInfo interval;
 extern const TypeInfo library;
 extern const TypeInfo network;
+extern const TypeInfo null;
 extern const TypeInfo port;
 extern const TypeInfo real;
 extern const TypeInfo regexp;
