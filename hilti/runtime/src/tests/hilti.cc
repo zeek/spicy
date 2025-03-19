@@ -48,18 +48,4 @@ TEST_CASE("print") {
     }
 }
 
-TEST_CASE("printValues") {
-    SUBCASE("w/ newline") {
-        TestCout cout;
-        printValues(std::make_tuple("\x00\x01"_b, 0.5), true);
-        CHECK_EQ(cout.str(), "\\x00\\x01, 0.5\n");
-    }
-
-    SUBCASE("w/o newline") {
-        TestCout cout;
-        printValues(std::make_tuple("\x00\x01"_b, 0.5), false);
-        CHECK_EQ(cout.str(), "\\x00\\x01, 0.5");
-    }
-}
-
 TEST_SUITE_END();

@@ -727,7 +727,10 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::ID& x) {
 }
 
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Type& x) {
-    return f << util::replace(x, fmt("%s::", f.namespace_(0)), "");
+    if ( auto ns = f.namespace_(0) )
+        return f << util::replace(x, fmt("%s::", ns), "");
+    else
+        return f << static_cast<std::string>(x);
 }
 
 void cxx::declaration::Type::emit(cxx::Formatter& f) const {

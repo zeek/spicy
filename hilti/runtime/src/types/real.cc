@@ -27,15 +27,15 @@ Bytes real::pack(double d, real::Type type, ByteOrder fmt) {
 }
 
 template<typename T>
-static Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder fmt) {
+static Result<Tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrder fmt) {
     switch ( type.value() ) {
         case real::Type::IEEE754_Single: {
             if ( data.size() < 4 )
                 return result::Error("insufficient data to unpack single precision real");
 
             if ( auto x = integer::unpack<uint32_t>(data, fmt) ) {
-                auto d = reinterpret_cast<float*>(&std::get<0>(*x));
-                return std::make_tuple(static_cast<double>(*d), std::get<1>(*x));
+                auto d = reinterpret_cast<float*>(&tuple::get<0>(*x));
+                return {{static_cast<double>(*d), tuple::get<1>(*x)}};
             }
             else
                 return x.error();
@@ -46,8 +46,8 @@ static Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, Byt
                 return result::Error("insufficient data to unpack double precision real");
 
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
-                auto d = reinterpret_cast<double*>(&std::get<0>(*x));
-                return std::make_tuple(*d, std::get<1>(*x));
+                auto d = reinterpret_cast<double*>(&tuple::get<0>(*x));
+                return {{*d, tuple::get<1>(*x)}};
             }
             else
                 return x.error();
@@ -59,11 +59,11 @@ static Result<std::tuple<double, T>> _unpack(const T& data, real::Type type, Byt
     cannot_be_reached();
 }
 
-Result<std::tuple<double, Bytes>> real::unpack(const Bytes& data, real::Type type, ByteOrder fmt) {
+Result<Tuple<double, Bytes>> real::unpack(const Bytes& data, real::Type type, ByteOrder fmt) {
     return _unpack(data, type, fmt);
 }
 
-Result<std::tuple<double, stream::View>> real::unpack(const stream::View& data, real::Type type, ByteOrder fmt) {
+Result<Tuple<double, stream::View>> real::unpack(const stream::View& data, real::Type type, ByteOrder fmt) {
     return _unpack(data, type, fmt);
 }
 

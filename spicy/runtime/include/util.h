@@ -33,7 +33,8 @@ extern std::string bytes_to_mac(const hilti::rt::Bytes& value);
 
 /** Returns the internal `__offsets` member if present. */
 extern const hilti::rt::Vector<
-    std::optional<std::tuple<hilti::rt::integer::safe<uint64_t>, std::optional<hilti::rt::integer::safe<uint64_t>>>>>*
+    std::optional<std::tuple<std::optional<hilti::rt::integer::safe<uint64_t>>,
+                             std::optional<std::optional<hilti::rt::integer::safe<uint64_t>>>>>>*
 get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value);
 
 /** Confirm a unit in trial mode. */

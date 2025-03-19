@@ -400,7 +400,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
             }
 
             default: {
-                auto call = builder()->call("hilti::printValues", {builder()->tuple(exprs)});
+                auto call = builder()->call("hilti::printTuple", {builder()->tuple(exprs)});
                 replaceNode(n, builder()->statementExpression(call, n->location()));
                 break;
             }

@@ -73,18 +73,18 @@ struct U16Iterator {
 
 } // namespace
 
-std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const const_iterator& start) const {
+Tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const const_iterator& start) const {
     auto b = begin();
 
     if ( needle.isEmpty() )
-        return std::make_tuple(true, start ? start : b);
+        return {true, start ? start : b};
 
     auto bv = needle.unsafeBegin();
     auto first = *bv;
 
     for ( auto i = const_iterator(start ? start : b); true; ++i ) {
         if ( i == end() )
-            return std::make_tuple(false, i);
+            return {false, i};
 
         if ( *i != first )
             continue;
@@ -94,13 +94,13 @@ std::tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const c
 
         for ( ;; ) {
             if ( x == end() )
-                return std::make_tuple(false, i);
+                return {false, i};
 
             if ( *x++ != *y++ )
                 break;
 
             if ( y == needle.unsafeEnd() )
-                return std::make_tuple(true, i);
+                return {true, i};
         }
     }
 }

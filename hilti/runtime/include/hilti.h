@@ -34,22 +34,6 @@ void print(const T& t, const hilti::rt::TypeInfo* /* ti */, bool newline = true)
         cout.flush();
 }
 
-/** Corresponds to `hilti::printValues`. */
-template<typename T, typename std::enable_if_t<is_tuple<T>::value>* = nullptr>
-void printValues(const T& t, bool newline = true) {
-    if ( ! configuration::get().cout )
-        return;
-
-    auto& cout = configuration::get().cout->get();
-
-    cout << join_tuple_for_print(t);
-
-    if ( newline )
-        cout << '\n';
-    else
-        cout.flush();
-}
-
 // Just for testing: Declaring a function that's not implemented.
 extern void __does_not_exist();
 

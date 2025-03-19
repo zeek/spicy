@@ -90,7 +90,7 @@ public:
      * @param parent parent controlling life time of the value
      */
     Value(const void* ptr, const TypeInfo* ti, const value::Parent& parent)
-        : _ptr(ptr), _ti(ti), _parent_handle(parent.handle()) {
+        : _ptr(ptr), _ti(ti), _parent_handle(parent._handle) {
         check();
     }
 

@@ -47,7 +47,7 @@ TEST_CASE("pack") {
 
 TEST_CASE("unpack") {
     SUBCASE("Bytes") {
-        using Result = Result<std::tuple<double, Bytes>>;
+        using Result = Result<Tuple<double, Bytes>>;
 
         SUBCASE("IEEE754_Single") {
             CHECK_EQ(real::unpack("\x3f\x00\x00"_b, real::Type::IEEE754_Single, ByteOrder::Big),
@@ -109,7 +109,7 @@ TEST_CASE("unpack") {
         SUBCASE("expanding") { expanding = true; }
         SUBCASE("not expanding") { expanding = false; }
 
-        using Result = Result<std::tuple<double, stream::View>>;
+        using Result = Result<Tuple<double, stream::View>>;
 
         const auto s1 = Stream("\x3f\x40\x00\x00\x01\x02\x03\x04"_b);
         const auto s2 = Stream(R"(?@)");
@@ -118,7 +118,7 @@ TEST_CASE("unpack") {
         CHECK_EQ(r1, Result(std::make_tuple(0.75, Stream("\x01\x02\x03\x04").view(! expanding))));
 
         REQUIRE(r1);
-        CHECK_EQ(std::get<1>(*r1).isOpenEnded(), expanding);
+        CHECK_EQ(tuple::get<1>(*r1).isOpenEnded(), expanding);
 
         CHECK_EQ(real::unpack(s2.view(expanding), real::Type::IEEE754_Single, ByteOrder::Big),
                  Result(result::Error("insufficient data to unpack single precision real")));

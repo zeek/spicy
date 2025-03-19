@@ -39,13 +39,13 @@ struct Visitor : hilti::visitor::PreOrder {
             types.emplace_back(itype);
 
             if ( auto x = n->bits(b->id()) )
-                values.emplace_back(cg->compile(x->expression()));
+                values.emplace_back(fmt("std::make_optional(%s)", cg->compile(x->expression())));
             else
-                values.emplace_back("std::nullopt");
+                values.emplace_back(fmt("std::optional<%s>{}", itype));
         }
 
-        result =
-            fmt("::hilti::rt::Bitfield<%s>(std::make_tuple(%s))", util::join(types, ", "), util::join(values, ", "));
+        result = fmt("::hilti::rt::Bitfield<%s>(hilti::rt::tuple::make_from_optionals(%s))", util::join(types, ", "),
+                     util::join(values, ", "));
     }
     void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool(%s)", n->value() ? "true" : "false"); }
 
@@ -98,9 +98,12 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->elementType()->type()->isA<type::Unknown>() )
             // Can only be the empty list.
             result = "::hilti::rt::vector::Empty()";
-        else
-            result = fmt("::hilti::rt::Vector<%s>({%s})", cg->compile(n->elementType(), codegen::TypeUsage::Storage),
-                         util::join(node::transform(n->value(), [this](auto e) { return cg->compile(e); }), ", "));
+        else {
+            auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
+            result = fmt("%s({%s}%s)", cxx_type,
+                         util::join(node::transform(n->value(), [this](auto e) { return cg->compile(e); }), ", "),
+                         cxx_default);
+        }
     }
 
     void operator()(ctor::Map* n) final {
@@ -253,8 +256,17 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::Tuple* n) final {
-        result = fmt("std::make_tuple(%s)",
-                     util::join(node::transform(n->value(), [this](auto e) { return cg->compile(e); }), ", "));
+        result =
+            fmt("hilti::rt::tuple::make_from_optionals(%s)",
+                util::join(node::transform(n->value(),
+                                           [this](auto e) -> std::string {
+                                               if ( e->template isA<expression::Ctor>() )
+                                                   return fmt("std::make_optional(%s)", cg->compile(e));
+                                               else
+                                                   return fmt("hilti::rt::tuple::wrap_expression([&]() { return %s; })",
+                                                              cg->compile(e));
+                                           }),
+                           ", "));
     }
 
     void operator()(ctor::Struct* n) final {
@@ -299,11 +311,7 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        auto x = cg->compile(n->elementType(), codegen::TypeUsage::Storage);
-
-        std::string allocator;
-        if ( auto def = cg->typeDefaultValue(n->elementType()) )
-            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
+        auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
             auto elems = util::join(node::transform(n->value(),
@@ -318,15 +326,16 @@ struct Visitor : hilti::visitor::PreOrder {
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
             auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
-            result = fmt("[%s]() { auto __xs = ::hilti::rt::Vector<%s%s>(); __xs.reserve(%d); %s return __xs; }()",
-                         captures, x, allocator, size, elems);
+            result = fmt("[%s]() { auto __xs = %s({}%s); __xs.reserve(%d); %s return __xs; }()", captures, cxx_type,
+                         cxx_default, size, elems);
         }
 
         else
             result =
-                fmt("::hilti::rt::Vector<%s%s>({%s})", x, allocator,
+                fmt("%s({%s}%s)", cxx_type,
                     util::join(node::transform(n->value(), [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
-                               ", "));
+                               ", "),
+                    cxx_default);
     }
 
     void operator()(ctor::UnsignedInteger* n) final {

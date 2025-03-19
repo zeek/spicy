@@ -64,6 +64,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(expression::Ctor* n) final { result = cg->compile(n->ctor(), lhs); }
 
+    // TODO: Remove
     void operator()(expression::Deferred* n) final {
         auto type = cg->compile(n->type(), codegen::TypeUsage::Storage);
         auto value = cg->compile(n->expression());
@@ -101,24 +102,16 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(expression::ListComprehension* n) final {
         auto id = cxx::ID(n->local()->id());
         auto input = cg->compile(n->input());
-        auto itype = cg->compile(n->input()->type()->type()->elementType(), codegen::TypeUsage::Storage);
         auto otype = cg->compile(n->output()->type(), codegen::TypeUsage::Storage);
         auto output = cg->compile(n->output());
+
         auto pred = std::string();
-        auto allocator = std::string();
-
-        if ( auto def = cg->typeDefaultValue(n->output()->type()) ) {
-            allocator = fmt("::hilti::rt::vector::Allocator<%s, %s>", otype, *def);
-        }
-        else {
-            allocator = fmt("std::allocator<%s>", otype);
-        }
-
         if ( auto c = n->condition() )
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(c));
 
-        result = fmt("::hilti::rt::vector::make<%s>(%s, [](auto&& %s) -> %s { return %s; }%s)", allocator, input, id,
-                     otype, output, pred);
+        auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->output()->type());
+        result = fmt("::hilti::rt::vector::make(%s({}%s), %s, [](auto&& %s) -> %s { return %s; }%s)", cxx_type,
+                     cxx_default, input, id, otype, output, pred);
     }
 
     void operator()(expression::Member* n) final {

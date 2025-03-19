@@ -4,10 +4,10 @@
 
 #include <string>
 #include <string_view>
-#include <tuple>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/tuple.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/unicode.h>
 #include <hilti/rt/util.h>
@@ -73,7 +73,7 @@ Vector<std::string> split(std::string_view s, std::string_view sep);
  * @param s the string to split
  * @return a tuple with elements before and after the separator
  */
-std::tuple<std::string, std::string> split1(const std::string& s);
+Tuple<std::string, std::string> split1(const std::string& s);
 
 /**
  * Splits the string (only) at the first sequence of a separator, returning exactly two parts.
@@ -83,7 +83,7 @@ std::tuple<std::string, std::string> split1(const std::string& s);
  * @param sep the string to split at the first occurrence
  * @return a tuple with elements before and after the separator
  */
-std::tuple<std::string, std::string> split1(const std::string& s, const std::string& sep);
+Tuple<std::string, std::string> split1(const std::string& s, const std::string& sep);
 
 /**
  * Creates a bytes instance from a raw string representation

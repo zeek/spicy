@@ -5,6 +5,7 @@
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
@@ -187,12 +188,12 @@ TEST_CASE("binary data") {
     CHECK_GT(RegExp("\\xF0\\xFe\\xff"_p).match("\xf0\xfe\xff"_b), 0); // Let the ctor unescape
 
     auto x = RegExp("[\\x7F\\x80]*"_p).find("\x7f\x80\x7f\x80$$$"_b);
-    CHECK_GT(std::get<0>(x), 0);
-    CHECK_EQ(std::get<1>(x).size(), 4); // check for expected length of match
+    CHECK_GT(tuple::get<0>(x), 0);
+    CHECK_EQ(tuple::get<1>(x).size(), 4); // check for expected length of match
 
     x = RegExp("abc\\x00def"_p).find("$$abc\000def%%"_b);
-    CHECK_GT(std::get<0>(x), 0);
-    CHECK_EQ(std::get<1>(x).size(), 7); // check for expected length of match
+    CHECK_GT(tuple::get<0>(x), 0);
+    CHECK_EQ(tuple::get<1>(x).size(), 7); // check for expected length of match
 
     // Try escaped data & pattern, which will be matched literally as ASCII characters.
     CHECK_GT(RegExp("\\\\xFF\\\\xFF"_p).match("\\xFF\\xFF"_b), 0);
@@ -314,8 +315,8 @@ TEST_CASE("advance") {
         SUBCASE("match until limit") {
             // Match a regexp ending in a wildcard so it could match the entire input.
             const auto x = RegExp("123.*"_p).tokenMatcher().advance(limited);
-            const auto& rc = std::get<0>(x);
-            const auto& unconsumed = std::get<1>(x);
+            const auto& rc = tuple::get<0>(x);
+            const auto& unconsumed = tuple::get<1>(x);
 
             CHECK_EQ(rc, 1);            // Match found and cannot consume more data.
             CHECK_EQ(unconsumed, ""_b); // Should have consumed entire input.
@@ -325,7 +326,7 @@ TEST_CASE("advance") {
         SUBCASE("no match in limit") {
             // Match a regexp matching the input, but not the passed, limited view.
             const auto x = RegExp({input.data()}).tokenMatcher().advance(limited);
-            const auto& rc = std::get<0>(x);
+            const auto& rc = tuple::get<0>(x);
 
             CHECK_EQ(rc, -1); // No match found yet in available, limited data.
         }
@@ -373,7 +374,7 @@ TEST_CASE("advance") {
             auto [rc, ncur] = re.tokenMatcher().advance(cur);
             CHECK_EQ(rc, 1);
             CHECK_EQ(ncur, stream::View(cur.begin() + 1, cur.end()));
-            cur = ncur;
+            cur = *ncur;
         }
 
         // Match attempt on gap fails, but leaves `cur` alone.
@@ -389,7 +390,7 @@ TEST_CASE("advance") {
         {
             auto [rc, ncur] = re.tokenMatcher().advance(cur);
             CHECK_EQ(rc, 1);
-            CHECK_EQ(ncur.offset(), 1 + 1024 + 1);
+            CHECK_EQ(ncur->offset(), 1 + 1024 + 1);
         }
     }
 }

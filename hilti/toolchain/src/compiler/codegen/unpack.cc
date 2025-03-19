@@ -58,16 +58,16 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( args.size() > 1 )
             bitorder = args[1];
 
-        auto unpacked =
-            cg->addTmp("x",
-                       cxx::Type(util::fmt("::hilti::rt::Result<std::tuple<::hilti::rt::integer::safe<uint%d_t>, %s>>",
-                                           n->width(), cg->compile(data_type, codegen::TypeUsage::Storage))));
+        auto unpacked = cg->addTmp(
+            "x",
+            cxx::Type(util::fmt("::hilti::rt::Result<::hilti::rt::Tuple<::hilti::rt::integer::safe<uint%d_t>, %s>>",
+                                n->width(), cg->compile(data_type, codegen::TypeUsage::Storage))));
         auto unpack_uint =
             fmt("%s = ::hilti::rt::integer::unpack<uint%d_t>(%s, %s)", unpacked, n->width(), data, args[0]);
 
-        auto bf_value = cg->unsignedIntegerToBitfield(n, fmt("std::get<0>(*%s)", unpacked), bitorder);
-        result = fmt("(%s, ::hilti::rt::make_result(std::make_tuple(%s, std::get<1>(*%s))))", unpack_uint, bf_value,
-                     unpacked);
+        auto bf_value = cg->unsignedIntegerToBitfield(n, fmt("::hilti::rt::tuple::get<0>(*%s)", unpacked), bitorder);
+        result = fmt("(%s, ::hilti::rt::make_result(::hilti::rt::tuple::make(%s, ::hilti::rt::tuple::get<1>(*%s))))",
+                     unpack_uint, bf_value, unpacked);
     }
 
     void operator()(type::UnsignedInteger* n) final {

@@ -148,14 +148,14 @@ Bytes Address::pack(ByteOrder fmt) const {
 }
 
 template<typename T>
-static Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily family, ByteOrder fmt) {
+static Result<Tuple<Address, T>> _unpack(const T& data, AddressFamily family, ByteOrder fmt) {
     switch ( family.value() ) {
         case AddressFamily::IPv4: {
             if ( data.size() < 4 )
                 return result::Error("insufficient data to unpack IPv4 address");
 
             if ( auto x = integer::unpack<uint32_t>(data, fmt) )
-                return std::make_tuple(Address(std::get<0>(*x)), std::get<1>(*x));
+                return {std::make_tuple(Address(tuple::get<0>(*x)), tuple::get<1>(*x))};
             else
                 return x.error();
         }
@@ -168,11 +168,11 @@ static Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily famil
                 fmt != ByteOrder::Little && (fmt != ByteOrder::Host || systemByteOrder() != ByteOrder::Little);
 
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
-                if ( auto y = integer::unpack<uint64_t>(std::get<1>(*x), fmt) ) {
+                if ( auto y = integer::unpack<uint64_t>(tuple::get<1>(*x), fmt) ) {
                     if ( ! nbo )
-                        return std::make_tuple(Address(std::get<0>(*y), std::get<0>(*x)), std::get<1>(*y));
+                        return {std::make_tuple(Address(tuple::get<0>(*y), tuple::get<0>(*x)), tuple::get<1>(*y))};
                     else
-                        return std::make_tuple(Address(std::get<0>(*x), std::get<0>(*y)), std::get<1>(*y));
+                        return {std::make_tuple(Address(tuple::get<0>(*x), tuple::get<0>(*y)), tuple::get<1>(*y))};
                 }
                 else
                     return y.error();
@@ -187,12 +187,11 @@ static Result<std::tuple<Address, T>> _unpack(const T& data, AddressFamily famil
     cannot_be_reached();
 }
 
-Result<std::tuple<Address, Bytes>> address::unpack(const Bytes& data, AddressFamily family, ByteOrder fmt) {
+Result<Tuple<Address, Bytes>> address::unpack(const Bytes& data, AddressFamily family, ByteOrder fmt) {
     return _unpack(data, family, fmt);
 }
 
-Result<std::tuple<Address, stream::View>> address::unpack(const stream::View& data, AddressFamily family,
-                                                          ByteOrder fmt) {
+Result<Tuple<Address, stream::View>> address::unpack(const stream::View& data, AddressFamily family, ByteOrder fmt) {
     return _unpack(data, family, fmt);
 }
 
