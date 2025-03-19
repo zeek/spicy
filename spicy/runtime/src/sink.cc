@@ -121,12 +121,13 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
         if ( ! _filter_data ) {
             // Initialize on first data.
             _filter_data = FilterData();
-            _filter_data->output = spicy::rt::filter::init(_filter, _filter_data->input, _filter_data->input->view());
+            _filter_data->output =
+                spicy::rt::filter::init(_filter, nullptr, _filter_data->input, _filter_data->input->view());
             _filter_data->output_cur = (*_filter_data->output).view();
         }
 
         _filter_data->input->append(std::move(*data));
-        spicy::rt::filter::flush(_filter);
+        spicy::rt::filter::flush(_filter, nullptr);
 
         data = _filter_data->output_cur.data();
         _filter_data->output_cur = _filter_data->output_cur.advance(data->size());
@@ -407,7 +408,7 @@ void Sink::connect_mime_type(const MIMEType& mt, std::string_view scope) {
 }
 
 void Sink::_close(bool orderly) {
-    spicy::rt::filter::disconnect(_filter);
+    spicy::rt::filter::disconnect(_filter, nullptr);
     _filter_data = {};
 
     if ( _states.size() ) {

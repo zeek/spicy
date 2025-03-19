@@ -380,7 +380,7 @@ method extern method view<stream> foo::A::parse1(inout value_ref<stream> __data,
 method extern method view<stream> foo::A::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-functions.spicy:18:10-18:16"
     local value_ref<A> __unit = value_ref(default<const A>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, A);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -626,7 +626,7 @@ method extern method view<stream> foo::B::parse1(inout value_ref<stream> __data,
 method extern method view<stream> foo::B::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-functions.spicy:21:17-21:23"
     local value_ref<B> __unit = value_ref(default<const B>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, B);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -868,7 +868,7 @@ method extern method view<stream> foo::C::parse1(inout value_ref<stream> __data,
 method extern method view<stream> foo::C::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-functions.spicy:24:10-24:16"
     local value_ref<C> __unit = value_ref(default<const C>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, C);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1129,7 +1129,7 @@ method extern method view<stream> foo::D::parse1(inout value_ref<stream> __data,
 method extern method view<stream> foo::D::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-functions.spicy:25:17-27:1"
     local value_ref<D> __unit = value_ref(default<const D>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, D);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1379,7 +1379,7 @@ method extern method view<stream> foo::F::parse1(inout value_ref<stream> __data,
 method extern method view<stream> foo::F::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-functions.spicy:30:10-32:1"
     local value_ref<F> __unit = value_ref(default<const F>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, F);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;

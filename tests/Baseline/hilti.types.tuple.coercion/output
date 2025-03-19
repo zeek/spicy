@@ -14,11 +14,16 @@ namespace __hlt::Foo {
     extern void __register_module();
 }
 
+namespace __hlt::type_info { namespace {
+    extern const ::hilti::rt::TypeInfo __ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b;
+    const ::hilti::rt::TypeInfo __ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b = { {}, "tuple<a: uint<64>, b: string>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string>*>(self)); }, new ::hilti::rt::type_info::Tuple(std::vector<::hilti::rt::type_info::tuple::Element>({::hilti::rt::type_info::tuple::Element{ "a", &::hilti::rt::type_info::uint64, ::hilti::rt::tuple::elementOffset<std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string>, 0>() }, ::hilti::rt::type_info::tuple::Element{ "b", &::hilti::rt::type_info::string, ::hilti::rt::tuple::elementOffset<std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string>, 1>() }})) };
+} }
+
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/coercion.hlt:14:1-14:17");
-    ::hilti::rt::print(f(), ::hilti::rt::Bool(true));
+    ::hilti::rt::print(f(), &type_info::__ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b, ::hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr, nullptr}); }

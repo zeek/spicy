@@ -176,7 +176,7 @@ method extern method view<stream> foo::Pub2::parse1(inout value_ref<stream> __da
 method extern method view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:16:20-16:26"
     local value_ref<Pub2> __unit = value_ref(default<const Pub2>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, Pub2);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -342,7 +342,7 @@ method extern method view<stream> foo::Pub3::parse1(inout value_ref<stream> __da
 method extern method view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:29:20-32:1"
     local value_ref<Pub3> __unit = value_ref(default<const Pub3>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, Pub3);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -428,7 +428,7 @@ method extern method view<stream> foo::Priv10::parse1(inout value_ref<stream> __
 method extern method view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:43:22-46:1"
     local value_ref<Priv10> __unit = value_ref(default<const Priv10>());
-    spicy_rt::initializeParsedUnit((*__gunit), __unit, Priv10);
+    spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;

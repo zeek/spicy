@@ -18,7 +18,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/spicyc-hello-world.spicy:8:1-8:22");
-    ::hilti::rt::print("Hello, world!"s, ::hilti::rt::Bool(true));
+    ::hilti::rt::print("Hello, world!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       __location__("<...>/spicyc-hello-world.spicy:9:1-9:24");
     ::hilti::rt::printValues(std::make_tuple("Hello"s, "world!"s), ::hilti::rt::Bool(true));
 }

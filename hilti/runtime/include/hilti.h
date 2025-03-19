@@ -16,9 +16,11 @@
 
 namespace hilti::rt {
 
+struct TypeInfo;
+
 /** Corresponds to `hilti::print`. */
 template<typename T>
-void print(const T& t, bool newline = true) {
+void print(const T& t, const hilti::rt::TypeInfo* /* ti */, bool newline = true) {
     if ( ! configuration::get().cout )
         return;
 
