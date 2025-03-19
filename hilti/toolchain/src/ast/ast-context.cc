@@ -570,6 +570,13 @@ static Result<Nothing> _runHook(bool* modified, const Plugin& plugin, PluginMemb
 }
 
 Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
+    auto _guard = scope_exit([&]() {
+        const auto& hilti_plugin = plugin::registry().hiltiPlugin();
+        _dumpAST(logging::debug::AstFinal, hilti_plugin, "Final AST", -1);
+        _dumpState(logging::debug::AstFinal);
+        _dumpStats(logging::debug::AstStats, hilti_plugin.component);
+    });
+
     if ( _resolved )
         return Nothing();
 
@@ -622,11 +629,6 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
     }
 
     HILTI_DEBUG(logging::debug::Compiler, "finalized AST");
-
-    const auto& hilti_plugin = plugin::registry().hiltiPlugin();
-    _dumpAST(logging::debug::AstFinal, hilti_plugin, "Final AST", -1);
-    _dumpState(logging::debug::AstFinal);
-    _dumpStats(logging::debug::AstStats, hilti_plugin.component);
 
     if ( auto rc = _computeDependencies(); ! rc )
         return rc;
