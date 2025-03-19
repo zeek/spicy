@@ -93,7 +93,6 @@ class Assign;
 class BuiltInFunction;
 class Coerced;
 class Ctor;
-class Deferred;
 class Grouping;
 class Keyword;
 class ListComprehension;
