@@ -216,8 +216,8 @@ struct ProductionVisitor : public production::Visitor {
 
                 // Helper to wrap future code into a "try" block to catch
                 // errors, if necessary.
-                auto begin_try = [&](bool insert_try = true) -> std::optional<Builder::TryProxy> {
-                    if ( ! (unit && insert_try) )
+                auto begin_try = [&]() -> std::optional<Builder::TryProxy> {
+                    if ( ! unit )
                         return {};
 
                     auto x = builder()->addTry();
@@ -478,25 +478,28 @@ struct ProductionVisitor : public production::Visitor {
                                                                                hilti::Constness::Const)),
                                                   hilti::Constness::Const)};
 
-                    auto result_type = builder()->typeTuple(x);
-                    auto store_result = builder()->addTmp("result", result_type);
+                    if ( join_stages ) {
+                        auto result_type = builder()->typeTuple(x);
+                        auto store_result = builder()->addTmp("result", result_type);
 
-                    auto try_ = begin_try(join_stages);
+                        auto try_ = begin_try();
 
-                    if ( join_stages )
                         build_parse_stage1_logic();
 
-                    auto result = build_parse_stage2_logic();
-                    builder()->addAssign(store_result, result);
+                        auto result = build_parse_stage2_logic();
+                        builder()->addAssign(store_result, result);
 
-                    end_try(try_);
+                        end_try(try_);
 
-                    if ( join_stages && unit )
-                        run_finally();
+                        if ( unit )
+                            run_finally();
+
+                        builder()->addReturn(store_result);
+                    }
+                    else
+                        builder()->addReturn(build_parse_stage2_logic());
 
                     popState();
-
-                    builder()->addReturn(store_result);
 
                     return popBuilder()->block();
                 }; // End of build_parse_stage2()
