@@ -173,6 +173,32 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
     switch ( type ) {
         case Type::Main: {
             ::fiber_init_toplevel(_fiber.get());
+
+            // We assume/require that the main stack is at least at large as
+            // our shared fiber stack. With that, we can compute a stack
+            // starting address that's safely inside the actual stack. That
+            // address can then be used for stack size checking in checkStack()
+            // to catch recursions going too deep while we're running inside
+            // the main fiber.
+            const auto min_size = configuration::get().fiber_shared_stack_size;
+
+            rlimit limit;
+            if ( ::getrlimit(RLIMIT_STACK, &limit) < 0 )
+                throw RuntimeError("could not get current stack size");
+
+            if ( limit.rlim_cur < min_size )
+                throw RuntimeError(fmt("process stack size too small, need at least %zu KB", min_size / 1024));
+
+#if __x86_64__ || __arm__ || __arm64__ || __aarch64__ || __i386__
+            // There's a bit of fuzziness here as the current frame won't start
+            // exactly at the beginning of the stack---but should be good
+            // enough.
+            _fiber->stack = reinterpret_cast<char*>(__builtin_frame_address(0)) - min_size;
+            _fiber->stack_size = min_size;
+#else
+#error "unsupported architecture in hilti::rt::detail::Fiber::Fiber()"
+#endif
+
             // ASAN stack size will be set dynamically later.
             break;
         }
@@ -286,8 +312,10 @@ size_t detail::StackBuffer::liveRemainingSize() const {
     auto sp = reinterpret_cast<char*>(__builtin_frame_address(0));
     auto lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
 
-    // Double-check we're pointing into the right space.
-    assert(sp >= allocatedRegion().first && sp < allocatedRegion().second);
+    // Double-check we're pointing into the right space (ignore for the main
+    // fiber as our upper bound might not be quite right, and hence the current
+    // SP might be passed it.)
+    assert((sp >= allocatedRegion().first && sp < allocatedRegion().second) || ::fiber_is_toplevel(_fiber));
 
     return static_cast<size_t>(sp - lower);
 #else

@@ -1,0 +1,18 @@
+# This test could produce false positives on macOS with ASAN.
+# @TEST-REQUIRES: ! sh ./isMacosAsan.sh
+#
+# @TEST-EXEC-FAIL: spicyc -d -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that stack overflows are caught during module initialization. Regression test for #1967.
+
+module hello;
+
+function foo(n: uint64) {
+    foo(n);
+}
+
+foo(134);
+# @TEST-START-FILE isMacosAsan.sh
+have-sanitizer && [[ "$OSTYPE" == "darwin"* ]]
+# @TEST-END-FILE
