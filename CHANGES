@@ -1,3 +1,7 @@
+1.13.0-dev.128 | 2025-03-26 11:02:19 -0400
+
+  * Add simple parser benchmarking. (Evan Typanski, Corelight)
+
 1.13.0-dev.126 | 2025-03-18 09:04:37 +0100
 
   * Bring back the internal `__visit` method for generated structs. (Robin Sommer)

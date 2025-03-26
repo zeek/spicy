@@ -1,0 +1,25 @@
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
+
+module Benchmark;
+
+type Inner = unit {
+    b: b"A";
+};
+
+public type UnitVectorSize = unit {
+    length: uint64;
+    inner: Inner[] &size=self.length;
+    end_: b"END";
+};
+
+public type UnitVectorLookahead = unit {
+    length: uint64;
+    inner: Inner[];
+    end_: b"END";
+};
+
+public type Regex = unit {
+    length: uint64;
+    data: /A*/;
+    end_: b"END";
+};
