@@ -37,8 +37,6 @@ TEST_CASE("make") {
     CHECK_EQ(tuple::get<0>(t), 1);
     CHECK_EQ(tuple::get<1>(t), true);
     CHECK_EQ(tuple::get<2>(t), 3.14);
-
-    CHECK_EQ(tuple::get_all(t), std::make_tuple(1, true, 3.14));
 }
 
 TEST_CASE("make-from-optionals") {
@@ -51,17 +49,15 @@ TEST_CASE("make-from-optionals") {
     CHECK_EQ(tuple::get<0>(t), 1);
     CHECK_THROWS_AS(tuple::get<1>(t), hilti::rt::UnsetTupleElement);
     CHECK_EQ(tuple::get<2>(t), 3.14);
-
-    CHECK_THROWS_AS(tuple::get_all(t), hilti::rt::UnsetTupleElement);
 }
 
-TEST_CASE("tie") {
-    auto t = tuple::make(1, true, 3.14);
+TEST_CASE("assign") {
+    auto t1 = tuple::make(1, true, 3.14);
 
     int i;
     bool b;
     double d;
-    std::tie(i, b, d) = tuple::get_all(t);
+    tuple::assign(std::tie(i, b, d), t1);
     CHECK_EQ(std::make_tuple(i, b, d), std::make_tuple(1, true, 3.14));
 
     auto t2 = tuple::make_from_optionals<int, bool, double>({1}, {true}, {});
