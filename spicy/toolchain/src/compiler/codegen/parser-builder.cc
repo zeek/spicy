@@ -315,7 +315,7 @@ struct ProductionVisitor : public production::Visitor {
                                                                                hilti::Constness::Const)),
                                                   hilti::Constness::Const)};
                     auto result_type = builder()->typeTuple(x);
-                    auto store_result = builder()->addTmp("result", result_type);
+                    auto store_result = builder()->addTmp("result", result_type, builder()->void_());
 
                     auto try_ = begin_try();
 
@@ -472,7 +472,7 @@ struct ProductionVisitor : public production::Visitor {
                                                   hilti::Constness::Const)};
 
                     auto result_type = builder()->typeTuple(x);
-                    auto store_result = builder()->addTmp("result", result_type);
+                    auto store_result = builder()->addTmp("result", result_type, builder()->void_());
 
                     auto try_ = begin_try(join_stages);
 

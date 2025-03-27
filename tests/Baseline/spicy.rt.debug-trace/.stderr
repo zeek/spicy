@@ -15,7 +15,7 @@
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
 [hilti-trace] : (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:1"
-[hilti-trace] : local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+[hilti-trace] : local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
 [hilti-trace] : hilti::debug("spicy", "Mini::Test");
 [hilti-trace] : hilti::debugIndent("spicy");
 [hilti-trace] : local iterator<stream> __begin = begin(__cur);
@@ -27,7 +27,7 @@
 [hilti-trace] : if ( ! filtered ) { __result = (*self).__parse_Mini__Test_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }
 [hilti-trace] : __result = (*self).__parse_Mini__Test_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:1"
-[hilti-trace] : local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+[hilti-trace] : local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
 [hilti-trace] : # "<...>/debug-trace.spicy:10:9-10:14"
 [hilti-trace] : # Begin parsing production: Variable: f1 -> uint<32>
 [hilti-trace] : spicy_rt::printParserState("Mini::Test", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);

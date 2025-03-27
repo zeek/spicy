@@ -146,7 +146,7 @@ init function void __register_foo_X3() {
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X4::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:32:11-34:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
@@ -168,7 +168,7 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X4::__parse_foo__X4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:32:11-34:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
     
         spicy_rt::filter_forward_eod(self);
 
@@ -248,7 +248,7 @@ method hook void foo::X5::__on_0x25_init() {
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X5::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:36:18-40:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
@@ -290,7 +290,7 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X5::__parse_foo__X5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:36:18-40:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
     
         spicy_rt::filter_disconnect(self);
 
@@ -367,7 +367,7 @@ method hook void foo::X6::__on_0x25_init() {
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X6::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:43:11-46:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
@@ -392,7 +392,7 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X6::__parse_foo__X6_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:43:11-46:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
     
         (*(*self).data).close();
 

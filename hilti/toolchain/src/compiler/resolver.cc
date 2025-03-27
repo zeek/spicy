@@ -990,7 +990,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         Expression* init = nullptr;
         std::optional<Expressions> args;
 
-        if ( auto e = n->init() ) {
+        if ( auto e = n->init(); e && ! e->isA<expression::Void>() ) {
             if ( auto x = coerceTo(n, e, n->type(), false, true) )
                 init = x;
         }
