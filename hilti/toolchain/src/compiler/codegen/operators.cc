@@ -1098,7 +1098,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::tuple::CustomAssign* n) final {
         auto t = n->operands()[0]->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         auto l = util::join(node::transform(t, [this](auto x) { return cg->compile(x, true); }), ", ");
-        result = {fmt("std::tie(%s) = hilti::rt::tuple::get_all(%s)", l, op1(n)), Side::LHS};
+        result = {fmt("::hilti::rt::tuple::assign(std::tie(%s), %s)", l, op1(n)), Side::LHS};
     }
 
     void operator()(operator_::tuple::Equal* n) final { result = fmt("%s == %s", op0(n), op1(n)); }

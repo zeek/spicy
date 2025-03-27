@@ -122,25 +122,32 @@ constexpr auto& get(std::pair<Ts...>& t) {
 
 namespace detail {
 
-// Backend for `tuple::get_all()`.
-template<typename... Ts, size_t... Is>
-constexpr auto get_all(const Tuple<Ts...>& t, std::index_sequence<Is...> /*unused*/) {
-    return std::make_tuple(get<Is>(t)...);
+template<typename Src, typename Dst, size_t... Is>
+void assign(Dst&& dst, const Src& src, std::index_sequence<Is...> /*unused*/) {
+    try {
+        ((std::get<Is>(dst) = *std::get<Is>(src)), ...);
+    } catch ( ... ) {
+        detail::throw_unset_tuple_element();
+    }
 }
 
 } // namespace detail
 
 /**
- * Returns a standard tuple containing all elements of a HILTI tuple, unwrapped
- * from their optionals. This assumes all elements are set. If not all element
- * are set, throws a `UnsetTupleElement` exception.
+ * Assigns the values of a HILTI tuple to a standard tuple of references, with
+ * the latter usually created through `std::tie()`. This works like
+ * `std::tie(...) = (...)`, but assigns the RHS values unwrapped from their
+ * `std::optional` wrappers. This assumes all elements are set. If not all
+ * elements are set, throws an `UnsetTupleElement` exception.
  *
- * @tparam Ts types of the tuple elements
- * @param t the tuple
+ * @tparam Src source tuple of type `rt::Tuple`
+ * @tparam Ts types of destination tuple elements
+ * @param dst destination tuple of references
+ * @param src source tuple
  */
-template<typename... Ts>
-constexpr auto get_all(const Tuple<Ts...>& t) {
-    return detail::get_all(t, std::index_sequence_for<Ts...>{});
+template<typename Src, typename... Ts>
+constexpr void assign(std::tuple<Ts&...>&& dst, const Src& src) {
+    detail::assign(std::move(dst), src, std::index_sequence_for<Ts...>());
 }
 
 /**
