@@ -25,14 +25,33 @@ type, see the type's documentation.
 Ensures at runtime that ``EXPR`` evaluates to a ``True`` value. If it
 doesn't, an exception gets thrown that will typically abort execution.
 ``EXPR`` must either be of boolean type to begin with, or support
-coercion into it. If ``MSG`` is specified, it must be a string and
-will be carried along with the exception.
+coercion into it. If ``MSG`` is specified, it must be a string or
+:ref:`error <type_error>`, and will be carried along with the
+exception.
 
 .. note::
 
     Technically, the version providing a ``MSG`` isn't a separate
     syntax but just leveraging the :ref:`condition test
     <operator_condition_test>` operator.
+
+.. _statement_assert_exception:
+
+``assert-exception``
+--------------------
+
+::
+
+    assert-exception EXPR;
+
+    assert-exception EXPR : MSG;
+
+Ensures at runtime that evaluating ``EXPR`` triggers an exception. If
+it indeed does, the exception is silently caught and execution
+proceeds normally. If it doesn't, an ``AssertionFailure`` exception is
+triggered by the statement, which will typically abort execution. If
+``MSG`` is specified, it must be a string or :ref:`error
+<type_error>`, and will be carried along with the exception.
 
 .. _operator_begin:
 

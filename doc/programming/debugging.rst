@@ -145,7 +145,7 @@ given Spicy grammar:
   C++ code, object files) into files ``dbg.*`` inside the current
   directory.
 
-Skipping validation
+Skipping Validation
 ===================
 
 When working on the Spicy code, it can be helpful to disable internal
@@ -153,3 +153,54 @@ validation of generated HILTI code with ``-V``. That way, one can
 often still see the HILTI code even if it's malformed. Note, however,
 that Spicy may end up crashing if broken HILTI code gets passed into
 later stages.
+
+Interpreting Stack Traces
+=========================
+
+When looking at stack traces taken during Spicy parsing (e.g., from
+``--show-backtraces``, or inside a debugger or profiler), it's
+important to understand that the stack trace will show internal HILTI
+functions that are being executed, not the Spicy grammar rules. While
+HILTI functions are generated from the Spicy grammar, and bear some
+resemblance to its structure, the mapping is not always
+straightforward.
+
+In addition, stack traces may be hard to interpret because the
+generated code runs inside *fibers*, which are a form of lightweight
+threads. Fibers are managed by HILTI's runtime system and are used to
+implement the non-blocking parsing. As a result of the fibers, stack
+traces don't show the full call chain up into the host application,
+but stop prematurely at the point where execution switched from the
+host application into a fiber.
+
+Here's an example stack trace taken during an execution of
+``spicy-driver`` with a small Spicy grammar printing some parsed
+value, as shown by ``lldb``::
+
+    frame #0:  void hilti::rt::print<hilti::rt::ValueReference<__hlt::Test::Foo>>
+    frame #1:  __hlt::Test::__hook_Foo___on_0x25_done_7fba
+    frame #2:  __hlt::Test::__hook_Foo___on_0x25_done
+    frame #3:  __hlt::Test::Foo::__on_0x25_done
+    frame #4:  __hlt::Test::Foo::__parse_Test__Foo_stage2
+    frame #5:  __hlt::Test::Foo::__parse_stage1
+    frame #6:  __hlt::Test::Foo::parse3
+    frame #7:  hlt::Test::Foo::parse3
+    frame #8:  hilti::rt::detail::Callback::Callback<hlt::Test::Foo::parse3>
+    frame #9:  hilti::rt::detail::Callback::Callback<hlt::Test::Foo::parse3>
+    frame #10: libhilti.dylib`hilti::rt::detail::Callback::operator
+    frame #11: libhilti.dylib`__fiber_run_trampoline
+    frame #12: libhilti.dylib`fiber_asm_invoke at fiber_asm_aarch64_apcs.S:83
+
+``__fiber_asm_invoke`` is the original entry point where control
+transferred into the fiber. Note that the stack trace doesn't show
+anything further beyond that point: no function of ``spicy-driver``
+shows up.
+
+While this example is relatively clean, depending on the OS and
+toolchain, sometimes there's additional noise in the stack trace just
+beyond that ``fiber_asm_invoke`` entry. In particular, profiling tools
+trying to aggregate multiple stack traces may get confused by the
+fibers, and can end up breaking up activity that belongs together.
+Sometimes this can be solved through some custom pre-processing of the
+stack traces, removing/ignoring anything beyond the fiber entry point
+(``hilti::rt::detail::Callback::operator`` is a good cut-off point).

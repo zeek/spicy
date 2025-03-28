@@ -1399,15 +1399,18 @@ loop. To that end, vectors support the following attributes:
     as a boolean expression after each parsed element, and before
     adding the element to the vector. Once ``EXPR`` evaluates to true,
     parsing stops *without* adding the element that was just
+    parsed. Inside ``EXPR``, ``$$`` refers to the element most recently
     parsed.
 
 ``&until-including=EXPR``
     Similar to ``&until``, but does include the final element ``EXPR``
-    into the field's vector when stopping parsing.
+    into the field's vector when stopping parsing. Inside ``EXPR``,
+    ``$$`` refers to the element most recently parsed.
 
 ``&while=EXPR``
     Continues parsing as long as the boolean expression ``EXPR``
-    evaluates to true.
+    evaluates to true. Inside ``EXPR``, ``$$`` refers to the element
+    most recently parsed.
 
 If neither a size nor an attribute is given, Spicy will attempt to use
 :ref:`look-ahead parsing <parse_lookahead>` to determine the end of

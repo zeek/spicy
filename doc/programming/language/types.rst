@@ -225,8 +225,19 @@ Map
 ---
 
 Maps are containers holding key/value pairs of elements, with fast
-lookup for keys to retrieve the corresponding value. They provide
-iterators to traverse their content, with no particular ordering.
+lookup for keys to retrieve the corresponding value.
+
+Maps provide iterators to traverse their content, with no particular
+ordering. A map iterator yields the corresponding key/value pair as a
+2-tuple. The following is an example iterating over a map's elements
+using the :ref:`'for' statement <statement_for>`:
+
+.. spicy-code::
+
+  global m: map("a": 1, "b": 2, "c": 3);
+
+  for ( i in m )
+    print i[0], i[1]; # key, value
 
 .. rubric:: Types
 
@@ -513,8 +524,18 @@ Patterns support the following optional flags:
 Set
 ---
 
-Sets are containers for unique elements with fast lookup. They provide
-iterators to traverse their content, with no particular ordering.
+Sets are containers for unique elements with fast lookup.
+
+Sets provide iterators to traverse their content, with no particular
+ordering. The following is an example iterating over a set's elements
+using the :ref:`statement_for` statement:
+
+.. spicy-code::
+
+  global s = set("a", "b", "c");
+
+  for ( i in s )
+      print i;
 
 .. rubric:: Types
 
@@ -759,8 +780,18 @@ Vector
 ------
 
 Vectors are homogeneous containers, holding a set of elements of a
-given element type. They provide iterators to traverse their content.
-Indexes begin at 0.
+given element type. Indexes begin at 0.
+
+Vectors provide iterators to traverse their content in order. The
+following is an example iterating over a vector's elements using the
+:ref:`statement_for` statement:
+
+.. spicy-code::
+
+  global v = vector("a", "b", "c");
+
+  for ( i in v )
+      print i;
 
 .. rubric:: Types
 
