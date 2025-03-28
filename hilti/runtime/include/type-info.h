@@ -107,6 +107,15 @@ public:
     }
 
     /**
+     * Constructor that does not tie the value to a parent.
+     *
+     * @param ptr raw pointer to storage of the value
+     * @param ti type information describing how to interpret the pointer
+     * @param parent parent value controlling life time of this value
+     */
+    Value(const void* ptr, const TypeInfo* ti) : _ptr(ptr), _ti(ti) {}
+
+    /**
      * Default constructor creating a value in invalid state.
      */
     Value() = default;
@@ -137,6 +146,12 @@ public:
 private:
     // Throws if parent has expired.
     void check() const {
+        std::weak_ptr<bool> default_;
+
+        if ( ! _parent_handle.owner_before(default_) && ! default_.owner_before(_parent_handle) )
+            // parent handle was never set
+            return;
+
         if ( _parent_handle.expired() )
             throw InvalidValue("type info value expired");
     }

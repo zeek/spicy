@@ -118,6 +118,16 @@ TEST_CASE("life-time") {
     CHECK_THROWS_WITH_AS(v.pointer(), "type info value expired", const InvalidValue&);
 }
 
+TEST_CASE("no parent") {
+    Test::Y y{true, 3.14};
+
+    auto x = StrongReference<Test::X>({42, "foo", y});
+    auto p = type_info::value::Parent(x);
+    auto v = type_info::Value(&*x, &__hlt::type_info::__ti_Test_X); // no parent
+
+    CHECK_EQ(v.pointer(), &*x); // access to the value works even without parent
+}
+
 TEST_CASE("internal fields") {
     struct A {
         integer::safe<int32_t> f1;
