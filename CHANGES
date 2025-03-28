@@ -1,3 +1,15 @@
+1.13.0-dev.135 | 2025-03-28 09:44:11 +0100
+
+  * GH-1967: Fix inactive stack size check during module initialization. (Robin Sommer, Corelight)
+
+  * GH-1974: Add documentation on how to interpret stack traces involving fibers. (Robin Sommer, Corelight)
+
+  * GH-1964: Document use of `$$` inside `&{while,until,until-including}`. (Robin Sommer, Corelight)
+
+  * GH-1963: Document `assert-exception`. (Robin Sommer, Corelight)
+
+  * GH-1155: Document iteration over maps/set/vectors. (Robin Sommer, Corelight)
+
 1.13.0-dev.128 | 2025-03-26 11:02:19 -0400
 
   * Add simple parser benchmarking. (Evan Typanski, Corelight)
