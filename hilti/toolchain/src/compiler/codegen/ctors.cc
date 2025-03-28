@@ -29,6 +29,34 @@ struct Visitor : hilti::visitor::PreOrder {
 
     std::optional<cxx::Expression> result;
 
+    bool mayThrowAttributeNotSet(const Expression* e) const {
+        // We whitelist a few expressions that are known to not throw `AttributeNotSet`.
+        if ( e->template isA<expression::Ctor>() || e->template isA<expression::Name>() ||
+             e->template isA<expression::Keyword>() )
+            return false;
+
+        if ( auto* x = e->tryAs<expression::Coerced>() )
+            return mayThrowAttributeNotSet(x->expression());
+
+        // The following operators are typically used when accessing struct
+        // fields. We whitelist them so that in particular Zeek events don't
+        // get extra `AttributeNotSet` checks when not needed.
+        if ( auto* x = e->template tryAs<operator_::struct_::MemberConst>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        if ( auto* x = e->template tryAs<operator_::struct_::MemberNonConst>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        if ( auto* x = e->template tryAs<operator_::value_reference::Deref>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        if ( auto* x = e->template tryAs<operator_::optional::Deref>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        // Everything else we assume may throw.
+        return true;
+    }
+
     void operator()(ctor::Address* n) final { result = fmt("::hilti::rt::Address(\"%s\")", n->value()); }
 
     void operator()(ctor::Bitfield* n) final {
@@ -260,11 +288,11 @@ struct Visitor : hilti::visitor::PreOrder {
             fmt("hilti::rt::tuple::make_from_optionals(%s)",
                 util::join(node::transform(n->value(),
                                            [this](auto e) -> std::string {
-                                               if ( e->template isA<expression::Ctor>() )
-                                                   return fmt("std::make_optional(%s)", cg->compile(e));
-                                               else
+                                               if ( mayThrowAttributeNotSet(e) )
                                                    return fmt("hilti::rt::tuple::wrap_expression([&]() { return %s; })",
                                                               cg->compile(e));
+                                               else
+                                                   return fmt("std::make_optional(%s)", cg->compile(e));
                                            }),
                            ", "));
     }
