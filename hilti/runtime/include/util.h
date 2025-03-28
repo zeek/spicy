@@ -517,18 +517,6 @@ template<typename T, typename F, std::size_t... Is>
 constexpr auto map_tuple(T&& tup, F& f, std::index_sequence<Is...> /*unused*/) {
     return std::make_tuple(f(std::get<Is>(std::forward<T>(tup)))...);
 }
-
-template<typename T, std::size_t... Is>
-auto join_tuple(T&& tup, std::index_sequence<Is...> /*unused*/) {
-    std::vector<std::string> x = {rt::to_string(std::get<Is>(std::forward<T>(tup)))...};
-    return join(x, ", ");
-}
-
-template<typename T, std::size_t... Is>
-auto join_tuple_for_print(T&& tup, std::index_sequence<Is...> /*unused*/) {
-    std::vector<std::string> x = {rt::to_string_for_print(std::get<Is>(std::forward<T>(tup)))...};
-    return join(x, ", ");
-}
 } // namespace detail
 
 /** Generic tuple for-each that runs a callback for each element. */
@@ -550,35 +538,6 @@ template<typename T, typename F, std::size_t TupSize = std::tuple_size_v<std::de
 constexpr auto map_tuple(T&& tup, F f) {
     return detail::map_tuple(std::forward<T>(tup), f, std::make_index_sequence<TupSize>{});
 }
-
-/**
- * Converts a tuple's elements into string representations and then
- * concatenates those with separating commas.  This version converts the
- * tuple elements into strings using HILTI's standard rendering (which, e.g.,
- * means that strings will be surrounded by quotes).
- */
-template<typename T, std::size_t TupSize = std::tuple_size_v<std::decay_t<T>>>
-auto join_tuple(T&& tup) {
-    return detail::join_tuple(std::forward<T>(tup), std::make_index_sequence<TupSize>{});
-}
-
-/**
- * Converts a tuple's elements into string representations and then
- * concatenates those with separating commas. This version converts the tuple
- * elements into strings as if they were given to a HILTI `print` statements
- * (which, e.g., means that top-level strings won't be surrounded by quotes).
- */
-template<typename T, std::size_t TupSize = std::tuple_size_v<std::decay_t<T>>>
-auto join_tuple_for_print(T&& tup) {
-    return detail::join_tuple_for_print(std::forward<T>(tup), std::make_index_sequence<TupSize>{});
-}
-
-template<typename>
-struct is_tuple : std::false_type {};
-
-/** Checks if a type is a tuple. */
-template<typename... T>
-struct is_tuple<std::tuple<T...>> : std::true_type {};
 
 /** Available byte orders. */
 HILTI_RT_ENUM(ByteOrder, Little, Big, Network, Host, Undef = -1);

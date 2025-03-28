@@ -113,6 +113,10 @@ public:
     cxx::Expression unsignedIntegerToBitfield(type::Bitfield* t, const cxx::Expression& value,
                                               const cxx::Expression& bitorder);
 
+    // Helper factoring out common code to generate C++ types and default
+    // values for vector types and iterators.
+    std::pair<std::string, std::string> cxxTypeForVector(QualifiedType* element_type, bool want_iterator = false);
+
     /**
      * Returns an ID that's unique for a given node. The ID is derived from
      * the node's location information, which must be present.

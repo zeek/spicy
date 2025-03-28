@@ -148,40 +148,40 @@ TEST_CASE("pack") {
 TEST_CASE("unpack") {
     SUBCASE("Bytes") {
         CHECK_EQ(address::unpack("\x01\x02\x03\x04"_b, AddressFamily::Undef, ByteOrder::Big),
-                 Result<std::tuple<Address, Bytes>>(result::Error("undefined address family for unpacking")));
+                 Result<Tuple<Address, Bytes>>(result::Error("undefined address family for unpacking")));
 
         CHECK_EQ(address::unpack("\x01\x02\x03\x04"_b, AddressFamily::IPv4, ByteOrder::Undef),
-                 Result<std::tuple<Address, Bytes>>(result::Error("undefined byte order")));
+                 Result<Tuple<Address, Bytes>>(result::Error("undefined byte order")));
 
 
         CHECK_EQ(address::unpack("\x01\x02\x03"_b, AddressFamily::IPv4, ByteOrder::Big),
-                 Result<std::tuple<Address, Bytes>>(result::Error("insufficient data to unpack IPv4 address")));
+                 Result<Tuple<Address, Bytes>>(result::Error("insufficient data to unpack IPv4 address")));
 
-        CHECK_EQ(address::unpack("\x01\x02\x03\x04", AddressFamily::IPv4, ByteOrder::Big),
-                 std::make_tuple(Address("1.2.3.4"), ""_b));
+        CHECK_EQ(*address::unpack("\x01\x02\x03\x04", AddressFamily::IPv4, ByteOrder::Big),
+                 tuple::make(Address("1.2.3.4"), ""_b));
 
-        CHECK_EQ(address::unpack("\x01\x02\x03\x04", AddressFamily::IPv4, ByteOrder::Little),
-                 std::make_tuple(Address("4.3.2.1"), ""_b));
+        CHECK_EQ(*address::unpack("\x01\x02\x03\x04", AddressFamily::IPv4, ByteOrder::Little),
+                 tuple::make(Address("4.3.2.1"), ""_b));
 
         const auto excess = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b;
-        CHECK_EQ(address::unpack("\x01\x02\x03\x04"_b + excess, AddressFamily::IPv4, ByteOrder::Big),
-                 std::make_tuple(Address("1.2.3.4"), excess));
+        CHECK_EQ(*address::unpack("\x01\x02\x03\x04"_b + excess, AddressFamily::IPv4, ByteOrder::Big),
+                 tuple::make(Address("1.2.3.4"), excess));
 
         CHECK_EQ(address::unpack("\x01\x02\x03\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03\x04\x05"_b, AddressFamily::IPv6,
                                  ByteOrder::Big),
-                 Result<std::tuple<Address, Bytes>>(result::Error("insufficient data to unpack IPv6 address")));
+                 Result<Tuple<Address, Bytes>>(result::Error("insufficient data to unpack IPv6 address")));
 
-        CHECK_EQ(address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b,
-                                 AddressFamily::IPv6, ByteOrder::Big),
-                 std::make_tuple(Address("102:304:102:304:506:708:901:203"), ""_b));
+        CHECK_EQ(*address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b,
+                                  AddressFamily::IPv6, ByteOrder::Big),
+                 tuple::make(Address("102:304:102:304:506:708:901:203"), ""_b));
 
-        CHECK_EQ(address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b,
-                                 AddressFamily::IPv6, ByteOrder::Little),
-                 std::make_tuple(Address("302:109:807:605:403:201:403:201"), ""_b));
+        CHECK_EQ(*address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b,
+                                  AddressFamily::IPv6, ByteOrder::Little),
+                 tuple::make(Address("302:109:807:605:403:201:403:201"), ""_b));
 
-        CHECK_EQ(address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b + excess,
-                                 AddressFamily::IPv6, ByteOrder::Big),
-                 std::make_tuple(Address("102:304:102:304:506:708:901:203"), excess));
+        CHECK_EQ(*address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b + excess,
+                                  AddressFamily::IPv6, ByteOrder::Big),
+                 tuple::make(Address("102:304:102:304:506:708:901:203"), excess));
     }
 
     SUBCASE("View") {
@@ -191,8 +191,8 @@ TEST_CASE("unpack") {
         SUBCASE("expanding") { expanding = true; }
         SUBCASE("not expanding") { expanding = false; }
 
-        CHECK_EQ(address::unpack(stream.view(expanding), AddressFamily::IPv4, ByteOrder::Big),
-                 std::make_tuple(Address("1.2.3.4"), Stream("\x05\x06\x07\x08\x09"_b).view(expanding)));
+        CHECK_EQ(*address::unpack(stream.view(expanding), AddressFamily::IPv4, ByteOrder::Big),
+                 tuple::make(Address("1.2.3.4"), Stream("\x05\x06\x07\x08\x09"_b).view(expanding)));
 
         ;
     }

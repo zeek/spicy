@@ -28,7 +28,7 @@ public type StreamStatistics = struct {
 } &cxxname = "hilti::rt::stream::Statistics";
 
 declare public void print(any obj, bool newline = True) &cxxname="hilti::rt::print" &have_prototype;
-declare public void printValues(tuple<*> t, bool newline = True) &cxxname="hilti::rt::printValues" &have_prototype;
+declare public void printTuple(tuple<*> t, bool newline = True) &cxxname="hilti::rt::tuple::print" &have_prototype;
 
 declare public void debug(string dbg_stream, any obj) &cxxname="hilti::rt::debug::print" &have_prototype;
 declare public void debugIndent(string dbg_stream) &cxxname="hilti::rt::debug::indent" &have_prototype;

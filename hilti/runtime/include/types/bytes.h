@@ -6,7 +6,6 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <tuple>
 #include <utility>
 
 #include <hilti/rt/exception.h>
@@ -16,6 +15,7 @@
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
 #include <hilti/rt/types/time.h>
+#include <hilti/rt/types/tuple.h>
 #include <hilti/rt/types/vector.h>
 #include <hilti/rt/unicode.h>
 #include <hilti/rt/util.h>
@@ -359,7 +359,7 @@ public:
      * if no, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*.
      */
-    std::tuple<bool, const_iterator> find(const Bytes& needle, const const_iterator& start = const_iterator()) const;
+    Tuple<bool, const_iterator> find(const Bytes& needle, const const_iterator& start = const_iterator()) const;
 
     /**
      * Extracts a subrange of bytes.
@@ -486,9 +486,9 @@ public:
      * Splits the data (only) at the first sequence of whitespace, returning
      * the two parts.
      */
-    std::tuple<Bytes, Bytes> split1() const {
+    Tuple<Bytes, Bytes> split1() const {
         auto p = hilti::rt::split1(str());
-        return std::make_tuple(p.first, p.second);
+        return {p.first, p.second};
     }
 
     /** Splits the data at occurrences of a separator, returning the parts. */
@@ -506,9 +506,9 @@ public:
      * @param sep `Bytes` sequence to split at
      * @return a tuple of head and tail of the split instance
      */
-    std::tuple<Bytes, Bytes> split1(const Bytes& sep) const {
+    Tuple<Bytes, Bytes> split1(const Bytes& sep) const {
         auto p = hilti::rt::split1(str(), sep);
-        return std::make_tuple(p.first, p.second);
+        return {p.first, p.second};
     }
 
     /**

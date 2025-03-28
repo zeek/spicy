@@ -4,6 +4,7 @@
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/stream.h>
 

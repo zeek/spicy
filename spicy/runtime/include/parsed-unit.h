@@ -58,11 +58,9 @@ public:
      */
     template<typename T>
     static void initialize(ParsedUnit& u, const hilti::rt::ValueReference<T>& t, const hilti::rt::TypeInfo* ti) {
-        assert(ti);
-
         u._unit = hilti::rt::StrongReference(t);
         u._ptr = t.get();
-        u._ti = ti;
+        u._ti = ti ? ti->value_reference->valueType() : nullptr; // nullptr allowed for unit testing only
         u.tie(u._unit);
     }
 

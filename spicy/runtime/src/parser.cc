@@ -245,14 +245,14 @@ std::optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
     const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
     const std::optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
     hilti::rt::stream::Direction d) {
-    std::tuple<bool, hilti::rt::stream::SafeConstIterator> v;
+    hilti::rt::Tuple<bool, hilti::rt::stream::SafeConstIterator> v;
     if ( i )
         v = hilti::rt::stream::View(begin, end).find(needle, *i, d);
     else
         v = hilti::rt::stream::View(begin, end).find(needle, d);
 
-    if ( std::get<0>(v) )
-        return std::get<1>(v);
+    if ( hilti::rt::tuple::get<0>(v) )
+        return hilti::rt::tuple::get<1>(v);
     else
         return {};
 }

@@ -66,7 +66,7 @@
 [debug/ast-declarations]     - Function "print" (hilti::print)
 [debug/ast-declarations]             - Parameter "obj" (hilti::obj)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline)
-[debug/ast-declarations]     - Function "printValues" (hilti::printValues)
+[debug/ast-declarations]     - Function "printTuple" (hilti::printTuple)
 [debug/ast-declarations]             - Parameter "t" (hilti::t)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline_2)
 [debug/ast-declarations]     - Function "debug" (hilti::debug)
@@ -173,11 +173,10 @@
 [debug/ast-declarations]     - Type "UnitContext" (spicy_rt::UnitContext)
 [debug/ast-declarations]     - Function "createContext" (spicy_rt::createContext)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Function "setContext" (spicy_rt::setContext)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_8)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx_2)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__2)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Type "Parser" (spicy_rt::Parser)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self_2)
 [debug/ast-declarations]           - Field "name" (spicy_rt::name)
@@ -186,7 +185,7 @@
 [debug/ast-declarations]           - Field "parse2" (spicy_rt::parse2)
 [debug/ast-declarations]           - Field "parse3" (spicy_rt::parse3)
 [debug/ast-declarations]           - Field "context_new" (spicy_rt::context_new)
-[debug/ast-declarations]           - Field "type_" (spicy_rt::type__3)
+[debug/ast-declarations]           - Field "type_" (spicy_rt::type__2)
 [debug/ast-declarations]           - Field "description" (spicy_rt::description)
 [debug/ast-declarations]           - Field "mime_types" (spicy_rt::mime_types)
 [debug/ast-declarations]           - Field "ports" (spicy_rt::ports)
@@ -256,7 +255,6 @@
 [debug/ast-declarations]     - Function "initializeParsedUnit" (spicy_rt::initializeParsedUnit)
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__4)
 [debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
 [debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
 [debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
@@ -377,7 +375,7 @@
 [debug/ast-declarations]             - Parameter "reason" (spicy::reason)
 [debug/ast-declarations] Declaration dependencies:
 [debug/ast-declarations] - [module] a -> a::X
-[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printValues, hilti::profiler_start, hilti::profiler_stop
+[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop
 [debug/ast-declarations] - [type] hilti::MatchState -> hilti::Captures
 [debug/ast-declarations] - [type] hilti::MissingData -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RecoverableFailure -> hilti::Exception
@@ -630,7 +628,7 @@
 [debug/ast-declarations]     - Function "print" (hilti::print)
 [debug/ast-declarations]             - Parameter "obj" (hilti::obj)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline)
-[debug/ast-declarations]     - Function "printValues" (hilti::printValues)
+[debug/ast-declarations]     - Function "printTuple" (hilti::printTuple)
 [debug/ast-declarations]             - Parameter "t" (hilti::t)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline_2)
 [debug/ast-declarations]     - Function "debug" (hilti::debug)
@@ -737,11 +735,10 @@
 [debug/ast-declarations]     - Type "UnitContext" (spicy_rt::UnitContext)
 [debug/ast-declarations]     - Function "createContext" (spicy_rt::createContext)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Function "setContext" (spicy_rt::setContext)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_8)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx_2)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__2)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Type "Parser" (spicy_rt::Parser)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self_2)
 [debug/ast-declarations]           - Field "name" (spicy_rt::name)
@@ -750,7 +747,7 @@
 [debug/ast-declarations]           - Field "parse2" (spicy_rt::parse2)
 [debug/ast-declarations]           - Field "parse3" (spicy_rt::parse3)
 [debug/ast-declarations]           - Field "context_new" (spicy_rt::context_new)
-[debug/ast-declarations]           - Field "type_" (spicy_rt::type__3)
+[debug/ast-declarations]           - Field "type_" (spicy_rt::type__2)
 [debug/ast-declarations]           - Field "description" (spicy_rt::description)
 [debug/ast-declarations]           - Field "mime_types" (spicy_rt::mime_types)
 [debug/ast-declarations]           - Field "ports" (spicy_rt::ports)
@@ -820,7 +817,6 @@
 [debug/ast-declarations]     - Function "initializeParsedUnit" (spicy_rt::initializeParsedUnit)
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__4)
 [debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
 [debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
 [debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
@@ -1109,7 +1105,7 @@
 [debug/ast-declarations]     - Function "print" (hilti::print)
 [debug/ast-declarations]             - Parameter "obj" (hilti::obj)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline)
-[debug/ast-declarations]     - Function "printValues" (hilti::printValues)
+[debug/ast-declarations]     - Function "printTuple" (hilti::printTuple)
 [debug/ast-declarations]             - Parameter "t" (hilti::t)
 [debug/ast-declarations]             - Parameter "newline" (hilti::newline_2)
 [debug/ast-declarations]     - Function "debug" (hilti::debug)
@@ -1210,11 +1206,10 @@
 [debug/ast-declarations]     - Type "UnitContext" (spicy_rt::UnitContext)
 [debug/ast-declarations]     - Function "createContext" (spicy_rt::createContext)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Function "setContext" (spicy_rt::setContext)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_8)
 [debug/ast-declarations]             - Parameter "ctx" (spicy_rt::ctx_2)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__2)
+[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type_)
 [debug/ast-declarations]     - Type "Parser" (spicy_rt::Parser)
 [debug/ast-declarations]           - Expression "self" (spicy_rt::self_2)
 [debug/ast-declarations]           - Field "name" (spicy_rt::name)
@@ -1223,7 +1218,7 @@
 [debug/ast-declarations]           - Field "parse2" (spicy_rt::parse2)
 [debug/ast-declarations]           - Field "parse3" (spicy_rt::parse3)
 [debug/ast-declarations]           - Field "context_new" (spicy_rt::context_new)
-[debug/ast-declarations]           - Field "type_" (spicy_rt::type__3)
+[debug/ast-declarations]           - Field "type_" (spicy_rt::type__2)
 [debug/ast-declarations]           - Field "description" (spicy_rt::description)
 [debug/ast-declarations]           - Field "mime_types" (spicy_rt::mime_types)
 [debug/ast-declarations]           - Field "ports" (spicy_rt::ports)
@@ -1293,7 +1288,6 @@
 [debug/ast-declarations]     - Function "initializeParsedUnit" (spicy_rt::initializeParsedUnit)
 [debug/ast-declarations]             - Parameter "punit" (spicy_rt::punit)
 [debug/ast-declarations]             - Parameter "unit" (spicy_rt::unit_9)
-[debug/ast-declarations]             - Parameter "type_" (spicy_rt::type__4)
 [debug/ast-declarations]     - Function "extractBytes" (spicy_rt::extractBytes)
 [debug/ast-declarations]             - Parameter "data" (spicy_rt::data_10)
 [debug/ast-declarations]             - Parameter "cur" (spicy_rt::cur_9)
@@ -1423,9 +1417,9 @@
 [debug/ast-declarations] - [function] a::a::X::parse1 -> a::X, hilti::Exception, hilti::RecoverableFailure, hilti::exception_what_2, hilti::exception_where_2, spicy_rt::MIMEType, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
 [debug/ast-declarations] - [function] a::a::X::parse2 -> a::X, hilti::Exception, hilti::RecoverableFailure, hilti::exception_what_2, hilti::exception_where_2, spicy_rt::MIMEType, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
 [debug/ast-declarations] - [function] a::a::X::parse3 -> a::X, hilti::Exception, hilti::RecoverableFailure, hilti::exception_what_2, hilti::exception_where_2, spicy_rt::MIMEType, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext, spicy_rt::initializeParsedUnit
-[debug/ast-declarations] - [module] b -> a::X, b::a::X::__on_x, hilti::Exception, hilti::RecoverableFailure, hilti::printValues, spicy_rt::MIMEType, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
-[debug/ast-declarations] - [function] b::a::X::__on_x -> a::X, hilti::Exception, hilti::RecoverableFailure, hilti::printValues, spicy_rt::MIMEType, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
-[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printValues, hilti::profiler_start, hilti::profiler_stop
+[debug/ast-declarations] - [module] b -> a::X, b::a::X::__on_x, hilti::Exception, hilti::RecoverableFailure, hilti::printTuple, spicy_rt::MIMEType, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
+[debug/ast-declarations] - [function] b::a::X::__on_x -> a::X, hilti::Exception, hilti::RecoverableFailure, hilti::printTuple, spicy_rt::MIMEType, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
+[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop
 [debug/ast-declarations] - [type] hilti::MatchState -> hilti::Captures
 [debug/ast-declarations] - [type] hilti::MissingData -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RecoverableFailure -> hilti::Exception

@@ -16,31 +16,17 @@
 
 namespace hilti::rt {
 
+struct TypeInfo;
+
 /** Corresponds to `hilti::print`. */
 template<typename T>
-void print(const T& t, bool newline = true) {
+void print(const T& t, const hilti::rt::TypeInfo* /* ti */, bool newline = true) {
     if ( ! configuration::get().cout )
         return;
 
     auto& cout = configuration::get().cout->get();
 
     cout << hilti::rt::to_string_for_print(t);
-
-    if ( newline )
-        cout << '\n';
-    else
-        cout.flush();
-}
-
-/** Corresponds to `hilti::printValues`. */
-template<typename T, typename std::enable_if_t<is_tuple<T>::value>* = nullptr>
-void printValues(const T& t, bool newline = true) {
-    if ( ! configuration::get().cout )
-        return;
-
-    auto& cout = configuration::get().cout->get();
-
-    cout << join_tuple_for_print(t);
 
     if ( newline )
         cout << '\n';

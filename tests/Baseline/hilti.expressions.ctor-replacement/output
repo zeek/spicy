@@ -60,7 +60,7 @@
 [debug/ast-final]         | hilti -> declaration::Module <canonical-id="hilti" declaration="D19" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | mktime -> declaration::Function <canonical-id="hilti::mktime" declaration="-" fqid="hilti::mktime" id="mktime" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | print -> declaration::Function <canonical-id="hilti::print" declaration="-" fqid="hilti::print" id="print" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]         | printValues -> declaration::Function <canonical-id="hilti::printValues" declaration="-" fqid="hilti::printValues" id="printValues" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | printTuple -> declaration::Function <canonical-id="hilti::printTuple" declaration="-" fqid="hilti::printTuple" id="printTuple" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | profiler_start -> declaration::Function <canonical-id="hilti::profiler_start" declaration="-" fqid="hilti::profiler_start" id="profiler_start" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | profiler_stop -> declaration::Function <canonical-id="hilti::profiler_stop" declaration="-" fqid="hilti::profiler_stop" id="profiler_stop" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (hilti.hlt:3:1-68:1) [@s:XXX]
@@ -535,32 +535,32 @@
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:30:85-30:99) [@a:XXX]
 [debug/ast-final]               - <empty>
-[debug/ast-final]       - declaration::Function <canonical-id="hilti::printValues" declaration="-" fqid="hilti::printValues" id="printValues" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:31:1-31:115) [@d:XXX]
+[debug/ast-final]       - declaration::Function <canonical-id="hilti::printTuple" declaration="-" fqid="hilti::printTuple" id="printTuple" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:31:1-31:115) [@d:XXX]
 [debug/ast-final]           | newline -> declaration::Parameter <canonical-id="hilti::newline_2" declaration="-" fqid="newline" id="newline" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | t -> declaration::Parameter <canonical-id="hilti::t" declaration="-" fqid="t" id="t" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]         - Function <cc="<standard>" id="printValues"> [parent @d:XXX] (hilti.hlt:31:16-31:114) [@f:XXX]
+[debug/ast-final]         - Function <cc="<standard>" id="printTuple"> [parent @d:XXX] (hilti.hlt:31:16-31:114) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:31:16-31:114) [@q:XXX]
 [debug/ast-final]             - type::Function <declaration="-" flavor="standard" type="-" unified="function(result:void, tuple(*), bool)" wildcard="false"> [parent @q:XXX] (hilti.hlt:31:16-31:114) (resolved) [@t:XXX]
 [debug/ast-final]               - QualifiedType <const="false" extern="false" side="rhs"> [parent @t:XXX] (hilti.hlt:31:16-31:19) [@q:XXX]
 [debug/ast-final]                 - type::Void <declaration="-" type="-" unified="void" wildcard="false"> [parent @q:XXX] (hilti.hlt:31:16-31:19) (resolved) [@t:XXX]
-[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::t" declaration="-" fqid="t" id="t" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:31:33-31:42) (resolved) [@d:XXX]
-[debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:31:33-31:40) [@q:XXX]
-[debug/ast-final]                   - type::Tuple <declaration="-" type="-" unified="tuple(*)" wildcard="true"> [parent @q:XXX] (hilti.hlt:31:33-31:40) (resolved) [@t:XXX]
+[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::t" declaration="-" fqid="t" id="t" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:31:32-31:41) (resolved) [@d:XXX]
+[debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:31:32-31:39) [@q:XXX]
+[debug/ast-final]                   - type::Tuple <declaration="-" type="-" unified="tuple(*)" wildcard="true"> [parent @q:XXX] (hilti.hlt:31:32-31:39) (resolved) [@t:XXX]
 [debug/ast-final]                 - <empty>
-[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:31:43-31:42) [@a:XXX]
-[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::newline_2" declaration="-" fqid="newline" id="newline" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:31:45-31:63) (resolved) [@d:XXX]
-[debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:31:45-31:48) [@q:XXX]
-[debug/ast-final]                   - type::Bool <declaration="-" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (hilti.hlt:31:45-31:48) (resolved) [@t:XXX]
-[debug/ast-final]                 - expression::Ctor [parent @d:XXX] (hilti.hlt:31:60-31:63)  (const)  (resolved) [@e:XXX]
-[debug/ast-final]                   - ctor::Bool <value="true"> [parent @e:XXX] (hilti.hlt:31:60-31:63) [@c:XXX]
-[debug/ast-final]                     - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] (hilti.hlt:31:60-31:63) [@q:XXX]
-[debug/ast-final]                       - type::Bool <declaration="-" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (hilti.hlt:31:60-31:63) (resolved) [@t:XXX]
-[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:31:64-31:63) [@a:XXX]
+[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:31:42-31:41) [@a:XXX]
+[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::newline_2" declaration="-" fqid="newline" id="newline" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:31:44-31:62) (resolved) [@d:XXX]
+[debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:31:44-31:47) [@q:XXX]
+[debug/ast-final]                   - type::Bool <declaration="-" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (hilti.hlt:31:44-31:47) (resolved) [@t:XXX]
+[debug/ast-final]                 - expression::Ctor [parent @d:XXX] (hilti.hlt:31:59-31:62)  (const)  (resolved) [@e:XXX]
+[debug/ast-final]                   - ctor::Bool <value="true"> [parent @e:XXX] (hilti.hlt:31:59-31:62) [@c:XXX]
+[debug/ast-final]                     - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] (hilti.hlt:31:59-31:62) [@q:XXX]
+[debug/ast-final]                       - type::Bool <declaration="-" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (hilti.hlt:31:59-31:62) (resolved) [@t:XXX]
+[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:31:63-31:62) [@a:XXX]
 [debug/ast-final]           - <empty>
-[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:31:65-31:114) [@a:XXX]
-[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:31:65-31:114) [@a:XXX]
+[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:31:64-31:114) [@a:XXX]
+[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:31:64-31:114) [@a:XXX]
 [debug/ast-final]               - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
-[debug/ast-final]                 - ctor::String <is_literal="true" value="::hilti::rt::printValues"> [parent @e:XXX] [@c:XXX]
+[debug/ast-final]                 - ctor::String <is_literal="true" value="::hilti::rt::tuple::print"> [parent @e:XXX] [@c:XXX]
 [debug/ast-final]                   - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:31:100-31:114) [@a:XXX]

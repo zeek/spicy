@@ -29,6 +29,34 @@ struct Visitor : hilti::visitor::PreOrder {
 
     std::optional<cxx::Expression> result;
 
+    bool mayThrowAttributeNotSet(const Expression* e) const {
+        // We whitelist a few expressions that are known to not throw `AttributeNotSet`.
+        if ( e->template isA<expression::Ctor>() || e->template isA<expression::Name>() ||
+             e->template isA<expression::Keyword>() )
+            return false;
+
+        if ( auto* x = e->tryAs<expression::Coerced>() )
+            return mayThrowAttributeNotSet(x->expression());
+
+        // The following operators are typically used when accessing struct
+        // fields. We whitelist them so that in particular Zeek events don't
+        // get extra `AttributeNotSet` checks when not needed.
+        if ( auto* x = e->template tryAs<operator_::struct_::MemberConst>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        if ( auto* x = e->template tryAs<operator_::struct_::MemberNonConst>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        if ( auto* x = e->template tryAs<operator_::value_reference::Deref>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        if ( auto* x = e->template tryAs<operator_::optional::Deref>() )
+            return mayThrowAttributeNotSet(x->op0());
+
+        // Everything else we assume may throw.
+        return true;
+    }
+
     void operator()(ctor::Address* n) final { result = fmt("::hilti::rt::Address(\"%s\")", n->value()); }
 
     void operator()(ctor::Bitfield* n) final {
@@ -39,13 +67,13 @@ struct Visitor : hilti::visitor::PreOrder {
             types.emplace_back(itype);
 
             if ( auto x = n->bits(b->id()) )
-                values.emplace_back(cg->compile(x->expression()));
+                values.emplace_back(fmt("std::make_optional(%s)", cg->compile(x->expression())));
             else
-                values.emplace_back("std::nullopt");
+                values.emplace_back(fmt("std::optional<%s>{}", itype));
         }
 
-        result =
-            fmt("::hilti::rt::Bitfield<%s>(std::make_tuple(%s))", util::join(types, ", "), util::join(values, ", "));
+        result = fmt("::hilti::rt::Bitfield<%s>(hilti::rt::tuple::make_from_optionals(%s))", util::join(types, ", "),
+                     util::join(values, ", "));
     }
     void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool(%s)", n->value() ? "true" : "false"); }
 
@@ -98,9 +126,12 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->elementType()->type()->isA<type::Unknown>() )
             // Can only be the empty list.
             result = "::hilti::rt::vector::Empty()";
-        else
-            result = fmt("::hilti::rt::Vector<%s>({%s})", cg->compile(n->elementType(), codegen::TypeUsage::Storage),
-                         util::join(node::transform(n->value(), [this](auto e) { return cg->compile(e); }), ", "));
+        else {
+            auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
+            result = fmt("%s({%s}%s)", cxx_type,
+                         util::join(node::transform(n->value(), [this](auto e) { return cg->compile(e); }), ", "),
+                         cxx_default);
+        }
     }
 
     void operator()(ctor::Map* n) final {
@@ -253,8 +284,17 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::Tuple* n) final {
-        result = fmt("std::make_tuple(%s)",
-                     util::join(node::transform(n->value(), [this](auto e) { return cg->compile(e); }), ", "));
+        result =
+            fmt("hilti::rt::tuple::make_from_optionals(%s)",
+                util::join(node::transform(n->value(),
+                                           [this](auto e) -> std::string {
+                                               if ( mayThrowAttributeNotSet(e) )
+                                                   return fmt("hilti::rt::tuple::wrap_expression([&]() { return %s; })",
+                                                              cg->compile(e));
+                                               else
+                                                   return fmt("std::make_optional(%s)", cg->compile(e));
+                                           }),
+                           ", "));
     }
 
     void operator()(ctor::Struct* n) final {
@@ -299,11 +339,7 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        auto x = cg->compile(n->elementType(), codegen::TypeUsage::Storage);
-
-        std::string allocator;
-        if ( auto def = cg->typeDefaultValue(n->elementType()) )
-            allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", x, *def);
+        auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
             auto elems = util::join(node::transform(n->value(),
@@ -318,15 +354,16 @@ struct Visitor : hilti::visitor::PreOrder {
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
             auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
-            result = fmt("[%s]() { auto __xs = ::hilti::rt::Vector<%s%s>(); __xs.reserve(%d); %s return __xs; }()",
-                         captures, x, allocator, size, elems);
+            result = fmt("[%s]() { auto __xs = %s({}%s); __xs.reserve(%d); %s return __xs; }()", captures, cxx_type,
+                         cxx_default, size, elems);
         }
 
         else
             result =
-                fmt("::hilti::rt::Vector<%s%s>({%s})", x, allocator,
+                fmt("%s({%s}%s)", cxx_type,
                     util::join(node::transform(n->value(), [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
-                               ", "));
+                               ", "),
+                    cxx_default);
     }
 
     void operator()(ctor::UnsignedInteger* n) final {

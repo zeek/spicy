@@ -7,6 +7,7 @@
 
 #include <hilti/ast/forward.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/optional.h>
 #include <hilti/base/util.h>
 
 namespace hilti::type {
@@ -19,7 +20,23 @@ public:
     ~Element() final;
 
     const auto& id() const { return _id; }
-    auto type() const { return child<QualifiedType>(0); }
+
+    /**
+     * Returns the type of the element wrapped into an out `type::Optional`.
+     *
+     * Note that the optional wrapping is not part of the AST semantics, but
+     * rather reflects how the type is stored during runtime.
+     */
+    auto typeWithOptional() const { return child<QualifiedType>(0); }
+
+    /**
+     * Returns the actual type of the element, without any `type::Optional`
+     * wrapper.
+     *
+     * This is type that one would normally want when inspecting the element
+     * during AST processing.
+     */
+    auto type() const { return typeWithOptional()->type()->as<type::Optional>()->dereferencedType(); }
 
     node::Properties properties() const final {
         auto p = node::Properties{{"id", _id}};
@@ -27,11 +44,13 @@ public:
     }
 
     static auto create(ASTContext* ctx, ID id, QualifiedType* type, Meta meta = {}) {
-        return ctx->make<Element>(ctx, {type}, std::move(id), std::move(meta));
+        auto optional = QualifiedType::create(ctx, type::Optional::create(ctx, type, meta), Constness::Const, meta);
+        return ctx->make<Element>(ctx, {optional}, std::move(id), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, QualifiedType* type, Meta meta = {}) {
-        return ctx->make<Element>(ctx, {type}, ID(), std::move(meta));
+        auto optional = QualifiedType::create(ctx, type::Optional::create(ctx, type, meta), Constness::Const, meta);
+        return ctx->make<Element>(ctx, {optional}, ID(), std::move(meta));
     }
 
 protected:

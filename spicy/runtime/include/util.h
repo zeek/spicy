@@ -33,12 +33,13 @@ extern std::string bytes_to_mac(const hilti::rt::Bytes& value);
 
 /** Returns the internal `__offsets` member if present. */
 extern const hilti::rt::Vector<
-    std::optional<std::tuple<hilti::rt::integer::safe<uint64_t>, std::optional<hilti::rt::integer::safe<uint64_t>>>>>*
+    std::optional<std::tuple<std::optional<hilti::rt::integer::safe<uint64_t>>,
+                             std::optional<std::optional<hilti::rt::integer::safe<uint64_t>>>>>>*
 get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value);
 
 /** Confirm a unit in trial mode. */
 template<typename U>
-inline void confirm(U& p) {
+inline void confirm(U& p, const hilti::rt::TypeInfo* /* ti */) {
     // If we are not in trial mode `confirm` is a no-op.
     if ( p.__error ) {
         p.__error.reset();
@@ -53,7 +54,7 @@ inline void confirm(U& p) {
 
 /** Reject a unit in trial or any other mode. */
 template<typename U>
-inline void reject(U& p) {
+inline void reject(U& p, const hilti::rt::TypeInfo* /* ti */) {
     // Only invoke hook if we were actually in trial mode.
     if ( const auto& error = p.__error ) {
         // TODO(bbannier): For consistence we would ideally bracket the hook

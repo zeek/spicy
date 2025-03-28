@@ -77,6 +77,7 @@ void TextPrinter::print(const type_info::Value& v) {
             break;
         }
         case TypeInfo::Network: out() << type.network->get(v); break;
+        case TypeInfo::Null: out() << "<null>"; break;
         case TypeInfo::Optional: {
             if ( auto y = type.optional->value(v) )
                 print(y);

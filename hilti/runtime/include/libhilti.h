@@ -10,7 +10,6 @@
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
-#include <hilti/rt/deferred-expression.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fiber-check-stack.h>

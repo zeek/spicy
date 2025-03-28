@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <optional>
 
+#include <hilti/rt/extension-points.h>
+
 namespace hilti::rt::profiler {
 
 /**
@@ -52,6 +54,7 @@ struct Measurement {
     Measurement operator-(const Measurement& m) const { return Measurement(*this) -= m; }
 };
 
+inline std::string to_string(const Measurement&, detail::adl::tag /*unused*/) { return "<profiler measurement>"; }
 
 namespace detail {
 
