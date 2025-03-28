@@ -79,11 +79,12 @@ constexpr auto has_value(const Tuple<Ts...>& t) {
  * @param t the tuple
  */
 template<size_t Idx, typename... Ts>
-constexpr auto& get(const Tuple<Ts...>& t) {
-    if ( const auto& x = std::get<Idx>(t); x.has_value() )
-        return *x;
-    else
+const auto& get(const Tuple<Ts...>& t) {
+    try {
+        return std::get<Idx>(t).value();
+    } catch ( ... ) {
         detail::throw_unset_tuple_element();
+    }
 }
 
 /**
@@ -96,11 +97,12 @@ constexpr auto& get(const Tuple<Ts...>& t) {
  * @param t the tuple
  */
 template<size_t Idx, typename... Ts>
-constexpr auto& get(Tuple<Ts...>& t) {
-    if ( auto& x = std::get<Idx>(t); x.has_value() )
-        return *x;
-    else
+auto& get(Tuple<Ts...>& t) {
+    try {
+        return std::get<Idx>(t).value();
+    } catch ( ... ) {
         detail::throw_unset_tuple_element();
+    }
 }
 
 // Helper overload to allow `tuple::get()` to operate on a `std::pair`. Inside
