@@ -197,6 +197,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 continue;
 
             auto sorted_nodes = std::vector<Declaration*>(nodes.begin(), nodes.end());
+            // NOLINTNEXTLINE(bugprone-nondeterministic-pointer-iteration-order)
             std::sort(sorted_nodes.begin(), sorted_nodes.end(),
                       [](const auto* a, const auto* b) { return a->location() < b->location(); });
 

@@ -164,6 +164,7 @@ template<typename Tuple, size_t Idx>
 ptrdiff_t elementOffset() {
     // This is pretty certainly not well-defined, but seems to work for us ...
     Tuple t; // requires all elements to be default constructable, which should be the case for us
+    // NOLINTNEXTLINE(clang-analyzer-security.PointerSub)
     return reinterpret_cast<const char*>(&std::get<Idx>(t)) - reinterpret_cast<const char*>(&t);
 }
 

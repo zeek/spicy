@@ -656,7 +656,7 @@ inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
 
 namespace bytes {
 inline namespace literals {
-inline Bytes operator"" _b(const char* str, size_t size) { return Bytes(Bytes::Base(str, size)); }
+inline Bytes operator""_b(const char* str, size_t size) { return Bytes(Bytes::Base(str, size)); }
 } // namespace literals
 } // namespace bytes
 
