@@ -1,0 +1,19 @@
+# @TEST-EXEC: spicyc -j -d -o test.hlto %INPUT
+# @TEST-EXEC: printf 'aa' | spicy-dump test.hlto >>output
+# @TEST-EXEC: printf 'b' | spicy-dump test.hlto >>output
+# @TEST-EXEC-FAIL: printf 'c' | spicy-dump test.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Exercise switch blocks with laheads. Regression test for #1971.
+
+module Test;
+
+public type X = unit {
+    switch {
+        -> {
+            a1: b"a";
+            a2: b"a";
+        }
+        -> b: b"b";
+    };
+};

@@ -26,16 +26,16 @@ public:
     auto expressions() const { return children<Expression>(1, {}); }
 
     /** Returns true if this is the default case. */
-    bool isDefault() const { return expressions().empty() && ! _look_ahead; }
+    bool isDefault() const { return expressions().empty() && ! _use_look_ahead; }
 
     /** Returns true if this is a look-ahead case. */
-    bool isLookAhead() const { return _look_ahead; }
+    bool isLookAhead() const { return _use_look_ahead; }
 
     /** Returns true if all items have been resolved. */
     bool isResolved(hilti::node::CycleDetector* cd = nullptr) const { return block()->isResolved(cd); }
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"look-ahead", _look_ahead}, {"default", isDefault()}};
+        auto p = node::Properties{{"look-ahead", _use_look_ahead}, {"default", isDefault()}};
         return Node::properties() + std::move(p);
     }
 
@@ -44,24 +44,18 @@ public:
         return ctx->make<Case>(ctx, node::flatten(block, exprs), false, m);
     }
 
-    /** Factory function for a default case. */
-    static auto create(ASTContext* ctx, type::unit::item::Block* block, const Meta& m = Meta()) {
-        return ctx->make<Case>(ctx, {block}, false, m);
-    }
-
-    /** Factory function for a look-ahead case. */
-    static auto create(ASTContext* ctx, type::unit::Item* field, const Meta& m = Meta()) {
-        return ctx->make<Case>(ctx, {Block::create(ctx, {field}, nullptr, {}, nullptr, m)}, true, m);
+    static auto create(ASTContext* ctx, type::unit::item::Block* block, bool use_look_ahead, const Meta& m = Meta()) {
+        return ctx->make<Case>(ctx, {block}, use_look_ahead, m);
     }
 
 protected:
     Case(ASTContext* ctx, Nodes children, bool look_ahead, Meta meta)
-        : Node::Node(ctx, NodeTags, std::move(children), std::move(meta)), _look_ahead(look_ahead) {}
+        : Node::Node(ctx, NodeTags, std::move(children), std::move(meta)), _use_look_ahead(look_ahead) {}
 
     SPICY_NODE_0(type::unit::item::switch_::Case, final);
 
 private:
-    bool _look_ahead = false;
+    bool _use_look_ahead = false;
 };
 
 using Cases = NodeVector<Case>;
