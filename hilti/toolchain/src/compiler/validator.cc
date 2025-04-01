@@ -495,6 +495,14 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(expression::Name* n) final {
+        if ( n->type()->type()->isA<type::Function>() ) {
+            if ( auto* parent = n->parent(); parent && ! parent->tryAs<expression::UnresolvedOperator>() ) {
+                // We only allow function references in the following two contexts.
+                if ( ! parent->isA<operator_::function::Call>() && ! parent->isA<ctor::struct_::Field>() )
+                    error("function must be called", n, node::ErrorPriority::Low);
+            }
+        }
+
         if ( auto decl = n->resolvedDeclaration() ) {
             if ( auto parent = n->parent<Declaration>();
                  decl == parent && ! decl->isA<declaration::Function>() && n->id() != ID("__dd") ) {
