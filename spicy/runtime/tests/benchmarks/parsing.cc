@@ -1,6 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
 #include <benchmark/benchmark.h>
+#pragma GCC diagnostic pop
 
 #include <hilti/rt/init.h>
 #include <hilti/rt/logging.h>
