@@ -2,6 +2,24 @@
 
 cmake_minimum_required(VERSION 3.15.0)
 
+if (APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0)
+    # We are going to need having CMAKE_OSX_SYSROOT point to the macOS SDK
+    # path. However, starting with CMake 4.0, CMAKE_OSX_SYSROOT is not set
+    # automatically anymore. So we follow the guidance from the CMake 4.0
+    # release notes here:
+    #
+    #    Builds targeting macOS no longer choose any SDK or pass an "-isysroot"
+    #    flag to the compiler by default. Instead, compilers are expected to
+    #    choose a default macOS SDK on their own. In order to use a compiler
+    #    that does not do this, users must now specify
+    #    "-DCMAKE_OSX_SYSROOT=macosx" when configuring their build.
+    #
+    # The described situation ("let the compiler choose") doesn't quite match
+    # ours, but this does lead to CMAKE_OSX_SYSROOT pointing to the macOS SDK
+    # path when we need it.
+    set(CMAKE_OSX_SYSROOT "macosx")
+endif ()
+
 project(spicy LANGUAGES C CXX)
 
 set(flex_minimum_version "2.5.37")

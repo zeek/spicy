@@ -153,6 +153,10 @@ hilti_link_object_libraries_in_tree(hilti PUBLIC)
 
 # Additional flags
 if (APPLE)
+    if (NOT CMAKE_OSX_SYSROOT)
+        message(FATAL_ERROR "CMAKE_OSX_SYSROOT not set")
+    endif ()
+
     set(addl_cxx_flags "-isysroot ${CMAKE_OSX_SYSROOT}")
     set(addl_ld_flags "-isysroot ${CMAKE_OSX_SYSROOT}")
 endif ()
