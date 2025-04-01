@@ -1,3 +1,16 @@
+1.13.0-dev.142 | 2025-04-01 17:41:10 +0200
+
+  * Work-around CMake 4 no longer setting `CMAKE_OSX_SYSROOT` by default. (Robin Sommer, Corelight)
+
+  * Let `configure` work with CMake 4. (Robin Sommer, Corelight)
+
+  * GH-1580: Catch when functions aren't called. (Robin Sommer, Corelight)
+
+    There are only very few cases where usage of a function is permitted
+    without calling it.
+
+  * GH-1971: Extend unit `switch` based on look-ahead to support blocks of items. (Robin Sommer, Corelight)
+
 1.13.0-dev.135 | 2025-03-28 09:44:11 +0100
 
   * GH-1967: Fix inactive stack size check during module initialization. (Robin Sommer, Corelight)

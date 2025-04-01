@@ -37,14 +37,15 @@ command="$0 $*"
 cmake_exe="<no cmake>"
 for i in cmake cmake3; do
     if which $i >/dev/null; then
-        $i --version | grep -q "cmake.*version 3" && cmake_exe=$(which $i)
+        version="$($i --version 2>&1 | grep "cmake.*version" | awk -F '[ .]' '{print $3}')"
+        test -n "${version}" && test "${version}" -ge 3 && cmake_exe=$(which $i)
         break
     fi
 done
 
 which "${cmake_exe}" > /dev/null 2>&1 || {
     echo "\
-This package requires CMake, please install it first, then you may
+This package requires CMake >= 3, please install it first, then you may
 use this configure script to access CMake equivalent functionality.\
 " >&2;
     exit 1;
