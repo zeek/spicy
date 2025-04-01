@@ -568,7 +568,7 @@ public:
      * current node. If  the node already has a parent, it will be deep-copied
      * first, and the new instance will be added instead of the once passed in.
      * If there's an existing child at that index, it'll be removed first and
-     * it's parent cleared.
+     * its parent cleared.
      *
      * @param ctx current context in use
      * @param idx index of child to set

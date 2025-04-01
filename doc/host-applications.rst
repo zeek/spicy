@@ -289,7 +289,7 @@ taking the file to load from the command line:
 .. literalinclude:: examples/my_http-host-driver-hlto.cc
     :caption: my-driver.cc
     :lines: 9-70
-    :emphasize-lines: 5-8
+    :emphasize-lines: 27-31
     :language: c++
 
 ::

@@ -117,7 +117,7 @@ public:
 
     /**
      * Connects a filter unit to the sink. Any input will then pass through the
-     * filter before being forwarded tp parsing. Must not be called when data
+     * filter before being forwarded to parsing. Must not be called when data
      * has been processed already. Multiple filters can be connected and will be
      * chained.
      *
