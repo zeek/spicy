@@ -97,15 +97,12 @@ public:
                                                                                                      nullptr, m),
                                                               m);
     }
-    auto typeUnitItemSwitchCase(type::unit::Item* field, const Meta& m = Meta()) {
-        return spicy::type::unit::item::switch_::Case::create(context(), field, m);
-    }
-    auto typeUnitItemSwitchCase(const type::unit::Items& items, const Meta& m = Meta()) {
+    auto typeUnitItemSwitchCase(const type::unit::Items& items, bool use_look_ahead, const Meta& m = Meta()) {
         return spicy::type::unit::item::switch_::Case::create(context(),
                                                               spicy::type::unit::item::Block::create(context(), items,
                                                                                                      nullptr, {},
                                                                                                      nullptr, m),
-                                                              m);
+                                                              use_look_ahead, m);
     }
     auto typeUnitItemUnitHook(const ID& id, spicy::declaration::Hook* hook, Meta meta = {}) {
         return spicy::type::unit::item::UnitHook::create(context(), id, hook, std::move(meta));
