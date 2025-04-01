@@ -1,6 +1,6 @@
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-"""X
+"""
 The Spicy domain for Sphinx.
 """
 
@@ -211,13 +211,13 @@ class SpicyDomain(Domain):
     }
 
     def clear_doc(self, docname):
-        for (typ, name), doc in list(self.data["objects"].items()):
+        for (type_, name), doc in list(self.data["objects"].items()):
             if doc == docname:
-                del self.data["objects"][typ, name]
+                del self.data["objects"][type_, name]
 
-    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+    def resolve_xref(self, env, fromdocname, builder, type_, target, node, contnode):
         objects = self.data["objects"]
-        objtypes = self.objtypes_for_role(typ)
+        objtypes = self.objtypes_for_role(type_)
         for objtype in objtypes:
             if (objtype, target) in objects:
                 return make_refnode(
@@ -230,8 +230,8 @@ class SpicyDomain(Domain):
                 )
 
     def get_objects(self):
-        for (typ, name), docname in self.data["objects"].items():
-            yield name, name, typ, docname, typ + "-" + name, 1
+        for (type_, name), docname in self.data["objects"].items():
+            yield name, name, type_, docname, type_ + "-" + name, 1
 
 
 class SpicyCode(CodeBlock):
