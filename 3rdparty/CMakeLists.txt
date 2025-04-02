@@ -5,6 +5,12 @@
 set(CMAKE_C_CLANG_TIDY "")
 set(CMAKE_CXX_CLANG_TIDY "")
 
+# Do not build any code here with `-Werror`.
+string(REPLACE "${werror_flags}" "" flags "${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS "${flags}")
+string(REPLACE "${werror_flags}" "" flags "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${flags}")
+
 # Note that most of the subdirectories here don't need to be known
 # to CMake because we directly pick out the pieces where we need
 # them.
@@ -30,12 +36,11 @@ set(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
 
-if (${USE_BENCHMARK})
-    set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-    set(BENCHMARK_ENABLE_TESTING OFF)
-    set(BENCHMARK_ENABLE_INSTALL OFF)
-    add_subdirectory(benchmark)
-endif ()
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+set(BENCHMARK_ENABLE_TESTING OFF)
+set(BENCHMARK_ENABLE_INSTALL OFF)
+set(BENCHMARK_ENABLE_WERROR OFF)
+add_subdirectory(benchmark)
 
 set(REPROC++ ON)
 set(REPROC_MULTITHREADED OFF)

@@ -108,7 +108,7 @@ struct ResourceUsage {
     uint64_t cached_fibers;        //< number of fibers currently cached for reuse
 };
 
-/** Returns statistics about the current resource uage. */
+/** Returns statistics about the current resource usage. */
 ResourceUsage resource_usage();
 
 /** Returns the value of an environment variable, if set. */
