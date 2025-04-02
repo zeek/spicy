@@ -1,3 +1,7 @@
+1.13.0-dev.157 | 2025-04-02 10:27:53 +0200
+
+  * Fix minor typos in comments and docs [skip CI]. (Evan Typanski, Corelight)
+
 1.13.0-dev.155 | 2025-04-02 09:59:29 +0200
 
   * Change runtime representation of tuples. (Robin Sommer, Corelight)

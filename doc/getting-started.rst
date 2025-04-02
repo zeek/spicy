@@ -59,7 +59,7 @@ an executable.
     often far easier to comprehend than the final C++ code, in
     particular once we do some actual parsing.  To see that
     intermediary HILTI code, execute ``spicy -p hello.spicy``. The
-    ``.hlto`` extension comes from HILTI as well: It's an
+    ``.hlto`` extension comes from HILTI as well: It's a
     HILTI-generated object file.
 
 A Simple Parser
