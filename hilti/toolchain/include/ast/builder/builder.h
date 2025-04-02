@@ -282,6 +282,10 @@ public:
 
     // Operator expressions
 
+    auto add(Expression* target, Expression* index, const Meta& m = Meta()) {
+        return expressionUnresolvedOperator(operator_::Kind::Add, {target, index}, m);
+    }
+
     auto and_(Expression* op0, Expression* op1, const Meta& m = Meta()) { return expressionLogicalAnd(op0, op1, m); }
 
     auto or_(Expression* op0, Expression* op1, const Meta& m = Meta()) { return expressionLogicalOr(op0, op1, m); }
@@ -385,8 +389,6 @@ public:
     auto sumAssign(Expression* op1, Expression* op2, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::SumAssign, {op1, op2}, m);
     }
-
-    auto deferred(Expression* e, const Meta& m = Meta()) { return expressionDeferred(e, m); }
 
     auto differenceAssign(Expression* op1, Expression* op2, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::DifferenceAssign, {op1, op2}, m);

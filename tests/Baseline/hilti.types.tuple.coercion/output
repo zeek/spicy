@@ -9,23 +9,32 @@
 extern const char* __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    static auto f() -> std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string>;
+    static auto f() -> ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>;
     extern void __init_module();
     extern void __register_module();
 }
+
+namespace __hlt::type_info { namespace {
+    extern const ::hilti::rt::TypeInfo __ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b;
+    extern const ::hilti::rt::TypeInfo __ti_optional_uint_64___optionalx2auint64x2b;
+    const ::hilti::rt::TypeInfo __ti_optional_uint_64___optionalx2auint64x2b = { {}, "optional<uint<64>>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const std::optional<::hilti::rt::integer::safe<uint64_t>>*>(self)); }, new ::hilti::rt::type_info::Optional(&::hilti::rt::type_info::uint64, ::hilti::rt::type_info::Optional::accessor<::hilti::rt::integer::safe<uint64_t>>()) };
+    extern const ::hilti::rt::TypeInfo __ti_optional_string__optionalx2astringx2b;
+    const ::hilti::rt::TypeInfo __ti_optional_string__optionalx2astringx2b = { {}, "optional<string>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const std::optional<std::string>*>(self)); }, new ::hilti::rt::type_info::Optional(&::hilti::rt::type_info::string, ::hilti::rt::type_info::Optional::accessor<std::string>()) };
+    const ::hilti::rt::TypeInfo __ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b = { {}, "tuple<a: uint<64>, b: string>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>*>(self)); }, new ::hilti::rt::type_info::Tuple(std::vector<::hilti::rt::type_info::tuple::Element>({::hilti::rt::type_info::tuple::Element{ "a", &type_info::__ti_optional_uint_64___optionalx2auint64x2b, ::hilti::rt::tuple::elementOffset<::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>, 0>() }, ::hilti::rt::type_info::tuple::Element{ "b", &type_info::__ti_optional_string__optionalx2astringx2b, ::hilti::rt::tuple::elementOffset<::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>, 1>() }})) };
+} }
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/coercion.hlt:14:1-14:17");
-    ::hilti::rt::print(f(), ::hilti::rt::Bool(true));
+    ::hilti::rt::print(f(), &type_info::__ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b, ::hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr, nullptr}); }
 
-static auto __hlt::Foo::f() -> std::tuple<::hilti::rt::integer::safe<uint64_t>, std::string> {
+static auto __hlt::Foo::f() -> ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string> {
     ::hilti::rt::detail::checkStack();
       __location__("<...>/coercion.hlt:11:5-11:24");
-    return std::make_tuple(::hilti::rt::integer::safe<std::uint64_t>{123U}, "abc"s);
+    return hilti::rt::tuple::make_from_optionals(std::make_optional(::hilti::rt::integer::safe<std::uint64_t>{123U}), std::make_optional("abc"s));
 }
 

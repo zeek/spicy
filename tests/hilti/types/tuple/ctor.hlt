@@ -14,8 +14,29 @@ global tuple<string, bool> x = ("Hello!", True);
 hilti::print(((1, 2, (3, 4))));
 hilti::print(());
 hilti::print(x);
-hilti::printValues(x);
+hilti::printTuple(x);
 
-#f1((True, "X"));
+f1((True, "X"));
+
+type Enum = enum { A, B, C };
+global tuple<bool, Enum> e;
+hilti::print(e);
+
+type S = struct {
+    string a &optional;
+    string b &optional;
+};
+
+function void f2() {
+    local S s;
+    s.a = "a";
+
+    local y = (s.?a, s.?b);
+    hilti::print(s);
+    hilti::print(y);
+}
+
+f2();
+
 
 }

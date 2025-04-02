@@ -42,12 +42,6 @@ ostream& operator<<(ostream& stream, const pair<U, V>& p) {
     return stream << "(" << p.first << ", " << p.second << ")";
 }
 
-template<typename... Ts>
-ostream& operator<<(ostream& stream, const tuple<Ts...>& xs) {
-    stream << "(";
-    tuple_for_each(xs, [&](auto&& x) { stream << x << ", "; });
-    return stream << ")";
-}
 } // namespace std
 
 TEST_SUITE_BEGIN("util");
@@ -332,19 +326,6 @@ TEST_CASE("join") {
     CHECK_EQ(join(str_list{null, null}, null), null + null + null);
 }
 
-TEST_CASE("join_tuple") {
-    CHECK_EQ(join_tuple(std::make_tuple()), "");
-    CHECK_EQ(join_tuple(std::make_tuple(integer::safe<uint8_t>(1), std::string("a"))), "1, \"a\"");
-    CHECK_EQ(join_tuple(std::make_tuple(integer::safe<uint8_t>(1), std::string(1U, '\0'))), "1, \"\\0\"");
-}
-
-TEST_CASE("join_tuple_for_print") {
-    CHECK_EQ(join_tuple_for_print(std::make_tuple()), "");
-    CHECK_EQ(join_tuple_for_print(std::make_tuple(integer::safe<uint8_t>(1), std::string("a"))), "1, a");
-    const auto null = std::string(1U, '\0');
-    CHECK_EQ(join_tuple_for_print(std::make_tuple(integer::safe<uint8_t>(1), null)), "1, " + null);
-}
-
 TEST_CASE("ltrim") {
     CHECK_EQ(ltrim("", ""), "");
     CHECK_EQ(ltrim("", "abc"), "");
@@ -357,6 +338,13 @@ TEST_CASE("ltrim") {
 }
 
 TEST_CASE("map_tuple") {
+    auto u0 = static_cast<uint64_t>(0);
+    auto u1 = static_cast<uint64_t>(1);
+    auto u2 = static_cast<uint64_t>(2);
+    auto i0 = static_cast<int64_t>(0);
+    auto i1 = static_cast<int64_t>(1);
+    auto i2 = static_cast<int64_t>(2);
+
     CHECK_EQ(map_tuple(std::make_tuple(), []() {}), std::make_tuple());
     CHECK_EQ(map_tuple(std::make_tuple(), []() { return 0; }), std::make_tuple());
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&&) {}), std::make_tuple());
@@ -364,20 +352,20 @@ TEST_CASE("map_tuple") {
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&) {}), std::make_tuple());
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&&) { return 0; }), std::make_tuple());
     CHECK_EQ(map_tuple(std::make_tuple(), [](auto&& x) { return decltype(x){}; }), std::make_tuple());
-    CHECK_EQ(map_tuple(std::make_tuple(1U, 1L, std::string("a")), [](auto&& x) { return decltype(x){}; }),
-             std::make_tuple(0U, 0L, std::string()));
-    CHECK_EQ(map_tuple(std::make_tuple(1U, 1L, std::string("a")), [](auto x) { return std::move(x); }),
-             std::make_tuple(1U, 1L, std::string("a")));
+    CHECK_EQ(map_tuple(std::make_tuple(u1, i1, std::string("a")), [](auto&& x) { return decltype(x){}; }),
+             std::make_tuple(u0, i0, std::string()));
+    CHECK_EQ(map_tuple(std::make_tuple(u1, i1, std::string("a")), [](auto x) { return std::move(x); }),
+             std::make_tuple(u1, i1, std::string("a")));
 
-    auto input = std::make_tuple(1U, 1L, std::string("a"));
+    auto input = std::make_tuple(u1, i1, std::string("a"));
     CHECK_EQ(map_tuple(input,
                        [](auto& x) {
                            auto y = x;
                            x += x;
                            return y;
                        }),
-             std::make_tuple(1U, 1L, std::string("a")));
-    CHECK_EQ(input, std::make_tuple(2U, 2L, std::string("aa")));
+             std::make_tuple(u1, i1, std::string("a")));
+    CHECK_EQ(input, std::make_tuple(u2, i2, std::string("aa")));
 }
 
 TEST_CASE("memory_statistics") {

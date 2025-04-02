@@ -186,14 +186,14 @@ struct TestTypes;
 struct TestOptionals;
 
 extern auto makeTestTypes()
-    -> std::tuple<hilti::rt::StrongReference<__hlt::Test::TestTypes>,
+    -> Tuple<hilti::rt::StrongReference<__hlt::Test::TestTypes>,
                   hilti::rt::StrongReference<__hlt::Test::TestTypes>, const ::hilti::rt::TypeInfo*>;
 
 extern auto makeTestOptionals()
-    -> std::tuple<hilti::rt::StrongReference<__hlt::Test::TestOptionals>, const ::hilti::rt::TypeInfo*>;
+    -> Tuple<hilti::rt::StrongReference<__hlt::Test::TestOptionals>, const ::hilti::rt::TypeInfo*>;
 
 extern auto getThreeTypeInfos()
-    -> std::tuple<const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*>;
+    -> Tuple<const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*>;
 
 } // namespace __hlt::Test
 
@@ -359,6 +359,10 @@ struct VisitorTypesInit {
                 CHECK_EQ(type.network->get(v), Network("1.2.3.4", 16));
                 break;
             }
+            case TypeInfo::Null: {
+                SEEN();
+                break;
+            }
             case TypeInfo::Optional: {
                 SEEN();
                 auto i = type.optional->value(v);
@@ -472,14 +476,21 @@ struct VisitorTypesInit {
                 const auto* x = type.tuple;
                 auto s = x->iterate(v);
                 auto i = s.begin();
-                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int32_t>>(i->second)->get(i->second), 123);
+
+                auto opt1 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
+                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int32_t>>(opt1)->get(opt1), 123);
                 CHECK_EQ(i->first.name, "a");
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i->second)->get(i->second), "string");
+
+                auto opt2 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(opt2)->get(opt2), "string");
                 CHECK_EQ(i->first.name, "");
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::Bool>(i->second)->get(i->second), true);
+
+                auto opt3 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
+                CHECK_EQ(type_info::value::auxType<type_info::Bool>(opt3)->get(opt3), true);
                 CHECK_EQ(i->first.name, "c");
+
                 ++i;
                 CHECK(i == s.end());
                 CHECK_EQ(x->elements().size(), 3);
@@ -627,22 +638,22 @@ int main(int argc, char** argv) {
 
     // Check that retrieving typeinfo works.
     auto ti = __hlt::Test::getThreeTypeInfos();
-    CHECK_EQ(std::string(std::get<0>(ti)->display), std::string("bytes"));
-    CHECK_EQ(std::string(std::get<1>(ti)->display), std::string("Test::Struct"));
-    CHECK_EQ(std::string(std::get<2>(ti)->display), std::string("Test::Struct"));
+    CHECK_EQ(std::string(tuple::get<0>(ti)->display), std::string("bytes"));
+    CHECK_EQ(std::string(tuple::get<1>(ti)->display), std::string("Test::Struct"));
+    CHECK_EQ(std::string(tuple::get<2>(ti)->display), std::string("Test::Struct"));
 
     // Call HILTI code to create & initialize struct instances.
     auto [x_init, x_default, ti_types] = __hlt::Test::makeTestTypes();
     auto [x_optionals, ti_optionals] = __hlt::Test::makeTestOptionals();
 
     // Test instance of TestTypes that has been initialized with known values.
-    CHECK(ti_types->id);
-    CHECK_EQ(std::string(*ti_types->id), std::string("Test::TestTypes"));
-    CHECK_EQ(std::string(ti_types->display), std::string("Test::TestTypes"));
+    CHECK((*ti_types)->id);
+    CHECK_EQ(std::string(*(*ti_types)->id), std::string("Test::TestTypes"));
+    CHECK_EQ(std::string((*ti_types)->display), std::string("Test::TestTypes"));
 
     VisitorTypesInit visitor_init;
-    type_info::value::Parent p_init(x_init);
-    auto v_init = type_info::Value(x_init.get(), ti_types, p_init);
+    type_info::value::Parent p_init(*x_init);
+    auto v_init = type_info::Value(x_init->get(), *ti_types, p_init);
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_init)->iterate(v_init) )
         visitor_init.visit(f.second);
 
@@ -650,8 +661,8 @@ int main(int argc, char** argv) {
 
     // Test instance of TestTypes that has been initialized with default values.
     VisitorTypesDefault visitor_default;
-    type_info::value::Parent p_default(x_default);
-    auto v_default = type_info::Value(x_default.get(), ti_types, p_default);
+    type_info::value::Parent p_default(*x_default);
+    auto v_default = type_info::Value(x_default->get(), *ti_types, p_default);
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_default)->iterate(v_default) )
         visitor_default.visit(f.second);
 
@@ -659,8 +670,8 @@ int main(int argc, char** argv) {
 
     // Test instances of TestOptions in which one optional has been set.
     VisitorOptionals visitor2;
-    type_info::value::Parent p_optionals(x_default);
-    auto v_optionals = type_info::Value(x_optionals.get(), ti_optionals, p_optionals);
+    type_info::value::Parent p_optionals(*x_default);
+    auto v_optionals = type_info::Value(x_optionals->get(), *ti_optionals, p_optionals);
     int idx = 0;
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_optionals)->iterate(v_optionals) ) {
         if ( idx == 0 ) {

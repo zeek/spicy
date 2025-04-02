@@ -1,3 +1,84 @@
+1.13.0-dev.155 | 2025-04-02 09:59:29 +0200
+
+  * Change runtime representation of tuples. (Robin Sommer, Corelight)
+
+    At runtime, we so far stored HILTI tuples simply as `std::tuple` of
+    the corresponding element types. However, that ignored that in HILTI
+    tuple elements can remain unset, which that runtime representation
+    could not express. This still worked so far because (a) unset elements
+    are rare (the main use case is the `.?` operator used inside a tuple
+    constructor); and (b) in the cases we needed it, we had C++-side
+    template code figure things out a compile time. However, the old
+    representation meant that a host application using introspection
+    through HILTI's runtime type information, could not receive/see unset
+    tuple elements at all.
+
+    This commit changes the runtime tuple representation to wrap all
+    elements into `std::optional`. So a HILTI tuple `tuple<T1, T2, T3>`
+    now gets turned into `std::tuple<std::optional<T1>, std::optional<T2>,
+    std::optional<T3>>`. While that comes with some additional overhead,
+    that can now fully capture all possible tuple values. The runtime type
+    information is adjusted accordingly as well. While that is a breaking
+    change, it presumably affects just Zeek as the only external user of
+    that API currently. A corresponding Zeek change is forthcoming.
+
+    The rest of the commit is mainly mechanical: it adapts code generator
+    and runtime to work with the new tuple representation.
+
+  * Provide `type_info::Value` constructor not taking a parent. (Robin Sommer, Corelight)
+
+    This leaves the internal member unset, saving an unnecessarily created
+    `shared_ptr`.
+
+  * Add mechanism to leave temporary codegen variables uninitialized. (Robin Sommer, Corelight)
+
+    Local variables now support a "special" init expression for
+    performance optimization: If the init expression is an instance of
+    `expression::Void`, the generated C++ code will not default-initialize
+    the variable. That means it's not safe to read from it before it has
+    been written to at least once. This avoids the overhead of the
+    creating the default value when it's not needed, but it disables
+    HILTI's safety property of forcing all runtime values to have
+    well-defined content at all times.
+
+    This is a work-around until we have flow-based optimization which
+    should be able to figure out automatically when it's safe to skip
+    computing the default.
+
+  * Add builder method to create an `add` expression. (Robin Sommer, Corelight)
+
+  * Remove AST node for deferred expressions. (Robin Sommer, Corelight)
+
+    This was no longer used anywhere now.
+
+  * Change FFI calling convention for `any`. (Robin Sommer, Corelight)
+
+    When translating HILTI functions to C++, we now convert any HILTI-side
+    arguments of type `any` into *two* C++-side arguments: the value (as
+    before) plus a `TypeInfo*` pointer describing the value's type.
+
+    Before, we did this manually in a few cases where we needed the type
+    information by adding an additional `type` parameter to the HILTI
+    function. Now this happens implicitly and is therefore automatically
+    available to all functions using `any` parameters. The advantage is
+    that we don't need to modify an call sites to provide type information
+    explicitly, in particular when they are inside generated code. The
+    downside is that we end up receiving that new parameter in a few cases
+    where we don't actually need it (though this could change in the
+    future if we ever started to move away from templates inside the C++
+    runtime).
+
+  * Add a few missing type information pieces. (Robin Sommer, Corelight)
+
+    - Add runtime type information for `Null` type.
+    - Generate `vector` type information for type `List` (because that's how we store lists).
+    - Fix type information for `result<void>`.
+    - dd `to_string()` support for `Nothing`.
+
+  * Make pre-defined type information objects constant. (Robin Sommer, Corelight)
+
+  * Report `ast-final` debugging output even if AST validation fails. (Robin Sommer, Corelight)
+
 1.13.0-dev.142 | 2025-04-01 17:41:10 +0200
 
   * Work-around CMake 4 no longer setting `CMAKE_OSX_SYSROOT` by default. (Robin Sommer, Corelight)

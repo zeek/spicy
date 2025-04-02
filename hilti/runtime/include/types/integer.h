@@ -5,7 +5,6 @@
 #include <cinttypes>
 #include <limits>
 #include <string>
-#include <tuple>
 #include <utility>
 
 #include <hilti/rt/extension-points.h>
@@ -82,14 +81,14 @@ inline void pack(D x, uint8_t* dst, std::initializer_list<int> bytes) {
 }
 
 template<typename T, typename D>
-inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, const uint8_t* dst, std::initializer_list<int> bytes) {
+inline Result<Tuple<integer::safe<T>, D>> unpack(D b, const uint8_t* dst, std::initializer_list<int> bytes) {
     T x = 0;
     for ( auto i : bytes ) {
         x <<= 8U;
         x |= (static_cast<T>(dst[i]));
     }
 
-    return std::make_tuple(static_cast<integer::safe<T>>(x), std::move(b));
+    return {{static_cast<integer::safe<T>>(x), std::move(b)}};
 }
 
 } // namespace detail
@@ -151,7 +150,7 @@ inline Bytes pack(integer::safe<T> i, ByteOrder fmt) {
 }
 
 template<typename T, typename D>
-inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
+inline Result<Tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
     if ( fmt == ByteOrder::Host )
         return unpack<T>(std::move(b), systemByteOrder());
 
@@ -165,11 +164,11 @@ inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
         case ByteOrder::Big:
         case ByteOrder::Network:
             if constexpr ( std::is_same_v<T, uint8_t> )
-                return std::make_tuple(static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b));
+                return {{static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b)}};
 
             if constexpr ( std::is_same_v<T, int8_t> ) {
                 auto x = static_cast<int8_t>(raw[0]); // Forced cast to skip safe<T> range check.
-                return std::make_tuple(static_cast<integer::safe<int8_t>>(x), std::move(b));
+                return {{static_cast<integer::safe<int8_t>>(x), std::move(b)}};
             }
 
             if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )
@@ -185,11 +184,11 @@ inline Result<std::tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
 
         case ByteOrder::Little:
             if constexpr ( std::is_same_v<T, uint8_t> )
-                return std::make_tuple(static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b));
+                return {{static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b)}};
 
             if constexpr ( std::is_same_v<T, int8_t> ) {
                 auto x = static_cast<int8_t>(raw[0]); // Forced cast to skip safe<T> range check.
-                return std::make_tuple(static_cast<integer::safe<int8_t>>(x), std::move(b));
+                return {{static_cast<integer::safe<int8_t>>(x), std::move(b)}};
             }
 
             if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )

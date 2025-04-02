@@ -3,7 +3,6 @@
 #include <bitset>
 #include <cmath>
 #include <limits>
-#include <tuple>
 
 #include <hilti/rt/doctest.h>
 #include <hilti/rt/result.h>
@@ -192,9 +191,9 @@ TEST_CASE("pack") {
 }
 
 TEST_CASE("unpack") {
-    using Result16 = Result<std::tuple<integer::safe<uint16_t>, Bytes>>;
-    using Result32 = Result<std::tuple<integer::safe<uint32_t>, Bytes>>;
-    using Result64 = Result<std::tuple<integer::safe<uint64_t>, Bytes>>;
+    using Result16 = Result<Tuple<integer::safe<uint16_t>, Bytes>>;
+    using Result32 = Result<Tuple<integer::safe<uint32_t>, Bytes>>;
+    using Result64 = Result<Tuple<integer::safe<uint64_t>, Bytes>>;
 
     CHECK_EQ(integer::unpack<uint16_t>(""_b, ByteOrder::Little),
              Result16(result::Error("insufficient data to unpack integer")));

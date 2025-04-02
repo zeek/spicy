@@ -108,7 +108,7 @@ public:
      * actually be *more* than what was previously returned in case matching
      * needed to backtrack because of a match now determined to end earlier.
      */
-    std::tuple<int32_t, stream::View> advance(const stream::View& data);
+    Tuple<integer::safe<int32_t>, stream::View> advance(const stream::View& data);
 
     /**
      * Feeds the next chunk of data into the matcher.
@@ -132,7 +132,7 @@ public:
      * bytes. Because this could be tricky to handle, it's usually better to
      * use the other variant of `advance()`, returning a view, if possible.
      */
-    std::tuple<int32_t, int64_t> advance(const Bytes& data, bool is_final = false);
+    Tuple<int32_t, int64_t> advance(const Bytes& data, bool is_final = false);
 
     /**
      * Returns extracted capture groups after successful matching.
@@ -271,7 +271,7 @@ public:
      * @return A tuple where the 1st element corresponds to the result of
      * `find()`. If that's larger than zero, the 2nd is the matching data.
      */
-    std::tuple<int32_t, Bytes> find(const Bytes& data) const;
+    Tuple<int32_t, Bytes> find(const Bytes& data) const;
 
     /**
      * Returns matching state initializes for incremental token matching. For

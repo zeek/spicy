@@ -13,7 +13,22 @@
 
 namespace hilti::declaration {
 
-/** AST node for a local variable declaration. */
+/**
+ * AST node for a local variable declaration.
+ *
+ * Local variables support a "special" init expression for performance
+ * optimization: If the init expression is an instance of `expression::Void`,
+ * the generated C++ code will not default-initialize the variable. That means
+ * it's not safe to read from it before it has been written to at least once.
+ * This avoids the overhead of the creating the default value when it's not
+ * needed, but it disables HILTI's safety property of forcing all runtime
+ * values to have well-defined content at all times.
+ *
+ * TODO: Once we have flow-based optimization, we should be able to figure out
+ * automatically when it's safe to skip computing the default. We should then
+ * remove support for explicit `expression::Void` instances.
+ *
+ */
 class LocalVariable : public Declaration {
 public:
     auto type() const { return child<QualifiedType>(0); }

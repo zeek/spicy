@@ -309,8 +309,8 @@ TEST_CASE("Time") {
 }
 
 TEST_CASE("tuple") {
-    CHECK_EQ(to_string(std::make_tuple(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
-    CHECK_EQ(fmt("%s", std::make_tuple(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
+    CHECK_EQ(to_string(tuple::make(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
+    CHECK_EQ(fmt("%s", tuple::make(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
 }
 
 TEST_CASE("View") {

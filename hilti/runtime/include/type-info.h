@@ -17,6 +17,7 @@
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/network.h>
+#include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
 #include <hilti/rt/types/set.h>
@@ -89,7 +90,7 @@ public:
      * @param parent parent controlling life time of the value
      */
     Value(const void* ptr, const TypeInfo* ti, const value::Parent& parent)
-        : _ptr(ptr), _ti(ti), _parent_handle(parent.handle()) {
+        : _ptr(ptr), _ti(ti), _parent_handle(parent._handle) {
         check();
     }
 
@@ -104,6 +105,15 @@ public:
         : _ptr(ptr), _ti(ti), _parent_handle(parent._parent_handle) {
         check();
     }
+
+    /**
+     * Constructor that does not tie the value to a parent.
+     *
+     * @param ptr raw pointer to storage of the value
+     * @param ti type information describing how to interpret the pointer
+     * @param parent parent value controlling life time of this value
+     */
+    Value(const void* ptr, const TypeInfo* ti) : _ptr(ptr), _ti(ti) {}
 
     /**
      * Default constructor creating a value in invalid state.
@@ -136,6 +146,12 @@ public:
 private:
     // Throws if parent has expired.
     void check() const {
+        std::weak_ptr<bool> default_;
+
+        if ( ! _parent_handle.owner_before(default_) && ! default_.owner_before(_parent_handle) )
+            // parent handle was never set
+            return;
+
         if ( _parent_handle.expired() )
             throw InvalidValue("type info value expired");
     }
@@ -781,6 +797,9 @@ private:
 /** Auxiliary type information for type ``net`. */
 class Network : public detail::AtomicType<hilti::rt::Network> {};
 
+/** Auxiliary type information for type ``null`. */
+class Null : public detail::ValueLessType {};
+
 /** Auxiliary type information for type ``optional<T>`. */
 class Optional : public detail::DereferenceableType {
 public:
@@ -1243,6 +1262,7 @@ struct TypeInfo {
         Map,
         MapIterator,
         Network,
+        Null,
         Optional,
         Port,
         Real,
@@ -1298,6 +1318,7 @@ struct TypeInfo {
         type_info::Map* map;
         type_info::MapIterator* map_iterator;
         type_info::Network* network;
+        type_info::Null* null;
         type_info::Optional* optional;
         type_info::Port* port;
         type_info::Real* real;
@@ -1398,6 +1419,10 @@ struct TypeInfo {
         else if constexpr ( std::is_same_v<Type, type_info::Network> ) {
             tag = Network;
             network = value;
+        }
+        else if constexpr ( std::is_same_v<Type, type_info::Null> ) {
+            tag = Null;
+            null = value;
         }
         else if constexpr ( std::is_same_v<Type, type_info::Optional> ) {
             tag = Optional;
@@ -1615,6 +1640,10 @@ const Type* auxType(const type_info::Value& v) {
         assert(type.tag == TypeInfo::Network);
         return type.network;
     }
+    else if constexpr ( std::is_same_v<Type, type_info::Null> ) {
+        assert(type.tag == TypeInfo::Null);
+        return type.null;
+    }
     else if constexpr ( std::is_same_v<Type, type_info::Optional> ) {
         assert(type.tag == TypeInfo::Optional);
         return type.optional;
@@ -1739,34 +1768,33 @@ const Type* auxType(const type_info::Value& v) {
 
 
 // Forward declare static built-in type information objects.
-extern TypeInfo address;
-extern TypeInfo any;
-extern TypeInfo bool_;
-extern TypeInfo bytes_iterator;
-extern TypeInfo bytes;
-
-extern TypeInfo error;
-extern TypeInfo int16;
-extern TypeInfo int32;
-extern TypeInfo int64;
-extern TypeInfo int8;
-extern TypeInfo interval;
-extern TypeInfo library;
-extern TypeInfo network;
-extern TypeInfo port;
-extern TypeInfo real;
-extern TypeInfo regexp;
-extern TypeInfo stream_iterator;
-extern TypeInfo stream_view;
-extern TypeInfo stream;
-extern TypeInfo string;
-
-extern TypeInfo time;
-extern TypeInfo uint16;
-extern TypeInfo uint32;
-extern TypeInfo uint64;
-extern TypeInfo uint8;
-extern TypeInfo void_;
+extern const TypeInfo address;
+extern const TypeInfo any;
+extern const TypeInfo bool_;
+extern const TypeInfo bytes_iterator;
+extern const TypeInfo bytes;
+extern const TypeInfo error;
+extern const TypeInfo int16;
+extern const TypeInfo int32;
+extern const TypeInfo int64;
+extern const TypeInfo int8;
+extern const TypeInfo interval;
+extern const TypeInfo library;
+extern const TypeInfo network;
+extern const TypeInfo null;
+extern const TypeInfo port;
+extern const TypeInfo real;
+extern const TypeInfo regexp;
+extern const TypeInfo stream_iterator;
+extern const TypeInfo stream_view;
+extern const TypeInfo stream;
+extern const TypeInfo string;
+extern const TypeInfo time;
+extern const TypeInfo uint16;
+extern const TypeInfo uint32;
+extern const TypeInfo uint64;
+extern const TypeInfo uint8;
+extern const TypeInfo void_;
 
 } // namespace type_info
 

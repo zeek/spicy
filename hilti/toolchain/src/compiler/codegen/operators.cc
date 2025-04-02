@@ -113,14 +113,14 @@ struct Visitor : hilti::visitor::PreOrder {
         const auto& id = n->op1()->as<expression::Member>()->id();
         auto elem = n->op0()->type()->type()->as<type::Bitfield>()->bitsIndex(id);
         assert(elem);
-        result = {fmt("(::hilti::rt::optional::value(std::get<%u>(%s.value)))", *elem, op0(n)), Side::RHS};
+        result = {fmt("(::hilti::rt::tuple::get<%u>(%s.value))", *elem, op0(n)), Side::RHS};
     }
 
     void operator()(operator_::bitfield::HasMember* n) final {
         const auto& id = n->op1()->as<expression::Member>()->id();
         auto elem = n->op0()->type()->type()->as<type::Bitfield>()->bitsIndex(id);
         assert(elem);
-        result = {fmt("std::get<%u>(%s.value).has_value()", *elem, op0(n)), Side::RHS};
+        result = {fmt("::hilti::rt::tuple::has_value<%u>(%s.value)", *elem, op0(n)), Side::RHS};
     }
 
     /// bytes::Iterator
@@ -152,7 +152,9 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::bytes::SumAssignUInt8* n) final { result = fmt("%s.append(%s)", op0(n), op1(n)); }
     void operator()(operator_::bytes::Unequal* n) final { result = fmt("%s != %s", op0(n), op1(n)); }
 
-    void operator()(operator_::bytes::In* n) final { result = fmt("std::get<0>(%s.find(%s))", op1(n), op0(n)); }
+    void operator()(operator_::bytes::In* n) final {
+        result = fmt("::hilti::rt::tuple::get<0>(%s.find(%s))", op1(n), op0(n));
+    }
 
     void operator()(operator_::bytes::Find* n) final {
         auto [self, args] = methodArguments(n);
@@ -544,9 +546,14 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( auto x = ctor->tryAs<ctor::Coerced>() )
                 ctor = x->coercedCtor();
 
-            auto args = util::join(cg->compileCallArguments(ctor->as<ctor::Tuple>()->value(),
-                                                            tv->typeValue()->type()->parameters()),
-                                   ", ");
+            std::string args;
+
+            if ( ctor->as<ctor::Tuple>()->value().size() )
+                args = util::join(cg->compileCallArguments(ctor->as<ctor::Tuple>()->value(),
+                                                           tv->typeValue()->type()->parameters()),
+                                  ", ");
+            else if ( auto def = cg->typeDefaultValue(tv->typeValue()) )
+                args = *def;
 
             result = fmt("::hilti::rt::reference::make_strong<%s>(%s)",
                          cg->compile(tv->typeValue(), codegen::TypeUsage::Ctor), args);
@@ -665,10 +672,10 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::stream::view::InBytes* n) final {
-        result = fmt("std::get<0>(%s.find(%s))", op1(n), op0(n));
+        result = fmt("::hilti::rt::tuple::get<0>(%s.find(%s))", op1(n), op0(n));
     }
     void operator()(operator_::stream::view::InView* n) final {
-        result = fmt("std::get<0>(%s.find(%s))", op1(n), op0(n));
+        result = fmt("::hilti::rt::tuple::get<0>(%s.find(%s))", op1(n), op0(n));
     }
 
     void operator()(operator_::stream::view::AdvanceTo* n) final {
@@ -1091,7 +1098,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::tuple::CustomAssign* n) final {
         auto t = n->operands()[0]->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         auto l = util::join(node::transform(t, [this](auto x) { return cg->compile(x, true); }), ", ");
-        result = {fmt("std::tie(%s) = %s", l, op1(n)), Side::LHS};
+        result = {fmt("::hilti::rt::tuple::assign(std::tie(%s), %s)", l, op1(n)), Side::LHS};
     }
 
     void operator()(operator_::tuple::Equal* n) final { result = fmt("%s == %s", op0(n), op1(n)); }
@@ -1099,14 +1106,14 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::tuple::Index* n) final {
         auto i = n->op1()->as<expression::Ctor>()->ctor()->as<ctor::UnsignedInteger>()->value();
-        result = {fmt("std::get<%u>(%s)", i, op0(n)), Side::LHS};
+        result = {fmt("::hilti::rt::tuple::get<%u>(%s)", i, op0(n)), Side::LHS};
     }
 
     void operator()(operator_::tuple::Member* n) final {
         const auto& id = n->op1()->as<expression::Member>()->id();
         auto elem = n->op0()->type()->type()->as<type::Tuple>()->elementByID(id);
         assert(elem);
-        result = {fmt("std::get<%u>(%s)", elem->first, op0(n)), Side::LHS};
+        result = {fmt("::hilti::rt::tuple::get<%u>(%s)", elem->first, op0(n)), Side::LHS};
     }
 
     // Unsigned integer

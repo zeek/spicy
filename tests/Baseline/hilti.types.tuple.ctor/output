@@ -3,3 +3,7 @@
 ()
 ("Hello!", True)
 Hello!, True
+(True, "X")
+(False, Enum::Undef)
+[$a="a", $b=(not set)]
+("a", (not set))

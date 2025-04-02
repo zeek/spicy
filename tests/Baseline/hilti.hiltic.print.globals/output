@@ -35,7 +35,7 @@ extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
 
 extern void __hlt::Foo::__init_module() {
       __location__("<...>/globals.hlt:16:1-16:15");
-    ::hilti::rt::print(Foo::__globals()->X, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Foo::__globals()->X, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, &__init_globals, nullptr, &__globals_index}); }

@@ -294,18 +294,18 @@ UnsafeConstIterator View::find(Byte b, UnsafeConstIterator n) const {
     return unsafeEnd();
 }
 
-std::tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstIterator n) const {
+Tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstIterator n) const {
     if ( ! n )
         n = UnsafeConstIterator(_begin);
 
     if ( v.isEmpty() )
-        return std::make_tuple(true, n);
+        return {true, n};
 
     auto first = *v.unsafeBegin();
 
     for ( auto i = n; true; ++i ) {
         if ( i == unsafeEnd() )
-            return std::make_tuple(false, i);
+            return {false, i};
 
         if ( *i != first )
             continue;
@@ -315,29 +315,29 @@ std::tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstItera
 
         for ( ;; ) {
             if ( x == unsafeEnd() )
-                return std::make_tuple(false, i);
+                return {false, i};
 
             if ( *x++ != *y++ )
                 break;
 
             if ( y == v.unsafeEnd() )
-                return std::make_tuple(true, i);
+                return {true, i};
         }
     }
 }
 
-std::tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeConstIterator n) const {
+Tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeConstIterator n) const {
     if ( ! n )
         n = UnsafeConstIterator(_begin);
 
     if ( v.isEmpty() )
-        return std::make_tuple(true, n);
+        return {true, n};
 
     auto first = *v.unsafeBegin();
 
     for ( auto i = n; true; ++i ) {
         if ( i == unsafeEnd() )
-            return std::make_tuple(false, i);
+            return {false, i};
 
         if ( *i != first )
             continue;
@@ -347,23 +347,23 @@ std::tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeC
 
         for ( ;; ) {
             if ( x == unsafeEnd() )
-                return std::make_tuple(false, i);
+                return {false, i};
 
             if ( *x++ != *y++ )
                 break;
 
             if ( y == v.unsafeEnd() )
-                return std::make_tuple(true, i);
+                return {true, i};
         }
     }
 }
 
-std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, UnsafeConstIterator i) const {
+Tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, UnsafeConstIterator i) const {
     // We can assume that "i" is inside the view.
 
     // An empty pattern always matches at the current position.
     if ( needle.isEmpty() )
-        return std::make_tuple(true, i);
+        return {true, i};
 
     if ( ! i )
         i = unsafeEnd();
@@ -380,7 +380,7 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
     // If we don't have enough bytes available to fit the pattern in, we
     // can stop right away.
     if ( needle.size() > (i.offset() - offset()) )
-        return std::make_tuple(false, UnsafeConstIterator());
+        return {false, UnsafeConstIterator()};
 
     i -= (needle.size() - 1).Ref(); // this is safe now, get us 1st position where initial character may match
 
@@ -398,12 +398,12 @@ std::tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, U
                     break;
 
                 if ( y == needle.unsafeEnd() )
-                    return std::make_tuple(true, j);
+                    return {true, j};
             }
         }
 
         if ( j == unsafeBegin() )
-            return std::make_tuple(false, j);
+            return {false, j};
     }
 }
 

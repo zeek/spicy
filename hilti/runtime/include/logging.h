@@ -12,6 +12,8 @@
 
 namespace hilti::rt {
 
+struct TypeInfo;
+
 /**
  * Reports a fatal error and immediately aborts execution. This skips all
  * cleanup and should be used only for catastrophic library issues; not for
@@ -113,7 +115,7 @@ inline void setLocation(const char* l = nullptr) {
  * arguments if nothing is going to get logged.
  */
 template<typename T>
-inline void print(std::string_view stream, T&& msg) {
+inline void print(std::string_view stream, T&& msg, const TypeInfo* /* type */) {
     if ( ::hilti::rt::detail::globalState()->debug_logger &&
          ::hilti::rt::detail::globalState()->debug_logger->isEnabled(stream) )
         ::hilti::rt::debug::detail::print(stream, std::forward<T>(msg));

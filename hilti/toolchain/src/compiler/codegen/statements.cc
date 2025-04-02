@@ -142,8 +142,10 @@ struct Visitor : hilti::visitor::PreOrder {
         std::vector<cxx::Expression> args;
         std::optional<cxx::Expression> init;
 
-        if ( auto i = d->init() )
-            init = cg->compile(i);
+        if ( auto i = d->init() ) {
+            if ( ! d->init()->isA<expression::Void>() )
+                init = cg->compile(i);
+        }
 
         else {
             if ( auto s = d->type()->type()->tryAs<type::Struct>() )

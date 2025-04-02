@@ -14,13 +14,6 @@ using namespace std::string_literals;
 using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
-namespace std {
-template<typename X, typename Y>
-ostream& operator<<(ostream& stream, const tuple<X, Y>& xs) {
-    return stream << '(' << hilti::rt::to_string(get<0>(xs)) << ", " << hilti::rt::to_string(get<1>(xs)) << ')';
-}
-} // namespace std
-
 TEST_SUITE_BEGIN("Bytes");
 
 TEST_CASE("add") {

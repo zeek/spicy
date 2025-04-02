@@ -79,14 +79,9 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Set>() )
             result = fmt("::hilti::rt::Set(%s)", expr);
 
-        else if ( auto x = dst->type()->tryAs<type::Vector>() ) {
-            auto y = cg->compile(x->elementType(), codegen::TypeUsage::Storage);
-
-            std::string allocator;
-            if ( auto def = cg->typeDefaultValue(x->elementType()) )
-                allocator = fmt(", ::hilti::rt::vector::Allocator<%s, %s>", y, *def);
-
-            result = fmt("::hilti::rt::Vector<%s%s>(%s)", y, allocator, expr);
+        else if ( dst->type()->isA<type::Vector>() ) {
+            assert(type::same(n->elementType(), dst->type()->as<type::Vector>()->elementType()));
+            result = expr;
         }
 
         else
@@ -233,8 +228,8 @@ struct Visitor : public hilti::visitor::PreOrder {
             // Coerce individual fields. We do this in a lambda to avoid
             // emitting multiple full tupled constructors for temporaries.
             for ( auto i = 0U; i < n->elements().size(); i++ ) {
-                exprs.push_back(
-                    cg->coerce(fmt("std::get<%d>(__t)", i), n->elements()[i]->type(), x->elements()[i]->type()));
+                exprs.push_back(cg->coerce(fmt("::hilti::rt::tuple::get<%d>(__t)", i), n->elements()[i]->type(),
+                                           x->elements()[i]->type()));
             }
 
             result = fmt("[&](const auto& __t) { return std::make_tuple(%s); }(%s)", util::join(exprs, ", "), expr);
