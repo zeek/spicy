@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.15.0)
 
-if (APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0)
+if (APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0 AND NOT CMAKE_OSX_SYSROOT)
     # We are going to need having CMAKE_OSX_SYSROOT point to the macOS SDK
     # path. However, starting with CMake 4.0, CMAKE_OSX_SYSROOT is not set
     # automatically anymore. So we follow the guidance from the CMake 4.0
