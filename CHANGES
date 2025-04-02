@@ -1,3 +1,7 @@
+1.13.0-dev.165 | 2025-04-02 12:37:53 +0200
+
+  * Fine-tune recent CMake 4 tweak. (Robin Sommer, Corelight)
+
 1.13.0-dev.163 | 2025-04-02 10:28:07 +0200
 
   * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
