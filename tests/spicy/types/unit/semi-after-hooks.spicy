@@ -1,0 +1,11 @@
+# @TEST-EXEC: spicyc -c %INPUT
+#
+# @TEST-DOC: Ensures that semicolons can follow unit hooks
+
+module Test;
+
+public type Data = unit {
+    # Test both with and without semicolons
+    : uint8 { print $$; }
+    : uint8 { print $$; };
+};

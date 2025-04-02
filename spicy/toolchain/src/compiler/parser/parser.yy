@@ -875,6 +875,8 @@ opt_skip_     :
                 SKIP                             { $$ = true; }
               | /* empty */                      { $$ = false; }
 
+opt_semi      : ';' | /* empty */
+
 opt_unit_field_args
               : '(' opt_exprs ')'                { $$ = std::move($2); }
               | /* empty */                      { $$ = hilti::Expressions(); }
@@ -896,7 +898,7 @@ opt_unit_field_sinks
               | /* empty */                      { $$ = hilti::Expressions(); }
 
 opt_unit_item_hooks
-              : unit_hooks                       { $$ = std::move($1); }
+              : unit_hooks opt_semi              { $$ = std::move($1); }
               | ';'                              { $$ = spicy::declaration::Hooks(); }
 
 unit_hooks    : unit_hooks unit_hook             { $$ = std::move($1); $$.push_back(std::move($2)); }
