@@ -11,8 +11,7 @@ set_source_files_properties(${_generated_sources} PROPERTIES SKIP_LINTING ON)
 if (BUILD_TOOLCHAIN)
     add_custom_command(
         OUTPUT ${_generated_sources}
-        COMMAND ${CMAKE_BINARY_DIR}/bin/spicyc -x ${CMAKE_CURRENT_BINARY_DIR}/Benchmark
-                "${BENCH_SOURCES}"
+        COMMAND $<TARGET_FILE:spicyc> -x ${CMAKE_CURRENT_BINARY_DIR}/Benchmark "${BENCH_SOURCES}"
         DEPENDS spicyc ${BENCH_SOURCES}
         COMMENT "Generating C++ code for Benchmark")
 
