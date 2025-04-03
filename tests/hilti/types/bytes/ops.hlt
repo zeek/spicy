@@ -51,6 +51,9 @@ assert b"xyz" !in y;
 assert y.starts_with(b"012");
 assert y.starts_with(b"");
 assert ! y.starts_with(b"XYZ");
+assert y.ends_with(b"789");
+assert y.ends_with(b"");
+assert ! y.ends_with(b"XYZ");
 
 assert |y| == 10;
 assert |b""| == 0;

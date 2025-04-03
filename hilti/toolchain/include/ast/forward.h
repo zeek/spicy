@@ -182,6 +182,7 @@ class At;
 class Split;
 class Split1;
 class StartsWith;
+class EndsWith;
 class Strip;
 class SubIterators;
 class SubIterator;

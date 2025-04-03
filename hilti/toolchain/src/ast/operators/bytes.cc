@@ -612,13 +612,13 @@ public:
             .member = "starts_with",
             .param0 =
                 {
-                    .name = "b",
+                    .name = "prefix",
                     .type = {parameter::Kind::In, builder->typeBytes()},
                 },
             .result = {Constness::Const, builder->typeBool()},
             .ns = "bytes",
             .doc = R"(
-Returns true if the bytes value starts with *b*.
+Returns true if the bytes value starts with *prefix*.
 )",
         };
     }
@@ -626,6 +626,31 @@ Returns true if the bytes value starts with *b*.
     HILTI_OPERATOR(hilti, bytes::StartsWith);
 };
 HILTI_OPERATOR_IMPLEMENTATION(StartsWith);
+
+class EndsWith : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeBytes()},
+            .member = "ends_with",
+            .param0 =
+                {
+                    .name = "suffix",
+                    .type = {parameter::Kind::In, builder->typeBytes()},
+                },
+            .result = {Constness::Const, builder->typeBool()},
+            .ns = "bytes",
+            .doc = R"(
+Returns true if the bytes value ends with *suffix*.
+)",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, bytes::EndsWith);
+};
+HILTI_OPERATOR_IMPLEMENTATION(EndsWith);
+
 
 class Strip : public BuiltInMemberCall {
 public:

@@ -152,6 +152,7 @@ public:
     virtual void operator()(hilti::operator_::bytes::Split* n) {}
     virtual void operator()(hilti::operator_::bytes::Split1* n) {}
     virtual void operator()(hilti::operator_::bytes::StartsWith* n) {}
+    virtual void operator()(hilti::operator_::bytes::EndsWith*) {}
     virtual void operator()(hilti::operator_::bytes::Strip* n) {}
     virtual void operator()(hilti::operator_::bytes::SubIterators* n) {}
     virtual void operator()(hilti::operator_::bytes::SubIterator* n) {}

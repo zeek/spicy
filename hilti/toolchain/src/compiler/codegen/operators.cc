@@ -191,6 +191,11 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s.startsWith(%s)", self, args[0]);
     }
 
+    void operator()(operator_::bytes::EndsWith* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("%s.endsWith(%s)", self, args[0]);
+    }
+
     void operator()(operator_::bytes::Strip* n) final {
         auto [self, args] = methodArguments(n);
 
