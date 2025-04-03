@@ -108,7 +108,7 @@ Version 1.12
 
 - Add ``CMAKE_CXX_FLAGS`` to ``HILTI_CONFIG_RUNTIME_LD_FLAGS``.
 - Speed up compilation of many parsers by streamlining generated C++ code.
-- Add ``starts_with`` ``split``, ``split1``, ``lower`` and ``upper`` methods to ``string``.
+- Add ``starts_with``, ``split``, ``split1``, ``lower`` and ``upper`` methods to ``string``.
 - GH-1874: Add new library function ``spicy::bytes_to_mac``.
 - Optimize ``spicy::bytes_to_hexstring`` and ``spicy::bytes_to_mac``.
 - Improve validation of attributes so incompatible or invalid attributes should be rejected more reliably.

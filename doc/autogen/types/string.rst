@@ -5,6 +5,10 @@
     Converts the string into a binary representation encoded with the
     given character set.
 
+.. spicy:method:: string::ends_with string ends_with False bool (suffix: string)
+
+    Returns true if the string value ends with *suffix*.
+
 .. spicy:method:: string::lower string lower False string ()
 
     Returns a lower-case version of the string value.

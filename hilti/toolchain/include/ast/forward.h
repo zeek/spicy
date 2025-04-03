@@ -182,6 +182,7 @@ class At;
 class Split;
 class Split1;
 class StartsWith;
+class EndsWith;
 class Strip;
 class SubIterators;
 class SubIterator;
@@ -490,6 +491,7 @@ class Encode;
 class Split;
 class Split1;
 class StartsWith;
+class EndsWith;
 class LowerCase;
 class UpperCase;
 } // namespace string

@@ -215,6 +215,28 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(StartsWith);
 
+class EndsWith : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {parameter::Kind::In, builder->typeString()},
+            .member = "ends_with",
+            .param0 =
+                {
+                    .name = "suffix",
+                    .type = {parameter::Kind::In, builder->typeString()},
+                },
+            .result = {Constness::Const, builder->typeBool()},
+            .ns = "string",
+            .doc = "Returns true if the string value ends with *suffix*.",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, string::EndsWith);
+};
+HILTI_OPERATOR_IMPLEMENTATION(EndsWith);
+
 class LowerCase : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {

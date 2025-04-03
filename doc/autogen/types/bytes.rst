@@ -12,6 +12,10 @@
     is encountered that *charset* or UTF* cannot represent, it's handled
     according to the *errors* strategy.
 
+.. spicy:method:: bytes::ends_with bytes ends_with False bool (suffix: bytes)
+
+    Returns true if the bytes value ends with *suffix*.
+
 .. spicy:method:: bytes::find bytes find False tuple<bool,~iterator<bytes>> (needle: bytes)
 
     Searches *needle* in the value's content. Returns a tuple of a boolean
@@ -63,9 +67,9 @@
     separator is not provided, the split will occur at the first sequence
     of white spaces.
 
-.. spicy:method:: bytes::starts_with bytes starts_with False bool (b: bytes)
+.. spicy:method:: bytes::starts_with bytes starts_with False bool (prefix: bytes)
 
-    Returns true if the bytes value starts with *b*.
+    Returns true if the bytes value starts with *prefix*.
 
 .. spicy:method:: bytes::strip bytes strip False bytes ([ side: spicy::Side ], [ set: bytes ])
 

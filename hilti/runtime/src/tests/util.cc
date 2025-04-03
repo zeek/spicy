@@ -160,6 +160,21 @@ TEST_CASE("createTemporaryFile") {
     }
 }
 
+TEST_CASE("endsWith") {
+    CHECK(endsWith("", ""));
+    CHECK_FALSE(endsWith("", "a"));
+    CHECK(endsWith("abc", "c"));
+    CHECK_FALSE(endsWith("abc", "a1"));
+    CHECK(endsWith("abc", "bc"));
+    CHECK(endsWith("abc", "abc"));
+
+    const auto null = std::string(1U, '\0');
+
+    CHECK(endsWith("abc" + null, null));
+    CHECK(endsWith("abc" + null, "c" + null));
+    CHECK_FALSE(endsWith("abc" + null, "abc"));
+}
+
 TEST_CASE("enumerate") {
     auto input = std::vector<char>({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'});
     for ( auto x : enumerate(input) ) {
