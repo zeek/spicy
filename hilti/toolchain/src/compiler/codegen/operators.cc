@@ -822,6 +822,11 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::startsWith(%s, %s)", self, args[0]);
     }
 
+    void operator()(operator_::string::EndsWith* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("::hilti::rt::endsWith(%s, %s)", self, args[0]);
+    }
+
     void operator()(operator_::string::LowerCase* n) final { result = fmt("::hilti::rt::string::lower(%s)", op0(n)); }
 
     void operator()(operator_::string::UpperCase* n) final { result = fmt("::hilti::rt::string::upper(%s)", op0(n)); }

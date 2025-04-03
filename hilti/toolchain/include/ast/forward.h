@@ -490,6 +490,7 @@ class Encode;
 class Split;
 class Split1;
 class StartsWith;
+class EndsWith;
 class LowerCase;
 class UpperCase;
 } // namespace string
