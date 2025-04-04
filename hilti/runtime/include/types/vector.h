@@ -252,7 +252,8 @@ private:
 
 } // namespace vector
 
-/** HILTI's `Vector` is a `std::vector`-like type with additional safety guarantees.
+/**
+ * HILTI's `Vector` is a `std::vector`-like type with additional safety guarantees.
  *
  * In particular it guarantees that
  *
@@ -262,7 +263,7 @@ private:
  *
  * If not otherwise specified, member functions have the semantics of
  * `std::vector` member functions.
- * */
+ */
 template<typename T, typename Allocator>
 class Vector : protected std::vector<T, Allocator> {
 public:
@@ -289,7 +290,8 @@ public:
 
     ~Vector() = default;
 
-    /** Returns the last element of the `vector`.
+    /**
+     * Returns the first element of the `vector`.
      *
      * @return a reference to the last element
      * @throw `IndexError` if the `Vector` is empty
@@ -301,7 +303,8 @@ public:
         return V::front();
     }
 
-    /** Returns the last element of the `vector`.
+    /**
+     * Returns the last element of the `vector`.
      *
      * @return a reference to the last element
      * @throw `IndexError` if the `Vector` is empty
@@ -372,7 +375,8 @@ public:
         return v;
     }
 
-    /** Replaces the contents of this `Vector` with another `Vector`.
+    /**
+     * Replaces the contents of this `Vector` with another `Vector`.
      *
      * In contrast to assignments of `std::vector` iterators remain valid and
      * after assignment will point to positions in the assigned vector.
@@ -388,7 +392,8 @@ public:
         return *this;
     }
 
-    /** Replaces the contents of this `Vector` with another `Vector`.
+    /**
+     * Replaces the contents of this `Vector` with another `Vector`.
      *
      * In contrast to assignments of `std::vector` iterators remain valid and
      * after assignment will point to positions in the assigned vector.
@@ -401,7 +406,8 @@ public:
         return *this;
     }
 
-    /** Accesses specified element.
+    /**
+     * Accesses specified element.
      *
      * @param i position of the element to return
      * @return a reference to the element
@@ -414,7 +420,8 @@ public:
         return V::data()[i];
     }
 
-    /** Accesses specified element.
+    /**
+     * Accesses specified element.
      *
      * @param i position of the element to return
      * @return the element
@@ -427,7 +434,8 @@ public:
         return V::data()[i];
     }
 
-    /** Accesses specified element.
+    /**
+     * Accesses specified element.
      *
      * @param i position of the element to return
      * @return a reference to the element
@@ -440,7 +448,8 @@ public:
         return V::data()[i];
     }
 
-    /* Assigns a value to an element.
+    /**
+     * Assigns a value to an element.
      *
      * If the element is not present in the vector, it is resized to contain
      * at i + 1 values. The other added values are default-initialized.
@@ -455,7 +464,8 @@ public:
         V::data()[i] = std::move(x);
     }
 
-    /** Concatenates this `Vector` and another `Vector`.
+    /**
+     * Concatenates this `Vector` and another `Vector`.
      *
      * @param other the other `Vector` to append
      * @return the concatenation of this `Vector` and the other `Vector`
@@ -466,7 +476,8 @@ public:
         return v;
     }
 
-    /** Appends a `Vector` in place.
+    /**
+     * Appends a `Vector` in place.
      *
      * @param other the `Vector` to append
      * @return a reference to the modified `Vector`
@@ -476,7 +487,8 @@ public:
         return *this;
     }
 
-    /** Inserts value before a given position.
+    /**
+     * Inserts value before a given position.
      *
      * @param pos iterator to the position preceding the inserted value
      * @param value value to insert
