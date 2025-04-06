@@ -30,7 +30,7 @@ static std::string makeInput(std::uint64_t input_size) {
 template<class... Args>
 static void benchmarkParser(benchmark::State& state, Args&&... args) {
     auto args_tuple = std::make_tuple(std::move(args)...);
-    auto parser_name = std::get<0>(args_tuple);
+    const auto& parser_name = std::get<0>(args_tuple);
 
     hilti::rt::init();
     spicy::rt::init();
