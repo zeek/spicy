@@ -630,7 +630,13 @@ struct scope_exit {
     scope_exit(const scope_exit&) = delete;
     scope_exit(scope_exit&&) = delete;
 
-    ~scope_exit() { _f(); }
+    ~scope_exit() noexcept {
+        try {
+            _f();
+        } catch ( ... ) {
+            // Ignore.
+        }
+    }
 
     EF _f;
 };
