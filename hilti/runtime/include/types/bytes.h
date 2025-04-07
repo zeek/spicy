@@ -433,7 +433,10 @@ public:
                        unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const;
 
     /** Returns true if the data begins with a given, other bytes instance. */
-    bool startsWith(const Bytes& b) const { return hilti::rt::startsWith(*this, b); }
+    bool startsWith(const Bytes& prefix) const { return hilti::rt::startsWith(*this, prefix); }
+
+    /** Returns true if the data begins with a given, other bytes instance. */
+    bool endsWith(const Bytes& suffix) const { return hilti::rt::endsWith(*this, suffix); }
 
     /**
      * Returns an upper-case version of the instance. This internally first

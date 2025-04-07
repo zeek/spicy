@@ -29,6 +29,11 @@ assert ! x1.starts_with("123");
 assert "hi there".starts_with("hi");
 assert "𝔘𝔫𝔦𝔠𝔬𝔡𝔢".starts_with("𝔘𝔫𝔦");
 
+assert x1.ends_with("123");
+assert ! x1.ends_with("abc");
+assert "hi there".ends_with("there");
+assert "𝔘𝔫𝔦𝔠𝔬𝔡𝔢".ends_with("𝔠𝔬𝔡𝔢");
+
 assert x1.split("b") == ["a", "c123"];
 assert "123xyz45xyz6".split("xyz") == ["123", "45", "6"];
 assert "123 456 789".split() == ["123", "456", "789"];

@@ -323,6 +323,17 @@ TEST_CASE("startsWith") {
     CHECK_FALSE(""_b.startsWith("a"_b));
 }
 
+TEST_CASE("endsWith") {
+    CHECK("123"_b.endsWith(""_b));
+    CHECK("123"_b.endsWith("3"_b));
+    CHECK("123"_b.endsWith("23"_b));
+    CHECK("123"_b.endsWith("123"_b));
+
+    CHECK_FALSE("123"_b.endsWith("1234"_b));
+    CHECK_FALSE("123"_b.endsWith("a"_b));
+    CHECK_FALSE(""_b.endsWith("a"_b));
+}
+
 TEST_CASE("strip") {
     SUBCASE("whitespace") {
         CHECK_EQ("\t 123 "_b.strip(bytes::Side::Left), "123 "_b);

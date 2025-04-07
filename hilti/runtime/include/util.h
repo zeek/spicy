@@ -243,6 +243,13 @@ std::string replace(std::string s, std::string_view o, std::string_view n);
 bool startsWith(std::string_view s, std::string_view prefix);
 
 /**
+ * Returns true if a string ends with another.
+ *
+ * \note This function is not UTF8-aware.
+ */
+bool endsWith(std::string_view s, std::string_view suffix);
+
+/**
  * Python-style enumerate() that returns an iterable yielding pairs `(index,
  * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
  */
