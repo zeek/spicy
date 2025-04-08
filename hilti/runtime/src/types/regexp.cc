@@ -255,7 +255,7 @@ void regexp::detail::CompiledRegExp::_newJrx() {
 }
 
 void regexp::detail::CompiledRegExp::_compileOne(regexp::Pattern pattern, int idx) {
-    auto regexp = pattern.value();
+    const auto& regexp = pattern.value();
 
     int cflags = (pattern.isCaseInsensitive() ? REG_ICASE : 0);
     auto id = static_cast<jrx_accept_id>(pattern.matchID());

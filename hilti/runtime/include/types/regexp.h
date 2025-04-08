@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -62,7 +61,7 @@ private:
 
 inline std::string to_string(const Pattern& pattern) {
     auto ci = (pattern.isCaseInsensitive() ? "i" : "");
-    auto id = (pattern.matchID() ? fmt("$(%" PRIu64 ")", pattern.matchID()) : "");
+    const auto& id = (pattern.matchID() ? fmt("$(%" PRIu64 ")", pattern.matchID()) : "");
     return fmt("/%s/%s%s", pattern.value(), ci, id);
 }
 

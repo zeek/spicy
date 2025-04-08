@@ -195,12 +195,13 @@ template<typename T>
 std::string join_to_string(T&& x, const std::string& separator) {
     std::stringstream out;
 
-    std::apply(
-        [&](auto&... args) {
-            size_t i = 0;
-            ((out << rt::to_string_for_print(args) << ((i++ < std::tuple_size_v<T> - 1) ? separator : "")), ...);
-        },
-        x);
+    if constexpr ( std::tuple_size_v<T> != 0 )
+        std::apply(
+            [&](auto& arg, auto&... args) {
+                out << rt::to_string_for_print(arg);
+                ((out << separator << rt::to_string_for_print(args)), ...);
+            },
+            x);
 
     return out.str();
 }
