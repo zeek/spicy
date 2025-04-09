@@ -367,7 +367,6 @@ std::string cxx::declaration::Global::str() const { return fmtDeclaration(id, ty
 
 std::string cxx::type::Struct::str() const {
     std::vector<std::string> to_string_fields;
-    std::vector<std::string> visitor_calls;
 
     auto fmt_member = [&](const auto& f) {
         if ( auto x = std::get_if<declaration::Local>(&f) ) {
@@ -377,11 +376,6 @@ std::string cxx::type::Struct::str() const {
                     to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
                 }
             }
-
-            if ( x->isAnonymous() )
-                visitor_calls.emplace_back(fmt("_(\"<anon>\", %s); ", x->id));
-            else if ( ! (x->isInternal() || x->linkage == "inline static") ) // Don't visit internal or static fields.
-                visitor_calls.emplace_back(fmt("_(\"%s\", %s); ", x->id, x->id));
 
             // We default initialize any members here that don't have an
             // explicit "init" expression. Those that do will be initialized
@@ -464,9 +458,6 @@ std::string cxx::type::Struct::str() const {
             struct_fields.emplace_back(params_ctor);
         }
     }
-
-    struct_fields.emplace_back(
-        fmt("template<typename F> void __visit(F _) const { %s}", util::join(visitor_calls, "")));
 
     auto struct_fields_as_str =
         util::join(util::transform(struct_fields, [&](const auto& x) { return fmt("    %s", x); }), "\n");
