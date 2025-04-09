@@ -225,10 +225,13 @@ b{string}             yylval->build(expandUTF8Escapes(driver, std::string(yytext
 
 <RE>(\\.|[^\\\/])*    yylval->build(hilti::util::replace(yytext, "\\/", "/")); return token::CREGEXP;
 <RE>[/\\\n]           return (token_type) yytext[0];
+<RE>.                 driver->error("invalid character in regular expression", toMeta(*yylloc));
 
-<DOTTED_ID>{id}(\.{id})*  yylval->build(std::string(yytext)); return token::DOTTED_IDENT;
-<DOTTED_ID>{blank}+       yylloc->step();
-<DOTTED_ID>[\n]+          yylloc->lines(yyleng); yylloc->step();
+<DOTTED_ID>%?{id}(\.{id})*  yylval->build(std::string(yytext)); return token::DOTTED_IDENT;
+<DOTTED_ID>{blank}+   yylloc->step();
+<DOTTED_ID>[./]+      yylloc->step();
+<DOTTED_ID>[\n]+      yylloc->lines(yyleng); yylloc->step();
+<DOTTED_ID>.          driver->error("invalid character in ID", toMeta(*yylloc));
 
 %%
 
