@@ -137,17 +137,17 @@ private:
     }
 
     void operator()(expression::Name* n) final {
-        auto d = n->resolvedDeclaration();
-        assert(d);
-        dispatch(d);
-        follow(d);
+        if ( auto d = n->resolvedDeclaration() ) {
+            dispatch(d);
+            follow(d);
+        }
     }
 
     void operator()(type::Name* n) final {
-        auto d = n->resolvedDeclaration();
-        assert(d);
-        dispatch(d);
-        follow(d);
+        if ( auto d = n->resolvedDeclaration() ) {
+            dispatch(d);
+            follow(d);
+        }
     }
 };
 
