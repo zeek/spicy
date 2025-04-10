@@ -10,6 +10,7 @@
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/void.h>
 
+#include <spicy/ast/attribute.h>
 #include <spicy/ast/forward.h>
 #include <spicy/ast/node.h>
 
@@ -73,22 +74,22 @@ public:
     auto unitFieldIndex() { return _unit_field_index; }
 
     hilti::Expression* priority() const {
-        if ( auto attr = attributes()->find(hilti::attribute::Kind::Priority) )
+        if ( auto attr = attributes()->find(attribute::kind::Priority) )
             return *attr->valueAsExpression();
         else
             return nullptr;
     }
 
     hook::Type hookType() const {
-        if ( attributes()->has(hilti::attribute::Kind::Foreach) )
+        if ( attributes()->has(attribute::kind::Foreach) )
             return hook::Type::ForEach;
-        else if ( attributes()->has(hilti::attribute::Kind::Error) )
+        else if ( attributes()->has(attribute::kind::Error) )
             return hook::Type::Error;
         else
             return hook::Type::Standard;
     }
 
-    auto isDebug() const { return attributes()->has(hilti::attribute::Kind::Debug); }
+    auto isDebug() const { return attributes()->has(attribute::kind::Debug); }
 
     void setUnitTypeIndex(hilti::ast::TypeIndex index) {
         assert(index);

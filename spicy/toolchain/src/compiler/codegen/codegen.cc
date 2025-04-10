@@ -75,7 +75,7 @@ struct VisitorASTInfo : public visitor::PreOrder {
 
             for ( const auto& [id, p] : unit->grammar().productions() ) {
                 auto field = p->meta().field();
-                if ( ! field || ! field->attributes()->has(hilti::attribute::Kind::Synchronize) )
+                if ( ! field || ! field->attributes()->has(attribute::kind::Synchronize) )
                     continue;
 
                 auto lahs = unit->grammar().lookAheadsForProduction(p);
@@ -139,13 +139,13 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         auto qstruct = builder()->qualifiedType(struct_, n->type()->constness());
 
         n->setType(context(), qstruct);
-        n->addAttribute(context(), builder()->attribute(hilti::attribute::Kind::OnHeap));
+        n->addAttribute(context(), builder()->attribute(hilti::attribute::kind::OnHeap));
 
         if ( info->uses_sync_advance.find(u->typeID()) != info->uses_sync_advance.end() )
             // Unit has an implementation of `%sync_advance`, so add feature
             // requirement for %sync_advance to the struct's type
             // declaration.
-            n->addAttribute(context(), builder()->attribute(hilti::attribute::Kind::RequiresTypeFeature,
+            n->addAttribute(context(), builder()->attribute(hilti::attribute::kind::RequiresTypeFeature,
                                                             builder()->stringLiteral("uses_sync_advance")));
 
         cg->recordTypeMapping(u, struct_);
@@ -687,7 +687,7 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     AttributeSet* attrs = builder()->attributeSet();
 
     if ( priority )
-        attrs->add(context(), builder()->attribute(hilti::attribute::Kind::Priority, priority));
+        attrs->add(context(), builder()->attribute(attribute::kind::Priority, priority));
 
     auto f = builder()->function(ID(hid), ft, body, hilti::function::CallingConvention::Standard, attrs, meta);
     return builder()->declarationFunction(f, hilti::declaration::Linkage::Struct, meta);

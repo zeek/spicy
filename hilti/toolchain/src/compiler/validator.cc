@@ -63,13 +63,13 @@ using util::fmt;
 /**
  * A mapping of node tags to any attributes that node allows. When a new
  * attribute is added, this map must be updated to accept that attribute on any
- * nodes it applies to.
+ * nodes it applies to. These checks are applied only to actual HILTI modules.
  */
 static std::unordered_map<node::Tag, std::unordered_set<attribute::Kind>> allowed_attributes{
     {node::tag::Function,
-     {attribute::Kind::Cxxname, attribute::Kind::HavePrototype, attribute::Kind::Priority, attribute::Kind::Static,
-      attribute::Kind::NeededByFeature, attribute::Kind::Debug, attribute::Kind::Foreach, attribute::Kind::Error}},
-    {node::tag::declaration::Parameter, {attribute::Kind::RequiresTypeFeature}},
+     {attribute::kind::Cxxname, attribute::kind::HavePrototype, attribute::kind::Priority, attribute::kind::Static,
+      attribute::kind::NeededByFeature, attribute::kind::Debug}},
+    {node::tag::declaration::Parameter, {attribute::kind::RequiresTypeFeature}},
 };
 
 void hilti::validator::VisitorMixIn::deprecated(const std::string& msg, const Location& l) const {
@@ -139,11 +139,15 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     // Ensures that the node represented by tag is allowed to have all of the
     // provided attributes. This does not use any context, if more information
     // is needed, then do the check elsewhere.
-    void checkNodeAttributes(node::Tag tag, AttributeSet* attributes, const std::string_view& where) {
+    void checkNodeAttributes(Node* n, AttributeSet* attributes, const std::string_view& where) {
         if ( ! attributes )
             return;
 
-        auto it = allowed_attributes.find(tag);
+        if ( auto current_module = n->parent<declaration::Module>();
+             current_module && current_module->uid().process_extension != ".hlt" )
+            return;
+
+        auto it = allowed_attributes.find(n->nodeTag());
 
         if ( it == allowed_attributes.end() ) {
             if ( ! attributes->attributes().empty() )
@@ -240,11 +244,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(Function* n) final {
-        checkNodeAttributes(n->nodeTag(), n->attributes(), "function");
+        checkNodeAttributes(n, n->attributes(), "function");
 
         if ( auto attrs = n->attributes() ) {
             auto is_hook = n->ftype()->flavor() == type::function::Flavor::Hook;
-            if ( auto prio = attrs->find(hilti::attribute::Kind::Priority) ) {
+            if ( auto prio = attrs->find(hilti::attribute::kind::Priority) ) {
                 if ( ! is_hook )
                     error("only hooks can have priorities", n);
 
@@ -252,7 +256,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                     error(x.error(), n);
             }
 
-            if ( ! n->body() && ! is_hook && ! attrs->has(hilti::attribute::Kind::Cxxname) )
+            if ( ! n->body() && ! is_hook && ! attrs->has(hilti::attribute::kind::Cxxname) )
                 error(fmt("function '%s' must have a body or be declared with &cxxname", n->id()), n);
         }
     }
@@ -336,7 +340,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(declaration::Parameter* n) final {
-        checkNodeAttributes(n->nodeTag(), n->attributes(), n->displayName());
+        checkNodeAttributes(n, n->attributes(), n->displayName());
         checkDeclarationType(n, n->type());
 
         if ( ! n->type()->type()->isA<type::Auto>() ) {
@@ -346,7 +350,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( n->type()->isWildcard() ) {
             if ( auto d = n->parent(4)->tryAs<declaration::Function>() ) {
-                if ( ! d->function()->attributes()->has(hilti::attribute::Kind::Cxxname) )
+                if ( ! d->function()->attributes()->has(hilti::attribute::kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
                               "functions declared with &cxxname",
                               n->id()),
@@ -354,7 +358,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
 
             if ( auto d = n->parent(4)->tryAs<declaration::Type>() ) {
-                if ( ! d->attributes()->has(hilti::attribute::Kind::Cxxname) )
+                if ( ! d->attributes()->has(hilti::attribute::kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
                               "library structs declared with &cxxname",
                               n->id()),
@@ -364,7 +368,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( auto attrs = n->attributes() )
             for ( const auto& attr : attrs->attributes() ) {
-                if ( attr->kind() == hilti::attribute::Kind::RequiresTypeFeature ) {
+                if ( attr->kind() == hilti::attribute::kind::RequiresTypeFeature ) {
                     if ( auto x = attr->valueAsString(); ! x )
                         error(x.error(), n);
                 }
@@ -433,7 +437,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(ctor::Null* n) final {}
 
     void operator()(ctor::RegExp* n) final {
-        if ( n->attributes()->has(hilti::attribute::Kind::Anchor) )
+        if ( n->attributes()->has(hilti::attribute::kind::Anchor) )
             // This can end up reporting the same location multiple times,
             // which seems fine. Otherwise we'd need to explicitly track what's
             // reported already.

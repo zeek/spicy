@@ -60,7 +60,7 @@ struct Visitor : public visitor::PreOrder {
         bool needs_check = false;
 
         if ( auto field = lp->production->meta().field();
-             field && field->attributes()->find(hilti::attribute::Kind::Synchronize) )
+             field && field->attributes()->find(attribute::kind::Synchronize) )
             needs_check = true;
         else {
             auto tokens = pb()->cg()->astInfo().look_aheads_in_use;
@@ -144,7 +144,7 @@ struct Visitor : public visitor::PreOrder {
         auto attrs = builder()->attributeSet();
 
         if ( ! state().captures )
-            attrs->add(context(), builder()->attribute(hilti::attribute::Kind::Nosub));
+            attrs->add(context(), builder()->attribute(hilti::attribute::kind::Nosub));
 
         auto re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->patterns(), attrs));
 

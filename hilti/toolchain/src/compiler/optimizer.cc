@@ -192,7 +192,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 assert(fn.size() <= 1);
 
                 // If the member declaration is marked `&always-emit` mark it as implemented.
-                if ( n->attributes()->has(hilti::attribute::Kind::AlwaysEmit) )
+                if ( n->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
                     function.defined = true;
 
                 // If the member declaration includes a body mark it as implemented.
@@ -203,7 +203,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 // attribute its members are defined in C++ as well.
                 auto type_ = n->parent<declaration::Type>();
 
-                if ( type_ && type_->attributes()->has(hilti::attribute::Kind::Cxxname) )
+                if ( type_ && type_->attributes()->has(hilti::attribute::kind::Cxxname) )
                     function.defined = true;
 
                 if ( n->type()->type()->as<type::Function>()->flavor() == type::function::Flavor::Hook )
@@ -211,7 +211,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 if ( auto type = type_ ) {
                     for ( const auto& requirement :
-                          n->attributes()->findAll(hilti::attribute::Kind::NeededByFeature) ) {
+                          n->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                         const auto& requirement_ = requirement->valueAsString();
                         const auto& feature = *requirement_;
 
@@ -275,11 +275,11 @@ struct FunctionVisitor : OptimizerVisitor {
                     function.defined = true;
 
                 // If the declaration has a `&cxxname` it is defined in C++.
-                else if ( fn->attributes()->has(hilti::attribute::Kind::Cxxname) )
+                else if ( fn->attributes()->has(hilti::attribute::kind::Cxxname) )
                     function.defined = true;
 
                 // If the member declaration is marked `&always-emit` mark it as referenced.
-                if ( fn->attributes()->has(hilti::attribute::Kind::AlwaysEmit) )
+                if ( fn->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
                     function.referenced = true;
 
                 // If the function is public mark is as referenced.
@@ -290,7 +290,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 // should only be emitted when certain features are active.
                 if ( auto decl = context()->lookup(n->linkedDeclarationIndex()) ) {
                     for ( const auto& requirement :
-                          fn->attributes()->findAll(hilti::attribute::Kind::NeededByFeature) ) {
+                          fn->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                         const auto& requirement_ = requirement->valueAsString();
                         const auto& feature = *requirement_;
 
@@ -1120,7 +1120,7 @@ public:
                     std::set<std::string> reqs;
 
                     for ( const auto& requirement :
-                          parameter->attributes()->findAll(hilti::attribute::Kind::RequiresTypeFeature) ) {
+                          parameter->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
                         auto feature = *requirement->valueAsString();
                         reqs.insert(std::move(feature));
                     }
@@ -1190,7 +1190,7 @@ public:
                 // Check if access to the field has type requirements.
                 if ( auto type_id = type->type()->typeID() )
                     for ( const auto& requirement :
-                          field->attributes()->findAll(hilti::attribute::Kind::NeededByFeature) ) {
+                          field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                         const auto feature = *requirement->valueAsString();
                         if ( ! ignored_features.count(type_id) || ! ignored_features.at(type_id).count(feature) )
                             // Enable the required feature.
@@ -1222,7 +1222,7 @@ public:
 
                     if ( auto type_id = type->type()->typeID() )
                         for ( const auto& requirement :
-                              param->attributes()->findAll(hilti::attribute::Kind::RequiresTypeFeature) ) {
+                              param->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
                             const auto feature = *requirement->valueAsString();
                             if ( ! ignored_features.count(type_id) || ! ignored_features.at(type_id).count(feature) ) {
                                 // Enable the required feature.
@@ -1325,7 +1325,7 @@ public:
                 const auto ignored_features = conditionalFeatures(x);
 
                 for ( const auto& requirement :
-                      field->attributes()->findAll(hilti::attribute::Kind::NeededByFeature) ) {
+                      field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                     const auto feature = *requirement->valueAsString();
 
                     // Enable the required feature if it is not ignored here.
@@ -1348,7 +1348,7 @@ public:
         switch ( _stage ) {
             case Stage::COLLECT: {
                 // Collect feature requirements associated with type.
-                for ( const auto& requirement : n->attributes()->findAll(hilti::attribute::Kind::RequiresTypeFeature) )
+                for ( const auto& requirement : n->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) )
                     _features[n->typeID()][*requirement->valueAsString()] = true;
 
                 break;
@@ -1437,11 +1437,11 @@ struct MemberVisitor : OptimizerVisitor {
             return;
 
         // We never remove member marked `&always-emit`.
-        if ( n->attributes()->has(hilti::attribute::Kind::AlwaysEmit) )
+        if ( n->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
             return;
 
         // We only remove member marked `&internal`.
-        if ( ! n->attributes()->find(hilti::attribute::Kind::Internal) )
+        if ( ! n->attributes()->find(hilti::attribute::kind::Internal) )
             return;
 
         auto member_id = util::join({type_id, n->id()}, "::");
@@ -1461,11 +1461,11 @@ struct MemberVisitor : OptimizerVisitor {
                         const auto& features = _features.at(type_id);
 
                         auto dependent_features =
-                            hilti::node::transform(n->attributes()->findAll(hilti::attribute::Kind::NeededByFeature),
+                            hilti::node::transform(n->attributes()->findAll(hilti::attribute::kind::NeededByFeature),
                                                    [](const auto& attr) { return *attr->valueAsString(); });
 
                         for ( const auto& dependent_feature_ :
-                              n->attributes()->findAll(hilti::attribute::Kind::NeededByFeature) ) {
+                              n->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                             auto dependent_feature = *dependent_feature_->valueAsString();
 
                             // The feature flag is known and the feature is active.

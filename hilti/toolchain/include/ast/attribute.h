@@ -17,107 +17,87 @@ namespace hilti {
 
 namespace attribute {
 
-enum class Kind {
-    Eod,
-    Until,
-    UntilIncluding,
-    ParseAt,
-    ParseFrom,
-    Size,
-    MaxSize,
-    IPv4,
-    IPv6,
-    Type,
-    Count,
-    Synchronize,
-    Default,
-    Anonymous,
-    Internal,
-    Optional,
-    Static,
-    NoEmit,
-    OnHeap,
-    Nosub,
-    Cxxname,
-    HavePrototype,
-    Priority,
-    Convert,
-    While,
-    Requires,
-    ByteOrder,
-    BitOrder,
-    Chunked,
-    Originator,
-    Responder,
-    Try,
-    NeededByFeature,
-    RequiresTypeFeature,
-    AlwaysEmit,
-    Transient,
-    Anchor,
+/**
+ * Represents a specific attribute. While we generally identify attributes by
+ * their names (`&...`), we wrap those strings into `Kind` instances so that we
+ * can (1) define global constants for all valid attribute names, and (2)
+ * retain a list of all known attributes for error checking.
+ *
+ * Note that generally, one should only use the global, pre-defined constants
+ * when referring to a specific attribute. Avoid creating new instances on the
+ * fly.
+ */
+class Kind {
+public:
+    explicit Kind(std::string name) : _name(std::move(name)) { _register(); }
 
-    // Hooks
-    Debug,
-    Error,
-    Foreach,
+    Kind() = delete;
+    Kind(const Kind& other) = default;
+    Kind(Kind&& other) = default;
+
+    ~Kind() = default; // not unregistering here, so that attribute remains known
+
+    operator std::string() const { return _name; }
+
+    Kind& operator=(const Kind& other) = default;
+    Kind& operator=(Kind&& other) = default;
+
+    bool operator==(const Kind& other) const { return _name == other._name; }
+    bool operator!=(const Kind& other) const { return ! operator==(other); }
+
+    // Returns a corresponding attribute kind iff the string matches to one of
+    // the known attributes created so far. Otherwise throws an `out_of_range`
+    // exception.
+    static Kind fromString(const std::string_view& s) {
+        if ( _known_attributes && _known_attributes->count(std::string(s)) > 0 )
+            return Kind(std::string(s));
+        else
+            throw std::out_of_range("unknown attribute kind: " + std::string(s));
+    }
+
+private:
+    void _register();
+
+    std::string _name = "<unset attribute>";
+    static std::set<std::string>* _known_attributes;
 };
-
-namespace detail {
-constexpr util::enum_::Value<Kind> AttributeKinds[] = {
-    {Kind::Eod, "&eod"},
-    {Kind::Until, "&until"},
-    {Kind::UntilIncluding, "&until-including"},
-    {Kind::ParseAt, "&parse-at"},
-    {Kind::ParseFrom, "&parse-from"},
-    {Kind::Size, "&size"},
-    {Kind::MaxSize, "&max-size"},
-    {Kind::IPv4, "&ipv4"},
-    {Kind::IPv6, "&ipv6"},
-    {Kind::Type, "&type"},
-    {Kind::Count, "&count"},
-    {Kind::Synchronize, "&synchronize"},
-    {Kind::Default, "&default"},
-    {Kind::Anonymous, "&anonymous"},
-    {Kind::Internal, "&internal"},
-    {Kind::Optional, "&optional"},
-    {Kind::Static, "&static"},
-    {Kind::NoEmit, "&no-emit"},
-    {Kind::OnHeap, "&on-heap"},
-    {Kind::Nosub, "&nosub"},
-    {Kind::Cxxname, "&cxxname"},
-    {Kind::HavePrototype, "&have_prototype"},
-    {Kind::Priority, "&priority"},
-    {Kind::Convert, "&convert"},
-    {Kind::While, "&while"},
-    {Kind::Requires, "&requires"},
-    {Kind::ByteOrder, "&byte-order"},
-    {Kind::BitOrder, "&bit-order"},
-    {Kind::Chunked, "&chunked"},
-    {Kind::Originator, "&originator"},
-    {Kind::Responder, "&responder"},
-    {Kind::Try, "&try"},
-    {Kind::NeededByFeature, "&needed-by-feature"},
-    {Kind::RequiresTypeFeature, "&requires-type-feature"},
-    {Kind::AlwaysEmit, "&always-emit"},
-    {Kind::Transient, "&transient"},
-    {Kind::Anchor, "&anchor"},
-    {Kind::Debug, "%debug"},
-    {Kind::Error, "%error"},
-    {Kind::Foreach, "foreach"},
-};
-}
-
-constexpr auto to_string(Kind kind) { return util::enum_::to_string(kind, detail::AttributeKinds); }
 
 /** Returns whether `kind` is in `kinds` */
-inline bool isOneOf(Kind kind, std::initializer_list<Kind> kinds) {
+inline bool isOneOf(const Kind& kind, std::initializer_list<Kind> kinds) {
     return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
 }
 
-namespace kind {
-constexpr auto from_string(const std::string_view& s) { return util::enum_::from_string(s, detail::AttributeKinds); }
-} // namespace kind
+inline auto to_string(const Kind& kind) { return std::string(kind); }
 
+inline std::ostream& operator<<(std::ostream& out, const Kind& x) {
+    out << to_string(x);
+    return out;
+}
+
+namespace kind {
+inline auto from_string(const std::string_view& s) { return Kind::fromString(s); }
+
+// In the following, we predefine all attributes that are part of the HILTI language.
+
+const Kind AlwaysEmit("&always-emit");
+const Kind Anchor("&anchor");
+const Kind Anonymous("&anonymous");
+const Kind Convert("&convert");
+const Kind Cxxname("&cxxname");
+const Kind Debug("&debug");
+const Kind Default("&default");
+const Kind HavePrototype("&have_prototype");
+const Kind Internal("&internal");
+const Kind NeededByFeature("&needed-by-feature");
+const Kind NoEmit("&no-emit");
+const Kind Nosub("&nosub");
+const Kind OnHeap("&on-heap");
+const Kind Optional("&optional");
+const Kind Priority("&priority");
+const Kind RequiresTypeFeature("&requires-type-feature");
+const Kind Static("&static");
+
+} // namespace kind
 } // namespace attribute
 
 /** AST node for an attribute. */
@@ -188,7 +168,7 @@ public:
      * @param v node representing the argument to associate with the attribute; must be an expression
      * @param m meta data to associate with the node
      */
-    static auto create(ASTContext* ctx, attribute::Kind kind, Expression* v, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, const attribute::Kind& kind, Expression* v, const Meta& m = Meta()) {
         return ctx->make<Attribute>(ctx, {v}, kind, m);
     }
 
@@ -198,13 +178,13 @@ public:
      * @param kind the attribute's internal representation
      * @param m meta data to associate with the node
      */
-    static auto create(ASTContext* ctx, attribute::Kind kind, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, const attribute::Kind& kind, const Meta& m = Meta()) {
         return create(ctx, kind, nullptr, m);
     }
 
 protected:
     Attribute(ASTContext* ctx, Nodes children, attribute::Kind kind, Meta m = Meta())
-        : Node(ctx, NodeTags, std::move(children), std::move(m)), _kind(kind) {}
+        : Node(ctx, NodeTags, std::move(children), std::move(m)), _kind(std::move(kind)) {}
 
     std::string _dump() const override;
 
@@ -226,21 +206,21 @@ public:
      *
      * @return attribute if found
      */
-    Attribute* find(attribute::Kind kind) const;
+    Attribute* find(const attribute::Kind& kind) const;
 
     /**
      * Retrieves all attributes with a given kind from the set.
      *
      * @return all attributes with matching kind
      */
-    hilti::node::Set<Attribute> findAll(attribute::Kind kind) const;
+    hilti::node::Set<Attribute> findAll(const attribute::Kind& kind) const;
 
     /**
      * Returns true if there's an attribute with a given kind in the set.
      *
      * @param true if found
      */
-    bool has(attribute::Kind kind) const { return find(kind) != nullptr; }
+    bool has(const attribute::Kind& kind) const { return find(kind) != nullptr; }
 
     /** Adds an attribute to the set. */
     void add(ASTContext* ctx, Attribute* a) {
@@ -250,7 +230,7 @@ public:
     }
 
     /** Removes all attributes of the given kind. */
-    void remove(attribute::Kind kind);
+    void remove(const attribute::Kind& kind);
 
     /** Returns true if the set has at least one element. */
     operator bool() const { return ! attributes().empty(); }
@@ -282,3 +262,10 @@ protected:
 };
 
 } // namespace hilti
+
+namespace std {
+template<>
+struct hash<hilti::attribute::Kind> {
+    size_t operator()(const hilti::attribute::Kind& x) const { return std::hash<std::string>()(x); }
+};
+} // namespace std
