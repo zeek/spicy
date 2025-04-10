@@ -1,3 +1,7 @@
+1.13.0-dev.186 | 2025-04-10 16:06:16 +0200
+
+  * Remove spurious include. (Robin Sommer, Corelight)
+
 1.13.0-dev.184 | 2025-04-10 10:14:16 +0200
 
   * GH-2013: Disallow illegal characters in hook IDs and a couple other places. (Robin Sommer, Corelight)

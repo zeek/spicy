@@ -10,8 +10,6 @@
 #include <hilti/ast/types/operand-list.h>
 #include <hilti/base/logger.h>
 
-#include "ast/type.h"
-
 namespace hilti {
 
 namespace expression {
