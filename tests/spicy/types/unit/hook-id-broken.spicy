@@ -1,0 +1,11 @@
+# @TEST-EXEC-FAIL: spicyc -j %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure reasonable error messages for broken hook names. Regression test for #2013.
+
+module Test;
+
+public type X = unit() {
+  name: uint8;
+  on %  0 1 2 name { }
+};

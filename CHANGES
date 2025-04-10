@@ -1,3 +1,37 @@
+1.13.0-dev.184 | 2025-04-10 10:14:16 +0200
+
+  * GH-2013: Disallow illegal characters in hook IDs and a couple other places. (Robin Sommer, Corelight)
+
+    The lexer wasn't handling all cases.
+
+  * Revert "Bring back the internal `__visit` method for generated structs." (Robin Sommer, Corelight)
+
+    This reverts commit 479b2d4bfb88c3010aba21f63db4c2c04a65216a. We now
+    *really* don't need this anymore since Zeek has been adapted
+    accordingly.
+
+  * GH-2007: Fix using `&try` with `&max-size`, and potentially other cases. (Robin Sommer, Corelight)
+
+    In the generated code, a temporary was declared inside the `try { ...
+    }`  block that we create for `&try`, but then used afterwards outside
+    of the block. A similar issue probably could have happened in
+    other situations as well.
+
+    The fix is to move more of the logic that was so far following the
+    `try`-block into the block. This comes with potential slight semantic
+    changes where in case of a parse error, before we would have executed
+    some post-field logic that now skip. The main example is hooks:
+    before, if a field with a `&try` had a hook, this would still run in
+    case of a parse error; now it's not running anymore—--which indeed
+    seems the better semantics.
+
+  * Let optimizer and dependency tracker ignore unresolved declarations. (Robin Sommer, Corelight)
+
+    This normally doesn't happen because validation catches unresolved
+    declarations early. However, for debugging it can be helpful to
+    support this when running with `--skip-validation` (e.g., to get to
+    the output of `--output-hilti` for debugging broken code generation).
+
 1.13.0-dev.177 | 2025-04-09 12:33:40 +0200
 
   * Bump 3rdparty/utf8proc from `5568eff` to `3de4596` (dependabot[bot])
