@@ -160,7 +160,8 @@ struct ProductionVisitor : public production::Visitor {
                               hilti::statement::comment::Separator::After);
     }
 
-    void _checkSizeAmount(hilti::Attribute* size, Expression* ncur, type::unit::item::Field* field = nullptr) {
+    void _checkSizeAmount(Expression* want, const Meta& attr_meta, Expression* ncur,
+                          type::unit::item::Field* field = nullptr) {
         // Make sure we parsed the entire &size amount.
         auto missing =
             builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(ncur, "offset"));
@@ -171,12 +172,11 @@ struct ProductionVisitor : public production::Visitor {
                 // to fill it.
                 builder()->addExpression(builder()->unset(state().self, field->id()));
 
-            auto want = *size->valueAsExpression();
             auto got = builder()->difference(builder()->memberCall(state().cur, "offset"),
                                              builder()->grouping(
                                                  builder()->difference(builder()->memberCall(ncur, "offset"), want)));
             pb->parseError("&size amount not consumed: expected %" PRIu64 " bytes, but got %" PRIu64 " bytes",
-                           {want, got}, size->meta());
+                           {want, got}, attr_meta);
         });
     }
 
@@ -626,8 +626,9 @@ struct ProductionVisitor : public production::Visitor {
         Expression* ncur_max_size = nullptr;
 
         if ( use_full_field_parsing ) {
+            Expression* length = nullptr;
             if ( is_field_owner )
-                initFullFieldParsing(field);
+                length = initFullFieldParsing(field);
 
             if ( const auto& x = p->tryAs<production::Enclosure>() )
                 // Recurse.
@@ -674,7 +675,7 @@ struct ProductionVisitor : public production::Visitor {
                 parseNonAtomicProduction(*p, {});
 
             if ( is_field_owner )
-                std::tie(ncur, ncur_max_size) = finishFullFieldParsing(field);
+                std::tie(ncur, ncur_max_size) = finishFullFieldParsing(field, length);
         }
 
         endProduction(*p);
@@ -809,8 +810,9 @@ struct ProductionVisitor : public production::Visitor {
         return pre_container_offset;
     }
 
-    // Sets up parsing infrastructure for non-optimized fields.
-    void initFullFieldParsing(type::unit::item::Field* field) {
+    // Sets up parsing infrastructure for non-optimized fields and returns the
+    // expression used for size or max size.
+    Expression* initFullFieldParsing(type::unit::item::Field* field) {
         // `&size` and `&max-size` share the same underlying infrastructure
         // so try to extract both of them and compute the ultimate value.
         Expression* length = nullptr;
@@ -818,7 +820,7 @@ struct ProductionVisitor : public production::Visitor {
         assert(! (field->attributes()->find(attribute::kind::Size) &&
                   field->attributes()->find(attribute::kind::MaxSize)));
         if ( auto a = field->attributes()->find(attribute::kind::Size) )
-            length = *a->valueAsExpression();
+            length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
         if ( auto a = field->attributes()->find(attribute::kind::MaxSize) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
             length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
@@ -839,6 +841,8 @@ struct ProductionVisitor : public production::Visitor {
             pstate.ncur = {};
             pushState(std::move(pstate));
         }
+
+        return length;
     }
 
     // Tears down parsing infrastructure for non-optimized fields.
@@ -848,7 +852,7 @@ struct ProductionVisitor : public production::Visitor {
     // 2. `ncur_max_size` if we're parsing with `&max-size`, which in that case
     // is the position in the limited view we ended parsing to; this will be
     // used to compute how much data we consumed from the original view.
-    std::pair<Expression*, Expression*> finishFullFieldParsing(type::unit::item::Field* field) {
+    std::pair<Expression*, Expression*> finishFullFieldParsing(type::unit::item::Field* field, Expression* length) {
         std::pair<Expression*, Expression*> result = {state().ncur, {}};
 
         if ( auto a = field->attributes()->find(attribute::kind::MaxSize) ) {
@@ -872,7 +876,8 @@ struct ProductionVisitor : public production::Visitor {
         else if ( auto a = field->attributes()->find(attribute::kind::Size);
                   a && ! field->attributes()->find(attribute::kind::Eod) ) {
             assert(state().ncur);
-            _checkSizeAmount(a, state().ncur, field);
+            assert(length);
+            _checkSizeAmount(length, a->meta(), state().ncur, field);
         }
 
         popState(); // from &size (pushed even if absent)
@@ -1489,7 +1494,8 @@ struct ProductionVisitor : public production::Visitor {
         popBuilder(); // while_.
     }
 
-    std::optional<Expression*> preAggregate(const Production* p, AttributeSet* attributes) {
+    std::pair<Expression*, Expression*> preAggregate(const Production* p, AttributeSet* attributes) {
+        Expression* length = nullptr;
         builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
 
         if ( const auto& a = attributes->find(attribute::kind::ParseFrom) )
@@ -1498,10 +1504,10 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto a = attributes->find(attribute::kind::ParseAt) )
             redirectInputToStreamPosition(*a->valueAsExpression());
 
-        std::optional<Expression*> ncur;
+        Expression* ncur = nullptr;
         if ( const auto& a = attributes->find(attribute::kind::Size) ) {
             // Limit input to the specified length.
-            auto length = *a->valueAsExpression();
+            length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
             auto limited = builder()->addTmp("limited_field", builder()->memberCall(state().cur, "limit", {length}));
 
             // Establish limited view, remembering position to continue at.
@@ -1513,14 +1519,15 @@ struct ProductionVisitor : public production::Visitor {
             pushState(std::move(pstate));
         }
 
-        return ncur;
+        return {ncur, length};
     }
 
-    void postAggregate(const Production* p, AttributeSet* attributes, std::optional<Expression*> ncur) {
+    void postAggregate(const Production* p, AttributeSet* attributes, Expression* ncur, Expression* length) {
         if ( auto a = attributes->find(attribute::kind::Size); a && ! attributes->find(attribute::kind::Eod) ) {
-            _checkSizeAmount(a, *ncur);
+            assert(length);
+            _checkSizeAmount(length, a->meta(), ncur);
             popState();
-            builder()->addAssign(state().cur, *ncur);
+            builder()->addAssign(state().cur, ncur);
         }
 
         if ( attributes->has(attribute::kind::ParseFrom) || attributes->has(attribute::kind::ParseAt) )
@@ -1531,12 +1538,12 @@ struct ProductionVisitor : public production::Visitor {
 
     void operator()(const production::Block* p) final {
         auto build_block_productions = [this, p](const auto& productions) {
-            auto ncur = preAggregate(p, p->attributes());
+            auto [ncur, length] = preAggregate(p, p->attributes());
 
             for ( const auto& i : productions )
                 parseProduction(*i);
 
-            postAggregate(p, p->attributes(), ncur);
+            postAggregate(p, p->attributes(), ncur, length);
         };
 
         std::optional<std::pair<BuilderPtr, BuilderPtr>> if_else;
@@ -1638,7 +1645,7 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto* condition = p->condition() )
             pushBuilder(builder()->addIf(condition));
 
-        auto ncur = preAggregate(p, p->attributes());
+        auto [ncur, length] = preAggregate(p, p->attributes());
 
         auto switch_ = builder()->addSwitch(p->expression(), p->location());
 
@@ -1658,7 +1665,7 @@ struct ProductionVisitor : public production::Visitor {
             });
         }
 
-        postAggregate(p, p->attributes(), ncur);
+        postAggregate(p, p->attributes(), ncur, length);
 
         if ( p->condition() )
             popBuilder();
@@ -1678,7 +1685,7 @@ struct ProductionVisitor : public production::Visitor {
         assert(! (p->unitType()->attributes()->find(attribute::kind::Size) &&
                   p->unitType()->attributes()->find(attribute::kind::MaxSize)));
         if ( auto a = p->unitType()->attributes()->find(attribute::kind::Size) )
-            length = *a->valueAsExpression();
+            length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
         else if ( auto a = p->unitType()->attributes()->find(attribute::kind::MaxSize) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
             length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
@@ -1806,7 +1813,8 @@ struct ProductionVisitor : public production::Visitor {
         else if ( auto a = p->unitType()->attributes()->find(attribute::kind::Size);
                   a && ! p->unitType()->attributes()->find(attribute::kind::Eod) ) {
             auto ncur = state().ncur;
-            _checkSizeAmount(a, ncur);
+            auto length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
+            _checkSizeAmount(length, a->meta(), ncur);
             popState();
             builder()->addAssign(state().cur, ncur);
         }

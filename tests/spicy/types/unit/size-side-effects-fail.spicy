@@ -1,0 +1,15 @@
+# @TEST-DOC: Check that &size with side effects fails properly (without overflow)
+#
+# @TEST-EXEC-FAIL: printf "\00312" | spicy-driver %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Data = unit {
+    len: uint8;
+    # This should error if len is more bytes than this field. That should not
+    # overflow by the &size condition getting executed multiple times in calculations.
+    len_bytes: bytes &size=self.len++;
+
+    on %done { print self; }
+};
