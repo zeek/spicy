@@ -536,11 +536,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(Attribute* n) final {
-        if ( n->kind() == hilti::attribute::Kind::Cxxname && n->hasValue() ) {
+        if ( n->kind() == hilti::attribute::kind::Cxxname && n->hasValue() ) {
             // Normalize values passed as `&cxxname` so they always are interpreted as FQNs by enforcing leading
             // `::`.
             if ( const auto& value = n->valueAsString(); value && ! util::startsWith(*value, "::") ) {
-                auto a = builder()->attribute(hilti::attribute::Kind::Cxxname,
+                auto a = builder()->attribute(hilti::attribute::kind::Cxxname,
                                               builder()->stringLiteral(util::fmt("::%s", *value)));
                 replaceNode(n, a);
             }
@@ -810,12 +810,12 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             recordChange(n, util::fmt("set linked type to %s", index));
         }
 
-        if ( auto a = n->attributes()->find(hilti::attribute::Kind::Default) ) {
+        if ( auto a = n->attributes()->find(hilti::attribute::kind::Default) ) {
             auto val = a->valueAsExpression();
             if ( auto x = coerceTo(n, *val, n->type(), false, true) ) {
                 recordChange(*val, x, "attribute");
-                n->attributes()->remove(hilti::attribute::Kind::Default);
-                n->attributes()->add(context(), builder()->attribute(hilti::attribute::Kind::Default, x));
+                n->attributes()->remove(hilti::attribute::kind::Default);
+                n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Default, x));
             }
         }
 
@@ -1074,9 +1074,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         if ( auto x = n->type()->type()->tryAs<type::Library>();
-             x && ! n->attributes()->has(hilti::attribute::Kind::Cxxname) )
+             x && ! n->attributes()->has(hilti::attribute::kind::Cxxname) )
             // Transfer the C++ name into an attribute.
-            n->attributes()->add(context(), builder()->attribute(hilti::attribute::Kind::Cxxname,
+            n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Cxxname,
                                                                  builder()->stringLiteral(x->cxxName())));
     }
 
@@ -1574,7 +1574,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! type::isResolved(n->itemType()) ) {
             auto t = n->ddType();
 
-            if ( auto a = n->attributes()->find(hilti::attribute::Kind::Convert) )
+            if ( auto a = n->attributes()->find(hilti::attribute::kind::Convert) )
                 t = (*a->valueAsExpression())->type();
 
             if ( t->isResolved() ) {

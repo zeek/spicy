@@ -13,7 +13,7 @@ using namespace spicy;
 using namespace spicy::detail;
 
 std::optional<std::pair<Expression*, QualifiedType*>> type::unit::item::Field::convertExpression() const {
-    if ( auto convert = attributes()->find(hilti::attribute::Kind::Convert) )
+    if ( auto convert = attributes()->find(attribute::kind::Convert) )
         return std::make_pair(*convert->valueAsExpression(), nullptr);
 
     auto t = parseType();
@@ -22,7 +22,7 @@ std::optional<std::pair<Expression*, QualifiedType*>> type::unit::item::Field::c
         t = x->dereferencedType();
 
     if ( auto x = t->type()->tryAs<type::Unit>() ) {
-        if ( auto convert = x->attributes()->find(hilti::attribute::Kind::Convert) )
+        if ( auto convert = x->attributes()->find(attribute::kind::Convert) )
             return std::make_pair(*convert->valueAsExpression(), t);
     }
 
@@ -41,9 +41,9 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     Expression* result = nullptr;
 
     void operator()(hilti::type::Address* n) final {
-        if ( field.attributes()->has(hilti::attribute::Kind::IPv4) )
+        if ( field.attributes()->has(attribute::kind::IPv4) )
             result = builder->integer(4U);
-        else if ( field.attributes()->has(hilti::attribute::Kind::IPv6) )
+        else if ( field.attributes()->has(attribute::kind::IPv6) )
             result = builder->integer(16U);
         else
             hilti::rt::cannot_be_reached();
@@ -54,7 +54,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     void operator()(hilti::type::Bitfield* n) final { result = builder->integer(n->width() / 8U); }
 
     void operator()(hilti::type::Real*) final {
-        auto* type = field.attributes()->find(hilti::attribute::Kind::Type);
+        auto* type = field.attributes()->find(attribute::kind::Type);
         if ( ! type )
             hilti::logger().internalError("real value must have a &type attribute");
 
@@ -67,7 +67,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
 Expression* spicy::type::unit::item::Field::size(ASTContext* ctx) const {
     Builder builder(ctx);
 
-    if ( const auto& size = attributes()->find(hilti::attribute::Kind::Size) )
+    if ( const auto& size = attributes()->find(attribute::kind::Size) )
         return *size->valueAsExpression();
 
     if ( auto size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(),

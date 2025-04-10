@@ -12,6 +12,15 @@
 
 using namespace hilti;
 
+std::set<std::string>* attribute::Kind::_known_attributes = nullptr; // initialized on first insert
+
+void attribute::Kind::_register() {
+    if ( ! _known_attributes )
+        _known_attributes = new std::set<std::string>();
+
+    _known_attributes->insert(std::move(_name));
+}
+
 Result<Expression*> Attribute::valueAsExpression() const {
     if ( ! hasValue() )
         return result::Error(hilti::util::fmt("attribute '%s' requires an expression", to_string(kind())));
@@ -72,7 +81,7 @@ std::string Attribute::_dump() const { return ""; }
 
 std::string AttributeSet::_dump() const { return ""; }
 
-Attribute* AttributeSet::find(attribute::Kind kind) const {
+Attribute* AttributeSet::find(const attribute::Kind& kind) const {
     for ( const auto& a : attributes() )
         if ( a->kind() == kind )
             return a;
@@ -80,7 +89,7 @@ Attribute* AttributeSet::find(attribute::Kind kind) const {
     return {};
 }
 
-hilti::node::Set<Attribute> AttributeSet::findAll(attribute::Kind kind) const {
+hilti::node::Set<Attribute> AttributeSet::findAll(const attribute::Kind& kind) const {
     hilti::node::Set<Attribute> result;
 
     for ( const auto& a : attributes() )
@@ -90,7 +99,7 @@ hilti::node::Set<Attribute> AttributeSet::findAll(attribute::Kind kind) const {
     return result;
 }
 
-void AttributeSet::remove(attribute::Kind kind) {
+void AttributeSet::remove(const attribute::Kind& kind) {
     while ( const auto& a = find(kind) )
         removeChild(a);
 }

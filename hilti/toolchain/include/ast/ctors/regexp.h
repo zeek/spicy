@@ -31,7 +31,7 @@ public:
     /**
      * Returns true if this pattern does not need support for capturing groups.
      */
-    bool isNoSub() const { return attributes()->find(hilti::attribute::Kind::Nosub) != nullptr; }
+    bool isNoSub() const { return attributes()->find(hilti::attribute::kind::Nosub) != nullptr; }
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
