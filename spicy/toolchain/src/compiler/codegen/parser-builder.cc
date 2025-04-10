@@ -761,6 +761,9 @@ struct ProductionVisitor : public production::Visitor {
 
         pb->enableDefaultNewValueForField(true);
 
+        if ( field->attributes()->find(hilti::attribute::Kind::Try) )
+            pb->initBacktracking();
+
         if ( auto c = field->condition() )
             pushBuilder(builder()->addIf(c));
 
@@ -802,9 +805,6 @@ struct ProductionVisitor : public production::Visitor {
                                       builder()->optional(builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                                                    hilti::Constness::Const))}));
         }
-
-        if ( field->attributes()->find(hilti::attribute::Kind::Try) )
-            pb->initBacktracking();
 
         return pre_container_offset;
     }
@@ -912,9 +912,6 @@ struct ProductionVisitor : public production::Visitor {
 
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- post-parse field: %s", field->id()));
 
-        if ( field->attributes()->find(hilti::attribute::Kind::Try) )
-            pb->finishBacktracking();
-
         if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
             assert(field->index());
             auto __offsets = builder()->member(state().self, "__offsets");
@@ -960,6 +957,9 @@ struct ProductionVisitor : public production::Visitor {
 
         if ( field->condition() )
             popBuilder();
+
+        if ( field->attributes()->find(hilti::attribute::Kind::Try) )
+            pb->finishBacktracking();
     }
 
     // top_level: true if we're called directly for the grammar's root unit, and

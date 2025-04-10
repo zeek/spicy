@@ -444,6 +444,9 @@ struct FunctionVisitor : OptimizerVisitor {
             return;
 
         auto decl = n->op0()->as<expression::Name>()->resolvedDeclaration();
+        if ( ! decl )
+            return;
+
         const auto& function_id = decl->fullyQualifiedID();
         assert(function_id);
 
@@ -754,6 +757,9 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
             case Stage::PRUNE_DECLS: return;
             case Stage::PRUNE_USES: {
                 auto decl = n->resolvedDeclaration();
+                if ( ! decl )
+                    return;
+
                 const auto& id = decl->fullyQualifiedID();
                 assert(id);
 
@@ -1102,6 +1108,9 @@ public:
                     return;
 
                 auto decl = rid->resolvedDeclaration();
+                if ( ! decl )
+                    return;
+
                 const auto& fn = decl->tryAs<declaration::Function>();
                 if ( ! fn )
                     return;
@@ -1507,7 +1516,7 @@ struct MemberVisitor : OptimizerVisitor {
         switch ( _stage ) {
             case Stage::COLLECT: {
                 auto decl = n->resolvedDeclaration();
-                if ( ! decl->isA<declaration::Field>() )
+                if ( ! decl || ! decl->isA<declaration::Field>() )
                     return;
 
                 // Record the member as used.
