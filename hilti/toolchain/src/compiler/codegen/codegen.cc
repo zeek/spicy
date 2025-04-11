@@ -269,8 +269,8 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
     void operator()(declaration::Function* n) final {
         // TODO(robin): This method needs a refactoring.
 
-        if ( n->function()->attributes()->find(hilti::attribute::Kind::Cxxname) &&
-             n->function()->attributes()->find(hilti::attribute::Kind::HavePrototype) )
+        if ( n->function()->attributes()->find(hilti::attribute::kind::Cxxname) &&
+             n->function()->attributes()->find(hilti::attribute::kind::HavePrototype) )
             return;
 
         const auto& f = n->function();
@@ -300,7 +300,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         auto d = cg->compile(n, ft, linkage, f->callingConvention(), f->attributes(), cid);
 
-        if ( auto a = n->function()->attributes()->find(hilti::attribute::Kind::Cxxname) ) {
+        if ( auto a = n->function()->attributes()->find(hilti::attribute::kind::Cxxname) ) {
             // Just add the prototype. Make sure to skip any custom namespacing.
             const auto& value = a->valueAsString();
             if ( ! value ) {
@@ -316,7 +316,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         int64_t priority = 0;
         if ( is_hook && f->attributes() ) {
-            if ( auto x = f->attributes()->find(hilti::attribute::Kind::Priority) ) {
+            if ( auto x = f->attributes()->find(hilti::attribute::kind::Priority) ) {
                 if ( auto i = x->valueAsInteger() )
                     priority = *i;
                 else
@@ -868,7 +868,7 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
     for ( const auto& b : t->bits(false) ) {
         auto x = fmt("::hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
 
-        if ( auto a = b->attributes()->find(hilti::attribute::Kind::Convert) ) {
+        if ( auto a = b->attributes()->find(hilti::attribute::kind::Convert) ) {
             pushDollarDollar(std::move(x));
             bits.emplace_back(compile(*a->valueAsExpression()));
             popDollarDollar();
