@@ -1,3 +1,7 @@
+1.13.0-dev.191 | 2025-04-15 10:06:29 +0200
+
+  * Drop unreachable lexer rules. (Benjamin Bannier, Corelight)
+
 1.13.0-dev.189 | 2025-04-15 08:30:10 +0200
 
   * Bump 3rdparty/filesystem from `076592c` to `9fda7b0` (dependabot[bot])
