@@ -1,3 +1,9 @@
+1.13.0-dev.189 | 2025-04-15 08:30:10 +0200
+
+  * Bump 3rdparty/filesystem from `076592c` to `9fda7b0` (dependabot[bot])
+
+  * Bump 3rdparty/utfcpp from `b26a5f7` to `65701fe` (dependabot[bot])
+
 1.13.0-dev.186 | 2025-04-10 16:06:16 +0200
 
   * Remove spurious include. (Robin Sommer, Corelight)
