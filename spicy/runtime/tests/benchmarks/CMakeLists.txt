@@ -6,7 +6,10 @@ set(BENCH_MODULE Benchmark)
 list(TRANSFORM BENCH_MODULE PREPEND Benchmark_ OUTPUT_VARIABLE _generated_sources)
 list(TRANSFORM _generated_sources APPEND ".cc" OUTPUT_VARIABLE _generated_sources)
 list(APPEND _generated_sources "Benchmark___linker__.cc")
-set_source_files_properties(${_generated_sources} PROPERTIES SKIP_LINTING ON)
+
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+    set_source_files_properties(${_generated_sources} PROPERTIES SKIP_LINTING ON)
+endif ()
 
 if (BUILD_TOOLCHAIN)
     add_custom_command(
