@@ -6,6 +6,7 @@
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
 
+#include <spicy/ast/attribute.h>
 #include <spicy/ast/builder/builder.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/visitor.h>
@@ -85,10 +86,10 @@ struct TypeParser {
     Expression* fieldByteOrder() {
         Expression* byte_order = nullptr;
 
-        if ( const auto& a = meta.field()->attributes()->find(hilti::attribute::Kind::ByteOrder) )
+        if ( const auto& a = meta.field()->attributes()->find(attribute::kind::ByteOrder) )
             byte_order = *a->valueAsExpression();
 
-        else if ( const auto& a = state().unit->attributes()->find(hilti::attribute::Kind::ByteOrder) )
+        else if ( const auto& a = state().unit->attributes()->find(attribute::kind::ByteOrder) )
             byte_order = *a->valueAsExpression();
 
         else if ( const auto& p = state().unit->propertyItem("%byte-order") )
@@ -122,8 +123,8 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::type::Address* n) final {
         switch ( tp->mode ) {
             case TypesMode::Default: {
-                auto v4 = tp->meta.field()->attributes()->find(hilti::attribute::Kind::IPv4);
-                auto v6 = tp->meta.field()->attributes()->find(hilti::attribute::Kind::IPv6);
+                auto v4 = tp->meta.field()->attributes()->find(attribute::kind::IPv4);
+                auto v6 = tp->meta.field()->attributes()->find(attribute::kind::IPv6);
                 (void)v6;
                 assert(! (v4 && v6));
 
@@ -159,7 +160,7 @@ struct Visitor : public visitor::PreOrder {
                 Expression* bitorder = builder()->id("hilti::BitOrder::LSB0");
 
                 if ( auto attrs = n->attributes() ) {
-                    if ( auto a = attrs->find(hilti::attribute::Kind::BitOrder) )
+                    if ( auto a = attrs->find(attribute::kind::BitOrder) )
                         bitorder = *a->valueAsExpression();
                 }
 
@@ -199,7 +200,7 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::type::Real* n) final {
         switch ( tp->mode ) {
             case TypesMode::Default: {
-                auto type = tp->meta.field()->attributes()->find(hilti::attribute::Kind::Type);
+                auto type = tp->meta.field()->attributes()->find(attribute::kind::Type);
                 assert(type);
                 result = tp->performUnpack(tp->destination(n), builder()->typeReal(), 4,
                                            {state().cur, *type->valueAsExpression(), tp->fieldByteOrder()}, n->meta(),
@@ -271,17 +272,17 @@ struct Visitor : public visitor::PreOrder {
 
     void operator()(hilti::type::Bytes* n) final {
         auto attrs = tp->meta.field()->attributes();
-        auto chunked_attr = attrs->find(hilti::attribute::Kind::Chunked);
-        auto eod_attr = attrs->find(hilti::attribute::Kind::Eod);
-        auto size_attr = attrs->find(hilti::attribute::Kind::Size);
-        auto until_attr = attrs->find(hilti::attribute::Kind::Until);
-        auto until_including_attr = attrs->find(hilti::attribute::Kind::UntilIncluding);
+        auto chunked_attr = attrs->find(attribute::kind::Chunked);
+        auto eod_attr = attrs->find(attribute::kind::Eod);
+        auto size_attr = attrs->find(attribute::kind::Size);
+        auto until_attr = attrs->find(attribute::kind::Until);
+        auto until_including_attr = attrs->find(attribute::kind::UntilIncluding);
 
         bool to_eod = (eod_attr != nullptr); // parse to end of input data
         bool parse_attr = false;             // do we have a &parse-* attribute
 
-        if ( (tp->meta.field()->attributes()->find(hilti::attribute::Kind::ParseFrom) ||
-              tp->meta.field()->attributes()->find(hilti::attribute::Kind::ParseAt)) &&
+        if ( (tp->meta.field()->attributes()->find(attribute::kind::ParseFrom) ||
+              tp->meta.field()->attributes()->find(attribute::kind::ParseAt)) &&
              ! (until_attr || until_including_attr) )
             parse_attr = true;
 

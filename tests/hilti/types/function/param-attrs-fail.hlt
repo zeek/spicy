@@ -7,6 +7,6 @@ module Foo {
 
 function void f1(string s &requires-type-feature) {}
 function void f2(string s &requires-type-feature=1) {}
-function void f3(string s &size=1) {}
+function void f3(string s &static=1) {}
 
 }

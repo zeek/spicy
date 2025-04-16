@@ -32,9 +32,7 @@ public:
     const auto& ctor() const { return _ctor; }
 
     bool isAtomic() const final { return _ctor ? _ctor->isAtomic() : true; };
-    bool isEodOk() const final {
-        return _ctor ? _ctor->isEodOk() : _field->attributes()->has(hilti::attribute::Kind::Eod);
-    };
+    bool isEodOk() const final { return _ctor ? _ctor->isEodOk() : _field->attributes()->has(attribute::kind::Eod); };
     bool isLiteral() const final { return _ctor ? _ctor->isLiteral() : false; };
     bool isNullable() const final { return _ctor ? _ctor->isNullable() : false; };
     bool isTerminal() const final { return _ctor ? _ctor->isTerminal() : true; };

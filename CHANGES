@@ -1,3 +1,19 @@
+1.13.0-dev.193 | 2025-04-16 10:38:34 +0200
+
+  * GH-1955: Split attributes between HILTI and Spicy. (Robin Sommer, Corelight)
+
+    A previous change had moved knowledge of Spicy attributes into the
+    HILTI layer. This splits that out again to separate concerns. The main
+    challenge is that we were using C++ enums, which could not be extended
+    by Spicy to add its own attributes. We now replace those enums values
+    with a custom helper class so that we can define constants at
+    multiple places.
+
+    Other than that new helper class, most of the changes are pretty
+    mechanical, with the main objective being that Spicy only refers to
+    its own attributes for anything that can appear in Spicy source code,
+    and uses HILTI attributes only when interacting with the HILTI layer.
+
 1.13.0-dev.191 | 2025-04-15 10:06:29 +0200
 
   * Drop unreachable lexer rules. (Benjamin Bannier, Corelight)

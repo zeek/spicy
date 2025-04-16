@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <spicy/ast/attribute.h>
 #include <spicy/ast/ctors/all.h>
 #include <spicy/ast/declarations/all.h>
 #include <spicy/ast/forward.h>
