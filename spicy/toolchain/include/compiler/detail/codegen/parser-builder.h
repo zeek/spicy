@@ -581,6 +581,9 @@ public:
     QualifiedType* lookAheadType() const;
     hilti::Expression* featureConstant(const type::Unit* unit, std::string_view feature);
 
+    /** Adds a temporary to store an attribute's expression, if necessary. */
+    Expression* evaluateAttributeExpression(const hilti::Attribute* attr, const std::string& prefix);
+
     /*
      * Filters a set of field attributes to remove those that are handled
      * generically by the field parsing machinery that the parser builder sets

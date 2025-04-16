@@ -785,10 +785,10 @@ struct ProductionVisitor : public production::Visitor {
         }
 
         if ( auto a = field->attributes()->find(attribute::kind::ParseFrom) )
-            redirectInputToBytesValue(*a->valueAsExpression());
+            redirectInputToBytesValue(pb->evaluateAttributeExpression(a, "parse_from"));
 
         if ( auto a = field->attributes()->find(attribute::kind::ParseAt) )
-            redirectInputToStreamPosition(*a->valueAsExpression());
+            redirectInputToStreamPosition(pb->evaluateAttributeExpression(a, "parse_at"));
 
         if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
             auto __offsets = builder()->member(state().self, "__offsets");
@@ -820,11 +820,12 @@ struct ProductionVisitor : public production::Visitor {
         assert(! (field->attributes()->find(attribute::kind::Size) &&
                   field->attributes()->find(attribute::kind::MaxSize)));
         if ( auto a = field->attributes()->find(attribute::kind::Size) )
-            length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
+            length = pb->evaluateAttributeExpression(a, "size");
         if ( auto a = field->attributes()->find(attribute::kind::MaxSize) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
-                                       builder()->sum(*a->valueAsExpression(), builder()->integer(1U)));
+            length = builder()->addTmp("max_size_with_sentinel", builder()->typeUnsignedInteger(64),
+                                       builder()->sum(pb->evaluateAttributeExpression(a, "max_size"),
+                                                      builder()->integer(1U)));
 
         if ( length ) {
             // Limit input to the specified length.
@@ -1499,15 +1500,15 @@ struct ProductionVisitor : public production::Visitor {
         builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
 
         if ( const auto& a = attributes->find(attribute::kind::ParseFrom) )
-            redirectInputToBytesValue(*a->valueAsExpression());
+            redirectInputToBytesValue(pb->evaluateAttributeExpression(a, "parse_from"));
 
         if ( auto a = attributes->find(attribute::kind::ParseAt) )
-            redirectInputToStreamPosition(*a->valueAsExpression());
+            redirectInputToStreamPosition(pb->evaluateAttributeExpression(a, "parse_at"));
 
         Expression* ncur = nullptr;
         if ( const auto& a = attributes->find(attribute::kind::Size) ) {
             // Limit input to the specified length.
-            length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
+            length = pb->evaluateAttributeExpression(a, "size");
             auto limited = builder()->addTmp("limited_field", builder()->memberCall(state().cur, "limit", {length}));
 
             // Establish limited view, remembering position to continue at.
@@ -1685,11 +1686,12 @@ struct ProductionVisitor : public production::Visitor {
         assert(! (p->unitType()->attributes()->find(attribute::kind::Size) &&
                   p->unitType()->attributes()->find(attribute::kind::MaxSize)));
         if ( auto a = p->unitType()->attributes()->find(attribute::kind::Size) )
-            length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
+            length = pb->evaluateAttributeExpression(a, "size");
         else if ( auto a = p->unitType()->attributes()->find(attribute::kind::MaxSize) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length = builder()->addTmp("max_size", builder()->typeUnsignedInteger(64),
-                                       builder()->sum(*a->valueAsExpression(), builder()->integer(1U)));
+            length = builder()->addTmp("max_size_with_sentinel", builder()->typeUnsignedInteger(64),
+                                       builder()->sum(pb->evaluateAttributeExpression(a, "max_size"),
+                                                      builder()->integer(1U)));
 
         if ( length ) {
             // Limit input to the specified length.
@@ -1813,7 +1815,7 @@ struct ProductionVisitor : public production::Visitor {
         else if ( auto a = p->unitType()->attributes()->find(attribute::kind::Size);
                   a && ! p->unitType()->attributes()->find(attribute::kind::Eod) ) {
             auto ncur = state().ncur;
-            auto length = builder()->addTmp("size", builder()->typeUnsignedInteger(64), *a->valueAsExpression());
+            auto length = pb->evaluateAttributeExpression(a, "size");
             _checkSizeAmount(length, a->meta(), ncur);
             popState();
             builder()->addAssign(state().cur, ncur);
@@ -1935,7 +1937,7 @@ struct ProductionVisitor : public production::Visitor {
 
             else if ( until_attr ) {
                 Expression* until_expr =
-                    builder()->coerceTo(*until_attr->valueAsExpression(),
+                    builder()->coerceTo(pb->evaluateAttributeExpression(until_attr, "until"),
                                         builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Const));
                 auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
                 auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
@@ -2533,7 +2535,7 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
         for ( const auto& a : field->attributes()->findAll(attribute::kind::Requires) ) {
             pushBuilder(builder()->addBlock(), [&]() {
                 builder()->addLocal("__dd", item);
-                auto cond = builder()->addTmp("requires", *a->valueAsExpression());
+                auto cond = evaluateAttributeExpression(a, "requires");
                 pushBuilder(builder()->addIf(builder()->not_(cond)),
                             [&]() { parseError(builder()->memberCall(cond, "error"), a->location()); });
             });
@@ -2626,7 +2628,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         // so that (1) that one can rely on the condition, and (2) we keep
         // running either "%done" or "%error".
         for ( const auto& attr : unit->attributes()->findAll(attribute::kind::Requires) ) {
-            auto cond = builder()->addTmp("requires", *attr->valueAsExpression());
+            auto cond = evaluateAttributeExpression(attr, "requires");
             pushBuilder(builder()->addIf(builder()->not_(cond)),
                         [&]() { parseError(builder()->memberCall(cond, "error"), attr->value()->meta()); });
         }
@@ -2923,4 +2925,16 @@ QualifiedType* ParserBuilder::lookAheadType() const {
 hilti::Expression* ParserBuilder::featureConstant(const type::Unit* unit, std::string_view feature) {
     const auto id = hilti::util::replace(unit->canonicalID(), ":", "@");
     return builder()->id(ID(hilti::rt::fmt("::__feat%%%s%%%s", id, feature)));
+}
+
+Expression* ParserBuilder::evaluateAttributeExpression(const hilti::Attribute* attr, const std::string& prefix) {
+    Expression* attr_expr = *attr->valueAsExpression();
+
+    // Temporaries are unnecessary for constants.
+    if ( attr_expr->isA<hilti::expression::Ctor>() && attr_expr->isConstant() )
+        return attr_expr;
+
+    Expression* result = builder()->addTmp(prefix, attr_expr);
+    result->setMeta(attr_expr->meta());
+    return result;
 }
