@@ -423,7 +423,7 @@ struct Visitor : public visitor::PreOrder {
             case TypesMode::Optimize: {
                 auto parse_attrs = ParserBuilder::removeGenericParseAttributes(attrs);
                 if ( size_attr && parse_attrs.size() == 0 ) {
-                    auto length = *size_attr->valueAsExpression();
+                    auto length = pb()->evaluateAttributeExpression(size_attr, "size");
                     auto eod_ok = builder()->bool_(eod_attr ? true : false);
                     auto value =
                         builder()->call("spicy_rt::extractBytes", {state().data, state().cur, length, eod_ok,

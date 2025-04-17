@@ -1,0 +1,48 @@
+# @TEST-DOC: Check that &size with side effects only gets evaluated once
+#
+# @TEST-EXEC: printf "\001123" | spicy-driver %INPUT > output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Data = unit {
+    len: uint8;
+    # One increment so this should parse one byte
+    len_bytes: bytes &size=self.len++;
+    # And this should parse two bytes
+    len_plus_one_bytes: bytes &size=self.len;
+
+    on %done { print self; }
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+public type Data = unit {
+    len: uint8;
+    # Vectors behave slightly differently than bytes, make sure that's covered
+    len_bytes: uint8[] &size=self.len++;
+    len_plus_one_bytes: uint8[] &size=self.len;
+
+    on %done { print self; }
+};
+
+# @TEST-START-NEXT
+
+module Test;
+
+public type Data = unit {
+    len: uint8;
+    # With a switch
+    switch (1) {
+        1 -> {
+            one: b"1";
+        }
+    } &size=self.len++;
+
+    two: b"2";
+    three: b"3";
+
+    on %done { print self; }
+};

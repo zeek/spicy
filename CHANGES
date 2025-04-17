@@ -1,3 +1,29 @@
+1.13.0-dev.201 | 2025-04-17 14:03:12 -0400
+
+  * Avoid attribute temporaries for constants. (Evan Typanski, Corelight)
+
+  * GH-2016: Fix `&size` expressions evaluating multiple times. (Evan Typanski, Corelight)
+
+    Fixes #2016
+
+    If the attribute is evaluated multiple times, some cases with side
+    effects may unknowingly get evaluated multiple times. This effect would
+    be different depending what happens - if there's a parse error, it could
+    even trigger an integer overflow when calculating offsets.
+
+    This solution uses a temporary and passes it around the parser builder
+    when it's needed. The downside is this is only applicable to `&size`,
+    but, luckily, that seems to be all that it currently applies to.
+
+    There are some alternative solutions, but they don't seem right. One
+    would be adding the temporary to the attribute, but that relies on only
+    retrieving that temporary if you're in the correct scope. Making the
+    attribute itself scope-aware seems wrong, as does removing the stored
+    expression when it would be out of scope.
+
+    It could also technically apply to the state, but that ended up being
+    more cumbersome than seemed necessary.
+
 1.13.0-dev.198 | 2025-04-17 16:52:19 +0200
 
   * Bump justrx to pull in CCL speed-up. (Robin Sommer, Corelight)
