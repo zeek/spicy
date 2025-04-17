@@ -1,3 +1,7 @@
+1.13.0-dev.198 | 2025-04-17 16:52:19 +0200
+
+  * Bump justrx to pull in CCL speed-up. (Robin Sommer, Corelight)
+
 1.13.0-dev.196 | 2025-04-16 13:42:21 +0200
 
   * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
