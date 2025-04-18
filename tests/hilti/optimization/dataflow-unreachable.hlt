@@ -1,0 +1,24 @@
+# @TEST-DOC: Validate optimization of unreachable data.
+#
+# @TEST-EXEC: HILTI_DEBUG_DUMP_CFG=1 hiltic -D optimizer -c %INPUT -o opt.cc >output 2>&1
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: btest-diff opt.cc
+
+module x {
+import hilti;
+
+public function uint<8> fn() {
+    local uint<8> a = 0;
+    a = 1;
+    a = 2;
+    hilti::print(a);
+    a = 3;
+    a = 4;
+    local uint<8> b = 42;
+    return b;
+}
+
+# Call to mark function used.
+fn();
+
+}

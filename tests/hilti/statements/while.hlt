@@ -1,4 +1,5 @@
-# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# FIXME(bbannier): this currently produces an infinite loop since we incorrectly deduce that a loop variable update in the body is not visible.
+# @TEST-EXEC: timeout 30s ${HILTIC} -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 
 module Foo {
