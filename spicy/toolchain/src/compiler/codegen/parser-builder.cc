@@ -513,8 +513,19 @@ struct ProductionVisitor : public production::Visitor {
         Expressions args = {state().data,   state().begin,      state().cur,  state().trim,
                             state().lahead, state().lahead_end, state().error};
 
-        if ( ! unit && p.meta().field() )
+        if ( ! unit && p.meta().field() ) {
+            auto field = p.meta().field();
+            auto repeat = field->repeatCount();
+            // Vectors with stored elements should reserve the amount
+            // they will parse, if known.
+            if ( ! field->isTransient() && repeat && field->parseType()->type()->isA<hilti::type::Vector>() &&
+                 ! repeat->type()->type()->isA<hilti::type::Null>() ) {
+                builder()->addExpression(
+                    builder()->assign(destination(), builder()->default_(p.meta().field()->parseType()->type())));
+                builder()->addExpression(builder()->memberCall(destination(), "reserve", {repeat}));
+            }
             args.push_back(destination());
+        }
 
         auto call = builder()->memberCall(state().self, id, args);
         builder()->addAssign(builder()->tuple({state().cur, state().lahead, state().lahead_end, state().error}), call);
