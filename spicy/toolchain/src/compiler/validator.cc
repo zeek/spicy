@@ -331,7 +331,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 return;
 
             if ( auto attr = n->parent<hilti::Attribute>() ) {
-                auto kind = attr->kind();
+                const auto& kind = attr->kind();
                 if ( kind == attribute::kind::Until || kind == attribute::kind::UntilIncluding ||
                      kind == attribute::kind::While )
                     // $$ inside these attributes is ok
