@@ -1,0 +1,13 @@
+# @TEST-DOC: Check that repeat expressions get rejected if not an unsigned integer
+#
+# @TEST-EXEC-FAIL: ${SPICYC} -p %INPUT >> output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Data = unit {
+    negative: uint8[-1];
+    decimal: uint8[0.5];
+    var indirect: int64 = 5;
+    indirect_vec: uint8[self.indirect];
+};

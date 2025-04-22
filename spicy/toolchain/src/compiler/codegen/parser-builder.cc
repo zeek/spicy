@@ -1570,10 +1570,20 @@ struct ProductionVisitor : public production::Visitor {
     void operator()(const production::Epsilon* /* p */) final {}
 
     void operator()(const production::Counter* p) final {
+        auto* repeat = p->expression();
+
+        // Fields with stored elements should reserve the amount they will parse
+        if ( auto* field = p->meta().field(); field && ! field->isTransient() ) {
+            // Create a temporary so stateful size expressions are only evaluated once.
+            repeat = builder()->addTmp("repeat", repeat);
+
+            builder()->addExpression(builder()->memberCall(destination(), "reserve", {repeat}));
+        }
+
         auto body = builder()->addWhile(builder()->local("__i",
                                                          builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                                                   hilti::Constness::Mutable),
-                                                         p->expression()),
+                                                         repeat),
                                         builder()->id("__i"));
 
         pushBuilder(body);

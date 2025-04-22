@@ -1,0 +1,16 @@
+# @TEST-DOC: Check that repeat expressions with side effects only gets evaluated once
+#
+# @TEST-EXEC: ${SCRIPTS}/printf '\001123' | spicy-driver %INPUT > output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type Data = unit {
+    len: uint8;
+    # One increment so this should parse one byte
+    len_bytes: uint8[self.len++];
+    # And this should parse two bytes
+    len_plus_one_bytes: uint8[self.len];
+
+    on %done { print self; }
+};

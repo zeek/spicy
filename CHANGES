@@ -1,3 +1,12 @@
+1.13.0-dev.206 | 2025-04-22 17:40:06 +0200
+
+  * Reserve vectors with repeat counts. (Evan Typanski, Corelight)
+
+    This improves performance of large vectors with a known size by about
+    10-20% while not hurting performance of small vectors.
+
+  * Fix minor comment issues in `vector.h`. (Evan Typanski, Corelight)
+
 1.13.0-dev.203 | 2025-04-22 17:38:22 +0200
 
   * Prevent unneeded copy. (Benjamin Bannier, Corelight)
