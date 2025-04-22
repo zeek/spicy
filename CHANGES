@@ -1,3 +1,7 @@
+1.13.0-dev.203 | 2025-04-22 17:38:22 +0200
+
+  * Prevent unneeded copy. (Benjamin Bannier, Corelight)
+
 1.13.0-dev.201 | 2025-04-17 14:03:12 -0400
 
   * Avoid attribute temporaries for constants. (Evan Typanski, Corelight)
