@@ -1,3 +1,9 @@
+1.13.0-dev.210 | 2025-04-23 15:32:56 +0200
+
+  * CI: No more Ubuntu 20.04 (Arne Welzel, Corelight)
+
+    EOL in April 2025, remove it now.
+
 1.13.0-dev.208 | 2025-04-23 12:20:45 +0200
 
   * Bump `justrx`. (Robin Sommer, Corelight)
