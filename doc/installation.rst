@@ -101,11 +101,6 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-rpm:`RPM <docker_fedora41>`
       - :repo:`Dockerfile <docker/Dockerfile.fedora-41>`
 
-    * - Ubuntu 20
-      - :package-release-deb:`DEB <linux_ubuntu20>`
-      - :package-dev-deb:`DEB <docker_ubuntu20>`
-      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-20>`
-
     * - Ubuntu 22
       - :package-release-deb:`DEB <linux_ubuntu22>`
       - :package-dev-deb:`DEB <docker_ubuntu22>`
