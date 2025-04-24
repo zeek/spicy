@@ -46,7 +46,7 @@ QualifiedType* CastedCoercion::result(Builder* builder, const Expressions& opera
 
 Result<expression::ResolvedOperator*> CastedCoercion::instantiate(Builder* builder, Expressions operands,
                                                                   Meta meta) const {
-    auto result_ = result(builder, operands, meta);
+    auto* result_ = result(builder, operands, meta);
     return {operator_::generic::CastedCoercion::create(builder->context(), this, result_, operands, std::move(meta))};
 }
 
@@ -137,9 +137,9 @@ public:
         if ( args.empty() )
             return builder->qualifiedType(builder->typeError(), Constness::Const);
 
-        auto t = builder->typeTuple(QualifiedTypes{operands[0]->type()->type()->as<type::Type_>()->typeValue(),
-                                                   args[0]->type()},
-                                    operands[0]->meta());
+        auto* t = builder->typeTuple(QualifiedTypes{operands[0]->type()->type()->as<type::Type_>()->typeValue(),
+                                                    args[0]->type()},
+                                     operands[0]->meta());
 
         if ( operands[2]->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value() )
             return builder->qualifiedType(t, Constness::Const);
@@ -233,7 +233,7 @@ public:
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        if ( auto iter = operands[0]->type()->type()->iteratorType() )
+        if ( auto* iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
             return builder->qualifiedType(builder->typeError(), Constness::Const);
@@ -261,7 +261,7 @@ public:
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        if ( auto iter = operands[0]->type()->type()->iteratorType() )
+        if ( auto* iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
             return builder->qualifiedType(builder->typeError(), Constness::Const);
@@ -297,9 +297,9 @@ expressions are not allowed.
         };
     }
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        auto t = operands[0]->type();
+        auto* t = operands[0]->type();
 
-        if ( auto tv = operands[0]->type()->type()->tryAs<type::Type_>() )
+        if ( auto* tv = operands[0]->type()->type()->tryAs<type::Type_>() )
             t = tv->typeValue();
 
         t = t->recreateAsLhs(builder->context());
@@ -308,9 +308,9 @@ expressions are not allowed.
     }
 
     void validate(expression::ResolvedOperator* n) const final {
-        auto t = n->operands()[0]->type();
+        auto* t = n->operands()[0]->type();
 
-        if ( auto tv = n->operands()[0]->type()->type()->tryAs<type::Type_>() )
+        if ( auto* tv = n->operands()[0]->type()->type()->tryAs<type::Type_>() )
             t = tv->typeValue();
 
         if ( ! t->type()->isAllocable() )

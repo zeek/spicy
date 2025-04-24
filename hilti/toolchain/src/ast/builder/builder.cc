@@ -71,11 +71,11 @@ void Builder::addDebugMsg(std::string_view stream, std::string_view fmt, Express
     if ( args.empty() )
         call_ = call("hilti::debug", {stringLiteral(stream), stringLiteral(fmt)});
     else if ( args.size() == 1 ) {
-        auto msg = modulo(stringLiteral(fmt), args.front());
+        auto* msg = modulo(stringLiteral(fmt), args.front());
         call_ = call("hilti::debug", {stringLiteral(stream), msg});
     }
     else {
-        auto msg = modulo(stringLiteral(fmt), tuple(args));
+        auto* msg = modulo(stringLiteral(fmt), tuple(args));
         call_ = call("hilti::debug", {stringLiteral(stream), msg});
     }
 
@@ -86,7 +86,7 @@ void Builder::addDebugIndent(std::string_view stream) {
     if ( ! context()->driver()->options().debug )
         return;
 
-    auto call_ = call("hilti::debugIndent", {stringLiteral(stream)});
+    auto* call_ = call("hilti::debugIndent", {stringLiteral(stream)});
     block()->_add(context(), statementExpression(call_));
 }
 
@@ -94,7 +94,7 @@ void Builder::addDebugDedent(std::string_view stream) {
     if ( ! context()->driver()->options().debug )
         return;
 
-    auto call_ = call("hilti::debugDedent", {stringLiteral(stream)});
+    auto* call_ = call("hilti::debugDedent", {stringLiteral(stream)});
     block()->_add(context(), statementExpression(call_));
 }
 

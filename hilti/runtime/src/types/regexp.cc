@@ -334,14 +334,14 @@ Vector<Bytes> RegExp::matchGroups(const Bytes& data) const {
 }
 
 Tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
-    const auto startp = data.data();
-    const auto endp = startp + data.size().Ref();
+    const auto* const startp = data.data();
+    const auto* const endp = startp + data.size().Ref();
 
     int cur_rc = 0;
     jrx_offset cur_so = -1;
     jrx_offset cur_eo = -1;
 
-    for ( auto cur = startp; cur < endp; cur++ ) {
+    for ( const auto* cur = startp; cur < endp; cur++ ) {
         jrx_offset so = -1; // just initialize with something, will be set by search_pattern to >=0 on match
         jrx_offset eo = -1; // likewise
         jrx_match_state ms;

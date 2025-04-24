@@ -15,7 +15,7 @@ namespace unit {
 
 void checkName(hilti::expression::ResolvedOperator* op) {
     const auto& id = op->op1()->as<hilti::expression::Member>()->id();
-    auto i = op->op0()->type()->type()->as<type::Unit>()->itemByName(id);
+    auto* i = op->op0()->type()->type()->as<type::Unit>()->itemByName(id);
 
     if ( ! i )
         op->addError(hilti::util::fmt("unit does not have field '%s'", id), node::ErrorPriority::High);
@@ -23,12 +23,12 @@ void checkName(hilti::expression::ResolvedOperator* op) {
 
 
 QualifiedType* itemType(hilti::Builder* builder, const Expressions& operands) {
-    auto unit = operands[0]->type()->type()->as<type::Unit>();
+    auto* unit = operands[0]->type()->type()->as<type::Unit>();
     const auto& id = operands[1]->as<hilti::expression::Member>()->id();
 
-    if ( auto item = unit->itemByName(id) )
+    if ( auto* item = unit->itemByName(id) )
         return item->itemType();
-    else if ( auto bitrange = unit->findRangeInAnonymousBitField(id).second )
+    else if ( auto* bitrange = unit->findRangeInAnonymousBitField(id).second )
         return bitrange->itemType();
     else
         return builder->qualifiedType(builder->typeUnknown(), hilti::Constness::Const);

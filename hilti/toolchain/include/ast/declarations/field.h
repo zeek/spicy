@@ -38,17 +38,17 @@ public:
     }
 
     bool isResolved(node::CycleDetector* cd = nullptr) const {
-        if ( auto func = inlineFunction() )
+        if ( auto* func = inlineFunction() )
             return func->type()->isResolved(cd);
 
-        if ( auto type = child<QualifiedType>(0); type->type()->isA<type::Function>() )
+        if ( auto* type = child<QualifiedType>(0); type->type()->isA<type::Function>() )
             return true;
         else
             return type->isResolved(cd);
     }
 
     hilti::Expression* default_() const {
-        if ( auto a = attributes()->find(hilti::attribute::kind::Default) )
+        if ( auto* a = attributes()->find(hilti::attribute::kind::Default) )
             return *a->valueAsExpression();
         else
             return {};

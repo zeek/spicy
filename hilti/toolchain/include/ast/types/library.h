@@ -28,7 +28,7 @@ public:
     bool isMutable() const final { return true; }
 
     node::Properties properties() const final {
-        auto constness = (_constness == Constness::Const ? "true" : "false");
+        const auto* constness = (_constness == Constness::Const ? "true" : "false");
         auto p = node::Properties{{"const", constness}, {"cxx_name", _cxx_name}};
         return UnqualifiedType::properties() + std::move(p);
     }

@@ -145,7 +145,7 @@ public:
             return *x;
 
         try {
-            if ( auto ptr = std::get<T*>(_ptr) ) {
+            if ( auto* ptr = std::get<T*>(_ptr) ) {
                 if constexpr ( std::is_base_of_v<Controllable<T>, T> )
                     return ptr->shared_from_this();
                 else

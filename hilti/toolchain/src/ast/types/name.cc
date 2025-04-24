@@ -11,7 +11,7 @@ bool type::Name::isResolved(node::CycleDetector* cd) const {
     if ( cd && cd->haveSeen(this) )
         return true;
 
-    auto t = resolvedType();
+    auto* t = resolvedType();
     assert(t);
 
     if ( ! cd ) {

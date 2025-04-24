@@ -116,7 +116,7 @@ struct Visitor : public hilti::visitor::PreOrder {
         else if ( dst->type()->isA<type::ValueReference>() )
             result = fmt("%s.derefAsValue()", expr);
 
-        else if ( auto x = dst->type()->tryAs<type::WeakReference>() )
+        else if ( auto* x = dst->type()->tryAs<type::WeakReference>() )
             result = fmt("::hilti::rt::WeakReference<%s>(%s)",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
@@ -159,10 +159,10 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Bool>() )
             result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
-        else if ( auto x = dst->type()->tryAs<type::SignedInteger>() )
+        else if ( auto* x = dst->type()->tryAs<type::SignedInteger>() )
             result = fmt("::hilti::rt::integer::safe<int%d_t>(%s)", x->width(), expr);
 
-        else if ( auto x = dst->type()->tryAs<type::UnsignedInteger>() )
+        else if ( auto* x = dst->type()->tryAs<type::UnsignedInteger>() )
             result = fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", x->width(), expr);
 
         else
@@ -199,14 +199,14 @@ struct Visitor : public hilti::visitor::PreOrder {
     }
 
     void operator()(type::Type_* n) final {
-        if ( auto lt = dst->type()->tryAs<type::Library>(); lt && lt->cxxName() == "::hilti::rt::TypeInfo*" )
+        if ( auto* lt = dst->type()->tryAs<type::Library>(); lt && lt->cxxName() == "::hilti::rt::TypeInfo*" )
             result = cg->typeInfo(n->typeValue());
         else
             result = cg->coerce(expr, n->typeValue(), dst);
     }
 
     void operator()(type::Tuple* n) final {
-        if ( auto x = dst->type()->tryAs<type::Tuple>() ) {
+        if ( auto* x = dst->type()->tryAs<type::Tuple>() ) {
             assert(n->elements().size() == x->elements().size());
 
             std::vector<cxx::Expression> exprs;
@@ -243,13 +243,13 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Bool>() )
             result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
-        else if ( auto x = dst->type()->tryAs<type::SignedInteger>() )
+        else if ( auto* x = dst->type()->tryAs<type::SignedInteger>() )
             result = fmt("::hilti::rt::integer::safe<int%d_t>(%s)", x->width(), expr);
 
-        else if ( auto x = dst->type()->tryAs<type::UnsignedInteger>() )
+        else if ( auto* x = dst->type()->tryAs<type::UnsignedInteger>() )
             result = fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", x->width(), expr);
 
-        else if ( auto t = dst->type()->tryAs<type::Bitfield>() )
+        else if ( auto* t = dst->type()->tryAs<type::Bitfield>() )
             result = cg->unsignedIntegerToBitfield(t, expr, cxx::Expression("::hilti::rt::integer::BitOrder::LSB0"));
         else
             logger().internalError(
@@ -260,7 +260,7 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Bool>() )
             result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
-        else if ( auto x = dst->type()->tryAs<type::StrongReference>() )
+        else if ( auto* x = dst->type()->tryAs<type::StrongReference>() )
             result = fmt("::hilti::rt::StrongReference<%s>(%s)",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
@@ -276,18 +276,18 @@ struct Visitor : public hilti::visitor::PreOrder {
     }
 
     void operator()(type::ValueReference* n) final {
-        if ( auto x = dst->type()->tryAs<type::Bool>() )
+        if ( auto* x = dst->type()->tryAs<type::Bool>() )
             result = cg->coerce(fmt("*%s", expr), x->dereferencedType(), dst);
 
-        else if ( auto x = dst->type()->tryAs<type::ValueReference>();
+        else if ( auto* x = dst->type()->tryAs<type::ValueReference>();
                   x && type::same(x->dereferencedType()->type(), x->dereferencedType()->type()) )
             result = fmt("%s", expr);
 
-        else if ( auto x = dst->type()->tryAs<type::StrongReference>() )
+        else if ( auto* x = dst->type()->tryAs<type::StrongReference>() )
             result = fmt("::hilti::rt::StrongReference<%s>(%s)",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
-        else if ( auto x = dst->type()->tryAs<type::WeakReference>() )
+        else if ( auto* x = dst->type()->tryAs<type::WeakReference>() )
             result = fmt("::hilti::rt::WeakReference<%s>(%s)",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
@@ -307,7 +307,7 @@ cxx::Expression CodeGen::coerce(const cxx::Expression& e, QualifiedType* src, Qu
         // If only difference is constness, nothing to do.
         return e;
 
-    if ( auto t = dst->type()->tryAs<type::Optional>(); t && ! src->type()->isA<type::Optional>() )
+    if ( auto* t = dst->type()->tryAs<type::Optional>(); t && ! src->type()->isA<type::Optional>() )
         return fmt("%s(%s)", compile(dst, codegen::TypeUsage::Storage), e);
 
     if ( dst->type()->isA<type::Result>() )

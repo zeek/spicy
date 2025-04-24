@@ -13,7 +13,7 @@ bool type::Function::isResolved(node::CycleDetector* cd) const {
     // we let them.
 
     for ( auto c = children().begin() + 1; c != children().end(); c++ ) {
-        auto p = (*c)->as<declaration::Parameter>();
+        auto* p = (*c)->as<declaration::Parameter>();
         if ( ! p->isResolved(cd) && ! p->type()->type()->isA<type::Auto>() )
             return false;
     }

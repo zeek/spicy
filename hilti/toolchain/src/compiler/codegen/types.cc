@@ -92,7 +92,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     }
 
                     std::optional<cxx::Expression> default_;
-                    if ( auto x = p->default_() )
+                    if ( auto* x = p->default_() )
                         default_ = cg->compile(x);
                     else
                         default_ = cg->typeDefaultValue(p->type());
@@ -106,14 +106,14 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     if ( f->isNoEmit() )
                         continue;
 
-                    if ( auto ft = f->type()->type()->tryAs<type::Function>() ) {
+                    if ( auto* ft = f->type()->type()->tryAs<type::Function>() ) {
                         auto d = cg->compile(f, ft, declaration::Linkage::Struct, function::CallingConvention::Standard,
                                              f->attributes());
 
                         if ( f->isStatic() )
                             d.linkage = "static";
 
-                        if ( auto func = f->inlineFunction(); func && func->body() ) {
+                        if ( auto* func = f->inlineFunction(); func && func->body() ) {
                             auto cxx_body = cxx::Block();
 
                             if ( ! f->isStatic() ) {
@@ -191,7 +191,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                                           .aux_types = std::move(aux_types),
                                                           .declare_only = true};
 
-                            auto vref =
+                            auto* vref =
                                 cg->builder()->qualifiedType(cg->builder()->typeValueReference(type), Constness::Const);
                             // NOLINTNEXTLINE(modernize-use-emplace)
                             hook.callee.args.push_back(
@@ -218,7 +218,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
 
                     if ( ! f->isOptional() ) {
                         cg->pushSelf("__self()");
-                        if ( auto x = f->default_() )
+                        if ( auto* x = f->default_() )
                             default_ = cg->compile(x);
                         else
                             default_ = cg->typeDefaultValue(f->type());
@@ -330,7 +330,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
         std::string base_ns = "::hilti::rt";
         std::string base_cls = "UsageError";
 
-        if ( auto b = n->baseType() ) {
+        if ( auto* b = n->baseType() ) {
             auto x = cxx::ID(cg->compile(cg->builder()->qualifiedType(b, Constness::Const), codegen::TypeUsage::Ctor));
             base_ns = x.namespace_();
             base_cls = x.local();
@@ -469,7 +469,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
     }
 
     void operator()(type::map::Iterator* n) final {
-        auto i = (n->dereferencedType()->isConstant() ? "const_iterator" : "iterator");
+        const auto* i = (n->dereferencedType()->isConstant() ? "const_iterator" : "iterator");
         auto k = cg->compile(n->keyType(), codegen::TypeUsage::Storage);
         auto v = cg->compile(n->valueType(), codegen::TypeUsage::Storage);
 
@@ -478,7 +478,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
     }
 
     void operator()(type::set::Iterator* n) final {
-        auto i = (n->dereferencedType()->isConstant() ? "const_iterator" : "iterator");
+        const auto* i = (n->dereferencedType()->isConstant() ? "const_iterator" : "iterator");
         auto x = cg->compile(n->dereferencedType(), codegen::TypeUsage::Storage);
 
         auto t = fmt("::hilti::rt::Set<%s>::%s", x, i);
@@ -666,8 +666,8 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         auto type_id = n->typeID();
         if ( ! type_id ) {
             // Special-case: construct a type ID for anonymous structs.
-            auto ctor = n->parent(2)->tryAs<ctor::Struct>();
-            auto decl = n->parent<declaration::Type>();
+            auto* ctor = n->parent(2)->tryAs<ctor::Struct>();
+            auto* decl = n->parent<declaration::Type>();
             if ( ctor && decl )
                 type_id = decl->fullyQualifiedID() + ctor->uniqueID();
         }
@@ -835,7 +835,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
     // vectors and vector iterators.
     std::string typeInfoForVector(QualifiedType* element_type, bool want_iterator = false) {
         auto etype = cg->compile(element_type, codegen::TypeUsage::Storage);
-        auto type_name = (want_iterator ? "VectorIterator" : "Vector");
+        const auto* type_name = (want_iterator ? "VectorIterator" : "Vector");
 
         std::string type_addl;
 
@@ -1151,7 +1151,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
 
             std::string to_string;
 
-            if ( auto x = t->type()->tryAs<type::Library>() )
+            if ( auto* x = t->type()->tryAs<type::Library>() )
                 // Library types cannot be rendered into strings, just hardcode the type's name.
                 to_string = fmt("[](const void *self) { return \"<%s>\"s; }", x->cxxName());
             else

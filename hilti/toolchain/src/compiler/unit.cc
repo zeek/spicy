@@ -50,7 +50,7 @@ bool Unit::isCompiledHILTI() const {
     if ( ! _uid.id )
         return false;
 
-    auto module = context()->astContext()->module(_uid);
+    auto* module = context()->astContext()->module(_uid);
     return module && module->uid().process_extension == ".hlt" && ! module->skipImplementation();
 }
 
@@ -69,7 +69,7 @@ Result<Nothing> Unit::createPrototypes(std::ostream& out) {
 }
 
 Result<std::shared_ptr<detail::cxx::Unit>> Unit::_codegenModule(const declaration::module::UID& uid) {
-    auto module = context()->astContext()->module(uid);
+    auto* module = context()->astContext()->module(uid);
     assert(module);
 
     auto cxx = detail::CodeGen(context()).compileModule(module);
@@ -120,7 +120,7 @@ bool Unit::requiresCompilation() {
     if ( _requires_compilation )
         return true;
 
-    auto m = module();
+    auto* m = module();
     if ( ! m )
         return false;
 

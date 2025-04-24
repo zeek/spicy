@@ -63,9 +63,9 @@ protected:
     void _preprocessExpressions(ASTContext* ctx, const std::string& id) {
         Expressions exprs;
         for ( const auto& e : expressions() ) {
-            auto n = expression::UnresolvedOperator::create(ctx, operator_::Kind::Equal,
-                                                            {expression::Name::create(ctx, ID(id), e->meta()), e},
-                                                            e->meta());
+            auto* n = expression::UnresolvedOperator::create(ctx, operator_::Kind::Equal,
+                                                             {expression::Name::create(ctx, ID(id), e->meta()), e},
+                                                             e->meta());
 
             exprs.push_back(n);
         }

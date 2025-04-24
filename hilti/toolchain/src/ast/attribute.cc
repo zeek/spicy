@@ -35,8 +35,8 @@ Result<std::string> Attribute::valueAsString() const {
     if ( ! hasValue() )
         return result::Error(hilti::util::fmt("attribute '%s' requires a string", to_string(kind())));
 
-    if ( auto e = value()->tryAs<expression::Ctor>() )
-        if ( auto s = e->ctor()->tryAs<ctor::String>() )
+    if ( auto* e = value()->tryAs<expression::Ctor>() )
+        if ( auto* s = e->ctor()->tryAs<ctor::String>() )
             return s->value();
 
     return result::Error(hilti::util::fmt("value for attribute '%s' must be a string", to_string(kind())));
@@ -46,11 +46,11 @@ Result<int64_t> Attribute::valueAsInteger() const {
     if ( ! hasValue() )
         return result::Error(hilti::util::fmt("attribute '%s' requires an integer", to_string(kind())));
 
-    if ( auto e = value()->tryAs<expression::Ctor>() ) {
-        if ( auto s = e->ctor()->tryAs<ctor::SignedInteger>() )
+    if ( auto* e = value()->tryAs<expression::Ctor>() ) {
+        if ( auto* s = e->ctor()->tryAs<ctor::SignedInteger>() )
             return s->value();
 
-        if ( auto s = e->ctor()->tryAs<ctor::UnsignedInteger>() )
+        if ( auto* s = e->ctor()->tryAs<ctor::UnsignedInteger>() )
             return static_cast<int64_t>(s->value());
     }
 

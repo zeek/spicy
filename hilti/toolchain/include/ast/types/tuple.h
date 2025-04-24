@@ -44,12 +44,12 @@ public:
     }
 
     static auto create(ASTContext* ctx, ID id, QualifiedType* type, Meta meta = {}) {
-        auto optional = QualifiedType::create(ctx, type::Optional::create(ctx, type, meta), Constness::Const, meta);
+        auto* optional = QualifiedType::create(ctx, type::Optional::create(ctx, type, meta), Constness::Const, meta);
         return ctx->make<Element>(ctx, {optional}, std::move(id), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, QualifiedType* type, Meta meta = {}) {
-        auto optional = QualifiedType::create(ctx, type::Optional::create(ctx, type, meta), Constness::Const, meta);
+        auto* optional = QualifiedType::create(ctx, type::Optional::create(ctx, type, meta), Constness::Const, meta);
         return ctx->make<Element>(ctx, {optional}, ID(), std::move(meta));
     }
 

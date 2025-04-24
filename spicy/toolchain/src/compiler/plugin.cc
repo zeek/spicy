@@ -30,19 +30,19 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
 
         .parse =
             [](hilti::Builder* builder, std::istream& in, const hilti::rt::filesystem::path& path) {
-                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                auto* spicy_builder = static_cast<spicy::Builder*>(builder);
                 return parser::parseSource(spicy_builder, in, path);
             },
 
         .coerce_ctor =
             [](hilti::Builder* builder, Ctor* c, QualifiedType* dst, bitmask<hilti::CoercionStyle> style) {
-                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                auto* spicy_builder = static_cast<spicy::Builder*>(builder);
                 return coercer::coerceCtor(spicy_builder, c, dst, style);
             },
 
         .coerce_type =
             [](hilti::Builder* builder, QualifiedType* t, QualifiedType* dst, bitmask<hilti::CoercionStyle> style) {
-                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                auto* spicy_builder = static_cast<spicy::Builder*>(builder);
                 return coercer::coerceType(spicy_builder, t, dst, style);
             },
 
@@ -59,27 +59,27 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
 
         .ast_build_scopes =
             [](hilti::Builder* builder, hilti::ASTRoot* root) {
-                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                auto* spicy_builder = static_cast<spicy::Builder*>(builder);
                 scope_builder::build(spicy_builder, root);
                 return false;
             },
 
         .ast_resolve =
             [](hilti::Builder* builder, Node* root) {
-                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                auto* spicy_builder = static_cast<spicy::Builder*>(builder);
                 return resolver::resolve(spicy_builder, root);
             },
 
         .ast_validate_pre =
             [](hilti::Builder* builder, hilti::ASTRoot* m) {
-                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                auto* spicy_builder = static_cast<spicy::Builder*>(builder);
                 validator::validatePre(spicy_builder, m);
                 return false;
             },
 
         .ast_validate_post =
             [](hilti::Builder* builder, hilti::ASTRoot* root) {
-                auto spicy_builder = static_cast<spicy::Builder*>(builder);
+                auto* spicy_builder = static_cast<spicy::Builder*>(builder);
                 validator::validatePost(spicy_builder, root);
                 return false;
             },
@@ -89,7 +89,7 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
         .ast_print_id = [](const ID& id, hilti::printer::Stream& out) { return printer::printID(out, id); },
 
         .ast_transform = [](hilti::Builder* builder, hilti::ASTRoot* m) -> bool {
-            auto spicy_builder = static_cast<spicy::Builder*>(builder);
+            auto* spicy_builder = static_cast<spicy::Builder*>(builder);
             return CodeGen(spicy_builder).compileAST(m);
         },
     };

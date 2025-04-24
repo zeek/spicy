@@ -65,7 +65,7 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
 }
 
 std::optional<std::string> hilti::rt::getenv(const std::string& name) {
-    if ( auto x = ::getenv(name.c_str()) )
+    if ( auto* x = ::getenv(name.c_str()) )
         return {x};
     else
         return {};
@@ -276,8 +276,8 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8
         return (style & render_style::UTF8::NoEscapeControl) ? std::string(1, c) : s;
     };
 
-    auto p = reinterpret_cast<const unsigned char*>(s.data());
-    auto e = p + s.size();
+    const auto* p = reinterpret_cast<const unsigned char*>(s.data());
+    const auto* e = p + s.size();
 
     std::string esc;
 
@@ -342,8 +342,8 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8
 }
 
 std::string hilti::rt::escapeBytes(std::string_view s, bitmask<render_style::Bytes> style) {
-    auto p = s.data();
-    auto e = p + s.size();
+    const auto* p = s.data();
+    const auto* e = p + s.size();
 
     std::string esc;
 
@@ -425,7 +425,7 @@ std::string hilti::rt::strftime(const std::string& format, const hilti::rt::Time
     // call it ourselves:
     ::tzset();
 
-    auto localtime = ::localtime_r(&seconds, &tm);
+    auto* localtime = ::localtime_r(&seconds, &tm);
     if ( ! localtime )
         throw InvalidArgument(hilti::rt::fmt("cannot convert timestamp to local time: %s", std::strerror(errno)));
 

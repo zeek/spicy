@@ -19,7 +19,7 @@ public:
     auto body() const { return child<hilti::Statement>(2); }
 
     static auto create(ASTContext* ctx, const hilti::ID& id, hilti::Expression* seq, Statement* body, Meta meta = {}) {
-        auto local = declaration::LocalVariable::create(ctx, id, meta);
+        auto* local = declaration::LocalVariable::create(ctx, id, meta);
         return ctx->make<For>(ctx, {local, seq, body}, std::move(meta));
     }
 

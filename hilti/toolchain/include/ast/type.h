@@ -422,7 +422,7 @@ public:
         if ( ! m )
             m = t->meta();
 
-        auto qt = ctx->make<QualifiedType>(ctx, Nodes{t}, const_, Side::RHS, std::move(m));
+        auto* qt = ctx->make<QualifiedType>(ctx, Nodes{t}, const_, Side::RHS, std::move(m));
         qt->type()->unify(ctx);
         qt->_type()->newlyQualified(qt);
         return qt;
@@ -438,7 +438,7 @@ public:
      * @param m meta data to attach
      */
     static auto create(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side side, const Meta& m = Meta()) {
-        auto qt = ctx->make<QualifiedType>(ctx, Nodes{t}, const_, side, m);
+        auto* qt = ctx->make<QualifiedType>(ctx, Nodes{t}, const_, side, m);
         qt->type()->unify(ctx);
         qt->_type()->newlyQualified(qt);
         return qt;
@@ -488,7 +488,7 @@ public:
 
     /** Factory method creating a copy of the type with "sideness" changed to LHS. */
     auto recreateAsLhs(ASTContext* ctx) const {
-        if ( auto t = _type(); t->isNameType() && (parent() || t->typeID()) )
+        if ( auto* t = _type(); t->isNameType() && (parent() || t->typeID()) )
             return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::LHS);
         else
             return QualifiedType::create(ctx, t, Constness::Mutable, Side::LHS);
@@ -496,7 +496,7 @@ public:
 
     /** Factory method creating a copy of the type with constness changed to constant. */
     auto recreateAsConst(ASTContext* ctx) const {
-        if ( auto t = _type(); t->isNameType() && (parent() || t->typeID()) )
+        if ( auto* t = _type(); t->isNameType() && (parent() || t->typeID()) )
             return QualifiedType::createExternal(ctx, t, Constness::Const, Side::RHS);
         else
             return QualifiedType::create(ctx, t, Constness::Const, Side::RHS);
@@ -504,7 +504,7 @@ public:
 
     /** Factory method creating a copy of the type with constness changed to non-constant. */
     auto recreateAsNonConst(ASTContext* ctx) const {
-        if ( auto t = _type(); t->isNameType() && (parent() || t->typeID()) )
+        if ( auto* t = _type(); t->isNameType() && (parent() || t->typeID()) )
             return QualifiedType::createExternal(ctx, t, Constness::Mutable, Side::RHS);
         else
             return QualifiedType::create(ctx, t, Constness::Mutable, Side::RHS);
@@ -561,8 +561,8 @@ inline bool isResolved(QualifiedType* t) { return isResolved(t->type()); }
  * both types have been fully resolved already.
  */
 inline bool same(UnqualifiedType* t1, UnqualifiedType* t2) {
-    auto t1_ = follow(t1);
-    auto t2_ = follow(t2);
+    auto* t1_ = follow(t1);
+    auto* t2_ = follow(t2);
 
     if ( t1_->unification() == t2_->unification() )
         return true;
@@ -578,8 +578,8 @@ inline bool same(QualifiedType* t1, QualifiedType* t2) {
     if ( t1->isConstant() != t2->isConstant() )
         return false;
 
-    auto t1_ = t1->type(); // performs follow
-    auto t2_ = t2->type(); // performs follow
+    auto* t1_ = t1->type(); // performs follow
+    auto* t2_ = t2->type(); // performs follow
 
     if ( t1_->unification() == t2_->unification() )
         return true;
@@ -595,8 +595,8 @@ inline bool sameExceptForConstness(QualifiedType* t1, QualifiedType* t2) {
     if ( ! isResolved(t1) || ! isResolved(t2) )
         return false;
 
-    auto t1_ = t1->type(); // performs follow
-    auto t2_ = t2->type(); // performs follow
+    auto* t1_ = t1->type(); // performs follow
+    auto* t2_ = t2->type(); // performs follow
 
     if ( t1_->unification() == t2_->unification() )
         return true;

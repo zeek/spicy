@@ -74,7 +74,7 @@ public:
     auto unitFieldIndex() { return _unit_field_index; }
 
     hilti::Expression* priority() const {
-        if ( auto attr = attributes()->find(attribute::kind::Priority) )
+        if ( auto* attr = attributes()->find(attribute::kind::Priority) )
             return *attr->valueAsExpression();
         else
             return nullptr;
@@ -118,12 +118,12 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        auto ftype = hilti::type::Function::create(ctx,
-                                                   QualifiedType::create(ctx, hilti::type::Void::create(ctx, m),
-                                                                         hilti::Constness::Const),
-                                                   parameters, hilti::type::function::Flavor::Hook, m);
-        auto func = hilti::Function::create(ctx, hilti::ID(), ftype, body, hilti::function::CallingConvention::Standard,
-                                            attrs, m);
+        auto* ftype = hilti::type::Function::create(ctx,
+                                                    QualifiedType::create(ctx, hilti::type::Void::create(ctx, m),
+                                                                          hilti::Constness::Const),
+                                                    parameters, hilti::type::function::Flavor::Hook, m);
+        auto* func = hilti::Function::create(ctx, hilti::ID(), ftype, body,
+                                             hilti::function::CallingConvention::Standard, attrs, m);
         return ctx->make<Hook>(ctx, {func, nullptr}, m);
     }
 

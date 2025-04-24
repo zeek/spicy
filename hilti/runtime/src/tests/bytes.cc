@@ -494,11 +494,11 @@ TEST_CASE("toReal") {
 
     // The next test should fail independent of the locale, so let's set one.
 
-    auto de_locale = newlocale(LC_ALL_MASK, "de_DE.UTF-8", nullptr);
+    auto* de_locale = newlocale(LC_ALL_MASK, "de_DE.UTF-8", nullptr);
     if ( ! de_locale )
         FAIL("failed to create de_DE locale; locales not installed?");
 
-    auto old_locale = uselocale(de_locale);
+    auto* old_locale = uselocale(de_locale);
     CHECK_THROWS_WITH_AS("1,0"_b.toReal(), "cannot parse real value: '1,0'", const InvalidValue&);
     uselocale(old_locale);
 

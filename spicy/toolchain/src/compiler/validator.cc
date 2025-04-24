@@ -98,13 +98,13 @@ hilti::Result<hilti::Nothing> checkFieldAttributes(type::unit::item::Field* f) {
         return hilti::result::Error("field cannot have both &ipv4 and &ipv6 attributes");
 
     // Termination conditions cannot be combined in certain ways
-    auto eod_attr = f->attributes()->find(attribute::kind::Eod);
-    auto until_attr = f->attributes()->find(attribute::kind::Until);
-    auto until_including_attr = f->attributes()->find(attribute::kind::UntilIncluding);
-    auto parse_at_attr = f->attributes()->find(attribute::kind::ParseAt);
-    auto parse_from_attr = f->attributes()->find(attribute::kind::ParseFrom);
-    auto size_attr = f->attributes()->find(attribute::kind::Size);
-    auto max_size_attr = f->attributes()->find(attribute::kind::MaxSize);
+    auto* eod_attr = f->attributes()->find(attribute::kind::Eod);
+    auto* until_attr = f->attributes()->find(attribute::kind::Until);
+    auto* until_including_attr = f->attributes()->find(attribute::kind::UntilIncluding);
+    auto* parse_at_attr = f->attributes()->find(attribute::kind::ParseAt);
+    auto* parse_from_attr = f->attributes()->find(attribute::kind::ParseFrom);
+    auto* size_attr = f->attributes()->find(attribute::kind::Size);
+    auto* max_size_attr = f->attributes()->find(attribute::kind::MaxSize);
 
     std::vector<hilti::attribute::Kind> start_attrs_present;
     for ( const auto& i : {parse_from_attr, parse_at_attr} ) {
@@ -176,7 +176,7 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
     }
 
     if ( pt->type()->isA<hilti::type::Real>() ) {
-        auto type = f->attributes()->find(attribute::kind::Type);
+        auto* type = f->attributes()->find(attribute::kind::Type);
 
         if ( type ) {
             if ( const auto& t = (*type->valueAsExpression())->type(); ! isEnumType(t, "spicy::RealType") )
@@ -220,20 +220,20 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
 }
 
 Expression* methodArgument(const hilti::expression::ResolvedOperator& o, size_t i) {
-    auto ops = o.op2();
+    auto* ops = o.op2();
 
     // If the argument list was the result of a coercion unpack its result.
-    if ( auto coerced = ops->tryAs<hilti::expression::Coerced>() )
+    if ( auto* coerced = ops->tryAs<hilti::expression::Coerced>() )
         ops = coerced->expression();
 
-    if ( auto ctor_ = ops->tryAs<hilti::expression::Ctor>() ) {
-        auto ctor = ctor_->ctor();
+    if ( auto* ctor_ = ops->tryAs<hilti::expression::Ctor>() ) {
+        auto* ctor = ctor_->ctor();
 
         // If the argument was the result of a coercion unpack its result.
-        if ( auto x = ctor->tryAs<hilti::ctor::Coerced>() )
+        if ( auto* x = ctor->tryAs<hilti::ctor::Coerced>() )
             ctor = x->coercedCtor();
 
-        if ( auto args = ctor->tryAs<hilti::ctor::Tuple>(); args && i < args->value().size() )
+        if ( auto* args = ctor->tryAs<hilti::ctor::Tuple>(); args && i < args->value().size() )
             return args->value()[i];
     }
 
@@ -318,19 +318,19 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(hilti::declaration::LocalVariable* n) final { checkVariable(n); }
 
     void operator()(hilti::declaration::Constant* n) final {
-        if ( auto parent = n->parent();
+        if ( auto* parent = n->parent();
              ! parent->isA<hilti::declaration::Module>() && ! parent->isA<hilti::type::Enum>() )
             error("constant cannot be declared at local scope", n);
     }
 
     void operator()(hilti::expression::Name* n) final {
         if ( n->id() == ID("__dd") ) {
-            if ( auto hook = n->parent<spicy::declaration::Hook>();
+            if ( auto* hook = n->parent<spicy::declaration::Hook>();
                  hook && hook->hookType() == declaration::hook::Type::ForEach )
                 // $$ in "foreach" ok is ok.
                 return;
 
-            if ( auto attr = n->parent<hilti::Attribute>() ) {
+            if ( auto* attr = n->parent<hilti::Attribute>() ) {
                 const auto& kind = attr->kind();
                 if ( kind == attribute::kind::Until || kind == attribute::kind::UntilIncluding ||
                      kind == attribute::kind::While )
@@ -338,7 +338,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     return;
             }
 
-            if ( auto field = n->parent<spicy::type::unit::item::Field>() ) {
+            if ( auto* field = n->parent<spicy::type::unit::item::Field>() ) {
                 if ( field->isContainer() && field->isTransient() )
                     error("cannot use $$ with container inside transient field", n);
             }
@@ -346,15 +346,15 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(hilti::declaration::Module* n) final {
-        if ( auto version = n->moduleProperty("%spicy-version") ) {
+        if ( auto* version = n->moduleProperty("%spicy-version") ) {
             if ( ! version->expression() ) {
                 error("%spicy-version requires an argument", n);
                 return;
             }
 
             bool ok = false;
-            if ( auto c = version->expression()->tryAs<hilti::expression::Ctor>() ) {
-                if ( auto s = c->ctor()->tryAs<hilti::ctor::String>() ) {
+            if ( auto* c = version->expression()->tryAs<hilti::expression::Ctor>() ) {
+                if ( auto* s = c->ctor()->tryAs<hilti::ctor::String>() ) {
                     // Parse string as either "x.y" or "x.y.z".
 
                     if ( auto v = hilti::util::split(s->value(), "."); v.size() >= 2 && v.size() <= 3 ) {
@@ -392,7 +392,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
     void operator()(statement::Stop* n) final {
         // Must be inside &foreach hook.
-        if ( auto x = n->parent<declaration::Hook>(); ! (x && x->hookType() == declaration::hook::Type::ForEach) )
+        if ( auto* x = n->parent<declaration::Hook>(); ! (x && x->hookType() == declaration::hook::Type::ForEach) )
             error("'stop' can only be used inside a 'foreach' hook", n);
     }
 
@@ -404,14 +404,14 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             ; // Nothing; just passed on to HILTI
 
         else if ( n->id().str() == "%byte-order" ) {
-            if ( auto e = n->expression(); ! e ) {
+            if ( auto* e = n->expression(); ! e ) {
                 error("%byte-order requires an argument", n);
                 return;
             }
         }
 
         else if ( n->id().str() == "%cxx-include" ) {
-            if ( auto e = n->expression(); ! e ) {
+            if ( auto* e = n->expression(); ! e ) {
                 error("%cxx-include requires an argument", n);
                 return;
             }
@@ -423,7 +423,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 return;
             }
 
-            else if ( auto t = e->type();
+            else if ( auto* t = e->type();
                       ! t->type()->isA<hilti::type::RegExp>() && ! t->type()->isA<hilti::type::Null>() ) {
                 error(fmt("%s requires a regexp as its argument", prop), n);
                 return;
@@ -431,7 +431,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( const auto& prop = n->id().str(); prop == "%synchronize-at" || prop == "%synchronize-after" ) {
-            auto e = n->expression();
+            auto* e = n->expression();
             if ( ! e ) {
                 error(fmt("%s requires an argument", prop), n);
                 return;
@@ -449,7 +449,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->id().str() == "%sync-advance-block-size" ) {
-            if ( auto e = n->expression(); ! e || ! e->type()->type()->isA<hilti::type::UnsignedInteger>() ) {
+            if ( auto* e = n->expression(); ! e || ! e->type()->type()->isA<hilti::type::UnsignedInteger>() ) {
                 error("%sync-advance-block-size requires an argument of type uint64", n);
                 return;
             }
@@ -505,7 +505,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 return;
             }
 
-            if ( auto x = n->expression()->tryAs<hilti::expression::Ctor>() ) {
+            if ( auto* x = n->expression()->tryAs<hilti::expression::Ctor>() ) {
                 const auto& mt = x->ctor()->as<hilti::ctor::String>()->value();
 
                 if ( ! spicy::rt::MIMEType::parse(mt) )
@@ -524,12 +524,12 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->id().str() == "%context" ) {
-            if ( auto e = n->expression(); ! e )
+            if ( auto* e = n->expression(); ! e )
                 error("%context requires an argument", n);
             else if ( ! e->type()->type()->isA<hilti::type::Type_>() )
                 error("%context requires a type", n);
 
-            auto decl = n->parent<hilti::declaration::Type>();
+            auto* decl = n->parent<hilti::declaration::Type>();
             if ( decl && decl->linkage() != hilti::declaration::Linkage::Public )
                 error("only public units can have %context", n);
         }
@@ -540,7 +540,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 return;
             }
 
-            else if ( auto t = e->type();
+            else if ( auto* t = e->type();
                       ! t->type()->isA<hilti::type::RegExp>() && ! t->type()->isA<hilti::type::Null>() ) {
                 error(fmt("%s requires a regexp as its argument", prop), n);
                 return;
@@ -560,7 +560,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( const auto& prop = n->id().str(); prop == "%synchronize-at" || prop == "%synchronize-after" ) {
-            auto e = n->expression();
+            auto* e = n->expression();
             if ( ! e ) {
                 error(fmt("%s requires an argument", prop), n);
                 return;
@@ -578,7 +578,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->id().str() == "%sync-advance-block-size" ) {
-            if ( auto e = n->expression(); ! e || ! e->type()->type()->isA<hilti::type::UnsignedInteger>() ) {
+            if ( auto* e = n->expression(); ! e || ! e->type()->type()->isA<hilti::type::UnsignedInteger>() ) {
                 error("%sync-advance-block-size requires an argument of type uint64", n);
                 return;
             }
@@ -591,7 +591,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::declaration::Hook* n) final {
         checkNodeAttributes(n, n->attributes(), "hook declaration");
 
-        if ( auto field = n->parent<spicy::type::unit::item::Field>();
+        if ( auto* field = n->parent<spicy::type::unit::item::Field>();
              field && n->attributes()->has(attribute::kind::Foreach) && ! field->isContainer() )
             error("'foreach' can only be used with containers", n);
 
@@ -601,7 +601,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         // Ensure we only have one foreach or one %error
         int foreach_count = 0;
         int err_count = 0;
-        if ( auto attrs = n->attributes() ) {
+        if ( auto* attrs = n->attributes() ) {
             for ( const auto& attr : attrs->attributes() ) {
                 if ( attr->kind() == attribute::kind::Foreach )
                     foreach_count++;
@@ -618,11 +618,11 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(spicy::type::unit::item::UnitHook* n) final {
-        auto decl = n->parent<hilti::declaration::Type>();
+        auto* decl = n->parent<hilti::declaration::Type>();
         if ( ! decl || ! decl->type()->type()->isA<type::Unit>() )
             return;
 
-        auto unit = n->parent<type::Unit>(); // note that this can be a different unit than in the decl, when nested
+        auto* unit = n->parent<type::Unit>(); // note that this can be a different unit than in the decl, when nested
         if ( ! unit )
             return;
 
@@ -666,7 +666,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->kind() == attribute::kind::Eod ) {
-            if ( auto f = get_attr_field(n) ) {
+            if ( auto* f = get_attr_field(n) ) {
                 if ( ! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
                         f->parseType()->type()->isA<hilti::type::Vector>()) ||
                      f->ctor() )
@@ -676,7 +676,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         else if ( hilti::attribute::isOneOf(n->kind(), {attribute::kind::While, attribute::kind::UntilIncluding,
                                                         attribute::kind::Until}) ) {
-            if ( auto f = get_attr_field(n) ) {
+            if ( auto* f = get_attr_field(n) ) {
                 if ( ! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
                         f->parseType()->type()->isA<hilti::type::Vector>()) )
                     error(fmt("%s is only valid for fields of type bytes or vector", to_string(n->kind())), n);
@@ -684,7 +684,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->kind() == attribute::kind::Chunked ) {
-            if ( auto f = get_attr_field(n) ) {
+            if ( auto* f = get_attr_field(n) ) {
                 if ( ! f->parseType()->type()->isA<hilti::type::Bytes>() || f->ctor() )
                     error("&chunked is only valid for bytes fields", n);
                 else if ( n->hasValue() )
@@ -715,10 +715,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             if ( ! n->hasValue() )
                 error("&requires must provide an expression", n);
             else {
-                auto e = *n->valueAsExpression();
+                auto* e = *n->valueAsExpression();
                 assert(e);
 
-                if ( auto result = e->type()->type()->tryAs<hilti::type::Result>();
+                if ( auto* result = e->type()->type()->tryAs<hilti::type::Result>();
                      ! result || ! result->dereferencedType()->type()->isA<hilti::type::Void>() )
                     error(fmt("&requires expression must be of type bool or result<void>, but is of type %d",
                               *e->type()),
@@ -730,11 +730,11 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void checkBits(const spicy::type::Unit& u, const hilti::node::Set<type::unit::Item>& items,
                    std::set<ID>* seen_bits) {
         for ( const auto& item : items ) {
-            if ( auto f = item->tryAs<spicy::type::unit::item::Field>() ) {
+            if ( auto* f = item->tryAs<spicy::type::unit::item::Field>() ) {
                 if ( ! f->isAnonymous() )
                     continue;
 
-                auto t = f->itemType()->type()->tryAs<hilti::type::Bitfield>();
+                auto* t = f->itemType()->type()->tryAs<hilti::type::Bitfield>();
                 if ( ! t )
                     continue;
 
@@ -749,12 +749,12 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 }
             }
 
-            else if ( auto f = item->tryAs<spicy::type::unit::item::Switch>() ) {
+            else if ( auto* f = item->tryAs<spicy::type::unit::item::Switch>() ) {
                 for ( const auto& c : f->cases() )
                     checkBits(u, {c->block()}, seen_bits);
             }
 
-            else if ( auto f = item->tryAs<spicy::type::unit::item::Block>() ) {
+            else if ( auto* f = item->tryAs<spicy::type::unit::item::Block>() ) {
                 checkBits(u, f->allItems(), seen_bits);
             }
         }
@@ -768,7 +768,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             return;
         }
 
-        if ( auto attrs = n->attributes() ) {
+        if ( auto* attrs = n->attributes() ) {
             if ( attrs->has(attribute::kind::Size) && attrs->has(attribute::kind::MaxSize) )
                 error(("attributes cannot be combined: &size, &max-size"), n);
 
@@ -778,7 +778,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                         error(fmt("%s must provide an expression", to_string(a->kind())), n);
                     else {
                         auto v = visitor::PreOrder();
-                        for ( auto i : visitor::range(v, a->value(), {}) )
+                        for ( auto* i : visitor::range(v, a->value(), {}) )
                             if ( const auto& name = i->tryAs<hilti::expression::Name>();
                                  name && name->id().str() == "self" ) {
                                 error(fmt("%s expression cannot use 'self' since it is only available after "
@@ -796,7 +796,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     if ( ! e )
                         error(e.error(), n);
                     else {
-                        if ( auto result = (*e)->type()->type()->tryAs<hilti::type::Result>();
+                        if ( auto* result = (*e)->type()->type()->tryAs<hilti::type::Result>();
                              ! result || ! result->dereferencedType()->type()->isA<hilti::type::Void>() )
                             error(fmt("&requires expression must be of type bool or result<void>, but is of type %s",
                                       *(*e)->type()),
@@ -827,7 +827,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         const auto& type_id = n->typeID();
         const auto& type_name = type_id.local();
         for ( const auto& item : n->items() )
-            if ( auto field = item->tryAs<spicy::type::unit::item::Field>(); field && field->id() == type_name )
+            if ( auto* field = item->tryAs<spicy::type::unit::item::Field>(); field && field->id() == type_name )
                 error(fmt("field name '%s' cannot have name identical to owning unit '%s'", field->id(), type_id), n);
 
         if ( n->propertyItem("%synchronize-at") && n->propertyItem("%synchronize-after") )
@@ -835,7 +835,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         for ( auto* p : n->parameters() ) {
             if ( p->kind() == hilti::parameter::Kind::InOut ) {
-                auto t = p->type()->type();
+                auto* t = p->type()->type();
                 if ( ! t->isA<type::Unit>() )
                     error(fmt("unsupported type for unit parameter '%s': type of inout unit parameters must "
                               "itself be a unit; for other parameter types, use references instead of inout",
@@ -850,25 +850,25 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(hilti::operator_::value_reference::Equal* n) final {
-        if ( auto ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
+        if ( auto* ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
              ref && ref->dereferencedType()->type()->isA<type::Unit>() )
             error("units cannot be compared with ==", n);
     }
 
     void operator()(hilti::operator_::value_reference::Unequal* n) final {
-        if ( auto ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
+        if ( auto* ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
              ref && ref->dereferencedType()->type()->isA<type::Unit>() )
             error("units cannot be compared with !=", n);
     }
 
     void operator()(hilti::operator_::strong_reference::Equal* n) final {
-        if ( auto ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
+        if ( auto* ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
              ref && ref->dereferencedType()->type()->isA<type::Unit>() )
             error("units cannot be compared with ==", n);
     }
 
     void operator()(hilti::operator_::strong_reference::Unequal* n) final {
-        if ( auto ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
+        if ( auto* ref = n->op0()->type()->type()->tryAs<hilti::type::ValueReference>();
              ref && ref->dereferencedType()->type()->isA<type::Unit>() )
             error("units cannot be compared with !=", n);
     }
@@ -883,7 +883,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::type::unit::item::Field* n) final {
         checkNodeAttributes(n, n->attributes(), "field");
 
-        auto type = n->parseType()->type();
+        auto* type = n->parseType()->type();
         validateFieldTypeAttributes(type->nodeTag(), n->attributes(), type->typeClass());
 
         if ( n->isSkip() ) {
@@ -892,8 +892,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
 
-        const auto count_attr = n->attributes()->find(attribute::kind::Count);
-        const auto repeat = n->repeatCount();
+        auto* const count_attr = n->attributes()->find(attribute::kind::Count);
+        auto* const repeat = n->repeatCount();
         if ( count_attr && (repeat && ! repeat->type()->type()->isA<hilti::type::Null>()) )
             error("cannot have both '[..]' and &count", n);
 
@@ -910,7 +910,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             error("only a bytes field can have sinks attached", n);
 
         for ( auto* s : n->sinks() ) {
-            auto t = s->type();
+            auto* t = s->type();
 
             if ( t->type()->isReferenceType() )
                 t = t->type()->dereferencedType();
@@ -958,7 +958,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             }
         }
 
-        if ( auto t = n->itemType()->type()->tryAs<hilti::type::Bitfield>() ) {
+        if ( auto* t = n->itemType()->type()->tryAs<hilti::type::Bitfield>() ) {
             for ( const auto& b : t->bits() ) {
                 if ( b->attributes()->has(attribute::kind::BitOrder) )
                     deprecated(fmt("&bit-order on bitfield item '%s' has no effect and is deprecated", b->id()),
@@ -969,8 +969,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( auto rc = checkFieldAttributes(n); ! rc )
             error(rc.error(), n);
 
-        if ( auto t = n->type() ) {
-            if ( auto unit = t->type()->tryAs<type::Unit>() )
+        if ( auto* t = n->type() ) {
+            if ( auto* unit = t->type()->tryAs<type::Unit>() )
                 // We disable the actual type checking here because arguments
                 // won't have been coerced yet. We are only interested in in
                 // the number of arguments being correct, type checking will
@@ -1035,7 +1035,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             }
 
             for ( const auto& i : c->block()->items() ) {
-                if ( auto f = i->tryAs<spicy::type::unit::item::Field>() ) {
+                if ( auto* f = i->tryAs<spicy::type::unit::item::Field>() ) {
                     for ( const auto& x : seen_fields ) {
                         if ( f->id() == x->id() &&
                              (! hilti::type::sameExceptForConstness(f->itemType(), x->itemType())) ) {
@@ -1072,8 +1072,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(spicy::type::unit::item::Sink* n) final { checkNodeAttributes(n, n->attributes(), "unit sink"); }
 
     void operator()(spicy::declaration::UnitHook* n) final {
-        if ( auto t = builder()->context()->lookup(n->hook()->unitTypeIndex()) ) {
-            auto ut = t->as<type::Unit>();
+        if ( auto* t = builder()->context()->lookup(n->hook()->unitTypeIndex()) ) {
+            auto* ut = t->as<type::Unit>();
             checkHook(ut, n->hook(), ut->isPublic(), true, n);
         }
         else
@@ -1167,20 +1167,20 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else {
-            if ( auto i = unit->itemByName(ID(id)); ! i )
+            if ( auto* i = unit->itemByName(ID(id)); ! i )
                 error(fmt("no field '%s' in unit type", id), n, location);
         }
     }
 
     void operator()(operator_::sink::ConnectMIMETypeBytes* n) final {
-        if ( auto x = n->op0()->type()->type()->tryAs<type::Unit>() ) {
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>() ) {
             if ( x->parameters().size() )
                 error("unit types with parameters cannot be connected through MIME type", n);
         }
     }
 
     void operator()(operator_::sink::ConnectMIMETypeString* n) final {
-        if ( auto x = n->op0()->type()->type()->tryAs<type::Unit>() ) {
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>() ) {
             if ( x->parameters().size() )
                 error("unit types with parameters cannot be connected through MIME type", n);
         }
@@ -1199,22 +1199,22 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(operator_::unit::ContextConst* n) final {
-        if ( auto x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->contextType() )
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->contextType() )
             error("context() used with a unit which did not declare %context", n);
     }
 
     void operator()(operator_::unit::ContextNonConst* n) final {
-        if ( auto x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->contextType() )
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->contextType() )
             error("context() used with a unit which did not declare %context", n);
     }
 
     void operator()(operator_::unit::Forward* n) final {
-        if ( auto x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->isFilter() )
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", n);
     }
 
     void operator()(operator_::unit::ForwardEod* n) final {
-        if ( auto x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->isFilter() )
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", n);
     }
 };

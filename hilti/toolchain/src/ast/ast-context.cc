@@ -95,8 +95,8 @@ private:
         cd.recordSeen(d);
 
         ++level;
-        for ( auto child : d->children() ) {
-            for ( auto n : visitor::range(hilti::visitor::PreOrder(), child) )
+        for ( auto* child : d->children() ) {
+            for ( auto* n : visitor::range(hilti::visitor::PreOrder(), child) )
                 if ( n )
                     dispatch(n);
         }
@@ -106,7 +106,7 @@ private:
     }
 
     void operator()(declaration::Constant* n) final {
-        if ( auto t = n->type()->type()->tryAs<type::Enum>() )
+        if ( auto* t = n->type()->type()->tryAs<type::Enum>() )
             // Special-case: For enum constants, insert a dependency on the
             // enum type instead, because that's the one that will declare it.
             insert(t->typeDeclaration());
@@ -119,7 +119,7 @@ private:
 
         if ( auto decl_index = n->linkedDeclarationIndex() ) {
             // Insert dependency on the linked type's declaration.
-            auto decl = context->lookup(decl_index);
+            auto* decl = context->lookup(decl_index);
             insert(decl);
             follow(decl);
         }
@@ -137,14 +137,14 @@ private:
     }
 
     void operator()(expression::Name* n) final {
-        if ( auto d = n->resolvedDeclaration() ) {
+        if ( auto* d = n->resolvedDeclaration() ) {
             dispatch(d);
             follow(d);
         }
     }
 
     void operator()(type::Name* n) final {
-        if ( auto d = n->resolvedDeclaration() ) {
+        if ( auto* d = n->resolvedDeclaration() ) {
             dispatch(d);
             follow(d);
         }
@@ -152,10 +152,10 @@ private:
 };
 
 void DependencyTracker::computeAllDependencies(ASTRoot* root) {
-    for ( auto module : root->childrenOfType<Declaration>() ) {
+    for ( auto* module : root->childrenOfType<Declaration>() ) {
         computeSingleDependency(module);
 
-        for ( auto d : module->childrenOfType<Declaration>() )
+        for ( auto* d : module->childrenOfType<Declaration>() )
             computeSingleDependency(d->as<Declaration>());
     }
 
@@ -304,7 +304,7 @@ Result<declaration::module::UID> ASTContext::importModule(
 declaration::Module* ASTContext::newModule(Builder* builder, ID id,
                                            const hilti::rt::filesystem::path& process_extension) {
     auto uid = declaration::module::UID(std::move(id), process_extension, process_extension);
-    auto m = builder->declarationModule(uid);
+    auto* m = builder->declarationModule(uid);
     _addModuleToAST(m);
     return module(uid);
 }
@@ -413,7 +413,7 @@ ast::DeclarationIndex ASTContext::register_(Declaration* decl) {
     _declarations_by_index.emplace_back(decl);
     decl->setDeclarationIndex(index);
 
-    if ( auto t = decl->tryAs<declaration::Type>() )
+    if ( auto* t = decl->tryAs<declaration::Type>() )
         t->type()->type()->setDeclarationIndex(index);
 
     if ( logger().isEnabled(logging::debug::Resolver) ) {
@@ -937,7 +937,7 @@ void ASTContext::_dumpDeclarations(const logging::DebugStream& stream, const Plu
 
     auto nodes = visitor::range(visitor::PreOrder(), _root.get(), {});
     for ( auto i = nodes.begin(); i != nodes.end(); ++i ) {
-        auto decl = (*i)->tryAs<Declaration>();
+        auto* decl = (*i)->tryAs<Declaration>();
         if ( ! decl )
             continue;
 

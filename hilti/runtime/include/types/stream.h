@@ -247,7 +247,7 @@ protected:
 
     // Update offset for current chunk and all others linked from it.
     void setOffset(Offset o) {
-        auto c = this;
+        auto* c = this;
         while ( c ) {
             c->_offset = o;
             o += c->size();
@@ -257,7 +257,7 @@ protected:
 
     // Set chain for current chunk and all others linked from it.
     void setChain(const Chain* chain) {
-        auto x = this;
+        auto* x = this;
         while ( x ) {
             x->_chain = chain;
             x = x->_next.get();
@@ -276,7 +276,7 @@ protected:
         Offset offset = endOffset();
         _next = std::move(next);
 
-        auto c = _next.get();
+        auto* c = _next.get();
         while ( c ) {
             c->_offset = offset;
             c->_chain = _chain;
@@ -777,7 +777,7 @@ private:
         if ( ! _chain->inRange(_offset) )
             throw InvalidIterator("stream iterator outside of valid range");
 
-        auto c = _chain->findChunk(_offset, chunk());
+        const auto* c = _chain->findChunk(_offset, chunk());
         assert(c);
 
         if ( c->isGap() )
@@ -1022,7 +1022,7 @@ private:
     Byte _dereference() const {
         assert(_chunk);
 
-        auto* byte = _chunk->data(_offset);
+        const auto* byte = _chunk->data(_offset);
 
         if ( ! byte )
             throw MissingData("data is missing");
@@ -1142,7 +1142,7 @@ inline Chunk* Chain::findChunk(const Offset& offset, Chunk* hint_prev) {
 }
 
 inline const Byte* Chain::data(const Offset& offset, Chunk* hint_prev) const {
-    auto c = findChunk(offset, hint_prev);
+    const auto* c = findChunk(offset, hint_prev);
     if ( ! c )
         throw InvalidIterator("stream iterator outside of valid range");
 
@@ -1493,7 +1493,7 @@ public:
 
         auto offset = p.offset().Ref();
 
-        for ( auto c = chain->findChunk(p.offset()); offset - p.offset().Ref() < n; c = c->next() ) {
+        for ( const auto* c = chain->findChunk(p.offset()); offset - p.offset().Ref() < n; c = c->next() ) {
             assert(c);
 
             const auto into_chunk = offset - c->offset().Ref();
@@ -1630,7 +1630,7 @@ inline Size View::size() const {
     if ( ! _begin.chain() )
         return 0;
 
-    auto tail = _begin.chain()->tail();
+    const auto* tail = _begin.chain()->tail();
     if ( ! tail )
         return 0;
 

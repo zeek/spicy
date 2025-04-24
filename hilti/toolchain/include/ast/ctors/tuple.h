@@ -21,7 +21,7 @@ public:
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     static auto create(ASTContext* ctx, const Expressions& exprs, Meta meta = {}) {
-        auto type = _inferType(ctx, exprs, meta);
+        auto* type = _inferType(ctx, exprs, meta);
         return ctx->make<Tuple>(ctx, node::flatten(type, exprs), std::move(meta));
     }
 

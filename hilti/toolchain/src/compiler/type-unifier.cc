@@ -213,7 +213,7 @@ void type_unifier::Unifier::add(UnqualifiedType* t) {
 
     _cd.recordSeen(t);
 
-    if ( auto name = t->tryAs<type::Name>() ) {
+    if ( auto* name = t->tryAs<type::Name>() ) {
         t = name->resolvedType();
         if ( ! t ) {
             abort();
@@ -228,7 +228,7 @@ void type_unifier::Unifier::add(UnqualifiedType* t) {
         if ( const auto& id = t->canonicalID() )
             add(util::fmt("name(%s)", id));
 
-        else if ( auto e = t->tryAs<type::Exception>(); e && ! e->baseType() )
+        else if ( auto* e = t->tryAs<type::Exception>(); e && ! e->baseType() )
             add("exception"); // special-case because the basic `exception` type by itself doesn't have an associated
                               // type ID
         else

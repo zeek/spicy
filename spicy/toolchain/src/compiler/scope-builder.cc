@@ -21,7 +21,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
     Builder* builder;
 
     void operator()(type::Unit* n) final {
-        if ( auto d = n->self() )
+        if ( auto* d = n->self() )
             n->getOrCreateScope()->insert(d);
 
         for ( auto&& x : n->parameters() )
@@ -29,16 +29,16 @@ struct VisitorScopeBuilder : visitor::PostOrder {
     }
 
     void operator()(type::unit::item::Field* n) final {
-        if ( auto d = n->dd() )
+        if ( auto* d = n->dd() )
             n->getOrCreateScope()->insert(d);
     }
 
     void operator()(declaration::UnitHook* n) final {
-        if ( auto d = n->hook()->dd() )
+        if ( auto* d = n->hook()->dd() )
             n->getOrCreateScope()->insert(d);
 
-        if ( auto t = builder->context()->lookup(n->hook()->unitTypeIndex()) ) {
-            auto u = t->as<type::Unit>();
+        if ( auto* t = builder->context()->lookup(n->hook()->unitTypeIndex()) ) {
+            auto* u = t->as<type::Unit>();
             if ( u->self() )
                 n->getOrCreateScope()->insert(u->self());
 
@@ -48,7 +48,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
     }
 
     void operator()(declaration::Hook* n) final {
-        if ( auto d = n->dd() )
+        if ( auto* d = n->dd() )
             n->getOrCreateScope()->insert(d);
         else
             // Force the scope lookup to stop here so that we don't find any
@@ -58,8 +58,8 @@ struct VisitorScopeBuilder : visitor::PostOrder {
         for ( auto&& x : n->ftype()->parameters() )
             n->getOrCreateScope()->insert(x);
 
-        if ( auto t = builder->context()->lookup(n->unitTypeIndex()) ) {
-            auto u = t->as<type::Unit>();
+        if ( auto* t = builder->context()->lookup(n->unitTypeIndex()) ) {
+            auto* u = t->as<type::Unit>();
             if ( u->self() )
                 n->getOrCreateScope()->insert(u->self());
 
@@ -71,7 +71,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
     void operator()(hilti::Attribute* n) final {
         if ( hilti::attribute::isOneOf(n->kind(), {attribute::kind::Until, attribute::kind::UntilIncluding,
                                                    attribute::kind::While}) ) {
-            auto f = n->parent<type::unit::item::Field>();
+            auto* f = n->parent<type::unit::item::Field>();
             if ( ! (f && f->isContainer()) )
                 return;
 
@@ -79,8 +79,8 @@ struct VisitorScopeBuilder : visitor::PostOrder {
             if ( ! pt->isResolved() )
                 return;
 
-            auto dd = hilti::expression::Keyword::createDollarDollarDeclaration(builder->context(),
-                                                                                pt->type()->elementType());
+            auto* dd = hilti::expression::Keyword::createDollarDollarDeclaration(builder->context(),
+                                                                                 pt->type()->elementType());
             n->getOrCreateScope()->insert(dd);
         }
     }

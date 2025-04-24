@@ -160,8 +160,8 @@ public:
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
                   const Meta& m = Meta()) {
-        auto ft = typeFunction(result, params, flavor, m);
-        auto f = function(id, ft, {}, cc, attrs, m);
+        auto* ft = typeFunction(result, params, flavor, m);
+        auto* f = function(id, ft, {}, cc, attrs, m);
         return declarationFunction(f, linkage, m);
     }
 
@@ -170,8 +170,8 @@ public:
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
                   const Meta& m = Meta()) {
-        auto ft = typeFunction(result, params, flavor, m);
-        auto f = function(id, ft, body, cc, attrs, m);
+        auto* ft = typeFunction(result, params, flavor, m);
+        auto* f = function(id, ft, body, cc, attrs, m);
         return declarationFunction(f, linkage, m);
     }
 
@@ -179,7 +179,7 @@ public:
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
                   const Meta& m = Meta()) {
-        auto f = function(id, ftype, body, cc, attrs, m);
+        auto* f = function(id, ftype, body, cc, attrs, m);
         return declarationFunction(f, linkage, m);
     }
 

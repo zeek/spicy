@@ -48,7 +48,7 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::Map* n) final {
-        if ( auto t = dst->type()->tryAs<type::Map>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Map>() ) {
             ctor::map::Elements nelemns;
             for ( const auto& e : n->value() ) {
                 auto k = hilti::coerceExpression(builder, e->key(), t->keyType(), style);
@@ -65,29 +65,29 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::Null* n) final {
-        if ( auto t = dst->type()->tryAs<type::Optional>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Optional>() ) {
             result = builder->ctorOptional(t->dereferencedType());
             return;
         }
 
-        if ( auto t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() ) {
             result = builder->ctorResult(t->dereferencedType());
             return;
         }
 
-        if ( auto t = dst->type()->tryAs<type::StrongReference>() ) {
+        if ( auto* t = dst->type()->tryAs<type::StrongReference>() ) {
             result = builder->ctorStrongReference(t->dereferencedType());
             return;
         }
 
-        if ( auto t = dst->type()->tryAs<type::WeakReference>() ) {
+        if ( auto* t = dst->type()->tryAs<type::WeakReference>() ) {
             result = builder->ctorWeakReference(t->dereferencedType());
             return;
         }
     }
 
     void operator()(ctor::List* n) final {
-        if ( auto t = dst->type()->tryAs<type::List>() ) {
+        if ( auto* t = dst->type()->tryAs<type::List>() ) {
             Expressions nexprs;
             for ( const auto& e : n->value() ) {
                 if ( auto x =
@@ -99,8 +99,8 @@ struct VisitorCtor : visitor::PreOrder {
             result = builder->ctorList(t->elementType(), std::move(nexprs), n->meta());
         }
 
-        if ( auto t = dst->type()->tryAs<type::Vector>() ) {
-            auto dt = t->isWildcard() ? n->elementType() : t->elementType();
+        if ( auto* t = dst->type()->tryAs<type::Vector>() ) {
+            auto* dt = t->isWildcard() ? n->elementType() : t->elementType();
 
             Expressions nexprs;
             for ( const auto& e : n->value() ) {
@@ -112,8 +112,8 @@ struct VisitorCtor : visitor::PreOrder {
             result = builder->ctorVector(dt, std::move(nexprs), n->meta());
         }
 
-        if ( auto t = dst->type()->tryAs<type::Set>() ) {
-            auto dt = t->isWildcard() ? n->elementType() : t->elementType();
+        if ( auto* t = dst->type()->tryAs<type::Set>() ) {
+            auto* dt = t->isWildcard() ? n->elementType() : t->elementType();
 
             Expressions nexprs;
             for ( const auto& e : n->value() ) {
@@ -130,7 +130,7 @@ struct VisitorCtor : visitor::PreOrder {
         // Note: double->Integral constant conversions check 'non-narrowing' via
         // double->Int->double roundtrip - the generated code looks good.
 
-        if ( auto t = dst->type()->tryAs<type::SignedInteger>() ) {
+        if ( auto* t = dst->type()->tryAs<type::SignedInteger>() ) {
             double d = n->value();
 
             if ( static_cast<double>(static_cast<int64_t>(d)) == d ) {
@@ -155,7 +155,7 @@ struct VisitorCtor : visitor::PreOrder {
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::UnsignedInteger>() ) {
+        if ( auto* t = dst->type()->tryAs<type::UnsignedInteger>() ) {
             double d = n->value();
 
             if ( static_cast<double>(static_cast<uint64_t>(d)) == d ) {
@@ -182,7 +182,7 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::Set* n) final {
-        if ( auto t = dst->type()->tryAs<type::Set>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Set>() ) {
             Expressions nexprs;
             for ( const auto& e : n->value() ) {
                 if ( auto x = hilti::coerceExpression(builder, e, t->elementType(), style) )
@@ -195,7 +195,7 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::SignedInteger* n) final {
-        if ( auto t = dst->type()->tryAs<type::SignedInteger>() ) {
+        if ( auto* t = dst->type()->tryAs<type::SignedInteger>() ) {
             if ( t->width() == 64 ) {
                 result = n;
                 return;
@@ -214,7 +214,7 @@ struct VisitorCtor : visitor::PreOrder {
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::UnsignedInteger>(); t && n->value() >= 0 ) {
+        if ( auto* t = dst->type()->tryAs<type::UnsignedInteger>(); t && n->value() >= 0 ) {
             auto u = static_cast<uint64_t>(n->value());
 
             if ( t->isWildcard() ) {
@@ -240,7 +240,7 @@ struct VisitorCtor : visitor::PreOrder {
             return;
         }
 
-        if ( auto t = dst->type()->tryAs<type::Bitfield>(); t && n->value() >= 0 ) {
+        if ( auto* t = dst->type()->tryAs<type::Bitfield>(); t && n->value() >= 0 ) {
             auto u = static_cast<uint64_t>(n->value());
             if ( auto [umin, umax] = util::unsignedIntegerRange(t->width()); u >= umin && u <= umax ) {
                 result = builder->ctorUnsignedInteger(u, t->width(), n->meta());
@@ -257,7 +257,7 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::Vector* n) final {
-        if ( auto t = dst->type()->tryAs<type::Vector>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Vector>() ) {
             Expressions nexprs;
             for ( const auto& e : n->value() ) {
                 if ( auto x = hilti::coerceExpression(builder, e, t->elementType(), style) )
@@ -270,7 +270,7 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::UnsignedInteger* n) final {
-        if ( auto t = dst->type()->tryAs<type::UnsignedInteger>() ) {
+        if ( auto* t = dst->type()->tryAs<type::UnsignedInteger>() ) {
             if ( t->width() == 64 ) {
                 result = n;
                 return;
@@ -289,7 +289,7 @@ struct VisitorCtor : visitor::PreOrder {
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::SignedInteger>(); t && static_cast<int64_t>(n->value()) >= 0 ) {
+        if ( auto* t = dst->type()->tryAs<type::SignedInteger>(); t && static_cast<int64_t>(n->value()) >= 0 ) {
             auto i = static_cast<int64_t>(n->value());
 
             if ( t->isWildcard() ) {
@@ -315,7 +315,7 @@ struct VisitorCtor : visitor::PreOrder {
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::Bitfield>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Bitfield>() ) {
             uint64_t u = n->value();
             if ( auto [umin, umax] = util::unsignedIntegerRange(t->width()); u >= umin && u <= umax ) {
                 result = builder->ctorUnsignedInteger(u, t->width(), n->meta());
@@ -325,7 +325,7 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::Tuple* n) final {
-        if ( auto t = dst->type()->tryAs<type::Tuple>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Tuple>() ) {
             auto vc = n->value();
             auto ve = t->elements();
 
@@ -349,19 +349,19 @@ struct VisitorCtor : visitor::PreOrder {
     }
 
     void operator()(ctor::Struct* n) final {
-        auto dst_ = dst;
+        auto* dst_ = dst;
 
         if ( (dst->type()->isA<type::ValueReference>() || dst->type()->isA<type::StrongReference>()) &&
              ! dst->type()->isReferenceType() )
             // Allow coercion from value to reference type with new instance.
             dst_ = dst->type()->dereferencedType();
 
-        if ( auto dtype = dst_->type()->tryAs<type::Struct>() ) {
+        if ( auto* dtype = dst_->type()->tryAs<type::Struct>() ) {
             if ( ! dst_->type() )
                 // Wait for this to be resolved.
                 return;
 
-            auto stype = n->type()->type()->as<type::Struct>();
+            auto* stype = n->type()->type()->as<type::Struct>();
 
             std::set<ID> src_fields;
             for ( const auto& f : stype->fields() )
@@ -383,7 +383,7 @@ struct VisitorCtor : visitor::PreOrder {
             std::set<ID> can_be_missing;
 
             for ( const auto& k : x ) {
-                auto f = dtype->field(k);
+                auto* f = dtype->field(k);
                 if ( f->isOptional() || f->isInternal() || f->default_() || f->type()->type()->isA<type::Function>() )
                     can_be_missing.insert(k);
             }
@@ -411,12 +411,12 @@ struct VisitorCtor : visitor::PreOrder {
             result = builder->ctorStruct(std::move(nf), dst_, n->meta());
         }
 
-        if ( auto dtype = dst_->type()->tryAs<type::Bitfield>() ) {
+        if ( auto* dtype = dst_->type()->tryAs<type::Bitfield>() ) {
             if ( ! dst_->type()->typeID() )
                 // Wait for this to be resolved.
                 return;
 
-            auto stype = n->type()->type()->as<type::Struct>();
+            auto* stype = n->type()->type()->as<type::Struct>();
 
             std::set<ID> src_fields;
             for ( const auto& f : stype->fields() )
@@ -462,19 +462,19 @@ struct VisitorType : visitor::PreOrder {
     QualifiedType* result = nullptr;
 
     void operator()(type::Enum* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
 
     void operator()(type::Interval* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
 
     void operator()(type::Null* n) final {
         if ( dst->type()->isA<type::Optional>() )
             result = dst;
-        else if ( auto t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() )
+        else if ( auto* t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() )
             result = dst;
         else if ( dst->type()->isA<type::StrongReference>() )
             result = dst;
@@ -493,15 +493,15 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::List* n) final {
-        if ( auto t = dst->type()->tryAs<type::Set>(); t && type::same(t->elementType(), n->elementType()) )
+        if ( auto* t = dst->type()->tryAs<type::Set>(); t && type::same(t->elementType(), n->elementType()) )
             result = dst;
 
-        else if ( auto t = dst->type()->tryAs<type::Vector>(); t && type::same(t->elementType(), n->elementType()) )
+        else if ( auto* t = dst->type()->tryAs<type::Vector>(); t && type::same(t->elementType(), n->elementType()) )
             result = dst;
     }
 
     void operator()(type::Optional* n) final {
-        if ( auto t = dst->type()->tryAs<type::Optional>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Optional>() ) {
             const auto& s = n->dereferencedType();
             const auto& d = t->dereferencedType();
 
@@ -513,12 +513,12 @@ struct VisitorType : visitor::PreOrder {
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
             result = dst;
     }
 
     void operator()(type::StrongReference* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
             result = dst;
             return;
         }
@@ -545,15 +545,15 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Time* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
 
     void operator()(type::Result* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t )
             result = dst;
 
-        else if ( auto t = dst->type()->tryAs<type::Optional>();
+        else if ( auto* t = dst->type()->tryAs<type::Optional>();
                   t && type::same(t->dereferencedType(), n->dereferencedType()) )
             result = dst;
     }
@@ -562,7 +562,7 @@ struct VisitorType : visitor::PreOrder {
         if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
             result = dst;
 
-        else if ( auto t = dst->type()->tryAs<type::SignedInteger>() ) {
+        else if ( auto* t = dst->type()->tryAs<type::SignedInteger>() ) {
             if ( n->width() <= t->width() )
                 result = dst;
         }
@@ -579,10 +579,10 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Type_* n) final {
-        if ( auto lt = dst->type()->tryAs<type::Library>(); lt && lt->cxxName() == "::hilti::rt::TypeInfo*" )
+        if ( auto* lt = dst->type()->tryAs<type::Library>(); lt && lt->cxxName() == "::hilti::rt::TypeInfo*" )
             result = dst->recreateAsConst(builder->context());
 
-        else if ( auto t = dst->type()->tryAs<type::Type_>() ) {
+        else if ( auto* t = dst->type()->tryAs<type::Type_>() ) {
             if ( type::sameExceptForConstness(n->typeValue(), t->typeValue()) )
                 result = src;
         }
@@ -593,7 +593,7 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Union* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
 
@@ -603,14 +603,14 @@ struct VisitorType : visitor::PreOrder {
             return;
         }
 
-        if ( auto t = dst->type()->tryAs<type::UnsignedInteger>() ) {
+        if ( auto* t = dst->type()->tryAs<type::UnsignedInteger>() ) {
             if ( n->width() <= t->width() ) {
                 result = dst;
                 return;
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::SignedInteger>() ) {
+        if ( auto* t = dst->type()->tryAs<type::SignedInteger>() ) {
             // As long as the target type has more bits, we can coerce.
             if ( n->width() < t->width() ) {
                 result = dst;
@@ -618,7 +618,7 @@ struct VisitorType : visitor::PreOrder {
             }
         }
 
-        if ( auto t = dst->type()->tryAs<type::Bitfield>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Bitfield>() ) {
             if ( n->width() <= t->width() ) {
                 result = dst;
                 return;
@@ -627,7 +627,7 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::Tuple* n) final {
-        if ( auto t = dst->type()->tryAs<type::Tuple>() ) {
+        if ( auto* t = dst->type()->tryAs<type::Tuple>() ) {
             auto vc = n->elements();
             auto ve = t->elements();
 
@@ -644,7 +644,7 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::ValueReference* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
             if ( auto t = hilti::coerceType(builder, n->dereferencedType(), dst, style) )
                 result = *t;
 
@@ -665,7 +665,7 @@ struct VisitorType : visitor::PreOrder {
     }
 
     void operator()(type::WeakReference* n) final {
-        if ( auto t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
+        if ( auto* t = dst->type()->tryAs<type::Bool>(); (style & CoercionStyle::ContextualConversion) && t ) {
             result = dst;
             return;
         }
@@ -697,7 +697,7 @@ Result<Ctor*> hilti::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst, b
         if ( ! (p.coerce_ctor) )
             continue;
 
-        if ( auto nc = (*p.coerce_ctor)(builder, c, dst, style) )
+        if ( auto* nc = (*p.coerce_ctor)(builder, c, dst, style) )
             return nc;
     }
 
@@ -711,19 +711,19 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
     // Update: I believe the answer is yes ... Added a few more cases, but this will
     // likely need more work.
 
-    auto src = src_;
+    auto* src = src_;
 
-    if ( auto name = src->type()->tryAs<type::Name>() ) {
-        if ( auto d = name->resolvedDeclaration() )
+    if ( auto* name = src->type()->tryAs<type::Name>() ) {
+        if ( auto* d = name->resolvedDeclaration() )
             src = d->type();
         else
             return result::Error("type name has not been resolved");
     }
 
-    auto dst = dst_;
+    auto* dst = dst_;
 
-    if ( auto name = dst->type()->tryAs<type::Name>() ) {
-        if ( auto d = name->resolvedDeclaration() )
+    if ( auto* name = dst->type()->tryAs<type::Name>() ) {
+        if ( auto* d = name->resolvedDeclaration() )
             dst = d->type();
         else
             return result::Error("type name has not been resolved");
@@ -738,7 +738,7 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
     }
 
     if ( style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall) ) {
-        if ( auto opt = dst->type()->tryAs<type::Optional>() ) {
+        if ( auto* opt = dst->type()->tryAs<type::Optional>() ) {
             if ( dst->type()->isWildcard() )
                 return dst;
 
@@ -747,7 +747,7 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
                 return builder->qualifiedType(builder->typeOptional(*x, src->meta()), Constness::Mutable);
         }
 
-        if ( auto opt = dst->type()->tryAs<type::Result>() ) {
+        if ( auto* opt = dst->type()->tryAs<type::Result>() ) {
             if ( dst->type()->isWildcard() )
                 return dst;
 
@@ -756,7 +756,7 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
                 return builder->qualifiedType(builder->typeResult(*x, src->meta()), Constness::Mutable);
         }
 
-        if ( auto x = dst->type()->tryAs<type::ValueReference>(); x && ! src->type()->isReferenceType() ) {
+        if ( auto* x = dst->type()->tryAs<type::ValueReference>(); x && ! src->type()->isReferenceType() ) {
             // All types converts into a corresponding value_ref.
             if ( auto y = coerceType(builder, src, x->dereferencedType(), style) )
                 return builder->qualifiedType(builder->typeValueReference(dst, src->meta()), Constness::Mutable);
@@ -767,7 +767,7 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
         if ( ! (p.coerce_type) )
             continue;
 
-        if ( auto nt = (*p.coerce_type)(builder, src, dst, style) )
+        if ( auto* nt = (*p.coerce_type)(builder, src, dst, style) )
             return nt;
     }
 
@@ -827,7 +827,7 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
     for ( const auto&& [i, op] : util::enumerate(operands) ) {
         if ( i >= exprs.size() ) {
             // Running out of operands, must have a default or be optional.
-            if ( auto d = op->default_() ) {
+            if ( auto* d = op->default_() ) {
                 transformed.emplace_back(d);
                 changed = true;
             }
@@ -841,7 +841,7 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
         }
 
         if ( exprs[i]->type()->type()->isA<type::Null>() ) {
-            if ( auto d = op->default_() ) {
+            if ( auto* d = op->default_() ) {
                 transformed.emplace_back(d);
                 changed = true;
                 continue;
@@ -861,7 +861,7 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
         }
 
         if ( needs_mutable ) {
-            auto t = exprs[i]->type();
+            auto* t = exprs[i]->type();
 
             if ( t->type()->isReferenceType() && (style & CoercionStyle::TryDeref) )
                 t = t->type()->dereferencedType();
@@ -908,8 +908,8 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
             return result::Error("no valid coercion found");
 
         if ( needs_mutable && result.nexpr && ! oat->type()->isWildcard() && ! oat->type()->isReferenceType() ) {
-            auto new_t = result.nexpr->type()->type();
-            auto orig_t = exprs[i]->type()->type();
+            auto* new_t = result.nexpr->type()->type();
+            auto* orig_t = exprs[i]->type()->type();
 
             if ( orig_t->isReferenceType() )
                 orig_t = orig_t->dereferencedType()->type();
@@ -931,9 +931,9 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
 // If an expression is a reference, dereference it; otherwise return the
 // expression itself.
 static Expression* skipReferenceValue(Builder* builder, Expression* op) {
-    static auto value_reference_deref = operator_::get("value_reference::Deref");
-    static auto strong_reference_deref = operator_::get("strong_reference::Deref");
-    static auto weak_reference_deref = operator_::get("weak_reference::Deref");
+    static const auto* value_reference_deref = operator_::get("value_reference::Deref");
+    static const auto* strong_reference_deref = operator_::get("strong_reference::Deref");
+    static const auto* weak_reference_deref = operator_::get("weak_reference::Deref");
 
     if ( ! op->type()->type()->isReferenceType() )
         return op;
@@ -969,19 +969,19 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
         goto exit;                                                                                                     \
     }
 
-    auto src = src_;
+    auto* src = src_;
 
-    if ( auto name = src->type()->tryAs<type::Name>() ) {
-        if ( auto d = name->resolvedDeclaration() )
+    if ( auto* name = src->type()->tryAs<type::Name>() ) {
+        if ( auto* d = name->resolvedDeclaration() )
             src = d->type();
         else
             return result::Error("type name has not been resolved");
     }
 
-    auto dst = dst_;
+    auto* dst = dst_;
 
-    if ( auto name = dst->type()->tryAs<type::Name>() ) {
-        if ( auto d = name->resolvedDeclaration() )
+    if ( auto* name = dst->type()->tryAs<type::Name>() ) {
+        if ( auto* d = name->resolvedDeclaration() )
             dst = d->type();
         else
             return result::Error("type name has not been resolved");
@@ -1020,7 +1020,7 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
     if ( (style & CoercionStyle::TryDeref) &&
          ! (style & (CoercionStyle::DisallowTypeChanges | CoercionStyle::Assignment)) ) {
         if ( src->type()->isReferenceType() ) {
-            auto nsrc = src->type()->dereferencedType();
+            auto* nsrc = src->type()->dereferencedType();
             if ( type::same(nsrc, dst) )
                 RETURN(CoercedExpression(src_, skipReferenceValue(builder, e)));
 
@@ -1035,7 +1035,7 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
         // type::Any accepts anything without actual coercion.
         RETURN(no_change);
 
-    if ( auto x = e->tryAs<expression::Member>() ) {
+    if ( auto* x = e->tryAs<expression::Member>() ) {
         // Make sure the expression remains a member expression, as we will
         // be expecting to cast it to that.
         if ( auto t = hilti::coerceType(builder, x->type(), dst_, style) ) {
@@ -1045,16 +1045,16 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
             RETURN(result::Error());
     }
 
-    if ( auto o = dst->type()->template tryAs<type::OperandList>() ) {
+    if ( auto* o = dst->type()->template tryAs<type::OperandList>() ) {
         // Match tuple against operands according to function call rules.
         HILTI_DEBUG(logging::debug::Coercer, util::fmt("matching against call parameters"));
         logging::DebugPushIndent _(logging::debug::Coercer);
 
-        auto c = e->template tryAs<expression::Ctor>();
+        auto* c = e->template tryAs<expression::Ctor>();
         if ( ! c )
             RETURN(CoercedExpression());
 
-        if ( auto t = c->ctor()->template tryAs<hilti::ctor::Tuple>() ) {
+        if ( auto* t = c->ctor()->template tryAs<hilti::ctor::Tuple>() ) {
             // The two style options both implicitly set CoercionStyle::FunctionCall.
             CoercionStyle function_style =
                 (style & CoercionStyle::TryCoercion ? CoercionStyle::TryAllForFunctionCall :
@@ -1073,7 +1073,7 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
     }
 
     if ( style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall) ) {
-        if ( auto opt = dst->type()->tryAs<type::Optional>() ) {
+        if ( auto* opt = dst->type()->tryAs<type::Optional>() ) {
             if ( opt->isWildcard() )
                 RETURN(no_change);
 
@@ -1082,7 +1082,7 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
                 RETURN(CoercedExpression(src_, builder->expressionCoerced(*x.coerced, dst_, e->meta())));
         }
 
-        if ( auto result = dst->type()->tryAs<type::Result>() ) {
+        if ( auto* result = dst->type()->tryAs<type::Result>() ) {
             if ( result->isWildcard() )
                 RETURN(no_change);
 
@@ -1091,7 +1091,7 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
                 RETURN(CoercedExpression(src_, builder->expressionCoerced(*x.coerced, dst_, e->meta())));
         }
 
-        if ( auto x = dst->type()->tryAs<type::ValueReference>(); x && ! src->type()->isReferenceType() ) {
+        if ( auto* x = dst->type()->tryAs<type::ValueReference>(); x && ! src->type()->isReferenceType() ) {
             // All types converts into a corresponding value_ref.
             if ( auto y = coerceExpression(builder, e, x->dereferencedType(), style) )
                 RETURN(CoercedExpression(src_, builder->expressionCoerced(*y.coerced, dst_, e->meta())));
@@ -1107,7 +1107,7 @@ static CoercedExpression _coerceExpression(Builder* builder, Expression* e, Qual
     }
 
     if ( try_coercion ) {
-        if ( auto c = e->tryAs<expression::Ctor>() ) {
+        if ( auto* c = e->tryAs<expression::Ctor>() ) {
             if ( auto nc = hilti::coerceCtor(builder, c->ctor(), dst, style) )
                 RETURN(CoercedExpression(src_, builder->expressionCtor(builder->ctorCoerced(c->ctor(), *nc, c->meta()),
                                                                        e->meta())));

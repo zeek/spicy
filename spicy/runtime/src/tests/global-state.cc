@@ -34,11 +34,11 @@ TEST_CASE("globalState") {
     TestState _;
     REQUIRE_EQ(detail::__global_state, nullptr);
 
-    const auto state1 = detail::globalState();
+    auto* const state1 = detail::globalState();
     CHECK_NE(state1, nullptr);
     CHECK_EQ(state1, detail::__global_state);
 
-    const auto state2 = detail::globalState();
+    auto* const state2 = detail::globalState();
     CHECK_EQ(state2, state1);
 }
 
