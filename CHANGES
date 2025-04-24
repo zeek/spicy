@@ -1,3 +1,7 @@
+1.13.0-dev.212 | 2025-04-24 08:31:03 -0400
+
+  * Limit `reserve` calls on vectors to prevent OOM. (Evan Typanski, Corelight)
+
 1.13.0-dev.210 | 2025-04-23 15:32:56 +0200
 
   * CI: No more Ubuntu 20.04 (Arne Welzel, Corelight)

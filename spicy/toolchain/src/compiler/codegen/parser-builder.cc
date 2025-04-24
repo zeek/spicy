@@ -1575,9 +1575,17 @@ struct ProductionVisitor : public production::Visitor {
         // Fields with stored elements should reserve the amount they will parse
         if ( auto* field = p->meta().field(); field && ! field->isTransient() ) {
             // Create a temporary so stateful size expressions are only evaluated once.
-            repeat = builder()->addTmp("repeat", repeat);
+            auto* uint64 = builder()->qualifiedType(builder()->typeUnsignedInteger(64), hilti::Constness::Const);
+            repeat = builder()->addTmp("repeat", uint64, repeat);
 
-            builder()->addExpression(builder()->memberCall(destination(), "reserve", {repeat}));
+            // Cap the number of reserved elements to avoid allocating
+            // excessive memory. The vector parsing might be stopped with
+            // `stop` in which case we would not store the declared repeat
+            // count anyway.
+            auto* max_reserve = builder()->integer(128U);
+            auto* num_elements = builder()->min(max_reserve, repeat);
+
+            builder()->addExpression(builder()->memberCall(destination(), "reserve", {num_elements}));
         }
 
         auto body = builder()->addWhile(builder()->local("__i",
