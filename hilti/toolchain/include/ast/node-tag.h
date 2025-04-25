@@ -115,9 +115,10 @@ constexpr Tag GlobalVariable = 304;
 constexpr Tag ImportedModule = 305;
 constexpr Tag LocalVariable = 306;
 constexpr Tag Module = 307;
-constexpr Tag Parameter = 308;
-constexpr Tag Property = 309;
-constexpr Tag Type = 310;
+constexpr Tag Option = 308;
+constexpr Tag Parameter = 309;
+constexpr Tag Property = 310;
+constexpr Tag Type = 311;
 } // namespace declaration
 
 namespace expression {

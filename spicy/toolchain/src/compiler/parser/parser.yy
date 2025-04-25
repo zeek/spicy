@@ -36,7 +36,7 @@ namespace spicy { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 119
-%expect-rr 172
+%expect-rr 174
 
 %{
 
@@ -221,6 +221,7 @@ static std::vector<hilti::DocString> _docs;
 %token NOT_IN
 %token OBJECT
 %token ON
+%token OPTION
 %token OPTIONAL
 %token OR
 %token PACK
@@ -272,7 +273,7 @@ static std::vector<hilti::DocString> _docs;
 %token WHILE
 
 %type <hilti::ID>                           local_id scoped_id dotted_id unit_hook_id
-%type <hilti::Declaration*>               local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl struct_field
+%type <hilti::Declaration*>               local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl hook_decl option_decl struct_field
 %type <hilti::Declarations>                 struct_fields
 %type <hilti::UnqualifiedType*>           base_type_no_ref base_type type type_no_ref tuple_type struct_type enum_type unit_type bitfield_type reference_type
 %type <hilti::QualifiedType*>             qtype func_result opt_func_result unit_field_base_type
@@ -379,6 +380,7 @@ global_scope_decl
               | import_decl                      { $$ = std::move($1); }
               | property_decl                    { $$ = std::move($1); }
               | hook_decl                        { $$ = std::move($1); }
+              | option_decl                     { $$ = std::move($1); }
 
 type_decl     : opt_linkage TYPE scoped_id '='   { _docs.emplace_back(driver->docGetAndClear()); }
                 qtype opt_attributes ';'         { if ( auto u = $6->type()->tryAs<type::Unit>(); u && $7 && *$7 ) {
@@ -478,6 +480,18 @@ hook_decl     : ON unit_hook_id unit_hook        { ID unit = $2.namespace_();
                                                  }
               ;
 
+option_decl   : OPTION scoped_id                  { _docs.emplace_back(driver->docGetAndClear()); }
+                '=' expr ';'                     { $$ = builder->declarationOption($2, $5, __loc__);
+                                                   $$->setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
+
+              | OPTION scoped_id                 { _docs.emplace_back(driver->docGetAndClear()); }
+                ':' qtype '=' expr ';'            { $$ = builder->declarationOption($2, $5, $7, __loc__);
+                                                   $$->setDocumentation(_docs.back());
+                                                   _docs.pop_back();
+                                                 }
+              ;
 opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Linkage::Public; }
               | PRIVATE                          { $$ = hilti::declaration::Linkage::Private; }
               | /* empty */                      { $$ = hilti::declaration::Linkage::Private; }

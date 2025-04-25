@@ -151,6 +151,8 @@ struct Printer : visitor::PreOrder {
         print_decls(
             util::filter(n->declarations(), [](const auto& d) { return d->template isA<declaration::Type>(); }));
         print_decls(
+            util::filter(n->declarations(), [](const auto& d) { return d->template isA<declaration::Option>(); }));
+        print_decls(
             util::filter(n->declarations(), [](const auto& d) { return d->template isA<declaration::Constant>(); }));
         print_decls(util::filter(n->declarations(),
                                  [](const auto& d) { return d->template isA<declaration::GlobalVariable>(); }));
@@ -455,6 +457,15 @@ struct Printer : visitor::PreOrder {
             _out << " = " << n->init();
 
         _out << ';';
+        _out.endLine();
+    }
+
+    void operator()(declaration::Option* n) final {
+        printDoc(n->documentation());
+        _out.beginLine();
+        _out << linkage(n->linkage()) << "option ";
+        _out << n->type();
+        _out << ' ' << n->id() << " = " << n->init() << ';';
         _out.endLine();
     }
 
