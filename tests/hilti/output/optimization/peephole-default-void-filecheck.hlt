@@ -1,0 +1,15 @@
+# @TEST-DOC: Test removal of no-op `default<void>()` statements
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic -p %INPUT | FileCheck %INPUT
+# @TEST-EXEC-FAIL: hiltic -gp %INPUT | FileCheck %INPUT
+
+module Test {
+
+# CHECK: public function void foo() {
+# CHECK-NEXT: }
+public function void foo() {
+    default<void>();
+}
+
+}
