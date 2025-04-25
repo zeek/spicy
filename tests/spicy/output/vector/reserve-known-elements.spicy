@@ -1,0 +1,12 @@
+# @TEST-DOC: Checks that a reserve call gets generated for vectors of known size
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: spicyc -p %INPUT | FileCheck %INPUT
+
+module Test;
+
+public type Data = unit {
+    # CHECK: [[REPEAT:[a-z_]+]] = 100
+    # CHECK: {{[a-z_]+}}.reserve(128 <= [[REPEAT]] ? 128 : [[REPEAT]])
+    vec: uint64[100];
+};

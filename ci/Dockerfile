@@ -44,6 +44,7 @@ RUN apt-get update \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
  && apt-get install -y --no-install-recommends llvm-20-dev clang-20 libclang-20-dev clang-tidy-20 libclang-rt-20-dev \
+ && update-alternatives --install /usr/bin/FileCheck FileCheck $(which FileCheck-20) 100 \
  # Install a recent CMake for `SKIP_LINTING` support.
  && test -f /usr/share/doc/kitware-archive-keyring/copyright || \
     curl https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
