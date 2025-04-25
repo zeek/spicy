@@ -43,9 +43,9 @@ Commit Messages
   one line summary and then explain at a high-level what's going on,
   including in particular any new functionality and changes to
   existing semantics. Include short examples of functionality if
-  possibles. (Expect people to read your commit messages. :)
+  possible. (Expect people to read your commit messages. :) )
 
-- If the commit refers to ticket or PR, include the number into the
+- If the commit refers to ticket or PR, include the number in the
   commit message.
 
 - Aim to make commits self-containing chunks of functionality. Rebase
@@ -53,7 +53,7 @@ Commit Messages
 
 - Formatting aspects of commit messages are linted with `gitlint
   <https://jorisroovers.com/gitlint/>`__ via pre-commit hooks, see
-  :ref:`tooling`. In particular we enforce that summary lines start with a
+  :ref:`tooling`. In particular, we enforce that summary lines start with a
   capital letter and end in a period, and length limits for both summary and
   body lines.
 
@@ -72,21 +72,19 @@ abort if there's anything not formatted as expected.
 
 .. _clang_tidy:
 
-Static analysis
----------------
+Linting
+-------
 
-Spicy also comes with a ``clang-tidy`` configuration, as well as
-``Makefile`` targets similar to the ones for formatting: ``make tidy``
-will check the code, and ``make tidy-fixit`` will apply fixes
-automatically where ``clang-tidy`` is able to. Note that the latter
-can sometimes make things worse: Double-check ``git diff`` before
-committing anything.
+Spicy also comes with a ``clang-tidy`` configuration, which lints
+Spicy's C++ code. The simplest way to run it is with
+``run-clang-tidy``, which will be installed alongside ``clang-tidy``.
+You can specify the build directory with ``-p build`` to locate the
+necessary compilation database. You may also automatically apply
+fixes where possible with the ``-fix`` flag. Note that ``-fix`` can
+sometimes make things worse: Double-check ``git diff`` before committing
+anything.
 
-You can set the environment variable ``CLANG_TIDY`` to the full path
-of the ``clang-tidy`` to ensure the right version is found (which,
-similar to ``clang-format``, needs to be from Clang >= 10).
-
-Spicy's CI runs ``make tidy`` as part of its code checks and will
+Spicy's CI runs ``clang-tidy`` as part of its code checks and will
 abort if there's anything not formatted as expected.
 
 Code Conventions
@@ -125,7 +123,7 @@ Code Conventions
         * Add a brief sentence or two to all class members that aren't
           obvious.
 
-- In implementation files
+- In implementation files:
 
     - For elements that aren't declared in a separate header file,
       follow the rules for headers defining elements of the private
