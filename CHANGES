@@ -1,3 +1,25 @@
+1.13.0-dev.214 | 2025-04-25 12:33:30 +0200
+
+  * Prevent escape of non-HILTI exception in lower-level driver functions. (Benjamin Bannier, Corelight)
+
+    While we already did some handling of non-HILTI exceptions in Spicy's
+    high-level drivers[^spicy-driver] (even though this would allow escape
+    of exceptions not deriving from `std::exception`), we did not do the
+    same for the lower level processing functionality in the actual driver.
+    This is the interface used by e.g., Zeek, and already an
+    `std::exception` thrown from a parser would lead to the exception
+    propagating into Zeek and ultimately causing a `std::terminate` there,
+    see e.g., [this oss-fuzz
+    report](https://oss-fuzz.com/testcase-detail/6088469254569984). In that
+    particular case a call to `std::vector::reserve` exceeding the available
+    memory caused raising of a `std::length_error`.
+
+    This patch extends the exception handling in the driver so all
+    exceptions are handled by now transforming any non-HILTI exceptions into
+    HILTI exceptions like expected by callers.
+
+    [^spicy-driver]: https://github.com/zeek/spicy/blob/32251850bd8808d18c5dd9306dc0d56c7ebd5d9d/spicy/toolchain/bin/spicy-driver.cc#L331-L334
+
 1.13.0-dev.212 | 2025-04-24 08:31:03 -0400
 
   * Limit `reserve` calls on vectors to prevent OOM. (Evan Typanski, Corelight)
