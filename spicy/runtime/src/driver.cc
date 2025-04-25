@@ -373,6 +373,15 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
         DRIVER_DEBUG(e.what());
         _done = true;
         throw;
+    } catch ( const std::exception& e ) {
+        DRIVER_DEBUG(e.what());
+        _done = true;
+        throw hilti::rt::Exception(e.what());
+    } catch ( ... ) {
+        auto* what = "non-standard exception thrown";
+        DRIVER_DEBUG(what);
+        _done = true;
+        throw hilti::rt::Exception(what);
     }
 
     hilti::rt::cannot_be_reached();
