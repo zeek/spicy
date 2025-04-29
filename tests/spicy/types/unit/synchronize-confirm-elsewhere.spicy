@@ -26,6 +26,8 @@ public type Z = unit {
 
 type X = unit {
     a: b"A";
+     : /()/; # avoid offset syncing
     b: b"B" &synchronize;
+     : /()/; # avoid offset syncing
     c: b"C" &synchronize;
 };

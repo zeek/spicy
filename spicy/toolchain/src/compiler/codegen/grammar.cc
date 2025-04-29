@@ -377,6 +377,20 @@ hilti::Result<production::Set> Grammar::lookAheadsForProduction(const Production
     return result;
 }
 
+bool Grammar::hasLookAheadLiterals(const Production* p, const Production* parent) const {
+    auto tokens = lookAheadsForProduction(p, parent);
+
+    if ( ! tokens || tokens->empty() )
+        return false;
+
+    for ( const auto& t : *tokens ) {
+        if ( t->isLiteral() )
+            return true;
+    }
+
+    return false;
+}
+
 void Grammar::printTables(std::ostream& out, bool verbose) {
     Production* root = nullptr;
 

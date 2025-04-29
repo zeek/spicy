@@ -20,7 +20,7 @@
 [spicy-verbose]     - state: type=sync::X1 input="XBC" stream=0xXXXXXXXX offsets=1025/0/1025/1028/1028 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - trimming input
 [spicy-verbose]     - state: type=sync::X1 input="BC" stream=0xXXXXXXXX offsets=1026/0/1026/1028/1028 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="B" recovering=yes
-[spicy-verbose]     successfully synchronized
+[spicy-verbose]     successfully synchronized (via look-ahead token)
 [spicy-verbose]     - state: type=sync::X1 input="BC" stream=0xXXXXXXXX offsets=1026/0/1026/1028/1028 chunks=1 frozen=no mode=default trim=yes lah=1 lah_token="B" recovering=no
 [spicy-verbose]     - parsing production: Ctor: _anon -> /(A|B|C)/ (regexp) (container 'xs')
 [spicy-verbose]       - consuming look-ahead token

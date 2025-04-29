@@ -1,0 +1,46 @@
+# @TEST-EXEC: printf 1234512345abcdeDONEc | spicy-driver -d %INPUT >>output 2>&1
+# @TEST-EXEC: echo === >>output
+# @TEST-EXEC: printf 12.4512345abcdeDONEc | spicy-driver -d %INPUT >>output 2>&1
+# @TEST-EXEC: echo === >>output
+# @TEST-EXEC-FAIL: printf 12.4512345abcdeDONE- | spicy-driver -d %INPUT >>output 2>&1
+# @TEST-EXEC: echo === >>output
+# @TEST-EXEC: printf 1234512.45abcdeDONEc | spicy-driver -d %INPUT >>output 2>&1
+# @TEST-EXEC: echo === >>output
+# @TEST-EXEC-FAIL: printf 1234512345abcdeDO.E- | spicy-driver -d %INPUT >>output 2>&1
+# @TEST-EXEC: echo === >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that we can synchronize after errors in fixed-size fields.
+module Test;
+
+type X = unit {
+    x1: bytes &size=3 &requires=($$ == b"123");
+    x2: bytes &eod;
+};
+
+type Y = unit {
+    y1: b"ab";
+    y2: uint16;
+    y3: uint8;
+};
+
+public type Foo = unit {
+    xa: X &size=5;
+    xb: X &size=5;
+    y: Y &synchronize;
+    z: b"DONE";
+
+    : bytes &size=1 { if ( $$ == b"c" ) confirm; }
+
+    on %synced {
+        print "* synchronized";
+    }
+
+    on %confirmed {
+        print "* confirmed";
+    }
+
+    on %done {
+        print self;
+    }
+};

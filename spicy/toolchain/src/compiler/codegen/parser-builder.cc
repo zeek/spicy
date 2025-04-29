@@ -1329,23 +1329,14 @@ struct ProductionVisitor : public production::Visitor {
             }
         }
 
-        auto tokens = grammar.lookAheadsForProduction(p);
-        if ( ! tokens || tokens->empty() ) {
-            // ignore error message that was returned, it's a bit cryptic for our use-case here
+        if ( ! grammar.hasLookAheadLiterals(p) ) {
             hilti::logger().error("&synchronize cannot be used on field, no look-ahead tokens found", p->location());
             return;
         }
 
-        for ( const auto& p : *tokens ) {
-            if ( ! p->isLiteral() ) {
-                hilti::logger().error("&synchronize cannot be used on field, look-ahead contains non-literals",
-                                      p->location());
-                return;
-            }
-        }
-
         state().printDebug(builder());
 
+        auto tokens = grammar.lookAheadsForProduction(p);
         getLookAhead(*tokens, p->symbol(), p->location(), LiteralMode::Search);
         validateSearchResult();
     }
@@ -1381,10 +1372,7 @@ struct ProductionVisitor : public production::Visitor {
                 builder()->addContinue();
             });
 
-            pb->beforeHook();
-            builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
-            builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
-            pb->afterHook();
+            pb->successfullySynchronized(p, "look-ahead token");
 
             // Sync point found, break from loop.
             builder()->addBreak();
@@ -1465,10 +1453,7 @@ struct ProductionVisitor : public production::Visitor {
 
             builder()->addAssign(is_trial_mode, builder()->bool_(true));
 
-            pb->beforeHook();
-            builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
-            builder()->addMemberCall(state().self, "__on_0x25_synced", {}, sync.location());
-            pb->afterHook();
+            pb->successfullySynchronized(sync, "look-ahead token");
         });
 
         auto [body, try_] = builder()->addTry();
@@ -1692,6 +1677,32 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
+    // Determines if a sync group has a fixed size. If so, returns an
+    // expression that yields that size.
+    Expression* parseSizeOfSynchronizationGroup(const production::Unit* p, const std::vector<uint64_t>& field_indices) {
+        Expression* group_size = nullptr;
+
+        for ( auto i : field_indices ) {
+            const auto& field_production = p->fields()[i];
+
+            if ( ! field_production->meta().field() )
+                return nullptr;
+
+            Expression* field_parse_size = field_production->bytesConsumed(context());
+            if ( ! (field_parse_size && field_parse_size->isConstant()) )
+                // We only allow fields of constant size, as otherwise
+                // the group size may end up ill-defined.
+                return nullptr;
+
+            if ( group_size )
+                group_size = builder()->sum(group_size, field_parse_size);
+            else
+                group_size = field_parse_size;
+        }
+
+        return group_size;
+    }
+
     void operator()(const production::Unit* p) final {
         auto pstate = pb->state();
         pstate.self = destination();
@@ -1754,6 +1765,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // Group adjacent fields with same sync point.
         std::vector<std::pair<std::vector<uint64_t>, std::optional<uint64_t>>> groups;
+
         for ( uint64_t i = 0; i < sync_points.size(); ++i ) {
             const auto& sync_point = sync_points[i];
             if ( ! groups.empty() && groups.back().second == sync_point )
@@ -1785,6 +1797,13 @@ struct ProductionVisitor : public production::Visitor {
                     parseField(p->fields()[field]);
 
             else {
+                // Determine if the group has a fixed size. If so, remember its
+                // start position.
+                Expression* group_begin = nullptr;
+                Expression* group_size = parseSizeOfSynchronizationGroup(p, fields);
+                if ( group_size )
+                    group_begin = builder()->addTmp("sync_group_begin", state().cur);
+
                 auto try_ = builder()->addTry();
 
                 pushBuilder(try_.first, [&]() {
@@ -1795,18 +1814,31 @@ struct ProductionVisitor : public production::Visitor {
                 pushBuilder(try_.second.addCatch(
                                 builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
                             [&]() {
-                                // There is a sync point; run its production w/o consuming input until parsing
-                                // succeeds or we run out of data.
-                                builder()->addDebugMsg("spicy-verbose",
-                                                       fmt("failed to parse, will try to synchronize at '%s'",
-                                                           p->fields()[*sync_point]->meta().field()->id()));
+                                builder()->addDebugMsg("spicy-verbose", "parse failure");
 
-                                // Remember the original error so we can report it in case the sync failed.
+                                // Remember the original error so we can report it in case the sync never gets
+                                // confirmed. This is also what marks that we are in trial mode.
                                 builder()->addAssign(state().error, builder()->id("e"));
                             });
 
-                startSynchronize(*p->fields()[*sync_point]);
-                ++trial_loops;
+                if ( group_size ) {
+                    // When the whole group is of fixed size, we know directly where
+                    // to continue parsing, and can just jump there. We prefer this
+                    // over pattern-based synchronization.
+                    pushBuilder(builder()->addIf(state().error), [&]() {
+                        builder()->addAssign(state().cur, builder()->memberCall(group_begin, "advance", {group_size}));
+                        pb->trimInput();
+                        pb->successfullySynchronized(*p, "fixed offset");
+                    });
+                }
+                else {
+                    // Start searching for the sync point.
+                    builder()->addDebugMsg("spicy-verbose", fmt("will try to synchronize at '%s'",
+                                                                p->fields()[*sync_point]->meta().field()->id()));
+
+                    startSynchronize(*p->fields()[*sync_point]);
+                    ++trial_loops;
+                }
             }
         }
 
@@ -2933,6 +2965,14 @@ void ParserBuilder::syncAdvanceHook(std::shared_ptr<Builder> cond) {
         else
             body();
     });
+}
+
+// TODO: Should this be called by synchronize-at/after?
+void ParserBuilder::successfullySynchronized(const Production& production, const std::string_view& debug_msg) {
+    beforeHook();
+    builder()->addDebugMsg("spicy-verbose", fmt("successfully synchronized (via %s)", debug_msg));
+    builder()->addMemberCall(state().self, "__on_0x25_synced", {}, production.location());
+    afterHook();
 }
 
 std::shared_ptr<Builder> ParserBuilder::_featureCodeIf(const type::Unit* unit,

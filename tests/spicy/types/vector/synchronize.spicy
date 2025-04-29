@@ -44,6 +44,7 @@ type X = unit {
 # Unit with a vector of elements using lookahead.
 public type Y = unit {
     a: uint8(0);
+     : /()/; # avoid offset syncing
     xs: (X &synchronize)[] &synchronize foreach { print "Foreach: %s" % $$; }
 
     on %synced { print "Synced: %s" % self; confirm; }
@@ -56,6 +57,7 @@ public type Y = unit {
 # Unit with a vector of elements not using lookahead.
 public type Z = unit {
     a: uint8(0);
+     : /()/; # avoid offset syncing
     xs: (X &synchronize)[2] &synchronize foreach { print "Foreach: %s" % $$; }
 
     on %synced { print "Synced: %s" % self; confirm; }

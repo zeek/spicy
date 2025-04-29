@@ -561,6 +561,8 @@ public:
      */
     void syncAdvanceHook(std::shared_ptr<Builder> cond = {});
 
+    void successfullySynchronized(const Production& production, const std::string_view& debug_msg);
+
     /**
      * Returns an expression referencing the current parse object's `__filters`
      * member if that exists; otherwises return a `Null` expression. The result
