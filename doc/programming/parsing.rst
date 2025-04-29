@@ -2428,10 +2428,6 @@ A synchronization point may be any of the following:
   Here, when parsing ``Foo:x`` triggers an error, Spicy will know that it can
   continue with ``Foo::y`` at offset ``<beginning of Foox:x> + 512``.
 
-  .. todo::
-
-    This synchronization strategy is not yet implemented.
-
 - When :ref:`parsing a vector <parse_vector>`, the inner elements may provide
   synchronization points as well. Example::
 
