@@ -36,8 +36,10 @@ module test;
 
 public type A = unit {
     a: /A/;
+     : /()/; # avoid offset syncing
     b: b"B" &synchronize;
     c: /C/;
+     : /()/; # avoid offset syncing
     d: /D/ &synchronize;
     e: /E/;
 
@@ -78,6 +80,7 @@ public type D = unit {
 # Type for testing lookahead from switch.
 public type E = unit {
      : b"BEGIN";
+     : /()/; # avoid offset syncing
     a: E_A &synchronize;
      : b"END";
 

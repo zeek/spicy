@@ -107,10 +107,9 @@
 [debug/ast-declarations]   - Module "spicy_rt" (spicy_rt)
 [debug/ast-declarations]     - Property "%skip-implementation" (spicy_rt::%skip-implementation)
 [debug/ast-declarations]     - ImportedModule "hilti" (spicy_rt::hilti)
+[debug/ast-declarations]     - Type "ParseError" (spicy_rt::ParseError)
 [debug/ast-declarations]     - Type "Backtrack" (spicy_rt::Backtrack)
 [debug/ast-declarations]     - Type "MissingData" (spicy_rt::MissingData)
-[debug/ast-declarations]     - Type "ParseError" (spicy_rt::ParseError)
-[debug/ast-declarations]     - Type "UnitAlreadyConnected" (spicy_rt::UnitAlreadyConnected)
 [debug/ast-declarations]     - Type "SinkState" (spicy_rt::SinkState)
 [debug/ast-declarations]     - Type "ParsedUnit" (spicy_rt::ParsedUnit)
 [debug/ast-declarations]     - Type "Sink" (spicy_rt::Sink)
@@ -394,7 +393,10 @@
 [debug/ast-declarations] - [function] spicy::zlib_decompress -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_finish -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_init -> spicy::ZlibStream
-[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [type] spicy_rt::Backtrack -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::ParseError
+[debug/ast-declarations] - [type] spicy_rt::MissingData -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::ParseError
+[debug/ast-declarations] - [type] spicy_rt::ParseError -> hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort
 [debug/ast-declarations] - [function] spicy_rt::atEod -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::UnitContext
@@ -669,10 +671,9 @@
 [debug/ast-declarations]   - Module "spicy_rt" (spicy_rt)
 [debug/ast-declarations]     - Property "%skip-implementation" (spicy_rt::%skip-implementation)
 [debug/ast-declarations]     - ImportedModule "hilti" (spicy_rt::hilti)
+[debug/ast-declarations]     - Type "ParseError" (spicy_rt::ParseError)
 [debug/ast-declarations]     - Type "Backtrack" (spicy_rt::Backtrack)
 [debug/ast-declarations]     - Type "MissingData" (spicy_rt::MissingData)
-[debug/ast-declarations]     - Type "ParseError" (spicy_rt::ParseError)
-[debug/ast-declarations]     - Type "UnitAlreadyConnected" (spicy_rt::UnitAlreadyConnected)
 [debug/ast-declarations]     - Type "SinkState" (spicy_rt::SinkState)
 [debug/ast-declarations]     - Type "ParsedUnit" (spicy_rt::ParsedUnit)
 [debug/ast-declarations]     - Type "Sink" (spicy_rt::Sink)
@@ -1146,10 +1147,9 @@
 [debug/ast-declarations]   - Module "spicy_rt" (spicy_rt)
 [debug/ast-declarations]     - Property "%skip-implementation" (spicy_rt::%skip-implementation)
 [debug/ast-declarations]     - ImportedModule "hilti" (spicy_rt::hilti)
+[debug/ast-declarations]     - Type "ParseError" (spicy_rt::ParseError)
 [debug/ast-declarations]     - Type "Backtrack" (spicy_rt::Backtrack)
 [debug/ast-declarations]     - Type "MissingData" (spicy_rt::MissingData)
-[debug/ast-declarations]     - Type "ParseError" (spicy_rt::ParseError)
-[debug/ast-declarations]     - Type "UnitAlreadyConnected" (spicy_rt::UnitAlreadyConnected)
 [debug/ast-declarations]     - Type "SinkState" (spicy_rt::SinkState)
 [debug/ast-declarations]     - Type "ParsedUnit" (spicy_rt::ParsedUnit)
 [debug/ast-declarations]     - Type "Sink" (spicy_rt::Sink)
@@ -1438,7 +1438,10 @@
 [debug/ast-declarations] - [function] spicy::zlib_decompress -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_finish -> spicy::ZlibStream
 [debug/ast-declarations] - [function] spicy::zlib_init -> spicy::ZlibStream
-[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::UnitAlreadyConnected, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [module] spicy_rt -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::Backtrack, spicy_rt::BitOrder, spicy_rt::Direction, spicy_rt::Filters, spicy_rt::FindDirection, spicy_rt::Forward, spicy_rt::HiltiResumable, spicy_rt::MIMEType, spicy_rt::MissingData, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::Sink, spicy_rt::SinkState, spicy_rt::UnitContext, spicy_rt::atEod, spicy_rt::backtrack, spicy_rt::confirm, spicy_rt::createContext, spicy_rt::expectBytesLiteral, spicy_rt::extractBytes, spicy_rt::filter_connect, spicy_rt::filter_disconnect, spicy_rt::filter_forward, spicy_rt::filter_forward_eod, spicy_rt::filter_init, spicy_rt::initializeParsedUnit, spicy_rt::printParserState, spicy_rt::registerParser, spicy_rt::reject, spicy_rt::setContext, spicy_rt::unit_find, spicy_rt::waitForEod, spicy_rt::waitForInput, spicy_rt::waitForInputOrEod, spicy_rt::waitForInputOrEod_2, spicy_rt::waitForInput_2
+[debug/ast-declarations] - [type] spicy_rt::Backtrack -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::ParseError
+[debug/ast-declarations] - [type] spicy_rt::MissingData -> hilti::Exception, hilti::RecoverableFailure, spicy_rt::ParseError
+[debug/ast-declarations] - [type] spicy_rt::ParseError -> hilti::Exception, hilti::RecoverableFailure
 [debug/ast-declarations] - [type] spicy_rt::Parser -> spicy_rt::MIMEType, spicy_rt::ParserPort
 [debug/ast-declarations] - [function] spicy_rt::atEod -> spicy_rt::Filters
 [debug/ast-declarations] - [function] spicy_rt::createContext -> spicy_rt::UnitContext
