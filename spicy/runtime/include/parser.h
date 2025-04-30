@@ -17,6 +17,7 @@
 #include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
+#include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/struct.h>
 #include <hilti/rt/types/tuple.h>
 #include <hilti/rt/util.h>
@@ -604,6 +605,7 @@ hilti::rt::Bytes extractBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data
 void expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
                         const hilti::rt::Bytes& literal, std::string_view location,
                         const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+
 
 } // namespace detail
 } // namespace spicy::rt

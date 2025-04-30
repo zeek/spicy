@@ -30,6 +30,8 @@
 [debug/resolver] [hilti.hlt:63:64-63:100] Attribute "&cxxname="hilti::rt::exception::what"" -> Attribute "&cxxname="::hilti::rt::exception::what""
 [debug/resolver] [hilti.hlt:66:62-66:99] Attribute "&cxxname="hilti::rt::exception::where"" -> Attribute "&cxxname="::hilti::rt::exception::where""
 [debug/resolver] [hilti.hlt:67:65-67:102] Attribute "&cxxname="hilti::rt::exception::where"" -> Attribute "&cxxname="::hilti::rt::exception::where""
+[debug/resolver] [hilti.hlt:69:69-69:112] Attribute "&cxxname="hilti::rt::exception::skip_offset"" -> Attribute "&cxxname="::hilti::rt::exception::skip_offset""
+[debug/resolver] [hilti.hlt:70:87-70:134] Attribute "&cxxname="hilti::rt::exception::set_skip_offset"" -> Attribute "&cxxname="::hilti::rt::exception::set_skip_offset""
 [debug/resolver] [spicy_rt.hlt:10:66-10:97] Attribute "&cxxname="spicy::rt::ParseError"" -> Attribute "&cxxname="::spicy::rt::ParseError""
 [debug/resolver] [spicy_rt.hlt:11:50-11:80] Attribute "&cxxname="spicy::rt::Backtrack"" -> Attribute "&cxxname="::spicy::rt::Backtrack""
 [debug/resolver] [spicy_rt.hlt:12:52-12:84] Attribute "&cxxname="spicy::rt::MissingData"" -> Attribute "&cxxname="::spicy::rt::MissingData""
