@@ -17,56 +17,56 @@ hilti::print(t);
 hilti::print(f);
 
 if (t) {
-    0;
+    hilti::print(0);
 } else {
-    1;
+    hilti::print(1);
 }
 
 if (f) {
-    2;
+    hilti::print(2);
 } else {
-    3;
+    hilti::print(3);
 }
 
 if (t) {
-    4;
+    hilti::print(4);
 }
 
 if (f) {
-    5;
+    hilti::print(5);
 }
 
-t || t;
-t || f;
-f || t;
-f || f;
+hilti::print(t || t);
+hilti::print(t || f);
+hilti::print(f || t);
+hilti::print(f || f);
 
-t && t;
-t && f;
-f && t;
-f && f;
+hilti::print(t && t);
+hilti::print(t && f);
+hilti::print(f && t);
+hilti::print(f && f);
 
-! t;
-! f;
+hilti::print(! t);
+hilti::print(! f);
 
-t ? 1: 0;
-f ? 0: 1;
+hilti::print(t ? 1: 0);
+hilti::print(f ? 0: 1);
 
 # While loops over constants.
-while (False) {}
+while (False) { hilti::print(False); }
 
 while (False) {
-    False;
+    hilti::print(False);
 } else {
-    True;
+    hilti::print(True);
 }
 
-while (True) {}
+while (True) { hilti::print(True); }
 
 while (True) {
-    True;
+    hilti::print(True);
 } else {
-    False;
+    hilti::print(False);
 }
 
 }

@@ -9,36 +9,37 @@ const bool f = False;
 hilti::print(True, True);
 hilti::print(False, True);
 {
-    0;
+    hilti::print(0, True);
 }
 {
-    3;
+    hilti::print(3, True);
 }
 {
-    4;
+    hilti::print(4, True);
 }
-True;
-True;
-True;
-False;
-True;
-False;
-False;
-False;
-False;
-True;
-1;
-1;
+hilti::print(True, True);
+hilti::print(True, True);
+hilti::print(True, True);
+hilti::print(False, True);
+hilti::print(True, True);
+hilti::print(False, True);
+hilti::print(False, True);
+hilti::print(False, True);
+hilti::print(False, True);
+hilti::print(True, True);
+hilti::print(1, True);
+hilti::print(1, True);
 {
-    True;
+    hilti::print(True, True);
 }
 
 while ( True ) {
+    hilti::print(True, True);
 }
 
 
 while ( True ) {
-    True;
+    hilti::print(True, True);
 }
 
 

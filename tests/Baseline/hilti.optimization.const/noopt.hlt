@@ -10,64 +10,66 @@ hilti::print(t, True);
 hilti::print(f, True);
 
 if ( t ) {
-    0;
+    hilti::print(0, True);
 }
 else {
-    1;
+    hilti::print(1, True);
 }
 
 
 if ( f ) {
-    2;
+    hilti::print(2, True);
 }
 else {
-    3;
+    hilti::print(3, True);
 }
 
 
 if ( t ) {
-    4;
+    hilti::print(4, True);
 }
 
 
 if ( f ) {
-    5;
+    hilti::print(5, True);
 }
 
-True;
-True;
-True;
-False;
-True;
-False;
-False;
-False;
-False;
-True;
-t ? 1 : 0;
-f ? 0 : 1;
+hilti::print(True, True);
+hilti::print(True, True);
+hilti::print(True, True);
+hilti::print(False, True);
+hilti::print(True, True);
+hilti::print(False, True);
+hilti::print(False, True);
+hilti::print(False, True);
+hilti::print(False, True);
+hilti::print(True, True);
+hilti::print(t ? 1 : 0, True);
+hilti::print(f ? 0 : 1, True);
 
 while ( False ) {
+    hilti::print(False, True);
 }
 
 
 while ( False ) {
-    False;
+    hilti::print(False, True);
 }
 else {
-    True;
+    hilti::print(True, True);
 }
 
 
 while ( True ) {
+    hilti::print(True, True);
 }
 
 
 while ( True ) {
-    True;
+    hilti::print(True, True);
 }
 else {
-    False;
+    hilti::print(False, True);
 }
 
 
