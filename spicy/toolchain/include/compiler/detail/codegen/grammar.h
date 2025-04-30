@@ -105,6 +105,13 @@ public:
      */
     hilti::Result<production::Set> lookAheadsForProduction(const Production* p, const Production* parent = {}) const;
 
+    /**
+     * Returns true if the set of look-ahead symbols for a given production is
+     * not empty and contains only literals. This is the requirement for being
+     * able to recognize the production through look-ahead search.
+     */
+    bool hasLookAheadLiterals(const Production* p, const Production* parent = {}) const;
+
     /** Returns the set of look-ahead symbols that the grammar uses. */
     const auto& lookAheadsInUse() const { return _look_aheads_in_use; }
 

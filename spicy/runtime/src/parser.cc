@@ -126,6 +126,15 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
         auto begin_offset = data->begin().offset();
         auto end_offset = data->end().offset();
 
+        if ( cur.begin().offset() == 12 ) {
+            std::cerr << "------------------------\n";
+            data->debugPrint(std::cerr);
+            std::cerr << "------------------------\n";
+            cur.debugPrint(std::cerr);
+            std::cerr << "------------------------\n";
+            __builtin_debugtrap();
+        }
+
         return hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%s/%" PRId64 "/%" PRId64
                               "/%" PRId64 " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64
                               " lah_token=\"%s%s\" recovering=%s",
