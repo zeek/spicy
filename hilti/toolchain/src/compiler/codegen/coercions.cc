@@ -64,6 +64,11 @@ struct Visitor : public hilti::visitor::PreOrder {
             logger().internalError(fmt("codegen: unexpected type coercion from error to %s", dst->type()->typename_()));
     }
 
+    void operator()(type::Exception* n) final {
+        if ( dst->type()->isA<type::Exception>() )
+            result = expr;
+    }
+
     void operator()(type::Interval* n) final {
         if ( dst->type()->isA<type::Bool>() ) {
             auto id = cg->compile(src, codegen::TypeUsage::Storage);

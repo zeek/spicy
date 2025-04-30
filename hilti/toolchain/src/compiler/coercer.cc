@@ -491,6 +491,26 @@ struct VisitorType : visitor::PreOrder {
             result = dst;
     }
 
+    void operator()(type::Exception* n) final {
+        if ( auto* t = dst->type()->tryAs<type::Exception>() ) {
+            // Coerces to any of the exception's base types.
+            while ( true ) {
+                if ( type::same(n, t) ) {
+                    result = dst;
+                    return;
+                }
+
+                if ( ! n->baseType() )
+                    break;
+
+                if ( auto x = n->baseType()->tryAs<type::Name>() )
+                    n = x->resolvedType()->as<type::Exception>();
+                else
+                    n = t->baseType()->as<type::Exception>();
+            }
+        }
+    }
+
     void operator()(type::List* n) final {
         if ( auto* t = dst->type()->tryAs<type::Set>(); t && type::same(t->elementType(), n->elementType()) )
             result = dst;

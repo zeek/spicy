@@ -1,0 +1,19 @@
+# @TEST-EXEC-FAIL: hiltic -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Confirm failure of invalid exception coercions.
+
+module Test {
+
+type MyException = exception;
+type AnotherException = [exception : MyException];
+
+function void test_coercion() {
+    local MyException my_exception;
+    local AnotherException another_exception;
+
+    local AnotherException c1 = another_exception; # works
+    local AnotherException c2 = my_exception; # fails
+}
+
+}
