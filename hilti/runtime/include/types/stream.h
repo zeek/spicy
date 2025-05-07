@@ -435,6 +435,11 @@ public:
     // lifetime of the chain.
     const auto& statistics() const { return _statistics; }
 
+    /**
+     * Prints out a debug rendering of the chain's internal representation.
+     */
+    void debugPrint(std::ostream& out) const;
+
 private:
     void _ensureValid() const {
         if ( ! isValid() )
@@ -1888,11 +1893,6 @@ public:
      * Prints out a debug rendering to the stream's internal representation.
      */
     void debugPrint(std::ostream& out) const;
-
-    /**
-     * Prints out a debug rendering to a stream's internal representation.
-     */
-    static void debugPrint(std::ostream& out, const stream::detail::Chain* chain);
 
 private:
     Stream(Chunk&& ch) : _chain(make_intrusive<Chain>(std::make_unique<Chunk>(std::move(ch)))) {}
