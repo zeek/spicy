@@ -395,7 +395,7 @@ public:
     // Appends a gap to the end.
     void appendGap(size_t size);
 
-    void trim(const Offset& offset);
+    void trim(Offset offset);
     void trim(const SafeConstIterator& i);
     void trim(const UnsafeConstIterator& i);
 
@@ -1792,7 +1792,6 @@ public:
      * @param len length of the data to append
      */
     void append(const char* data, size_t len);
-
 
     /**
      * Appends the content of a raw memory area, *not* copying the data. This
