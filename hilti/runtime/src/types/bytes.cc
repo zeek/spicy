@@ -266,8 +266,8 @@ integer::safe<uint64_t> Bytes::toUInt(uint64_t base) const {
     throw RuntimeError("cannot parse bytes as unsigned integer");
 }
 
-int64_t Bytes::toInt(ByteOrder byte_order) const {
-    auto i = toUInt(byte_order); // throws on size == 0 or size > 8
+integer::safe<int64_t> Bytes::toInt(ByteOrder byte_order) const {
+    auto i = toUInt(byte_order).Ref(); // throws on size == 0 or size > 8
     auto size_ = static_cast<uint64_t>(size());
 
     if ( i & (UINT64_C(1) << (size_ * 8 - 1)) ) {
@@ -280,7 +280,7 @@ int64_t Bytes::toInt(ByteOrder byte_order) const {
     return static_cast<int64_t>(i);
 }
 
-uint64_t Bytes::toUInt(ByteOrder byte_order) const {
+integer::safe<uint64_t> Bytes::toUInt(ByteOrder byte_order) const {
     switch ( byte_order.value() ) {
         case ByteOrder::Undef: throw InvalidArgument("cannot convert value to undefined byte order");
         case ByteOrder::Host: return toInt(systemByteOrder());
