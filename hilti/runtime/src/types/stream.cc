@@ -164,7 +164,7 @@ void Chain::debugPrint(std::ostream& out) const {
     }
 }
 
-void Chain::trim(const Offset& offset) {
+void Chain::trim(Offset offset) {
     _ensureValid();
 
     if ( ! _head || offset < _head->offset() )
@@ -177,6 +177,8 @@ void Chain::trim(const Offset& offset) {
     // contains the position.
     while ( _head ) {
         if ( offset >= _head->endOffset() ) {
+            _head_offset = _head->endOffset();
+
             // Chain should be in order and we progress forward in offset.
             assert(! _head->next() || _head->offset() < _head->next()->offset());
 
@@ -200,6 +202,7 @@ void Chain::trim(const Offset& offset) {
 
         else if ( _head->inRange(offset) ) {
             // Perform no trimming inside individual chunks.
+            _head_offset = offset;
             break;
         }
 
@@ -207,8 +210,6 @@ void Chain::trim(const Offset& offset) {
             // Other offsets are already rejected before entering loop.
             cannot_be_reached();
     }
-
-    _head_offset = offset;
 }
 
 ChainPtr Chain::copy() const {
