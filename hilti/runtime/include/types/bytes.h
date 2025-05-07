@@ -477,7 +477,7 @@ public:
      * @param byte_order byte order that the integer is encoded in
      * @return converted integer value
      */
-    int64_t toInt(hilti::rt::ByteOrder byte_order) const;
+    integer::safe<int64_t> toInt(hilti::rt::ByteOrder byte_order) const;
 
     /**
      * Interprets the data as an binary representation of an unsigned
@@ -486,7 +486,7 @@ public:
      * @param byte_order byte order that the integer is encoded in
      * @return converted integer value
      */
-    uint64_t toUInt(hilti::rt::ByteOrder byte_order) const;
+    integer::safe<uint64_t> toUInt(hilti::rt::ByteOrder byte_order) const;
 
     /**
      * Interprets the data as an ASCII representation of a floating point value
