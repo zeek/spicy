@@ -14,7 +14,7 @@
 using namespace std;
 
 static void usage() {
-    std::cerr << R"(
+    std::cout << R"(
 Usage: hilti-config [options]
 
 Available options:
