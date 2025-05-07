@@ -55,6 +55,8 @@ public:
         return {{_alternatives.first.get()}, {_alternatives.second.get()}};
     }
 
+    Expression* parseSize(Builder* builder) const final { return nullptr; }
+
     std::string dump() const final;
 
     /**

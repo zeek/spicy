@@ -395,7 +395,7 @@ public:
     // Appends a gap to the end.
     void appendGap(size_t size);
 
-    void trim(const Offset& offset);
+    void trim(Offset offset);
     void trim(const SafeConstIterator& i);
     void trim(const UnsafeConstIterator& i);
 
@@ -434,6 +434,11 @@ public:
     // Returns statistics for the chain. These are accumulative over the whole
     // lifetime of the chain.
     const auto& statistics() const { return _statistics; }
+
+    /**
+     * Prints out a debug rendering of the chain's internal representation.
+     */
+    void debugPrint(std::ostream& out) const;
 
 private:
     void _ensureValid() const {
@@ -1788,7 +1793,6 @@ public:
      */
     void append(const char* data, size_t len);
 
-
     /**
      * Appends the content of a raw memory area, *not* copying the data. This
      * function does not invalidate iterators. Because the data will not be
@@ -1888,11 +1892,6 @@ public:
      * Prints out a debug rendering to the stream's internal representation.
      */
     void debugPrint(std::ostream& out) const;
-
-    /**
-     * Prints out a debug rendering to a stream's internal representation.
-     */
-    static void debugPrint(std::ostream& out, const stream::detail::Chain* chain);
 
 private:
     Stream(Chunk&& ch) : _chain(make_intrusive<Chain>(std::make_unique<Chunk>(std::move(ch)))) {}

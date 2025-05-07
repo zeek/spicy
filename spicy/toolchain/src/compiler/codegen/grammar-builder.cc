@@ -160,7 +160,11 @@ struct Visitor : public visitor::PreOrder {
                 // Skipping not supported
             }
 
-            else if ( n->size(context()) )
+            else if ( n->attributes()->find(attribute::kind::Size) )
+                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
+                                                          n->meta().location());
+
+            else if ( auto builder = Builder(context()); n->parseSize(&builder) )
                 skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
                                                           n->meta().location());
 

@@ -422,36 +422,51 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X0::__parse_foo__X0_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:13:11-15:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X0%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X0%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X0%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X0%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X0%uses_random_access || ::__feat%foo@@X0%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X0%uses_random_access || ::__feat%foo@@X0%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X0%uses_random_access || ::__feat%foo@@X0%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X0%uses_random_access || ::__feat%foo@@X0%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X0%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
+        if ( ::__feat%foo@@X0%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X0%supports_sinks ) 
+        if ( ::__feat%foo@@X0%supports_sinks ) 
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X0", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X0", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -672,36 +687,51 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X1::__parse_foo__X1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:18:11-20:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X1%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X1%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X1%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X1%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X1%uses_random_access || ::__feat%foo@@X1%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X1%uses_random_access || ::__feat%foo@@X1%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X1%uses_random_access || ::__feat%foo@@X1%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X1%uses_random_access || ::__feat%foo@@X1%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X1%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
+        if ( ::__feat%foo@@X1%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X1%supports_sinks ) 
+        if ( ::__feat%foo@@X1%supports_sinks ) 
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X1", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X1", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -918,36 +948,51 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X2::__parse_foo__X2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:23:11-23:17"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X2%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X2%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X2%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X2%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X2%uses_random_access || ::__feat%foo@@X2%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X2%uses_random_access || ::__feat%foo@@X2%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X2%uses_random_access || ::__feat%foo@@X2%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X2%uses_random_access || ::__feat%foo@@X2%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X2%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
+        if ( ::__feat%foo@@X2%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X2%supports_sinks ) 
+        if ( ::__feat%foo@@X2%supports_sinks ) 
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X2", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X2", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1168,40 +1213,55 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X3::__parse_foo__X3_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:26:11-28:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X3%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X3%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X3%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X3%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X3%uses_random_access || ::__feat%foo@@X3%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X3%uses_random_access || ::__feat%foo@@X3%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X3%uses_random_access || ::__feat%foo@@X3%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X3%uses_random_access || ::__feat%foo@@X3%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X3%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
-
-
-    if ( ::__feat%foo@@X3%is_filter ) 
-        spicy_rt::filter_forward_eod(self);
+        if ( ::__feat%foo@@X3%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X3%supports_sinks ) 
+        if ( ::__feat%foo@@X3%is_filter ) 
+            spicy_rt::filter_forward_eod(self);
+
+
+        if ( ::__feat%foo@@X3%supports_sinks ) 
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X3", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X3", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1422,40 +1482,55 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X4::__parse_foo__X4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:32:11-34:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X4%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X4%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X4%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X4%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X4%uses_random_access || ::__feat%foo@@X4%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X4%uses_random_access || ::__feat%foo@@X4%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X4%uses_random_access || ::__feat%foo@@X4%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X4%uses_random_access || ::__feat%foo@@X4%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X4%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
-
-
-    if ( ::__feat%foo@@X4%is_filter ) 
-        spicy_rt::filter_forward_eod(self);
+        if ( ::__feat%foo@@X4%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X4%supports_sinks ) 
+        if ( ::__feat%foo@@X4%is_filter ) 
+            spicy_rt::filter_forward_eod(self);
+
+
+        if ( ::__feat%foo@@X4%supports_sinks ) 
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X4", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X4", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1676,36 +1751,51 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X5::__parse_foo__X5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:36:18-40:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X5%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X5%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X5%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X5%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X5%uses_random_access || ::__feat%foo@@X5%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X5%uses_random_access || ::__feat%foo@@X5%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X5%uses_random_access || ::__feat%foo@@X5%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X5%uses_random_access || ::__feat%foo@@X5%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X5%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
+        if ( ::__feat%foo@@X5%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X5%supports_sinks ) 
+        if ( ::__feat%foo@@X5%supports_sinks ) 
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X5", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X5", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1923,37 +2013,52 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X6::__parse_foo__X6_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:43:11-46:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X6%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X6%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X6%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X6%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X6%uses_random_access || ::__feat%foo@@X6%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X6%uses_random_access || ::__feat%foo@@X6%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X6%uses_random_access || ::__feat%foo@@X6%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X6%uses_random_access || ::__feat%foo@@X6%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X6%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
+        if ( ::__feat%foo@@X6%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X6%supports_sinks ) 
-        (*(*self).data).close();
+        if ( ::__feat%foo@@X6%supports_sinks ) 
+            (*(*self).data).close();
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X6", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X6", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -2171,37 +2276,52 @@ method method tuple<const view<stream>, int<64>, const iterator<stream>, optiona
 method method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X7::__parse_foo__X7_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:49:11-51:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local optional<uint<64>> __field_offset;
+    local optional<uint<64>> __field_nr;
+    try {
 
-    if ( ::__feat%foo@@X7%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@X7%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@X7%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@X7%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@X7%uses_random_access || ::__feat%foo@@X7%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@X7%uses_random_access || ::__feat%foo@@X7%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@X7%uses_random_access || ::__feat%foo@@X7%uses_offset ) 
             (*self).__position_update = Null;
-        }
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@X7%uses_random_access || ::__feat%foo@@X7%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
 
 
-    __error = (*self).__error;
+        __error = (*self).__error;
 
-    if ( ::__feat%foo@@X7%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
+        if ( ::__feat%foo@@X7%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@X7%supports_sinks ) 
-        (*(*self).data).close();
+        if ( ::__feat%foo@@X7%supports_sinks ) 
+            (*(*self).data).close();
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        spicy_rt::printParserState("foo::X7", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+
+        if ( ! __field_nr ) 
+            throw;
+
+        spicy_rt::printParserState("foo::X7", __data, __begin, __cur, __lah, __lahe, "default", __trim, __error);
+        hilti::set_skip_offset(e, (*__field_offset));
+        throw;
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);

@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
 
@@ -21,6 +21,8 @@ public:
     bool isLiteral() const final { return false; };
     bool isNullable() const final { return true; };
     bool isTerminal() const final { return true; };
+
+    Expression* parseSize(Builder* builder) const final { return builder->integer(0U); }
 
     std::string dump() const final { return "()"; }
 

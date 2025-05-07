@@ -30,6 +30,8 @@ public:
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_body.get()}}; };
 
+    Expression* parseSize(Builder* builder) const final { return nullptr; }
+
     std::string dump() const override { return hilti::util::fmt("foreach: %s", _body->symbol()); }
 
     SPICY_PRODUCTION

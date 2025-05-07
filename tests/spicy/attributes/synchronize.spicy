@@ -8,7 +8,7 @@
 module test;
 
 type A = unit {
-    : uint8;
+    : bytes &until=b"\x00";
     : uint8 &synchronize;
 };
 # @TEST-END-FILE
@@ -21,7 +21,7 @@ type A = unit {
 };
 
 type B = unit {
-    : uint8;
+    : bytes &until=b"\x00";
     : A &synchronize;
 };
 # @TEST-END-FILE

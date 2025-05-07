@@ -39,6 +39,7 @@ set(SOURCES_COMPILER
     src/compiler/codegen/parsers/literals.cc
     src/compiler/codegen/parsers/types.cc
     src/compiler/codegen/production.cc
+    src/compiler/codegen/productions/ctor.cc
     src/compiler/codegen/productions/look-ahead.cc
     src/compiler/codegen/productions/switch.cc
     src/compiler/codegen/productions/while.cc

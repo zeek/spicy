@@ -1,11 +1,10 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/exception.h>
 #include <hilti/rt/safe-math.h>
 
 using namespace hilti::rt;
 
-[[noreturn]] inline static void safe_math_fail(const char* msg) { throw OutOfRange("integer value out of range"); }
+[[noreturn]] extern void safe_math_fail(const char* msg); // defined in safe-int.cc to avoid dependency on exception.h
 
 #define SAFE_MATH_FAIL_DEFINED
 extern "C" {
