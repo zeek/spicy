@@ -153,6 +153,17 @@ void Chain::appendGap(size_t size) {
     append(std::make_unique<Chunk>(0, size));
 }
 
+void Chain::debugPrint(std::ostream& out) const {
+    out << fmt("chain %p, head_offset: %" PRIu64, this, _head_offset) << '\n';
+    int i = 0;
+    auto c = _head.get();
+    while ( c ) {
+        out << fmt("  #%d/%p: ", i++, c);
+        c->debugPrint(out);
+        c = c->next();
+    }
+}
+
 void Chain::trim(const Offset& offset) {
     _ensureValid();
 
@@ -689,21 +700,10 @@ void View::debugPrint(std::ostream& out) const {
         out << "<not set>\n";
 
     out << "[data]" << '\n';
-    Stream::debugPrint(out, _begin.chain());
+    _begin.chain()->debugPrint(out);
 }
 
-void Stream::debugPrint(std::ostream& out, const stream::detail::Chain* chain) {
-    out << fmt("chain %p", chain) << '\n';
-    int i = 0;
-    const auto* c = chain->head();
-    while ( c ) {
-        out << fmt("  #%d/%p: ", i++, c);
-        c->debugPrint(out);
-        c = c->next();
-    }
-}
-
-void Stream::debugPrint(std::ostream& out) const { debugPrint(out, _chain.get()); }
+void Stream::debugPrint(std::ostream& out) const { _chain->debugPrint(out); }
 
 void Chunk::debugPrint(std::ostream& out) const {
     auto x = std::string(reinterpret_cast<const char*>(data()), size());
