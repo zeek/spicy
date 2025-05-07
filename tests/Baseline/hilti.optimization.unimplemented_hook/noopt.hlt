@@ -12,14 +12,14 @@ global optional<int<64>> i = global_unimplemented_int64();
 global X x;
 global optional<int<64>> j = x.unimplemented_int64();
 
-declare public function hook void global_unimplemented_void();
-declare public function hook void global_implemented();
-declare public function hook optional<int<64>> global_unimplemented_int64();
+declare public hook void global_unimplemented_void();
+declare public hook void global_implemented();
+declare public hook optional<int<64>> global_unimplemented_int64();
 
-function hook void global_implemented() {
+hook void global_implemented() {
 }
 
-method hook void X::implemented() {
+hook void X::implemented() {
 }
 
 global_implemented();

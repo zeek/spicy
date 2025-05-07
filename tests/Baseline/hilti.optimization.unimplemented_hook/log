@@ -3,8 +3,8 @@
 [debug/optimizer] [unimplemented_hook.hlt:35:1-35:22] operator_::struct_::MemberCall "x.unimplemented_void()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [unimplemented_hook.hlt:30:12-30:39] operator_::function::Call "global_unimplemented_int64()" -> expression::Ctor "default<optional<int<64>>>()" (replacing call to unimplemented function with default value)
 [debug/optimizer] [unimplemented_hook.hlt:36:12-36:34] operator_::struct_::MemberCall "x.unimplemented_int64()" -> expression::Ctor "default<optional<int<64>>>()" (replacing call to unimplemented method with default value)
-[debug/optimizer] [unimplemented_hook.hlt:12:1-12:53] declaration::Function "declare public function hook void global_unimplemented_void();" -> null (removing declaration for unused hook function)
-[debug/optimizer] [unimplemented_hook.hlt:14:1-14:67] declaration::Function "declare public function hook optional<int<64>> global_unimplemented_int64();" -> null (removing declaration for unused hook function)
+[debug/optimizer] [unimplemented_hook.hlt:12:1-12:53] declaration::Function "declare public hook void global_unimplemented_void();" -> null (removing declaration for unused hook function)
+[debug/optimizer] [unimplemented_hook.hlt:14:1-14:67] declaration::Function "declare public hook optional<int<64>> global_unimplemented_int64();" -> null (removing declaration for unused hook function)
 [debug/optimizer] removing field for unused method Foo::X::unimplemented
 [debug/optimizer] [unimplemented_hook.hlt:20:5-20:30] declaration::Field "hook void unimplemented();" -> null
 [debug/optimizer] removing field for unused method Foo::X::unimplemented_void
