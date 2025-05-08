@@ -26,14 +26,14 @@ using Parameters = declaration::Parameters;
 enum class Flavor {
     Hook,    /**< a hook */
     Method,  /**< a struct method */
-    Standard /**< a normal function */
+    Function /**< a normal function */
 };
 
 namespace detail {
 constexpr util::enum_::Value<Flavor> Flavors[] = {
     {Flavor::Hook, "hook"},
     {Flavor::Method, "method"},
-    {Flavor::Standard, "standard"},
+    {Flavor::Function, "function"},
 };
 } // namespace detail
 
@@ -77,7 +77,7 @@ public:
     }
 
     static auto create(ASTContext* ctx, QualifiedType* result, const declaration::Parameters& params,
-                       function::Flavor flavor = function::Flavor::Standard, Meta meta = {}) {
+                       function::Flavor flavor = function::Flavor::Function, Meta meta = {}) {
         return ctx->make<Function>(ctx, flatten(result, params), flavor, std::move(meta));
     }
 
@@ -92,7 +92,7 @@ protected:
 
     Function(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"function(*)"}, std::move(children), std::move(meta)),
-          _flavor(function::Flavor::Standard) {}
+          _flavor(function::Flavor::Function) {}
 
     HILTI_NODE_1(type::Function, UnqualifiedType, final);
 

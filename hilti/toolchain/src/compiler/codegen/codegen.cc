@@ -643,7 +643,7 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
         switch ( ft->flavor() ) {
             case hilti::type::function::Flavor::Hook:
             case hilti::type::function::Flavor::Method:
-            case hilti::type::function::Flavor::Standard: return rt;
+            case hilti::type::function::Flavor::Function: return rt;
             default: util::cannotBeReached();
         }
     };

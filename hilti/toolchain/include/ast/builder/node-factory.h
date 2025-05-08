@@ -484,7 +484,7 @@ public:
         return hilti::type::Exception::create(context(), _, m);
     }
     auto typeFunction(QualifiedType* result, const declaration::Parameters& params,
-                      type::function::Flavor flavor = type::function::Flavor::Standard, Meta meta = {}) {
+                      type::function::Flavor flavor = type::function::Flavor::Function, Meta meta = {}) {
         return hilti::type::Function::create(context(), result, params, flavor, std::move(meta));
     }
     auto typeFunction(type::Wildcard _, const Meta& m = Meta()) {

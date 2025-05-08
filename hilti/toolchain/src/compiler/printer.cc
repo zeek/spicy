@@ -41,10 +41,7 @@ struct Printer : visitor::PreOrder {
             return;
         }
 
-        if ( ftype.flavor() == type::function::Flavor::Standard )
-            _out << "function ";
-        else
-            _out << to_string(ftype.flavor()) << ' ';
+        _out << to_string(ftype.flavor()) << ' ';
 
         if ( calling_conv != function::CallingConvention::Standard )
             _out << to_string(calling_conv) << ' ';

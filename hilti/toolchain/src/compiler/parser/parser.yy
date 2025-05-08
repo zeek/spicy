@@ -406,7 +406,7 @@ scoped_function_id:
 function_with_body
               : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
-                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Standard, __loc__);
+                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Function, __loc__);
                                                     $$ = builder->function($3, ftype->as<type::Function>(), $8, $1, $7, __loc__);
                                                  }
 
@@ -432,7 +432,7 @@ function_without_body
                                                  }
 
 opt_func_flavor : func_flavor                    { $$ = $1; }
-                | /* empty */                    { $$ = hilti::type::function::Flavor::Standard; }
+                | /* empty */                    { $$ = hilti::type::function::Flavor::Function; }
 
 func_flavor     : METHOD                         { $$ = hilti::type::function::Flavor::Method; }
                 | HOOK                           { $$ = hilti::type::function::Flavor::Hook; }

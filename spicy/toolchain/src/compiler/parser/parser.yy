@@ -484,7 +484,7 @@ opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Link
 
 /* Function helpers */
 
-opt_func_flavor : /* empty */                    { $$ = hilti::type::function::Flavor::Standard; }
+opt_func_flavor : /* empty */                    { $$ = hilti::type::function::Flavor::Function; }
 
 opt_func_cc   : CSTRING                          { try {
                                                        $$ = hilti::function::calling_convention::from_string($1);

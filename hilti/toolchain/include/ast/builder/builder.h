@@ -156,7 +156,7 @@ public:
     using NodeFactory::function;
 
     auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params,
-                  type::function::Flavor flavor = type::function::Flavor::Standard,
+                  type::function::Flavor flavor = type::function::Flavor::Function,
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
                   const Meta& m = Meta()) {
@@ -166,7 +166,7 @@ public:
     }
 
     auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params, Statement* body,
-                  type::function::Flavor flavor = type::function::Flavor::Standard,
+                  type::function::Flavor flavor = type::function::Flavor::Function,
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
                   const Meta& m = Meta()) {
