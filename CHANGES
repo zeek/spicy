@@ -1,3 +1,7 @@
+1.13.0-dev.218 | 2025-05-08 09:25:46 +0200
+
+  * Add `#include <cstdint>` for fixed-width integers (i2z1)
+
 1.13.0-dev.216 | 2025-04-25 10:05:52 -0400
 
   * Touchup docs style section [skip CI]. (Evan Typanski, Corelight)
