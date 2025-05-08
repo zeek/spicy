@@ -1,0 +1,15 @@
+# @TEST-GROUP: no-jit
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: ${HILTIC} -p %INPUT | FileCheck %INPUT
+# @TEST-EXEC: ${HILTIC} -c %INPUT | FileCheck %INPUT
+
+module Foo {
+
+global real d;
+# CHECK: r = [[TRANSFORMED:0x1.9*ap-4]];
+global real r = 0.1;
+
+# CHECK: [[TRANSFORMED]] == [[TRANSFORMED]]
+assert 0.1 == 0x1.999999999999ap-4;
+
+}
