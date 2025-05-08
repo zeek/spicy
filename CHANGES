@@ -1,3 +1,119 @@
+1.11.4 | 2025-05-08 09:27:39 +0200
+
+  * Make sure `bytes::to[U]Int` returns runtime integers. (Benjamin Bannier, Corelight)
+
+    A user was using code like
+
+        function make(): tuple<uint64> {
+            return (b"\x00\x00".to_uint(spicy::ByteOrder::Big), );
+        }
+
+    Before this patch this would generate a tuple constructor from an an
+    naked `uint64_t` which failed in the conversion to the expected safe
+    integer at C++ compilation time with a pretty cryptic C++ compiler error.
+
+    The only way to work around that would have been to explicitly create a
+    temporary integer and use that, e.g.,
+
+        function make(): tuple<uint64> {
+            local x = b"\x00\x00".to_uint(spicy::ByteOrder::Big);
+            return (x, );
+        }
+
+    With this patch this works like expected.
+
+    (cherry picked from commit 94a4441cea22d02332d1d6e581425958a067a878)
+
+  * Add `#include <cstdint>` for fixed-width integers (i2z1)
+
+    (cherry picked from commit e3cc7ee858ed2c94c1a2422faea86d9262427dad)
+
+  * Bump freebsd-14 in CI. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 7d2ef9cf040c41a5ab8d76d71d29ee2c786c9f44)
+
+  * Bump freebsd-13 in CI. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 220649c6a0d51e2ac590d0bea47fdc63e463767c)
+
+  * Fine-tune recent CMake 4 tweak. (Robin Sommer, Corelight)
+
+    (cherry picked from commit 170a9bd5724bfa260201770e91740cb9791a178a)
+
+  * Work-around CMake 4 no longer setting `CMAKE_OSX_SYSROOT` by default. (Robin Sommer, Corelight)
+
+    See comment for details.
+
+    (cherry picked from commit 60908a6202875b33cae5123fd150bf57bfac7ddd)
+
+  * Let `configure` work with CMake 4. (Robin Sommer, Corelight)
+
+    (Not checking for a `cmake4` binary; unlikely to have that but not a
+    valid `cmake`.)
+
+    (cherry picked from commit 8bb65de26bfe2e491a6959c5b8b0f1d05f6c3cfe)
+
+  * Keep test `spicy.rt.time` working for the next 200 years. (Benjamin Bannier, Corelight)
+
+    This test still compares the current time against hardcoded times to
+    check ordering. Extend the upper value so this test passes for the next
+    ~200 years.
+
+    (cherry picked from commit 93c2cc86e51c1b66b821c091095842cb22ba2a94)
+
+  * Prevent escape of non-HILTI exception in lower-level driver functions. (Benjamin Bannier, Corelight)
+
+    While we already did some handling of non-HILTI exceptions in Spicy's
+    high-level drivers[^spicy-driver] (even though this would allow escape
+    of exceptions not deriving from `std::exception`), we did not do the
+    same for the lower level processing functionality in the actual driver.
+    This is the interface used by e.g., Zeek, and already an
+    `std::exception` thrown from a parser would lead to the exception
+    propagating into Zeek and ultimately causing a `std::terminate` there,
+    see e.g., [this oss-fuzz
+    report](https://oss-fuzz.com/testcase-detail/6088469254569984). In that
+    particular case a call to `std::vector::reserve` exceeding the available
+    memory caused raising of a `std::length_error`.
+
+    This patch extends the exception handling in the driver so all
+    exceptions are handled by now transforming any non-HILTI exceptions into
+    HILTI exceptions like expected by callers.
+
+    [^spicy-driver]: https://github.com/zeek/spicy/blob/32251850bd8808d18c5dd9306dc0d56c7ebd5d9d/spicy/toolchain/bin/spicy-driver.cc#L331-L334
+
+  * GH-1918: Fix potential segfault with stream iterators. (Robin Sommer, Corelight)
+
+    When trimming off the beginning of a stream, an existing iterator
+    could end up dereferencing its internal chunk pointer even if the
+    chunk now no longer existed. The issue was inside the
+    increment/decrement operations, which didn't check if the *current*
+    iterator offset was still valid (because only then the current chunk
+    is guaranteed to be valid too).
+
+    Closes #1918.
+
+    (cherry picked from commit 153eca31ec55ddfe5425812ad1eba35d271a137d)
+
+  * GH-1918: Add regression tests triggering #1918. (Robin Sommer, Corelight)
+
+    (cherry picked from commit ff34c28a6882387d9849a034401b2d3ae0f01759)
+
+  * GH-1871: Fix `&max-size` on unit containing a `switch`. (Robin Sommer, Corelight)
+
+    We would advance our input too early, letting the subsequent
+    `&max-size` check fail.
+
+    Closes #1871.
+
+    (cherry picked from commit 3825ff993d020915b3a29920aa493abd26194c7e)
+
+  * Stop using deprecated pre-commit stage names. (Benjamin Bannier, Corelight)
+
+    The names we used have been deprecated since some time, see
+    https://github.com/pre-commit/pre-commit/issues/2732.
+
+    (cherry picked from commit 45d92820c90b88cfeb3e5d864fb7254d56ac6b26)
+
 1.11.3 | 2024-10-01 20:15:46 +0200
 
   * GH-1846: Fix bug with captures groups. (Robin Sommer, Corelight)
