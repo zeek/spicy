@@ -2,16 +2,120 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.13 (in progress)
-==========================
+Version 1.13
+============
 
 .. rubric:: New Functionality
 
+- GH-1788: We now support decoding and encoding to UTF16, in particular the new
+  ``UTF16LE`` and ``UTF16BE`` charsets for little and big endian encoding,
+  respectively.
+
+- GH-1961: We now support creating type values in Spicy code. The primary use
+  case for this is to pass type information to host applications, and debugging.
+
+  A type value is typically created from either ``typeinfo(TYPE)`` or
+  ``typinfo(value)``, or coercion from an existing ID of a custom type like
+  ``global T: type = MyStruct);``. The resulting value can be printed or stored
+  in a variable of type ``type``, e.g., ``global bool_t: type = typeinfo(bool);``.
+
+- GH-1971: Extend unit ``switch`` based on look-ahead to support blocks of items.
+
+  In 1.12.0 we added support grouping related unit fields in blocks; there the
+  primary use case were ``if`` blocks to group fields with identical
+  dependencies. We now also support such blocks inside unit ``switch`` constructs
+  with lookahead so one can write the following code:
+
+  .. code-block:: spicy
+
+    # Parses either `a` followed by another `a`, or `b`.
+    type X = unit {
+        switch {
+            -> {
+                : b"a";
+                : b"a";
+            }
+            -> : b"b";
+        };
+    };
+
+- GH-1538: Implement compound statements (``{...}``). This allows introducing
+  local scopes, e.g., to group related code.
+
+- GH-1946: ``string``'s ``encode`` method gained an optional ``errors`` argument to
+  influence error handling. The parameter defaults to
+  ``DecodeErrorStrategy::REPLACE`` reproducing the previous implicit behavior.
+
+- GH-2010: ``bytes`` and ``string`` gained ``ends_with`` methods
+
+- GH-1965: Add support for case-insensitive matching to regular expressions.
+
+  By adding an ``i`` flag to a regular expression pattern, it will now be
+  matched case-insensitively (e.g. ``/foobar/i``).
+
+- GH-1962: Add ``spicy-dump`` option to enable profiling.
+
 .. rubric:: Changed Functionality
+
+- GH-1981, GH-1982, GH-1991: We now catch more user errors in defining function
+  overloads. Previously these would likely (hopefully) have failed in C++ compilation
+  down the line, but are now cleanly rejected.
+
+- GH-1977: We now reject function overloads which only differ in their return type.
+
+- GH-1991: We now reject function prototypes without ``&cxxname``.
+
+  Since in Spicy global declarations can be in any order there is no need to
+  introduce a function with a prototype if it is declared later. The only valid
+  use case for function prototypes was if the function was implemented in C++
+  and bound to the Spicy name with ``&cxxname``.
+
+- We have cleaned up our implementation for runtime type information, primarily
+  intended for custom host applications.
+
+  - ``type_info::Value`` instances obtained through runtime type introspection
+    can now be rendered to a user-facing representation with a new ``to_string``
+    method.
+
+  - The runtime representation was changed to correctly encode that tuple
+    elements can remain unset. A Spicy-side tuple ``tuple<T1, T2, T3>`` now gets
+    turned into ``std::tuple<std::optional<T1>, std::optional<T2>, std::optional<T3>>``
+    which captures the full semantics.
+
+  - We added type information for types previously not exposed, namely ``Null``,
+    ``Nothing`` and ``List``. We also fixed the exposed type information for
+    ``result<void>``.
+
+- GH-2011: We have optimized allocations for unit fields extracting vectors
+  which should speed up extracting especially small and medium-size vectors.
+- GH-2035: We have dropped support for Ubuntu 20.04 (Focal Fossa) since it has
+  reached end of standard support upstream.
+- GH-2026: Speed up matching of character classes in regexps
 
 .. rubric:: Bug fixes
 
+- GH-1580: Catch when functions aren't called.
+- GH-1961: Fix generated C++ prototype header.
+- GH-1966: Reject anonymous units in variables and fields.
+- GH-1967: Fix inactive stack size check during module initialization.
+- GH-1968: Fix coercion of function call arguments.
+- GH-1976: Fix unit ``&max-size`` not returning to proper loc.
+- GH-2007: Fix using ``&try`` with ``&max-size``, and potentially other cases.
+- GH-2016: Fix ``&size`` expressions evaluating multiple times.
+- GH-2038: Prevent escape of non-HILTI exception in lower-level driver functions.
+- GH-2047: Make sure ``bytes::to[U]Int`` returns runtime integers.
+- GH-2049: Add ``#include <cstdint>`` for fixed-width integers
+
 .. rubric:: Documentation
+
+- GH-1155: Document iteration over maps/set/vectors.
+- GH-1963: Document ``assert-exception``.
+- GH-1964: Document use of ``$$`` inside ``&{while,until,until-including}``.
+- GH-1973: Remove documentation of unsupported ``&nosub``.
+- GH-1974: Add documentation on how to interpret stack traces involving fibers.
+- GH-1975: Fix possibly-incorrect custom host compile command
+- GH-2039: Touchup docs style section.
+- GH-1970, GH-2003: Fix minor typos in documentation.
 
 Version 1.12
 ============
@@ -846,7 +950,7 @@ Version 1.6
   also consider their constness. This breaks e.g., cases where the used
   expression is not a LHS like the field the ``&default`` is defined for,
 
-  .. code-block:: ruby
+  .. code-block:: spicy
 
      type X = unit {
          var x: bytes = b"" + a;
