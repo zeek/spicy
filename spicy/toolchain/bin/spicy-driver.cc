@@ -63,22 +63,6 @@ public:
     std::string opt_parser;
     std::vector<std::string> opt_parser_aliases;
 
-    void fatalError(const std::string& msg) {
-        hilti::logger().error(msg);
-        finishRuntime();
-        exit(1);
-    }
-
-    void fatalError(const hilti::result::Error& error) {
-        hilti::logger().error(error.description());
-
-        if ( error.context().size() )
-            hilti::logger().error(error.context());
-
-        finishRuntime();
-        exit(1);
-    }
-
 private:
     void hookInitRuntime() override { spicy::rt::init(); }
     void hookFinishRuntime() override { spicy::rt::done(); }
@@ -87,7 +71,7 @@ private:
 void SpicyDriver::usage() {
     auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions(), ", ");
 
-    std::cerr
+    std::cout
         << "Usage: cat <data> | spicy-driver [options] <inputs> ...\n"
            "\n"
            "Options:\n"
@@ -180,11 +164,11 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
                 auto arg = std::string(optarg);
 
                 if ( arg == "help" ) {
-                    std::cerr << "Additional debug instrumentation:\n";
-                    std::cerr << "   flow:     log function calls to debug stream \"hilti-flow\"\n";
-                    std::cerr << "   location: log statements to debug stream \"hilti-trace\"\n";
-                    std::cerr << "   trace:    track current source code location for error reporting\n";
-                    std::cerr << "\n";
+                    std::cout << "Additional debug instrumentation:\n";
+                    std::cout << "   flow:     log function calls to debug stream \"hilti-flow\"\n";
+                    std::cout << "   location: log statements to debug stream \"hilti-trace\"\n";
+                    std::cout << "   trace:    track current source code location for error reporting\n";
+                    std::cout << "\n";
                     exit(0);
                 }
 
@@ -205,12 +189,12 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
                 auto arg = std::string(optarg);
 
                 if ( arg == "help" ) {
-                    std::cerr << "Debug streams:\n";
+                    std::cout << "Debug streams:\n";
 
                     for ( const auto& s : hilti::logging::DebugStream::all() )
-                        std::cerr << "  " << s << "\n";
+                        std::cout << "  " << s << "\n";
 
-                    std::cerr << "\n";
+                    std::cout << "\n";
                     exit(0);
                 }
 
@@ -238,7 +222,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
 
             case 'U': driver_options.report_resource_usage = true; break;
 
-            case 'v': std::cerr << "spicy-driver v" << hilti::configuration().version_string_long << '\n'; exit(0);
+            case 'v': std::cout << "spicy-driver v" << hilti::configuration().version_string_long << '\n'; exit(0);
 
             case 'L': compiler_options.library_paths.emplace_back(optarg); break;
 
@@ -248,8 +232,12 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
                 break;
 
             case 'h': usage(); exit(0);
-            case '?': usage(); exit(1); // getopt reports error
-            default: usage(); fatalError(fmt("option %c not supported", c));
+            case '?': [[fallthrough]];
+            default:
+                if ( optopt )
+                    fatalError(fmt("option '%s' requires an argument; try --help for usage", argv[optind - 1]));
+                else
+                    fatalError(fmt("option '%s' not supported; try --help for usage", argv[optind - 1]));
         }
     }
 

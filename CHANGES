@@ -1,3 +1,11 @@
+1.14.0-dev.2 | 2025-05-08 16:12:21 -0400
+
+  * Prefer stdout over stderr for `--help` messages. (Evan Typanski, Corelight)
+
+    This makes help messages greppable. It also makes incorrect arguments
+    not print the whole help message, instead they prompt the user to use
+    --help
+
 1.13.0 | 2025-05-08 16:49:41 +0200
 
 1.13.0-dev.222 | 2025-05-08 16:48:26 +0200

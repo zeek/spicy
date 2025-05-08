@@ -91,7 +91,7 @@ void Driver::usage() {
     if ( addl_usage.size() )
         addl_usage = std::string("\n") + addl_usage + "\n";
 
-    std::cerr
+    std::cout
         << "Usage: " << _name
         << " [options] <inputs>\n"
            "\n"
@@ -316,11 +316,11 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 auto arg = std::string(optarg);
 
                 if ( arg == "help" ) {
-                    std::cerr << "Additional debug instrumentation:\n";
-                    std::cerr << "   flow:     log function calls to debug stream \"hilti-flow\"\n";
-                    std::cerr << "   location: track current source code location for error reporting\n";
-                    std::cerr << "   trace:    log statements to debug stream \"hilti-trace\"\n";
-                    std::cerr << "\n";
+                    std::cout << "Additional debug instrumentation:\n";
+                    std::cout << "   flow:     log function calls to debug stream \"hilti-flow\"\n";
+                    std::cout << "   location: track current source code location for error reporting\n";
+                    std::cout << "   trace:    log statements to debug stream \"hilti-trace\"\n";
+                    std::cout << "\n";
                     exit(0);
                 }
 
@@ -336,12 +336,12 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
                 auto arg = std::string(optarg);
 
                 if ( arg == "help" ) {
-                    std::cerr << "Debug streams:\n";
+                    std::cout << "Debug streams:\n";
 
                     for ( const auto& s : logging::DebugStream::all() )
-                        std::cerr << "  " << s << "\n";
+                        std::cout << "  " << s << "\n";
 
-                    std::cerr << "\n";
+                    std::cout << "\n";
                     exit(0);
                 }
 
@@ -413,7 +413,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
             case 'U': _driver_options.report_resource_usage = true; break;
 
             case 'v':
-                std::cerr << _name << " v" << hilti::configuration().version_string_long << '\n';
+                std::cout << _name << " v" << hilti::configuration().version_string_long << '\n';
                 return Nothing();
 
             case 'V': _compiler_options.skip_validation = true; break;
@@ -431,14 +431,17 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case 'h': usage(); return Nothing();
 
-            case '?': usage(); return error("unknown option");
+            case '?':
+                if ( optopt )
+                    fatalError(fmt("option '%s' requires an argument; try --help for usage", argv[optind - 1]));
+                else
+                    fatalError(fmt("option '%s' not supported; try --help for usage", argv[optind - 1]));
 
             default:
                 if ( hookProcessCommandLineOption(c, optarg) )
                     break;
 
-                usage();
-                return error(fmt("option %c not implemented", c));
+                fatalError(fmt("option '%s' not implemented; try --help for usage", argv[optind - 1]));
         }
     }
 
@@ -1026,4 +1029,20 @@ Result<Nothing> Driver::finishRuntime() {
     _library.reset();
 
     return Nothing();
+}
+
+void Driver::fatalError(const std::string& msg) {
+    hilti::logger().error(msg);
+    finishRuntime();
+    exit(1);
+}
+
+void Driver::fatalError(const hilti::result::Error& error) {
+    hilti::logger().error(error.description());
+
+    if ( error.context().size() )
+        hilti::logger().error(error.context());
+
+    finishRuntime();
+    exit(1);
 }

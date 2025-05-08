@@ -259,6 +259,20 @@ public:
     Result<Nothing> finishRuntime();
 
     /**
+     * Reports the given message and stops execution.
+     *
+     * @param msg the error message
+     */
+    void fatalError(const std::string& msg);
+
+    /**
+     * Reports the given error and stops execution.
+     *
+     * @param error the error to report
+     */
+    void fatalError(const hilti::result::Error& error);
+
+    /**
      * Compile and executes all source files. This is a convenience wrapper
      * around the stages of the process provided by other methods. It
      * executes all of `compile()`, `initRuntime()`, `executeMain()`, and
