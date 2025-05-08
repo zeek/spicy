@@ -1,3 +1,7 @@
+1.14.0-dev.5 | 2025-05-08 16:14:22 -0400
+
+  * Fix `hiltic -p` printing invalid functions. (Evan Typanski, Corelight)
+
 1.14.0-dev.2 | 2025-05-08 16:12:21 -0400
 
   * Prefer stdout over stderr for `--help` messages. (Evan Typanski, Corelight)

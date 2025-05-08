@@ -488,6 +488,6 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
     auto register_unit =
         builder()->function(ID(fmt("__register_%s_%s", hiltiModule()->uid(), public_id.local())),
                             builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const), {}, block,
-                            hilti::type::function::Flavor::Standard, hilti::declaration::Linkage::Init);
+                            hilti::type::function::Flavor::Function, hilti::declaration::Linkage::Init);
     addDeclaration(register_unit);
 }

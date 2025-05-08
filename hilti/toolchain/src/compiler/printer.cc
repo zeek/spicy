@@ -35,14 +35,16 @@ namespace {
 struct Printer : visitor::PreOrder {
     Printer(printer::Stream& out) : _out(out) {} // NOLINT
 
-    void printFunctionType(const type::Function& ftype, const ID& id) {
+    void printFunctionType(const type::Function& ftype, const ID& id, function::CallingConvention calling_conv) {
         if ( ftype.isWildcard() ) {
             _out << "<function>";
             return;
         }
 
-        if ( ftype.flavor() != type::function::Flavor::Standard )
-            _out << to_string(ftype.flavor()) << ' ';
+        _out << to_string(ftype.flavor()) << ' ';
+
+        if ( calling_conv != function::CallingConvention::Standard )
+            _out << to_string(calling_conv) << ' ';
 
         _out << ftype.result() << ' ';
 
@@ -65,9 +67,9 @@ struct Printer : visitor::PreOrder {
         switch ( l ) {
             case declaration::Linkage::Init: return "init ";
             case declaration::Linkage::PreInit: return "preinit ";
-            case declaration::Linkage::Struct: return "method ";
-            case declaration::Linkage::Private: return ""; // That's the default.
             case declaration::Linkage::Public: return "public ";
+            case declaration::Linkage::Struct: [[fallthrough]];
+            case declaration::Linkage::Private: return ""; // That's the default.
             default: util::cannotBeReached();
         }
     }
@@ -116,10 +118,7 @@ struct Printer : visitor::PreOrder {
     }
 
     void operator()(Function* n) final {
-        if ( n->callingConvention() != function::CallingConvention::Standard )
-            _out << to_string(n->callingConvention()) << ' ';
-
-        printFunctionType(*n->ftype(), n->id());
+        printFunctionType(*n->ftype(), n->id(), n->callingConvention());
 
         if ( auto attrs = n->attributes()->attributes(); ! attrs.empty() )
             _out << ' ' << std::make_pair(attrs, " ");
@@ -389,10 +388,6 @@ struct Printer : visitor::PreOrder {
         }
 
         _out << linkage(n->linkage());
-
-        if ( n->linkage() != declaration::Linkage::Struct )
-            _out << "function ";
-
         _out << n->function();
     }
 
@@ -847,7 +842,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(type::Function* n) final {
         _out << "function ";
-        printFunctionType(*n, {});
+        printFunctionType(*n, {}, function::CallingConvention::Standard);
     }
 
     void operator()(type::Interval* n) final { _out << "interval"; }
