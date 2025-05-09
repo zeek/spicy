@@ -1,3 +1,7 @@
+1.14.0-dev.9 | 2025-05-09 15:05:44 +0200
+
+  * CI: Drop Fedora 40, add Fedora 42 (Arne Welzel, Corelight)
+
 1.14.0-dev.7 | 2025-05-09 13:37:40 +0200
 
   * Drop unnecessary Bison include from CMake function. (Benjamin Bannier, Corelight)
