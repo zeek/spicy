@@ -10,7 +10,10 @@
 #pragma GCC diagnostic push
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-literal-operator"
 #include <hilti/rt/3rdparty/nlohmann/json.hpp>
+#pragma GCC diagnostic pop
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

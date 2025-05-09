@@ -39,11 +39,11 @@ RUN apt-get update \
  # GCC.
  && apt-get install -y --no-install-recommends g++ gcc \
  # LLVM toolchain.
- && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main' >> /etc/apt/sources.list.d/llvm19.list \
- && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main' >> /etc/apt/sources.list.d/llvm19.list \
+ && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-20 main' >> /etc/apt/sources.list.d/llvm20.list \
+ && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-20 main' >> /etc/apt/sources.list.d/llvm20.list \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
- && apt-get install -y --no-install-recommends llvm-19-dev clang-19 libclang-19-dev clang-tidy-19 libclang-rt-19-dev \
+ && apt-get install -y --no-install-recommends llvm-20-dev clang-20 libclang-20-dev clang-tidy-20 libclang-rt-20-dev \
  # Install a recent CMake for `SKIP_LINTING` support.
  && test -f /usr/share/doc/kitware-archive-keyring/copyright || \
     curl https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
