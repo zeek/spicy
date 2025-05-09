@@ -35,22 +35,22 @@ struct Visitor : hilti::visitor::PreOrder {
              e->template isA<expression::Keyword>() )
             return false;
 
-        if ( auto* x = e->tryAs<expression::Coerced>() )
+        if ( const auto* x = e->tryAs<expression::Coerced>() )
             return mayThrowAttributeNotSet(x->expression());
 
         // The following operators are typically used when accessing struct
         // fields. We whitelist them so that in particular Zeek events don't
         // get extra `AttributeNotSet` checks when not needed.
-        if ( auto* x = e->template tryAs<operator_::struct_::MemberConst>() )
+        if ( const auto* x = e->template tryAs<operator_::struct_::MemberConst>() )
             return mayThrowAttributeNotSet(x->op0());
 
-        if ( auto* x = e->template tryAs<operator_::struct_::MemberNonConst>() )
+        if ( const auto* x = e->template tryAs<operator_::struct_::MemberNonConst>() )
             return mayThrowAttributeNotSet(x->op0());
 
-        if ( auto* x = e->template tryAs<operator_::value_reference::Deref>() )
+        if ( const auto* x = e->template tryAs<operator_::value_reference::Deref>() )
             return mayThrowAttributeNotSet(x->op0());
 
-        if ( auto* x = e->template tryAs<operator_::optional::Deref>() )
+        if ( const auto* x = e->template tryAs<operator_::optional::Deref>() )
             return mayThrowAttributeNotSet(x->op0());
 
         // Everything else we assume may throw.
@@ -66,7 +66,7 @@ struct Visitor : hilti::visitor::PreOrder {
             auto itype = cg->compile(n->btype()->bits(b->id())->itemType(), codegen::TypeUsage::Storage);
             types.emplace_back(itype);
 
-            if ( auto x = n->bits(b->id()) )
+            if ( auto* x = n->bits(b->id()) )
                 values.emplace_back(fmt("std::make_optional(%s)", cg->compile(x->expression())));
             else
                 values.emplace_back(fmt("std::optional<%s>{}", itype));
@@ -106,7 +106,7 @@ struct Visitor : hilti::visitor::PreOrder {
         else
             type = cg->compile(n->type(), codegen::TypeUsage::Ctor);
 
-        if ( auto x = n->location() )
+        if ( auto* x = n->location() )
             result = fmt("%s(%s, %s)", type, cg->compile(n->value()), cg->compile(x));
         else
             result = fmt("%s(%s, \"%s\")", type, cg->compile(n->value()), n->meta().location());
@@ -157,7 +157,7 @@ struct Visitor : hilti::visitor::PreOrder {
             // non-local `const` (into a namespace) which can reference only
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
-            auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
+            const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
             result = fmt("[%s]() { auto __xs = ::hilti::rt::Map<%s, %s>(); %s return __xs; }()", captures, k, v, elems);
         }
 
@@ -178,7 +178,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(ctor::Null* n) final { result = fmt("::hilti::rt::Null()"); }
 
     void operator()(ctor::Optional* n) final {
-        if ( auto e = n->value() )
+        if ( auto* e = n->value() )
             result = fmt("std::make_optional(%s)", cg->compile(e));
         else
             result = fmt("std::optional<%s>()", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
@@ -201,7 +201,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         if ( n->type()->type()->isA<type::Void>() )
             result = fmt("::hilti::rt::Nothing{}");
-        else if ( auto e = n->value() )
+        else if ( auto* e = n->value() )
             result = fmt("%s(%s)", t, cg->compile(e));
         else
             result = fmt("%s(%s)", t, cg->compile(n->error()));
@@ -251,7 +251,7 @@ struct Visitor : hilti::visitor::PreOrder {
             // non-local `const` (into a namespace) which can reference only
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
-            auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
+            const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
             result = fmt("[%s]() { auto __xs = ::hilti::rt::Set<%s>(); %s return __xs; }()", captures, k, elems);
         }
 
@@ -353,7 +353,7 @@ struct Visitor : hilti::visitor::PreOrder {
             // non-local `const` (into a namespace) which can reference only
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
-            auto captures = (cg->cxxBlock() == nullptr) ? "" : "&";
+            const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
             result = fmt("[%s]() { auto __xs = %s({}%s); __xs.reserve(%d); %s return __xs; }()", captures, cxx_type,
                          cxx_default, size, elems);
         }

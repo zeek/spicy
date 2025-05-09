@@ -69,20 +69,20 @@ public:
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, params, fields), std::move(meta));
+        auto* t = ctx->make<Struct>(ctx, node::flatten(nullptr, params, fields), std::move(meta));
         t->_setSelf(ctx);
         return t;
     }
 
     static auto create(ASTContext* ctx, const Declarations& fields, Meta meta = {}) {
-        auto t = create(ctx, declaration::Parameters{}, fields, std::move(meta));
+        auto* t = create(ctx, declaration::Parameters{}, fields, std::move(meta));
         t->_setSelf(ctx);
         return t;
     }
 
     struct AnonymousStruct {};
     static auto create(ASTContext* ctx, AnonymousStruct _, const Declarations& fields, Meta meta = {}) {
-        auto t = ctx->make<Struct>(ctx, node::flatten(nullptr, fields), std::move(meta));
+        auto* t = ctx->make<Struct>(ctx, node::flatten(nullptr, fields), std::move(meta));
         t->_setSelf(ctx);
         return t;
     }

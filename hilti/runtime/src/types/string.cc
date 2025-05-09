@@ -42,8 +42,8 @@ integer::safe<uint64_t> string::size(const std::string& s, unicode::DecodeErrorS
 }
 
 std::string string::upper(std::string_view s, unicode::DecodeErrorStrategy errors) {
-    auto p = reinterpret_cast<const unsigned char*>(s.data());
-    auto e = p + s.size();
+    const auto* p = reinterpret_cast<const unsigned char*>(s.data());
+    const auto* e = p + s.size();
 
     unsigned char buf[4];
     std::string rval;
@@ -72,8 +72,8 @@ std::string string::upper(std::string_view s, unicode::DecodeErrorStrategy error
 }
 
 std::string string::lower(std::string_view s, unicode::DecodeErrorStrategy errors) {
-    auto p = reinterpret_cast<const unsigned char*>(s.data());
-    auto e = p + s.size();
+    const auto* p = reinterpret_cast<const unsigned char*>(s.data());
+    const auto* e = p + s.size();
 
     unsigned char buf[4];
     std::string rval;

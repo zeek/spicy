@@ -1,7 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <system_error>
-#include <utility>
 
 #include <hilti/rt/filesystem.h>
 
@@ -99,7 +98,7 @@ void Configuration::init(bool use_build_directory) {
 
     std::vector<std::string> library_paths;
 
-    if ( auto path = std::getenv("SPICY_PATH") )
+    if ( auto* path = std::getenv("SPICY_PATH") )
         library_paths = hilti::util::split(path, ":");
 
     else

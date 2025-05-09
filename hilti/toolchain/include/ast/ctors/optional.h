@@ -20,7 +20,7 @@ public:
     QualifiedType* dereferencedType() const { return type()->type()->as<type::Optional>()->dereferencedType(); }
 
     QualifiedType* type() const final {
-        if ( auto e = child<QualifiedType>(0) )
+        if ( auto* e = child<QualifiedType>(0) )
             return e;
         else
             return child<Expression>(1)->type();

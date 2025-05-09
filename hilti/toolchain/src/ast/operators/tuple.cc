@@ -27,7 +27,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 
@@ -49,7 +49,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 
@@ -71,11 +71,11 @@ public:
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        auto ctor = operands[1]->tryAs<expression::Ctor>();
+        auto* ctor = operands[1]->tryAs<expression::Ctor>();
         if ( ! ctor )
             return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
-        auto i = ctor->ctor()->tryAs<ctor::UnsignedInteger>();
+        auto* i = ctor->ctor()->tryAs<ctor::UnsignedInteger>();
         if ( ! i )
             return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
@@ -88,8 +88,8 @@ public:
     }
 
     void validate(expression::ResolvedOperator* n) const final {
-        if ( auto ec = n->op1()->tryAs<expression::Ctor>() )
-            if ( auto c = ec->ctor()->tryAs<ctor::UnsignedInteger>() ) {
+        if ( auto* ec = n->op1()->tryAs<expression::Ctor>() )
+            if ( auto* c = ec->ctor()->tryAs<ctor::UnsignedInteger>() ) {
                 if ( c->value() >=
                      static_cast<uint64_t>(n->op0()->type()->type()->as<type::Tuple>()->elements().size()) )
                     n->addError("tuple index out of range");
@@ -119,7 +119,7 @@ public:
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
         const auto& id = operands[1]->as<expression::Member>()->id();
-        auto tt = operands[0]->type()->type()->tryAs<type::Tuple>();
+        auto* tt = operands[0]->type()->type()->tryAs<type::Tuple>();
         if ( ! tt )
             return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
@@ -132,7 +132,7 @@ public:
 
     void validate(expression::ResolvedOperator* n) const final {
         const auto& id = n->op1()->as<expression::Member>()->id();
-        auto tt = n->op0()->type()->type()->tryAs<type::Tuple>();
+        auto* tt = n->op0()->type()->type()->tryAs<type::Tuple>();
         if ( ! tt ) {
             n->addError("unknown tuple element");
             return;
@@ -168,9 +168,9 @@ public:
     }
 
     void validate(expression::ResolvedOperator* n) const final {
-        auto lhs = n->operands()[0]->as<expression::Ctor>()->ctor()->as<ctor::Tuple>();
-        auto lhs_type = lhs->type()->type()->as<type::Tuple>();
-        auto rhs_type = n->operands()[1]->type()->type()->tryAs<type::Tuple>();
+        auto* lhs = n->operands()[0]->as<expression::Ctor>()->ctor()->as<ctor::Tuple>();
+        auto* lhs_type = lhs->type()->type()->as<type::Tuple>();
+        auto* rhs_type = n->operands()[1]->type()->type()->tryAs<type::Tuple>();
         if ( ! rhs_type ) {
             n->addError("rhs is not a tuple");
             return;

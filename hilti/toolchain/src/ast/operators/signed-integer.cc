@@ -12,14 +12,14 @@ inline UnqualifiedType* widestTypeSigned(Builder* builder, const Expressions& op
     unsigned int w1 = 0;
     unsigned int w2 = 0;
 
-    if ( auto t = operands[0]->type()->type()->tryAs<type::SignedInteger>() )
+    if ( auto* t = operands[0]->type()->type()->tryAs<type::SignedInteger>() )
         w1 = t->width();
-    else if ( auto t = operands[0]->type()->type()->tryAs<type::UnsignedInteger>() )
+    else if ( auto* t = operands[0]->type()->type()->tryAs<type::UnsignedInteger>() )
         w1 = t->width();
 
-    if ( auto t = operands[1]->type()->type()->tryAs<type::SignedInteger>() )
+    if ( auto* t = operands[1]->type()->type()->tryAs<type::SignedInteger>() )
         w2 = t->width();
-    else if ( auto t = operands[1]->type()->type()->tryAs<type::UnsignedInteger>() )
+    else if ( auto* t = operands[1]->type()->type()->tryAs<type::UnsignedInteger>() )
         w2 = t->width();
 
     if ( ! (w1 && w2) )
@@ -160,8 +160,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -188,8 +188,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
+        auto* op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op1}};
     }
 
@@ -216,8 +216,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -244,8 +244,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
+        auto* op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op1}};
     }
 
@@ -268,8 +268,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -292,8 +292,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -316,8 +316,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -340,8 +340,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -364,8 +364,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -392,8 +392,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -420,8 +420,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -448,8 +448,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
+        auto* op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op1}};
     }
 
@@ -476,8 +476,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -504,8 +504,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 
@@ -532,8 +532,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
+        auto* op1 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op1}};
     }
 
@@ -556,8 +556,8 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
-        auto op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op0 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
+        auto* op1 = builder->typeOperandListOperand(parameter::Kind::In, widestTypeSigned(builder, operands));
         return {{op0, op1}};
     }
 

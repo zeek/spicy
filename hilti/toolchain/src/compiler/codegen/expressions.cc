@@ -90,7 +90,7 @@ struct Visitor : hilti::visitor::PreOrder {
         auto output = cg->compile(n->output());
 
         auto pred = std::string();
-        if ( auto c = n->condition() )
+        if ( auto* c = n->condition() )
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(c));
 
         auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->output()->type());
@@ -125,7 +125,7 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        auto decl = n->resolvedDeclaration();
+        auto* decl = n->resolvedDeclaration();
         const auto& fqid = decl->fullyQualifiedID();
         assert(fqid);
 
@@ -142,12 +142,12 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        if ( auto e = decl->tryAs<declaration::Expression>() ) {
+        if ( auto* e = decl->tryAs<declaration::Expression>() ) {
             result = cg->compile(e->expression(), lhs);
             return;
         }
 
-        if ( auto c = decl->tryAs<declaration::Constant>() ) {
+        if ( auto* c = decl->tryAs<declaration::Constant>() ) {
             if ( c->value()->type()->type()->isA<type::Enum>() )
                 result = {cxx::ID(cg->compile(c->value())), Side::LHS};
             else
@@ -156,7 +156,7 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        if ( auto f = decl->tryAs<declaration::Function>() ) {
+        if ( auto* f = decl->tryAs<declaration::Function>() ) {
             // If we're referring to, but not calling, an "external" function
             // or static method, bind to the externally visible name.
             if ( (f->function()->callingConvention() == function::CallingConvention::Extern ||
@@ -172,14 +172,14 @@ struct Visitor : hilti::visitor::PreOrder {
             }
         }
 
-        if ( auto f = decl->tryAs<declaration::Field>(); f && f->type()->type()->isA<type::Function>() ) {
+        if ( auto* f = decl->tryAs<declaration::Field>(); f && f->type()->type()->isA<type::Function>() ) {
             // If we're referring to, but not calling, a method,
             // or static method, bind to the externally visible name for the type.
             result = {cxx::ID(cg->options().cxx_namespace_extern, fqid), Side::LHS};
             return;
         }
 
-        if ( auto p = decl->tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {
+        if ( auto* p = decl->tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {
             if ( p->type()->type()->isReferenceType() )
                 // Need to adjust here for potential automatic change to a weak reference.
                 result = fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id());
@@ -205,9 +205,9 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(expression::TypeInfo* n) final {
-        auto t = n->expression()->type();
+        auto* t = n->expression()->type();
 
-        if ( auto tv = t->type()->tryAs<type::Type_>() )
+        if ( auto* tv = t->type()->tryAs<type::Type_>() )
             t = tv->typeValue();
 
         result = cg->typeInfo(t);

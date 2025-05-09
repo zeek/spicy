@@ -19,7 +19,7 @@ static HILTI_THREAD_LOCAL Context* __current = nullptr;
 Context*& current() { return __current; }
 
 hilti::rt::Context* set(Context* ctx) {
-    auto old = current();
+    auto* old = current();
     current() = ctx;
     return old;
 }

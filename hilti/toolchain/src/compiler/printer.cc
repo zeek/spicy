@@ -328,7 +328,7 @@ struct Printer : visitor::PreOrder {
     void operator()(declaration::Field* n) final {
         _out << "    ";
 
-        if ( auto ft = n->type()->type()->tryAs<type::Function>() ) {
+        if ( auto* ft = n->type()->type()->tryAs<type::Function>() ) {
             _out << to_string(ft->flavor()) << " ";
 
             if ( auto cc = n->callingConvention(); cc && *cc != function::CallingConvention::Standard )
@@ -340,10 +340,10 @@ struct Printer : visitor::PreOrder {
         else
             _out << n->type() << ' ' << n->id();
 
-        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
+        if ( auto* attrs = n->attributes(); ! attrs->attributes().empty() )
             _out << ' ' << attrs;
 
-        if ( auto f = n->inlineFunction(); f && f->body() ) {
+        if ( auto* f = n->inlineFunction(); f && f->body() ) {
             const auto& block = f->body()->tryAs<statement::Block>();
             if ( block && block->statements().empty() ) {
                 _out << " {}";
@@ -369,7 +369,7 @@ struct Printer : visitor::PreOrder {
         if ( n->default_() )
             _out << " = " << n->default_();
 
-        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
+        if ( auto* attrs = n->attributes(); ! attrs->attributes().empty() )
             _out << ' ' << attrs;
     }
 
@@ -410,7 +410,7 @@ struct Printer : visitor::PreOrder {
         _out.setExpandSubsequentType(true);
         _out << n->type();
 
-        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
+        if ( auto* attrs = n->attributes(); ! attrs->attributes().empty() )
             _out << ' ' << attrs;
 
         _out << ';';
@@ -627,10 +627,10 @@ struct Printer : visitor::PreOrder {
         _out.beginLine();
         _out << "if ( ";
 
-        if ( auto e = n->init() )
+        if ( auto* e = n->init() )
             _out << e << "; ";
 
-        if ( auto e = n->condition() )
+        if ( auto* e = n->condition() )
             _out << e;
 
         _out << " ) " << n->true_();
@@ -653,7 +653,7 @@ struct Printer : visitor::PreOrder {
         _out.beginLine();
         _out << "return";
 
-        if ( auto e = n->expression() )
+        if ( auto* e = n->expression() )
             _out << ' ' << e;
 
         _out << ';';
@@ -696,7 +696,7 @@ struct Printer : visitor::PreOrder {
         _out.beginLine();
         _out << "throw";
 
-        if ( auto e = n->expression() )
+        if ( auto* e = n->expression() )
             _out << fmt(" %s", *e);
 
         _out << ";";
@@ -707,7 +707,7 @@ struct Printer : visitor::PreOrder {
         _out.beginLine();
         _out << "catch ";
 
-        if ( auto p = n->parameter() )
+        if ( auto* p = n->parameter() )
             _out << "( " << p << " ) ";
 
         _out << n->body();
@@ -728,10 +728,10 @@ struct Printer : visitor::PreOrder {
         _out.beginLine();
         _out << "while ( ";
 
-        if ( auto e = n->init() )
+        if ( auto* e = n->init() )
             _out << e << "; ";
 
-        if ( auto e = n->condition() )
+        if ( auto* e = n->condition() )
             _out << e;
 
         _out << " ) " << n->body();
@@ -768,7 +768,7 @@ struct Printer : visitor::PreOrder {
         else
             _out << fmt("%d..%d", n->lower(), n->upper());
 
-        if ( auto attrs = n->attributes(); ! attrs->attributes().empty() )
+        if ( auto* attrs = n->attributes(); ! attrs->attributes().empty() )
             _out << ' ' << attrs;
 
         _out << ";" << _out.newline();
@@ -828,7 +828,7 @@ struct Printer : visitor::PreOrder {
 
         _out.setExpandSubsequentType(false);
 
-        if ( auto t = n->baseType(); t && ! t->isA<type::Unknown>() ) {
+        if ( auto* t = n->baseType(); t && ! t->isA<type::Unknown>() ) {
             _out << "[exception :";
 
             if ( auto id = t->typeID() )
@@ -1129,11 +1129,11 @@ void printer::print(std::ostream& out, Node* root, bool compact, bool user_visib
 void printer::Stream::_print(Node* root) {
     util::timing::Collector _("hilti/printer");
 
-    for ( auto& p : plugin::registry().plugins() ) {
+    for ( const auto& p : plugin::registry().plugins() ) {
         if ( ! p.ast_print )
             continue;
 
-        auto* prev = std::exchange(detail::State::current->current_plugin, &p);
+        const auto* prev = std::exchange(detail::State::current->current_plugin, &p);
         auto _ = util::scope_exit([&]() { detail::State::current->current_plugin = prev; });
 
         if ( (*p.ast_print)(root, *this) )

@@ -201,9 +201,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         // Add any custom includes.
         for ( const auto& i : n->moduleProperties("%cxx-include") ) {
-            if ( auto expr = i->expression() ) {
-                if ( auto ctor = expr->tryAs<expression::Ctor>() ) {
-                    if ( auto str = ctor->ctor()->tryAs<ctor::String>() ) {
+            if ( auto* expr = i->expression() ) {
+                if ( auto* ctor = expr->tryAs<expression::Ctor>() ) {
+                    if ( auto* str = ctor->ctor()->tryAs<ctor::String>() ) {
                         auto include = cxx::declaration::IncludeFile(str->value());
                         unit->add(include);
                         continue;
@@ -300,7 +300,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         auto d = cg->compile(n, ft, linkage, f->callingConvention(), f->attributes(), cid);
 
-        if ( auto a = n->function()->attributes()->find(hilti::attribute::kind::Cxxname) ) {
+        if ( auto* a = n->function()->attributes()->find(hilti::attribute::kind::Cxxname) ) {
             // Just add the prototype. Make sure to skip any custom namespacing.
             const auto& value = a->valueAsString();
             if ( ! value ) {
@@ -316,7 +316,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         int64_t priority = 0;
         if ( is_hook && f->attributes() ) {
-            if ( auto x = f->attributes()->find(hilti::attribute::kind::Priority) ) {
+            if ( auto* x = f->attributes()->find(hilti::attribute::kind::Priority) ) {
                 if ( auto i = x->valueAsInteger() )
                     priority = *i;
                 else
@@ -355,7 +355,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                                        fmt("struct %s", id_class), {}, true)};
 
             for ( const auto& p : ft->parameters() ) {
-                auto type = p->type();
+                auto* type = p->type();
 
                 if ( type->type()->iteratorType() )
                     type = type->type()->elementType();
@@ -419,7 +419,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             std::list<cxx::declaration::Type> aux_types;
 
             for ( const auto& p : ft->parameters() ) {
-                auto type = p->type();
+                auto* type = p->type();
 
                 while ( type->type()->isReferenceType() )
                     type = type->type()->dereferencedType();
@@ -735,7 +735,7 @@ void GlobalsVisitor::addCxxDeclarationsFor(Declaration* d, ID module_name, bool 
 
     cd->recordSeen(d);
 
-    for ( auto dep : cg->context()->astContext()->dependentDeclarations(d) ) {
+    for ( auto* dep : cg->context()->astContext()->dependentDeclarations(d) ) {
         if ( dep != d )
             addCxxDeclarationsFor(dep, dep->fullyQualifiedID().sub(0), include_implementation_, cd);
     }
@@ -868,7 +868,7 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
     for ( const auto& b : t->bits(false) ) {
         auto x = fmt("::hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
 
-        if ( auto a = b->attributes()->find(hilti::attribute::kind::Convert) ) {
+        if ( auto* a = b->attributes()->find(hilti::attribute::kind::Convert) ) {
             pushDollarDollar(std::move(x));
             bits.emplace_back(compile(*a->valueAsExpression()));
             popDollarDollar();

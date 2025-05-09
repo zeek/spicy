@@ -62,7 +62,7 @@ void Configuration::init(bool use_build_directory) {
                    [](auto& c) { return std::tolower(c); });
 
     // Allow to set a compiler wrapper through the environment.
-    if ( auto hilti_cxx = getenv("HILTI_CXX"); hilti_cxx && *hilti_cxx )
+    if ( auto* hilti_cxx = getenv("HILTI_CXX"); hilti_cxx && *hilti_cxx )
         cxx = hilti_cxx;
     else
         cxx = "${CMAKE_CXX_COMPILER}";
@@ -74,7 +74,7 @@ void Configuration::init(bool use_build_directory) {
     //   variable is empty no launcher will be used.
     // - next we check whether any compiler launcher was set during the build and reuse it
     // - else we disable use of a compiler launcher.
-    if ( auto hilti_cxx_launcher = getenv("HILTI_CXX_COMPILER_LAUNCHER"); hilti_cxx_launcher ) {
+    if ( auto* hilti_cxx_launcher = getenv("HILTI_CXX_COMPILER_LAUNCHER"); hilti_cxx_launcher ) {
         if ( std::strlen(hilti_cxx_launcher) == 0 ) {
             cxx_launcher = {};
         }
@@ -97,7 +97,7 @@ void Configuration::init(bool use_build_directory) {
 
     std::vector<std::string> library_paths;
 
-    if ( auto hilti_library_paths = std::getenv("HILTI_PATH") ) {
+    if ( auto* hilti_library_paths = std::getenv("HILTI_PATH") ) {
         library_paths =
             util::transform(hilti::rt::split(hilti_library_paths, ":"), [](auto s) { return std::string(s); });
     }

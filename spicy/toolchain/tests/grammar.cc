@@ -23,7 +23,7 @@ static auto make_prods(Args... args) {
 }
 
 static auto literal(hilti::ASTContext* ctx, const std::string& symbol, std::string value) {
-    auto c = hilti::ctor::Bytes::create(ctx, std::move(value));
+    auto* c = hilti::ctor::Bytes::create(ctx, std::move(value));
     return std::make_unique<spicy::detail::codegen::production::Ctor>(ctx, symbol, c);
 }
 

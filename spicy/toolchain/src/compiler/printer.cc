@@ -51,7 +51,7 @@ struct VisitorPrinter : visitor::PreOrder {
     }
 
     void operator()(hilti::type::StrongReference* n) final {
-        if ( auto m = n->parent<hilti::declaration::Module>(); m && m->uid().process_extension != ".spicy" )
+        if ( auto* m = n->parent<hilti::declaration::Module>(); m && m->uid().process_extension != ".spicy" )
             return;
 
         if ( n->isWildcard() )

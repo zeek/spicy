@@ -290,7 +290,7 @@ void cxx::Block::addFor(const Expression& init, const Expression& cond, const Ex
 }
 
 void cxx::Block::addForRange(bool const_, const ID& id, const Expression& seq, const cxx::Block& body) {
-    auto c = (const_ ? "const " : "");
+    const auto* c = (const_ ? "const " : "");
     _stmts.emplace_back(fmt("for ( %sauto& %s : %s )", c, id, seq), body, flags::AddSeparatorAfter);
 }
 

@@ -44,9 +44,9 @@ struct FieldBuilder : public visitor::PreOrder {
 
     void operator()(spicy::type::unit::item::Field* f) final {
         // Create struct field.
-        auto attrs = builder()->attributeSet({builder()->attribute(attribute::kind::Optional)});
+        auto* attrs = builder()->attributeSet({builder()->attribute(attribute::kind::Optional)});
 
-        if ( auto x = f->attributes()->find(attribute::kind::Default) )
+        if ( auto* x = f->attributes()->find(attribute::kind::Default) )
             attrs->add(context(), x);
 
         if ( f->isAnonymous() )
@@ -59,7 +59,7 @@ struct FieldBuilder : public visitor::PreOrder {
             // times, and also can improve error messages.
             attrs->add(context(), builder()->attribute(hilti::attribute::kind::NoEmit));
 
-        auto nf = builder()->declarationField(f->id(), f->itemType(), attrs, f->meta());
+        auto* nf = builder()->declarationField(f->id(), f->itemType(), attrs, f->meta());
         addField(nf);
 
         // Add hooks.
@@ -87,11 +87,11 @@ struct FieldBuilder : public visitor::PreOrder {
             if ( f->isContainer() )
                 add_hook_declaration(f, declaration::hook::Type::ForEach);
 
-            for ( auto h : f->hooks() )
+            for ( auto* h : f->hooks() )
                 add_hook_implementation(h);
         }
 
-        if ( auto x = f->item() )
+        if ( auto* x = f->item() )
             dispatch(x);
     }
 
@@ -107,7 +107,7 @@ struct FieldBuilder : public visitor::PreOrder {
 
         for ( const auto&& [n, c] : hilti::util::enumerate(f->cases()) ) {
             for ( const auto& i : c->block()->items() ) {
-                if ( auto f = i->tryAs<spicy::type::unit::item::Field>() ) {
+                if ( auto* f = i->tryAs<spicy::type::unit::item::Field>() ) {
                     if ( seen.find(f->id()) != seen.end() )
                         // Validator ensures two fields with the same name are equivalent.
                         continue;
@@ -122,38 +122,39 @@ struct FieldBuilder : public visitor::PreOrder {
 
     void operator()(spicy::type::unit::item::Variable* f) final {
         AttributeSet* attrs = builder()->attributeSet();
-        auto ftype = f->itemType();
+        auto* ftype = f->itemType();
 
         // Create struct field.
-        if ( auto x = f->default_() )
+        if ( auto* x = f->default_() )
             attrs->add(context(), builder()->attribute(attribute::kind::Default, x));
 
         if ( f->isOptional() )
             attrs->add(context(), builder()->attribute(attribute::kind::Optional));
 
-        auto nf = builder()->declarationField(f->id(), ftype, attrs, f->meta());
+        auto* nf = builder()->declarationField(f->id(), ftype, attrs, f->meta());
         addField(nf);
     }
 
     void operator()(spicy::type::unit::item::Sink* s) final {
-        auto type = builder()->typeName("spicy_rt::Sink", s->meta());
-        auto attrs = builder()->attributeSet({builder()->attribute(attribute::kind::Default, builder()->new_(type)),
-                                              builder()->attribute(hilti::attribute::kind::Internal),
-                                              builder()->attribute(hilti::attribute::kind::NeededByFeature,
-                                                                   builder()->stringLiteral("supports_sinks"))});
+        auto* type = builder()->typeName("spicy_rt::Sink", s->meta());
+        auto* attrs = builder()->attributeSet({builder()->attribute(attribute::kind::Default, builder()->new_(type)),
+                                               builder()->attribute(hilti::attribute::kind::Internal),
+                                               builder()->attribute(hilti::attribute::kind::NeededByFeature,
+                                                                    builder()->stringLiteral("supports_sinks"))});
 
-        auto sink = builder()->qualifiedType(builder()->typeSink(), hilti::Constness::Mutable, hilti::Side::LHS);
-        auto nf = builder()->declarationField(s->id(),
-                                              builder()->qualifiedType(builder()->typeStrongReference(sink),
-                                                                       hilti::Constness::Const),
-                                              attrs, s->meta());
+        auto* sink = builder()->qualifiedType(builder()->typeSink(), hilti::Constness::Mutable, hilti::Side::LHS);
+        auto* nf = builder()->declarationField(s->id(),
+                                               builder()->qualifiedType(builder()->typeStrongReference(sink),
+                                                                        hilti::Constness::Const),
+                                               attrs, s->meta());
         addField(nf);
     }
 
     void operator()(spicy::type::unit::item::UnitHook* h) final {
         const auto& hook = h->hook();
-        if ( auto hook_impl = cg->compileHook(*unit, ID(unit->typeID(), h->id()), {}, hook->hookType(), hook->isDebug(),
-                                              hook->ftype()->parameters(), hook->body(), hook->priority(), h->meta()) )
+        if ( auto* hook_impl =
+                 cg->compileHook(*unit, ID(unit->typeID(), h->id()), {}, hook->hookType(), hook->isDebug(),
+                                 hook->ftype()->parameters(), hook->body(), hook->priority(), h->meta()) )
             cg->addDeclaration(hook_impl);
     }
 };
@@ -167,21 +168,21 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
         v.dispatch(i);
 
     auto add_hook = [&](const std::string& id, hilti::declaration::Parameters params, AttributeSet* attributes = {}) {
-        if ( auto hook_decl = compileHook(*unit, ID(id), {}, declaration::hook::Type::Standard, false,
-                                          std::move(params), {}, {}, unit->meta()) ) {
-            auto nf = builder()->declarationField(hook_decl->id().local(), hook_decl->function()->type(), attributes,
-                                                  unit->meta());
+        if ( auto* hook_decl = compileHook(*unit, ID(id), {}, declaration::hook::Type::Standard, false,
+                                           std::move(params), {}, {}, unit->meta()) ) {
+            auto* nf = builder()->declarationField(hook_decl->id().local(), hook_decl->function()->type(), attributes,
+                                                   unit->meta());
             v.addField(nf);
         }
     };
 
     if ( options().getAuxOption<bool>("spicy.track_offsets", false) ) {
-        auto u64 = builder()->qualifiedType(builder()->typeUnsignedInteger(64), hilti::Constness::Const);
-        auto opt_u64 = builder()->qualifiedType(builder()->typeOptional(u64), hilti::Constness::Const);
-        auto v_elem =
+        auto* u64 = builder()->qualifiedType(builder()->typeUnsignedInteger(64), hilti::Constness::Const);
+        auto* opt_u64 = builder()->qualifiedType(builder()->typeOptional(u64), hilti::Constness::Const);
+        auto* v_elem =
             builder()->qualifiedType(builder()->typeTuple(QualifiedTypes{u64, opt_u64}), hilti::Constness::Const);
-        auto opt_v_elem = builder()->qualifiedType(builder()->typeOptional(v_elem), hilti::Constness::Const);
-        auto vec = builder()->qualifiedType(builder()->typeVector(opt_v_elem), hilti::Constness::Const);
+        auto* opt_v_elem = builder()->qualifiedType(builder()->typeOptional(v_elem), hilti::Constness::Const);
+        auto* vec = builder()->qualifiedType(builder()->typeVector(opt_v_elem), hilti::Constness::Const);
 
         v.addField(builder()->declarationField(ID("__offsets"), vec,
                                                builder()->attributeSet(
@@ -189,10 +190,10 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
                                                     builder()->attribute(hilti::attribute::kind::AlwaysEmit)})));
     }
 
-    if ( auto context = unit->contextType() ) {
-        auto attrs = builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Internal)});
-        auto ftype = builder()->typeStrongReference(builder()->qualifiedType(context, hilti::Constness::Mutable));
-        auto f =
+    if ( auto* context = unit->contextType() ) {
+        auto* attrs = builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Internal)});
+        auto* ftype = builder()->typeStrongReference(builder()->qualifiedType(context, hilti::Constness::Mutable));
+        auto* f =
             builder()->declarationField(ID("__context"), builder()->qualifiedType(ftype, hilti::Constness::Mutable),
                                         attrs, unit->meta());
         v.addField(f);
@@ -204,7 +205,7 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     add_hook("0x25_print", {});
     add_hook("0x25_finally", {});
 
-    auto attr_sync = builder()->attributeSet(
+    auto* attr_sync = builder()->attributeSet(
         {builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("synchronization"))});
     add_hook("0x25_confirmed", {}, attr_sync);
     add_hook("0x25_rejected", {}, attr_sync);
@@ -233,9 +234,9 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     add_hook("0x25_undelivered", {builder()->parameter("seq", builder()->typeUnsignedInteger(64)),
                                   builder()->parameter("data", builder()->typeBytes())});
 
-    auto attr_uses_stream =
+    auto* attr_uses_stream =
         builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("uses_stream"));
-    auto stream =
+    auto* stream =
         builder()->declarationField(ID("__stream"),
                                     builder()->qualifiedType(builder()->typeWeakReference(
                                                                  builder()->qualifiedType(builder()->typeStream(),
@@ -246,21 +247,21 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
 
     v.addField(stream);
 
-    auto attr_sync_advance = builder()->attributeSet(
+    auto* attr_sync_advance = builder()->attributeSet(
         {builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("uses_sync_advance"))});
 
     add_hook("0x25_sync_advance", {builder()->parameter("offset", builder()->typeUnsignedInteger(64))},
              attr_sync_advance);
 
     // Fields related to random-access functionality.
-    auto attr_uses_random_access =
+    auto* attr_uses_random_access =
         builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("uses_random_access"));
-    auto iter = builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Mutable);
-    auto f1 =
+    auto* iter = builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Mutable);
+    auto* f1 =
         builder()->declarationField(ID("__begin"), iter,
                                     builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Internal),
                                                              attr_uses_random_access}));
-    auto f2 =
+    auto* f2 =
         builder()->declarationField(ID("__position_update"),
                                     builder()->qualifiedType(builder()->typeOptional(iter), hilti::Constness::Mutable),
                                     builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Internal),
@@ -269,9 +270,9 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     v.addField(f2);
 
     // Fields related to offset functionality.
-    auto attr_uses_offset =
+    auto* attr_uses_offset =
         builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("uses_offset"));
-    auto f3 =
+    auto* f3 =
         builder()->declarationField(ID("__offset"),
                                     builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                              hilti::Constness::Mutable),
@@ -280,10 +281,10 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     v.addField(f3);
 
     {
-        auto attrs = builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Static),
-                                              builder()->attribute(hilti::attribute::kind::Internal),
-                                              builder()->attribute(hilti::attribute::kind::NeededByFeature,
-                                                                   builder()->stringLiteral("supports_filters"))});
+        auto* attrs = builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Static),
+                                               builder()->attribute(hilti::attribute::kind::Internal),
+                                               builder()->attribute(hilti::attribute::kind::NeededByFeature,
+                                                                    builder()->stringLiteral("supports_filters"))});
 
         if ( unit->isPublic() )
             attrs->add(context(), builder()->attribute(hilti::attribute::kind::AlwaysEmit));
@@ -295,18 +296,18 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
             attrs->add(context(), builder()->attribute(hilti::attribute::kind::NeededByFeature,
                                                        builder()->stringLiteral("is_filter")));
 
-        auto parser = builder()->declarationField(ID("__parser"),
-                                                  builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
-                                                                           hilti::Constness::Const),
-                                                  attrs);
+        auto* parser = builder()->declarationField(ID("__parser"),
+                                                   builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
+                                                                            hilti::Constness::Const),
+                                                   attrs);
 
         v.addField(parser);
     }
 
     {
-        auto attrs = builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Internal),
-                                              builder()->attribute(hilti::attribute::kind::NeededByFeature,
-                                                                   builder()->stringLiteral("supports_sinks"))});
+        auto* attrs = builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Internal),
+                                               builder()->attribute(hilti::attribute::kind::NeededByFeature,
+                                                                    builder()->stringLiteral("supports_sinks"))});
 
         // If the unit has a `%mime-type` property consumers can connect to it via
         // MIME type with `connect_mime_type`. In that case we need to always emit
@@ -314,15 +315,15 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
         if ( unit->propertyItem("%mime-type") )
             attrs->add(context(), builder()->attribute(hilti::attribute::kind::AlwaysEmit));
 
-        auto sink = builder()->declarationField(ID("__sink"),
-                                                builder()->qualifiedType(builder()->typeName("spicy_rt::SinkState"),
-                                                                         hilti::Constness::Mutable),
-                                                attrs);
+        auto* sink = builder()->declarationField(ID("__sink"),
+                                                 builder()->qualifiedType(builder()->typeName("spicy_rt::SinkState"),
+                                                                          hilti::Constness::Mutable),
+                                                 attrs);
         v.addField(sink);
     }
 
     {
-        auto filters =
+        auto* filters =
             builder()
                 ->declarationField(ID("__filters"),
                                    builder()->qualifiedType(builder()->typeStrongReference(
@@ -338,7 +339,7 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     }
 
     if ( unit->isFilter() ) {
-        auto forward =
+        auto* forward =
             builder()
                 ->declarationField(ID("__forward"),
                                    builder()->qualifiedType(builder()->typeWeakReference(
@@ -353,26 +354,26 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
         v.addField(forward);
     }
 
-    auto ft = _pb.parseMethodFunctionType({}, unit->meta());
+    auto* ft = _pb.parseMethodFunctionType({}, unit->meta());
     v.addField(
         builder()->declarationField(ID("__parse_stage1"), builder()->qualifiedType(ft, hilti::Constness::Mutable), {}));
 
-    if ( auto convert = unit->attributes()->find(attribute::kind::Convert) ) {
-        auto expression = *convert->valueAsExpression();
-        auto result = builder()->qualifiedType(builder()->typeAuto(), hilti::Constness::Mutable);
-        auto ftype = builder()->typeFunction(result, {}, hilti::type::function::Flavor::Method, expression->meta());
+    if ( auto* convert = unit->attributes()->find(attribute::kind::Convert) ) {
+        auto* expression = *convert->valueAsExpression();
+        auto* result = builder()->qualifiedType(builder()->typeAuto(), hilti::Constness::Mutable);
+        auto* ftype = builder()->typeFunction(result, {}, hilti::type::function::Flavor::Method, expression->meta());
 
         _pb.pushBuilder();
         _pb.builder()->addReturn(expression);
         auto body = _pb.popBuilder();
-        auto function =
+        auto* function =
             builder()->function(ID("__convert"), ftype, body->block(), hilti::function::CallingConvention::Standard);
-        auto convert_ = builder()->declarationField(ID("__convert"), function, {});
+        auto* convert_ = builder()->declarationField(ID("__convert"), function, {});
         v.addField(convert_);
     }
 
     assert(unit->typeID());
-    auto s = builder()->typeStruct(unit->parameters(), std::move(v.fields));
+    auto* s = builder()->typeStruct(unit->parameters(), std::move(v.fields));
     _pb.addParserMethods(s, unit, declare_only);
 
     if ( ! declare_only )
@@ -383,27 +384,27 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
 
 void CodeGen::compilePublicUnitAlias(hilti::declaration::Module* module, const ID& alias_id, type::Unit* unit) {
     // We create a mini parser struct here that just contains the `__parser` field for runtime registration.
-    auto attrs = builder()->attributeSet(
+    auto* attrs = builder()->attributeSet(
         {builder()->attribute(hilti::attribute::kind::Static), builder()->attribute(hilti::attribute::kind::Internal),
          builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("supports_filters"))});
 
-    auto parser_field = builder()->declarationField(ID("__parser"),
-                                                    builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
-                                                                             hilti::Constness::Mutable),
-                                                    attrs);
+    auto* parser_field = builder()->declarationField(ID("__parser"),
+                                                     builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
+                                                                              hilti::Constness::Mutable),
+                                                     attrs);
 
     auto struct_id = ID(alias_id.namespace_(), "__parser_" + alias_id.local().str());
-    auto struct_decl = builder()->declarationType(struct_id.local(),
-                                                  builder()->qualifiedType(builder()->typeStruct({parser_field}),
-                                                                           hilti::Constness::Mutable),
-                                                  hilti::declaration::Linkage::Public, unit->meta());
+    auto* struct_decl = builder()->declarationType(struct_id.local(),
+                                                   builder()->qualifiedType(builder()->typeStruct({parser_field}),
+                                                                            hilti::Constness::Mutable),
+                                                   hilti::declaration::Linkage::Public, unit->meta());
     module->add(context(), struct_decl);
 
     _compileParserRegistration(alias_id, struct_id, unit);
 }
 
 void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_id, type::Unit* unit) {
-    auto description = unit->propertyItem("%description");
+    auto* description = unit->propertyItem("%description");
     auto mime_types =
         hilti::node::transform(unit->propertyItems("%mime-type"), [](const auto& p) { return p->expression(); });
     auto ports = hilti::node::transform(unit->propertyItems("%port"), [this](auto p) -> Expression* {
@@ -448,12 +449,12 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
                                             std::vector<std::string_view>({"is_filter", "supports_sinks"});
 
     _pb.guardFeatureCode(unit, dependentFeatureFlags, [&]() {
-        auto ty_mime_types = builder()->typeVector(
+        auto* ty_mime_types = builder()->typeVector(
             builder()->qualifiedType(builder()->typeName("spicy_rt::MIMEType"), hilti::Constness::Const));
-        auto ty_ports = builder()->typeVector(
+        auto* ty_ports = builder()->typeVector(
             builder()->qualifiedType(builder()->typeName("spicy_rt::ParserPort"), hilti::Constness::Const));
 
-        auto parser = builder()->struct_(
+        auto* parser = builder()->struct_(
             {builder()->ctorStructField(ID("name"), builder()->stringLiteral(public_id.str())),
              builder()->ctorStructField(ID("is_public"), builder()->bool_(unit->isPublic())),
              builder()->ctorStructField(ID("parse1"), parse1),
@@ -483,9 +484,9 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
                              builder()->strongReference(builder()->qualifiedType(unit, hilti::Constness::Const))}));
     });
 
-    auto block = _pb.popBuilder()->block();
+    auto* block = _pb.popBuilder()->block();
 
-    auto register_unit =
+    auto* register_unit =
         builder()->function(ID(fmt("__register_%s_%s", hiltiModule()->uid(), public_id.local())),
                             builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const), {}, block,
                             hilti::type::function::Flavor::Function, hilti::declaration::Linkage::Init);

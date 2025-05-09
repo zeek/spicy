@@ -108,7 +108,7 @@ public:
     static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
                        const Statements& stmts, Meta meta = {}) {
         Nodes nodes = {statement::Block::create(ctx, stmts, meta)};
-        for ( auto d : decls )
+        for ( auto* d : decls )
             nodes.push_back(d);
 
         return ctx->make<Module>(ctx, std::move(nodes), uid, scope, std::move(meta));

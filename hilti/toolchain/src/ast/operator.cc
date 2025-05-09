@@ -89,7 +89,7 @@ std::string _printOperator(operator_::Kind kind, const Expressions& operands, bo
         case operator_::Kind::MemberCall: {
             assert(operands.size() == 3);
             std::string args;
-            if ( auto ttype = operands[2]->type()->type()->tryAs<type::Tuple>() )
+            if ( auto* ttype = operands[2]->type()->type()->tryAs<type::Tuple>() )
                 args = util::join(util::transform(ttype->elements(),
                                                   [&render_one](const auto& x) { return render_one(x->type()); }),
                                   ", ");
@@ -104,7 +104,7 @@ std::string _printOperator(operator_::Kind kind, const Expressions& operands, bo
         case operator_::Kind::Call: {
             assert(operands.size() == 2);
             std::string args;
-            if ( auto ttype = operands[1]->type()->type()->tryAs<type::Tuple>() )
+            if ( auto* ttype = operands[1]->type()->type()->tryAs<type::Tuple>() )
                 args = util::join(util::transform(ttype->elements(),
                                                   [&render_one](const auto& x) { return render_one(x->type()); }),
                                   ", ");
@@ -127,7 +127,7 @@ std::string _printOperator(operator_::Kind kind, const Operands& operands, const
     auto render_one = [](Operand* t) {
         if ( t->type()->type()->template isA<type::Member>() )
             return t->print();
-        else if ( auto ft = t->type()->type()->tryAs<type::Function>(); ft && ft->functionNameForPrinting() )
+        else if ( auto* ft = t->type()->type()->tryAs<type::Function>(); ft && ft->functionNameForPrinting() )
             return ft->functionNameForPrinting().str();
         else
             return fmt("<%s>", t->print());
@@ -137,7 +137,7 @@ std::string _printOperator(operator_::Kind kind, const Operands& operands, const
         case operator_::Kind::MemberCall: {
             assert(operands.size() == 3);
             std::string args;
-            if ( auto ttype = operands[2]->type()->type()->tryAs<type::OperandList>() )
+            if ( auto* ttype = operands[2]->type()->type()->tryAs<type::OperandList>() )
                 args = util::join(util::transform(ttype->operands(), [](const auto& x) { return x->print(); }), ", ");
             else
                 args = render_one(operands[2]);
@@ -149,7 +149,7 @@ std::string _printOperator(operator_::Kind kind, const Operands& operands, const
         case operator_::Kind::Call: {
             assert(operands.size() == 2);
             std::string args;
-            if ( auto ttype = operands[1]->type()->type()->tryAs<type::OperandList>() )
+            if ( auto* ttype = operands[1]->type()->type()->tryAs<type::OperandList>() )
                 args = util::join(util::transform(ttype->operands(), [](const auto& x) { return x->print(); }), ", ");
             else
                 args = render_one(operands[1]);

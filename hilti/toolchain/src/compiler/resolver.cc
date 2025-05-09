@@ -65,11 +65,11 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
         }
 
         if ( n->resolvedTypeIndex() ) {
-            auto resolved = n->resolvedType();
+            auto* resolved = n->resolvedType();
             if ( ! resolved )
                 n->addError(util::fmt("type '%s' cannot be resolved by its name", n->id()));
             else if ( resolved->isOnHeap() ) {
-                if ( auto qtype = n->parent()->tryAs<QualifiedType>() ) {
+                if ( auto* qtype = n->parent()->tryAs<QualifiedType>() ) {
                     auto replace = false;
 
                     if ( n->parent(2)->tryAs<Declaration>() )
@@ -80,7 +80,7 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
                         replace = false;
 
                     if ( replace ) {
-                        auto rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
+                        auto* rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
                         replaceNode(qtype, builder()->qualifiedType(rt, qtype->constness(), qtype->side()),
                                     "&on-heap replacement");
                     }
@@ -108,9 +108,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     // If an expression is a reference, dereference it; otherwise return the
     // expression itself.
     Expression* skipReferenceValue(Expression* op) {
-        static auto value_reference_deref = operator_::get("value_reference::Deref");
-        static auto strong_reference_deref = operator_::get("strong_reference::Deref");
-        static auto weak_reference_deref = operator_::get("weak_reference::Deref");
+        static const auto* value_reference_deref = operator_::get("value_reference::Deref");
+        static const auto* strong_reference_deref = operator_::get("strong_reference::Deref");
+        static const auto* weak_reference_deref = operator_::get("weak_reference::Deref");
 
         if ( ! op->type()->type()->isReferenceType() )
             return op;
@@ -143,13 +143,13 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         type::Function* hook_type = nullptr;
 
         for ( const auto& i : matches ) {
-            auto ftype = i->as<expression::ResolvedOperator>()->op0()->type()->type()->tryAs<type::Function>();
-            auto fid = i->as<expression::ResolvedOperator>()->op0()->tryAs<expression::Name>();
+            auto* ftype = i->as<expression::ResolvedOperator>()->op0()->type()->type()->tryAs<type::Function>();
+            auto* fid = i->as<expression::ResolvedOperator>()->op0()->tryAs<expression::Name>();
 
             if ( ! ftype || ! fid || ftype->flavor() != type::function::Flavor::Hook )
                 return false;
 
-            auto decl = context()->lookup(fid->resolvedDeclarationIndex());
+            auto* decl = context()->lookup(fid->resolvedDeclarationIndex());
             assert(decl);
             auto canon_id = decl->canonicalID();
 
@@ -201,7 +201,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! t )
             return nullptr;
 
-        auto ntype = builder()->qualifiedType(t, Constness::Mutable);
+        auto* ntype = builder()->qualifiedType(t, Constness::Mutable);
 
         if ( old_type && type::same(old_type, ntype) )
             return nullptr;
@@ -230,9 +230,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     // Returns the i'th argument of a call expression.
     auto callArgument(const expression::ResolvedOperator* o, int i) {
-        auto ctor = o->op1()->as<expression::Ctor>()->ctor();
+        auto* ctor = o->op1()->as<expression::Ctor>()->ctor();
 
-        if ( auto x = ctor->tryAs<ctor::Coerced>() )
+        if ( auto* x = ctor->tryAs<ctor::Coerced>() )
             ctor = x->coercedCtor();
 
         return ctor->as<ctor::Tuple>()->value()[i];
@@ -240,20 +240,20 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     // Returns a method call's i-th argument.
     Expression* methodArgument(const expression::ResolvedOperator* o, size_t i) {
-        auto ops = o->op2();
+        auto* ops = o->op2();
 
         // If the argument list was the result of a coercion unpack its result.
-        if ( auto coerced = ops->tryAs<expression::Coerced>() )
+        if ( auto* coerced = ops->tryAs<expression::Coerced>() )
             ops = coerced->expression();
 
-        if ( auto ctor_ = ops->tryAs<expression::Ctor>() ) {
-            auto ctor = ctor_->ctor();
+        if ( auto* ctor_ = ops->tryAs<expression::Ctor>() ) {
+            auto* ctor = ctor_->ctor();
 
             // If the argument was the result of a coercion unpack its result.
-            if ( auto x = ctor->tryAs<ctor::Coerced>() )
+            if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                 ctor = x->coercedCtor();
 
-            if ( auto args = ctor->tryAs<ctor::Tuple>(); args && i < args->value().size() )
+            if ( auto* args = ctor->tryAs<ctor::Tuple>(); args && i < args->value().size() )
                 return args->value()[i];
         }
 
@@ -346,16 +346,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     // Coerces a specific call argument to a given type returning the coerced
     // expression (only) if its type has changed.
     Result<Expression*> coerceMethodArgument(const expression::ResolvedOperator* o, size_t i, QualifiedType* t) {
-        auto ops = o->op2();
+        auto* ops = o->op2();
 
         // If the argument list was the result of a coercion unpack its result.
-        if ( auto coerced = ops->tryAs<expression::Coerced>() )
+        if ( auto* coerced = ops->tryAs<expression::Coerced>() )
             ops = coerced->expression();
 
-        auto ctor_ = ops->as<expression::Ctor>()->ctor();
+        auto* ctor_ = ops->as<expression::Ctor>()->ctor();
 
         // If the argument was the result of a coercion unpack its result.
-        if ( auto x = ctor_->tryAs<ctor::Coerced>() )
+        if ( auto* x = ctor_->tryAs<ctor::Coerced>() )
             ctor_ = x->coercedCtor();
 
         const auto& args = ctor_->as<ctor::Tuple>()->value();
@@ -379,11 +379,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         auto arg = args->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value().begin();
         std::vector<type::function::Parameter> params;
         for ( auto& rp : ftype.parameters() ) {
-            auto p = rp->as<declaration::Parameter>();
+            auto* p = rp->as<declaration::Parameter>();
             if ( ! p->type()->isAuto() )
                 continue;
 
-            auto t = (*arg)->type();
+            auto* t = (*arg)->type();
             if ( ! t->isResolved() )
                 continue;
 
@@ -491,7 +491,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     HILTI_DEBUG(logging::debug::Operator, util::fmt("candidate: %s (%s)", c->name(), c->print()));
                     logging::DebugPushIndent _(logging::debug::Operator);
 
-                    if ( auto r = try_candidate(c, u->operands(), style, u->meta(), "candidate matches") ) {
+                    if ( auto* r = try_candidate(c, u->operands(), style, u->meta(), "candidate matches") ) {
                         if ( c->signature().priority == operator_::Priority::Normal )
                             kinds_resolved->insert(c->kind());
 
@@ -502,10 +502,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                         // Try to swap the operators for commutative operators.
                         if ( operator_::isCommutative(c->kind()) && operands.size() == 2 ) {
                             Nodes new_operands = {operands[1], operands[0]};
-                            if ( auto r = try_candidate(c,
-                                                        hilti::node::Range<Expression>(new_operands.begin(),
-                                                                                       new_operands.end()),
-                                                        style, u->meta(), "candidate matches with operands swapped") ) {
+                            if ( auto* r =
+                                     try_candidate(c,
+                                                   hilti::node::Range<Expression>(new_operands.begin(),
+                                                                                  new_operands.end()),
+                                                   style, u->meta(), "candidate matches with operands swapped") ) {
                                 if ( c->signature().priority == operator_::Priority::Normal )
                                     kinds_resolved->insert(c->kind());
 
@@ -540,15 +541,15 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             // Normalize values passed as `&cxxname` so they always are interpreted as FQNs by enforcing leading
             // `::`.
             if ( const auto& value = n->valueAsString(); value && ! util::startsWith(*value, "::") ) {
-                auto a = builder()->attribute(hilti::attribute::kind::Cxxname,
-                                              builder()->stringLiteral(util::fmt("::%s", *value)));
+                auto* a = builder()->attribute(hilti::attribute::kind::Cxxname,
+                                               builder()->stringLiteral(util::fmt("::%s", *value)));
                 replaceNode(n, a);
             }
         }
     }
 
     void operator()(ctor::Default* n) final {
-        if ( auto t = skipReferenceType(n->type()); t->isResolved() ) {
+        if ( auto* t = skipReferenceType(n->type()); t->isResolved() ) {
             if ( ! t->type()->parameters().empty() ) {
                 if ( auto x = n->typeArguments(); x.size() ) {
                     if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
@@ -565,7 +566,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return; // cannot do anything yet
 
         if ( ! n->type()->isResolved() ) {
-            if ( auto ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), builder()->qualifiedType(builder()->typeList(ntype), Constness::Mutable));
             }
@@ -576,14 +577,14 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             // coercion has figured out how to type the list for that coercion
             // even though the list's type on its own isn't known, then
             // transfer the container's element type over.
-            if ( auto parent = n->parent()->tryAs<ctor::Coerced>(); parent && parent->type()->isResolved() ) {
+            if ( auto* parent = n->parent()->tryAs<ctor::Coerced>(); parent && parent->type()->isResolved() ) {
                 QualifiedType* etype = nullptr;
 
-                if ( auto l = parent->type()->type()->tryAs<type::List>() )
+                if ( auto* l = parent->type()->type()->tryAs<type::List>() )
                     etype = l->elementType();
-                else if ( auto s = parent->type()->type()->tryAs<type::Set>() )
+                else if ( auto* s = parent->type()->type()->tryAs<type::Set>() )
                     etype = s->elementType();
-                else if ( auto v = parent->type()->type()->tryAs<type::Vector>() )
+                else if ( auto* v = parent->type()->type()->tryAs<type::Vector>() )
                     etype = v->elementType();
 
                 if ( etype && ! etype->type()->isA<type::Unknown>() ) {
@@ -631,7 +632,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 value = builder()->qualifiedType(builder()->typeUnknown(), Constness::Const);
             }
 
-            auto ntype = builder()->qualifiedType(builder()->typeMap(key, value, n->meta()), Constness::Mutable);
+            auto* ntype = builder()->qualifiedType(builder()->typeMap(key, value, n->meta()), Constness::Mutable);
             if ( ! type::same(ntype, n->type()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), ntype);
@@ -683,7 +684,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return; // cannot do anything yet
 
         if ( ! n->type()->isResolved() ) {
-            if ( auto ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), builder()->qualifiedType(builder()->typeSet(ntype), Constness::Mutable));
             }
@@ -707,9 +708,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 fields.emplace_back(builder()->declarationField(f->id(), f->expression()->type(),
                                                                 builder()->attributeSet({}), f->meta()));
 
-            auto ntype = builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(),
-                                                                        std::move(fields), n->meta()),
-                                                  Constness::Mutable);
+            auto* ntype = builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(),
+                                                                         std::move(fields), n->meta()),
+                                                   Constness::Mutable);
             recordChange(n, ntype, "type");
             n->setType(context(), ntype);
         }
@@ -718,7 +719,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     void operator()(ctor::Tuple* n) final {
         if ( ! n->type()->isResolved() && expression::areResolved(n->value()) ) {
             auto elems = node::transform(n->value(), [](const auto& e) { return e->type(); });
-            auto t = builder()->qualifiedType(builder()->typeTuple(elems, n->meta()), Constness::Const);
+            auto* t = builder()->qualifiedType(builder()->typeTuple(elems, n->meta()), Constness::Const);
             recordChange(n, t, "type");
             n->setType(context(), t);
         }
@@ -726,7 +727,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(ctor::ValueReference* n) final {
         if ( ! n->type()->isResolved() && n->expression()->isResolved() ) {
-            auto t = builder()->typeValueReference(n->expression()->type()->recreateAsNonConst(context()));
+            auto* t = builder()->typeValueReference(n->expression()->type()->recreateAsNonConst(context()));
             recordChange(n, t, "type");
             n->setType(context(), builder()->qualifiedType(t, Constness::Const));
         }
@@ -737,7 +738,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return; // cannot do anything yet
 
         if ( ! n->type()->isResolved() ) {
-            if ( auto ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), builder()->qualifiedType(builder()->typeVector(ntype), Constness::Mutable));
             }
@@ -751,7 +752,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(Declaration* n) final {
         if ( ! n->canonicalID() ) {
-            if ( auto module = n->parent<declaration::Module>() ) {
+            if ( auto* module = n->parent<declaration::Module>() ) {
                 assert(module);
                 auto id = module->uid().unique + n->id();
                 n->setCanonicalID(context()->uniqueCanononicalID(id));
@@ -768,11 +769,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
             else if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
-            else if ( auto m = n->parent<declaration::Module>() )
+            else if ( auto* m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
         }
 
-        if ( auto x = coerceTo(n, n->value(), n->type()->recreateAsLhs(context()), false, true) ) {
+        if ( auto* x = coerceTo(n, n->value(), n->type()->recreateAsLhs(context()), false, true) ) {
             recordChange(n, x, "value");
             n->setValue(context(), x);
         }
@@ -784,35 +785,35 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 setFqID(n, n->id()); // local scope
             else if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
-            else if ( auto m = n->parent<declaration::Module>() )
+            else if ( auto* m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
         }
     }
 
     void operator()(declaration::Field* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto ctor = n->parent(3)->tryAs<ctor::Struct>() )
+            if ( auto* ctor = n->parent(3)->tryAs<ctor::Struct>() )
                 // special-case anonymous structs
                 setFqID(n, ctor->uniqueID() + n->id());
-            else if ( auto ctor = n->parent(3)->tryAs<ctor::Bitfield>() )
+            else if ( auto* ctor = n->parent(3)->tryAs<ctor::Bitfield>() )
                 // special-case anonymous bitfields
                 setFqID(n, ctor->btype()->uniqueID() + n->id());
-            else if ( auto stype = n->parent()->tryAs<type::Struct>(); stype && stype->typeID() )
+            else if ( auto* stype = n->parent()->tryAs<type::Struct>(); stype && stype->typeID() )
                 setFqID(n, stype->typeID() + n->id());
-            else if ( auto utype = n->parent()->tryAs<type::Union>(); utype && utype->typeID() )
+            else if ( auto* utype = n->parent()->tryAs<type::Union>(); utype && utype->typeID() )
                 setFqID(n, utype->typeID() + n->id());
         }
 
         if ( ! n->linkedTypeIndex() ) {
-            auto t = n->parent()->as<UnqualifiedType>();
+            auto* t = n->parent()->as<UnqualifiedType>();
             auto index = context()->register_(t);
             n->setLinkedTypeIndex(index);
             recordChange(n, util::fmt("set linked type to %s", index));
         }
 
-        if ( auto a = n->attributes()->find(hilti::attribute::kind::Default) ) {
+        if ( auto* a = n->attributes()->find(hilti::attribute::kind::Default) ) {
             auto val = a->valueAsExpression();
-            if ( auto x = coerceTo(n, *val, n->type(), false, true) ) {
+            if ( auto* x = coerceTo(n, *val, n->type(), false, true) ) {
                 recordChange(*val, x, "attribute");
                 n->attributes()->remove(hilti::attribute::kind::Default);
                 n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Default, x));
@@ -834,7 +835,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(declaration::Function* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto m = n->parent<declaration::Module>() ) {
+            if ( auto* m = n->parent<declaration::Module>() ) {
                 if ( m->scopeID() == n->id().sub(0) )
                     setFqID(n, n->id());
                 else
@@ -851,7 +852,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 linked_type = resolved->first;
 
                 for ( const auto& field : linked_type->type()->type()->as<type::Struct>()->fields(n->id().local()) ) {
-                    auto method_type = field->type()->type()->tryAs<type::Function>();
+                    auto* method_type = field->type()->type()->tryAs<type::Function>();
                     if ( ! method_type ) {
                         n->addError(util::fmt("'%s' is not a method of type '%s'", n->id().local(), linked_type->id()));
                         return;
@@ -870,7 +871,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             else {
                 for ( const auto& x : context()->root()->scope()->lookupAll(n->id()) ) {
-                    if ( auto f = x.node->tryAs<declaration::Function>() ) {
+                    if ( auto* f = x.node->tryAs<declaration::Function>() ) {
                         if ( areEquivalent(n->function()->ftype(), f->function()->ftype()) ) {
                             if ( ! linked_prototype ||
                                  ! f->function()->body() ) // prefer declarations wo/ implementation
@@ -918,15 +919,15 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(declaration::GlobalVariable* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto m = n->parent<declaration::Module>() )
+            if ( auto* m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
         }
 
         Expression* init = nullptr;
         std::optional<Expressions> args;
 
-        if ( auto e = n->init(); e && ! type::sameExceptForConstness(n->type(), e->type()) ) {
-            if ( auto x = coerceTo(n, e, n->type(), false, true) )
+        if ( auto* e = n->init(); e && ! type::sameExceptForConstness(n->type(), e->type()) ) {
+            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
                 init = x;
         }
 
@@ -949,7 +950,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         if ( n->type()->isAuto() ) {
-            if ( auto init = n->init(); init && init->isResolved() ) {
+            if ( auto* init = n->init(); init && init->isResolved() ) {
                 recordChange(n, init->type(), "type");
                 n->setType(context(), init->type());
             }
@@ -958,12 +959,12 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(declaration::ImportedModule* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto m = n->parent<declaration::Module>() )
+            if ( auto* m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id());
         }
 
         if ( ! n->uid() ) {
-            auto current_module = n->parent<declaration::Module>();
+            auto* current_module = n->parent<declaration::Module>();
             assert(current_module);
 
             auto uid = context()->importModule(builder(), n->id(), n->scope(), n->parseExtension(),
@@ -990,8 +991,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         Expression* init = nullptr;
         std::optional<Expressions> args;
 
-        if ( auto e = n->init(); e && ! e->isA<expression::Void>() ) {
-            if ( auto x = coerceTo(n, e, n->type(), false, true) )
+        if ( auto* e = n->init(); e && ! e->isA<expression::Void>() ) {
+            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
                 init = x;
         }
 
@@ -1014,7 +1015,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         if ( n->type()->isAuto() ) {
-            if ( auto init = n->init(); init && init->isResolved() ) {
+            if ( auto* init = n->init(); init && init->isResolved() ) {
                 recordChange(n, init->type(), "type");
                 n->setType(context(), init->type());
             }
@@ -1043,8 +1044,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! n->fullyQualifiedID() )
             setFqID(n, n->id());
 
-        if ( auto def = n->default_() ) {
-            if ( auto x = coerceTo(n, def, n->type(), false, true) ) {
+        if ( auto* def = n->default_() ) {
+            if ( auto* x = coerceTo(n, def, n->type(), false, true) ) {
                 recordChange(n, x, "default value");
                 n->setDefault(context(), x);
             }
@@ -1055,7 +1056,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! n->fullyQualifiedID() ) {
             if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
-            else if ( auto m = n->parent<declaration::Module>() )
+            else if ( auto* m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
         }
     }
@@ -1064,7 +1065,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! n->fullyQualifiedID() ) {
             if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
-            else if ( auto m = n->parent<declaration::Module>() )
+            else if ( auto* m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
         }
 
@@ -1073,7 +1074,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             recordChange(n->type()->type(), util::fmt("set type's declaration to %s", index));
         }
 
-        if ( auto x = n->type()->type()->tryAs<type::Library>();
+        if ( auto* x = n->type()->type()->tryAs<type::Library>();
              x && ! n->attributes()->has(hilti::attribute::kind::Cxxname) )
             // Transfer the C++ name into an attribute.
             n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Cxxname,
@@ -1089,7 +1090,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
 
             if ( *ctor ) {
-                auto nexpr = builder()->expressionCtor(*ctor, (*ctor)->meta());
+                auto* nexpr = builder()->expressionCtor(*ctor, (*ctor)->meta());
                 replaceNode(n, nexpr);
             }
         }
@@ -1097,26 +1098,26 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(expression::Assign* n) final {
         // Rewrite assignments to map elements to use the `index_assign` operator.
-        if ( auto index_non_const = n->target()->tryAs<operator_::map::IndexNonConst>() ) {
+        if ( auto* index_non_const = n->target()->tryAs<operator_::map::IndexNonConst>() ) {
             const auto& map = index_non_const->op0();
             const auto& map_type = map->type()->type()->as<type::Map>();
             const auto& key_type = map_type->keyType();
             const auto& value_type = map_type->valueType();
 
-            auto key = index_non_const->op1();
+            auto* key = index_non_const->op1();
             if ( key->type() != key_type ) {
-                if ( auto nexpr = hilti::coerceExpression(builder(), key, key_type).nexpr )
+                if ( auto* nexpr = hilti::coerceExpression(builder(), key, key_type).nexpr )
                     key = nexpr;
             }
 
-            auto value = n->source();
+            auto* value = n->source();
             if ( value->type() != value_type ) {
-                if ( auto nexpr = hilti::coerceExpression(builder(), value, value_type).nexpr )
+                if ( auto* nexpr = hilti::coerceExpression(builder(), value, value_type).nexpr )
                     value = nexpr;
             }
 
-            auto index_assign = builder()->expressionUnresolvedOperator(hilti::operator_::Kind::IndexAssign,
-                                                                        {map, key, value}, n->meta());
+            auto* index_assign = builder()->expressionUnresolvedOperator(hilti::operator_::Kind::IndexAssign,
+                                                                         {map, key, value}, n->meta());
 
             replaceNode(n, index_assign);
         }
@@ -1124,17 +1125,17 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         // Rewrite assignments involving tuple ctors on the LHS to use the
         // tuple's custom by-element assign operator. We need this to get
         // constness right.
-        auto lhs_ctor = n->target()->tryAs<expression::Ctor>();
+        auto* lhs_ctor = n->target()->tryAs<expression::Ctor>();
         if ( lhs_ctor && lhs_ctor->ctor()->isA<ctor::Tuple>() ) {
             if ( n->source()->isResolved() && n->target()->isResolved() ) {
-                auto op = operator_::registry().byName("tuple::CustomAssign");
+                const auto* op = operator_::registry().byName("tuple::CustomAssign");
                 assert(op);
-                auto x = *op->instantiate(builder(), {n->target(), n->source()}, n->meta());
+                auto* x = *op->instantiate(builder(), {n->target(), n->source()}, n->meta());
                 replaceNode(n, x);
             }
         }
 
-        if ( auto x = coerceTo(n, n->source(), n->target()->type(), false, true) ) {
+        if ( auto* x = coerceTo(n, n->source(), n->target()->type(), false, true) ) {
             recordChange(n, x, "source");
             n->setSource(context(), x);
         }
@@ -1149,7 +1150,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(expression::Keyword* n) final {
         if ( n->kind() == expression::keyword::Kind::Scope && ! n->type()->isResolved() ) {
-            auto ntype = builder()->qualifiedType(builder()->typeString(), Constness::Const);
+            auto* ntype = builder()->qualifiedType(builder()->typeString(), Constness::Const);
             recordChange(n, ntype);
             n->setType(context(), ntype);
         }
@@ -1157,13 +1158,13 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(expression::ListComprehension* n) final {
         if ( ! n->type()->isResolved() && n->output()->isResolved() ) {
-            auto ntype = builder()->qualifiedType(builder()->typeList(n->output()->type()), Constness::Mutable);
+            auto* ntype = builder()->qualifiedType(builder()->typeList(n->output()->type()), Constness::Mutable);
             recordChange(n, ntype);
             n->setType(context(), ntype);
         }
 
         if ( ! n->local()->type()->isResolved() && n->input()->isResolved() ) {
-            auto container = n->input()->type();
+            auto* container = n->input()->type();
             if ( ! container->type()->iteratorType() ) {
                 n->addError("right-hand side of list comprehension is not iterable");
                 return;
@@ -1176,31 +1177,31 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(expression::LogicalAnd* n) final {
-        if ( auto x = coerceTo(n, n->op0(), n->type(), true, false) ) {
+        if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
             recordChange(n, x, "op0");
             n->setOp0(context(), x);
         }
 
-        if ( auto x = coerceTo(n, n->op1(), n->type(), true, false) ) {
+        if ( auto* x = coerceTo(n, n->op1(), n->type(), true, false) ) {
             recordChange(n, x, "op1");
             n->setOp1(context(), x);
         }
     }
 
     void operator()(expression::LogicalNot* n) final {
-        if ( auto x = coerceTo(n, n->expression(), n->type(), true, false) ) {
+        if ( auto* x = coerceTo(n, n->expression(), n->type(), true, false) ) {
             recordChange(n, x, "expression");
             n->setExpression(context(), x);
         }
     }
 
     void operator()(expression::LogicalOr* n) final {
-        if ( auto x = coerceTo(n, n->op0(), n->type(), true, false) ) {
+        if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
             recordChange(n, x, "op0");
             n->setOp0(context(), x);
         }
 
-        if ( auto x = coerceTo(n, n->op1(), n->type(), true, false) ) {
+        if ( auto* x = coerceTo(n, n->op1(), n->type(), true, false) ) {
             recordChange(n, x, "op1");
             n->setOp1(context(), x);
         }
@@ -1228,7 +1229,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // If we are inside a call expression, the name may map to multiple
                 // function declarations (overloads and hooks). We leave it to operator
                 // resolving to figure that out and don't report an error here.
-                auto op = n->parent()->tryAs<expression::UnresolvedOperator>();
+                auto* op = n->parent()->tryAs<expression::UnresolvedOperator>();
                 if ( ! op || op->kind() != operator_::Kind::Call ) {
                     if ( n->id() == ID("__dd") )
                         // Provide better error message
@@ -1245,16 +1246,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(expression::ConditionTest* n) final {
         if ( n->condition()->isResolved() && ! n->condition()->type()->type()->isA<type::Bool>() ) {
-            if ( auto x = coerceTo(n, n->condition(), builder()->qualifiedType(builder()->typeBool(), Constness::Const),
-                                   true, false) ) {
+            if ( auto* x = coerceTo(n, n->condition(),
+                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
                 recordChange(n, x, "condition");
                 n->setCondition(context(), x);
             }
         }
 
         if ( n->error()->isResolved() && ! n->error()->type()->type()->isA<type::Error>() ) {
-            if ( auto x = coerceTo(n, n->error(), builder()->qualifiedType(builder()->typeError(), Constness::Const),
-                                   true, false) ) {
+            if ( auto* x = coerceTo(n, n->error(), builder()->qualifiedType(builder()->typeError(), Constness::Const),
+                                    true, false) ) {
                 recordChange(n, x, "error");
                 n->setError(context(), x);
             }
@@ -1290,7 +1291,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             // We hardcode that a cast<> operator can always perform any
             // legal coercion. This helps in cases where we need to force a
             // specific coercion to take place.
-            static auto casted_coercion = operator_::get("generic::CastedCoercion");
+            static const auto* casted_coercion = operator_::get("generic::CastedCoercion");
             if ( hilti::coerceExpression(builder(), n->operands()[0],
                                          n->op1()->type()->type()->as<type::Type_>()->typeValue(),
                                          CoercionStyle::TryAllForMatching | CoercionStyle::ContextualConversion) ) {
@@ -1334,7 +1335,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( ! checkForHooks(builder(), n, matches) ) {
                 std::vector<std::string> context = {"candidates:"};
                 for ( const auto& op : matches ) {
-                    auto resolved = op->as<hilti::expression::ResolvedOperator>();
+                    auto* resolved = op->as<hilti::expression::ResolvedOperator>();
                     context.emplace_back(
                         util::fmt("- %s [%s]", resolved->printSignature(), resolved->operator_().name()));
                 }
@@ -1344,17 +1345,17 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
         }
 
-        if ( auto match = matches[0]->tryAs<expression::ResolvedOperator>() ) {
+        if ( auto* match = matches[0]->tryAs<expression::ResolvedOperator>() ) {
             if ( n->kind() == operator_::Kind::Call ) {
-                if ( auto ftype = match->op0()->type()->type()->tryAs<type::Function>() )
+                if ( auto* ftype = match->op0()->type()->type()->tryAs<type::Function>() )
                     recordAutoParameters(*ftype, match->op1());
             }
 
             if ( n->kind() == operator_::Kind::MemberCall ) {
-                if ( auto stype = match->op0()->type()->type()->tryAs<type::Struct>() ) {
+                if ( auto* stype = match->op0()->type()->type()->tryAs<type::Struct>() ) {
                     const auto& id = match->op1()->as<expression::Member>()->id();
-                    if ( auto field = stype->field(id) ) {
-                        auto ftype = field->type()->type()->as<type::Function>();
+                    if ( auto* field = stype->field(id) ) {
+                        auto* ftype = field->type()->type()->as<type::Function>();
                         recordAutoParameters(*ftype, match->op2());
                     }
                 }
@@ -1368,8 +1369,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( n->ftype()->result()->isAuto() ) {
             // Look for a `return` to infer the return type.
             auto v = visitor::PreOrder();
-            for ( const auto i : visitor::range(v, n, {}) ) {
-                if ( auto x = i->tryAs<statement::Return>(); x && x->expression() && x->expression()->isResolved() ) {
+            for ( auto* const i : visitor::range(v, n, {}) ) {
+                if ( auto* x = i->tryAs<statement::Return>(); x && x->expression() && x->expression()->isResolved() ) {
                     const auto& rt = x->expression()->type();
                     recordChange(n, rt, "auto return");
                     n->ftype()->setResultType(context(), rt);
@@ -1380,18 +1381,18 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::generic::New* n) final {
-        if ( auto etype = n->op0()->type()->type()->tryAs<type::Type_>();
+        if ( auto* etype = n->op0()->type()->type()->tryAs<type::Type_>();
              etype && ! etype->typeValue()->type()->parameters().empty() ) {
-            auto ctor = n->op1()->as<expression::Ctor>()->ctor();
+            auto* ctor = n->op1()->as<expression::Ctor>()->ctor();
 
-            if ( auto x = ctor->tryAs<ctor::Coerced>() )
+            if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                 ctor = x->coercedCtor();
 
             auto args = ctor->as<ctor::Tuple>()->value();
 
             if ( auto coerced = coerceCallArguments(args, etype->typeValue()->type()->parameters());
                  coerced && *coerced ) {
-                auto ntuple = builder()->expressionCtor(builder()->ctorTuple(**coerced), n->op1()->meta());
+                auto* ntuple = builder()->expressionCtor(builder()->ctorTuple(**coerced), n->op1()->meta());
                 recordChange(n, ntuple, "type arguments");
                 n->setOp1(context(), ntuple);
             }
@@ -1414,11 +1415,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     // passed `map` and perform the coercion automatically when resolving the
     // function call.
     void operator()(operator_::map::In* n) final {
-        auto op0 = n->op0()->type()->type()->tryAs<type::Map>();
+        auto* op0 = n->op0()->type()->type()->tryAs<type::Map>();
         if ( ! op0 )
             return;
 
-        if ( auto x = coerceTo(n, n->op0(), op0->keyType(), true, false) ) {
+        if ( auto* x = coerceTo(n, n->op0(), op0->keyType(), true, false) ) {
             recordChange(n, x, "call argument");
             n->setOp0(context(), x);
         }
@@ -1429,11 +1430,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     // passed `set` and perform the coercion automatically when resolving the
     // function call.
     void operator()(operator_::set::In* n) final {
-        auto op1 = n->op1()->type()->type()->tryAs<type::Set>();
+        auto* op1 = n->op1()->type()->type()->tryAs<type::Set>();
         if ( ! op1 )
             return;
 
-        if ( auto x = coerceTo(n, n->op0(), op1->elementType(), true, false) ) {
+        if ( auto* x = coerceTo(n, n->op0(), op1->elementType(), true, false) ) {
             recordChange(n, x, "call argument");
             n->setOp0(context(), x);
         }
@@ -1441,11 +1442,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(operator_::tuple::CustomAssign* n) final {
         if ( n->op0()->isResolved() && n->op1()->isResolved() ) {
-            auto lhs = n->op0()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>();
+            auto* lhs = n->op0()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>();
 
             if ( ! type::same(lhs->type(), n->op1()->type()) ) {
-                auto lhs_type = lhs->type()->type()->as<type::Tuple>();
-                auto rhs_type = n->op1()->type()->type()->tryAs<type::Tuple>();
+                auto* lhs_type = lhs->type()->type()->as<type::Tuple>();
+                auto* rhs_type = n->op1()->type()->type()->tryAs<type::Tuple>();
 
                 if ( rhs_type && lhs_type->elements().size() ==
                                      rhs_type->elements().size() ) { // validator will report if not same size
@@ -1456,17 +1457,17 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     const auto& rhs_type_elements = rhs_type->elements();
 
                     for ( auto i = 0U; i < lhs_type->elements().size(); i++ ) {
-                        static auto op = operator_::get("tuple::Index");
+                        static const auto* op = operator_::get("tuple::Index");
                         const auto& lhs_elem_type = lhs_type_elements[i]->type();
-                        auto rhs_elem_type = rhs_type_elements[i]->type();
-                        auto rhs_elem =
+                        auto* rhs_elem_type = rhs_type_elements[i]->type();
+                        auto* rhs_elem =
                             builder()->expressionTypeWrapped(*op->instantiate(builder(),
                                                                               {n->op1(), builder()->integer(i)},
                                                                               n->meta()),
                                                              rhs_elem_type);
 
 
-                        if ( auto x = coerceTo(n, rhs_elem, lhs_elem_type, false, true) ) {
+                        if ( auto* x = coerceTo(n, rhs_elem, lhs_elem_type, false, true) ) {
                             changed = true;
                             new_elems.push_back(x);
                         }
@@ -1475,7 +1476,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     }
 
                     if ( changed ) {
-                        auto new_rhs = builder()->tuple(new_elems);
+                        auto* new_rhs = builder()->tuple(new_elems);
                         recordChange(n, new_rhs, "tuple assign");
                         n->setOp1(context(), new_rhs);
                     }
@@ -1488,8 +1489,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( n->op0()->isResolved() && n->op2()->isResolved() ) {
             // Need to coerce the element here as the normal overload resolution
             // couldn't know the element type yet.
-            auto etype = n->op0()->type()->type()->as<type::Vector>()->elementType();
-            if ( auto x =
+            auto* etype = n->op0()->type()->type()->as<type::Vector>()->elementType();
+            if ( auto* x =
                      coerceTo(n, n->op2(), builder()->qualifiedType(builder()->typeTuple({etype}), Constness::Const),
                               false, true) ) {
                 recordChange(n, x, "element type");
@@ -1500,8 +1501,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(statement::Assert* n) final {
         if ( ! n->expectException() && ! n->expression()->type()->type()->isA<type::Result>() ) {
-            if ( auto x = coerceTo(n, n->expression(),
-                                   builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
+            if ( auto* x = coerceTo(n, n->expression(),
+                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
                 recordChange(n, x, "expression");
                 n->setExpression(context(), x);
             }
@@ -1509,16 +1510,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(statement::If* n) final {
-        if ( auto cond = n->condition() ) {
-            if ( auto x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
-                                   false) ) {
+        if ( auto* cond = n->condition() ) {
+            if ( auto* x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
+                                    false) ) {
                 recordChange(n, x, "condition");
                 n->setCondition(context(), x);
             }
         }
 
         if ( n->init() && ! n->condition() ) {
-            auto cond = builder()->expressionName(n->init()->id());
+            auto* cond = builder()->expressionName(n->init()->id());
             n->setCondition(context(), cond);
             recordChange(n, cond);
         }
@@ -1539,16 +1540,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(statement::Return* n) final {
-        auto func = n->parent<Function>();
+        auto* func = n->parent<Function>();
         if ( ! func ) {
             n->addError("return outside of function");
             return;
         }
 
-        if ( auto e = n->expression() ) {
+        if ( auto* e = n->expression() ) {
             const auto& t = func->ftype()->result();
 
-            if ( auto x = coerceTo(n, e, t, false, true) ) {
+            if ( auto* x = coerceTo(n, e, t, false, true) ) {
                 recordChange(n, x, "expression");
                 n->setExpression(context(), x);
             }
@@ -1558,9 +1559,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     void operator()(statement::Switch* n) final { n->preprocessCases(context()); }
 
     void operator()(statement::While* n) final {
-        if ( auto cond = n->condition() ) {
-            if ( auto x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
-                                   false) ) {
+        if ( auto* cond = n->condition() ) {
+            if ( auto* x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
+                                    false) ) {
                 recordChange(n, x, "condition");
                 n->setCondition(context(), x);
             }
@@ -1572,9 +1573,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             setFqID(n, n->id()); // local scope
 
         if ( ! type::isResolved(n->itemType()) ) {
-            auto t = n->ddType();
+            auto* t = n->ddType();
 
-            if ( auto a = n->attributes()->find(hilti::attribute::kind::Convert) )
+            if ( auto* a = n->attributes()->find(hilti::attribute::kind::Convert) )
                 t = (*a->valueAsExpression())->type();
 
             if ( t->isResolved() ) {
@@ -1584,7 +1585,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         if ( n->ctorValue() ) {
-            if ( auto x = coerceTo(n, n->ctorValue(), n->itemType(), false, true) ) {
+            if ( auto* x = coerceTo(n, n->ctorValue(), n->itemType(), false, true) ) {
                 recordChange(n, x, "bits value");
                 n->setCtorValue(context(), x);
             }
@@ -1609,14 +1610,14 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
             i = resolver.auto_params.find(n->canonicalID());
 
         if ( i == resolver.auto_params.end() ) {
-            if ( auto d = n->parent<declaration::Function>(); d && d->linkedPrototypeIndex() ) {
-                auto prototype = builder()->context()->lookup(d->linkedPrototypeIndex());
+            if ( auto* d = n->parent<declaration::Function>(); d && d->linkedPrototypeIndex() ) {
+                auto* prototype = builder()->context()->lookup(d->linkedPrototypeIndex());
 
                 type::Function* ftype = nullptr;
-                if ( auto f = prototype->tryAs<declaration::Function>() )
+                if ( auto* f = prototype->tryAs<declaration::Function>() )
                     ftype = f->function()->ftype();
 
-                if ( auto f = prototype->tryAs<declaration::Field>() )
+                if ( auto* f = prototype->tryAs<declaration::Field>() )
                     ftype = f->type()->type()->tryAs<type::Function>();
 
                 if ( ftype ) {

@@ -35,15 +35,15 @@ struct Visitor : visitor::PostOrder {
     void operator()(declaration::Expression* n) final { n->parent()->getOrCreateScope()->insert(n); }
 
     void operator()(declaration::Function* n) final {
-        auto x = n->parent();
+        auto* x = n->parent();
 
-        auto module = n->parent<declaration::Module>();
+        auto* module = n->parent<declaration::Module>();
         assert(module);
 
         if ( ! n->id().namespace_() || n->id().namespace_() == module->id().namespace_() )
             x->getOrCreateScope()->insert(n->id().local(), n);
 
-        for ( auto x : n->function()->ftype()->parameters() )
+        for ( auto* x : n->function()->ftype()->parameters() )
             n->getOrCreateScope()->insert(x);
 
         if ( n->linkage() == declaration::Linkage::Struct ) {
@@ -54,11 +54,11 @@ struct Visitor : visitor::PostOrder {
         }
 
         if ( n->linkedDeclarationIndex() ) {
-            if ( auto decl = builder->context()->lookup(n->linkedDeclarationIndex())->as<declaration::Type>() ) {
-                const auto t = decl->type()->type()->as<type::Struct>();
+            if ( auto* decl = builder->context()->lookup(n->linkedDeclarationIndex())->as<declaration::Type>() ) {
+                auto* const t = decl->type()->type()->as<type::Struct>();
                 n->getOrCreateScope()->insert(t->self());
 
-                for ( auto x : t->parameters() )
+                for ( auto* x : t->parameters() )
                     n->getOrCreateScope()->insert(x);
             }
         }
@@ -73,20 +73,20 @@ struct Visitor : visitor::PostOrder {
         // If we know the imported module already, insert it into the
         // containing module's scope so that we can look it up.
         if ( const auto& uid = n->uid() ) {
-            auto imported_module = builder->context()->module(*uid);
+            auto* imported_module = builder->context()->module(*uid);
             assert(imported_module);
             if ( auto index = imported_module->declarationIndex() ) {
-                auto current_module = n->parent<declaration::Module>();
+                auto* current_module = n->parent<declaration::Module>();
                 assert(current_module);
 
-                auto decl = builder->context()->lookup(index)->as<declaration::Module>();
+                auto* decl = builder->context()->lookup(index)->as<declaration::Module>();
                 current_module->getOrCreateScope()->insert(decl);
             }
         }
     }
 
     void operator()(declaration::Module* n) final {
-        auto m = n;
+        auto* m = n;
 
         // Insert into the module's own scope so that IDs inside the module can
         // be qualified with the module's own name. We insert it under
@@ -106,8 +106,8 @@ struct Visitor : visitor::PostOrder {
     }
 
     void operator()(declaration::Field* n) final {
-        if ( auto func = n->inlineFunction() ) {
-            for ( auto x : func->ftype()->parameters() )
+        if ( auto* func = n->inlineFunction() ) {
+            for ( auto* x : func->ftype()->parameters() )
                 n->getOrCreateScope()->insert(x);
         }
 
@@ -130,17 +130,17 @@ struct Visitor : visitor::PostOrder {
     void operator()(statement::Switch* n) final { n->getOrCreateScope()->insert(n->condition()); }
 
     void operator()(statement::try_::Catch* n) final {
-        if ( auto x = n->parameter() )
+        if ( auto* x = n->parameter() )
             n->getOrCreateScope()->insert(x);
     }
 
     void operator()(statement::While* n) final {
-        if ( auto x = n->init() )
+        if ( auto* x = n->init() )
             n->getOrCreateScope()->insert(x);
     }
 
     void operator()(type::bitfield::BitRange* n) final {
-        if ( auto d = n->dd() )
+        if ( auto* d = n->dd() )
             n->scope()->insert(d);
     }
 
@@ -156,7 +156,7 @@ struct Visitor : visitor::PostOrder {
     }
 
     void operator()(type::Struct* n) final {
-        for ( auto x : n->parameters() )
+        for ( auto* x : n->parameters() )
             n->getOrCreateScope()->insert(x);
 
         if ( n->typeID() )

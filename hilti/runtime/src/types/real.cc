@@ -11,12 +11,12 @@ Bytes real::pack(double d, real::Type type, ByteOrder fmt) {
     switch ( type.value() ) {
         case real::Type::IEEE754_Single: {
             auto f = static_cast<float>(d);
-            auto i = reinterpret_cast<uint32_t*>(&f);
+            auto* i = reinterpret_cast<uint32_t*>(&f);
             return integer::pack<uint32_t>(*i, fmt);
         }
 
         case real::Type::IEEE754_Double: {
-            auto i = reinterpret_cast<uint64_t*>(&d);
+            auto* i = reinterpret_cast<uint64_t*>(&d);
             return integer::pack<uint64_t>(*i, fmt);
         }
 
@@ -34,7 +34,7 @@ static Result<Tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrde
                 return result::Error("insufficient data to unpack single precision real");
 
             if ( auto x = integer::unpack<uint32_t>(data, fmt) ) {
-                auto d = reinterpret_cast<float*>(&tuple::get<0>(*x));
+                auto* d = reinterpret_cast<float*>(&tuple::get<0>(*x));
                 return {{static_cast<double>(*d), tuple::get<1>(*x)}};
             }
             else
@@ -46,7 +46,7 @@ static Result<Tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrde
                 return result::Error("insufficient data to unpack double precision real");
 
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
-                auto d = reinterpret_cast<double*>(&tuple::get<0>(*x));
+                auto* d = reinterpret_cast<double*>(&tuple::get<0>(*x));
                 return {{*d, tuple::get<1>(*x)}};
             }
             else

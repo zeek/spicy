@@ -20,7 +20,7 @@ public:
     auto value() const { return child<hilti::Expression>(1); }
 
     QualifiedType* type() const {
-        if ( auto t = child<QualifiedType>(0) )
+        if ( auto* t = child<QualifiedType>(0) )
             return t;
         else
             return value()->type();

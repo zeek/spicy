@@ -54,7 +54,7 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        auto dd = expression::Keyword::createDollarDollarDeclaration(
+        auto* dd = expression::Keyword::createDollarDollarDeclaration(
             ctx, QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, field_width), Constness::Const));
 
         return ctx->make<BitRange>(ctx, node::flatten(QualifiedType::createAuto(ctx), attrs, ctor_value, dd), id, lower,
@@ -136,7 +136,7 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        auto value = bitfield::BitRange::create(ctx, ID("__value__"), 0, width - 1, width, {}, m);
+        auto* value = bitfield::BitRange::create(ctx, ID("__value__"), 0, width - 1, width, {}, m);
         return ctx->make<Bitfield>(ctx, node::flatten(attrs, bits, value), width, m);
     }
 

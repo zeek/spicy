@@ -141,7 +141,7 @@ public:
         for ( auto&& p : params )
             p->setIsTypeParameter();
 
-        auto t = ctx->make<Unit>(ctx, node::flatten(nullptr, attrs, nullptr, params, items), std::move(meta));
+        auto* t = ctx->make<Unit>(ctx, node::flatten(nullptr, attrs, nullptr, params, items), std::move(meta));
 
         t->_setSelf(ctx);
         return t;

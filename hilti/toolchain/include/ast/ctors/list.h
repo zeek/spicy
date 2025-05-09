@@ -28,14 +28,15 @@ public:
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     static auto create(ASTContext* ctx, QualifiedType* etype, const Expressions& exprs, Meta meta = {}) {
-        auto stype = QualifiedType::create(ctx, type::List::create(ctx, etype, meta), Constness::Const, meta);
+        auto* stype = QualifiedType::create(ctx, type::List::create(ctx, etype, meta), Constness::Const, meta);
         return ctx->make<List>(ctx, node::flatten(stype, exprs), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, const Expressions& exprs, Meta meta = {}) {
         // Bool is just an arbitrary place-holder type for empty values.
-        auto etype = exprs.empty() ? QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const, meta) :
-                                     QualifiedType::createAuto(ctx, meta);
+        auto* etype = exprs.empty() ?
+                          QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const, meta) :
+                          QualifiedType::createAuto(ctx, meta);
         return create(ctx, etype, exprs, std::move(meta));
     }
 

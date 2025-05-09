@@ -29,18 +29,18 @@ struct VisitorCtor : visitor::PreOrder {
     Ctor* result = nullptr;
 
     void operator()(hilti::ctor::String* n) final {
-        if ( auto x = dst->type()->tryAs<hilti::type::Library>(); x && x->cxxName() == "::spicy::rt::MIMEType" )
+        if ( auto* x = dst->type()->tryAs<hilti::type::Library>(); x && x->cxxName() == "::spicy::rt::MIMEType" )
             result = builder->ctorLibrary(n, dst, n->meta());
     }
 
     void operator()(hilti::ctor::Tuple* n) final {
-        if ( auto x = dst->type()->tryAs<hilti::type::Library>(); x && x->cxxName() == "::spicy::rt::ParserPort" )
+        if ( auto* x = dst->type()->tryAs<hilti::type::Library>(); x && x->cxxName() == "::spicy::rt::ParserPort" )
             result = builder->ctorLibrary(n, dst, n->meta());
     }
 
     void operator()(hilti::ctor::Struct* n) final {
-        if ( auto x = dst->type()->tryAs<spicy::type::Unit>(); x && x->typeID() ) {
-            auto nc = builder->ctorUnit(n->fields(), n->meta());
+        if ( auto* x = dst->type()->tryAs<spicy::type::Unit>(); x && x->typeID() ) {
+            auto* nc = builder->ctorUnit(n->fields(), n->meta());
             // We force the types to match for now, and let the HILTI struct
             // validator decide later if they are actually compatible.
 
@@ -71,7 +71,7 @@ struct VisitorType : visitor::PreOrder {
     QualifiedType* result = nullptr;
 
     void operator()(type::Unit* n) final {
-        if ( auto x = dst->type()->tryAs<hilti::type::StrongReference>();
+        if ( auto* x = dst->type()->tryAs<hilti::type::StrongReference>();
              x && hilti::type::same(x->dereferencedType()->type(), n) )
             // Our codegen will turn a unit T into value_ref<T>, which coerces to strong_ref<T>.
             result = dst;

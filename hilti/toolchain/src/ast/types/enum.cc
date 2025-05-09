@@ -17,7 +17,7 @@ void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
                                 [](const auto& l1, const auto& l2) { return l1->value() < l2->value(); });
     auto next_value = (max != labels.end() ? (*max)->value() + 1 : 0);
 
-    auto enum_type = QualifiedType::createExternal(ctx, as<type::Enum>(), Constness::Mutable);
+    auto* enum_type = QualifiedType::createExternal(ctx, as<type::Enum>(), Constness::Mutable);
 
     for ( auto&& l : labels ) {
         if ( util::tolower(l->id()) == "undef" )
@@ -28,14 +28,15 @@ void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
 
         l->setEnumType(ctx, enum_type);
 
-        auto d = declaration::Constant::create(ctx, l->id(), expression::Ctor::create(ctx, ctor::Enum::create(ctx, l)));
+        auto* d =
+            declaration::Constant::create(ctx, l->id(), expression::Ctor::create(ctx, ctor::Enum::create(ctx, l)));
         addChild(ctx, d);
     }
 
-    auto undef_label = type::enum_::Label::create(ctx, ID("Undef"), -1, meta())->as<type::enum_::Label>();
+    auto* undef_label = type::enum_::Label::create(ctx, ID("Undef"), -1, meta())->as<type::enum_::Label>();
     undef_label->setEnumType(ctx, enum_type);
 
-    auto undef_decl =
+    auto* undef_decl =
         declaration::Constant::create(ctx, undef_label->id(),
                                       expression::Ctor::create(ctx, ctor::Enum::create(ctx, undef_label)));
 
@@ -45,7 +46,7 @@ void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
 type::enum_::Labels type::Enum::labels() const {
     enum_::Labels labels;
 
-    for ( auto d : labelDeclarations() )
+    for ( auto* d : labelDeclarations() )
         labels.emplace_back(
             d->as<declaration::Constant>()->value()->as<expression::Ctor>()->ctor()->as<ctor::Enum>()->value());
 

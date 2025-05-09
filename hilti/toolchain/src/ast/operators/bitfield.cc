@@ -20,7 +20,7 @@ namespace {
 namespace bitfield {
 
 QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
-    if ( auto range =
+    if ( auto* range =
              operands[0]->type()->type()->as<type::Bitfield>()->bits(operands[1]->as<expression::Member>()->id()) )
         return range->itemType();
     else

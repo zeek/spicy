@@ -319,7 +319,7 @@ TEST_CASE("construct") {
     SUBCASE("move") {
         const int x = 42;
         auto ref1 = StrongReference<int>(x);
-        const auto ptr = ref1.get();
+        auto* const ptr = ref1.get();
 
         const auto ref2 = StrongReference<int>(std::move(ref1));
         CHECK_EQ(*ref2, 42);

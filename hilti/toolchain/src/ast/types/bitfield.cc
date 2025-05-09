@@ -35,7 +35,7 @@ Ctor* type::Bitfield::ctorValue(ASTContext* ctx) {
     ctor::bitfield::BitRanges values;
 
     for ( const auto& b : bits() ) {
-        if ( auto v = b->ctorValue() )
+        if ( auto* v = b->ctorValue() )
             values.emplace_back(ctor::bitfield::BitRange::create(ctx, b->id(), v, meta()));
     }
 

@@ -88,7 +88,7 @@ void Manager::summary(std::ostream& out) {
 
     out << "\n=== Execution Time Summary ===\n\n";
 
-    for ( auto ledger : sorted_ledgers )
+    for ( auto* ledger : sorted_ledgers )
         out << fmt("%7.2f%%  ",
                    (100 * static_cast<double>(ledger->_time_used.count()) / static_cast<double>(total_time.count())))
             << fmt("%8s", prettyTimeForUnit(ledger->_time_used, 1e9, "s")) << "   " << ledger->_name << " "

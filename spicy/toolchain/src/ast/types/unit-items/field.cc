@@ -13,16 +13,16 @@ using namespace spicy;
 using namespace spicy::detail;
 
 std::optional<std::pair<Expression*, QualifiedType*>> type::unit::item::Field::convertExpression() const {
-    if ( auto convert = attributes()->find(attribute::kind::Convert) )
+    if ( auto* convert = attributes()->find(attribute::kind::Convert) )
         return std::make_pair(*convert->valueAsExpression(), nullptr);
 
-    auto t = parseType();
+    auto* t = parseType();
 
-    if ( auto x = t->type()->tryAs<hilti::type::ValueReference>() )
+    if ( auto* x = t->type()->tryAs<hilti::type::ValueReference>() )
         t = x->dereferencedType();
 
-    if ( auto x = t->type()->tryAs<type::Unit>() ) {
-        if ( auto convert = x->attributes()->find(attribute::kind::Convert) )
+    if ( auto* x = t->type()->tryAs<type::Unit>() ) {
+        if ( auto* convert = x->attributes()->find(attribute::kind::Convert) )
             return std::make_pair(*convert->valueAsExpression(), t);
     }
 
@@ -70,8 +70,8 @@ Expression* spicy::type::unit::item::Field::size(ASTContext* ctx) const {
     if ( const auto& size = attributes()->find(attribute::kind::Size) )
         return *size->valueAsExpression();
 
-    if ( auto size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(),
-                                              [](const auto& v) { return v.result; }) )
+    if ( auto* size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(),
+                                               [](const auto& v) { return v.result; }) )
         return size;
 
     return nullptr;

@@ -38,7 +38,7 @@ void production::While::preprocessLookAhead(ASTContext* ctx, Grammar* grammar) {
     //
     // This is Left-factored & right-recursive.
     auto unresolved = std::make_unique<production::Deferred>(ctx);
-    auto unresolved_ptr = unresolved.get();
+    auto* unresolved_ptr = unresolved.get();
 
     auto l1 = std::make_unique<production::LookAhead>(ctx, symbol() + "_l1",
                                                       std::make_unique<production::Epsilon>(ctx, location()),

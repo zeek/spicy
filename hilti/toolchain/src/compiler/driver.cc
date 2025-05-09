@@ -227,7 +227,7 @@ Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const
 }
 
 void Driver::dumpUnit(const Unit& unit) {
-    if ( auto module = unit.module() ) {
+    if ( auto* module = unit.module() ) {
         auto output_path = util::fmt("dbg.%s%s.ast", unit.uid().str(), unit.uid().process_extension.native());
         if ( auto out = openOutput(output_path) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving AST for module %s to %s", unit.uid().str(), output_path));
@@ -548,11 +548,11 @@ Result<void*> Driver::_symbol(const std::string& symbol) {
 
     ::dlerror(); // Resets error state.
     // NOLINTNEXTLINE(performance-no-int-to-ptr)
-    auto sym = ::dlsym(RTLD_DEFAULT, symbol.c_str());
+    auto* sym = ::dlsym(RTLD_DEFAULT, symbol.c_str());
 
     // We return an error if the symbol could not be looked up, or if the
     // address of the symbol is `NULL`.
-    if ( auto error = ::dlerror() )
+    if ( auto* error = ::dlerror() )
         return result::Error(error);
     else if ( ! sym )
         return result::Error(util::fmt("address of symbol is %s", sym));

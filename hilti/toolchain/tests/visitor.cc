@@ -19,21 +19,21 @@
 static auto ast() {
     auto ctx = std::make_unique<hilti::ASTContext>(nullptr);
     auto builder = hilti::Builder(ctx.get());
-    auto s =
+    auto* s =
         builder.declarationType(hilti::ID("s"), builder.qualifiedType(builder.typeString(), hilti::Constness::Mutable));
-    auto i32 = builder.declarationType(hilti::ID("i32"),
-                                       builder.qualifiedType(builder.typeSignedInteger(32), hilti::Constness::Mutable));
-    auto d =
+    auto* i32 = builder.declarationType(hilti::ID("i32"), builder.qualifiedType(builder.typeSignedInteger(32),
+                                                                                hilti::Constness::Mutable));
+    auto* d =
         builder.declarationType(hilti::ID("d"), builder.qualifiedType(builder.typeReal(), hilti::Constness::Mutable));
-    auto e = builder.declarationLocalVariable(hilti::ID("e"),
-                                              builder.qualifiedType(builder.typeVoid(), hilti::Constness::Const));
-    auto c = builder.declarationLocalVariable(hilti::ID("c"),
-                                              builder.qualifiedType(builder.typeBool(), hilti::Constness::Mutable),
-                                              builder.expressionCtor(builder.ctorBool(true)));
+    auto* e = builder.declarationLocalVariable(hilti::ID("e"),
+                                               builder.qualifiedType(builder.typeVoid(), hilti::Constness::Const));
+    auto* c = builder.declarationLocalVariable(hilti::ID("c"),
+                                               builder.qualifiedType(builder.typeBool(), hilti::Constness::Mutable),
+                                               builder.expressionCtor(builder.ctorBool(true)));
 
     hilti::Declarations x = {s, i32, d, e, c};
     auto uid = hilti::declaration::module::UID("test", "/tmp/test.hlt");
-    auto m = builder.declarationModule(uid, {}, x);
+    auto* m = builder.declarationModule(uid, {}, x);
     return std::make_pair(std::move(ctx), m);
 }
 
@@ -100,7 +100,7 @@ TEST_CASE("Visitor, pre-order") {
 
     auto [ctx, module] = ast();
     auto v = Visitor();
-    for ( auto i : hilti::visitor::range(v, module) )
+    for ( auto* i : hilti::visitor::range(v, module) )
         v.testDispatch(i);
 
     CHECK(v.x == v.expected);
@@ -134,7 +134,7 @@ TEST_CASE("Visitor, pre-order") {
 
     auto [ctx, module] = ast();
     auto v = Visitor();
-    for ( auto i : hilti::visitor::range(v, module) )
+    for ( auto* i : hilti::visitor::range(v, module) )
         v.testDispatch(i);
 
     CHECK(v.x == v.expected);
@@ -176,7 +176,7 @@ TEST_CASE("Copy node by value on insert") {
     hilti::Declaration* d =
         builder.declarationType(hilti::ID("x"), builder.qualifiedType(builder.typeString(), hilti::Constness::Mutable));
     auto uid = hilti::declaration::module::UID("m", "/tmp/m.hlt");
-    auto m = builder.declarationModule(uid, {}, {d});
+    auto* m = builder.declarationModule(uid, {}, {d});
     REQUIRE(m->declarations().size() == 1);
     CHECK(m->declarations()[0] == d); // same object was inserted, not copied
     m->add(ctx.get(), d);

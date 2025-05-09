@@ -65,7 +65,7 @@ public:
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     static auto create(ASTContext* ctx, Expression* expr, Meta meta = {}) {
-        auto auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
+        auto* auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
         return ctx->make<ValueReference>(ctx, {auto_, expr}, std::move(meta));
     }
 

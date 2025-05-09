@@ -141,7 +141,7 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
 
     std::vector<sink::detail::State*> states;
     states.reserve(_states.size());
-    for ( auto s : _states ) {
+    for ( auto* s : _states ) {
         if ( s->skip_delivery )
             continue;
 
@@ -151,7 +151,7 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
         states.push_back(s);
     }
 
-    for ( auto s : states ) {
+    for ( auto* s : states ) {
         if ( states.size() == 1 )
             s->data->append(std::move(*data));
         else
@@ -415,7 +415,7 @@ void Sink::_close(bool orderly) {
         SPICY_RT_DEBUG_VERBOSE(
             fmt("closing sink, disconnecting parsers from sink %p%s", this, (orderly ? "" : " (abort)")));
 
-        for ( auto s : _states ) {
+        for ( auto* s : _states ) {
             if ( ! s->resumable ) {
                 s->data->freeze();
 

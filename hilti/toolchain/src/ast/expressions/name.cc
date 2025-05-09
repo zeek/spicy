@@ -24,8 +24,8 @@ QualifiedType* expression::Name::type() const {
         void operator()(declaration::Type* n) final { result = name->child<QualifiedType>(0); }
     };
 
-    if ( auto decl = _context->lookup(_resolved_declaration_index) ) {
-        if ( auto type = visitor::dispatch(Visitor(this), decl, [](const auto& x) { return x.result; }) )
+    if ( auto* decl = _context->lookup(_resolved_declaration_index) ) {
+        if ( auto* type = visitor::dispatch(Visitor(this), decl, [](const auto& x) { return x.result; }) )
             return type;
         else
             logger().internalError(util::fmt("unsupported declaration type %s", decl->typename_()), this);
@@ -43,7 +43,7 @@ void expression::Name::setResolvedDeclarationIndex(ASTContext* ctx, ast::Declara
 
     // Special-case: If the ID refers to a type declaration, we want the
     // expression type to be `type::Type_`, wrapping the target type.
-    if ( auto d = resolvedDeclaration()->tryAs<declaration::Type>() )
+    if ( auto* d = resolvedDeclaration()->tryAs<declaration::Type>() )
         addChild(ctx,
                  QualifiedType::create(ctx,
                                        type::Type_::create(ctx, QualifiedType::createExternal(ctx, d->type()->type(),
@@ -56,7 +56,7 @@ node::Properties expression::Name::properties() const {
                               {"fqid", _fqid},
                               {"resolved-declaration", to_string(_resolved_declaration_index)}};
 
-    if ( auto t = type() )
+    if ( auto* t = type() )
         p["resolved-unified"] = t->type()->unification().str();
     else
         p["resolved-unified"] = "-";

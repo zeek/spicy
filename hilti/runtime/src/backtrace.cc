@@ -27,9 +27,9 @@ std::unique_ptr<std::vector<std::string>> Backtrace::backtrace() const {
     }
 
     for ( auto i = 0; i < _frames; i++ ) {
-        auto p1 = strchr(strings[i], '(');
-        auto p2 = p1 ? strchr(p1, '+') : nullptr;
-        auto p3 = p2 ? strchr(p2, ')') : nullptr;
+        auto* p1 = strchr(strings[i], '(');
+        auto* p2 = p1 ? strchr(p1, '+') : nullptr;
+        auto* p3 = p2 ? strchr(p2, ')') : nullptr;
         if ( p1 && p2 && p3 ) {
             *p2 = '\0';
             bt->push_back(fmt("# %s %s", p3 + 2, demangle(p1 + 1)));

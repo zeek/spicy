@@ -44,20 +44,20 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     auto methodArguments(const expression::ResolvedOperator* o) {
-        auto ops = o->op2();
+        auto* ops = o->op2();
 
         // If the argument list was the result of a coercion unpack its result.
-        if ( auto coerced = ops->tryAs<expression::Coerced>() )
+        if ( auto* coerced = ops->tryAs<expression::Coerced>() )
             ops = coerced->expression();
 
-        if ( auto ctor_ = ops->tryAs<expression::Ctor>() ) {
-            auto ctor = ctor_->ctor();
+        if ( auto* ctor_ = ops->tryAs<expression::Ctor>() ) {
+            auto* ctor = ctor_->ctor();
 
             // If the argument was the result of a coercion unpack its result.
-            if ( auto x = ctor->tryAs<ctor::Coerced>() )
+            if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                 ctor = x->coercedCtor();
 
-            if ( auto args = ctor->tryAs<ctor::Tuple>() )
+            if ( auto* args = ctor->tryAs<ctor::Tuple>() )
                 return std::make_pair(op0(o), compileExpressions(args->value()));
         }
 
@@ -65,18 +65,18 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     auto tupleArguments(expression::ResolvedOperator* o, Expression* op) {
-        auto ctor = op->as<expression::Ctor>()->ctor();
+        auto* ctor = op->as<expression::Ctor>()->ctor();
 
-        if ( auto x = ctor->tryAs<ctor::Coerced>() )
+        if ( auto* x = ctor->tryAs<ctor::Coerced>() )
             ctor = x->coercedCtor();
 
         return compileExpressions(ctor->as<ctor::Tuple>()->value());
     }
 
     auto tupleArgumentType(Expression* op, int i) {
-        auto ctor = op->as<expression::Ctor>()->ctor();
+        auto* ctor = op->as<expression::Ctor>()->ctor();
 
-        if ( auto x = ctor->tryAs<ctor::Coerced>() )
+        if ( auto* x = ctor->tryAs<ctor::Coerced>() )
             ctor = x->coercedCtor();
 
         return ctor->as<ctor::Tuple>()->value()[i]->type();
@@ -291,24 +291,24 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::enum_::Unequal* n) final { result = binary(n, "!="); }
 
     void operator()(operator_::enum_::CastToSignedInteger* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s.value())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     void operator()(operator_::enum_::CastToUnsignedInteger* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s.value())", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     void operator()(operator_::enum_::CtorSigned* n) final {
         auto args = tupleArguments(n, n->op1());
-        auto t = n->op0()->type();
+        auto* t = n->op0()->type();
         result = fmt("%s{%s}", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     void operator()(operator_::enum_::CtorUnsigned* n) final {
         auto args = tupleArguments(n, n->op1());
-        auto t = n->op0()->type();
+        auto* t = n->op0()->type();
         result = fmt("%s{%s}", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
@@ -348,12 +348,12 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::function::Call* n) final {
         // 1st operand directly references a function, validator ensures that.
-        auto decl = cg->context()->astContext()->lookup(n->op0()->as<expression::Name>()->resolvedDeclarationIndex());
-        auto f = decl->as<declaration::Function>();
+        auto* decl = cg->context()->astContext()->lookup(n->op0()->as<expression::Name>()->resolvedDeclarationIndex());
+        auto* f = decl->as<declaration::Function>();
 
         auto name = op0(n);
 
-        if ( auto a = f->function()->attributes()->find(hilti::attribute::kind::Cxxname) ) {
+        if ( auto* a = f->function()->attributes()->find(hilti::attribute::kind::Cxxname) ) {
             if ( auto s = a->valueAsString() )
                 name = cxx::Expression(*s);
             else
@@ -498,12 +498,12 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::real::Unequal* n) final { result = binary(n, "!="); }
 
     void operator()(operator_::real::CastToSignedInteger* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     void operator()(operator_::real::CastToUnsignedInteger* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
@@ -543,12 +543,12 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::generic::New* n) final {
-        auto t = n->op0()->type()->type();
+        auto* t = n->op0()->type()->type();
 
-        if ( auto tv = t->tryAs<type::Type_>() ) {
-            auto ctor = n->op1()->as<expression::Ctor>()->ctor();
+        if ( auto* tv = t->tryAs<type::Type_>() ) {
+            auto* ctor = n->op1()->as<expression::Ctor>()->ctor();
 
-            if ( auto x = ctor->tryAs<ctor::Coerced>() )
+            if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                 ctor = x->coercedCtor();
 
             std::string args;
@@ -791,7 +791,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::string::Modulo* n) final {
         if ( n->op1()->type()->type()->isA<type::Tuple>() ) {
-            if ( auto ctor = n->op1()->tryAs<expression::Ctor>() ) {
+            if ( auto* ctor = n->op1()->tryAs<expression::Ctor>() ) {
                 auto t = ctor->ctor()->as<ctor::Tuple>()->value();
                 result = fmt("::hilti::rt::fmt(%s, %s)", op0(n),
                              util::join(node::transform(t, [this](auto x) { return cg->compile(x); }), ", "));
@@ -863,12 +863,12 @@ struct Visitor : hilti::visitor::PreOrder {
         const auto& id = o->op1()->as<expression::Member>()->id();
         auto attr = memberAccess(o, id);
 
-        auto type = op0->type()->type();
+        auto* type = op0->type()->type();
         if ( type->isReferenceType() )
             type = type->dereferencedType()->type();
 
-        if ( auto f = type->as<type::Struct>()->field(id); f->isOptional() ) {
-            auto d = f->default_();
+        if ( auto* f = type->as<type::Struct>()->field(id); f->isOptional() ) {
+            auto* d = f->default_();
 
             if ( lhs ) {
                 if ( d )
@@ -891,10 +891,10 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::struct_::MemberCall* n) final {
         const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
-        auto fdecl = op.declaration();
+        auto* fdecl = op.declaration();
         assert(fdecl);
 
-        auto ft = fdecl->type()->type()->as<type::Function>();
+        auto* ft = fdecl->type()->type()->as<type::Function>();
         auto args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         const auto& id = n->op1()->as<expression::Member>()->id();
 
@@ -917,7 +917,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::struct_::HasMember* n) final {
         const auto& id = n->op1()->as<expression::Member>()->id();
 
-        if ( auto f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() )
+        if ( auto* f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() )
             result = fmt("%s.has_value()", memberAccess(n, id));
         else
             result = "true";
@@ -927,10 +927,10 @@ struct Visitor : hilti::visitor::PreOrder {
         const auto& id = n->op1()->as<expression::Member>()->id();
         assert(! lhs);
 
-        if ( auto f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() ) {
+        if ( auto* f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() ) {
             auto attr = memberAccess(n, id);
 
-            if ( auto d = f->default_() )
+            if ( auto* d = f->default_() )
                 result = memberAccess(n, fmt("value_or(%s)", cg->compile(d)));
             else
                 result = fmt("::hilti::rt::struct_::value_or_exception(%s)", attr);
@@ -982,7 +982,7 @@ struct Visitor : hilti::visitor::PreOrder {
                      op0(n));
     }
     void operator()(operator_::signed_integer::CastToEnum* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("::hilti::rt::enum_::from_int<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
     void operator()(operator_::signed_integer::DecrPostfix* n) final { result = fmt("%s--", op0(n)); }
@@ -1010,17 +1010,17 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::signed_integer::Unequal* n) final { result = fmt("%s != %s", op0(n), op1(n)); }
 
     void operator()(operator_::signed_integer::CastToSigned* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     void operator()(operator_::signed_integer::CastToUnsigned* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     void operator()(operator_::signed_integer::CastToReal* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
@@ -1133,7 +1133,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::unsigned_integer::BitXor* n) final { result = fmt("(%s ^ %s)", op0(n), op1(n)); }
     void operator()(operator_::unsigned_integer::CastToBool* n) final { result = fmt("::hilti::rt::Bool(%s)", op0(n)); }
     void operator()(operator_::unsigned_integer::CastToEnum* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
     void operator()(operator_::unsigned_integer::CastToInterval* n) final {
@@ -1176,17 +1176,17 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::unsigned_integer::Unequal* n) final { result = fmt("%s != %s", op0(n), op1(n)); }
 
     void operator()(operator_::unsigned_integer::CastToSigned* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     void operator()(operator_::unsigned_integer::CastToUnsigned* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 
     void operator()(operator_::unsigned_integer::CastToReal* n) final {
-        auto t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
+        auto* t = n->op1()->type()->type()->as<type::Type_>()->typeValue();
         result = fmt("static_cast<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
 

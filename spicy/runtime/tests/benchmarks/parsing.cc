@@ -36,7 +36,7 @@ static void benchmarkParser(benchmark::State& state, Args&&... args) {
     spicy::rt::init();
 
     const spicy::rt::Parser* parser = nullptr;
-    for ( auto* p : spicy::rt::parsers() ) {
+    for ( const auto* p : spicy::rt::parsers() ) {
         if ( p->name == parser_name ) {
             parser = p;
             break;

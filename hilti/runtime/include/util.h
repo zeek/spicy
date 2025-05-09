@@ -593,7 +593,7 @@ public:
     TemporaryDirectory() {
         const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
         auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();
-        auto path = ::mkdtemp(template_.data());
+        auto* path = ::mkdtemp(template_.data());
         if ( ! path )
             throw RuntimeError("cannot create temporary directory");
 

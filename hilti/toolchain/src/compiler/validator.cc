@@ -143,7 +143,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( ! attributes )
             return;
 
-        if ( auto current_module = n->parent<declaration::Module>();
+        if ( auto* current_module = n->parent<declaration::Module>();
              current_module && current_module->uid().process_extension != ".hlt" )
             return;
 
@@ -171,7 +171,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             return result::Error(fmt("type '%s' is not sortable", *t));
 
         // Sortability of tuples requires sortable element types.
-        if ( auto tt = t->type()->tryAs<type::Tuple>() ) {
+        if ( auto* tt = t->type()->tryAs<type::Tuple>() ) {
             for ( const auto& e : tt->elements() ) {
                 if ( auto rc = isSortable(e->type()); ! rc )
                     return rc;
@@ -210,13 +210,13 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 const auto& node = sorted_nodes[i];
 
                 // Functions can legitimately be overloaded most of the time.
-                if ( auto current_decl = node->tryAs<declaration::Function>();
+                if ( auto* current_decl = node->tryAs<declaration::Function>();
                      current_decl && first_node->isA<declaration::Function>() ) {
                     // Try all previous nodes and see if this is a valid overload for each
                     for ( std::size_t j = 0; j < i; j++ ) {
-                        if ( auto previous_decl = sorted_nodes[j]->tryAs<declaration::Function>() ) {
-                            auto current_fn_ty = current_decl->function()->ftype();
-                            auto previous_fn_ty = previous_decl->function()->ftype();
+                        if ( auto* previous_decl = sorted_nodes[j]->tryAs<declaration::Function>() ) {
+                            auto* current_fn_ty = current_decl->function()->ftype();
+                            auto* previous_fn_ty = previous_decl->function()->ftype();
 
                             if ( current_fn_ty->flavor() == type::function::Flavor::Hook &&
                                  current_fn_ty->flavor() == previous_fn_ty->flavor() )
@@ -246,9 +246,9 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(Function* n) final {
         checkNodeAttributes(n, n->attributes(), "function");
 
-        if ( auto attrs = n->attributes() ) {
+        if ( auto* attrs = n->attributes() ) {
             auto is_hook = n->ftype()->flavor() == type::function::Flavor::Hook;
-            if ( auto prio = attrs->find(hilti::attribute::kind::Priority) ) {
+            if ( auto* prio = attrs->find(hilti::attribute::kind::Priority) ) {
                 if ( ! is_hook )
                     error("only hooks can have priorities", n);
 
@@ -300,7 +300,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(declaration::LocalVariable* n) final {
         checkDeclarationType(n, n->type());
 
-        if ( auto t = n->type()->type();
+        if ( auto* t = n->type()->type();
              ! t->isAllocable() && ! t->isA<type::Unknown>() ) // unknown will be reported elsewhere
             error(fmt("type '%s' cannot be used for variable declaration", *n->type()), n);
 
@@ -312,7 +312,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             // part of another statement (like if/while/...) where
             // initialization happens internally.
             if ( ! n->typeArguments().empty() ) {
-                auto t = n->type();
+                auto* t = n->type();
 
                 if ( t->type()->isReferenceType() )
                     t = t->type()->dereferencedType();
@@ -349,7 +349,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
 
         if ( n->type()->isWildcard() ) {
-            if ( auto d = n->parent(4)->tryAs<declaration::Function>() ) {
+            if ( auto* d = n->parent(4)->tryAs<declaration::Function>() ) {
                 if ( ! d->function()->attributes()->has(hilti::attribute::kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
                               "functions declared with &cxxname",
@@ -357,7 +357,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                           n);
             }
 
-            if ( auto d = n->parent(4)->tryAs<declaration::Type>() ) {
+            if ( auto* d = n->parent(4)->tryAs<declaration::Type>() ) {
                 if ( ! d->attributes()->has(hilti::attribute::kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
                               "library structs declared with &cxxname",
@@ -366,7 +366,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
         }
 
-        if ( auto attrs = n->attributes() )
+        if ( auto* attrs = n->attributes() )
             for ( const auto& attr : attrs->attributes() ) {
                 if ( attr->kind() == hilti::attribute::kind::RequiresTypeFeature ) {
                     if ( auto x = attr->valueAsString(); ! x )
@@ -378,7 +378,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(declaration::GlobalVariable* n) final {
         checkDeclarationType(n, n->type());
 
-        if ( auto t = n->type()->type();
+        if ( auto* t = n->type()->type();
              ! t->isAllocable() && ! t->isA<type::Unknown>() ) // unknown will be reported elsewhere
             error(fmt("type '%s' cannot be used for variable declaration", *n->type()), n);
 
@@ -397,9 +397,9 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     ////// Ctors
 
     void operator()(ctor::Default* n) final {
-        auto t = n->type()->type();
+        auto* t = n->type()->type();
 
-        if ( auto vr = t->tryAs<type::ValueReference>() )
+        if ( auto* vr = t->tryAs<type::ValueReference>() )
             t = vr->dereferencedType()->type();
 
         if ( auto args = n->typeArguments(); args.size() ) {
@@ -412,7 +412,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(hilti::ctor::Exception* n) final {
-        if ( auto x = n->value()->tryAs<hilti::expression::Ctor>() )
+        if ( auto* x = n->value()->tryAs<hilti::expression::Ctor>() )
             if ( ! x->type()->type()->isA<type::String>() )
                 error("exceptions need to be a string", n);
     }
@@ -423,7 +423,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             // and those may coerce them into the right type even if the
             // elements aren't consistent. We assume we are all good in that
             // case.
-            if ( auto c = n->parent()->tryAs<ctor::Coerced>(); ! c || c->type()->type()->isA<type::Unknown>() )
+            if ( auto* c = n->parent()->tryAs<ctor::Coerced>(); ! c || c->type()->type()->isA<type::Unknown>() )
                 error("list elements have inconsistent types", n);
         }
     }
@@ -508,8 +508,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
         }
 
-        if ( auto decl = n->resolvedDeclaration() ) {
-            if ( auto parent = n->parent<Declaration>();
+        if ( auto* decl = n->resolvedDeclaration() ) {
+            if ( auto* parent = n->parent<Declaration>();
                  decl == parent && ! decl->isA<declaration::Function>() && n->id() != ID("__dd") ) {
                 error(fmt("ID '%s' cannot be used inside its own declaration", n->id()), n);
                 return;
@@ -517,7 +517,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
         else {
             // We prefer the error message from a parent's unresolved call operator.
-            auto op = n->parent()->tryAs<expression::UnresolvedOperator>();
+            auto* op = n->parent()->tryAs<expression::UnresolvedOperator>();
             if ( ! op || op->kind() != operator_::Kind::Call )
                 error(fmt("unknown ID '%s'", n->id()), n);
         }
@@ -536,8 +536,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(statement::Break* n) final {
-        auto w = n->parent<statement::While>();
-        auto f = n->parent<statement::For>();
+        auto* w = n->parent<statement::While>();
+        auto* f = n->parent<statement::For>();
 
         if ( ! (f || w) ) {
             error("'break' outside of loop", n);
@@ -546,8 +546,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(statement::Continue* n) final {
-        auto w = n->parent<statement::While>();
-        auto f = n->parent<statement::For>();
+        auto* w = n->parent<statement::While>();
+        auto* f = n->parent<statement::For>();
 
         if ( ! (f || w) ) {
             error("'continue' outside of loop", n);
@@ -556,7 +556,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(statement::Return* n) final {
-        auto func = n->parent<Function>();
+        auto* func = n->parent<Function>();
 
         if ( ! func ) {
             error("'return' outside of function", n);
@@ -576,7 +576,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(statement::Switch* n) final {}
 
     void operator()(statement::Throw* n) final {
-        if ( auto e = n->expression() ) {
+        if ( auto* e = n->expression() ) {
             if ( ! e->type()->type()->isA<type::Exception>() ) {
                 error("'throw' argument must be an exception", n);
             }
@@ -631,7 +631,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             if ( auto [valid, candidates] = operator_::registry().functionCallCandidates(n);
                  valid && ! candidates->empty() ) {
                 context.emplace_back("candidates:");
-                for ( auto op : *candidates )
+                for ( const auto* op : *candidates )
                     context.emplace_back(util::fmt("- %s", op->print()));
             }
 
@@ -645,11 +645,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                  ! candidates.empty() ) {
                 // Apply heuristic on op0 to limit the candidates reported.
                 std::vector<std::string> cands;
-                for ( auto op : candidates ) {
+                for ( const auto* op : candidates ) {
                     if ( type::same(op->op0()->type()->type(), n->op0()->type()->type()) )
                         cands.emplace_back(util::fmt("- %s", op->print()));
                     else {
-                        if ( auto vt = n->op0()->type()->type()->tryAs<type::ValueReference>();
+                        if ( auto* vt = n->op0()->type()->type()->tryAs<type::ValueReference>();
                              vt && type::same(op->op0()->type()->type(), vt->dereferencedType()->type()) )
                             cands.emplace_back(util::fmt("- %s", op->print()));
                     }
@@ -682,14 +682,14 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( upper >= n->fieldWidth() )
             error("upper limit is beyond the width of the bitfield", n);
 
-        if ( auto expr = n->ctorValue() ) {
-            if ( auto expr_ = expr->tryAs<expression::Ctor>() ) {
-                auto ctor = expr_->ctor();
+        if ( auto* expr = n->ctorValue() ) {
+            if ( auto* expr_ = expr->tryAs<expression::Ctor>() ) {
+                auto* ctor = expr_->ctor();
 
-                if ( auto x = ctor->tryAs<ctor::Coerced>() )
+                if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                     ctor = x->coercedCtor();
 
-                if ( auto i = ctor->tryAs<ctor::UnsignedInteger>() ) {
+                if ( auto* i = ctor->tryAs<ctor::UnsignedInteger>() ) {
                     if ( i->value() > (1U << (upper - lower + 1)) - 1 )
                         error("value is outside of bitfield element's range", n);
                 }
@@ -716,7 +716,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     void operator()(type::Function* n) final {
         if ( n->flavor() == type::function::Flavor::Hook ) {
-            auto r = n->result()->type();
+            auto* r = n->result()->type();
             if ( ! (r->isA<type::Void>() || r->isA<type::Optional>()) )
                 error(fmt("hooks must have return type either void or optional<T>"), n);
         }
@@ -787,12 +787,12 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             if ( f->isStatic() && f->default_() )
                 error("&default is currently not supported for static fields", n);
 
-            if ( auto d = f->default_(); d && ! type::sameExceptForConstness(d->type(), f->type()) )
+            if ( auto* d = f->default_(); d && ! type::sameExceptForConstness(d->type(), f->type()) )
                 error(fmt("type mismatch for &default expression, expecting type %s, got %s", *f->type(), *d->type()),
                       n);
 
             if ( f->id().str() == "~finally" ) {
-                auto ft = f->type()->type()->tryAs<type::Function>();
+                auto* ft = f->type()->type()->tryAs<type::Function>();
                 if ( ! ft ) {
                     error("~finally must be a hook", n);
                     continue;
@@ -857,12 +857,12 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     void operator()(operator_::generic::New* n) final {
         // We reuse checkTypeArguments() here, that's why this operator is covered here.
-        if ( auto t = n->operands()[0]->type()->type()->tryAs<type::Type_>() ) {
+        if ( auto* t = n->operands()[0]->type()->type()->tryAs<type::Type_>() ) {
             if ( ! t->typeValue()->type()->parameters().empty() ) {
                 node::Range<Expression> args;
                 if ( n->operands().size() > 1 ) {
-                    auto ctor = n->operands()[1]->as<expression::Ctor>()->ctor();
-                    if ( auto x = ctor->tryAs<ctor::Coerced>() )
+                    auto* ctor = n->operands()[1]->as<expression::Ctor>()->ctor();
+                    if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                         ctor = x->coercedCtor();
 
                     args = ctor->as<ctor::Tuple>()->value();

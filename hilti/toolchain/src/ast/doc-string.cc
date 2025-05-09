@@ -48,7 +48,7 @@ std::string DocString::dump() const {
 
     auto summary_ = util::join(summary(), " ");
     if ( ! summary_.empty() ) {
-        auto summary_dots = (summary_.size() > max_doc || summary().size() > 1 ? "..." : "");
+        const auto* summary_dots = (summary_.size() > max_doc || summary().size() > 1 ? "..." : "");
         rendering += util::fmt(R"(summary: "%s%s")", summary_.substr(0, max_doc), summary_dots);
     }
 
@@ -57,7 +57,7 @@ std::string DocString::dump() const {
         if ( ! rendering.empty() )
             rendering += " ";
 
-        auto text_dots = (text_.size() > max_doc || text().size() > 1 ? "..." : "");
+        const auto* text_dots = (text_.size() > max_doc || text().size() > 1 ? "..." : "");
         rendering += util::fmt(R"(doc: "%s%s")", text_.substr(0, max_doc), text_dots);
     }
 

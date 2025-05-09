@@ -17,7 +17,7 @@ public:
     auto attributes() const { return child<AttributeSet>(1); }
 
     bool isOnHeap() const {
-        if ( auto x = attributes() )
+        if ( auto* x = attributes() )
             return x->find(hilti::attribute::kind::OnHeap) != nullptr;
         else
             return false;

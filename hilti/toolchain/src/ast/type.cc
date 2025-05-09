@@ -17,14 +17,14 @@ declaration::Type* UnqualifiedType::typeDeclaration() const {
 }
 
 ID UnqualifiedType::typeID() const {
-    if ( auto decl = typeDeclaration(); decl && decl->fullyQualifiedID() )
+    if ( auto* decl = typeDeclaration(); decl && decl->fullyQualifiedID() )
         return decl->fullyQualifiedID();
 
     return ID();
 }
 
 ID UnqualifiedType::canonicalID() const {
-    if ( auto decl = typeDeclaration(); decl && decl->canonicalID() )
+    if ( auto* decl = typeDeclaration(); decl && decl->canonicalID() )
         return decl->canonicalID();
 
     return ID();
@@ -38,8 +38,8 @@ bool UnqualifiedType::isOnHeap() const {
 }
 
 ID UnqualifiedType::cxxID() const {
-    if ( auto decl = typeDeclaration() ) {
-        if ( auto a = decl->attributes()->find(hilti::attribute::kind::Cxxname) )
+    if ( auto* decl = typeDeclaration() ) {
+        if ( auto* a = decl->attributes()->find(hilti::attribute::kind::Cxxname) )
             return ID{*a->valueAsString()};
     }
 
@@ -70,7 +70,7 @@ bool QualifiedType::isResolved(node::CycleDetector* cd) const {
     if ( cd && cd->haveSeen(this) )
         return true;
 
-    auto t = _type();
+    auto* t = _type();
 
     if ( _external && ! cd ) {
         node::CycleDetector cd;
@@ -89,9 +89,9 @@ bool QualifiedType::isAuto() const { return type()->isA<type::Auto>(); }
 type::Name* QualifiedType::alias() const { return _type()->tryAs<type::Name>(); }
 
 hilti::node::Properties QualifiedType::properties() const {
-    auto side = (_side == Side::LHS ? "lhs" : "rhs");
-    auto constness = (_constness == Constness::Const ? "true" : "false");
-    auto external = (_external ? "true" : "false");
+    const auto* side = (_side == Side::LHS ? "lhs" : "rhs");
+    const auto* constness = (_constness == Constness::Const ? "true" : "false");
+    const auto* external = (_external ? "true" : "false");
     return {{"const", constness}, {"side", side}, {"extern", external}};
 }
 
@@ -101,8 +101,8 @@ std::string QualifiedType::_dump() const {
 }
 
 UnqualifiedType* type::follow(UnqualifiedType* t) {
-    if ( auto n = t->tryAs<type::Name>() ) {
-        if ( auto r = n->resolvedType() )
+    if ( auto* n = t->tryAs<type::Name>() ) {
+        if ( auto* r = n->resolvedType() )
             return r;
     }
 

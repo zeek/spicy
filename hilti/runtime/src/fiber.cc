@@ -122,8 +122,8 @@ void __fiber_switch_trampoline(void* argsp) {
     auto* args = reinterpret_cast<SwitchArgs*>(argsp);
     detail::Fiber::_finishSwitchFiber("stack-switcher");
 
-    auto from = args->from;
-    auto to = args->to;
+    auto* from = args->from;
+    auto* to = args->to;
     // Explicitly put the log message on the stack to work around ASAN false positives on macos.
     if ( detail::unsafeGlobalState()->debug_logger &&
          detail::unsafeGlobalState()->debug_logger->isEnabled(debug_stream_fibers) ) {
@@ -215,7 +215,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             break;
 
         case Type::SharedStack: {
-            auto shared_stack = context::detail::get()->fiber.shared_stack.get();
+            auto* shared_stack = context::detail::get()->fiber.shared_stack.get();
             ::fiber_init(_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, this);
 
 #ifdef HILTI_HAVE_ASAN
@@ -287,8 +287,8 @@ std::pair<char*, char*> detail::StackBuffer::activeRegion() const {
     // probably gong to be growing downwards pretty much everywhere, but to be
     // safe we whitelist platforms that we have confirmed to do so.
 #if __x86_64__ || __arm__ || __arm64__ || __aarch64__ || __i386__
-    auto lower = reinterpret_cast<char*>(_fiber->regs.sp);
-    auto upper = reinterpret_cast<char*>(_fiber->regs.sp) + fiber_stack_used_size(_fiber);
+    auto* lower = reinterpret_cast<char*>(_fiber->regs.sp);
+    auto* upper = reinterpret_cast<char*>(_fiber->regs.sp) + fiber_stack_used_size(_fiber);
 #else
 #error "unsupported architecture in hilti::rt::detail::StackBuffer::activeRegion"
 #endif
@@ -297,7 +297,7 @@ std::pair<char*, char*> detail::StackBuffer::activeRegion() const {
 }
 
 std::pair<char*, char*> detail::StackBuffer::allocatedRegion() const {
-    auto lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
+    auto* lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
     return std::make_pair(lower, lower + ::fiber_stack_size(_fiber));
 }
 
@@ -309,8 +309,8 @@ size_t detail::StackBuffer::liveRemainingSize() const {
     // See
     // https://stackoverflow.com/questions/20059673/print-out-value-of-stack-pointer
     // for discussion of how to get stack pointer.
-    auto sp = reinterpret_cast<char*>(__builtin_frame_address(0));
-    auto lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
+    auto* sp = reinterpret_cast<char*>(__builtin_frame_address(0));
+    auto* lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
 
     // Double-check we're pointing into the right space (ignore for the main
     // fiber as our upper bound might not be quite right, and hence the current
@@ -433,8 +433,8 @@ void detail::Fiber::_activate(const char* tag) {
         args.to = this;
 
         // Reinitialize fiber with same stack.
-        auto fiber = stack_switcher->_fiber.get();
-        auto saved_alloc_stack = fiber->alloc_stack; // fiber_init() resets this
+        auto* fiber = stack_switcher->_fiber.get();
+        auto* saved_alloc_stack = fiber->alloc_stack; // fiber_init() resets this
         ::fiber_init(fiber, ::fiber_stack(fiber), ::fiber_stack_size(fiber), fiber_bottom_abort, this);
         ::fiber_push_return(fiber, __fiber_switch_trampoline, &args, sizeof(args));
         fiber->alloc_stack = saved_alloc_stack;
@@ -469,8 +469,8 @@ void detail::Fiber::_yield(const char* tag) {
         args.to = _caller;
 
         // Reinitialize fiber with same stack.
-        auto fiber = stack_switcher->_fiber.get();
-        auto saved_alloc_stack = fiber->alloc_stack; // fiber_init() resets this
+        auto* fiber = stack_switcher->_fiber.get();
+        auto* saved_alloc_stack = fiber->alloc_stack; // fiber_init() resets this
         ::fiber_init(fiber, ::fiber_stack(fiber), ::fiber_stack_size(fiber), fiber_bottom_abort, this);
         ::fiber_push_return(fiber, __fiber_switch_trampoline, &args, sizeof(args));
         fiber->alloc_stack = saved_alloc_stack;
@@ -611,7 +611,7 @@ void detail::Fiber::reset() {
 void Resumable::run() {
     checkFiber("run");
 
-    auto old = context::detail::get()->resumable;
+    auto* old = context::detail::get()->resumable;
     context::detail::get()->resumable = handle();
     _fiber->run();
     context::detail::get()->resumable = old;
@@ -622,7 +622,7 @@ void Resumable::run() {
 void Resumable::resume() {
     checkFiber("resume");
 
-    auto old = context::detail::get()->resumable;
+    auto* old = context::detail::get()->resumable;
     context::detail::get()->resumable = handle();
     _fiber->resume();
     context::detail::get()->resumable = old;
@@ -634,7 +634,7 @@ void Resumable::abort() {
     if ( ! _fiber )
         return;
 
-    auto old = context::detail::get()->resumable;
+    auto* old = context::detail::get()->resumable;
     context::detail::get()->resumable = handle();
     _fiber->abort();
     context::detail::get()->resumable = old;
@@ -665,7 +665,7 @@ void Resumable::yielded() {
 }
 
 void detail::yield() {
-    auto r = context::detail::get()->resumable;
+    auto* r = context::detail::get()->resumable;
 
     if ( ! r )
         throw RuntimeError("'yield' in non-suspendable context");

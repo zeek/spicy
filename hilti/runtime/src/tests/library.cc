@@ -34,7 +34,7 @@ const hilti::rt::filesystem::path dummy2 =
 class Env {
 public:
     Env(std::string k, const std::string_view& v) {
-        if ( auto prev = ::getenv(k.data()) )
+        if ( auto* prev = ::getenv(k.data()) )
             _prev = {k, prev};
         else
             _prev = {k, std::nullopt};

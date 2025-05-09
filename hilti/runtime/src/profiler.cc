@@ -89,8 +89,8 @@ std::optional<Measurement> profiler::get(const std::string& name) {
 }
 
 void profiler::report() {
-    static const auto fmt_header = "#%-49s %10s %10s %10s %10s %15s\n";
-    static const auto fmt_data = "%-50s %10" PRIu64 " %10" PRIu64 " %10.2f %10.2f %15s\n";
+    static const auto* const fmt_header = "#%-49s %10s %10s %10s %10s %15s\n";
+    static const auto* const fmt_data = "%-50s %10" PRIu64 " %10" PRIu64 " %10.2f %10.2f %15s\n";
 
     const auto& profilers = rt::detail::globalState()->profilers;
 

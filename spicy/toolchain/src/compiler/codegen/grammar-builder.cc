@@ -46,7 +46,7 @@ struct Visitor : public visitor::PreOrder {
     auto context() const { return pf->cg->context(); }
 
     std::unique_ptr<Production> productionForItem(Node* item) {
-        auto field = item->tryAs<spicy::type::unit::item::Field>();
+        auto* field = item->tryAs<spicy::type::unit::item::Field>();
         if ( field )
             pf->pushField(field);
 
@@ -75,15 +75,15 @@ struct Visitor : public visitor::PreOrder {
         const auto& loc = n->location();
         const auto& field = pf->currentField();
         auto id = pf->cg->uniquer()->get(field->id());
-        auto eod = field->attributes()->find(attribute::kind::Eod);
-        auto count = field->attributes()->find(attribute::kind::Count);
-        auto size = field->attributes()->find(attribute::kind::Size);
-        auto parse_at = field->attributes()->find(attribute::kind::ParseAt);
-        auto parse_from = field->attributes()->find(attribute::kind::ParseFrom);
-        auto until = field->attributes()->find(attribute::kind::Until);
-        auto until_including = field->attributes()->find(attribute::kind::UntilIncluding);
-        auto while_ = field->attributes()->find(attribute::kind::While);
-        auto repeat = field->repeatCount();
+        auto* eod = field->attributes()->find(attribute::kind::Eod);
+        auto* count = field->attributes()->find(attribute::kind::Count);
+        auto* size = field->attributes()->find(attribute::kind::Size);
+        auto* parse_at = field->attributes()->find(attribute::kind::ParseAt);
+        auto* parse_from = field->attributes()->find(attribute::kind::ParseFrom);
+        auto* until = field->attributes()->find(attribute::kind::Until);
+        auto* until_including = field->attributes()->find(attribute::kind::UntilIncluding);
+        auto* while_ = field->attributes()->find(attribute::kind::While);
+        auto* repeat = field->repeatCount();
 
         auto m = sub->meta();
 
@@ -166,9 +166,9 @@ struct Visitor : public visitor::PreOrder {
 
             else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
                 // Bytes with fixed size already handled above.
-                auto eod_attr = n->attributes()->find(attribute::kind::Eod);
-                auto until_attr = n->attributes()->find(attribute::kind::Until);
-                auto until_including_attr = n->attributes()->find(attribute::kind::UntilIncluding);
+                auto* eod_attr = n->attributes()->find(attribute::kind::Eod);
+                auto* until_attr = n->attributes()->find(attribute::kind::Until);
+                auto* until_including_attr = n->attributes()->find(attribute::kind::UntilIncluding);
 
                 if ( eod_attr || until_attr || until_including_attr )
                     skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
@@ -178,8 +178,8 @@ struct Visitor : public visitor::PreOrder {
             if ( n->repeatCount() )
                 skip.reset();
 
-            auto convert_attr = n->attributes()->find(attribute::kind::Convert);
-            auto requires_attr = n->attributes()->find(attribute::kind::Requires);
+            auto* convert_attr = n->attributes()->find(attribute::kind::Convert);
+            auto* requires_attr = n->attributes()->find(attribute::kind::Requires);
             if ( convert_attr || requires_attr )
                 skip.reset();
 
@@ -191,7 +191,7 @@ struct Visitor : public visitor::PreOrder {
 
         std::unique_ptr<Production> prod;
 
-        if ( auto c = n->ctor() ) {
+        if ( auto* c = n->ctor() ) {
             prod = productionForCtor(c, n->id());
 
             if ( n->isContainer() )
@@ -297,7 +297,7 @@ struct Visitor : public visitor::PreOrder {
         assert(id);
 
         if ( auto p = pf->cache.get(id) ) {
-            auto r = dynamic_cast<production::Deferred*>(*p);
+            auto* r = dynamic_cast<production::Deferred*>(*p);
             assert(r);
             result = std::make_unique<production::Reference>(context(), r);
             return;

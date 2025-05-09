@@ -41,7 +41,7 @@ void Registry::initPending(Builder* builder) {
             }
 
             if ( op->kind() == Kind::Call && op->isBuiltIn() ) {
-                if ( auto member = op->signature().operands->op0()->type()->type()->tryAs<type::Member>() )
+                if ( auto* member = op->signature().operands->op0()->type()->type()->tryAs<type::Member>() )
                     _operators_by_builtin_function[member->id()].push_back(op.get());
                 else
                     _operators_by_builtin_function[ID()].push_back(op.get());
@@ -86,7 +86,7 @@ std::pair<bool, std::optional<std::vector<const Operator*>>> Registry::functionC
     // Try built-in function operators first, they override anything found
     // by scope lookup. (The validator will reject functions with a name
     // matching a built-in one anyway.)
-    if ( auto member = op->op0()->tryAs<expression::Member>() ) {
+    if ( auto* member = op->op0()->tryAs<expression::Member>() ) {
         auto candidates = byBuiltinFunctionID(member->id());
         if ( ! candidates.empty() )
             return std::make_pair(true, std::move(candidates));
@@ -94,14 +94,14 @@ std::pair<bool, std::optional<std::vector<const Operator*>>> Registry::functionC
 
     // If it's a name expression, return any functions that we find through
     // scope lookup.
-    if ( auto callee = op->op0()->tryAs<expression::Name>() ) {
+    if ( auto* callee = op->op0()->tryAs<expression::Name>() ) {
         std::vector<const Operator*> candidates;
         for ( const Node* n = op; n; n = n->parent() ) {
             if ( ! n->scope() )
                 continue;
 
             for ( const auto& r : n->scope()->lookupAll(callee->id()) ) {
-                auto d = r.node->tryAs<declaration::Function>();
+                auto* d = r.node->tryAs<declaration::Function>();
                 if ( ! d )
                     // It's ok to refer to types for some constructor
                     // expressions.

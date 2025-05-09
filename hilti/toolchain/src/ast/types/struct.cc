@@ -10,10 +10,10 @@ bool Struct::isResolved(node::CycleDetector* cd) const {
         if ( ! c )
             continue;
 
-        if ( auto f = c->template tryAs<declaration::Field>(); f && ! f->isResolved(cd) )
+        if ( auto* f = c->template tryAs<declaration::Field>(); f && ! f->isResolved(cd) )
             return false;
 
-        if ( auto p = c->template tryAs<type::function::Parameter>(); p && ! p->isResolved(cd) )
+        if ( auto* p = c->template tryAs<type::function::Parameter>(); p && ! p->isResolved(cd) )
             return false;
 
         return true;
@@ -23,12 +23,12 @@ bool Struct::isResolved(node::CycleDetector* cd) const {
 }
 
 void Struct::_setSelf(ASTContext* ctx) {
-    auto qtype = QualifiedType::createExternal(ctx, as<UnqualifiedType>(), Constness::Mutable);
-    auto self = expression::Keyword::create(ctx, expression::keyword::Kind::Self,
-                                            QualifiedType::create(ctx, type::ValueReference::create(ctx, qtype),
-                                                                  Constness::Mutable));
+    auto* qtype = QualifiedType::createExternal(ctx, as<UnqualifiedType>(), Constness::Mutable);
+    auto* self = expression::Keyword::create(ctx, expression::keyword::Kind::Self,
+                                             QualifiedType::create(ctx, type::ValueReference::create(ctx, qtype),
+                                                                   Constness::Mutable));
 
-    auto decl = declaration::Expression::create(ctx, ID("self"), self, {}, meta());
+    auto* decl = declaration::Expression::create(ctx, ID("self"), self, {}, meta());
 
     setChild(ctx, 0, decl);
 }

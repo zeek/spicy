@@ -15,7 +15,7 @@ namespace {
 namespace union_ {
 
 QualifiedType* itemType(Builder* builder, const Expressions& operands) {
-    if ( auto field =
+    if ( auto* field =
              operands[0]->type()->type()->as<type::Union>()->field(operands[1]->as<expression::Member>()->id()) )
         return field->type();
     else
@@ -42,7 +42,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 
@@ -64,7 +64,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 

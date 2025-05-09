@@ -107,14 +107,14 @@ Address::operator std::string() const {
     if ( _family == AddressFamily::Undef )
         return "<bad address>";
 
-    if ( auto v4 = std::get_if<struct in_addr>(&in_addr) ) {
+    if ( auto* v4 = std::get_if<struct in_addr>(&in_addr) ) {
         if ( inet_ntop(AF_INET, v4, buffer, INET_ADDRSTRLEN) )
             return buffer;
 
         return "<bad IPv4 address>";
     }
     else {
-        auto v6 = std::get_if<struct in6_addr>(&in_addr);
+        auto* v6 = std::get_if<struct in6_addr>(&in_addr);
         assert(v6); // no other possibility
 
         if ( inet_ntop(AF_INET6, v6, buffer, INET6_ADDRSTRLEN) )
