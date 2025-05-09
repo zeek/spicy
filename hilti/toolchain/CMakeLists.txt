@@ -17,10 +17,10 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
     set_source_files_properties(${BISON_parser_hilti_OUTPUTS} PROPERTIES SKIP_LINTING ON)
 endif ()
 
-bison_source(src/compiler/plugin.cc ${AUTOGEN_CC})
-bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
-bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
-bison_source(${AUTOGEN_CC}/__parser.cc ${AUTOGEN_CC})
+flex_bison_source(src/compiler/plugin.cc ${AUTOGEN_CC})
+flex_bison_source(src/compiler/parser/driver.cc ${AUTOGEN_CC})
+flex_bison_source(${AUTOGEN_CC}/__scanner.cc ${AUTOGEN_CC})
+flex_bison_source(${AUTOGEN_CC}/__parser.cc ${AUTOGEN_CC})
 
 set(SOURCES
     src/ast/ast-context.cc
