@@ -133,6 +133,7 @@ module                return token::MODULE;
 move                  return token::MOVE;
 net                   return token::NETWORK;
 new                   return token::NEW;
+option                return token::OPTION;
 optional              return token::OPTIONAL;
 pack                  return token::PACK;
 port                  return token::PORT;

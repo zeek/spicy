@@ -1039,6 +1039,27 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(declaration::Option* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( auto m = n->parent<declaration::Module>() )
+                setFqID(n, m->scopeID() + n->id()); // global scope
+        }
+
+        if ( auto e = n->init(); e && ! type::sameExceptForConstness(n->type(), e->type()) ) {
+            if ( auto init = coerceTo(n, e, n->type(), false, true) ) {
+                recordChange(n, init, "init expression");
+                n->setInit(context(), init);
+            }
+
+            if ( n->type()->isAuto() ) {
+                if ( auto init = n->init(); init && init->isResolved() ) {
+                    recordChange(n, init->type(), "type");
+                    n->setType(context(), init->type());
+                }
+            }
+        }
+    }
+
     void operator()(declaration::Parameter* n) final {
         if ( ! n->fullyQualifiedID() )
             setFqID(n, n->id());
@@ -1234,8 +1255,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                         // Provide better error message
                         n->addError("$$ is not available in this context", node::ErrorPriority::High);
                     else if ( n->id() == ID("self") )
-                        n->addError(resolved.error(), node::ErrorPriority::Normal); // let other errors take precedence
-                                                                                    // explaining why we didn't set self
+                        n->addError(resolved.error(),
+                                    node::ErrorPriority::Normal); // let other errors take precedence
+                                                                  // explaining why we didn't set self
                     else
                         n->addError(resolved.error(), node::ErrorPriority::High);
                 }

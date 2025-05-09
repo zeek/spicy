@@ -84,6 +84,7 @@ public:
     virtual void operator()(hilti::declaration::ImportedModule*) {}
     virtual void operator()(hilti::declaration::LocalVariable*) {}
     virtual void operator()(hilti::declaration::Module*) {}
+    virtual void operator()(hilti::declaration::Option*) {}
     virtual void operator()(hilti::declaration::Property*) {}
     virtual void operator()(hilti::declaration::Type*) {}
     virtual void operator()(hilti::expression::Assign*) {}

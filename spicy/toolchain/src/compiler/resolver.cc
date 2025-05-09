@@ -647,6 +647,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 else
                     n->addError("field value must be a constant");
             }
+
             else
                 n->addError(hilti::util::fmt("field value must be a constant or type (but is a %s)",
                                              resolved->first->as<hilti::Declaration>()->displayName()));

@@ -100,6 +100,8 @@ struct Visitor : visitor::PostOrder {
         root->getOrCreateScope()->insert(m->scopeID(), m);
     }
 
+    void operator()(declaration::Option* n) final { n->parent()->getOrCreateScope()->insert(n); }
+
     void operator()(declaration::Type* n) final {
         if ( n->parent()->isA<declaration::Module>() )
             n->parent()->getOrCreateScope()->insert(n);

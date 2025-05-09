@@ -251,6 +251,19 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         unit->add(x);
     }
 
+    void operator()(declaration::Option* n) final {
+        auto type = cg->compile(n->type(), codegen::TypeUsage::Storage);
+
+        cxx::declaration::Global* glob = nullptr;
+
+        if ( include_implementation )
+            glob = new cxx::declaration::Global({cxxNamespace(), n->id()}, type, {}, cg->compile(n->init()));
+        else
+            glob = new cxx::declaration::Global({cxxNamespace(), n->id()}, type, {}, std::nullopt, "extern");
+
+        unit->add(*glob);
+    }
+
     void operator()(declaration::Type* n) final {
         assert(n->typeID());
 

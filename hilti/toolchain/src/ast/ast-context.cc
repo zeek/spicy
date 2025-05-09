@@ -129,6 +129,8 @@ private:
 
     void operator()(declaration::Module* n) final { insert(n); }
 
+    void operator()(declaration::Option* n) final { insert(n); }
+
     void operator()(declaration::Type* n) final { insert(n); }
 
     void operator()(QualifiedType* n) final {

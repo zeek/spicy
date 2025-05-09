@@ -36,7 +36,7 @@ namespace hilti { namespace detail { class Parser; } }
 
 %glr-parser
 %expect 113
-%expect-rr 211
+%expect-rr 213
 
 %{
 
@@ -192,6 +192,7 @@ static int _field_width = 0;
 %token NEQ "!="
 %token NETWORK "net"
 %token NOT_IN "!in"
+%token OPTION "option"
 %token OPTIONAL "optional"
 %token OR "||"
 %token OVERLAY "overlay"
@@ -244,7 +245,7 @@ static int _field_width = 0;
 %token YIELD "yield"
 
 %type <hilti::ID>                             local_id scoped_id dotted_id function_id scoped_function_id
-%type <hilti::Declaration*>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl struct_field union_field
+%type <hilti::Declaration*>                   local_decl local_init_decl global_decl type_decl import_decl constant_decl function_decl global_scope_decl property_decl option_decl struct_field union_field
 %type <hilti::Declarations>                     struct_fields union_fields opt_union_fields
 %type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
 %type <hilti::QualifiedType*>                 qtype
@@ -330,6 +331,7 @@ global_scope_decl
               | function_decl                    { $$ = std::move($1); }
               | import_decl                      { $$ = std::move($1); }
               | property_decl                    { $$ = std::move($1); }
+              | option_decl                      { $$ = std::move($1); }
 
 type_decl     : opt_linkage TYPE scoped_id '=' qtype opt_attributes ';'
                                                  { $$ = builder->declarationType(std::move($3), std::move($5), std::move($6), std::move($1), __loc__); }
@@ -386,6 +388,10 @@ import_decl   : IMPORT local_id ';'              { $$ = builder->declarationImpo
 
 property_decl : PROPERTY ';'                     { $$ = builder->declarationProperty(ID(std::move($1)), __loc__); }
               | PROPERTY '=' expr ';'            { $$ = builder->declarationProperty(ID(std::move($1)), std::move($3), __loc__); }
+
+option_decl   : OPTION scoped_id '=' expr ';'    { $$ = builder->declarationOption($2, $4, __loc__); }
+              | OPTION scoped_id ':' qtype '=' expr ';'
+                                                 { $$ = builder->declarationOption($2, $4, $6, __loc__); }
 
 opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Linkage::Public; }
               | PRIVATE                          { $$ = hilti::declaration::Linkage::Private; }

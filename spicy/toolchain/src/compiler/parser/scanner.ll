@@ -159,6 +159,7 @@ network               return token::NETWORK;
 new                   return token::NEW;
 object                return token::OBJECT;
 on                    return token::ON;
+option                return token::OPTION;
 optional              return token::OPTIONAL;
 pack                  return token::PACK;
 port                  return token::PORT;
