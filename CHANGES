@@ -1,3 +1,15 @@
+1.14.0-dev.7 | 2025-05-09 13:37:40 +0200
+
+  * Drop unnecessary Bison include from CMake function. (Benjamin Bannier, Corelight)
+
+    We do not seem to need any includes from Bison, but where previously
+    adding some include path in a pretty ad hoc way. This patch performs
+    minimal cleanup of this. There is probably the opportunity to clean up
+    how we add dependencies with Flex and Bison (e.g., using by refactoring
+    how we propagate this and using functionality like
+    `add_flex_bison_dependency` at the lowest level), but I punt on that
+    here.
+
 1.14.0-dev.5 | 2025-05-08 16:14:22 -0400
 
   * Fix `hiltic -p` printing invalid functions. (Evan Typanski, Corelight)

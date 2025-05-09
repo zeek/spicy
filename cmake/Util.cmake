@@ -2,11 +2,12 @@
 
 ### A collection of small helpers for the HILTI/Spicy build system.
 
-# Add the likely Bison include directory to Bison sources to avoid version mismatches.
-function (bison_source src output_dir)
-    string(REGEX REPLACE "/bin/bison" "/include" bison_include "${BISON_EXECUTABLE}")
-    set_source_files_properties(
-        ${src} PROPERTIES INCLUDE_DIRECTORIES "${bison_include};${FLEX_INCLUDE_DIR};${output_dir}")
+# Add required Flex/Bison include directories to source files.
+function (flex_bison_source src output_dir)
+    # cmake-format: off
+    set_source_files_properties(${src} PROPERTIES
+        INCLUDE_DIRECTORIES "${FLEX_INCLUDE_DIR};${output_dir}")
+    # cmake-format: on
 endfunction ()
 
 # Install a set of header files from a directory location.
