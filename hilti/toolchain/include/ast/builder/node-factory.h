@@ -251,6 +251,12 @@ public:
                            Meta meta = {}) {
         return hilti::declaration::Module::create(context(), uid, scope, decls, std::move(meta));
     }
+    auto declarationOption(ID id, Expression* value, Meta meta = {}) {
+        return hilti::declaration::Option::create(context(), std::move(id), value, std::move(meta));
+    }
+    auto declarationOption(ID id, QualifiedType* type, Expression* value, Meta meta = {}) {
+        return hilti::declaration::Option::create(context(), std::move(id), type, value, std::move(meta));
+    }
     auto declarationParameter(ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,
                               AttributeSet* attrs, Meta meta = {}) {
         return hilti::declaration::Parameter::create(context(), std::move(id), type, kind, default_, attrs,

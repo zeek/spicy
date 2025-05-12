@@ -82,6 +82,7 @@ class GlobalVariable;
 class ImportedModule;
 class LocalVariable;
 class Module;
+class Option;
 class Parameter;
 class Property;
 class Type;

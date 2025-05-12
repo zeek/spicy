@@ -20,6 +20,7 @@ QualifiedType* expression::Name::type() const {
         void operator()(declaration::Function* n) final { result = n->function()->type(); }
         void operator()(declaration::GlobalVariable* n) final { result = n->type(); }
         void operator()(declaration::LocalVariable* n) final { result = n->type(); }
+        void operator()(declaration::Option* n) final { result = n->type(); }
         void operator()(declaration::Parameter* n) final { result = n->type(); }
         void operator()(declaration::Type* n) final { result = name->child<QualifiedType>(0); }
     };

@@ -263,6 +263,19 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     ////// Declarations
 
+    void rejectNameExpressions(Declaration* d) {
+        struct VisitExpressions : visitor::PreOrder {
+            VisitorPost* outer_ = nullptr;
+            Declaration* d = nullptr;
+            VisitExpressions(VisitorPost* outer, Declaration* d) : outer_(outer), d(d) {}
+            void operator()(hilti::expression::Name* x) override {
+                outer_->error(fmt("'%s' initialization cannot refer to other IDs", d->displayName()), x);
+            }
+        };
+
+        hilti::visitor::visit(VisitExpressions(this, d), d);
+    }
+
     // Perform validation of ID names suitable for all types of declarations.
     void operator()(Declaration* n) final {
         // 'self' is only ok for our internally created 'self' declarations,
@@ -277,14 +290,20 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( n->value()->type()->isWildcard() )
             error("cannot use wildcard type for constants", n);
 
-        struct VisitExpressions : visitor::PreOrder {
-            VisitorPost* outer_ = nullptr;
-            VisitExpressions(VisitorPost* outer) : outer_(outer) {}
-            void operator()(hilti::expression::Name* x) override {
-                outer_->error("'const' initialization cannot refer to other IDs", x);
-            }
-        };
-        hilti::visitor::visit(VisitExpressions(this), n);
+        rejectNameExpressions(n);
+    }
+
+    void operator()(declaration::Option* n) final {
+        checkDeclarationType(n, n->type());
+
+        if ( auto t = n->type()->type(); (! t->isAllocable() && ! t->isA<type::Unknown>()) ||
+                                         ! t->parameters().empty() ) // unknown will be reported elsewhere
+            error(fmt("type '%s' cannot be used for option declaration", *n->type()), n);
+
+        if ( n->init()->type()->isWildcard() )
+            error("cannot use wildcard type for options", n);
+
+        rejectNameExpressions(n);
     }
 
     void operator()(declaration::Field* n) final { checkDeclarationType(n, n->type()); }
@@ -477,6 +496,13 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         else if ( n->target()->type()->side() != Side::LHS )
             error(fmt("cannot assign to RHS expression: %s", *n), n);
+
+        // else if ( auto id = n->target()->tryAs<expression::Name>() ) {
+        //     if ( auto decl = id->resolvedDeclaration();
+        //          decl && decl->isA<declaration::Option>() && n->parent<declaration::Function>() ) {
+        //         error(fmt("can assign to option only from global module statement: %s", *n), n);
+        //     }
+        // }
 
         if ( ! n->hasErrors() ) { // no need for more checks if coercer has already flagged it
             if ( ! type::sameExceptForConstness(n->source()->type(), n->target()->type()) )

@@ -179,6 +179,11 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
+        if ( decl->isA<declaration::Option>() ) {
+            result = {cxx::ID(cg->options().cxx_namespace_intern, cxx::ID(fqid)), Side::LHS};
+            return;
+        }
+
         if ( auto p = decl->tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {
             if ( p->type()->type()->isReferenceType() )
                 // Need to adjust here for potential automatic change to a weak reference.

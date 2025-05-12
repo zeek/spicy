@@ -10,6 +10,7 @@
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/module.h>
+#include <hilti/ast/declarations/option.h>
 #include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/declarations/type.h>
