@@ -53,7 +53,7 @@ doxygen:
 
 .PHONY: check
 check:
-	@$(SPHINXBUILD) -q -b linkcheck $(SOURCEDIR) $(DESTDIR)/linkcheck
+	@$(SPHINXBUILD) -v -b linkcheck $(SOURCEDIR) $(DESTDIR)/linkcheck
 
 spicy-%:
 	git clone https://github.com/zeek/$@
