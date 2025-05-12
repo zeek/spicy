@@ -271,7 +271,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@A%supports_sinks ) 
+        if ( ::__feat%foo@@A%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -343,7 +344,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@A%supports_sinks ) 
+    if ( ::__feat%foo@@A%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -517,7 +519,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@B%supports_sinks ) 
+        if ( ::__feat%foo@@B%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -589,7 +592,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@B%supports_sinks ) 
+    if ( ::__feat%foo@@B%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -759,7 +763,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@C%supports_sinks ) 
+        if ( ::__feat%foo@@C%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -831,7 +836,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@C%supports_sinks ) 
+    if ( ::__feat%foo@@C%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1005,7 +1011,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@D%supports_sinks ) 
+        if ( ::__feat%foo@@D%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -1092,7 +1099,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@D%supports_sinks ) 
+    if ( ::__feat%foo@@D%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1266,7 +1274,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_forward_eod(self);
 
 
-        if ( ::__feat%foo@@F%supports_sinks ) 
+        if ( ::__feat%foo@@F%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -1342,7 +1351,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_forward_eod(self);
 
 
-    if ( ::__feat%foo@@F%supports_sinks ) 
+    if ( ::__feat%foo@@F%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);

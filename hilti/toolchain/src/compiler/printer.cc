@@ -547,7 +547,7 @@ struct Printer : visitor::PreOrder {
     }
 
     void operator()(statement::Block* n) final {
-        if ( _out.indent() == 0 || n->statements().size() > 1 )
+        if ( _out.indent() == 0 || n->statements().size() != 1 )
             _out << "{";
 
         _out.endLine();
@@ -568,7 +568,7 @@ struct Printer : visitor::PreOrder {
 
         _out.decrementIndent();
 
-        if ( _out.indent() == 0 || n->statements().size() > 1 ) {
+        if ( _out.indent() == 0 || n->statements().size() != 1 ) {
             _out.beginLine();
             _out << "}";
             _out.endLine();
