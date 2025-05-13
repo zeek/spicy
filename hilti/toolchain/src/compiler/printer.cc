@@ -504,7 +504,7 @@ struct Printer : visitor::PreOrder {
         _out << ']';
     }
 
-    void operator()(expression::LogicalAnd* n) final { _out << n->op0() << " &* " << n->op1(); }
+    void operator()(expression::LogicalAnd* n) final { _out << n->op0() << " && " << n->op1(); }
 
     void operator()(expression::LogicalNot* n) final { _out << "! " << n->expression(); }
 
