@@ -104,9 +104,9 @@ struct TestUnion : Union<int, std::string> {
     TestUnion(T&& x) : Union(std::forward<T>(x)) {}
 
     std::string __to_string() const {
-        if ( auto* x = std::get_if<1>(&this->value) )
+        if ( const auto* x = std::get_if<1>(&this->value) )
             return "$int=" + to_string(*x);
-        else if ( auto* x = std::get_if<2>(&this->value) )
+        else if ( const auto* x = std::get_if<2>(&this->value) )
             return "$string=" + to_string(*x);
         else
             return "<unset>";

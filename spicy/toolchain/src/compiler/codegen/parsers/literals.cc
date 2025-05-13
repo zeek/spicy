@@ -31,7 +31,7 @@ struct LiteralParser {
         if ( dst )
             return dst;
 
-        if ( auto field = production->meta().field() )
+        if ( auto* field = production->meta().field() )
             return pb->builder()->addTmp("c", field->parseType());
 
         return pb->builder()->addTmp("c", pb->builder()->qualifiedType(t, hilti::Constness::Mutable));
@@ -59,7 +59,7 @@ struct Visitor : public visitor::PreOrder {
     auto needToCheckForLookAhead(const Meta& meta) {
         bool needs_check = false;
 
-        if ( auto field = lp->production->meta().field();
+        if ( auto* field = lp->production->meta().field();
              field && field->attributes()->find(attribute::kind::Synchronize) )
             needs_check = true;
         else {
@@ -74,8 +74,8 @@ struct Visitor : public visitor::PreOrder {
     }
 
     void operator()(hilti::ctor::Bytes* n) final {
-        auto len = builder()->integer(static_cast<uint64_t>(n->value().size()));
-        auto literal = pb()->cg()->addGlobalConstant(n);
+        auto* len = builder()->integer(static_cast<uint64_t>(n->value().size()));
+        auto* literal = pb()->cg()->addGlobalConstant(n);
 
         switch ( state().literal_mode ) {
             case LiteralMode::Default:
@@ -107,7 +107,7 @@ struct Visitor : public visitor::PreOrder {
                     pushBuilder(std::move(no_lah));
                 }
 
-                auto expect_bytes_literal =
+                auto* expect_bytes_literal =
                     builder()->call("spicy_rt::expectBytesLiteral",
                                     {state().data, state().cur, literal, builder()->expression(n->meta()),
                                      pb()->currentFilters(state())});
@@ -128,7 +128,7 @@ struct Visitor : public visitor::PreOrder {
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try:
-                auto cond = builder()->memberCall(state().cur, "starts_with", {literal});
+                auto* cond = builder()->memberCall(state().cur, "starts_with", {literal});
                 result = builder()->ternary(builder()->and_(pb()->waitForInputOrEod(len), cond),
                                             builder()->sum(builder()->begin(state().cur), len),
                                             builder()->begin(state().cur));
@@ -141,12 +141,12 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::ctor::Coerced* n) final { dispatch(n->coercedCtor()); }
 
     void operator()(hilti::ctor::RegExp* n) final {
-        auto attrs = builder()->attributeSet();
+        auto* attrs = builder()->attributeSet();
 
         if ( ! state().captures )
             attrs->add(context(), builder()->attribute(hilti::attribute::kind::Nosub));
 
-        auto re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->patterns(), attrs));
+        auto* re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->patterns(), attrs));
 
         auto parse = [&](Expression* result, bool trim) -> Expression* {
             if ( ! result && state().literal_mode != LiteralMode::Skip )
@@ -169,13 +169,13 @@ struct Visitor : public visitor::PreOrder {
                 pushBuilder(std::move(no_lah));
             }
 
-            auto ncur = builder()->addTmp(ID("ncur"), state().cur);
-            auto ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
+            auto* ncur = builder()->addTmp(ID("ncur"), state().cur);
+            auto* ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
             auto body = builder()->addWhile(ms, builder()->bool_(true));
             pushBuilder(std::move(body));
 
-            auto rc = builder()->addTmp(ID("rc"), builder()->qualifiedType(builder()->typeSignedInteger(32),
-                                                                           hilti::Constness::Mutable));
+            auto* rc = builder()->addTmp(ID("rc"), builder()->qualifiedType(builder()->typeSignedInteger(32),
+                                                                            hilti::Constness::Mutable));
 
             builder()->addAssign(builder()->tuple({rc, ncur}),
                                  builder()->memberCall(builder()->id("ms"), "advance", {ncur}), n->meta());
@@ -237,7 +237,7 @@ struct Visitor : public visitor::PreOrder {
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
-                auto tmp = builder()->addTmp("result", state().cur);
+                auto* tmp = builder()->addTmp("result", state().cur);
                 result = parse(tmp, false);
                 return;
             }
@@ -271,14 +271,14 @@ struct Visitor : public visitor::PreOrder {
                     pushBuilder(std::move(no_lah));
                 }
 
-                auto old_cur = builder()->addTmp("ocur", state().cur);
+                auto* old_cur = builder()->addTmp("ocur", state().cur);
 
                 // Parse value as an instance of the corresponding type, without trimming.
-                auto x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Default, true);
+                auto* x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Default, true);
 
                 // Compare parsed value against expected value.
-                auto no_match = builder()->or_(builder()->equal(offset(old_cur), offset(state().cur)),
-                                               builder()->unequal(x, expected));
+                auto* no_match = builder()->or_(builder()->equal(offset(old_cur), offset(state().cur)),
+                                                builder()->unequal(x, expected));
 
                 auto error = builder()->addIf(no_match);
                 pushBuilder(std::move(error));
@@ -299,14 +299,14 @@ struct Visitor : public visitor::PreOrder {
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
-                auto old_cur = builder()->addTmp("ocur", state().cur);
-                auto x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Try);
-                auto new_cur = builder()->addTmp("ncur", state().cur);
+                auto* old_cur = builder()->addTmp("ocur", state().cur);
+                auto* x = pb()->parseType(type, lp->production->meta(), {}, TypesMode::Try);
+                auto* new_cur = builder()->addTmp("ncur", state().cur);
                 builder()->addAssign(state().cur, old_cur);
 
                 // Compare parsed value against expected value.
-                auto match = builder()->and_(x, builder()->and_(builder()->unequal(offset(old_cur), offset(new_cur)),
-                                                                builder()->equal(builder()->deref(x), expected)));
+                auto* match = builder()->and_(x, builder()->and_(builder()->unequal(offset(old_cur), offset(new_cur)),
+                                                                 builder()->equal(builder()->deref(x), expected)));
                 return builder()->begin(builder()->ternary(match, new_cur, old_cur));
             }
         }
@@ -340,7 +340,7 @@ struct Visitor : public visitor::PreOrder {
                     popBuilder();
 
                     // Need to reparse the value to assign it to our destination.
-                    auto value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default);
+                    auto* value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default);
                     builder()->addAssign(lp->destination(n->btype()), value);
 
                     pb()->consumeLookAhead();
@@ -349,10 +349,10 @@ struct Visitor : public visitor::PreOrder {
                     pushBuilder(std::move(no_lah));
                 }
 
-                auto old_cur = builder()->addTmp("ocur", state().cur);
+                auto* old_cur = builder()->addTmp("ocur", state().cur);
 
                 // Parse value as an instance of the underlying type, without trimming.
-                auto value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default, true);
+                auto* value = pb()->parseType(n->btype(), lp->production->meta(), {}, TypesMode::Default, true);
 
                 // Check that the bit values match what we expect.
                 for ( const auto& b : n->bits() ) {
@@ -378,10 +378,10 @@ struct Visitor : public visitor::PreOrder {
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
-                auto old_cur = builder()->addTmp("ocur", state().cur);
-                auto bf = builder()->addTmp("bf", n->btype());
+                auto* old_cur = builder()->addTmp("ocur", state().cur);
+                auto* bf = builder()->addTmp("bf", n->btype());
                 pb()->parseType(n->btype(), lp->production->meta(), bf, TypesMode::Try);
-                auto new_cur = builder()->addTmp("ncur", state().cur);
+                auto* new_cur = builder()->addTmp("ncur", state().cur);
 
                 auto match = builder()->addIf(builder()->unequal(offset(old_cur), offset(new_cur)));
                 pushBuilder(std::move(match));
@@ -413,7 +413,7 @@ Expression* LiteralParser::buildParser(Node* n) {
 } // namespace
 
 Expression* ParserBuilder::parseLiteral(const Production& p, Expression* dst) {
-    if ( auto e = LiteralParser(this, &p, dst).buildParser(p.expression()) )
+    if ( auto* e = LiteralParser(this, &p, dst).buildParser(p.expression()) )
         return e;
 
     hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s' (%s)",

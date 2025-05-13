@@ -448,7 +448,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
 
     if ( _dump_code ) {
         // Logging to driver because that's where all the other "saving to ..." messages go.
-        auto dbg = "dbg.__library__.hlto";
+        const auto* dbg = "dbg.__library__.hlto";
         HILTI_DEBUG(logging::debug::Driver, util::fmt("saving library to %s", dbg));
         library->save(dbg); // will go into current directory
     }

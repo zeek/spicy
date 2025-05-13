@@ -205,7 +205,7 @@ ChainPtr Chain::copy() const {
 
     auto nchain = make_intrusive<Chain>();
 
-    auto c = _head.get();
+    auto* c = _head.get();
     while ( c ) {
         nchain->append(std::make_unique<Chunk>(*c));
         c = c->next();
@@ -217,7 +217,7 @@ ChainPtr Chain::copy() const {
 
 int Chain::numberOfChunks() const {
     int n = 0;
-    for ( auto ch = _head.get(); ch; ch = ch->_next.get() )
+    for ( auto* ch = _head.get(); ch; ch = ch->_next.get() )
         ++n;
 
     return n;
@@ -247,7 +247,7 @@ View View::advanceToNextData() const {
         // ensures that we always advance by at least one byte.
         i = _begin + 1;
 
-    auto* c = i.chunk(); // Pointer to the currently looked at chunk.
+    const auto* c = i.chunk(); // Pointer to the currently looked at chunk.
 
     // If the position is already not in a gap we can directly compute a view at it.
     if ( c && ! c->isGap() )
@@ -443,11 +443,11 @@ std::optional<View::Block> View::firstBlock() const {
     const auto* chain = begin.chain();
     assert(chain);
 
-    auto chunk = chain->findChunk(begin.offset(), begin.chunk());
+    const auto* chunk = chain->findChunk(begin.offset(), begin.chunk());
     if ( ! chunk )
         throw InvalidIterator("stream iterator outside of valid range");
 
-    auto start = chunk->data() + (begin.offset() - chunk->offset()).Ref();
+    const auto* start = chunk->data() + (begin.offset() - chunk->offset()).Ref();
     bool is_last = (chunk->isLast() || (_end && _end->offset() <= chunk->endOffset()));
 
     Size size;
@@ -473,9 +473,9 @@ std::optional<View::Block> View::nextBlock(std::optional<Block> current) const {
     if ( ! (current && current->_block) )
         return {};
 
-    auto chunk = current->_block;
+    const auto* chunk = current->_block;
 
-    auto start = chunk->data();
+    const auto* start = chunk->data();
     bool is_last = (chunk->isLast() || (_end && _end->offset() <= chunk->endOffset()));
 
     Size size;
@@ -527,13 +527,13 @@ std::string stream::View::dataForPrint() const {
     const auto start = begin.offset();
     const auto stop = end.offset();
 
-    auto* c = begin.chunk();
+    const auto* c = begin.chunk();
     while ( c && c->offset() < stop ) {
         if ( c->isGap() )
             data.append("<gap>");
 
         else {
-            auto cstart = c->data();
+            const auto* cstart = c->data();
             auto csize = c->size();
 
             if ( c->inRange(start) ) {
@@ -621,7 +621,7 @@ std::string hilti::rt::detail::adl::to_string(const stream::SafeConstIterator& x
 void SafeConstIterator::debugPrint(std::ostream& out) const {
     int chunk = 0;
 
-    auto c = _chain->head();
+    const auto* c = _chain->head();
     while ( c ) {
         if ( c == _chunk )
             break;
@@ -660,7 +660,7 @@ std::string hilti::rt::detail::adl::to_string(const UnsafeConstIterator& x, adl:
 void UnsafeConstIterator::debugPrint(std::ostream& out) const {
     int chunk = 0;
 
-    auto c = _chain->head();
+    const auto* c = _chain->head();
     while ( c ) {
         if ( c == _chunk )
             break;
@@ -695,7 +695,7 @@ void View::debugPrint(std::ostream& out) const {
 void Stream::debugPrint(std::ostream& out, const stream::detail::Chain* chain) {
     out << fmt("chain %p", chain) << '\n';
     int i = 0;
-    auto c = chain->head();
+    const auto* c = chain->head();
     while ( c ) {
         out << fmt("  #%d/%p: ", i++, c);
         c->debugPrint(out);

@@ -55,25 +55,25 @@ struct TypeParser {
 
     Expression* performUnpack(Expression* target, UnqualifiedType* t, unsigned int len, const Expressions& unpack_args,
                               const Meta& m, bool is_try) {
-        auto qt = builder()->qualifiedType(t, hilti::Constness::Mutable);
+        auto* qt = builder()->qualifiedType(t, hilti::Constness::Mutable);
 
         if ( ! is_try ) {
             auto error_msg = fmt("expecting %d bytes for unpacking value", len);
             pb->waitForInput(builder()->integer(len), error_msg, m);
 
-            auto unpacked = builder()->unpack(qt, unpack_args);
+            auto* unpacked = builder()->unpack(qt, unpack_args);
             builder()->addAssign(builder()->tuple({target, state().cur}), builder()->deref(unpacked));
 
             return target;
         }
         else {
-            auto has_data = pb->waitForInputOrEod(builder()->integer(len));
+            auto* has_data = pb->waitForInputOrEod(builder()->integer(len));
 
-            auto result = dst ? dst : builder()->addTmp("result", builder()->typeResult(qt));
+            auto* result = dst ? dst : builder()->addTmp("result", builder()->typeResult(qt));
 
             auto true_ = builder()->addIf(has_data);
             pushBuilder(std::move(true_));
-            auto unpacked = builder()->deref(builder()->unpack(qt, unpack_args));
+            auto* unpacked = builder()->deref(builder()->unpack(qt, unpack_args));
             builder()->addAssign(builder()->tuple({result, state().cur}), unpacked);
             popBuilder();
 
@@ -123,8 +123,8 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::type::Address* n) final {
         switch ( tp->mode ) {
             case TypesMode::Default: {
-                auto v4 = tp->meta.field()->attributes()->find(attribute::kind::IPv4);
-                auto v6 = tp->meta.field()->attributes()->find(attribute::kind::IPv6);
+                auto* v4 = tp->meta.field()->attributes()->find(attribute::kind::IPv4);
+                auto* v6 = tp->meta.field()->attributes()->find(attribute::kind::IPv6);
                 (void)v6;
                 assert(! (v4 && v6));
 
@@ -159,12 +159,12 @@ struct Visitor : public visitor::PreOrder {
             case TypesMode::Try: {
                 Expression* bitorder = builder()->id("hilti::BitOrder::LSB0");
 
-                if ( auto attrs = n->attributes() ) {
-                    if ( auto a = attrs->find(attribute::kind::BitOrder) )
+                if ( auto* attrs = n->attributes() ) {
+                    if ( auto* a = attrs->find(attribute::kind::BitOrder) )
                         bitorder = *a->valueAsExpression();
                 }
 
-                auto target = tp->destination(n);
+                auto* target = tp->destination(n);
                 tp->performUnpack(target, n, n->width() / 8, {state().cur, tp->fieldByteOrder(), bitorder}, n->meta(),
                                   tp->mode == TypesMode::Try);
 
@@ -200,7 +200,7 @@ struct Visitor : public visitor::PreOrder {
     void operator()(hilti::type::Real* n) final {
         switch ( tp->mode ) {
             case TypesMode::Default: {
-                auto type = tp->meta.field()->attributes()->find(attribute::kind::Type);
+                auto* type = tp->meta.field()->attributes()->find(attribute::kind::Type);
                 assert(type);
                 result = tp->performUnpack(tp->destination(n), builder()->typeReal(), 4,
                                            {state().cur, *type->valueAsExpression(), tp->fieldByteOrder()}, n->meta(),
@@ -271,12 +271,12 @@ struct Visitor : public visitor::PreOrder {
     }
 
     void operator()(hilti::type::Bytes* n) final {
-        auto attrs = tp->meta.field()->attributes();
-        auto chunked_attr = attrs->find(attribute::kind::Chunked);
-        auto eod_attr = attrs->find(attribute::kind::Eod);
-        auto size_attr = attrs->find(attribute::kind::Size);
-        auto until_attr = attrs->find(attribute::kind::Until);
-        auto until_including_attr = attrs->find(attribute::kind::UntilIncluding);
+        auto* attrs = tp->meta.field()->attributes();
+        auto* chunked_attr = attrs->find(attribute::kind::Chunked);
+        auto* eod_attr = attrs->find(attribute::kind::Eod);
+        auto* size_attr = attrs->find(attribute::kind::Size);
+        auto* until_attr = attrs->find(attribute::kind::Until);
+        auto* until_including_attr = attrs->find(attribute::kind::UntilIncluding);
 
         bool to_eod = (eod_attr != nullptr); // parse to end of input data
         bool parse_attr = false;             // do we have a &parse-* attribute
@@ -294,7 +294,7 @@ struct Visitor : public visitor::PreOrder {
                 to_eod = true;
         }
 
-        auto target = tp->destination(n);
+        auto* target = tp->destination(n);
 
         switch ( tp->mode ) {
             case TypesMode::Default: {
@@ -314,7 +314,7 @@ struct Visitor : public visitor::PreOrder {
 
                                 const auto& field = tp->meta.field();
                                 assert(field);
-                                auto value = pb()->applyConvertExpression(*field, target);
+                                auto* value = pb()->applyConvertExpression(*field, target);
 
                                 if ( tp->meta.field() && ! tp->meta.container() )
                                     pb()->newValueForField(tp->meta, value, target);
@@ -352,8 +352,8 @@ struct Visitor : public visitor::PreOrder {
                                                          builder()->qualifiedType(builder()->typeBytes(),
                                                                                   hilti::Constness::Mutable));
 
-                    auto until_bytes_var = builder()->addTmp("until_bytes", until_expr);
-                    auto until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
+                    auto* until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+                    auto* until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
 
                     if ( tp->meta.field() && chunked_attr && ! tp->meta.container() )
                         pb()->enableDefaultNewValueForField(false);
@@ -380,11 +380,11 @@ struct Visitor : public visitor::PreOrder {
                                                (until_attr ? "&until" : "&until-including")),
                                            until_expr->meta());
 
-                        auto find = builder()->memberCall(state().cur, "find", {until_bytes_var});
+                        auto* find = builder()->memberCall(state().cur, "find", {until_bytes_var});
                         auto found_id = ID("found");
                         auto it_id = ID("it");
-                        auto found = builder()->id(found_id);
-                        auto it = builder()->id(it_id);
+                        auto* found = builder()->id(found_id);
+                        auto* it = builder()->id(it_id);
                         builder()->addLocal(std::move(found_id),
                                             builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
                         builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
@@ -399,7 +399,7 @@ struct Visitor : public visitor::PreOrder {
                         auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
                         pushBuilder(std::move(found_branch), [&]() {
-                            auto new_it = builder()->sum(it, until_bytes_size_var);
+                            auto* new_it = builder()->sum(it, until_bytes_size_var);
 
                             if ( until_including_attr )
                                 add_match_data(target, builder()->memberCall(state().cur, "sub", {it, new_it}));
@@ -423,9 +423,9 @@ struct Visitor : public visitor::PreOrder {
             case TypesMode::Optimize: {
                 auto parse_attrs = ParserBuilder::removeGenericParseAttributes(attrs);
                 if ( size_attr && parse_attrs.size() == 0 ) {
-                    auto length = pb()->evaluateAttributeExpression(size_attr, "size");
-                    auto eod_ok = builder()->bool_(eod_attr ? true : false);
-                    auto value =
+                    auto* length = pb()->evaluateAttributeExpression(size_attr, "size");
+                    auto* eod_ok = builder()->bool_(eod_attr ? true : false);
+                    auto* value =
                         builder()->call("spicy_rt::extractBytes", {state().data, state().cur, length, eod_ok,
                                                                    builder()->expression(tp->meta.field()->meta()),
                                                                    pb()->currentFilters(state())});
@@ -451,7 +451,7 @@ Expression* TypeParser::buildParser(UnqualifiedType* t) {
 
 Expression* ParserBuilder::parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode,
                                      bool no_trim) {
-    if ( auto e = TypeParser(this, meta, dst, mode).buildParser(t); e || mode == TypesMode::Optimize ) {
+    if ( auto* e = TypeParser(this, meta, dst, mode).buildParser(t); e || mode == TypesMode::Optimize ) {
         if ( mode == TypesMode::Default && ! no_trim )
             trimInput();
 

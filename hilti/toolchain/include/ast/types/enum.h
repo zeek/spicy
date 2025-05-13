@@ -87,7 +87,7 @@ public:
     bool isNameType() const final { return true; }
 
     static auto create(ASTContext* ctx, enum_::Labels labels, Meta meta = {}) {
-        auto t = ctx->make<Enum>(ctx, Nodes(), std::move(meta));
+        auto* t = ctx->make<Enum>(ctx, Nodes(), std::move(meta));
         t->_setLabels(ctx, std::move(labels));
         return t;
     }

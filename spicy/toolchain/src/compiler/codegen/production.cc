@@ -7,16 +7,16 @@ using namespace spicy;
 using namespace spicy::detail;
 
 const codegen::Production* codegen::Production::follow() const {
-    auto p = this;
-    while ( auto r = dynamic_cast<const production::Reference*>(p) )
+    const auto* p = this;
+    while ( const auto* r = dynamic_cast<const production::Reference*>(p) )
         p = r->production();
 
     return p;
 }
 
 codegen::Production* codegen::Production::follow() {
-    auto p = this;
-    while ( auto r = dynamic_cast<production::Reference*>(p) )
+    auto* p = this;
+    while ( auto* r = dynamic_cast<production::Reference*>(p) )
         p = r->production();
 
     return p;
@@ -29,7 +29,7 @@ bool codegen::production::isNullable(const std::vector<std::vector<Production*>>
         return true;
 
     for ( const auto& rhs : rhss ) {
-        for ( auto& r : rhs ) {
+        for ( const auto& r : rhs ) {
             if ( ! r->isNullable() )
                 goto next;
         }
@@ -51,7 +51,7 @@ std::string codegen::to_string(const Production& p) {
     if ( p.isLiteral() )
         id = hilti::util::fmt("%" PRId64, p.tokenID());
 
-    if ( auto f = p.meta().field() ) {
+    if ( auto* f = p.meta().field() ) {
         std::string args;
 
         if ( auto x = f->arguments(); x.size() ) {
@@ -66,11 +66,11 @@ std::string codegen::to_string(const Production& p) {
         }
     }
 
-    if ( auto f = p.meta().container() )
+    if ( auto* f = p.meta().container() )
         container = hilti::util::fmt(" (container '%s')", f->id());
 
-    auto prefix = "";
-    auto postfix = "";
+    const auto* prefix = "";
+    const auto* postfix = "";
     auto name = p.typename_();
     auto render = p.dump();
 

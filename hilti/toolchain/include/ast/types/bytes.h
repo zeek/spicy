@@ -18,7 +18,7 @@ public:
     QualifiedType* dereferencedType() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, Meta meta = {}) {
-        auto etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::Const, meta);
+        auto* etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::Const, meta);
         return ctx->make<Iterator>(ctx, {etype}, std::move(meta));
     }
 

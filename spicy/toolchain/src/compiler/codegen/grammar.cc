@@ -42,7 +42,7 @@ std::vector<std::vector<Production*>> Grammar::_rhss(const Production* p) {
     for ( const auto& rhs : p->rhss() ) {
         std::vector<Production*> nrhs;
         for ( const auto& r : rhs ) {
-            if ( auto x = r->tryAs<production::Deferred>() )
+            if ( auto* x = r->tryAs<production::Deferred>() )
                 nrhs.push_back(resolved(x)->follow());
             else
                 nrhs.push_back(r->follow());
@@ -133,7 +133,7 @@ void Grammar::_simplify() {
 }
 
 void Grammar::_closureRecurse(production::Set* c, Production* p) {
-    if ( auto r = p->template tryAs<production::Deferred>() ) {
+    if ( auto* r = p->template tryAs<production::Deferred>() ) {
         assert(r->resolved());
         _closureRecurse(c, r->resolved());
         return;
@@ -188,7 +188,7 @@ bool Grammar::_isNullable(const Production* p) const {
 bool Grammar::_isNullable(std::vector<Production*>::const_iterator i,
                           std::vector<Production*>::const_iterator j) const {
     while ( i != j ) {
-        auto rhs = *i++;
+        auto* rhs = *i++;
         if ( ! _isNullable(rhs) )
             return false;
     }
@@ -288,7 +288,7 @@ hilti::Result<hilti::Nothing> Grammar::_computeTables() {
         if ( ! p->isA<production::LookAhead>() )
             continue;
 
-        auto lap = p->as<production::LookAhead>();
+        auto* lap = p->as<production::LookAhead>();
 
         auto v0 = lookAheadsForProduction(lap->alternatives().first, p);
         if ( ! v0 )
@@ -312,7 +312,7 @@ hilti::Result<hilti::Nothing> Grammar::_computeTables() {
 
 hilti::Result<hilti::Nothing> Grammar::_check() {
     for ( const auto& sym : _nterms ) {
-        auto lap = _prods.find(sym)->second->tryAs<production::LookAhead>();
+        auto* lap = _prods.find(sym)->second->tryAs<production::LookAhead>();
         if ( ! lap )
             continue;
 
@@ -348,7 +348,7 @@ hilti::Result<hilti::Nothing> Grammar::_check() {
 }
 
 hilti::Result<production::Set> Grammar::lookAheadsForProduction(const Production* p, const Production* parent) const {
-    if ( auto x = p->tryAs<production::Deferred>() )
+    if ( const auto* x = p->tryAs<production::Deferred>() )
         p = resolved(x);
 
     auto laheads = std::set<std::string>{};
@@ -389,7 +389,7 @@ void Grammar::printTables(std::ostream& out, bool verbose) {
         std::string field;
 
         if ( const auto& f = i.second->meta().field() ) {
-            auto isfp = i.second->meta().isFieldProduction() ? " (*)" : "";
+            const auto* isfp = i.second->meta().isFieldProduction() ? " (*)" : "";
             field =
                 fmt(" [field: %s%s] [item-type: %s] [parse-type: %s]", f->id(), isfp, *f->itemType(), *f->parseType());
         }

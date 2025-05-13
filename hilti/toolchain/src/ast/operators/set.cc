@@ -90,7 +90,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 
@@ -112,7 +112,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 
@@ -152,7 +152,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 
@@ -174,7 +174,7 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
+        auto* op0 = operandForExpression(builder, parameter::Kind::In, operands, 0);
         return {{op0, op0}};
     }
 
@@ -213,9 +213,9 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto op1 = operandForType(builder, parameter::Kind::In,
-                                  operands[0]->type()->type()->as<type::Set>()->elementType()->type());
+        auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
+        auto* op1 = operandForType(builder, parameter::Kind::In,
+                                   operands[0]->type()->type()->as<type::Set>()->elementType()->type());
         return {{op0, op1}};
     }
 
@@ -237,9 +237,9 @@ public:
     }
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
-        auto op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto op1 = operandForType(builder, parameter::Kind::In,
-                                  operands[0]->type()->type()->as<type::Set>()->elementType()->type());
+        auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
+        auto* op1 = operandForType(builder, parameter::Kind::In,
+                                   operands[0]->type()->type()->as<type::Set>()->elementType()->type());
         return {{op0, op1}};
     }
 

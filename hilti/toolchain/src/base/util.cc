@@ -298,13 +298,13 @@ std::optional<hilti::rt::filesystem::path> util::cacheDirectory(const hilti::Con
     if ( configuration.uses_build_directory )
         return configuration.build_directory / "cache" / "spicy";
 
-    if ( auto spicy_cache = ::getenv("SPICY_CACHE") )
+    if ( auto* spicy_cache = ::getenv("SPICY_CACHE") )
         return spicy_cache;
 
     const char* homedir = getenv("HOME");
 
     if ( homedir == nullptr ) {
-        auto pwuid = getpwuid(getuid());
+        auto* pwuid = getpwuid(getuid());
         if ( ! pwuid )
             return {};
 

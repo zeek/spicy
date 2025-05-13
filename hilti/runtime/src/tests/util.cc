@@ -76,7 +76,7 @@ TEST_CASE("atoi_n") {
 
         SUBCASE("invalid chars") {
             std::string_view s = "abc";
-            auto it = atoi_n(s.begin(), s.end(), 10, &x);
+            const auto* it = atoi_n(s.begin(), s.end(), 10, &x);
             CHECK_EQ(it, s.begin());
         }
 
@@ -140,7 +140,7 @@ TEST_CASE("createTemporaryFile") {
         SUBCASE("default prefix") { tmp = createTemporaryFile().valueOrThrow(); }
 
         SUBCASE("custom prefix") {
-            auto prefix = "1234567890";
+            const auto* prefix = "1234567890";
             tmp = createTemporaryFile(prefix).valueOrThrow();
             CHECK(startsWith(tmp.filename().string(), prefix));
         }
@@ -449,9 +449,9 @@ TEST_CASE("pow") {
 TEST_CASE("normalizePath") {
     CHECK_EQ(normalizePath(""), "");
 
-    const auto does_not_exist1 = "/does/not/exist";
-    const auto does_not_exist2 = "does/not/exist";
-    const auto does_not_exist3 = "./does//not///exist";
+    const auto* const does_not_exist1 = "/does/not/exist";
+    const auto* const does_not_exist2 = "does/not/exist";
+    const auto* const does_not_exist3 = "./does//not///exist";
     REQUIRE_FALSE(hilti::rt::filesystem::exists(does_not_exist1));
     REQUIRE_FALSE(hilti::rt::filesystem::exists(does_not_exist2));
     REQUIRE_FALSE(hilti::rt::filesystem::exists(does_not_exist3));

@@ -66,7 +66,7 @@ std::string Node::renderSelf(bool include_location) const {
 
     const auto& location =
         (include_location && meta().location()) ? util::fmt(" (%s)", meta().location().dump(true)) : "";
-    auto no_inherit_scope = (inheritScope() ? "" : " (no-inherit-scope)");
+    const auto* no_inherit_scope = (inheritScope() ? "" : " (no-inherit-scope)");
     const auto& parent = (_parent ? util::fmt(" [parent %s]", identity(_parent)) : " [no parent]");
 
     auto s = util::fmt("%s%s%s%s%s", name(this), sprops, parent, no_inherit_scope, location);
@@ -79,7 +79,7 @@ std::string Node::renderSelf(bool include_location) const {
     // Format errors last on the line since they are not properly delimited.
     if ( hasErrors() )
         for ( auto&& e : errors() ) {
-            auto prio = "";
+            const auto* prio = "";
             if ( e.priority == node::ErrorPriority::Low )
                 prio = " (low prio)";
             else if ( e.priority == node::ErrorPriority::High )
@@ -155,7 +155,7 @@ Node* node::detail::deepcopy(ASTContext* ctx, Node* n, bool force) {
     if ( ! force && ! n->_parent )
         return n;
 
-    auto clone = n->_clone(ctx);
+    auto* clone = n->_clone(ctx);
 
     for ( const auto& c : n->children() )
         clone->addChild(ctx, c); // this will copy the children recursively (because they have a parent already)
@@ -196,8 +196,8 @@ static std::pair<bool, Result<std::pair<Declaration*, ID>>> _lookupID(const ID& 
         if ( d->isA<declaration::Type>() )
             ok = true;
 
-        if ( auto c = d->tryAs<declaration::Constant>() ) {
-            if ( auto ctor = c->value()->tryAs<expression::Ctor>(); ctor && ctor->ctor()->isA<ctor::Enum>() )
+        if ( auto* c = d->tryAs<declaration::Constant>() ) {
+            if ( auto* ctor = c->value()->tryAs<expression::Ctor>(); ctor && ctor->ctor()->isA<ctor::Enum>() )
                 ok = true;
         }
 

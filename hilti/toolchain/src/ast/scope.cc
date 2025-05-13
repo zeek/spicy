@@ -70,7 +70,7 @@ std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, boo
             for ( const auto& v : (*i).second ) {
                 Scope* scope_ = v->scope();
 
-                if ( auto m = v->tryAs<declaration::Module>() )
+                if ( auto* m = v->tryAs<declaration::Module>() )
                     scope_ = m->scope();
 
                 auto e = v->isA<declaration::ImportedModule>();
@@ -106,7 +106,7 @@ void Scope::dump(std::ostream& out, const std::string& prefix) const {
             auto s = util::fmt("%s%s -> %s", prefix, k, x->renderSelf(false));
 
             if ( x ) {
-                if ( auto d = x->tryAs<declaration::Expression>() )
+                if ( auto* d = x->tryAs<declaration::Expression>() )
                     s += util::fmt(" (type: [@e:%s] [@t:%s])", d->expression()->type()->identity(),
                                    d->expression()->type()->identity());
                 else

@@ -15,7 +15,7 @@
 using nlohmann::json;
 
 static std::string formatType(const hilti::UnqualifiedType* t) {
-    if ( auto d = t->tryAs<hilti::type::DocOnly>() )
+    if ( const auto* d = t->tryAs<hilti::type::DocOnly>() )
         return d->description();
 
     return t->print();
@@ -83,7 +83,7 @@ static std::string kindToString(hilti::operator_::Kind kind) {
 static json operandToJSON(const hilti::operator_::Operand& o, const std::string& default_name) {
     json op;
 
-    auto t = o.type()->type();
+    auto* t = o.type()->type();
 
     op["type"] = formatType(t);
     op["kind"] = to_string(o.kind());
@@ -148,7 +148,7 @@ int main(int argc, char** argv) try {
 
         if ( op.kind() == hilti::operator_::Kind::Call ) {
             auto operands = op.operands();
-            auto callee = operands[0];
+            auto* callee = operands[0];
             auto args = operands[1]->type()->type()->tryAs<hilti::type::OperandList>()->operands();
 
             jop["operands"].push_back(operandToJSON(*callee, {}));
@@ -158,7 +158,7 @@ int main(int argc, char** argv) try {
         }
         else if ( op.kind() == hilti::operator_::Kind::MemberCall ) {
             auto operands = op.operands();
-            auto self = operands[0];
+            auto* self = operands[0];
             auto args = operands[2]->type()->type()->tryAs<hilti::type::OperandList>()->operands();
 
             jop["self"] = operandToJSON(*self, "self");
@@ -181,7 +181,7 @@ int main(int argc, char** argv) try {
 
     if ( argc > 1 ) {
         for ( auto i = 1; i < argc; i++ ) {
-            auto op = hilti::operator_::registry().byName(argv[i]);
+            const auto* op = hilti::operator_::registry().byName(argv[i]);
             if ( op )
                 add_operator(op->signature().namespace_, *op);
             else

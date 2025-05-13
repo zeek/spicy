@@ -294,7 +294,7 @@ public:
      */
     auto pathLength() const {
         size_t i = 0;
-        for ( auto n = parent(); n; i++, n = n->parent() )
+        for ( auto* n = parent(); n; i++, n = n->parent() )
             ;
 
         return i;
@@ -575,7 +575,7 @@ public:
      * @param n child node to set; this may be null to unset the particular index
      */
     void setChild(ASTContext* ctx, size_t idx, Node* n) {
-        if ( auto old = _children[idx] ) {
+        if ( auto* old = _children[idx] ) {
             old->_parent = nullptr;
             old->release();
         }

@@ -1,3 +1,7 @@
+1.14.0-dev.25 | 2025-05-13 14:32:23 +0200
+
+  * Use `auto*` instead of `auto`. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.23 | 2025-05-13 14:31:45 +0200
 
   * Remove unnecessary declaration of `main` as `extern "C"`. (Benjamin Bannier, Corelight)

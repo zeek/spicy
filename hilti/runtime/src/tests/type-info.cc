@@ -146,7 +146,7 @@ TEST_CASE("internal fields") {
     auto p = type_info::value::Parent(sx);
     auto v = type_info::Value(&*sx, &ti, p);
 
-    const auto s = type_info::value::auxType<type_info::Struct>(v);
+    const auto* const s = type_info::value::auxType<type_info::Struct>(v);
 
     CHECK_EQ(s->fields().size(), 2U);
     CHECK_EQ(s->fields(false).size(), 2U);
@@ -170,7 +170,7 @@ TEST_CASE("anonymous fields") {
     auto p = type_info::value::Parent(sx);
     auto v = type_info::Value(&*sx, &ti, p);
 
-    const auto s = type_info::value::auxType<type_info::Struct>(v);
+    const auto* const s = type_info::value::auxType<type_info::Struct>(v);
 
     CHECK_EQ(s->fields().size(), 1U);
     CHECK(s->fields()[0].get().isAnonymous());

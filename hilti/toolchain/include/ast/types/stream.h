@@ -23,7 +23,7 @@ public:
     bool isMutable() const final { return true; }
 
     static auto create(ASTContext* ctx, Meta meta = {}) {
-        auto etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::Mutable, meta);
+        auto* etype = QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, 8, meta), Constness::Mutable, meta);
         return ctx->make<Iterator>(ctx, {etype}, std::move(meta));
     }
 

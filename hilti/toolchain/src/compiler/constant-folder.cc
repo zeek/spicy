@@ -61,9 +61,9 @@ struct VisitorConstantFolder : public visitor::PreOrder {
 
     // Helper to extract the 1st argument of a call expression.
     Expression* callArgument(const expression::ResolvedOperator* o, int i) {
-        auto ctor = o->op1()->as<expression::Ctor>()->ctor();
+        auto* ctor = o->op1()->as<expression::Ctor>()->ctor();
 
-        if ( auto x = ctor->tryAs<ctor::Coerced>() )
+        if ( auto* x = ctor->tryAs<ctor::Coerced>() )
             ctor = x->coercedCtor();
 
         return ctor->as<ctor::Tuple>()->value()[i];
@@ -87,7 +87,7 @@ struct VisitorConstantFolder : public visitor::PreOrder {
     }
 
     void operator()(expression::Ctor* n) final {
-        if ( auto coerced = n->ctor()->tryAs<ctor::Coerced>() )
+        if ( auto* coerced = n->ctor()->tryAs<ctor::Coerced>() )
             result = coerced->coercedCtor();
         else
             result = n->ctor();
@@ -134,8 +134,8 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         if ( util::startsWith(n->id().local(), "__feat") )
             return;
 
-        auto decl = n->resolvedDeclaration();
-        auto const_ = decl->tryAs<declaration::Constant>();
+        auto* decl = n->resolvedDeclaration();
+        auto* const_ = decl->tryAs<declaration::Constant>();
         if ( ! const_ )
             return;
 
@@ -333,7 +333,7 @@ struct VisitorConstantFolder : public visitor::PreOrder {
 };
 
 Result<Ctor*> foldConstant(Builder* builder, Expression* expr) {
-    if ( auto result =
+    if ( auto* result =
              hilti::visitor::dispatch(VisitorConstantFolder(builder), expr, [](const auto& v) { return v.result; }) )
         return result;
     else
@@ -349,8 +349,8 @@ Result<Ctor*> detail::constant_folder::fold(Builder* builder, Expression* expr) 
         return {nullptr};
 
     try {
-        if ( auto result = hilti::visitor::dispatch(VisitorConstantFolder(builder), expr,
-                                                    [](const auto& v) { return v.result; }) )
+        if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder), expr,
+                                                     [](const auto& v) { return v.result; }) )
             return result;
         else
             return {nullptr};

@@ -60,7 +60,7 @@ private:
 };
 
 inline std::string to_string(const Pattern& pattern) {
-    auto ci = (pattern.isCaseInsensitive() ? "i" : "");
+    const auto* ci = (pattern.isCaseInsensitive() ? "i" : "");
     const auto& id = (pattern.matchID() ? fmt("$(%" PRIu64 ")", pattern.matchID()) : "");
     return fmt("/%s/%s%s", pattern.value(), ci, id);
 }

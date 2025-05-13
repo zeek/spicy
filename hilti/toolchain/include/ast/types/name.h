@@ -24,8 +24,8 @@ public:
         if ( recursion_depth > 1000 )
             return nullptr;
 
-        auto t = context()->lookup(_resolved_type_index);
-        if ( auto n = t->tryAs<type::Name>() )
+        auto* t = context()->lookup(_resolved_type_index);
+        if ( auto* n = t->tryAs<type::Name>() )
             return n->resolvedType(recursion_depth + 1);
         else
             return t;

@@ -17,10 +17,10 @@ hilti::struct_::MemberCall::MemberCall(declaration::Field* fdecl) : Operator(fde
 hilti::struct_::MemberCall::~MemberCall() {}
 
 operator_::Signature hilti::struct_::MemberCall::signature(Builder* builder) const {
-    auto ftype = _fdecl->type()->type()->as<type::Function>();
-    auto stype = _fdecl->parent(1)->as<type::Struct>();
-    auto params = type::OperandList::fromParameters(builder->context(), ftype->parameters());
-    auto result = ftype->result();
+    auto* ftype = _fdecl->type()->type()->as<type::Function>();
+    auto* stype = _fdecl->parent(1)->as<type::Struct>();
+    auto* params = type::OperandList::fromParameters(builder->context(), ftype->parameters());
+    auto* result = ftype->result();
 
     return Signature{
         .kind = Kind::MemberCall,
@@ -34,10 +34,10 @@ operator_::Signature hilti::struct_::MemberCall::signature(Builder* builder) con
 
 Result<expression::ResolvedOperator*> hilti::struct_::MemberCall::instantiate(Builder* builder, Expressions operands,
                                                                               Meta meta) const {
-    auto callee = operands[0];
-    auto member = operands[1];
-    auto args = operands[2];
-    auto result = _fdecl->type()->type()->as<type::Function>()->result();
+    auto* callee = operands[0];
+    auto* member = operands[1];
+    auto* args = operands[2];
+    auto* result = _fdecl->type()->type()->as<type::Function>()->result();
 
     return {operator_::struct_::MemberCall::create(builder->context(), this, result, {callee, member, args},
                                                    std::move(meta))};
@@ -47,11 +47,11 @@ namespace {
 namespace struct_ {
 
 QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
-    auto stype = operands[0]->type()->type()->tryAs<type::Struct>();
+    auto* stype = operands[0]->type()->type()->tryAs<type::Struct>();
     if ( ! stype )
         return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 
-    if ( auto field = stype->field(operands[1]->as<expression::Member>()->id()) )
+    if ( auto* field = stype->field(operands[1]->as<expression::Member>()->id()) )
         return field->type();
     else
         return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
@@ -59,18 +59,18 @@ QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
 
 void _checkName(expression::ResolvedOperator* op, bool check_optional = false) {
     const auto& id = op->op1()->as<expression::Member>()->id();
-    auto t = op->op0()->type()->type();
+    auto* t = op->op0()->type()->type();
 
-    if ( auto x = t->tryAs<type::ValueReference>() )
+    if ( auto* x = t->tryAs<type::ValueReference>() )
         t = x->dereferencedType()->type();
 
-    auto stype = t->tryAs<type::Struct>();
+    auto* stype = t->tryAs<type::Struct>();
     if ( ! stype ) {
         op->addError("type is not a struct");
         return;
     }
 
-    auto f = stype->field(id);
+    auto* f = stype->field(id);
     if ( ! f ) {
         op->addError(util::fmt("type does not have field '%s'", id));
         return;

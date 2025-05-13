@@ -46,7 +46,7 @@ public:
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     static auto create(ASTContext* ctx, const ctor::unit::Fields& fields, Meta meta = {}) {
-        auto auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
+        auto* auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
         return ctx->make<Unit>(ctx, node::flatten(auto_, fields), std::move(meta));
     }
 

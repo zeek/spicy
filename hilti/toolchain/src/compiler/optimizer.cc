@@ -201,7 +201,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 // If the unit is wrapped in a type with a `&cxxname`
                 // attribute its members are defined in C++ as well.
-                auto type_ = n->parent<declaration::Type>();
+                auto* type_ = n->parent<declaration::Type>();
 
                 if ( type_ && type_->attributes()->has(hilti::attribute::kind::Cxxname) )
                     function.defined = true;
@@ -209,7 +209,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 if ( n->type()->type()->as<type::Function>()->flavor() == type::function::Flavor::Hook )
                     function.hook = true;
 
-                if ( auto type = type_ ) {
+                if ( auto* type = type_ ) {
                     for ( const auto& requirement :
                           n->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                         const auto& requirement_ = requirement->valueAsString();
@@ -258,7 +258,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
     void operator()(declaration::Function* n) final {
         ID function_id;
-        if ( auto prototype = context()->lookup(n->linkedPrototypeIndex()) )
+        if ( auto* prototype = context()->lookup(n->linkedPrototypeIndex()) )
             function_id = prototype->fullyQualifiedID();
         else
             function_id = n->fullyQualifiedID();
@@ -288,7 +288,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 // For implementation of methods check whether the method
                 // should only be emitted when certain features are active.
-                if ( auto decl = context()->lookup(n->linkedDeclarationIndex()) ) {
+                if ( auto* decl = context()->lookup(n->linkedDeclarationIndex()) ) {
                     for ( const auto& requirement :
                           fn->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                         const auto& requirement_ = requirement->valueAsString();
@@ -316,7 +316,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 if ( fn->ftype()->flavor() == type::function::Flavor::Hook )
                     function.hook = true;
 
-                const auto decl = context()->lookup(n->linkedDeclarationIndex());
+                auto* const decl = context()->lookup(n->linkedDeclarationIndex());
 
                 switch ( fn->callingConvention() ) {
                     case function::CallingConvention::ExternNoSuspend:
@@ -391,9 +391,9 @@ struct FunctionVisitor : OptimizerVisitor {
 
         assert(n->hasOp0());
 
-        auto type = n->op0()->type();
+        auto* type = n->op0()->type();
 
-        auto struct_ = type->type()->tryAs<type::Struct>();
+        auto* struct_ = type->type()->tryAs<type::Struct>();
         if ( ! struct_ )
             return;
 
@@ -401,7 +401,7 @@ struct FunctionVisitor : OptimizerVisitor {
         if ( ! member )
             return;
 
-        auto field = struct_->field(member->id());
+        auto* field = struct_->field(member->id());
         if ( ! field )
             return;
 
@@ -443,7 +443,7 @@ struct FunctionVisitor : OptimizerVisitor {
         if ( ! n->hasOp0() )
             return;
 
-        auto decl = n->op0()->as<expression::Name>()->resolvedDeclaration();
+        auto* decl = n->op0()->as<expression::Name>()->resolvedDeclaration();
         if ( ! decl )
             return;
 
@@ -463,7 +463,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 // Replace call node referencing unimplemented hook with default value.
                 if ( function.hook && ! function.defined ) {
-                    if ( auto fn = decl->tryAs<declaration::Function>() ) {
+                    if ( auto* fn = decl->tryAs<declaration::Function>() ) {
                         replaceNode(n,
                                     builder()->expressionCtor(
                                         builder()->ctorDefault(fn->function()->ftype()->result()->type())),
@@ -485,8 +485,8 @@ struct FunctionVisitor : OptimizerVisitor {
         switch ( _stage ) {
             case Stage::COLLECT: {
                 std::optional<bool> value;
-                if ( auto ctor = n->value()->tryAs<expression::Ctor>() )
-                    if ( auto bool_ = ctor->ctor()->tryAs<ctor::Bool>() )
+                if ( auto* ctor = n->value()->tryAs<expression::Ctor>() )
+                    if ( auto* bool_ = ctor->ctor()->tryAs<ctor::Bool>() )
                         value = bool_->value();
 
                 if ( ! value )
@@ -591,7 +591,7 @@ struct TypeVisitor : OptimizerVisitor {
     }
 
     void operator()(type::Name* n) final {
-        auto t = n->resolvedType();
+        auto* t = n->resolvedType();
         assert(t);
 
         switch ( _stage ) {
@@ -633,7 +633,7 @@ struct TypeVisitor : OptimizerVisitor {
     void operator()(expression::Name* n) final {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                const auto type = innermostType(n->type());
+                auto* const type = innermostType(n->type());
 
                 const auto& type_id = type->type()->typeID();
 
@@ -655,7 +655,7 @@ struct TypeVisitor : OptimizerVisitor {
     void operator()(declaration::Function* n) final {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( const auto decl = context()->lookup(n->linkedDeclarationIndex()) ) {
+                if ( auto* const decl = context()->lookup(n->linkedDeclarationIndex()) ) {
                     // If this type is referenced by a function declaration it is used.
                     _used[decl->fullyQualifiedID()] = true;
                     break;
@@ -739,8 +739,8 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( auto ctor = n->value()->tryAs<expression::Ctor>() )
-                    if ( auto bool_ = ctor->ctor()->tryAs<ctor::Bool>() )
+                if ( auto* ctor = n->value()->tryAs<expression::Ctor>() )
+                    if ( auto* bool_ = ctor->ctor()->tryAs<ctor::Bool>() )
                         _constants[id] = bool_->value();
 
                 break;
@@ -756,7 +756,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
             case Stage::COLLECT:
             case Stage::PRUNE_DECLS: return;
             case Stage::PRUNE_USES: {
-                auto decl = n->resolvedDeclaration();
+                auto* decl = n->resolvedDeclaration();
                 if ( ! decl )
                     return;
 
@@ -774,8 +774,8 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
     }
 
     std::optional<bool> tryAsBoolLiteral(Expression* x) {
-        if ( auto expression = x->tryAs<expression::Ctor>() )
-            if ( auto bool_ = expression->ctor()->tryAs<ctor::Bool>() )
+        if ( auto* expression = x->tryAs<expression::Ctor>() )
+            if ( auto* bool_ = expression->ctor()->tryAs<ctor::Bool>() )
                 return {bool_->value()};
 
         return {};
@@ -787,7 +787,7 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
             case Stage::PRUNE_DECLS: return;
             case Stage::PRUNE_USES: {
                 if ( auto bool_ = tryAsBoolLiteral(n->condition()) ) {
-                    if ( auto else_ = n->false_() ) {
+                    if ( auto* else_ = n->false_() ) {
                         if ( ! bool_.value() ) {
                             replaceNode(n, else_);
                             return;
@@ -924,27 +924,27 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
 
     // Returns true if statement is `(*self).__error = __error`.
     bool isErrorPush(statement::Expression* n) {
-        auto assign = n->expression()->tryAs<expression::Assign>();
+        auto* assign = n->expression()->tryAs<expression::Assign>();
         if ( ! assign )
             return false;
 
-        auto lhs = assign->target()->tryAs<operator_::struct_::MemberNonConst>();
+        auto* lhs = assign->target()->tryAs<operator_::struct_::MemberNonConst>();
         if ( ! lhs )
             return false;
 
-        auto op0 = lhs->op0()->tryAs<operator_::value_reference::Deref>();
+        auto* op0 = lhs->op0()->tryAs<operator_::value_reference::Deref>();
         if ( ! op0 )
             return false;
 
-        auto op1 = lhs->op1()->tryAs<expression::Member>();
+        auto* op1 = lhs->op1()->tryAs<expression::Member>();
         if ( ! (op1 && op1->id() == "__error") )
             return false;
 
-        auto self = op0->op0()->tryAs<expression::Name>();
+        auto* self = op0->op0()->tryAs<expression::Name>();
         if ( ! (self && self->id() == "self") )
             return false;
 
-        auto rhs = assign->source()->tryAs<expression::Name>();
+        auto* rhs = assign->source()->tryAs<expression::Name>();
         if ( ! (rhs && rhs->id() == "__error") )
             return false;
 
@@ -953,27 +953,27 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
 
     // Returns true if statement is `__error == (*self).__error`.
     bool isErrorPop(statement::Expression* n) {
-        auto assign = n->expression()->tryAs<expression::Assign>();
+        auto* assign = n->expression()->tryAs<expression::Assign>();
         if ( ! assign )
             return false;
 
-        auto lhs = assign->target()->tryAs<expression::Name>();
+        auto* lhs = assign->target()->tryAs<expression::Name>();
         if ( ! (lhs && lhs->id() == "__error") )
             return false;
 
-        auto rhs = assign->source()->tryAs<operator_::struct_::MemberNonConst>();
+        auto* rhs = assign->source()->tryAs<operator_::struct_::MemberNonConst>();
         if ( ! rhs )
             return false;
 
-        auto op0 = rhs->op0()->tryAs<operator_::value_reference::Deref>();
+        auto* op0 = rhs->op0()->tryAs<operator_::value_reference::Deref>();
         if ( ! op0 )
             return false;
 
-        auto op1 = rhs->op1()->tryAs<expression::Member>();
+        auto* op1 = rhs->op1()->tryAs<expression::Member>();
         if ( ! (op1 && op1->id() == "__error") )
             return false;
 
-        auto self = op0->op0()->tryAs<expression::Name>();
+        auto* self = op0->op0()->tryAs<expression::Name>();
         if ( ! (self && self->id() == "self") )
             return false;
 
@@ -982,7 +982,7 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
 
     void operator()(statement::Expression* n) final {
         // Remove expression statements of the form `default<void>`.
-        if ( auto ctor = n->expression()->tryAs<expression::Ctor>();
+        if ( auto* ctor = n->expression()->tryAs<expression::Ctor>();
              ctor && ctor->ctor()->isA<ctor::Default>() && ctor->type()->type()->isA<type::Void>() ) {
             recordChange(n, "removing default<void> statement");
             n->parent()->removeChild(n);
@@ -997,9 +997,9 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
         // These will be left behind by the optimizer if a hook call got
         // optimized out in between them.
         if ( isErrorPush(n) && n->parent() ) {
-            auto parent = n->parent();
-            if ( auto sibling = parent->sibling(n) ) {
-                if ( auto stmt = sibling->tryAs<statement::Expression>(); stmt && isErrorPop(stmt) ) {
+            auto* parent = n->parent();
+            if ( auto* sibling = parent->sibling(n) ) {
+                if ( auto* stmt = sibling->tryAs<statement::Expression>(); stmt && isErrorPop(stmt) ) {
                     recordChange(n, "removing unneeded error push/pop statements");
                     parent->removeChild(n);
                     parent->removeChild(sibling);
@@ -1014,8 +1014,8 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
         // the whole try/catch with the block inside.
         if ( auto catches = n->catches(); catches.size() == 1 ) {
             const auto& catch_ = catches.front();
-            if ( auto catch_body = catch_->body()->as<statement::Block>(); catch_body->statements().size() == 1 ) {
-                if ( auto throw_ = catch_body->statements().front()->tryAs<statement::Throw>();
+            if ( auto* catch_body = catch_->body()->as<statement::Block>(); catch_body->statements().size() == 1 ) {
+                if ( auto* throw_ = catch_body->statements().front()->tryAs<statement::Throw>();
                      throw_ && ! throw_->expression() ) {
                     recordChange(n, "replacing rethrowing try/catch with just the block");
                     replaceNode(n, n->body());
@@ -1103,11 +1103,11 @@ public:
                 // Collect parameter requirements from the declaration of the called function.
                 std::vector<std::set<std::string>> requirements;
 
-                auto rid = n->op0()->tryAs<expression::Name>();
+                auto* rid = n->op0()->tryAs<expression::Name>();
                 if ( ! rid )
                     return;
 
-                auto decl = rid->resolvedDeclaration();
+                auto* decl = rid->resolvedDeclaration();
                 if ( ! decl )
                     return;
 
@@ -1142,7 +1142,7 @@ public:
                     // it to the element type of list args. Since this
                     // optimizer pass removes code worst case this could lead
                     // to us optimizing less.
-                    auto type = innermostType(arg->type());
+                    auto* type = innermostType(arg->type());
 
                     // Ignore arguments types without type ID (e.g., builtin types).
                     const auto& type_id = type->type()->typeID();
@@ -1171,17 +1171,17 @@ public:
     void operator()(operator_::struct_::MemberCall* n) final {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto type = n->op0()->type();
+                auto* type = n->op0()->type();
                 while ( type->type()->isReferenceType() )
                     type = type->type()->dereferencedType();
 
-                const auto struct_ = type->type()->tryAs<type::Struct>();
+                auto* const struct_ = type->type()->tryAs<type::Struct>();
                 if ( ! struct_ )
                     break;
 
                 const auto& member = n->op1()->as<expression::Member>();
 
-                const auto field = struct_->field(member->id());
+                auto* const field = struct_->field(member->id());
                 if ( ! field )
                     break;
 
@@ -1200,7 +1200,7 @@ public:
                 // Check if call imposes requirements on any of the types of the arguments.
                 const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
                 assert(op.declaration());
-                auto ftype = op.declaration()->type()->type()->as<type::Function>();
+                auto* ftype = op.declaration()->type()->type()->as<type::Function>();
 
                 const auto parameters = ftype->parameters();
                 if ( parameters.empty() )
@@ -1217,7 +1217,7 @@ public:
                     // it to the element type of list args. Since this
                     // optimizer pass removes code worst case this could lead
                     // to us optimizing less.
-                    const auto type = innermostType(args[i]->type());
+                    auto* const type = innermostType(args[i]->type());
                     const auto& param = parameters[i];
 
                     if ( auto type_id = type->type()->typeID() )
@@ -1259,14 +1259,14 @@ public:
             return {{type_id, feature}};
         };
 
-        if ( auto rid = condition->tryAs<expression::Name>() ) {
+        if ( auto* rid = condition->tryAs<expression::Name>() ) {
             if ( auto id_feature = idFeatureFromConstant(rid->id()) )
                 result[std::move(id_feature->first)].insert(std::move(id_feature->second));
         }
 
         // If we did not find a feature constant in the conditional, we
         // could also be dealing with a `OR` of feature constants.
-        else if ( auto or_ = condition->tryAs<expression::LogicalOr>() ) {
+        else if ( auto* or_ = condition->tryAs<expression::LogicalOr>() ) {
             featureFlagsFromCondition(or_->op0(), result);
             featureFlagsFromCondition(or_->op1(), result);
         }
@@ -1277,9 +1277,9 @@ public:
         std::map<ID, std::set<std::string>> result;
 
         // We walk up the full path to discover all feature conditionals wrapping this position.
-        for ( auto parent = n->parent(); parent; parent = parent->parent() ) {
+        for ( auto* parent = n->parent(); parent; parent = parent->parent() ) {
             if ( const auto& if_ = parent->tryAs<statement::If>() ) {
-                const auto condition = if_->condition();
+                auto* const condition = if_->condition();
                 if ( ! condition )
                     continue;
 
@@ -1297,7 +1297,7 @@ public:
     void handleMemberAccess(expression::ResolvedOperator* x) {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto type_ = x->op0()->type();
+                auto* type_ = x->op0()->type();
                 while ( type_->type()->isReferenceType() )
                     type_ = type_->type()->dereferencedType();
 
@@ -1305,7 +1305,7 @@ public:
                 if ( ! type_id )
                     return;
 
-                auto member = x->op1()->tryAs<expression::Member>();
+                auto* member = x->op1()->tryAs<expression::Member>();
                 if ( ! member )
                     return;
 
@@ -1313,12 +1313,12 @@ public:
                 if ( ! lookup )
                     return;
 
-                auto type = lookup->first->template as<declaration::Type>();
-                auto struct_ = type->type()->type()->template tryAs<type::Struct>();
+                auto* type = lookup->first->template as<declaration::Type>();
+                auto* struct_ = type->type()->type()->template tryAs<type::Struct>();
                 if ( ! struct_ )
                     return;
 
-                auto field = struct_->field(member->id());
+                auto* field = struct_->field(member->id());
                 if ( ! field )
                     return;
 
@@ -1487,13 +1487,13 @@ struct MemberVisitor : OptimizerVisitor {
     void operator()(expression::Member* n) final {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto expr = n->parent()->children()[1]->tryAs<Expression>();
+                auto* expr = n->parent()->children()[1]->tryAs<Expression>();
                 if ( ! expr )
                     break;
 
-                const auto type = innermostType(expr->type());
+                auto* const type = innermostType(expr->type());
 
-                auto struct_ = type->type()->tryAs<type::Struct>();
+                auto* struct_ = type->type()->tryAs<type::Struct>();
                 if ( ! struct_ )
                     break;
 
@@ -1515,7 +1515,7 @@ struct MemberVisitor : OptimizerVisitor {
     void operator()(expression::Name* n) final {
         switch ( _stage ) {
             case Stage::COLLECT: {
-                auto decl = n->resolvedDeclaration();
+                auto* decl = n->resolvedDeclaration();
                 if ( ! decl || ! decl->isA<declaration::Field>() )
                     return;
 
@@ -1632,7 +1632,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
 
     // Clear cached information which might become outdated due to edits.
     auto v = hilti::visitor::PreOrder();
-    for ( auto n : hilti::visitor::range(v, root, {}) )
+    for ( auto* n : hilti::visitor::range(v, root, {}) )
         n->clearScope();
 }
 

@@ -94,7 +94,7 @@ TEST_CASE("debug::location") {
     CHECK_EQ(debug::location(), nullptr);
 
     REQUIRE(context::detail::current());
-    const auto source_location = "foo/bar.h";
+    const auto* const source_location = "foo/bar.h";
     debug::setLocation(source_location);
 
     CHECK_EQ(debug::location(), source_location);

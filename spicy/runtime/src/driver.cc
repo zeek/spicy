@@ -372,7 +372,7 @@ driver::ParsingState::State driver::ParsingState::_process(size_t size, const ch
         _done = true;
         throw hilti::rt::Exception(e.what());
     } catch ( ... ) {
-        auto* what = "non-standard exception thrown";
+        const auto* what = "non-standard exception thrown";
         DRIVER_DEBUG(what);
         _done = true;
         throw hilti::rt::Exception(what);

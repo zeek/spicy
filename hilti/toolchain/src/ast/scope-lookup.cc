@@ -49,8 +49,8 @@ std::pair<bool, Result<std::pair<Declaration*, ID>>> hilti::scope::detail::looku
             if ( d->isA<declaration::Type>() )
                 ok = true;
 
-            if ( auto c = d->tryAs<declaration::Constant>() ) {
-                if ( auto ctor = c->value()->tryAs<expression::Ctor>(); ctor && ctor->ctor()->isA<ctor::Enum>() )
+            if ( auto* c = d->tryAs<declaration::Constant>() ) {
+                if ( auto* ctor = c->value()->tryAs<expression::Ctor>(); ctor && ctor->ctor()->isA<ctor::Enum>() )
                     ok = true;
             }
 

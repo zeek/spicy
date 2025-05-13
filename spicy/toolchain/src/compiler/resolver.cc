@@ -40,10 +40,10 @@ auto resolveField(Builder* builder, type::unit::item::UnresolvedField* u, T t) {
     // First unlink nodes from their `UnresolvedField` parent to avoid deep-copying
     // them when adding them to the new field.
     auto arguments = copy_vector<Expression>(u->arguments());
-    auto repeat_count = u->repeatCount();
-    auto attributes = u->attributes();
+    auto* repeat_count = u->repeatCount();
+    auto* attributes = u->attributes();
     auto sinks = copy_vector<Expression>(u->sinks());
-    auto condition = u->condition();
+    auto* condition = u->condition();
     auto hooks = copy_vector<declaration::Hook>(u->hooks());
 
     u->removeChildren(0, {});
@@ -105,7 +105,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! nt->isResolved() ) {
             // Accept as resolved if it's a name that we already know. This
             // avoids getting into unsatisfiable resolution loops.
-            if ( auto name = nt->type(false)->tryAs<hilti::type::Name>(); ! name || ! name->resolvedTypeIndex() )
+            if ( auto* name = nt->type(false)->tryAs<hilti::type::Name>(); ! name || ! name->resolvedTypeIndex() )
                 return {};
         }
 
@@ -135,7 +135,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // Caught elsewhere, we don't want to report it here again.
                 return;
 
-            auto cond = *n->valueAsExpression();
+            auto* cond = *n->valueAsExpression();
             if ( ! cond->isResolved() )
                 return;
 
@@ -151,7 +151,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             // Implicitly create an error message from the condition itself.
             auto msg = hilti::util::fmt("&requires failed: %s", hilti::util::replace(cond->print(), "__dd", "$$"));
-            auto new_cond =
+            auto* new_cond =
                 builder()->conditionTest(*ne.coerced, builder()->expression(builder()->ctorError(std::move(msg))),
                                          cond->meta());
             n->replaceChild(context(), cond, new_cond);
@@ -161,16 +161,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(type::unit::Item* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto utype = n->parent<type::Unit>(); utype && utype->typeID() )
+            if ( auto* utype = n->parent<type::Unit>(); utype && utype->typeID() )
                 n->setFullyQualifiedID(utype->typeID() + n->id()); // global scope
         }
     }
 
     void operator()(declaration::Hook* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( auto utype = n->parent<type::Unit>(); utype && utype->typeID() )
+            if ( auto* utype = n->parent<type::Unit>(); utype && utype->typeID() )
                 n->setFullyQualifiedID(utype->typeID() + n->id()); // global scope
-            else if ( auto hook = n->parent<declaration::UnitHook>(); hook && hook->fullyQualifiedID() )
+            else if ( auto* hook = n->parent<declaration::UnitHook>(); hook && hook->fullyQualifiedID() )
                 n->setFullyQualifiedID(hook->fullyQualifiedID()); // global scope
         }
 
@@ -180,7 +180,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( n->id().local().str() == "0x25_print" ) {
                 if ( n->ftype()->result()->type()->isA<hilti::type::Void>() ) {
                     recordChange(n, "setting %print result to string");
-                    auto optional = builder()->typeOptional(
+                    auto* optional = builder()->typeOptional(
                         builder()->qualifiedType(builder()->typeString(), hilti::Constness::Const));
                     n->setResult(context(), builder()->qualifiedType(optional, hilti::Constness::Const));
                 }
@@ -198,7 +198,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             // Link hook to its unit type and field.
 
-            auto unit_type = n->parent<type::Unit>();
+            auto* unit_type = n->parent<type::Unit>();
             if ( unit_type ) {
                 // Produce a tailored error message if `%XXX` is used on a unit field.
                 if ( auto id = n->id().namespace_(); id && hilti::util::startsWith(n->id().local(), "0x25_") ) {
@@ -228,10 +228,10 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                         if ( auto id = ns.namespace_(); id && hilti::util::startsWith(n->id().local(), "0x25_") ) {
                             if ( auto resolved =
                                      hilti::scope::lookupID<hilti::declaration::Type>(std::move(id), n, "unit type") ) {
-                                if ( auto utype = resolved->first->template as<hilti::declaration::Type>()
-                                                      ->type()
-                                                      ->type()
-                                                      ->tryAs<type::Unit>();
+                                if ( auto* utype = resolved->first->template as<hilti::declaration::Type>()
+                                                       ->type()
+                                                       ->type()
+                                                       ->tryAs<type::Unit>();
                                      utype && utype->itemByName(ns.local()) ) {
                                     n->addError(hilti::util::fmt("cannot use hook '%s' with a unit field",
                                                                  hilti::util::replace(n->id().local(), "0x25_", "%")));
@@ -248,7 +248,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     }
                 }
 
-                if ( auto x = resolved->first->as<hilti::declaration::Type>()->type()->type()->tryAs<type::Unit>() )
+                if ( auto* x = resolved->first->as<hilti::declaration::Type>()->type()->type()->tryAs<type::Unit>() )
                     unit_type = x;
                 else {
                     n->addError(hilti::util::fmt("'%s' is not a unit type", ns));
@@ -294,7 +294,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         if ( n->unitFieldIndex() && ! n->dd() ) {
-            auto unit_field = context()->lookup(n->unitFieldIndex())->as<type::unit::item::Field>();
+            auto* unit_field = context()->lookup(n->unitFieldIndex())->as<type::unit::item::Field>();
 
             QualifiedType* dd = nullptr;
 
@@ -310,7 +310,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 dd = unit_field->itemType();
 
             if ( dd && dd->isResolved() ) {
-                auto dd_ = QualifiedType::createExternal(context(), dd->type(), dd->constness());
+                auto* dd_ = QualifiedType::createExternal(context(), dd->type(), dd->constness());
                 recordChange(n, dd_, "$$ type");
                 n->setDDType(context(), dd_);
             }
@@ -318,7 +318,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::declaration::Type* n) final {
-        if ( auto u = n->type()->type()->tryAs<type::Unit>(); u && ! n->type()->alias() ) {
+        if ( auto* u = n->type()->type()->tryAs<type::Unit>(); u && ! n->type()->alias() ) {
             if ( n->linkage() == hilti::declaration::Linkage::Public && ! u->isPublic() ) {
                 recordChange(n, "set public");
                 u->setPublic(true);
@@ -331,7 +331,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 if ( u->propertyItem(prop->id()) )
                     continue;
 
-                auto i = builder()->typeUnitItemProperty(prop->id(), prop->expression(), {}, true, prop->meta());
+                auto* i = builder()->typeUnitItemProperty(prop->id(), prop->expression(), {}, true, prop->meta());
                 recordChange(n, hilti::util::fmt("add module-level property %s", prop->id()));
                 u->addItems(context(), {i});
             }
@@ -342,8 +342,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         // Allow `$$` as an alias for `self` in unit convert attributes for symmetry with field convert attributes.
         if ( n->id() == ID("__dd") ) {
             // The following loop searches for `&convert` attribute nodes directly under `Unit` nodes.
-            for ( auto p = n->parent(); p; p = p->parent() ) {
-                auto attr = p->tryAs<hilti::Attribute>();
+            for ( auto* p = n->parent(); p; p = p->parent() ) {
+                auto* attr = p->tryAs<hilti::Attribute>();
                 if ( ! attr )
                     continue;
 
@@ -361,20 +361,20 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::unit::ConnectFilter* n) final {
-        auto unit = n->op0()->type()->type()->as<type::Unit>();
+        auto* unit = n->op0()->type()->type()->as<type::Unit>();
         unit->setMayHaveFilter(true);
     }
 
     void operator()(operator_::unit::HasMember* n) final {
-        auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
+        auto* unit = n->op0()->type()->type()->tryAs<type::Unit>();
         const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
-            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
-                auto has_member = hilti::operator_::registry().byName("unit::HasMember");
+            if ( auto* field = unit->findRangeInAnonymousBitField(id).first ) {
+                const auto* has_member = hilti::operator_::registry().byName("unit::HasMember");
                 assert(has_member);
                 auto has_field =
                     has_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())}, n->meta());
@@ -384,16 +384,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::unit::MemberConst* n) final {
-        auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
+        auto* unit = n->op0()->type()->type()->tryAs<type::Unit>();
         const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
-            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
-                auto unit_member = hilti::operator_::registry().byName("unit::MemberConst");
-                auto bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
+            if ( auto* field = unit->findRangeInAnonymousBitField(id).first ) {
+                const auto* unit_member = hilti::operator_::registry().byName("unit::MemberConst");
+                const auto* bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(unit_member && bitfield_member);
                 auto access_field =
                     unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())},
@@ -405,16 +405,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::unit::MemberNonConst* n) final {
-        auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
+        auto* unit = n->op0()->type()->type()->tryAs<type::Unit>();
         const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently refer to the
             // member through the field's internal name.
-            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
-                auto unit_member = hilti::operator_::registry().byName("unit::MemberNonConst");
-                auto bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
+            if ( auto* field = unit->findRangeInAnonymousBitField(id).first ) {
+                const auto* unit_member = hilti::operator_::registry().byName("unit::MemberNonConst");
+                const auto* bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(unit_member && bitfield_member);
                 auto access_field =
                     unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())},
@@ -426,16 +426,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::unit::TryMember* n) final {
-        auto unit = n->op0()->type()->type()->tryAs<type::Unit>();
+        auto* unit = n->op0()->type()->type()->tryAs<type::Unit>();
         const auto& id = n->op1()->tryAs<hilti::expression::Member>()->id();
 
         if ( unit && id && ! unit->itemByName(id) ) {
             // See if we we got an anonymous bitfield with a member of that
             // name. If so, rewrite the access to transparently to refer to the
             // member through the field's internal name.
-            if ( auto field = unit->findRangeInAnonymousBitField(id).first ) {
-                auto try_member = hilti::operator_::registry().byName("unit::TryMember");
-                auto bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
+            if ( auto* field = unit->findRangeInAnonymousBitField(id).first ) {
+                const auto* try_member = hilti::operator_::registry().byName("unit::TryMember");
+                const auto* bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(try_member && bitfield_member);
 
                 auto try_field =
@@ -447,18 +447,18 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::type::Bitfield* n) final {
-        if ( auto field = n->parent(2)->tryAs<type::unit::item::Field>() ) {
+        if ( auto* field = n->parent(2)->tryAs<type::unit::item::Field>() ) {
             // Transfer any "&bitorder" attribute over to the type.
-            if ( auto a = field->attributes()->find(attribute::kind::BitOrder);
+            if ( auto* a = field->attributes()->find(attribute::kind::BitOrder);
                  a && ! n->attributes()->find(attribute::kind::BitOrder) ) {
                 recordChange(n, "transfer &bitorder attribute");
                 n->attributes()->add(context(), a);
             }
         }
 
-        if ( auto decl = n->parent(2)->tryAs<hilti::declaration::Type>() ) {
+        if ( auto* decl = n->parent(2)->tryAs<hilti::declaration::Type>() ) {
             // Transfer any "&bitorder" attribute over to the type.
-            if ( auto a = decl->attributes()->find(attribute::kind::BitOrder);
+            if ( auto* a = decl->attributes()->find(attribute::kind::BitOrder);
                  a && ! n->attributes()->find(attribute::kind::BitOrder) ) {
                 recordChange(n, "transfer &bitorder attribute");
                 n->attributes()->add(context(), a);
@@ -468,9 +468,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(type::Unit* n) final {
         if ( ! n->contextType() ) {
-            if ( auto ctx = n->propertyItem("%context") ) {
-                if ( auto expr = ctx->expression(); expr && expr->isResolved() ) {
-                    if ( auto ty = expr->type()->type()->tryAs<hilti::type::Type_>() ) {
+            if ( auto* ctx = n->propertyItem("%context") ) {
+                if ( auto* expr = ctx->expression(); expr && expr->isResolved() ) {
+                    if ( auto* ty = expr->type()->type()->tryAs<hilti::type::Type_>() ) {
                         recordChange(n, "set unit's context type");
                         n->setContextType(context(), ty->typeValue()->type());
                     }
@@ -480,7 +480,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(type::unit::item::Block* n) final {
-        if ( auto cond = n->condition() ) {
+        if ( auto* cond = n->condition() ) {
             auto coerced =
                 hilti::coerceExpression(builder(), cond,
                                         builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Const),
@@ -502,7 +502,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( n->parent()->isA<type::Unit>() )
                 make_transient = true;
 
-            if ( auto pf = n->parent<type::unit::item::Field>(); pf && pf->isTransient() )
+            if ( auto* pf = n->parent<type::unit::item::Field>(); pf && pf->isTransient() )
                 make_transient = true;
 
             if ( make_transient ) {
@@ -515,14 +515,14 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( n->parseType()
                  ->type()
                  ->isA<hilti::type::Auto>() ) { // do not use isResolved(), so that we can deal with loops
-            if ( auto t = fieldType(*n, n->originalType(), FieldType::ParseType, n->isContainer(), n->meta()) ) {
+            if ( auto* t = fieldType(*n, n->originalType(), FieldType::ParseType, n->isContainer(), n->meta()) ) {
                 recordChange(n, "parse type");
                 n->setParseType(context(), t);
             }
         }
 
         if ( ! n->ddType()->isResolved() && n->parseType()->isResolved() ) {
-            if ( auto dd = fieldType(*n, n->originalType(), FieldType::DDType, n->isContainer(), n->meta()) ) {
+            if ( auto* dd = fieldType(*n, n->originalType(), FieldType::DDType, n->isContainer(), n->meta()) ) {
                 recordChange(n, dd, "$$ type");
                 n->setDDType(context(), dd);
             }
@@ -537,10 +537,10 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( auto x = n->convertExpression() ) {
                 if ( x->second ) {
                     // Unit-level convert on the sub-item.
-                    auto u = x->second->type()->as<type::Unit>();
-                    auto a = u->attributes()->find(attribute::kind::Convert);
+                    auto* u = x->second->type()->as<type::Unit>();
+                    auto* a = u->attributes()->find(attribute::kind::Convert);
                     assert(a);
-                    auto e = *a->valueAsExpression();
+                    auto* e = *a->valueAsExpression();
                     if ( e->isResolved() )
                         t = e->type();
                 }
@@ -549,7 +549,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
                     // If there's list comprehension, morph the type into a vector.
                     // Assignment will transparently work.
-                    if ( auto x = t->type()->tryAs<hilti::type::List>() )
+                    if ( auto* x = t->type()->tryAs<hilti::type::List>() )
                         t = builder()->qualifiedType(builder()->typeVector(x->elementType(), x->meta()),
                                                      t->constness());
                 }
@@ -570,8 +570,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(type::unit::item::Property* n) final {
         if ( n->id() == "%sync-advance-block-size" ) {
-            if ( auto expr = n->expression() ) {
-                auto t = expr->type()->type()->tryAs<hilti::type::UnsignedInteger>();
+            if ( auto* expr = n->expression() ) {
+                auto* t = expr->type()->type()->tryAs<hilti::type::UnsignedInteger>();
                 if ( ! t || t->width() != 64 ) {
                     if ( auto x = hilti::coerceExpression(builder(), expr,
                                                           builder()->qualifiedType(builder()->typeUnsignedInteger(64),
@@ -615,21 +615,21 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 return;
             }
 
-            if ( auto t = resolved->first->template tryAs<hilti::declaration::Type>() ) {
+            if ( auto* t = resolved->first->template tryAs<hilti::declaration::Type>() ) {
                 QualifiedType* tt = builder()->qualifiedType(builder()->typeName(id), hilti::Constness::Mutable);
 
                 // If a unit comes with a &convert attribute, we wrap it into a
                 // subitem so that we have our recursive machinery available
                 // (which we don't have for pure types).
-                if ( auto unit_type = t->type()->type()->tryAs<type::Unit>();
+                if ( auto* unit_type = t->type()->type()->tryAs<type::Unit>();
                      unit_type && unit_type->attributes()->has(attribute::kind::Convert) ) {
-                    auto inner_field =
+                    auto* inner_field =
                         builder()->typeUnitItemField({}, tt, false, n->arguments(), {}, {}, {}, {}, {}, n->meta());
                     inner_field->setIndex(*n->index());
 
-                    auto outer_field = builder()->typeUnitItemField(n->fieldID(), inner_field, n->isSkip(), {},
-                                                                    n->repeatCount(), n->sinks(), n->attributes(),
-                                                                    n->condition(), n->hooks(), n->meta());
+                    auto* outer_field = builder()->typeUnitItemField(n->fieldID(), inner_field, n->isSkip(), {},
+                                                                     n->repeatCount(), n->sinks(), n->attributes(),
+                                                                     n->condition(), n->hooks(), n->meta());
 
                     outer_field->setIndex(*n->index());
 
@@ -641,8 +641,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     replaceNode(n, resolveField(builder(), n, tt));
             }
 
-            else if ( auto c = resolved->first->tryAs<hilti::declaration::Constant>() ) {
-                if ( auto ctor = c->value()->template tryAs<hilti::expression::Ctor>() )
+            else if ( auto* c = resolved->first->tryAs<hilti::declaration::Constant>() ) {
+                if ( auto* ctor = c->value()->template tryAs<hilti::expression::Ctor>() )
                     replaceNode(n, resolveField(builder(), n, ctor->ctor()));
                 else
                     n->addError("field value must be a constant");
@@ -652,15 +652,15 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                                              resolved->first->as<hilti::Declaration>()->displayName()));
         }
 
-        else if ( auto c = n->ctor() )
+        else if ( auto* c = n->ctor() )
             replaceNode(n, resolveField(builder(), n, c));
 
-        else if ( auto t = n->type() ) {
-            if ( auto bf = t->type()->tryAs<hilti::type::Bitfield>() ) {
+        else if ( auto* t = n->type() ) {
+            if ( auto* bf = t->type()->tryAs<hilti::type::Bitfield>() ) {
                 // If a bitfield type comes with values for at least one of its
                 // items, it's actually a bitfield ctor. Replace the type with the
                 // ctor then.
-                if ( auto ctor = bf->ctorValue(context()) ) {
+                if ( auto* ctor = bf->ctorValue(context()) ) {
                     replaceNode(n, resolveField(builder(), n, ctor));
                     return;
                 }
@@ -669,7 +669,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             replaceNode(n, resolveField(builder(), n, t));
         }
 
-        else if ( auto i = n->item() )
+        else if ( auto* i = n->item() )
             replaceNode(n, resolveField(builder(), n, i));
 
         else
