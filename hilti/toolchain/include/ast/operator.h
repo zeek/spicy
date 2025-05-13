@@ -149,7 +149,7 @@ constexpr util::enum_::Value<Kind> Kinds[] = {{Kind::Add, "add"},           {Kin
                                               {Kind::Difference, "-"},      {Kind::DifferenceAssign, "-="},
                                               {Kind::Modulo, "%"},          {Kind::Multiple, "*"},
                                               {Kind::MultipleAssign, "*="}, {Kind::Sum, "+"},
-                                              {Kind::Pack, "unpack"},       {Kind::Unset, "unset"},
+                                              {Kind::Pack, "pack"},         {Kind::Unset, "unset"},
                                               {Kind::SumAssign, "+="},      {Kind::Power, "**"},
                                               {Kind::ShiftLeft, "<<"},      {Kind::ShiftRight, ">>"},
                                               {Kind::SignNeg, "-"},         {Kind::SignPos, "+"},
