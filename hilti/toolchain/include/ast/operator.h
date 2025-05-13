@@ -150,14 +150,13 @@ constexpr util::enum_::Value<Kind> Kinds[] =
      {.value = Kind::Difference, .name = "-"},      {.value = Kind::DifferenceAssign, .name = "-="},
      {.value = Kind::Modulo, .name = "%"},          {.value = Kind::Multiple, .name = "*"},
      {.value = Kind::MultipleAssign, .name = "*="}, {.value = Kind::Sum, .name = "+"},
-     {.value = Kind::Pack, .name = "unpack"},       {.value = Kind::Unset, .name = "unset"},
+     {.value = Kind::Pack, .name = "pack"},         {.value = Kind::Unset, .name = "unset"},
      {.value = Kind::SumAssign, .name = "+="},      {.value = Kind::Power, .name = "**"},
      {.value = Kind::ShiftLeft, .name = "<<"},      {.value = Kind::ShiftRight, .name = ">>"},
      {.value = Kind::SignNeg, .name = "-"},         {.value = Kind::SignPos, .name = "+"},
      {.value = Kind::Size, .name = "size"},         {.value = Kind::TryMember, .name = ".?"},
      {.value = Kind::Unequal, .name = "!="},        {.value = Kind::Unknown, .name = "<unknown>"},
      {.value = Kind::Unpack, .name = "unpack"},     {.value = Kind::Unset, .name = "unset"}};
-
 
 /** Render an operator with its operand expressions. */
 extern std::string print(Kind kind, const Expressions& operands);
