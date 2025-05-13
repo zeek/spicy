@@ -429,8 +429,20 @@ struct Printer : visitor::PreOrder {
         if ( n->typeArguments().size() )
             _out << '(' << std::make_pair(n->typeArguments(), ", ") << ')';
 
-        if ( n->init() )
-            _out << " = " << n->init();
+        // We use void expressions as a hint for the initialization mechanism
+        // to use in C++ codegen. These expressions have no actual equivalent
+        // in the syntax.
+        //
+        // To still somehow capture them in HILTI output render them by
+        // declaring a variable with no constructor arguments; this is distinct
+        // from HILTI default initialization which uses assignment syntax. This
+        // is not 100% equivalent, but allows rendering valid code.
+        if ( auto* init = n->init() ) {
+            if ( init->isA<expression::Void>() )
+                _out << "()";
+            else
+                _out << " = " << init;
+        }
     }
 
     void operator()(declaration::GlobalVariable* n) final {

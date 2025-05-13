@@ -351,7 +351,7 @@ global Priv12 em = Priv12::A;
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv1::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:13:14-13:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv1%uses_random_access ) 
@@ -469,7 +469,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv1::__parse_foo__Priv1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:13:14-13:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv1%uses_random_access ) 
         (*self).__begin = __begin;
@@ -599,7 +599,7 @@ init function void __register_foo_Priv1() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub2::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:16:20-16:26"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Pub2%uses_random_access ) 
@@ -717,7 +717,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub2::__parse_foo__Pub2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:16:20-16:26"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Pub2%uses_random_access ) 
         (*self).__begin = __begin;
@@ -843,7 +843,7 @@ init function void __register_foo_Pub2() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv2::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:19:14-19:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv2%uses_random_access ) 
@@ -961,7 +961,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv2::__parse_foo__Priv2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:19:14-19:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv2%uses_random_access ) 
         (*self).__begin = __begin;
@@ -1091,7 +1091,7 @@ init function void __register_foo_Priv2() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv3::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:20:14-20:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv3%uses_random_access ) 
@@ -1209,7 +1209,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv3::__parse_foo__Priv3_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:20:14-20:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv3%uses_random_access ) 
         (*self).__begin = __begin;
@@ -1339,7 +1339,7 @@ init function void __register_foo_Priv3() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv4::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:21:14-24:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv4%uses_random_access ) 
@@ -1457,7 +1457,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv4::__parse_foo__Priv4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:21:14-24:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     local value_ref<Priv2> __transient__anon;
     # "<...>/unused-types.spicy:19:14-19:20"
 
@@ -1640,7 +1640,7 @@ init function void __register_foo_Priv4() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:27:14-27:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv5%uses_random_access ) 
@@ -1758,7 +1758,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_foo__Priv5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:27:14-27:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv5%uses_random_access ) 
         (*self).__begin = __begin;
@@ -1888,7 +1888,7 @@ init function void __register_foo_Priv5() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:28:14-28:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv6%uses_random_access ) 
@@ -2006,7 +2006,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_foo__Priv6_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:28:14-28:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv6%uses_random_access ) 
         (*self).__begin = __begin;
@@ -2136,7 +2136,7 @@ init function void __register_foo_Priv6() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub3::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:29:20-32:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Pub3%uses_random_access ) 
@@ -2254,7 +2254,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub3::__parse_foo__Pub3_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:29:20-32:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     local value_ref<Priv5> __transient__anon_2;
     # "<...>/unused-types.spicy:27:14-27:20"
 
@@ -2433,7 +2433,7 @@ init function void __register_foo_Pub3() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv10::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:43:22-46:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv10%uses_random_access ) 
@@ -2551,7 +2551,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv10::__parse_foo__Priv10_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:43:22-46:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv10%uses_random_access ) 
         (*self).__begin = __begin;
