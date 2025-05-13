@@ -310,7 +310,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(ctor::WeakReference* n) final { _out << "Null"; }
 
-    void operator()(ctor::ValueReference* n) final { _out << "value_ref(" << n->expression() << ')'; }
+    void operator()(ctor::ValueReference* n) final { _out << n->expression(); }
 
     ////// Declarations
 
