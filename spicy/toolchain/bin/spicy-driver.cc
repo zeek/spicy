@@ -36,6 +36,7 @@ static struct option long_driver_options[] = {{"abort-on-exceptions", required_a
                                               {"show-backtraces", required_argument, nullptr, 'B'},
                                               {"skip-dependencies", no_argument, nullptr, 'S'},
                                               {"report-resource-usage", no_argument, nullptr, 'U'},
+                                              {"skip-validation", no_argument, nullptr, 'V'},
                                               {"version", no_argument, nullptr, 'v'},
                                               {nullptr, 0, nullptr, 0}};
 
@@ -100,6 +101,7 @@ void SpicyDriver::usage() {
            "  -R | --report-times                 Report a break-down of compiler's execution time.\n"
            "  -S | --skip-dependencies            Do not automatically compile dependencies during JIT.\n"
            "  -U | --report-resource-usage        Print summary of runtime resource usage.\n"
+           "  -V | --skip-validation              Don't validate ASTs (for debugging only).\n"
            "  -X | --debug-addl <addl>            Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
            "  -Z | --enable-profiling             Report profiling statistics after execution.\n"
@@ -124,7 +126,7 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
     driver_options.logger = std::make_unique<hilti::Logger>();
 
     while ( true ) {
-        int c = getopt_long(argc, argv, "ABcD:f:F:ghdJX:Vlp:P:i:SRL:UZ", long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, "ABcD:f:F:ghdJX:Vlp:P:i:SRL:UVZ", long_driver_options, nullptr);
 
         if ( c < 0 )
             break;
@@ -225,6 +227,8 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'v': std::cout << "spicy-driver v" << hilti::configuration().version_string_long << '\n'; exit(0);
 
             case 'L': compiler_options.library_paths.emplace_back(optarg); break;
+
+            case 'V': compiler_options.skip_validation = true; break;
 
             case 'Z':
                 compiler_options.enable_profiling = true;
