@@ -1,3 +1,7 @@
+1.14.0-dev.27 | 2025-05-13 17:12:24 -0400
+
+  * Add `FileCheck` tests. (Evan Typanski, Corelight)
+
 1.14.0-dev.25 | 2025-05-13 14:32:23 +0200
 
   * Use `auto*` instead of `auto`. (Benjamin Bannier, Corelight)

@@ -1,0 +1,110 @@
+# @TEST-DOC: Tests optimizations performing constant folding.
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -pg | FileCheck %INPUT -check-prefix=NOOPT
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT -check-prefix=OPT
+
+module Foo {
+import hilti;
+
+const t = True;
+const f = False;
+
+# NOOPT: print(t, True);
+# OPT: print(True, True);
+hilti::print(t);
+# NOOPT: print(f, True);
+# OPT: print(False, True);
+hilti::print(f);
+
+# NOOPT: if ( t ) {
+# Optimized just creates the 'if' block
+# OPT: {{^{$}}
+if (t) {
+    ## NOOPT: 0;
+    ## OPT: 0;
+    0;
+} else {
+    ## NOOPT: 1;
+    ## OPT-NOT: 1;
+    1;
+}
+
+# NOOPT: if ( f ) {
+# Optimized version just creates the 'else' block
+# OPT: {{^{$}}
+if (f) {
+    ## NOOPT: 2;
+    ## OPT-NOT: 2;
+    2;
+} else {
+    ## NOOPT: 3;
+    ## OPT: 3;
+    3;
+}
+
+# NOOPT: if ( t ) {
+# OPT: {{^{$}}
+if (t) {
+    # NOOPT: 4;
+    # OPT: 4;
+    4;
+}
+
+# NOOPT: if ( f ) {
+# Optimized version just removes this
+if (f) {
+    # NOOPT: 5;
+    # OPT-NOT: 5;
+    5;
+}
+
+# NOOPT: t ? 1 : 0
+# OPT: 1;
+t ? 1: 0;
+# NOOPT: f ? 0 : 1
+# OPT: 1;
+f ? 0: 1;
+
+# While loops over constants.
+# NOOPT: while ( False )
+while (False) {
+    # NOOPT: in while 1
+    # OPT-NOT: in while 1
+    "in while 1";
+}
+
+# NOOPT: while ( False )
+while (False) {
+    # NOOPT: in while 2
+    # OPT-NOT: in while 2
+    "in while 2";
+# NOOPT: else
+# OPT: {{^{$}}
+} else {
+    # NOOPT: in while 2 else
+    # OPT: in while 2 else
+    "in while 2 else";
+}
+
+# NOOPT: while ( True )
+# OPT: while ( True )
+while (True) {
+    # NOOPT: in while 3
+    # OPT: in while 3
+    "in while 3";
+}
+
+# NOOPT: while ( True )
+# OPT: while ( True )
+while (True) {
+    # NOOPT: in while 4
+    # OPT: in while 4
+    "in while 4";
+} else {
+    # NOOPT: in while 4 else
+    # OPT-NOT: in while 4 else
+    "in while 4 else";
+}
+
+}
