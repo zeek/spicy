@@ -9,8 +9,6 @@
 //
 // If we have compiled with address/leak sanitizer, make sure it's active.
 
-extern "C" {
-
 #include <cstdio>
 
 int main(int argc, char** argv) {
@@ -18,6 +16,4 @@ int main(int argc, char** argv) {
     auto leak = new int;
     printf("%p\n", leak);
     return 0;
-}
-
 }
