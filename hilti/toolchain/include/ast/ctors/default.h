@@ -24,7 +24,7 @@ public:
 
     /** Constructs a default value of a given type. */
     static auto create(ASTContext* ctx, UnqualifiedType* type, const Meta& meta = {}) {
-        return ctx->make<Default>(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta)}, meta);
+        return ctx->make<Default>(ctx, {QualifiedType::create(ctx, type, Constness::Mutable, meta)}, meta);
     }
 
     /**
@@ -33,7 +33,7 @@ public:
      */
     static auto create(ASTContext* ctx, UnqualifiedType* type, const Expressions& type_args, const Meta& meta = {}) {
         return ctx->make<Default>(ctx,
-                                  node::flatten(QualifiedType::create(ctx, type, Constness::Const, meta), type_args),
+                                  node::flatten(QualifiedType::create(ctx, type, Constness::Mutable, meta), type_args),
                                   meta);
     }
 

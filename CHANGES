@@ -1,3 +1,17 @@
+1.14.0-dev.16 | 2025-05-13 14:30:02 +0200
+
+  * Change `default<T>` to hold a mutable T. (Benjamin Bannier, Corelight)
+
+  * Remove incorrect HILTI printer for `value_ref` ctrs. (Benjamin Bannier, Corelight)
+
+  * Add workaround for rendering init of locals with void expressions. (Benjamin Bannier, Corelight)
+
+  * Add `--skip-validation` flag to `spicy-driver`. (Benjamin Bannier, Corelight)
+
+  * Fix hlt output for exception values. (Benjamin Bannier, Corelight)
+
+  * Fix printing of empty statements. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.9 | 2025-05-09 15:05:44 +0200
 
   * CI: Drop Fedora 40, add Fedora 42 (Arne Welzel, Corelight)

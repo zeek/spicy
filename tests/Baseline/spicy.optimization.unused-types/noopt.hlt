@@ -351,7 +351,7 @@ global Priv12 em = Priv12::A;
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv1::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:13:14-13:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv1%uses_random_access ) 
@@ -426,7 +426,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Priv1%supports_sinks ) 
+        if ( ::__feat%foo@@Priv1%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -468,7 +469,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv1::__parse_foo__Priv1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:13:14-13:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv1%uses_random_access ) 
         (*self).__begin = __begin;
@@ -498,7 +499,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Priv1%supports_sinks ) 
+    if ( ::__feat%foo@@Priv1%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -507,7 +509,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Priv1::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:13:14-13:20"
-    local value_ref<Priv1> __unit = value_ref(default<const Priv1>());
+    local value_ref<Priv1> __unit = default<Priv1>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -527,14 +529,14 @@ method extern view<stream> foo::Priv1::parse1(inout value_ref<stream> __data, op
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Priv1::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:13:14-13:20"
-    local value_ref<Priv1> __unit = value_ref(default<const Priv1>());
+    local value_ref<Priv1> __unit = default<Priv1>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -555,7 +557,7 @@ method extern view<stream> foo::Priv1::parse3(inout value_ref<spicy_rt::ParsedUn
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -581,7 +583,7 @@ method extern view<stream> foo::Priv1::parse2(inout value_ref<Priv1> __unit, ino
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -597,7 +599,7 @@ init function void __register_foo_Priv1() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub2::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:16:20-16:26"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Pub2%uses_random_access ) 
@@ -672,7 +674,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Pub2%supports_sinks ) 
+        if ( ::__feat%foo@@Pub2%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -714,7 +717,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub2::__parse_foo__Pub2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:16:20-16:26"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Pub2%uses_random_access ) 
         (*self).__begin = __begin;
@@ -744,7 +747,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Pub2%supports_sinks ) 
+    if ( ::__feat%foo@@Pub2%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -753,7 +757,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Pub2::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:16:20-16:26"
-    local value_ref<Pub2> __unit = value_ref(default<const Pub2>());
+    local value_ref<Pub2> __unit = default<Pub2>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -773,14 +777,14 @@ method extern view<stream> foo::Pub2::parse1(inout value_ref<stream> __data, opt
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:16:20-16:26"
-    local value_ref<Pub2> __unit = value_ref(default<const Pub2>());
+    local value_ref<Pub2> __unit = default<Pub2>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -801,7 +805,7 @@ method extern view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::ParsedUni
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -827,7 +831,7 @@ method extern view<stream> foo::Pub2::parse2(inout value_ref<Pub2> __unit, inout
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -839,7 +843,7 @@ init function void __register_foo_Pub2() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv2::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:19:14-19:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv2%uses_random_access ) 
@@ -914,7 +918,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Priv2%supports_sinks ) 
+        if ( ::__feat%foo@@Priv2%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -956,7 +961,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv2::__parse_foo__Priv2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:19:14-19:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv2%uses_random_access ) 
         (*self).__begin = __begin;
@@ -986,7 +991,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Priv2%supports_sinks ) 
+    if ( ::__feat%foo@@Priv2%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -995,7 +1001,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Priv2::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:19:14-19:20"
-    local value_ref<Priv2> __unit = value_ref(default<const Priv2>());
+    local value_ref<Priv2> __unit = default<Priv2>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1015,14 +1021,14 @@ method extern view<stream> foo::Priv2::parse1(inout value_ref<stream> __data, op
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Priv2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:19:14-19:20"
-    local value_ref<Priv2> __unit = value_ref(default<const Priv2>());
+    local value_ref<Priv2> __unit = default<Priv2>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1043,7 +1049,7 @@ method extern view<stream> foo::Priv2::parse3(inout value_ref<spicy_rt::ParsedUn
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1069,7 +1075,7 @@ method extern view<stream> foo::Priv2::parse2(inout value_ref<Priv2> __unit, ino
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1085,7 +1091,7 @@ init function void __register_foo_Priv2() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv3::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:20:14-20:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv3%uses_random_access ) 
@@ -1160,7 +1166,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Priv3%supports_sinks ) 
+        if ( ::__feat%foo@@Priv3%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -1202,7 +1209,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv3::__parse_foo__Priv3_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:20:14-20:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv3%uses_random_access ) 
         (*self).__begin = __begin;
@@ -1232,7 +1239,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Priv3%supports_sinks ) 
+    if ( ::__feat%foo@@Priv3%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1241,7 +1249,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Priv3::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:20:14-20:20"
-    local value_ref<Priv3> __unit = value_ref(default<const Priv3>());
+    local value_ref<Priv3> __unit = default<Priv3>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1261,14 +1269,14 @@ method extern view<stream> foo::Priv3::parse1(inout value_ref<stream> __data, op
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Priv3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:20:14-20:20"
-    local value_ref<Priv3> __unit = value_ref(default<const Priv3>());
+    local value_ref<Priv3> __unit = default<Priv3>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1289,7 +1297,7 @@ method extern view<stream> foo::Priv3::parse3(inout value_ref<spicy_rt::ParsedUn
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1315,7 +1323,7 @@ method extern view<stream> foo::Priv3::parse2(inout value_ref<Priv3> __unit, ino
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1331,7 +1339,7 @@ init function void __register_foo_Priv3() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv4::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:21:14-24:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv4%uses_random_access ) 
@@ -1406,7 +1414,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Priv4%supports_sinks ) 
+        if ( ::__feat%foo@@Priv4%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -1448,12 +1457,12 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv4::__parse_foo__Priv4_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:21:14-24:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     local value_ref<Priv2> __transient__anon;
     # "<...>/unused-types.spicy:19:14-19:20"
 
     # Begin parsing production: Unit: foo__Priv2_2 ->
-    __transient__anon = default<const Priv2>();
+    __transient__anon = default<Priv2>();
     (__cur, __lah, __lahe, __error) = (*__transient__anon).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
     # End parsing production: Unit: foo__Priv2_2 ->
 
@@ -1468,7 +1477,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         # "<...>/unused-types.spicy:20:14-20:20"
 
         # Begin parsing production: Unit: foo__Priv3_2 ->
-        (*self).x = default<const Priv3>();
+        (*self).x = default<Priv3>();
         (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
         # End parsing production: Unit: foo__Priv3_2 ->
 
@@ -1531,7 +1540,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Priv4%supports_sinks ) 
+    if ( ::__feat%foo@@Priv4%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1540,7 +1550,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Priv4::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:21:14-24:1"
-    local value_ref<Priv4> __unit = value_ref(default<const Priv4>());
+    local value_ref<Priv4> __unit = default<Priv4>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1560,14 +1570,14 @@ method extern view<stream> foo::Priv4::parse1(inout value_ref<stream> __data, op
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Priv4::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:21:14-24:1"
-    local value_ref<Priv4> __unit = value_ref(default<const Priv4>());
+    local value_ref<Priv4> __unit = default<Priv4>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1588,7 +1598,7 @@ method extern view<stream> foo::Priv4::parse3(inout value_ref<spicy_rt::ParsedUn
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1614,7 +1624,7 @@ method extern view<stream> foo::Priv4::parse2(inout value_ref<Priv4> __unit, ino
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1630,7 +1640,7 @@ init function void __register_foo_Priv4() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:27:14-27:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv5%uses_random_access ) 
@@ -1705,7 +1715,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Priv5%supports_sinks ) 
+        if ( ::__feat%foo@@Priv5%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -1747,7 +1758,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_foo__Priv5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:27:14-27:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv5%uses_random_access ) 
         (*self).__begin = __begin;
@@ -1777,7 +1788,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Priv5%supports_sinks ) 
+    if ( ::__feat%foo@@Priv5%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -1786,7 +1798,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Priv5::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:27:14-27:20"
-    local value_ref<Priv5> __unit = value_ref(default<const Priv5>());
+    local value_ref<Priv5> __unit = default<Priv5>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -1806,14 +1818,14 @@ method extern view<stream> foo::Priv5::parse1(inout value_ref<stream> __data, op
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Priv5::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:27:14-27:20"
-    local value_ref<Priv5> __unit = value_ref(default<const Priv5>());
+    local value_ref<Priv5> __unit = default<Priv5>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1834,7 +1846,7 @@ method extern view<stream> foo::Priv5::parse3(inout value_ref<spicy_rt::ParsedUn
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1860,7 +1872,7 @@ method extern view<stream> foo::Priv5::parse2(inout value_ref<Priv5> __unit, ino
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1876,7 +1888,7 @@ init function void __register_foo_Priv5() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:28:14-28:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv6%uses_random_access ) 
@@ -1951,7 +1963,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Priv6%supports_sinks ) 
+        if ( ::__feat%foo@@Priv6%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -1993,7 +2006,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_foo__Priv6_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:28:14-28:20"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv6%uses_random_access ) 
         (*self).__begin = __begin;
@@ -2023,7 +2036,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Priv6%supports_sinks ) 
+    if ( ::__feat%foo@@Priv6%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -2032,7 +2046,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Priv6::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:28:14-28:20"
-    local value_ref<Priv6> __unit = value_ref(default<const Priv6>());
+    local value_ref<Priv6> __unit = default<Priv6>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2052,14 +2066,14 @@ method extern view<stream> foo::Priv6::parse1(inout value_ref<stream> __data, op
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Priv6::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:28:14-28:20"
-    local value_ref<Priv6> __unit = value_ref(default<const Priv6>());
+    local value_ref<Priv6> __unit = default<Priv6>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -2080,7 +2094,7 @@ method extern view<stream> foo::Priv6::parse3(inout value_ref<spicy_rt::ParsedUn
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -2106,7 +2120,7 @@ method extern view<stream> foo::Priv6::parse2(inout value_ref<Priv6> __unit, ino
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -2122,7 +2136,7 @@ init function void __register_foo_Priv6() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub3::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:29:20-32:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Pub3%uses_random_access ) 
@@ -2197,7 +2211,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Pub3%supports_sinks ) 
+        if ( ::__feat%foo@@Pub3%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -2239,12 +2254,12 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub3::__parse_foo__Pub3_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:29:20-32:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     local value_ref<Priv5> __transient__anon_2;
     # "<...>/unused-types.spicy:27:14-27:20"
 
     # Begin parsing production: Unit: foo__Priv5_2 ->
-    __transient__anon_2 = default<const Priv5>();
+    __transient__anon_2 = default<Priv5>();
     (__cur, __lah, __lahe, __error) = (*__transient__anon_2).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
     # End parsing production: Unit: foo__Priv5_2 ->
 
@@ -2259,7 +2274,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         # "<...>/unused-types.spicy:28:14-28:20"
 
         # Begin parsing production: Unit: foo__Priv6_2 ->
-        (*self).x = default<const Priv6>();
+        (*self).x = default<Priv6>();
         (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
         # End parsing production: Unit: foo__Priv6_2 ->
 
@@ -2322,7 +2337,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Pub3%supports_sinks ) 
+    if ( ::__feat%foo@@Pub3%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -2331,7 +2347,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Pub3::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:29:20-32:1"
-    local value_ref<Pub3> __unit = value_ref(default<const Pub3>());
+    local value_ref<Pub3> __unit = default<Pub3>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2351,14 +2367,14 @@ method extern view<stream> foo::Pub3::parse1(inout value_ref<stream> __data, opt
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:29:20-32:1"
-    local value_ref<Pub3> __unit = value_ref(default<const Pub3>());
+    local value_ref<Pub3> __unit = default<Pub3>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -2379,7 +2395,7 @@ method extern view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::ParsedUni
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -2405,7 +2421,7 @@ method extern view<stream> foo::Pub3::parse2(inout value_ref<Pub3> __unit, inout
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -2417,7 +2433,7 @@ init function void __register_foo_Pub3() {
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv10::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:43:22-46:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     try {
 
         if ( ::__feat%foo@@Priv10%uses_random_access ) 
@@ -2492,7 +2508,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@Priv10%supports_sinks ) 
+        if ( ::__feat%foo@@Priv10%supports_sinks ) {
+        }
 
         (*self).__error = __error;
 
@@ -2534,7 +2551,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv10::__parse_foo__Priv10_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:43:22-46:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result = <void expression>;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
 
     if ( ::__feat%foo@@Priv10%uses_random_access ) 
         (*self).__begin = __begin;
@@ -2564,7 +2581,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@Priv10%supports_sinks ) 
+    if ( ::__feat%foo@@Priv10%supports_sinks ) {
+    }
 
     hilti::debugDedent("spicy");
     __result = (__cur, __lah, __lahe, __error);
@@ -2573,7 +2591,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method extern view<stream> foo::Priv10::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:43:22-46:1"
-    local value_ref<Priv10> __unit = value_ref(default<const Priv10>());
+    local value_ref<Priv10> __unit = default<Priv10>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
     local iterator<stream> __lahead_end;
@@ -2593,14 +2611,14 @@ method extern view<stream> foo::Priv10::parse1(inout value_ref<stream> __data, o
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
 
 method extern view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/unused-types.spicy:43:22-46:1"
-    local value_ref<Priv10> __unit = value_ref(default<const Priv10>());
+    local value_ref<Priv10> __unit = default<Priv10>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -2621,7 +2639,7 @@ method extern view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::ParsedU
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -2647,7 +2665,7 @@ method extern view<stream> foo::Priv10::parse2(inout value_ref<Priv10> __unit, i
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
