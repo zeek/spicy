@@ -374,7 +374,7 @@ method extern view<stream> foo::A::parse1(inout value_ref<stream> __data, option
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -402,7 +402,7 @@ method extern view<stream> foo::A::parse3(inout value_ref<spicy_rt::ParsedUnit> 
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -428,7 +428,7 @@ method extern view<stream> foo::A::parse2(inout value_ref<A> __unit, inout value
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -622,7 +622,7 @@ method extern view<stream> foo::B::parse1(inout value_ref<stream> __data, option
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -650,7 +650,7 @@ method extern view<stream> foo::B::parse3(inout value_ref<spicy_rt::ParsedUnit> 
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -676,7 +676,7 @@ method extern view<stream> foo::B::parse2(inout value_ref<B> __unit, inout value
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -866,7 +866,7 @@ method extern view<stream> foo::C::parse1(inout value_ref<stream> __data, option
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -894,7 +894,7 @@ method extern view<stream> foo::C::parse3(inout value_ref<spicy_rt::ParsedUnit> 
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -920,7 +920,7 @@ method extern view<stream> foo::C::parse2(inout value_ref<C> __unit, inout value
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1129,7 +1129,7 @@ method extern view<stream> foo::D::parse1(inout value_ref<stream> __data, option
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1157,7 +1157,7 @@ method extern view<stream> foo::D::parse3(inout value_ref<spicy_rt::ParsedUnit> 
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1183,7 +1183,7 @@ method extern view<stream> foo::D::parse2(inout value_ref<D> __unit, inout value
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1381,7 +1381,7 @@ method extern view<stream> foo::F::parse1(inout value_ref<stream> __data, option
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1409,7 +1409,7 @@ method extern view<stream> foo::F::parse3(inout value_ref<spicy_rt::ParsedUnit> 
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
@@ -1435,7 +1435,7 @@ method extern view<stream> foo::F::parse2(inout value_ref<F> __unit, inout value
 
 
     if ( __error ) 
-        throw exception("successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))));
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
 
     return __ncur;
 }
