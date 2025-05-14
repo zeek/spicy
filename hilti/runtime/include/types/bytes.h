@@ -63,14 +63,14 @@ public:
     SafeIterator(typename B::size_type index, std::weak_ptr<const B*> control)
         : _control(std::move(control)), _index(index) {}
 
-    uint8_t operator*() const {
+    integer::safe<uint8_t> operator*() const {
         if ( auto&& l = _control.lock() ) {
             auto&& data = static_cast<const B&>(**l);
 
             if ( _index >= data.size() )
                 throw IndexError(fmt("index %s out of bounds", _index));
 
-            return data[_index];
+            return static_cast<uint8_t>(data[_index]);
         }
 
         throw InvalidIterator("bound object has expired");
