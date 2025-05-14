@@ -1,0 +1,17 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check coercion from derefed stream iterator to tuple; regression test for #2057.
+
+module foo {
+
+import hilti;
+
+global vector<tuple<data: uint<8>>> xs;
+
+for (i in b"123\xff") {
+    xs.push_back((i, ));
+}
+
+hilti::print(xs);
+}
