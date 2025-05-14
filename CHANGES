@@ -1,3 +1,13 @@
+1.14.0-dev.31 | 2025-05-14 14:14:32 +0200
+
+  * GH-2057: Fix `bytes` iterator dereference operation. (Robin Sommer, Corelight)
+
+    It now returns a safe integer.
+
+  * GH-2059: Remove the documentation's linkcheck from CI. (Robin Sommer, Corelight)
+
+    This is now instead part of the release checklist.
+
 1.14.0-dev.27 | 2025-05-13 17:12:24 -0400
 
   * Add `FileCheck` tests. (Evan Typanski, Corelight)
