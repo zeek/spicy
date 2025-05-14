@@ -235,7 +235,7 @@ TEST_CASE("iteration") {
     // This is a regression test for #219.
     for ( auto x : Bytes() ) {
         (void)x;
-        static_assert(std::is_same_v<decltype(x), uint8_t>);
+        static_assert(std::is_same_v<decltype(x), integer::safe<uint8_t>>);
     }
 }
 
