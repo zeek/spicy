@@ -242,11 +242,6 @@ function run_test_common {
 
     run_test_btest "${btest_alternative}" || rc=1
 
-    log_stage "Checking docs ..."
-    # We currently ignore this check since lint checks can fail spuriously if
-    # the remote is temporarily unavailable.
-    (cd "${root}"/doc && make BUILDDIR="${build}" DESTDIR="${artifacts}"/doc check) || true
-
     return ${rc}
 }
 
