@@ -848,14 +848,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     auto memberAccess(const expression::ResolvedOperator* o, const std::string& member, bool lhs = false) {
-        cxx::Expression op0;
-
-        if ( o->op0()->type()->type()->isReferenceType() )
-            op0 = fmt("(*%s)", cg->compile(o->op0()));
-        else
-            op0 = cg->compile(o->op0());
-
-        return memberAccess(o, op0, member);
+        return memberAccess(o, cg->compile(o->op0()), member);
     }
 
     cxx::Expression structMember(const expression::ResolvedOperator* o) {

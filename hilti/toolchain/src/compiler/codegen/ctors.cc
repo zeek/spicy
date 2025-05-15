@@ -311,11 +311,9 @@ struct Visitor : hilti::visitor::PreOrder {
             return cxx::Expression("{}");
         };
 
-        result = fmt("%s(%s)", id,
-                     util::join(node::transform(node::filter(n->type()->type()->as<type::Struct>()->fields(),
-                                                             is_public_field),
-                                                convert_field),
-                                ", "));
+        result =
+            fmt("%s(%s)", id,
+                util::join(node::transform(node::filter(n->stype()->fields(), is_public_field), convert_field), ", "));
     }
 
     void operator()(ctor::Time* n) final {

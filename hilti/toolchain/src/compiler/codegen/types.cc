@@ -920,9 +920,11 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
             if ( auto x = n->cxxID() )
                 cxx_type_id = x;
 
-            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, offsetof(%s, %s), %s, %s%s }",
-                                 cxx::ID(f->id()), cg->typeInfo(f->type()), cxx_type_id, cxx::ID(f->id()),
-                                 f->isInternal(), f->isAnonymous(), accessor));
+            fields.push_back(
+                fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, static_cast<std::ptrdiff_t>(offsetof(%s, "
+                    "%s)), %s, %s%s }",
+                    cxx::ID(f->id()), cg->typeInfo(f->type()), cxx_type_id, cxx::ID(f->id()), f->isInternal(),
+                    f->isAnonymous(), accessor));
         }
 
         result = fmt("::hilti::rt::type_info::Struct(std::vector<::hilti::rt::type_info::struct_::Field>({%s}))",

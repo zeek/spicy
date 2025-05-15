@@ -351,8 +351,7 @@ struct VisitorCtor : visitor::PreOrder {
     void operator()(ctor::Struct* n) final {
         auto* dst_ = dst;
 
-        if ( (dst->type()->isA<type::ValueReference>() || dst->type()->isA<type::StrongReference>()) &&
-             ! dst->type()->isReferenceType() )
+        if ( dst->type()->isA<type::ValueReference>() || dst->type()->isA<type::StrongReference>() )
             // Allow coercion from value to reference type with new instance.
             dst_ = dst->type()->dereferencedType();
 
@@ -361,7 +360,7 @@ struct VisitorCtor : visitor::PreOrder {
                 // Wait for this to be resolved.
                 return;
 
-            auto* stype = n->type()->type()->as<type::Struct>();
+            auto* stype = n->stype();
 
             std::set<ID> src_fields;
             for ( const auto& f : stype->fields() )

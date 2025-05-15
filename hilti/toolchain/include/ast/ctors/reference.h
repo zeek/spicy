@@ -18,6 +18,7 @@ public:
     QualifiedType* dereferencedType() const { return type()->type()->as<type::StrongReference>()->dereferencedType(); }
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
+    bool isReferenceCtor() const final { return true; }
 
     static auto create(ASTContext* ctx, QualifiedType* t, const Meta& meta = {}) {
         return ctx->make<StrongReference>(ctx,
@@ -39,6 +40,7 @@ public:
     QualifiedType* dereferencedType() const { return type()->type()->as<type::WeakReference>()->dereferencedType(); }
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
+    bool isReferenceCtor() const final { return true; }
 
     static auto create(ASTContext* ctx, QualifiedType* t, const Meta& meta = {}) {
         return ctx->make<WeakReference>(ctx,
@@ -57,10 +59,11 @@ protected:
 /** AST node for a `value_ref<T>` constructor value. */
 class ValueReference : public Ctor {
 public:
-    QualifiedType* type() const final { return child<QualifiedType>(0); }
+    QualifiedType* dereferencedType() const { return type()->type()->as<type::ValueReference>()->dereferencedType(); }
     Expression* expression() const { return child<Expression>(1); }
 
-    QualifiedType* dereferencedType() const { return type()->type()->as<type::ValueReference>()->dereferencedType(); }
+    QualifiedType* type() const final { return child<QualifiedType>(0); }
+    bool isReferenceCtor() const final { return true; }
 
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 

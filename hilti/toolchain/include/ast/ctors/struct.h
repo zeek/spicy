@@ -61,7 +61,11 @@ public:
     }
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
-    void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
+
+    void setType(ASTContext* ctx, QualifiedType* t) {
+        assert(t->type()->isA<type::Struct>());
+        setChild(ctx, 0, t);
+    }
 
     /** Implements the node interface. */
     node::Properties properties() const override {
@@ -79,7 +83,9 @@ public:
 
 protected:
     Struct(ASTContext* ctx, Nodes children, Meta meta)
-        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)), WithUniqueID("struct") {}
+        : Ctor(ctx, NodeTags, std::move(children), std::move(meta)), WithUniqueID("struct") {
+        assert(type()->type()->isA<type::Auto>() || type()->type()->isA<type::Struct>());
+    }
 
     HILTI_NODE_1(ctor::Struct, Ctor, final);
 };
