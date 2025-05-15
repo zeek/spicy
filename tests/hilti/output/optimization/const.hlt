@@ -10,61 +10,61 @@ import hilti;
 const t = True;
 const f = False;
 
-# NOOPT: print(t, True);
-# OPT: print(True, True);
+# NOOPT: print(t
+# OPT: print(True
 hilti::print(t);
-# NOOPT: print(f, True);
-# OPT: print(False, True);
+# NOOPT: print(f
+# OPT: print(False
 hilti::print(f);
 
 # NOOPT: if ( t ) {
 # Optimized just creates the 'if' block
 # OPT: {{^{$}}
 if (t) {
-    ## NOOPT: 0;
-    ## OPT: 0;
-    0;
+    ## NOOPT: hilti::print(0
+    ## OPT: hilti::print(0
+    hilti::print(0);
 } else {
-    ## NOOPT: 1;
-    ## OPT-NOT: 1;
-    1;
+    ## NOOPT: hilti::print(1
+    ## OPT-NOT: hilti::print(1
+    hilti::print(1);
 }
 
 # NOOPT: if ( f ) {
 # Optimized version just creates the 'else' block
 # OPT: {{^{$}}
 if (f) {
-    ## NOOPT: 2;
-    ## OPT-NOT: 2;
-    2;
+    ## NOOPT: hilti::print(2
+    ## OPT-NOT: hilti::print(2
+    hilti::print(2);
 } else {
-    ## NOOPT: 3;
-    ## OPT: 3;
-    3;
+    ## NOOPT: hilti::print(3
+    ## OPT: hilti::print(3
+    hilti::print(3);
 }
 
 # NOOPT: if ( t ) {
 # OPT: {{^{$}}
 if (t) {
-    # NOOPT: 4;
-    # OPT: 4;
-    4;
+    # NOOPT: hilti::print(4
+    # OPT: hilti::print(4
+    hilti::print(4);
 }
 
 # NOOPT: if ( f ) {
 # Optimized version just removes this
 if (f) {
-    # NOOPT: 5;
-    # OPT-NOT: 5;
-    5;
+    # NOOPT: hilti::print(5
+    # OPT-NOT: hilti::print(5
+    hilti::print(5);
 }
 
-# NOOPT: t ? 1 : 0
-# OPT: 1;
-t ? 1: 0;
-# NOOPT: f ? 0 : 1
-# OPT: 1;
-f ? 0: 1;
+# NOOPT: hilti::print(t ? 1 : 0
+# OPT: hilti::print(1
+hilti::print(t ? 1: 0);
+# NOOPT: hilti::print(f ? 0 : 1
+# OPT: hilti::print(1
+hilti::print(f ? 0: 1);
 
 # While loops over constants.
 # NOOPT: while ( False )
@@ -84,7 +84,7 @@ while (False) {
 } else {
     # NOOPT: in while 2 else
     # OPT: in while 2 else
-    "in while 2 else";
+    hilti::print("in while 2 else");
 }
 
 # NOOPT: while ( True )
@@ -92,7 +92,7 @@ while (False) {
 while (True) {
     # NOOPT: in while 3
     # OPT: in while 3
-    "in while 3";
+    hilti::print("in while 3");
 }
 
 # NOOPT: while ( True )
@@ -100,11 +100,11 @@ while (True) {
 while (True) {
     # NOOPT: in while 4
     # OPT: in while 4
-    "in while 4";
+    hilti::print("in while 4");
 } else {
     # NOOPT: in while 4 else
     # OPT-NOT: in while 4 else
-    "in while 4 else";
+    hilti::print("in while 4 else");
 }
 
 }
