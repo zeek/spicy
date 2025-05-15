@@ -398,7 +398,8 @@ struct ProductionVisitor : public production::Visitor {
                     run_finally();
 
                     if ( profiler ) {
-                        auto* offset = builder()->memberCall(builder()->index(store_result, 0), "offset");
+                        auto* offset =
+                            builder()->memberCall(builder()->index(store_result, builder()->integer(0U)), "offset");
                         builder()->stopProfiler(profiler, offset);
                     }
 
@@ -800,7 +801,7 @@ struct ProductionVisitor : public production::Visitor {
             auto* index = builder()->addTmp("index", builder()->integer(*field->index()));
             builder()->addMemberCall(__offsets, "resize", {builder()->sum(index, builder()->integer(1))});
 
-            builder()->addAssign(builder()->index(__offsets, *field->index()),
+            builder()->addAssign(builder()->index(__offsets, builder()->integer(*field->index())),
                                  builder()->tuple(
                                      {cur_offset,
                                       builder()->optional(builder()->qualifiedType(builder()->typeUnsignedInteger(64),
@@ -922,9 +923,10 @@ struct ProductionVisitor : public production::Visitor {
             assert(field->index());
             auto* __offsets = builder()->member(state().self, "__offsets");
             auto* cur_offset = builder()->memberCall(state().cur, "offset");
-            auto* offsets = builder()->index(__offsets, *field->index());
+            auto* offsets = builder()->index(__offsets, builder()->integer(*field->index()));
             builder()->addAssign(offsets,
-                                 builder()->tuple({builder()->index(builder()->deref(offsets), 0), cur_offset}));
+                                 builder()->tuple({builder()->index(builder()->deref(offsets), builder()->integer(0U)),
+                                                   cur_offset}));
         }
 
         auto* val = destination();

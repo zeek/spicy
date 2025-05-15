@@ -314,8 +314,8 @@ public:
         return expressionUnresolvedOperator(operator_::Kind::Call, {id(id_, m), tuple(v, m)}, m);
     }
 
-    auto index(Expression* value, unsigned int index, const Meta& m = Meta()) {
-        return expressionUnresolvedOperator(operator_::Kind::Index, {value, integer(index, m)}, m);
+    auto index(Expression* value, Expression* index, const Meta& m = Meta()) {
+        return expressionUnresolvedOperator(operator_::Kind::Index, {value, index}, m);
     }
 
     auto size(Expression* op, const Meta& m = Meta()) {
