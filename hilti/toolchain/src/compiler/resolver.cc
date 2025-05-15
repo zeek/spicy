@@ -70,19 +70,37 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
                 n->addError(util::fmt("type '%s' cannot be resolved by its name", n->id()));
             else if ( resolved->isOnHeap() ) {
                 if ( auto* qtype = n->parent()->tryAs<QualifiedType>() ) {
-                    auto replace = false;
+                    auto* parent = qtype->parent()->tryAs<UnqualifiedType>();
+                    if ( ! (parent && parent->isReferenceType()) ) {
+                        // Climb up the parent path to see if we are in a
+                        // context where we want to wrap the type into a
+                        // `value_ref`.
+                        auto replace = false;
 
-                    if ( n->parent(2)->tryAs<Declaration>() )
-                        replace = true;
+                        for ( Node* x = n->parent(); x; x = x->parent() ) {
+                            if ( x->isA<UnqualifiedType>() || x->isA<Declaration>() ) {
+                                replace = true;
+                                break;
+                            }
+                            else if ( auto* ctor = x->tryAs<Ctor>(); ctor && ctor->isReferenceCtor() ) {
+                                replace = false;
+                                break;
+                            }
+                            else if ( x->isA<ctor::Default>() || x->isA<ctor::Struct>() ) {
+                                replace = false;
+                                break;
+                            }
+                            else if ( x->isA<Statement>() && ! x->isA<statement::Declaration>() ) {
+                                replace = false;
+                                break;
+                            }
+                        }
 
-                    if ( n->parent(2)->isA<declaration::LocalVariable>() &&
-                         ! n->parent(3)->isA<statement::Declaration>() )
-                        replace = false;
-
-                    if ( replace ) {
-                        auto* rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
-                        replaceNode(qtype, builder()->qualifiedType(rt, qtype->constness(), qtype->side()),
-                                    "&on-heap replacement");
+                        if ( replace ) {
+                            auto* rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
+                            replaceNode(qtype, builder()->qualifiedType(rt, qtype->constness(), qtype->side()),
+                                        "&on-heap replacement");
+                        }
                     }
                 }
             }

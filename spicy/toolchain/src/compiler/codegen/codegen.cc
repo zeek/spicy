@@ -11,7 +11,10 @@
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/operators/function.h>
+#include <hilti/ast/operators/map.h>
 #include <hilti/ast/operators/struct.h>
+#include <hilti/ast/operators/tuple.h>
+#include <hilti/ast/operators/vector.h>
 #include <hilti/ast/types/bitfield.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/reference.h>
@@ -211,6 +214,16 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         replaceNode(n, func);
     }
 
+    void operator()(hilti::operator_::map::IndexConst* n) final {
+        auto* x = builder()->index(n->op0(), n->op1(), n->meta());
+        replaceNode(n, x);
+    }
+
+    void operator()(hilti::operator_::map::IndexNonConst* n) final {
+        auto* x = builder()->index(n->op0(), n->op1(), n->meta());
+        replaceNode(n, x);
+    }
+
     void operator()(operator_::unit::Unset* n) final {
         const auto& id = n->op1()->as<hilti::expression::Member>()->id();
         replaceNode(n, builder()->unset(n->op0(), id, n->meta()));
@@ -309,6 +322,21 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
 
     void operator()(operator_::unit::Stream* n) final {
         replaceNode(n, builder()->deref(builder()->member(n->op0(), ID("__stream"))));
+    }
+
+    void operator()(hilti::operator_::tuple::Index* n) final {
+        auto* x = builder()->index(n->op0(), n->op1(), n->meta());
+        replaceNode(n, x);
+    }
+
+    void operator()(hilti::operator_::vector::IndexConst* n) final {
+        auto* x = builder()->index(n->op0(), n->op1(), n->meta());
+        replaceNode(n, x);
+    }
+
+    void operator()(hilti::operator_::vector::IndexNonConst* n) final {
+        auto* x = builder()->index(n->op0(), n->op1(), n->meta());
+        replaceNode(n, x);
     }
 
     void operator()(operator_::sink::Close* n) final {
