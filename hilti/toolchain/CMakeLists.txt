@@ -109,6 +109,7 @@ set(SOURCES
     src/compiler/cxx/formatter.cc
     src/compiler/cxx/linker.cc
     src/compiler/cxx/unit.cc
+    src/compiler/cfg.cc
     src/compiler/driver.cc
     src/compiler/init.cc
     src/compiler/jit.cc
@@ -138,6 +139,7 @@ target_include_directories(hilti-objects BEFORE
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE
                            PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+target_link_libraries(hilti-objects PUBLIC CXXGraph)
 
 # Unclear why we need this: Without it, the generated Bison/Flex get a broken
 # include path on some systems. (Seen on Ubuntu 19.10).
@@ -232,5 +234,6 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hil
 add_executable(hilti-toolchain-tests tests/main.cc tests/id-base.cc tests/visitor.cc tests/util.cc)
 hilti_link_executable_in_tree(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
+target_link_libraries(hilti-toolchain-tests PRIVATE CXXGraph)
 target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
 add_test(NAME hilti-toolchain-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-toolchain-tests)
