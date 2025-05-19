@@ -1,0 +1,46 @@
+# @TEST-DOC: Checks that scopes for statements with initializers extends to the body
+#
+# @TEST-EXEC-FAIL: hiltic -d -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+while (local int<64> i = 1; i < 10) {
+    local int<64> i = 5;
+} else {
+    local int<64> i = 5;
+}
+
+if (local int<64> i = 1; i == 1) {
+    local int<64> i = 5;
+} else {
+    local int<64> i = 5;
+}
+
+global auto vec = vector(1, 2, 3);
+for (i in vec) {
+    local int<64> i = 5;
+}
+
+switch (local int<64> i = 10) {
+    case 1: local int<64> i = 5;
+    default: {
+        local int<64> i = 5;
+    }
+}
+
+# Test the same cases without the extra blocks
+while (local int<64> i = 1; i < 10)
+    local int<64> i = 5;
+else
+    local int<64> i = 5;
+
+if (local int<64> i = 1; i == 1)
+    local int<64> i = 5;
+else
+    local int<64> i = 5;
+
+for (i in vec)
+    local int<64> i = 5;
+
+}
