@@ -1,3 +1,7 @@
+1.13.1 | 2025-05-14 14:22:16 +0200
+
+  * GH-2057: Fix `bytes` iterator dereference operation. (Robin Sommer, Corelight)
+
 1.13.0 | 2025-05-08 16:49:41 +0200
 
 1.13.0-dev.222 | 2025-05-08 16:48:26 +0200
