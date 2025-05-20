@@ -1,7 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <utility>
-
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/expression.h>
@@ -120,14 +118,31 @@ struct Visitor : visitor::PostOrder {
 
     void operator()(statement::Declaration* n) final { n->parent()->getOrCreateScope()->insert(n->declaration()); }
 
-    void operator()(statement::For* n) final { n->getOrCreateScope()->insert(n->local()); }
+    void operator()(statement::For* n) final {
+        n->getOrCreateScope()->insert(n->local());
 
-    void operator()(statement::If* n) final {
-        if ( n->init() )
-            n->getOrCreateScope()->insert(n->init());
+        // Also add this to the body to avoid redefinitions
+        n->body()->getOrCreateScope()->insert(n->local());
     }
 
-    void operator()(statement::Switch* n) final { n->getOrCreateScope()->insert(n->condition()); }
+    void operator()(statement::If* n) final {
+        if ( auto* init = n->init() ) {
+            n->getOrCreateScope()->insert(init);
+
+            // Also add this to the true/false bodies to avoid redefinitions
+            n->true_()->getOrCreateScope()->insert(init);
+            if ( auto* els = n->false_() )
+                els->getOrCreateScope()->insert(init);
+        }
+    }
+
+    void operator()(statement::Switch* n) final {
+        n->getOrCreateScope()->insert(n->condition());
+
+        // Also add this to each case body to avoid redefinitions
+        for ( auto* case_ : n->cases() )
+            case_->body()->getOrCreateScope()->insert(n->condition());
+    }
 
     void operator()(statement::try_::Catch* n) final {
         if ( auto* x = n->parameter() )
@@ -135,8 +150,14 @@ struct Visitor : visitor::PostOrder {
     }
 
     void operator()(statement::While* n) final {
-        if ( auto* x = n->init() )
-            n->getOrCreateScope()->insert(x);
+        if ( auto* init = n->init() ) {
+            n->getOrCreateScope()->insert(init);
+
+            // Also add this to the body and else condition to avoid redefinitions
+            n->body()->getOrCreateScope()->insert(init);
+            if ( auto* els = n->else_() )
+                els->getOrCreateScope()->insert(init);
+        }
     }
 
     void operator()(type::bitfield::BitRange* n) final {

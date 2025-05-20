@@ -1,3 +1,18 @@
+1.14.0-dev.33 | 2025-05-20 10:28:07 -0400
+
+  * GH-2065: Error for redefined locals from statement inits. (Evan Typanski, Corelight)
+
+    Closes #2065
+
+    This now properly errors in Hilti from code that redefines a local
+    inside a statement with an initializer, like:
+
+    for (i in vec) {
+        local int<64> i = 5;
+    }
+
+    This avoids a C++ error later.
+
 1.14.0-dev.31 | 2025-05-14 14:14:32 +0200
 
   * GH-2057: Fix `bytes` iterator dereference operation. (Robin Sommer, Corelight)
