@@ -75,7 +75,7 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spi
 ##### Tests
 
 add_executable(
-    spicy-rt-tests
+    spicy-rt-tests EXCLUDE_FROM_ALL
     src/tests/main.cc
     src/tests/base64.cc
     src/tests/debug.cc
