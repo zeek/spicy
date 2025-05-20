@@ -42,6 +42,8 @@ set(BENCHMARK_ENABLE_TESTING OFF)
 set(BENCHMARK_ENABLE_INSTALL OFF)
 set(BENCHMARK_ENABLE_WERROR OFF)
 add_subdirectory(benchmark)
+set_target_properties(benchmark PROPERTIES EXCLUDE_FROM_ALL ON)
+set_target_properties(benchmark_main PROPERTIES EXCLUDE_FROM_ALL ON)
 
 set(REPROC++ ON)
 set(REPROC_MULTITHREADED OFF)
