@@ -18,6 +18,9 @@ public:
     /** Returns the HILTI type of the constructor's value. */
     virtual QualifiedType* type() const = 0;
 
+    /** Returns true for constructors creating a reference to another type. */
+    virtual bool isReferenceCtor() const { return false; }
+
 protected:
     Ctor(ASTContext* ctx, node::Tags node_tags, Nodes children, Meta meta)
         : Node::Node(ctx, node_tags, std::move(children), std::move(meta)) {}

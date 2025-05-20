@@ -1,3 +1,18 @@
+1.14.0-dev.38 | 2025-05-20 17:33:54 +0200
+
+  * GH-2061: Fix cyclic usage of units types inside other types. (Robin Sommer, Corelight)
+
+    We had cyclic dependencies partially solved through the `&on-heap`
+    conversion, but weren't consistently applying it to types nested
+    inside others.
+
+  * Fix compiler error. (Robin Sommer, Corelight)
+
+  * Small tweak to builder API so that we can create index expression
+    with operands other than integers. (Robin Sommer, Corelight)
+
+  * Add API method to ctors to see if they create a reference. (Robin Sommer, Corelight)
+
 1.14.0-dev.33 | 2025-05-20 10:28:07 -0400
 
   * GH-2065: Error for redefined locals from statement inits. (Evan Typanski, Corelight)
