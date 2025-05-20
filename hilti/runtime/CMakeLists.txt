@@ -96,12 +96,12 @@ target_compile_options(hilti-rt-debug-objects PRIVATE ${cxx_flags_debug})
 target_compile_options(hilti-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
 target_compile_definitions(hilti-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 
-add_library(hilti-rt-tests-library-dummy1 SHARED src/tests/library-dummy.cc)
+add_library(hilti-rt-tests-library-dummy1 EXCLUDE_FROM_ALL SHARED src/tests/library-dummy.cc)
 target_include_directories(hilti-rt-tests-library-dummy1
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(hilti-rt-tests-library-dummy1 PUBLIC RETURN_VALUE=1)
 
-add_library(hilti-rt-tests-library-dummy2 SHARED src/tests/library-dummy.cc)
+add_library(hilti-rt-tests-library-dummy2 EXCLUDE_FROM_ALL SHARED src/tests/library-dummy.cc)
 target_include_directories(hilti-rt-tests-library-dummy2
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(hilti-rt-tests-library-dummy2 PUBLIC RETURN_VALUE=2)
@@ -136,7 +136,7 @@ install_headers(${PROJECT_SOURCE_DIR}/3rdparty/any hilti/rt/3rdparty/any)
 ##### Tests
 
 add_executable(
-    hilti-rt-tests
+    hilti-rt-tests EXCLUDE_FROM_ALL
     src/tests/main.cc
     src/tests/address.cc
     src/tests/backtrace.cc
@@ -186,7 +186,7 @@ target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
 add_test(NAME hilti-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-tests)
 
-add_executable(hilti-rt-configuration-tests src/tests/configuration.cc)
+add_executable(hilti-rt-configuration-tests EXCLUDE_FROM_ALL src/tests/configuration.cc)
 target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
 target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
 target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)

@@ -229,7 +229,8 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hil
 
 ##### Tests
 
-add_executable(hilti-toolchain-tests tests/main.cc tests/id-base.cc tests/visitor.cc tests/util.cc)
+add_executable(hilti-toolchain-tests EXCLUDE_FROM_ALL tests/main.cc tests/id-base.cc
+                                                      tests/visitor.cc tests/util.cc)
 hilti_link_executable_in_tree(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
 target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
