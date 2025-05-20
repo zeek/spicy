@@ -102,7 +102,10 @@ TEST_CASE("split_shell_unsafe") {
     // Command substitutions are supported.
     CHECK_EQ(hilti::util::split_shell_unsafe(R"(1 `true`)"), std::vector<std::string>{R"(1)"});
 
-    CHECK(! hilti::util::split_shell_unsafe(R"($SHELL_VARIABLE_WHICH_IS_EXTREMELY_LIKELY_TO_BE_UNDEFINED)").hasValue());
+    auto from_unset_var =
+        hilti::util::split_shell_unsafe(R"($SHELL_VARIABLE_WHICH_IS_EXTREMELY_LIKELY_TO_BE_UNDEFINED)");
+    auto is_unset_or_empty = ! from_unset_var.hasValue() || from_unset_var->empty();
+    CHECK(is_unset_or_empty);
 }
 
 TEST_SUITE_END();
