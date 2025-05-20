@@ -3,10 +3,10 @@
 add_subdirectory(lib)
 add_subdirectory(runtime)
 
+add_custom_target(spicy-tests COMMENT "Building unit tests for Spicy")
+add_dependencies(spicy-tests spicy-rt-tests)
+
 if (HAVE_TOOLCHAIN)
     add_subdirectory(toolchain)
-    add_custom_target(spicy-tests DEPENDS spicy-toolchain-tests spicy-rt-tests
-                      COMMENT "Running spicy-tests")
-else ()
-    add_custom_target(spicy-tests DEPENDS spicy-rt-tests COMMENT "Running spicy-tests")
+    add_dependencies(spicy-tests spicy-toolchain-tests spicy-rt-tests spicy-rt-parsing-benchmark)
 endif ()

@@ -272,7 +272,8 @@ add_custom_target(
     COMMAND ctest --output-on-failure -C $<CONFIG>
     DEPENDS tests
     COMMENT "Running unit tests")
-add_custom_target(tests DEPENDS hilti-tests spicy-tests COMMENT "Running unit tests")
+add_custom_target(tests COMMENT "Building test targets")
+add_dependencies(tests hilti-tests spicy-tests)
 
 # Packaging.
 # Check tags the HEAD commit corresponds to. If we cannot get the current
