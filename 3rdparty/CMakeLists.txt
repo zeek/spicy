@@ -18,7 +18,7 @@ set(CMAKE_CXX_FLAGS "${flags}")
 option(DOCTEST_NO_INSTALL "Skip the installation process" ON)
 add_subdirectory(doctest)
 
-set(DISABLE_TESTS ON)
+set(JUSTRX_DISABLE_TESTS ON)
 # If we'd enable tests above we would need to pick up the benchmarking
 # library here to avoid declaring the target twice.
 set(JUSTRX_HAVE_BENCHMARK ON)
