@@ -272,7 +272,16 @@ add_custom_target(
     COMMAND ctest --output-on-failure -C $<CONFIG>
     DEPENDS tests
     COMMENT "Running unit tests")
-add_custom_target(tests DEPENDS hilti-tests spicy-tests COMMENT "Running unit tests")
+add_custom_target(tests COMMENT "Building test targets")
+add_dependencies(tests hilti-tests spicy-tests)
+
+# By default Test targets are built since we want them to be build as part
+# of the default dev experience. Projects using Spicy can still disable them
+# when bundling Spicy by setting the the option.
+option(SPICY_ENABLE_TESTS "Build Spicy unit tests and benchmarks" ON)
+if (SPICY_ENABLE_TESTS)
+    add_custom_target(tests-build ALL DEPENDS tests COMMENT "Forcing test build")
+endif ()
 
 # Packaging.
 # Check tags the HEAD commit corresponds to. If we cannot get the current

@@ -18,7 +18,10 @@ set(CMAKE_CXX_FLAGS "${flags}")
 option(DOCTEST_NO_INSTALL "Skip the installation process" ON)
 add_subdirectory(doctest)
 
-option(JUSTRX_HAVE_BENCHMARK "Benchmark is provided" ON)
+set(JUSTRX_DISABLE_TESTS ON)
+# If we'd enable tests above we would need to pick up the benchmarking
+# library here to avoid declaring the target twice.
+set(JUSTRX_HAVE_BENCHMARK ON)
 add_subdirectory(justrx)
 
 # Use the configured C compiler as ASM compiler as well. This prevents that we
@@ -42,6 +45,8 @@ set(BENCHMARK_ENABLE_TESTING OFF)
 set(BENCHMARK_ENABLE_INSTALL OFF)
 set(BENCHMARK_ENABLE_WERROR OFF)
 add_subdirectory(benchmark)
+set_target_properties(benchmark PROPERTIES EXCLUDE_FROM_ALL ON)
+set_target_properties(benchmark_main PROPERTIES EXCLUDE_FROM_ALL ON)
 
 set(REPROC++ ON)
 set(REPROC_MULTITHREADED OFF)
