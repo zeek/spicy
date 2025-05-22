@@ -2044,7 +2044,7 @@ struct ProductionVisitor : public production::Visitor {
                                     syncProductionNext(*p);
                                 });
 
-                    pushBuilder(builder_default,
+                    pushBuilder(std::move(builder_default),
                                 [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
                 }
                 else {

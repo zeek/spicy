@@ -358,7 +358,7 @@ struct Visitor : public visitor::PreOrder {
                 for ( const auto& b : n->bits() ) {
                     auto error =
                         builder()->addIf(builder()->unequal(builder()->member(value, b->id()), b->expression()));
-                    pushBuilder(error);
+                    pushBuilder(std::move(error));
                     builder()->addAssign(state().cur, old_cur);
                     pb()->parseError(fmt("unexpected value for bitfield element '%s'", b->id()), n->meta());
                     popBuilder();

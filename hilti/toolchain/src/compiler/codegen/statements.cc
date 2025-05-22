@@ -260,7 +260,7 @@ struct Visitor : hilti::visitor::PreOrder {
             auto body = cg->compile(c->body());
 
             if ( first ) {
-                block->addIf(fmt("%s %s = %s", cxx_type, cxx_id, cxx_init), std::move(cond), body);
+                block->addIf(fmt("%s %s = %s", cxx_type, cxx_id, cxx_init), std::move(cond), std::move(body));
                 first = false;
             }
             else
@@ -274,7 +274,7 @@ struct Visitor : hilti::visitor::PreOrder {
         else
             default_.addStatement(
                 fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")",
-                    (first ? cxx_init : std::move(cxx_id)), n->meta().location()));
+                    (first ? std::move(cxx_init) : std::move(cxx_id)), n->meta().location()));
 
         if ( first )
             block->addBlock(std::move(default_));
@@ -385,10 +385,10 @@ struct Visitor : hilti::visitor::PreOrder {
         auto body = cg->compile(n->body());
 
         if ( sinit.empty() )
-            block->addWhile(cond, body);
+            block->addWhile(std::move(cond), body);
 
         else if ( cond.empty() )
-            block->addWhile(sinit, body);
+            block->addWhile(std::move(sinit), body);
 
         else
             // C++ doesn't support having both init and cond in a while-loop.
