@@ -141,8 +141,8 @@ int main(int argc, char** argv) try {
         jop["commutative"] = hilti::operator_::isCommutative(op.kind());
         jop["operands"] = json::array();
 
-        if ( auto rtype = op.signature().result_doc; ! rtype.empty() )
-            jop["rtype"] = std::move(rtype);
+        if ( const auto& rtype = op.signature().result_doc; ! rtype.empty() )
+            jop["rtype"] = rtype;
         else
             jop["rtype"] = formatType(op.result(&builder, {}, hilti::Meta())->type());
 

@@ -109,7 +109,7 @@ struct Visitor : public visitor::PreOrder {
     Expression* result = nullptr;
 
     auto pb() { return tp->pb; }
-    auto state() { return pb()->state(); }
+    const auto& state() { return pb()->state(); }
     auto builder() { return pb()->builder(); }
     auto context() { return pb()->context(); }
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb()->pushBuilder(std::move(b)); }
