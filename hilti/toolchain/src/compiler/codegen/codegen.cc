@@ -334,9 +334,6 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
             auto id_hook_impl =
                 cxx::ID(cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n->function()));
-            auto id_hook_stub =
-                cxx::ID(cg->options().cxx_namespace_intern, id_module, fmt("__hook_%s_%s", id_class, id_local));
-
             // Adapt the function we generate.
             d.linkage = "extern";
             d.id = std::move(id_hook_impl);
@@ -385,9 +382,13 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             cg->unit()->add(d);
 
             if ( include_implementation ) {
+                auto id_hook_stub =
+                    cxx::ID(cg->options().cxx_namespace_intern, id_module, fmt("__hook_%s_%s", id_class, id_local));
                 // Tell linker about our implementation.
-                auto hook_join =
-                    cxx::linker::Join{.id = id_hook_stub, .callee = d, .aux_types = aux_types, .priority = priority};
+                auto hook_join = cxx::linker::Join{.id = std::move(id_hook_stub),
+                                                   .callee = d,
+                                                   .aux_types = std::move(aux_types),
+                                                   .priority = priority};
 
                 cg->unit()->add(hook_join);
             }
@@ -401,13 +402,11 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                 id_module = current_module;
 
             auto id_local = id.sub(-1);
-            auto id_hook_impl =
-                cxx::ID(cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n->function()));
             auto id_hook_stub = cxx::ID(cg->options().cxx_namespace_intern, id_module, id_local);
 
             // Adapt the function we generate.
             d.linkage = "extern";
-            d.id = id_hook_impl;
+            d.id = cxx::ID(cxxNamespace(), cg->uniqueID(fmt("__hook_%s_%s", id_class, id_local), n->function()));
             d.ftype = cxx::declaration::Function::Free;
 
             // Add a declaration for the stub that the linker will generate.

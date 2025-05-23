@@ -1,3 +1,9 @@
+1.14.0-dev.41 | 2025-05-23 07:54:50 -0400
+
+  * Fix auto causes copies. (Evan Typanski, Corelight)
+
+  * Fix copy instead of moves. (Evan Typanski, Corelight)
+
 1.14.0-dev.38 | 2025-05-20 17:33:54 +0200
 
   * GH-2061: Fix cyclic usage of units types inside other types. (Robin Sommer, Corelight)
