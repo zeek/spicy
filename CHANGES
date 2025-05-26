@@ -1,3 +1,7 @@
+1.14.0-dev.43 | 2025-05-26 12:43:01 +0200
+
+  * Bump 3rdparty/doctest from `3a01ec3` to `1da23a3` (dependabot[bot])
+
 1.14.0-dev.41 | 2025-05-23 07:54:50 -0400
 
   * Fix auto causes copies. (Evan Typanski, Corelight)
