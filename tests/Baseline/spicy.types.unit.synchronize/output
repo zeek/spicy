@@ -472,6 +472,7 @@ Done: [$x=49]
 [spicy-verbose]   - parsing production: Variable: x_2 -> uint<8>
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'x' to '49'
+[spicy-verbose]   - skipping skip offset to 1
 Error: [$x=49]
 [error] terminating with uncaught exception of type spicy::rt::ParseError: unit rejected outside of trial mode
 [spicy-verbose] - state: type=test::D input="1" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no

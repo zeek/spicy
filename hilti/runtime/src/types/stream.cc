@@ -707,7 +707,13 @@ void View::debugPrint(std::ostream& out) const {
 void Stream::debugPrint(std::ostream& out) const { _chain->debugPrint(out); }
 
 void Chunk::debugPrint(std::ostream& out) const {
-    auto x = std::string(reinterpret_cast<const char*>(data()), size());
+    std::string x;
+
+    if ( ! isGap() )
+        x = std::string(reinterpret_cast<const char*>(data()), size());
+    else
+        x = "<gap>";
+
     x = escapeBytes(x);
     out << fmt("offset %lu  data=|%s| (%s)", _offset, x, (isOwning() ? "owning" : "non-owning")) << '\n';
 }

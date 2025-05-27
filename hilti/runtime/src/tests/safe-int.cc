@@ -3,6 +3,7 @@
 #include <limits>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/safe-int.h>
 
 using namespace hilti::rt;

@@ -7,6 +7,7 @@
 #include <limits>
 #include <string>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/safe-int.h>

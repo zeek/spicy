@@ -12,6 +12,7 @@
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
+#include <hilti/rt/safe-int.h>
 
 namespace hilti::rt {
 
@@ -119,8 +120,26 @@ HILTI_EXCEPTION(RuntimeError, Exception)
 /** Base class for exceptions indicating non-recoverable misuse of some functionality. */
 HILTI_EXCEPTION(UsageError, Exception)
 
-/** Base class for exceptions which can be recovered. */
-HILTI_EXCEPTION(RecoverableFailure, RuntimeError)
+/** Base class for exceptions which can be recovered from. */
+class RecoverableFailure : public RuntimeError {
+public:
+    RecoverableFailure(std::string_view desc) : RuntimeError(Internal(), "RecoverableFailure", desc) {}
+    RecoverableFailure(std::string_view desc, std::string_view location)
+        : RuntimeError(Internal(), "RecoverableFailure", desc, location) {}
+    ~RecoverableFailure() override; /* required to create vtable, see hilti::rt::Exception */
+
+    /** Returns an offset to potentially skip to for synchronization, if set. */
+    const auto& skipOffset() const { return _skip_offset; }
+
+    /** Sets an offset to potentially skip to for synchronization. */
+    void setSkipOffset(uint64_t skip_to) { _skip_offset = skip_to; }
+
+protected:
+    using RuntimeError::RuntimeError;
+
+private:
+    std::optional<integer::safe<uint64_t>> _skip_offset; // not using SafeInt here to avoid circular dependency
+};
 
 /** Thrown when an `assert` statement fails. */
 HILTI_EXCEPTION(AssertionFailure, RuntimeError)
@@ -278,6 +297,14 @@ inline std::string what(const std::exception& e) { return e.what(); }
 
 /** Returns the location associated with an exception. */
 inline std::string where(const Exception& e) { return e.location(); }
+
+/** Returns an offset to potentially skip to for synchronization, if set for the exception. */
+inline const auto& skip_offset(const RecoverableFailure& e) { return e.skipOffset(); }
+
+/** Sets an offset to potentially skip to for synchronization with the exception. */
+inline void set_skip_offset(RecoverableFailure& e, integer::safe<uint64_t> skip_offset) {
+    e.setSkipOffset(skip_offset);
+}
 
 } // namespace exception
 

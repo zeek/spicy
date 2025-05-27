@@ -1,0 +1,42 @@
+# @TEST-EXEC: spicy-driver -d -F test.dat -P 80/tcp=Test::Chunks %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure that only a top-level vector item is eligible for sized-based synchronization.
+
+module Test;
+
+public type Chunks = unit {
+    chunks: (Chunk &synchronize)[] { print self; }
+
+    # We should not find an opportunity to resync.
+    on %synced { print "synced - SHOULD NEVER SEE THIS"; confirm; }
+};
+
+type Chunk = unit {
+    a1: uint16 { print "a1", $$; } # with our test input, this should print the same value two times
+    a2: uint16;
+    foo: Foo; # this will fail, and we shouldn't be able to recover
+    a3: uint8;
+};
+
+type Foo = unit {
+    x: void &requires=False; # force a parse error at the 2nd level; should not be able to recover
+    y: uint8;
+};
+# @TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-flow id1 stream 80/tcp
+@data id1 2
+11
+@data id1 2
+22
+@data id1 2
+33
+@data id1 2
+11
+@data id1 2
+22
+@data id1 2
+33
+@end-flow id1
+# @TEST-END-FILE

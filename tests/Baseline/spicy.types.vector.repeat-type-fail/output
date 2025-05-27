@@ -2,4 +2,6 @@
 [error] <...>/repeat-type-fail.spicy:9:5-9:24: cannot coerce expression '-1' of type 'int<64>' to type 'uint<64>'
 [error] <...>/repeat-type-fail.spicy:10:5-10:24: cannot coerce expression '0x1p-1' of type 'real' to type 'uint<64>'
 [error] <...>/repeat-type-fail.spicy:12:5-12:39: cannot coerce expression '(*self).indirect' of type 'int<64>' to type 'uint<64>'
+[error] <...>/repeat-type-fail.spicy:8:20-13:1: unsupported operator: <uint<64>> += <int<64>>
+[error] <...>/repeat-type-fail.spicy:8:20-13:1: unsupported operator: <uint<64>> += <real>
 [error] spicyc: aborting after errors

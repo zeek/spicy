@@ -408,7 +408,10 @@ void Grammar::printTables(std::ostream& out, bool verbose) {
                 fmt(" [field: %s%s] [item-type: %s] [parse-type: %s]", f->id(), isfp, *f->itemType(), *f->parseType());
         }
 
-        out << fmt(" %3s %s%s", (root && i.first == root->symbol() ? "(*)" : ""), *i.second, field) << '\n';
+        out << fmt(" %3s %s%s", (root && i.first == root->symbol() ? "(*)" : ""), *i.second, field);
+        if ( i.second->meta().container() )
+            out << fmt(" [container: %s]", i.second->meta().container()->id());
+        out << '\n';
     }
 
     for ( const auto& [r, p] : _resolved_mapping )

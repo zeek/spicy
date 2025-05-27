@@ -30,7 +30,7 @@
 [debug/ast-final]           - ctor::SignedInteger <value="-1" width="64"> [parent @e:XXX] (ctor-replacement.hlt:10:12-10:13) [@c:XXX]
 [debug/ast-final]             - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] (ctor-replacement.hlt:10:12-10:13) [@q:XXX]
 [debug/ast-final]               - type::SignedInteger <declaration="-" type="-" unified="int64" width="64" wildcard="false"> [parent @q:XXX] (ctor-replacement.hlt:10:12-10:13) (resolved) [@t:XXX]
-[debug/ast-final]     - declaration::Module <canonical-id="hilti" declaration="D19" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (hilti.hlt:3:1-68:1) [@d:XXX]
+[debug/ast-final]     - declaration::Module <canonical-id="hilti" declaration="D19" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (hilti.hlt:3:1-71:1) [@d:XXX]
 [debug/ast-final]         | AddressFamily -> declaration::Type <canonical-id="hilti::AddressFamily" declaration="D5" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | BitOrder -> declaration::Type <canonical-id="hilti::BitOrder" declaration="D2" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | ByteOrder -> declaration::Type <canonical-id="hilti::ByteOrder" declaration="D3" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
@@ -63,7 +63,9 @@
 [debug/ast-final]         | printTuple -> declaration::Function <canonical-id="hilti::printTuple" declaration="-" fqid="hilti::printTuple" id="printTuple" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | profiler_start -> declaration::Function <canonical-id="hilti::profiler_start" declaration="-" fqid="hilti::profiler_start" id="profiler_start" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | profiler_stop -> declaration::Function <canonical-id="hilti::profiler_stop" declaration="-" fqid="hilti::profiler_stop" id="profiler_stop" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]       - statement::Block [parent @d:XXX] (hilti.hlt:3:1-68:1) [@s:XXX]
+[debug/ast-final]         | set_skip_offset -> declaration::Function <canonical-id="hilti::set_skip_offset" declaration="-" fqid="hilti::set_skip_offset" id="set_skip_offset" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | skip_offset -> declaration::Function <canonical-id="hilti::skip_offset" declaration="-" fqid="hilti::skip_offset" id="skip_offset" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]       - statement::Block [parent @d:XXX] (hilti.hlt:3:1-71:1) [@s:XXX]
 [debug/ast-final]       - declaration::Property <canonical-id="hilti::%skip-implementation" declaration="-" fqid="hilti::%skip-implementation" id="%skip-implementation" linkage="private"> [parent @d:XXX] (hilti.hlt:6:1-6:21) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::BitOrder" declaration="D2" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:8:1-8:83) [@d:XXX]
 [debug/ast-final]           | LSB0 -> declaration::Constant <canonical-id="hilti::LSB0" declaration="-" fqid="hilti::BitOrder::LSB0" id="LSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
@@ -931,6 +933,56 @@
 [debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:67:104-67:118) [@a:XXX]
 [debug/ast-final]               - <empty>
+[debug/ast-final]       - declaration::Function <canonical-id="hilti::skip_offset" declaration="-" fqid="hilti::skip_offset" id="skip_offset" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:69:1-69:129) [@d:XXX]
+[debug/ast-final]           | e -> declaration::Parameter <canonical-id="hilti::e" declaration="-" fqid="e" id="e" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]         - Function <cc="<standard>" id="skip_offset"> [parent @d:XXX] (hilti.hlt:69:16-69:128) [@f:XXX]
+[debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:69:16-69:128) [@q:XXX]
+[debug/ast-final]             - type::Function <declaration="-" flavor="function" type="-" unified="function(result:optional(uint64), name(hilti::RecoverableFailure))" wildcard="false"> [parent @q:XXX] (hilti.hlt:69:16-69:128) (resolved) [@t:XXX]
+[debug/ast-final]               - QualifiedType <const="false" extern="false" side="rhs"> [parent @t:XXX] (hilti.hlt:69:16-69:33) [@q:XXX]
+[debug/ast-final]                 - type::Optional <declaration="-" type="-" unified="optional(uint64)" wildcard="false"> [parent @q:XXX] (hilti.hlt:69:16-69:33) (resolved) [@t:XXX]
+[debug/ast-final]                   - QualifiedType <const="false" extern="false" side="rhs"> [parent @t:XXX] (hilti.hlt:69:25-69:32) [@q:XXX]
+[debug/ast-final]                     - type::UnsignedInteger <declaration="-" type="-" unified="uint64" width="64" wildcard="false"> [parent @q:XXX] (hilti.hlt:69:25-69:32) (resolved) [@t:XXX]
+[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::e" declaration="-" fqid="e" id="e" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:69:47-69:66) (resolved) [@d:XXX]
+[debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:69:47-69:64) [@q:XXX]
+[debug/ast-final]                   - type::Name <builtin="false" declaration="-" id="RecoverableFailure" resolved-type="T15" type="-" unified="name(hilti::RecoverableFailure)" wildcard="false"> [parent @q:XXX] (hilti.hlt:69:47-69:64) (resolved) [@t:XXX]
+[debug/ast-final]                 - <empty>
+[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:69:67-69:66) [@a:XXX]
+[debug/ast-final]           - <empty>
+[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:69:68-69:128) [@a:XXX]
+[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:69:68-69:128) [@a:XXX]
+[debug/ast-final]               - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
+[debug/ast-final]                 - ctor::String <is_literal="true" value="::hilti::rt::exception::skip_offset"> [parent @e:XXX] [@c:XXX]
+[debug/ast-final]                   - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
+[debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
+[debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:69:114-69:128) [@a:XXX]
+[debug/ast-final]               - <empty>
+[debug/ast-final]       - declaration::Function <canonical-id="hilti::set_skip_offset" declaration="-" fqid="hilti::set_skip_offset" id="set_skip_offset" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:70:1-70:151) [@d:XXX]
+[debug/ast-final]           | e -> declaration::Parameter <canonical-id="hilti::e_2" declaration="-" fqid="e" id="e" is_type_param="false" kind="inout" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | skip_offset -> declaration::Parameter <canonical-id="hilti::skip_offset_2" declaration="-" fqid="skip_offset" id="skip_offset" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]         - Function <cc="<standard>" id="set_skip_offset"> [parent @d:XXX] (hilti.hlt:70:16-70:150) [@f:XXX]
+[debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:70:16-70:150) [@q:XXX]
+[debug/ast-final]             - type::Function <declaration="-" flavor="function" type="-" unified="function(result:void, name(hilti::RecoverableFailure), uint64)" wildcard="false"> [parent @q:XXX] (hilti.hlt:70:16-70:150) (resolved) [@t:XXX]
+[debug/ast-final]               - QualifiedType <const="false" extern="false" side="rhs"> [parent @t:XXX] (hilti.hlt:70:16-70:19) [@q:XXX]
+[debug/ast-final]                 - type::Void <declaration="-" type="-" unified="void" wildcard="false"> [parent @q:XXX] (hilti.hlt:70:16-70:19) (resolved) [@t:XXX]
+[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::e_2" declaration="-" fqid="e" id="e" is_type_param="false" kind="inout" linkage="private"> [parent @t:XXX] (hilti.hlt:70:37-70:62) (resolved) [@d:XXX]
+[debug/ast-final]                 - QualifiedType <const="false" extern="false" side="lhs"> [parent @d:XXX] (hilti.hlt:70:43-70:60) [@q:XXX]
+[debug/ast-final]                   - type::Name <builtin="false" declaration="-" id="RecoverableFailure" resolved-type="T15" type="-" unified="name(hilti::RecoverableFailure)" wildcard="false"> [parent @q:XXX] (hilti.hlt:70:43-70:60) (resolved) [@t:XXX]
+[debug/ast-final]                 - <empty>
+[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:70:63-70:62) [@a:XXX]
+[debug/ast-final]               - declaration::Parameter <canonical-id="hilti::skip_offset_2" declaration="-" fqid="skip_offset" id="skip_offset" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (hilti.hlt:70:65-70:84) (resolved) [@d:XXX]
+[debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:70:65-70:72) [@q:XXX]
+[debug/ast-final]                   - type::UnsignedInteger <declaration="-" type="-" unified="uint64" width="64" wildcard="false"> [parent @q:XXX] (hilti.hlt:70:65-70:72) (resolved) [@t:XXX]
+[debug/ast-final]                 - <empty>
+[debug/ast-final]                 - AttributeSet [parent @d:XXX] (hilti.hlt:70:85-70:84) [@a:XXX]
+[debug/ast-final]           - <empty>
+[debug/ast-final]           - AttributeSet [parent @f:XXX] (hilti.hlt:70:86-70:150) [@a:XXX]
+[debug/ast-final]             - Attribute <tag="&cxxname"> [parent @a:XXX] (hilti.hlt:70:86-70:150) [@a:XXX]
+[debug/ast-final]               - expression::Ctor [parent @a:XXX]  (const)  (resolved) [@e:XXX]
+[debug/ast-final]                 - ctor::String <is_literal="true" value="::hilti::rt::exception::set_skip_offset"> [parent @e:XXX] [@c:XXX]
+[debug/ast-final]                   - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
+[debug/ast-final]                     - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
+[debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:70:136-70:150) [@a:XXX]
+[debug/ast-final]               - <empty>
 [debug/ast-final] # State tables:
 [debug/ast-final]   [D1] Test [declaration::Module] (ctor-replacement.hlt:6:1-12:1)
 [debug/ast-final]   [D2] hilti::BitOrder [declaration::Type] (hilti.hlt:8:1-8:83)
@@ -950,7 +1002,7 @@
 [debug/ast-final]   [D16] hilti::RuntimeError [declaration::Type] (hilti.hlt:53:1-53:86)
 [debug/ast-final]   [D17] hilti::RecoverableFailure [declaration::Type] (hilti.hlt:56:1-56:98)
 [debug/ast-final]   [D18] hilti::MissingData [declaration::Type] (hilti.hlt:59:1-59:84)
-[debug/ast-final]   [D19] hilti [declaration::Module] (hilti.hlt:3:1-68:1)
+[debug/ast-final]   [D19] hilti [declaration::Module] (hilti.hlt:3:1-71:1)
 [debug/ast-final]   [D20] hilti::UTF8 [declaration::Constant] (hilti.hlt:14:23-14:60)
 [debug/ast-final]   [D21] hilti::REPLACE [declaration::Constant] (hilti.hlt:15:35-15:66)
 [debug/ast-final]   [T1] hilti::BitOrder [type::Enum] (hilti.hlt:8:24-8:42)

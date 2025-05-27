@@ -241,36 +241,45 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P0::__parse_foo__P0_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:12:11-12:17"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<uint<64>, uint<64>> __sync_field;
+    try {
 
-    if ( ::__feat%foo@@P0%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@P0%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@P0%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@P0%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@P0%uses_random_access || ::__feat%foo@@P0%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@P0%uses_random_access || ::__feat%foo@@P0%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@P0%uses_random_access || ::__feat%foo@@P0%uses_offset ) 
             (*self).__position_update = Null;
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@P0%uses_random_access || ::__feat%foo@@P0%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
+        __error = (*self).__error;
+
+        if ( ::__feat%foo@@P0%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
+
+
+        if ( ::__feat%foo@@P0%supports_sinks ) {
         }
 
-
-    __error = (*self).__error;
-
-    if ( ::__feat%foo@@P0%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
-
-
-    if ( ::__feat%foo@@P0%supports_sinks ) {
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        local uint<64> __sync_offset = __sync_field[1];
+        hilti::set_skip_offset(e, __sync_offset);
+        throw;
     }
 
     hilti::debugDedent("spicy");
@@ -489,36 +498,45 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P1::__parse_foo__P1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:14:18-14:24"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<uint<64>, uint<64>> __sync_field;
+    try {
 
-    if ( ::__feat%foo@@P1%uses_random_access ) 
-        (*self).__begin = __begin;
+        if ( ::__feat%foo@@P1%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@P1%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::__feat%foo@@P1%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
 
-    (*self).__error = __error;
+        (*self).__error = __error;
 
-    if ( ::__feat%foo@@P1%uses_random_access || ::__feat%foo@@P1%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@P1%uses_random_access || ::__feat%foo@@P1%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
+        if ( ::__feat%foo@@P1%uses_random_access || ::__feat%foo@@P1%uses_offset ) 
             (*self).__position_update = Null;
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@P1%uses_random_access || ::__feat%foo@@P1%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
+        __error = (*self).__error;
+
+        if ( ::__feat%foo@@P1%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
+
+
+        if ( ::__feat%foo@@P1%supports_sinks ) {
         }
 
-
-    __error = (*self).__error;
-
-    if ( ::__feat%foo@@P1%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
-
-
-    if ( ::__feat%foo@@P1%supports_sinks ) {
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        local uint<64> __sync_offset = __sync_field[1];
+        hilti::set_skip_offset(e, __sync_offset);
+        throw;
     }
 
     hilti::debugDedent("spicy");
@@ -739,120 +757,139 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P2::__parse_foo__P2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:16:18-21:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<uint<64>, uint<64>> __sync_field;
     try {
-        # "<...>/default-parser-functions.spicy:17:8-17:12"
+        __sync_field = (0, begin(__cur).offset());
+        try {
+            # "<...>/default-parser-functions.spicy:17:8-17:12"
 
-        # Begin parsing production: Variable: x   -> uint<8>
-        spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
-        ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
+            # Begin parsing production: Variable: x   -> uint<8>
+            spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
+            ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
 
-        if ( __trim ) 
-            (*__data).trim(begin(__cur));
+            if ( __trim ) 
+                (*__data).trim(begin(__cur));
 
-        # End parsing production: Variable: x   -> uint<8>
+            # End parsing production: Variable: x   -> uint<8>
 
-        (*self).__error = __error;
+            (*self).__error = __error;
 
-        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-            (*self).__position_update = Null;
-
-        (*self).__on_x((*self).x);
-
-        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
+            if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
                 (*self).__position_update = Null;
-            }
+
+            (*self).__on_x((*self).x);
+
+            if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
+
+                if ( (*self).__position_update ) {
+                    __cur = __cur.advance((*(*self).__position_update));
+                    (*self).__position_update = Null;
+                }
 
 
-        __error = (*self).__error;
-    }
-    catch ( hilti::SystemException __except ) {
-        (*self).__on_x_error(hilti::exception_what(__except));
-        throw;
-    }
-
-
-    if ( ::__feat%foo@@P2%uses_random_access ) 
-        (*self).__begin = __begin;
-
-
-    if ( ::__feat%foo@@P2%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
-
-    try {
-        # "<...>/default-parser-functions.spicy:18:8-18:12"
-
-        # Begin parsing production: Variable: y   -> uint<8>
-        spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
-        ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
-
-        if ( __trim ) 
-            (*__data).trim(begin(__cur));
-
-        # End parsing production: Variable: y   -> uint<8>
-
-        (*self).__error = __error;
-
-        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-            (*self).__position_update = Null;
-
-        (*self).__on_y((*self).y);
-
-        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
-            }
-
-
-        __error = (*self).__error;
-    }
-    catch ( hilti::SystemException __except ) {
-        (*self).__on_y_error(hilti::exception_what(__except));
-        throw;
-    }
-
-
-    if ( ::__feat%foo@@P2%uses_random_access ) 
-        (*self).__begin = __begin;
-
-
-    if ( ::__feat%foo@@P2%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
-
-
-    if ( ::__feat%foo@@P2%uses_random_access ) 
-        (*self).__begin = __begin;
-
-
-    if ( ::__feat%foo@@P2%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
-
-    (*self).__error = __error;
-
-    if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-        (*self).__position_update = Null;
-
-    (*self).__on_0x25_done();
-
-    if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
-
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+            __error = (*self).__error;
+        }
+        catch ( hilti::SystemException __except ) {
+            (*self).__on_x_error(hilti::exception_what(__except));
+            throw;
         }
 
 
-    __error = (*self).__error;
-
-    if ( ::__feat%foo@@P2%supports_filters ) 
-        spicy_rt::filter_disconnect(self);
+        if ( ::__feat%foo@@P2%uses_random_access ) 
+            (*self).__begin = __begin;
 
 
-    if ( ::__feat%foo@@P2%supports_sinks ) {
+        if ( ::__feat%foo@@P2%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+
+        __sync_field = (1, begin(__cur).offset());
+        try {
+            # "<...>/default-parser-functions.spicy:18:8-18:12"
+
+            # Begin parsing production: Variable: y   -> uint<8>
+            spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", ::__feat%foo@@P2%supports_filters ? (*self).__filters : Null);
+            ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network)));
+
+            if ( __trim ) 
+                (*__data).trim(begin(__cur));
+
+            # End parsing production: Variable: y   -> uint<8>
+
+            (*self).__error = __error;
+
+            if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
+                (*self).__position_update = Null;
+
+            (*self).__on_y((*self).y);
+
+            if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
+
+                if ( (*self).__position_update ) {
+                    __cur = __cur.advance((*(*self).__position_update));
+                    (*self).__position_update = Null;
+                }
+
+
+            __error = (*self).__error;
+        }
+        catch ( hilti::SystemException __except ) {
+            (*self).__on_y_error(hilti::exception_what(__except));
+            throw;
+        }
+
+
+        if ( ::__feat%foo@@P2%uses_random_access ) 
+            (*self).__begin = __begin;
+
+
+        if ( ::__feat%foo@@P2%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+
+
+        if ( ::__feat%foo@@P2%uses_random_access ) 
+            (*self).__begin = __begin;
+
+
+        if ( ::__feat%foo@@P2%uses_offset ) 
+            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+
+        (*self).__error = __error;
+
+        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
+            (*self).__position_update = Null;
+
+        (*self).__on_0x25_done();
+
+        if ( ::__feat%foo@@P2%uses_random_access || ::__feat%foo@@P2%uses_offset ) 
+
+            if ( (*self).__position_update ) {
+                __cur = __cur.advance((*(*self).__position_update));
+                (*self).__position_update = Null;
+            }
+
+
+        __error = (*self).__error;
+
+        if ( ::__feat%foo@@P2%supports_filters ) 
+            spicy_rt::filter_disconnect(self);
+
+
+        if ( ::__feat%foo@@P2%supports_sinks ) {
+        }
+
+    }
+    catch ( inout hilti::RecoverableFailure e ) {
+        local uint<64> __sync_offset = __sync_field[1];
+
+        if ( __sync_field[0] <= 0 ) 
+            __sync_offset += 1;
+
+
+        if ( __sync_field[0] <= 1 ) 
+            __sync_offset += 1;
+
+        hilti::set_skip_offset(e, __sync_offset);
+        throw;
     }
 
     hilti::debugDedent("spicy");
