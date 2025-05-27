@@ -1,3 +1,28 @@
+1.14.0-dev.49 | 2025-05-27 09:14:21 +0200
+
+  * Fix test for alpine-3.18.3. (Benjamin Bannier, Corelight)
+
+    Since recently `wordexp` on Alpine seems to ignore the `WRDE_UNDEF`
+    flag. This fixes the test to accommodate that.
+
+  * Use namespaced option for `3rdparty/justrx`. (Benjamin Bannier, Corelight)
+
+  * Do not build benchmarks or test for `3rdparty/justrx`. (Benjamin Bannier, Corelight)
+
+    To run benchmarks or unit tests for that project we should just run them
+    over there.
+
+  * Allow disabling building of tests. (Benjamin Bannier, Corelight)
+
+    This patch adds a new CMake option `SPICY_ENABLE_TESTS` which if toggled
+    on forces building of test and benchmark binaries; it is `ON` by
+    default. This flag can be used by projects building Spicy to disable
+    building of tests if they are not interested in them. We also provide a
+    configure flag `--disable-tests` which has has the effect of turning it
+    off.
+
+  * Only build benchmarks when building `test` target. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.43 | 2025-05-26 12:43:01 +0200
 
   * Bump 3rdparty/doctest from `3a01ec3` to `1da23a3` (dependabot[bot])

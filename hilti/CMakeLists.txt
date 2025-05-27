@@ -3,12 +3,9 @@
 add_subdirectory(lib)
 add_subdirectory(runtime)
 
+add_custom_target(hilti-tests COMMENT "Building unit tests for HILTI"
+                  DEPENDS hilti-rt-tests hilti-rt-configuration-tests hilti-rt-fiber-benchmark)
 if (HAVE_TOOLCHAIN)
     add_subdirectory(toolchain)
-    add_custom_target(
-        hilti-tests DEPENDS hilti-toolchain-tests hilti-rt-tests hilti-rt-configuration-tests
-        COMMENT "Running hilti-tests")
-else ()
-    add_custom_target(hilti-tests DEPENDS hilti-rt-tests hilti-rt-configuration-tests
-                      COMMENT "Running hilti-tests")
+    add_dependencies(hilti-tests hilti-toolchain-tests)
 endif ()

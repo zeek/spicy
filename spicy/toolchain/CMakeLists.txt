@@ -164,7 +164,7 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spi
 
 ## Tests
 
-add_executable(spicy-toolchain-tests tests/main.cc tests/grammar.cc)
+add_executable(spicy-toolchain-tests EXCLUDE_FROM_ALL tests/main.cc tests/grammar.cc)
 spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)
 target_link_libraries(spicy-toolchain-tests PRIVATE doctest)
 target_compile_options(spicy-toolchain-tests PRIVATE "-Wall")
