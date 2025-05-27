@@ -9,6 +9,7 @@
 
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
+#include <spicy/compiler/detail/codegen/productions/visitor.h>
 
 namespace spicy::detail::codegen::production {
 
@@ -33,6 +34,7 @@ public:
 
     std::vector<std::vector<Production*>> rhss() const final { return {{_child.get()}}; };
     QualifiedType* type() const final { return _child->type(); };
+    Expression* _bytesConsumed(ASTContext* context) const final { return _child->bytesConsumed(context); }
 
     std::string dump() const override { return _child->symbol(); }
 

@@ -65,4 +65,10 @@ declare public string exception_what(RecoverableFailure excpt) &cxxname="hilti::
 # Returns the location associated with an exception.
 declare public string exception_where(SystemException excpt) &cxxname="hilti::rt::exception::where" &have_prototype;
 declare public string exception_where(RecoverableFailure excpt) &cxxname="hilti::rt::exception::where" &have_prototype;
+
+# Returns the skip offset recorded in an exception instance.
+declare public optional<uint<64>> skip_offset(RecoverableFailure e) &cxxname="hilti::rt::exception::skip_offset" &have_prototype;
+
+# Sets an offset to potentially skip to in an exception instance.
+declare public void set_skip_offset(inout RecoverableFailure e, uint<64> skip_offset) &cxxname="hilti::rt::exception::set_skip_offset" &have_prototype;
 }

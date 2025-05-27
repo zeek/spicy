@@ -1243,7 +1243,7 @@ struct ProductionVisitor : public production::Visitor {
     // Generate code to synchronize on the given production. We assume that the
     // given production supports some form of lookahead; if the production is
     // not supported an error will be generated.
-    void syncProduction(const Production& p_) {
+    void syncProduction(const Production& p_, bool allow_missing_lookahead = false) {
         const auto* p = &p_;
 
         if ( const auto* resolved = p->tryAs<production::Deferred>() ) {
@@ -1329,23 +1329,14 @@ struct ProductionVisitor : public production::Visitor {
             }
         }
 
-        auto tokens = grammar.lookAheadsForProduction(p);
-        if ( ! tokens || tokens->empty() ) {
-            // ignore error message that was returned, it's a bit cryptic for our use-case here
+        if ( ! grammar.hasLookAheadLiterals(p) ) {
             hilti::logger().error("&synchronize cannot be used on field, no look-ahead tokens found", p->location());
             return;
         }
 
-        for ( const auto& p : *tokens ) {
-            if ( ! p->isLiteral() ) {
-                hilti::logger().error("&synchronize cannot be used on field, look-ahead contains non-literals",
-                                      p->location());
-                return;
-            }
-        }
-
         state().printDebug(builder());
 
+        auto tokens = grammar.lookAheadsForProduction(p);
         getLookAhead(*tokens, p->symbol(), p->location(), LiteralMode::Search);
         validateSearchResult();
     }
@@ -1354,7 +1345,7 @@ struct ProductionVisitor : public production::Visitor {
     // This function behaves like `syncProduction`, but makes sure that in case
     // the current input already appears to be synchronized we find a new
     // position in the input which is synchronized.
-    void syncProductionNext(const Production& p) {
+    void syncProductionNext(const Production& p, bool allow_missing_lookahead = false) {
         // We wrap lookahead search in a loop so we can advance manually should it get stuck
         // at the same input position. This can happen if we end up synchronizing on an
         // input token which matches something near the start of the list element type, but
@@ -1371,7 +1362,7 @@ struct ProductionVisitor : public production::Visitor {
             // The current input has failed, either since it does not match or since
             // data was missing. Advance the input to go to the next data.
             pb->advanceToNextData();
-            syncProduction(p);
+            syncProduction(p, allow_missing_lookahead);
 
             pushBuilder(builder()->addIf(builder()->equal(builder()->id("search_start"), state().cur)), [&]() {
                 builder()->addDebugMsg("spicy",
@@ -1381,10 +1372,7 @@ struct ProductionVisitor : public production::Visitor {
                 builder()->addContinue();
             });
 
-            pb->beforeHook();
-            builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
-            builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p.location());
-            pb->afterHook();
+            pb->successfullySynchronized(p, "look-ahead token");
 
             // Sync point found, break from loop.
             builder()->addBreak();
@@ -1465,10 +1453,7 @@ struct ProductionVisitor : public production::Visitor {
 
             builder()->addAssign(is_trial_mode, builder()->bool_(true));
 
-            pb->beforeHook();
-            builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
-            builder()->addMemberCall(state().self, "__on_0x25_synced", {}, sync.location());
-            pb->afterHook();
+            pb->successfullySynchronized(sync, "look-ahead token");
         });
 
         auto [body, try_] = builder()->addTry();
@@ -1495,6 +1480,52 @@ struct ProductionVisitor : public production::Visitor {
         builder()->addBreak();
         popBuilder(); // body.
         popBuilder(); // while_.
+    }
+
+    /**
+     * Add a catch block to an existing try block (presumably doing parsing)
+     * that catches recoverable errors and starts synchronization.
+     */
+    void addCatchForSynchronize(const Production* p, Builder::TryProxy* try_, bool allow_missing_lahead = false) {
+        pushBuilder(try_->addCatch(builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
+                    [&]() {
+                        // Remember the original error so we can report it
+                        // in case the sync failed. This is also what marks
+                        // that we are in trial mode.
+                        builder()->addAssign(state().error, builder()->id("e"));
+
+                        // If the exception carries an offset to skip to, do so.
+                        auto* skip_offset = builder()->local("skip_offset", builder()->call("hilti::skip_offset",
+                                                                                            {builder()->id("e")}));
+                        auto [true_, false_] = builder()->addIfElse(skip_offset, builder()->id("skip_offset"));
+
+                        pushBuilder(std::move(true_), [&]() {
+                            builder()->addDebugMsg("spicy-verbose", "failed to parse list element, skipping over it");
+
+                            auto* x = builder()->memberCall(state().cur, "at",
+                                                            {builder()->deref(builder()->id("skip_offset"))});
+                            pb->advanceInput(x);
+
+                            pb->beforeHook();
+                            builder()->addDebugMsg("spicy-verbose", "successfully synchronized");
+                            builder()->addMemberCall(state().self, "__on_0x25_synced", {}, p->location());
+                            pb->afterHook();
+                        });
+
+                        pushBuilder(std::move(false_), [&]() {
+                            if ( grammar.hasLookAheadLiterals(p) ) {
+                                builder()->addDebugMsg("spicy-verbose",
+                                                       "failed to parse list element, will try to "
+                                                       "synchronize at next possible element");
+                                syncProductionNext(*p, allow_missing_lahead);
+                            }
+                            else
+                                // Production cannot be recognized through
+                                // look-ahead symbols, so stay with original
+                                // error.
+                                builder()->addRethrow();
+                        });
+                    });
     }
 
     std::pair<Expression*, Expression*> preAggregate(const Production* p, AttributeSet* attributes) {
@@ -1611,21 +1642,8 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto* f = p->body()->meta().field(); f && f->attributes()->find(attribute::kind::Synchronize) ) {
             auto try_ = builder()->addTry();
             pushBuilder(try_.first, [&]() { parse(); });
-
-            pushBuilder(try_.second.addCatch(
-                            builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                        [&]() {
-                            // Remember the original error so we can report it in case the sync failed.
-                            builder()->addAssign(state().error, builder()->id("e"));
-
-                            builder()->addDebugMsg("spicy-verbose",
-                                                   "failed to parse list element, will try to "
-                                                   "synchronize at next possible element");
-
-                            syncProductionNext(*p);
-                        });
+            addCatchForSynchronize(p, &try_.second);
         }
-
         else
             parse();
 
@@ -1692,6 +1710,32 @@ struct ProductionVisitor : public production::Visitor {
             popBuilder();
     }
 
+    // Determines if a sync group has a fixed size. If so, returns an
+    // expression that yields that size.
+    Expression* parseSizeOfSynchronizationGroup(const production::Unit* p, const std::vector<uint64_t>& field_indices) {
+        Expression* group_size = nullptr;
+
+        for ( auto i : field_indices ) {
+            const auto& field_production = p->fields()[i];
+
+            if ( ! field_production->meta().field() )
+                return nullptr;
+
+            Expression* field_parse_size = field_production->bytesConsumed(context());
+            if ( ! (field_parse_size && field_parse_size->isConstant()) )
+                // We only allow fields of constant size, as otherwise
+                // the group size may end up ill-defined.
+                return nullptr;
+
+            if ( group_size )
+                group_size = builder()->sum(group_size, field_parse_size);
+            else
+                group_size = field_parse_size;
+        }
+
+        return group_size;
+    }
+
     void operator()(const production::Unit* p) final {
         auto pstate = pb->state();
         pstate.self = destination();
@@ -1754,6 +1798,7 @@ struct ProductionVisitor : public production::Visitor {
 
         // Group adjacent fields with same sync point.
         std::vector<std::pair<std::vector<uint64_t>, std::optional<uint64_t>>> groups;
+
         for ( uint64_t i = 0; i < sync_points.size(); ++i ) {
             const auto& sync_point = sync_points[i];
             if ( ! groups.empty() && groups.back().second == sync_point )
@@ -1762,11 +1807,40 @@ struct ProductionVisitor : public production::Visitor {
                 groups.push_back({{i}, sync_point});
         }
 
-        auto parseField = [&](const auto& fieldProduction) {
-            parseProduction(*fieldProduction);
+        auto parseField = [&](const auto& unit_fields, size_t field_index, Expression* sync_field) {
+            const auto& production = unit_fields[field_index];
+
+            if ( sync_field )
+                // Record current field and offset.
+                builder()->addAssign(sync_field, builder()->tuple(
+                                                     {builder()->integer(static_cast<uint64_t>(field_index)),
+                                                      builder()->memberCall(builder()->begin(state().cur), "offset")}));
+
+            parseProduction(*production);
 
             if ( const auto& skip = p->unitType()->propertyItem("%skip") )
                 skipRegExp(skip->expression());
+        };
+
+        Expression* sync_field = nullptr;
+
+        if ( ! (p->unitType()->propertyItem("%skip") || p->unitType()->propertyItem("%skip-pre") ||
+                p->unitType()->propertyItem("%skip-post")) ) {
+            // Track current field and offset for potential size-based synchronization.
+            sync_field =
+                builder()->addTmp("sync_field",
+                                  builder()->typeTuple({builder()->qualifiedType(builder()->typeUnsignedInteger(64),
+                                                                                 hilti::Constness::Const),
+                                                        builder()->qualifiedType(builder()->typeUnsignedInteger(64),
+                                                                                 hilti::Constness::Const)}));
+        }
+
+        std::optional<Builder::TryProxy> sync_try;
+
+        if ( sync_field ) {
+            auto try_ = builder()->addTry();
+            pushBuilder(try_.first);
+            sync_try = try_.second;
         };
 
         int trial_loops = 0;
@@ -1778,35 +1852,53 @@ struct ProductionVisitor : public production::Visitor {
 
             assert(! fields.empty());
 
-            auto maybe_try = std::optional<decltype(std::declval<Builder>().addTry())>();
-
-            if ( ! sync_point )
+            if ( ! sync_point ) {
                 for ( auto field : fields )
-                    parseField(p->fields()[field]);
-
+                    parseField(p->fields(), field, sync_field);
+            }
             else {
+                // Determine if the group has a fixed size. If so, remember its
+                // start position.
+                Expression* group_begin = nullptr;
+                Expression* group_size = parseSizeOfSynchronizationGroup(p, fields);
+                if ( group_size )
+                    group_begin = builder()->addTmp("sync_group_begin", state().cur);
+
                 auto try_ = builder()->addTry();
 
                 pushBuilder(try_.first, [&]() {
                     for ( auto field : fields )
-                        parseField(p->fields()[field]);
+                        parseField(p->fields(), field, sync_field);
                 });
 
                 pushBuilder(try_.second.addCatch(
                                 builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
                             [&]() {
-                                // There is a sync point; run its production w/o consuming input until parsing
-                                // succeeds or we run out of data.
-                                builder()->addDebugMsg("spicy-verbose",
-                                                       fmt("failed to parse, will try to synchronize at '%s'",
-                                                           p->fields()[*sync_point]->meta().field()->id()));
+                                builder()->addDebugMsg("spicy-verbose", "parse failure");
 
-                                // Remember the original error so we can report it in case the sync failed.
+                                // Remember the original error so we can report it in case the sync never gets
+                                // confirmed. This is also what marks that we are in trial mode.
                                 builder()->addAssign(state().error, builder()->id("e"));
                             });
 
-                startSynchronize(*p->fields()[*sync_point]);
-                ++trial_loops;
+                if ( group_size ) {
+                    // When the whole group is of fixed size, we know directly where
+                    // to continue parsing, and can just jump there. We prefer this
+                    // over pattern-based synchronization.
+                    pushBuilder(builder()->addIf(state().error), [&]() {
+                        builder()->addAssign(state().cur, builder()->memberCall(group_begin, "advance", {group_size}));
+                        pb->trimInput();
+                        pb->successfullySynchronized(*p, "fixed offset");
+                    });
+                }
+                else {
+                    // Start searching for the sync point.
+                    builder()->addDebugMsg("spicy-verbose", fmt("will try to synchronize at '%s'",
+                                                                p->fields()[*sync_point]->meta().field()->id()));
+
+                    startSynchronize(*p->fields()[*sync_point]);
+                    ++trial_loops;
+                }
             }
         }
 
@@ -1839,6 +1931,40 @@ struct ProductionVisitor : public production::Visitor {
             _checkSizeAmount(length, a->meta(), ncur);
             popState();
             builder()->addAssign(state().cur, ncur);
+        }
+
+        if ( sync_field ) {
+            popBuilder();
+
+            pushBuilder(sync_try->addCatch(builder()->parameter(ID("e"),
+                                                                builder()->typeName("hilti::RecoverableFailure"),
+                                                                hilti::parameter::Kind::InOut)),
+                        [&]() {
+                            // Add catch handler for parse errors that sees if we can determine
+                            // the number bytes from where the error occurred to the end of the
+                            // unit. If so, we record the offset of the unit's end inside the
+                            // exception instance for later synchronization.
+                            auto* offset = builder()->addTmp("sync_offset", builder()->typeUnsignedInteger(64),
+                                                             builder()->index(sync_field, builder()->integer(1U)));
+                            for ( auto x : hilti::util::enumerate(p->fields()) ) {
+                                const auto& field_nr_2 = std::get<0>(x);
+                                const auto& field_production = std::get<1>(x);
+
+                                auto true_ = builder()->addIf(
+                                    builder()->lowerEqual(builder()->index(sync_field, builder()->integer(0U)),
+                                                          builder()->integer(static_cast<uint64_t>(field_nr_2))));
+                                pushBuilder(std::move(true_), [&]() {
+                                    if ( auto* size = field_production->bytesConsumed(context()) )
+                                        builder()->addSumAssign(offset, size);
+                                    else
+                                        builder()->addRethrow(); // Cannot determine end offset, just rethrow.
+                                });
+                            }
+
+                            builder()->addDebugMsg("spicy-verbose", "- skipping skip offset to %" PRIu64, {offset});
+                            builder()->addCall("hilti::set_skip_offset", {builder()->id("e"), offset});
+                            builder()->addRethrow();
+                        });
         }
 
         popState();
@@ -1933,68 +2059,73 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void operator()(const production::Skip* p) final {
-        if ( auto* c = p->field()->condition() )
-            pushBuilder(builder()->addIf(c));
+        const auto& production = p->production();
+        const auto* field = production->meta().field();
 
-        if ( const auto& ctor = p->ctor() )
+        if ( field && field->condition() )
+            pushBuilder(builder()->addIf(field->condition()));
+
+        if ( const auto& ctor = production->tryAs<production::Ctor>() )
             pb->skipLiteral(*ctor);
 
-        else if ( const auto& size = p->field()->size(context()) )
-            pb->skip(size, p->location());
+        else if ( field ) {
+            if ( const auto& size = p->bytesConsumed(context()) )
+                pb->skip(size, p->location()); // we know the number of bytes to skip
 
-        else if ( p->field()->parseType()->type()->isA<hilti::type::Bytes>() ) {
-            auto* eod_attr = p->field()->attributes()->find(attribute::kind::Eod);
-            auto* until_attr = p->field()->attributes()->find(attribute::kind::Until);
-            if ( ! until_attr )
-                until_attr = p->field()->attributes()->find(attribute::kind::UntilIncluding);
+            else if ( field->parseType()->type()->isA<hilti::type::Bytes>() ) {
+                auto* eod_attr = field->attributes()->find(attribute::kind::Eod);
+                auto* until_attr = field->attributes()->find(attribute::kind::Until);
+                if ( ! until_attr )
+                    until_attr = field->attributes()->find(attribute::kind::UntilIncluding);
 
-            if ( eod_attr ) {
-                builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
-                auto loop = builder()->addWhile(pb->waitForInputOrEod());
-                pushBuilder(std::move(loop), [&]() { pb->advanceInput(builder()->size(state().cur)); });
-                pb->advanceInput(builder()->size(state().cur));
-            }
+                if ( eod_attr ) {
+                    builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
+                    auto loop = builder()->addWhile(pb->waitForInputOrEod());
+                    pushBuilder(std::move(loop), [&]() { pb->advanceInput(builder()->size(state().cur)); });
+                    pb->advanceInput(builder()->size(state().cur));
+                }
 
-            else if ( until_attr ) {
-                Expression* until_expr =
-                    builder()->coerceTo(pb->evaluateAttributeExpression(until_attr, "until"),
-                                        builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Const));
-                auto* until_bytes_var = builder()->addTmp("until_bytes", until_expr);
-                auto* until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
+                else if ( until_attr ) {
+                    Expression* until_expr =
+                        builder()->coerceTo(pb->evaluateAttributeExpression(until_attr, "until"),
+                                            builder()->qualifiedType(builder()->typeBytes(), hilti::Constness::Const));
+                    auto* until_bytes_var = builder()->addTmp("until_bytes", until_expr);
+                    auto* until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
 
-                auto body = builder()->addWhile(builder()->bool_(true));
-                pushBuilder(std::move(body), [&]() {
-                    pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
-                                     until_expr->meta());
+                    auto body = builder()->addWhile(builder()->bool_(true));
+                    pushBuilder(std::move(body), [&]() {
+                        pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
+                                         until_expr->meta());
 
-                    auto* find = builder()->memberCall(state().cur, "find", {until_bytes_var});
-                    auto found_id = ID("found");
-                    auto it_id = ID("it");
-                    auto* found = builder()->id(found_id);
-                    auto* it = builder()->id(it_id);
-                    builder()->addLocal(std::move(found_id),
-                                        builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
-                    builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
-                                                                                   hilti::Constness::Mutable));
-                    builder()->addAssign(builder()->tuple({found, it}), find);
+                        auto* find = builder()->memberCall(state().cur, "find", {until_bytes_var});
+                        auto found_id = ID("found");
+                        auto it_id = ID("it");
+                        auto* found = builder()->id(found_id);
+                        auto* it = builder()->id(it_id);
+                        builder()->addLocal(std::move(found_id),
+                                            builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
+                        builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
+                                                                                       hilti::Constness::Mutable));
+                        builder()->addAssign(builder()->tuple({found, it}), find);
 
-                    auto [found_branch, not_found_branch] = builder()->addIfElse(found);
+                        auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
-                    pushBuilder(std::move(found_branch), [&]() {
-                        auto* new_it = builder()->sum(it, until_bytes_size_var);
-                        pb->advanceInput(new_it);
-                        builder()->addBreak();
+                        pushBuilder(std::move(found_branch), [&]() {
+                            auto* new_it = builder()->sum(it, until_bytes_size_var);
+                            pb->advanceInput(new_it);
+                            builder()->addBreak();
+                        });
+
+                        pushBuilder(std::move(not_found_branch), [&]() { pb->advanceInput(it); });
                     });
-
-                    pushBuilder(std::move(not_found_branch), [&]() { pb->advanceInput(it); });
-                });
+                }
             }
         }
 
         else
             hilti::logger().internalError("unexpected skip production");
 
-        if ( p->field()->condition() )
+        if ( field && field->condition() )
             popBuilder();
     }
 
@@ -2030,19 +2161,7 @@ struct ProductionVisitor : public production::Visitor {
                     auto try_ = builder()->addTry();
 
                     pushBuilder(try_.first, [&]() { parse(); });
-
-                    pushBuilder(try_.second.addCatch(
-                                    builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                                [&]() {
-                                    // Remember the original error so we can report it in case the sync failed.
-                                    builder()->addAssign(state().error, builder()->id("e"));
-
-                                    builder()->addDebugMsg("spicy-verbose",
-                                                           "failed to parse list element, will try to "
-                                                           "synchronize at next possible element");
-
-                                    syncProductionNext(*p);
-                                });
+                    addCatchForSynchronize(p, &try_.second, true);
 
                     pushBuilder(std::move(builder_default),
                                 [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
@@ -2805,15 +2924,16 @@ void ParserBuilder::advanceToNextData() {
 }
 
 void ParserBuilder::advanceInput(Expression* i) {
-    if ( i->type()->type()->isA<hilti::type::stream::View>() )
-        builder()->addAssign(state().cur, i);
-    else
-        builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance", {i}));
+    // A previous version allowed to pass in a view, which however didn't work
+    // reliably (because the expression might not have been resolved yet, which
+    // would mislead the type check). We assert on that old usage of the API
+    // just in case there's still a place out there where it happened to be
+    // working previously.
+    assert(! i->type()->type()->isA<hilti::type::stream::View>());
 
+    builder()->addAssign(state().cur, builder()->memberCall(state().cur, "advance", {i}));
     trimInput();
 }
-
-void ParserBuilder::setInput(Expression* i) { builder()->addAssign(state().cur, i); }
 
 void ParserBuilder::beforeHook() {
     // Forward the current trial mode state into the unit so hooks see the
@@ -2927,6 +3047,14 @@ void ParserBuilder::syncAdvanceHook(std::shared_ptr<Builder> cond) {
         else
             body();
     });
+}
+
+// TODO: Should this be called by synchronize-at/after?
+void ParserBuilder::successfullySynchronized(const Production& production, const std::string_view& debug_msg) {
+    beforeHook();
+    builder()->addDebugMsg("spicy-verbose", fmt("successfully synchronized (via %s)", debug_msg));
+    builder()->addMemberCall(state().self, "__on_0x25_synced", {}, production.location());
+    afterHook();
 }
 
 std::shared_ptr<Builder> ParserBuilder::_featureCodeIf(const type::Unit* unit,

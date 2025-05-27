@@ -143,52 +143,6 @@ struct Visitor : public visitor::PreOrder {
     }
 
     void operator()(spicy::type::unit::item::Field* n) final {
-        if ( n->isSkip() ) {
-            // For field types that support it, create a dedicated skip production.
-            std::unique_ptr<Production> skip;
-
-            if ( const auto& ctor = n->ctor() ) {
-                auto prod = productionForCtor(ctor, n->id());
-                auto m = prod->meta();
-                m.setField(pf->currentField(), false);
-                prod->setMeta(m);
-                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n,
-                                                          std::move(prod), n->meta().location());
-            }
-
-            else if ( n->item() ) {
-                // Skipping not supported
-            }
-
-            else if ( n->size(context()) )
-                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
-                                                          n->meta().location());
-
-            else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
-                // Bytes with fixed size already handled above.
-                auto* eod_attr = n->attributes()->find(attribute::kind::Eod);
-                auto* until_attr = n->attributes()->find(attribute::kind::Until);
-                auto* until_including_attr = n->attributes()->find(attribute::kind::UntilIncluding);
-
-                if ( eod_attr || until_attr || until_including_attr )
-                    skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
-                                                              n->meta().location());
-            }
-
-            if ( n->repeatCount() )
-                skip.reset();
-
-            auto* convert_attr = n->attributes()->find(attribute::kind::Convert);
-            auto* requires_attr = n->attributes()->find(attribute::kind::Requires);
-            if ( convert_attr || requires_attr )
-                skip.reset();
-
-            if ( skip ) {
-                result = std::move(skip);
-                return;
-            }
-        }
-
         std::unique_ptr<Production> prod;
 
         if ( auto* c = n->ctor() ) {
@@ -216,6 +170,38 @@ struct Visitor : public visitor::PreOrder {
         auto m = prod->meta();
         m.setField(pf->currentField(), true);
         prod->setMeta(m);
+
+        if ( n->isSkip() ) {
+            std::unique_ptr<production::Skip> skip = nullptr;
+
+            bool can_skip = false;
+
+            if ( n->ctor() || prod->bytesConsumed(context()) )
+                can_skip = true;
+
+            else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
+                auto* eod_attr = n->attributes()->find(attribute::kind::Eod);
+                auto* until_attr = n->attributes()->find(attribute::kind::Until);
+                auto* until_including_attr = n->attributes()->find(attribute::kind::UntilIncluding);
+
+                if ( eod_attr || until_attr || until_including_attr )
+                    can_skip = true;
+            }
+
+            if ( n->repeatCount() )
+                can_skip = false;
+
+            auto* convert_attr = n->attributes()->find(attribute::kind::Convert);
+            auto* requires_attr = n->attributes()->find(attribute::kind::Requires);
+            if ( convert_attr || requires_attr )
+                can_skip = false;
+
+            if ( can_skip ) {
+                result = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), std::move(prod),
+                                                            n->meta().location());
+                return;
+            }
+        }
 
         result = std::move(prod);
     }

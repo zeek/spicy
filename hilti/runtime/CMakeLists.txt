@@ -33,6 +33,7 @@ set(SOURCES
     src/logging.cc
     src/main.cc
     src/profiler.cc
+    src/safe-int.cc
     src/safe-math.cc
     src/type-info.cc
     src/types/address.cc

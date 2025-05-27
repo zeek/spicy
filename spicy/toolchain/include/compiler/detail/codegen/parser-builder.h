@@ -402,26 +402,19 @@ public:
     Expression* atEod();
 
     /**
-     * Generates code that advances the current view to the next position which is not a gap.
-     * This implicitly calls advancedInput() afterwards.
+     * Generates code that advances the current view to the next position which
+     * is not a gap. This implicitly calls `trimInput()` afterwards.
      */
     void advanceToNextData();
 
     /**
      * Generates code that advances the current view to a new start position.
-     * This implicitly calls advancedInput() afterwards.
+     * This implicitly calls `trimInput()` afterwards.
      *
-     * @param i expression that's either the number of bytes to move ahead,
-     * a stream iterator to move to, or a new stream view to use from now on.
+     * @param i expression that's either the number of bytes to move ahead or a
+     * stream iterator to move to.
      */
     void advanceInput(Expression* i);
-
-    /**
-     * Generates code that sets the current view.
-     *
-     * @param i expression that's the new view to use.
-     */
-    void setInput(Expression* i);
 
     /**
      * Generates code that saves the current parsing position inside the
@@ -567,6 +560,8 @@ public:
      *             the hook.
      */
     void syncAdvanceHook(std::shared_ptr<Builder> cond = {});
+
+    void successfullySynchronized(const Production& production, const std::string_view& debug_msg);
 
     /**
      * Returns an expression referencing the current parse object's `__filters`

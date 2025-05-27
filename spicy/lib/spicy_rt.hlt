@@ -7,10 +7,12 @@ module spicy_rt {
 
 import hilti;
 
-public type Backtrack = exception &cxxname="spicy::rt::Backtrack";
-public type MissingData = exception &cxxname="spicy::rt::MissingData";
-public type ParseError = exception &cxxname="spicy::rt::ParseError";
-public type UnitAlreadyConnected = exception &cxxname="spicy::rt::UnitAlreadyConnected";
+public type ParseError = [exception : hilti::RecoverableFailure] &cxxname="spicy::rt::ParseError";
+public type Backtrack = [exception : ParseError] &cxxname="spicy::rt::Backtrack";
+public type MissingData = [exception : ParseError] &cxxname="spicy::rt::MissingData";
+
+# TODO: No longer needed?
+# public type UnitAlreadyConnected = exception &cxxname="spicy::rt::UnitAlreadyConnected";
 
 # State stored inside a unit to allow connecting it to a sink.
 public type SinkState = __library_type("spicy::rt::sink::detail::State*");

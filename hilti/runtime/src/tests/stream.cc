@@ -737,7 +737,7 @@ TEST_CASE("Trim") {
 
     y.trim(y.at(100));
     CHECK_EQ(y.size().Ref(), 0);
-    CHECK_EQ(y.begin().offset().Ref(), 100);
+    CHECK_EQ(y.begin().offset().Ref(), 72); // y is unchanged
 
     auto z = Stream("12345"_b);
     z.trim(z.at(3));
@@ -781,10 +781,10 @@ TEST_CASE("Trim to beyond end") {
     x.trim(i);
     CHECK_EQ(x.numberOfChunks(), 0);
     CHECK_EQ(x, ""_b);
-    x.append("56789");
+    x.append("23456");
     CHECK_EQ(*i, '5');
-    CHECK_EQ(x.view().begin().offset(), 5);
-    CHECK_EQ(x.view().end().offset(), 10);
+    CHECK_EQ(x.view().begin().offset(), 2);
+    CHECK_EQ(x.view().end().offset(), 7);
 }
 
 TEST_CASE("Trim noop") {

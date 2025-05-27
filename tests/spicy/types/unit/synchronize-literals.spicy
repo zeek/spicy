@@ -20,12 +20,17 @@ module test;
 
 public type X = unit {
     a: b"Axy";
+     : /()/; # avoid offset syncing
     b: uint32(6) &synchronize;
+     : /()/; # avoid offset syncing
     c: b"Cxy" &synchronize;
+     : /()/; # avoid offset syncing
     d: /Dxy/ &synchronize;
+     : /()/; # avoid offset syncing
     e: bitfield(8) {
          msb: 7 = 1;
     } &synchronize;
+     : /()/; # avoid offset syncing
 
     on %synced { confirm; }
     on %done { print self; }

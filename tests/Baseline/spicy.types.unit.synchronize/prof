@@ -3,6 +3,7 @@
 spicy/unit/test::A 1 8
 spicy/unit/test::A/__sync_advance__ 4 0
 spicy/unit/test::A/__synchronize__ 1 4
+spicy/unit/test::A::_anon_2 1 0
 spicy/unit/test::A::a 1 -
 spicy/unit/test::A::b 1 1
 spicy/unit/test::A::c 1 1

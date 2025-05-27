@@ -1,0 +1,47 @@
+# @TEST-EXEC: spicy-driver -d -F test.dat -P 80/tcp=Test::Chunks %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC:
+module Test;
+
+public type Chunks = unit {
+    chunks: (Chunk &synchronize)[] { print self; }
+
+    on %synced { print "synced"; confirm; }
+    on %confirmed { print "confirmed"; }
+};
+
+type Chunk = unit {
+    content_size: bytes &until=b"\n" &convert=$$.to_uint();
+    content: bytes &size=self.content_size;
+    pad:     uint8;
+};
+
+# @TEST-START-FILE test.dat
+!spicy-batch v2
+@begin-flow id1 stream 80/tcp
+@data id1 3
+15
+
+@data id1 5
+abcde
+@gap id1 5
+@data id1 5
+klmno
+@data id1 1
+*
+@data id1 3
+20
+
+@data id1 5
+ABCDE
+@data id1 5
+FGHIJ
+@data id1 5
+KLMNO
+@data id1 5
+PQRST
+@data id1 1
+*
+@end-flow id1
+# @TEST-END-FILE

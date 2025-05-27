@@ -4,16 +4,14 @@
 
 #define SAFEINT_DISABLE_ADDRESS_OPERATOR
 #include <hilti/rt/3rdparty/SafeInt/SafeInt.hpp>
-#include <hilti/rt/exception.h>
 
 namespace hilti::rt::integer {
 
 namespace detail {
 class SafeIntException {
 public:
-    static void SafeIntOnOverflow() __attribute__((noreturn)) { throw Overflow("integer overflow"); }
-
-    static void SafeIntOnDivZero() __attribute__((noreturn)) { throw DivisionByZero("integer division by zero"); }
+    static void SafeIntOnOverflow() __attribute__((noreturn));
+    static void SafeIntOnDivZero() __attribute__((noreturn));
 };
 } // namespace detail
 

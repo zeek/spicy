@@ -303,7 +303,7 @@ struct Visitor : hilti::visitor::PreOrder {
             cxx::declaration::Argument arg;
 
             if ( auto* par = c->parameter() ) {
-                auto t = cg->compile(par->type(), codegen::TypeUsage::InParameter);
+                auto t = cg->compile(par->type(), cg->parameterKindToTypeUsage(par->kind()));
                 arg = {cxx::ID(par->id()), std::move(t)};
             }
             else

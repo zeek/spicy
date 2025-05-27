@@ -11,7 +11,7 @@
 [spicy-verbose]     suspending to wait for more input for stream 0xXXXXXXXX, currently have 0
 [spicy-verbose]     resuming after insufficient input, now have 2 for stream 0xXXXXXXXX
 [spicy-verbose]     - state: type=sync::X2 input="AB" stream=0xXXXXXXXX offsets=1025/0/1025/1027/1027 chunks=1 frozen=no mode=default trim=yes lah=2 lah_token="AB" recovering=yes
-[spicy-verbose]     successfully synchronized
+[spicy-verbose]     successfully synchronized (via look-ahead token)
 [spicy-verbose]     - state: type=sync::X2 input="AB" stream=0xXXXXXXXX offsets=1025/0/1025/1027/1027 chunks=1 frozen=no mode=default trim=yes lah=2 lah_token="AB" recovering=no
 [spicy-verbose]     - parsing production: Ctor: _anon_2 -> /AB/ (regexp) (container 'xs')
 [spicy-verbose]       - consuming look-ahead token

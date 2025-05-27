@@ -1,0 +1,33 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test coercion of exceptions to their base type.
+
+module Test {
+
+import hilti;
+
+type MyException = exception;
+type AnotherException = [exception : MyException];
+
+function void test_coercion() {
+    local my_exception = MyException("my_exception");
+    local another_exception = AnotherException("another_exception");
+
+    local exception a1 = my_exception;
+    local exception a2 = another_exception;
+    hilti::print(a1);
+    hilti::print(a2);
+
+    local MyException b1 = my_exception;
+    local MyException b2 = another_exception;
+    hilti::print(b1);
+    hilti::print(b2);
+
+    local AnotherException c1 = another_exception;
+    hilti::print(c1);
+}
+
+test_coercion();
+
+}

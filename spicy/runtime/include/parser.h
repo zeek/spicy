@@ -17,6 +17,7 @@
 #include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
+#include <hilti/rt/types/stream.h>
 #include <hilti/rt/types/struct.h>
 #include <hilti/rt/types/tuple.h>
 #include <hilti/rt/util.h>

@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <spicy/ast/builder/builder.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/reference.h>
 
@@ -20,6 +21,29 @@ codegen::Production* codegen::Production::follow() {
         p = r->production();
 
     return p;
+}
+
+Expression* codegen::Production::bytesConsumed(ASTContext* context) const {
+    if ( auto* field = meta().field(); field && field->attributes() ) {
+        auto* attributes = field->attributes();
+
+        if ( field->condition() )
+            // Uncertain if the field is active.
+            return nullptr;
+
+        if ( const auto& size = attributes->find(attribute::kind::Size) )
+            return *size->valueAsExpression();
+
+        if ( attributes->has(attribute::kind::ParseFrom) || attributes->has(attribute::kind::ParseAt) )
+            // These don't consume any data from the input stream.
+            return hilti::expression::Ctor::create(context, hilti::ctor::UnsignedInteger::create(context, 0, 64));
+
+        if ( attributes->has(attribute::kind::Eod) )
+            // Cannot compute the size.
+            return nullptr;
+    }
+
+    return _bytesConsumed(context);
 }
 
 std::string codegen::Production::print() const { return hilti::util::trim(to_string(*this)); }
