@@ -230,7 +230,8 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
     };
 }
 
-class AbortException : public std::exception {};
+HILTI_EXCEPTION(AbortException, RuntimeError);
+AbortException::~AbortException() = default;
 
 detail::Fiber::~Fiber() {
 #ifndef NDEBUG
@@ -501,7 +502,7 @@ void detail::Fiber::yield() {
     _yield("yield");
 
     if ( _state == State::Aborting )
-        throw AbortException();
+        throw AbortException("processing aborted for input");
 }
 
 void detail::Fiber::resume() {
