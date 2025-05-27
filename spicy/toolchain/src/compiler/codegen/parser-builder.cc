@@ -1482,6 +1482,24 @@ struct ProductionVisitor : public production::Visitor {
         popBuilder(); // while_.
     }
 
+    /**
+     * Add a catch block to an existing try block (presumably doing parsing)
+     * that catches recoverable errors and starts synchronization.
+     */
+    void addCatchForSynchronize(const Production* p, Builder::TryProxy* try_) {
+        pushBuilder(try_->addCatch(builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
+                    [&]() {
+                        // Remember the original error so we can report it in case the sync failed.
+                        builder()->addAssign(state().error, builder()->id("e"));
+
+                        builder()->addDebugMsg("spicy-verbose",
+                                               "failed to parse list element, will try to "
+                                               "synchronize at next possible element");
+
+                        syncProductionNext(*p);
+                    });
+    }
+
     std::pair<Expression*, Expression*> preAggregate(const Production* p, AttributeSet* attributes) {
         Expression* length = nullptr;
         builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
@@ -1596,19 +1614,7 @@ struct ProductionVisitor : public production::Visitor {
         if ( auto* f = p->body()->meta().field(); f && f->attributes()->find(attribute::kind::Synchronize) ) {
             auto try_ = builder()->addTry();
             pushBuilder(try_.first, [&]() { parse(); });
-
-            pushBuilder(try_.second.addCatch(
-                            builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                        [&]() {
-                            // Remember the original error so we can report it in case the sync failed.
-                            builder()->addAssign(state().error, builder()->id("e"));
-
-                            builder()->addDebugMsg("spicy-verbose",
-                                                   "failed to parse list element, will try to "
-                                                   "synchronize at next possible element");
-
-                            syncProductionNext(*p);
-                        });
+            addCatchForSynchronize(p, &try_.second);
         }
 
         else
@@ -2067,19 +2073,7 @@ struct ProductionVisitor : public production::Visitor {
                     auto try_ = builder()->addTry();
 
                     pushBuilder(try_.first, [&]() { parse(); });
-
-                    pushBuilder(try_.second.addCatch(
-                                    builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                                [&]() {
-                                    // Remember the original error so we can report it in case the sync failed.
-                                    builder()->addAssign(state().error, builder()->id("e"));
-
-                                    builder()->addDebugMsg("spicy-verbose",
-                                                           "failed to parse list element, will try to "
-                                                           "synchronize at next possible element");
-
-                                    syncProductionNext(*p);
-                                });
+                    addCatchForSynchronize(p, &try_.second);
 
                     pushBuilder(std::move(builder_default),
                                 [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
