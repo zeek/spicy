@@ -238,6 +238,8 @@ private:
 /** Base class for all AST nodes. */
 class Node {
 public:
+    static uintptr_t counter;
+    uintptr_t count = counter++;
     virtual ~Node();
 
     /** Returns the node tag associated with the instance's class. */
@@ -357,7 +359,7 @@ public:
     std::string typename_() const { return _typename(); }
 
     /** Returns a globally unique numeric identifier for the node. */
-    uintptr_t identity() const { return reinterpret_cast<uintptr_t>(this); }
+    uintptr_t identity() const { return reinterpret_cast<uintptr_t>(count); }
 
     /** Returns the set of all children. */
     const auto& children() const { return _children; }
