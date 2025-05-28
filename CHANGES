@@ -1,3 +1,14 @@
+1.14.0-dev.53 | 2025-05-28 15:46:04 +0200
+
+  * Fix fiber abortion. (Robin Sommer, Corelight)
+
+    When aborting a fiber, we need to activate it once more, to then leave
+    it for good by raising an `AbortException. Problem was that that
+    exception ended up being caught by user code because it was derived
+    from `std::exception`. This change removes the base class so that the
+    exception is guaranteed to go back to the managing fiber code, where
+    we just ignore it.
+
 1.14.0-dev.51 | 2025-05-28 10:25:20 +0200
 
   * Prevent throwing naked exception when yielding from aborted fiber. (Benjamin Bannier, Corelight)
