@@ -230,8 +230,11 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
     };
 }
 
-HILTI_EXCEPTION(AbortException, RuntimeError);
-AbortException::~AbortException() = default;
+// Exception raised by a fiber resuming operation in case it has been aborted
+// in the meantime. This must not be derived from `std::exception` to guarantee
+// that it will bubble back up to the fiber code, without being caught by any
+// intermediary catch handlers.
+struct AbortException {};
 
 detail::Fiber::~Fiber() {
 #ifndef NDEBUG
@@ -502,7 +505,7 @@ void detail::Fiber::yield() {
     _yield("yield");
 
     if ( _state == State::Aborting )
-        throw AbortException("processing aborted for input");
+        throw AbortException();
 }
 
 void detail::Fiber::resume() {
@@ -517,7 +520,12 @@ void detail::Fiber::abort() {
     if ( ! context::detail::get(true) )
         return;
 
-    run();
+    try {
+        run();
+    } catch ( const AbortException& ) {
+        // Exception is expected here when the fiber realizes it has been
+        // aborted.
+    }
 }
 
 std::unique_ptr<detail::Fiber> detail::Fiber::create() {
