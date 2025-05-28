@@ -1,0 +1,18 @@
+# @TEST-EXEC: hiltic -p -o /dev/null -D cfg-initial %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo {
+
+function void fn1() {
+    if (True)
+        1;
+}
+
+function void fn2() {
+    if (True)
+        1;
+    else
+        2;
+}
+
+}
