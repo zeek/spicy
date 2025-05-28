@@ -124,9 +124,13 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
 
         void operator()(const declaration::Constant& d) {
             if ( isTypeInfo(d.id) ) {
-                if ( phase == Phase::TypeInfos ) {
-                    // We split these out because creating the type information
-                    // needs access to all other types.
+                // We split these out because creating the type information
+                // needs access to all other types.
+                if ( phase == Phase::TypeInfoForwards && d.linkage == "extern" ) {
+                    f << d;
+                    return;
+                }
+                else if ( phase == Phase::TypeInfos && d.linkage != "extern" ) {
                     f << d;
                     return;
                 }
@@ -198,8 +202,9 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
 }
 
 void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
-    const Phase phases[] = {Phase::Forwards,      Phase::Enums,   Phase::Types,     Phase::Constants,
-                            Phase::PublicAliases, Phase::Globals, Phase::Functions, Phase::TypeInfos};
+    const Phase phases[] = {Phase::TypeInfoForwards, Phase::Forwards,      Phase::Enums,   Phase::Types,
+                            Phase::Constants,        Phase::PublicAliases, Phase::Globals, Phase::Functions,
+                            Phase::TypeInfos};
 
     for ( const auto& [_, decl] : _declarations )
         _emitDeclarations(decl, f, Phase::Includes, prototypes_only, include_all_implementations);

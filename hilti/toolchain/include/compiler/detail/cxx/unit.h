@@ -105,16 +105,17 @@ protected:
 
 private:
     enum class Phase {
-        Includes,
-        Forwards,
-        Enums,
-        Types,
-        PublicAliases,
         Constants,
-        Globals,
+        Enums,
+        Forwards,
         Functions,
+        Globals,
+        Implementations,
+        Includes,
+        PublicAliases,
+        TypeInfoForwards,
         TypeInfos,
-        Implementations
+        Types,
     };
 
     using cxxDeclaration = std::variant<declaration::IncludeFile, declaration::Global, declaration::Constant,
