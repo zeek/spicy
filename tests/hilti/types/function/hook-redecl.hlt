@@ -1,0 +1,39 @@
+# @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT 2>stderr
+# @TEST-EXEC: btest-diff stderr
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    bool b;
+    hook void f1(string s);
+    hook void f1(string s);
+};
+
+hook void X::f1(string s) {
+    hilti::print(s);
+}
+
+hook void X::f1(string s) {
+    hilti::print(s);
+}
+
+global X x = [$b = True];
+x.f1("Hello");
+
+declare public hook void f2(uint<64> x);
+declare public hook void f2(uint<64> x);
+
+hook void f2(uint<64> x) {
+    hilti::print(x);
+}
+hook void f2(uint<64> x) {
+    hilti::print(x);
+}
+hook void f2(uint<64> x) {
+    hilti::print(x);
+}
+
+f2(4);
+}
