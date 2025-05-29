@@ -152,49 +152,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return t;
     }
 
-    // Checks if a set of operator candidates contains only calls to hooks of the same type.
-    bool checkForHooks(Builder* builder, expression::UnresolvedOperator* u, const Expressions& matches) {
-        if ( u->kind() != operator_::Kind::Call )
-            return false;
-
-        ID hook_id;
-        type::Function* hook_type = nullptr;
-
-        for ( const auto& i : matches ) {
-            auto* ftype = i->as<expression::ResolvedOperator>()->op0()->type()->type()->tryAs<type::Function>();
-            auto* fid = i->as<expression::ResolvedOperator>()->op0()->tryAs<expression::Name>();
-
-            if ( ! ftype || ! fid || ftype->flavor() != type::function::Flavor::Hook )
-                return false;
-
-            auto* decl = context()->lookup(fid->resolvedDeclarationIndex());
-            assert(decl);
-            auto canon_id = decl->canonicalID();
-
-            // If it's scoped ID, look that up to find the canonical of the main declaration.
-            if ( fid->id().namespace_() ) {
-                if ( auto x = builder->context()->root()->scope()->lookupAll(fid->id()); ! x.empty() ) {
-                    // Just the 1st hit is fine, others are assume to match.
-                    canon_id = x.front().node->canonicalID();
-                    assert(canon_id);
-                }
-                else
-                    return false;
-            }
-
-            if ( ! hook_id ) {
-                hook_id = std::move(canon_id);
-                hook_type = ftype;
-            }
-            else if ( hook_type ) {
-                if ( canon_id != hook_id || ! type::same(ftype, hook_type) )
-                    return false;
-            }
-        }
-
-        return true;
-    };
-
     // Attempts to infer a common type from a list of expression. Ignores
     // constness of the individual expressions when comparing types, and always
     // returns a non-constant type as the one inferred. If old type is given,
@@ -1348,19 +1305,14 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return;
 
         if ( matches.size() > 1 ) {
-            // This is only ok if all matches are function calls executing
-            // implementations of the same hook.
-            if ( ! checkForHooks(builder(), n, matches) ) {
-                std::vector<std::string> context = {"candidates:"};
-                for ( const auto& op : matches ) {
-                    auto* resolved = op->as<hilti::expression::ResolvedOperator>();
-                    context.emplace_back(
-                        util::fmt("- %s [%s]", resolved->printSignature(), resolved->operator_().name()));
-                }
-
-                n->addError(util::fmt("operator usage is ambiguous: %s", n->printSignature()), std::move(context));
-                return;
+            std::vector<std::string> context = {"candidates:"};
+            for ( const auto& op : matches ) {
+                auto* resolved = op->as<hilti::expression::ResolvedOperator>();
+                context.emplace_back(util::fmt("- %s [%s]", resolved->printSignature(), resolved->operator_().name()));
             }
+
+            n->addError(util::fmt("operator usage is ambiguous: %s", n->printSignature()), std::move(context));
+            return;
         }
 
         if ( auto* match = matches[0]->tryAs<expression::ResolvedOperator>() ) {
