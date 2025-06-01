@@ -1,0 +1,56 @@
+# Copyright (c) 2020-2023 by the Zeek Project. See LICENSE for details.
+
+name: CodSpeed
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    name: Run benchmarks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends curl ca-certificates gnupg2
+          sudo apt-get install -y --no-install-recommends \
+              bison \
+              ccache \
+              flex \
+              g++ \
+              libfl-dev \
+              libssl-dev \
+              make \
+              ninja-build \
+              zlib1g-dev
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@3cfe8f57e1c7bffe434f38879f1ebca09e169288
+        with:
+          create-symlink: true
+          key: ${{ github.job }}
+
+      - name: Build benchmarks
+        run: |
+          cmake -G Ninja -DCODSPEED_MODE=instrumentation -DCMAKE_BUILD_TYPE=RelWithDebInfo -Bbuild /spicy
+          ninja -C build spicy-rt-parsing-benchmark hilti-rt-fiber-benchmark
+
+      - uses: CodSpeedHQ/action@0010eb0ca6e89b80c88e8edaaa07cfe5f3e6664d
+        with:
+          run: |
+            ./build/bin/hilti-rt-fiber-benchmark
+            ./build/bin/spicy-rt-parsing-benchmark
+          token: ${{ secrets.CODSPEED_TOKEN }}
