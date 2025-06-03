@@ -14,13 +14,13 @@
 #include <algorithm>
 #include <initializer_list>
 #include <map>
-#include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/safe-int.h>
@@ -37,7 +37,8 @@ template<typename K, typename V>
 class Iterator {
     using M = Map<K, V>;
 
-    std::weak_ptr<M*> _control;
+    using Control = typename M::Control::Ref;
+    Control _control;
     typename M::M::iterator _iterator;
 
 public:
@@ -46,7 +47,7 @@ public:
     friend class Map<K, V>;
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different maps");
 
         return a._iterator == b._iterator;
@@ -55,7 +56,7 @@ public:
     friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
 
     Iterator& operator++() {
-        if ( ! _control.lock() ) {
+        if ( ! _control.isValid() ) {
             throw IndexError("iterator is invalid");
         }
 
@@ -72,36 +73,33 @@ public:
     const typename M::M::value_type* operator->() const { return &operator*(); }
 
     typename M::M::const_reference operator*() const {
-        if ( auto&& l = _control.lock() ) {
-            // Iterators to `end` cannot be dereferenced.
-            if ( _iterator == static_cast<const typename M::M&>(**l).cend() )
-                throw IndexError("iterator is invalid");
+        // Iterators to `end` cannot be dereferenced.
+        if ( _iterator == static_cast<const typename M::M&>(_control.get()).cend() )
+            throw IndexError("iterator is invalid");
 
-            return *_iterator;
-        }
-
-        throw IndexError("iterator is invalid");
+        return *_iterator;
     }
 
 private:
     friend class Map<K, V>;
 
-    Iterator(typename M::M::iterator iterator, const typename M::C& control)
-        : _control(control), _iterator(std::move(iterator)) {}
+    Iterator(typename M::M::iterator iterator, Control control)
+        : _control(std::move(control)), _iterator(std::move(iterator)) {}
 };
 
 template<typename K, typename V>
 class ConstIterator {
     using M = Map<K, V>;
 
-    std::weak_ptr<M*> _control;
+    using Control = typename M::Control::Ref;
+    Control _control;
     typename M::M::const_iterator _iterator;
 
 public:
     ConstIterator() = default;
 
     friend bool operator==(const ConstIterator& a, const ConstIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different sets");
 
         return a._iterator == b._iterator;
@@ -110,9 +108,8 @@ public:
     friend bool operator!=(const ConstIterator& a, const ConstIterator& b) { return ! (a == b); }
 
     ConstIterator& operator++() {
-        if ( ! _control.lock() ) {
+        if ( ! _control.isValid() )
             throw IndexError("iterator is invalid");
-        }
 
         ++_iterator;
         return *this;
@@ -127,22 +124,20 @@ public:
     const typename M::M::value_type* operator->() const { return &operator*(); }
 
     typename M::M::const_reference operator*() const {
-        if ( auto&& l = _control.lock() ) {
-            // Iterators to `end` cannot be dereferenced.
-            if ( _iterator == static_cast<const typename M::M&>(**l).cend() )
-                throw IndexError("iterator is invalid");
+        auto&& data = _control.get();
 
-            return *_iterator;
-        }
+        // Iterators to `end` cannot be dereferenced.
+        if ( _iterator == static_cast<const typename M::M&>(data).cend() )
+            throw IndexError("iterator is invalid");
 
-        throw IndexError("iterator is invalid");
+        return *_iterator;
     }
 
 private:
     friend class Map<K, V>;
 
-    ConstIterator(typename M::M::const_iterator iterator, const typename M::C& control)
-        : _control(control), _iterator(std::move(iterator)) {}
+    ConstIterator(typename M::M::const_iterator iterator, Control control)
+        : _control(std::move(control)), _iterator(std::move(iterator)) {}
 };
 
 } // namespace map
@@ -172,9 +167,9 @@ template<typename K, typename V>
 class Map : protected std::map<K, V> {
 public:
     using M = std::map<K, V>;
-    using C = std::shared_ptr<Map<K, V>*>;
 
-    C _control = std::make_shared<Map<K, V>*>(this);
+    using Control = control::Block<Map<K, V>, InvalidIterator>;
+    Control _control{this};
 
     using key_type = typename M::key_type;
     using value_type = typename M::value_type;
@@ -316,7 +311,7 @@ private:
 
     void invalidateIterators() {
         // Update control block to invalidate all iterators previously created from it.
-        _control = std::make_shared<Map<K, V>*>(this);
+        _control.Reset();
     }
 }; // namespace hilti::rt
 

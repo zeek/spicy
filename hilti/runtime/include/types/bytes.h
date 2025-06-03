@@ -54,26 +54,22 @@ class SafeIterator {
     using B = std::string;
     using difference_type = B::const_iterator::difference_type;
 
-    std::weak_ptr<const B*> _control;
+    using Control = control::Reference<B, InvalidIterator>;
+    Control _control;
     typename integer::safe<std::uint64_t> _index = 0;
 
 public:
     SafeIterator() = default;
 
-    SafeIterator(typename B::size_type index, std::weak_ptr<const B*> control)
-        : _control(std::move(control)), _index(index) {}
+    SafeIterator(typename B::size_type index, Control control) : _control(std::move(control)), _index(index) {}
 
     integer::safe<uint8_t> operator*() const {
-        if ( auto&& l = _control.lock() ) {
-            auto&& data = static_cast<const B&>(**l);
+        auto&& data = _control.get();
 
-            if ( _index >= data.size() )
-                throw IndexError(fmt("index %s out of bounds", _index));
+        if ( _index >= data.size() )
+            throw IndexError(fmt("index %s out of bounds", _index));
 
-            return static_cast<uint8_t>(data[_index]);
-        }
-
-        throw InvalidIterator("bound object has expired");
+        return static_cast<uint8_t>(data[_index]);
     }
 
     template<typename T>
@@ -96,7 +92,7 @@ public:
         return SafeIterator{_index + n, _control};
     }
 
-    explicit operator bool() const { return static_cast<bool>(_control.lock()); }
+    explicit operator bool() const { return _control.isValid(); }
 
     auto& operator++() {
         ++_index;
@@ -110,7 +106,7 @@ public:
     }
 
     friend auto operator==(const SafeIterator& a, const SafeIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index == b._index;
     }
@@ -118,31 +114,31 @@ public:
     friend bool operator!=(const SafeIterator& a, const SafeIterator& b) { return ! (a == b); }
 
     friend auto operator<(const SafeIterator& a, const SafeIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index < b._index;
     }
 
     friend auto operator<=(const SafeIterator& a, const SafeIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index <= b._index;
     }
 
     friend auto operator>(const SafeIterator& a, const SafeIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index > b._index;
     }
 
     friend auto operator>=(const SafeIterator& a, const SafeIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different bytes");
         return a._index >= b._index;
     }
 
     friend difference_type operator-(const SafeIterator& a, const SafeIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot perform arithmetic with iterators into different bytes");
         return a._index - b._index;
     }
@@ -303,10 +299,10 @@ public:
     std::string str() && { return std::move(*this); }
 
     /** Returns an iterator representing the first byte of the instance. */
-    const_iterator begin() const { return const_iterator(0U, getControl()); }
+    const_iterator begin() const { return const_iterator(0U, _control); }
 
     /** Same as `begin()`, just for compatibility with std types. */
-    const_iterator cbegin() const { return const_iterator(0U, getControl()); }
+    const_iterator cbegin() const { return const_iterator(0U, _control); }
 
     /**
      * Returns an unchecked (but fast) iterator representing the first byte of
@@ -315,10 +311,10 @@ public:
     auto unsafeBegin() const { return unsafe_const_iterator(str().begin()); }
 
     /** Returns an iterator representing the end of the instance. */
-    const_iterator end() const { return const_iterator(size(), getControl()); }
+    const_iterator end() const { return const_iterator(size(), _control); }
 
     /** Same as `end()`, just for compatibility with std types. */
-    const_iterator cend() const { return const_iterator(size(), getControl()); }
+    const_iterator cend() const { return const_iterator(size(), _control); }
 
     /**
      * Returns an unchecked (but fast) iterator representing the end of the
@@ -369,7 +365,7 @@ public:
      * @return a `Bytes` instance for the subrange
      */
     Bytes sub(const const_iterator& from, const const_iterator& to) const {
-        if ( from._control.lock() != to._control.lock() )
+        if ( from._control != to._control )
             throw InvalidArgument("start and end iterator cannot belong to different bytes");
 
         return sub(Offset(from - begin()), to._index);
@@ -640,16 +636,9 @@ public:
 private:
     friend bytes::SafeIterator;
 
-    const C& getControl() const {
-        if ( ! _control )
-            _control = std::make_shared<const Base*>(static_cast<const Base*>(this));
+    void invalidateIterators() { _control.Reset(); }
 
-        return _control;
-    }
-
-    void invalidateIterators() { _control.reset(); }
-
-    mutable C _control;
+    control::Block<Base, InvalidIterator> _control{this};
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {

@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/vector.h>
@@ -45,11 +46,11 @@ TEST_CASE("insert") {
         Set<int> s;
         auto begin = s.begin();
 
-        REQUIRE_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
+        REQUIRE_THROWS_WITH_AS(*begin, "underlying object is invalid", const InvalidIterator&);
 
         s.insert(2);
 
-        REQUIRE_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
+        REQUIRE_THROWS_WITH_AS(*begin, "underlying object is invalid", const InvalidIterator&);
         REQUIRE_THROWS_WITH_AS(++begin, "iterator is invalid", const IndexError&);
         REQUIRE_THROWS_WITH_AS(begin++, "iterator is invalid", const IndexError&);
     }
@@ -62,7 +63,7 @@ TEST_CASE("insert") {
 
         // For an empty `Set`, `begin` is not a dereferenceable iterator, and it
         // does not become valid when an element backing it is added to the `Set`.
-        REQUIRE_THROWS_WITH_AS(*hint, "iterator is invalid", const IndexError&);
+        REQUIRE_THROWS_WITH_AS(*hint, "underlying object is invalid", const InvalidIterator&);
 
         CHECK_EQ(*it1, 1);
 
@@ -84,11 +85,11 @@ TEST_CASE("erase") {
     // _all iterators_, not just iterators to the removed element.
     CHECK_THROWS_WITH_AS(++it1, "iterator is invalid", const IndexError&);
     CHECK_THROWS_WITH_AS(it1++, "iterator is invalid", const IndexError&);
-    CHECK_THROWS_WITH_AS(*it1, "iterator is invalid", const IndexError&);
+    CHECK_THROWS_WITH_AS(*it1, "underlying object has expired", const InvalidIterator&);
 
     CHECK_THROWS_WITH_AS(++it2, "iterator is invalid", const IndexError&);
     CHECK_THROWS_WITH_AS(it2++, "iterator is invalid", const IndexError&);
-    CHECK_THROWS_WITH_AS(*it2, "iterator is invalid", const IndexError&);
+    CHECK_THROWS_WITH_AS(*it2, "underlying object has expired", const InvalidIterator&);
 }
 
 TEST_CASE("clear") {
@@ -102,7 +103,7 @@ TEST_CASE("clear") {
     // Clearing a `Set` invalidates all iterators.
     CHECK_THROWS_WITH_AS(it++, "iterator is invalid", const IndexError&);
     CHECK_THROWS_WITH_AS(++it, "iterator is invalid", const IndexError&);
-    CHECK_THROWS_WITH_AS(*it, "iterator is invalid", const IndexError&);
+    CHECK_THROWS_WITH_AS(*it, "underlying object has expired", const InvalidIterator&);
 }
 
 TEST_CASE("equal") {
@@ -136,7 +137,7 @@ TEST_CASE("iterator") {
     auto it = s1.begin();
     REQUIRE_EQ(*it, 1);
     s1 = s2;
-    CHECK_THROWS_WITH_AS(*it, "iterator is invalid", const IndexError&);
+    CHECK_THROWS_WITH_AS(*it, "underlying object has expired", const InvalidIterator&);
 }
 
 TEST_SUITE_END();

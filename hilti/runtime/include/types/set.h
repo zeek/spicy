@@ -13,11 +13,11 @@
 
 #include <algorithm>
 #include <initializer_list>
-#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/safe-int.h>
@@ -33,26 +33,23 @@ template<typename T>
 class Iterator {
     using S = Set<T>;
 
-    std::weak_ptr<S*> _control;
+    using Control = typename S::Control::Ref;
+    Control _control;
     typename S::V::iterator _iterator;
 
 public:
     Iterator() = default;
 
     typename S::reference operator*() const {
-        if ( auto&& l = _control.lock() ) {
-            // Iterators to `end` cannot be dereferenced.
-            if ( _iterator == static_cast<const std::set<T>&>(**l).end() )
-                throw IndexError("iterator is invalid");
+        // Iterators to `end` cannot be dereferenced.
+        if ( _iterator == static_cast<const std::set<T>&>(_control.get()).end() )
+            throw IndexError("iterator is invalid");
 
-            return *_iterator;
-        }
-
-        throw IndexError("iterator is invalid");
+        return *_iterator;
     }
 
     Iterator& operator++() {
-        if ( ! _control.lock() )
+        if ( ! _control.isValid() )
             throw IndexError("iterator is invalid");
 
         ++_iterator;
@@ -66,7 +63,7 @@ public:
     }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different sets");
 
         return a._iterator == b._iterator;
@@ -77,8 +74,8 @@ public:
 protected:
     friend class Set<T>;
 
-    Iterator(typename S::V::iterator iterator, const typename S::C& control)
-        : _control(control), _iterator(std::move(iterator)) {}
+    Iterator(typename S::V::iterator iterator, Control control)
+        : _control(std::move(control)), _iterator(std::move(iterator)) {}
 };
 
 } // namespace set
@@ -108,9 +105,9 @@ template<typename T>
 class Set : protected std::set<T> {
 public:
     using V = std::set<T>;
-    using C = std::shared_ptr<Set<T>*>;
 
-    C _control = std::make_shared<Set<T>*>(this);
+    using Control = control::Block<Set<T>, InvalidIterator>;
+    Control _control{this};
 
     using reference = const T&;
     using const_reference = const T&;
@@ -140,8 +137,13 @@ public:
      */
     bool contains(const T& t) const { return this->count(t); }
 
-    auto begin() const { return iterator(static_cast<const V&>(*this).begin(), empty() ? nullptr : _control); }
-    auto end() const { return iterator(static_cast<const V&>(*this).end(), empty() ? nullptr : _control); }
+    auto begin() const {
+        return iterator(static_cast<const V&>(*this).begin(), empty() ? typename Control::Ref() : _control);
+    }
+
+    auto end() const {
+        return iterator(static_cast<const V&>(*this).end(), empty() ? typename Control::Ref() : _control);
+    }
 
     size_type size() const { return V::size(); }
 
@@ -154,7 +156,7 @@ public:
      */
     size_type erase(const key_type& key) {
         // Update control block to invalidate all iterators previously created from it.
-        _control = std::make_shared<Set<T>*>();
+        _control.Reset();
 
         return static_cast<V&>(*this).erase(key);
     }
@@ -165,7 +167,7 @@ public:
      */
     void clear() {
         // Update control block to invalidate all iterators previously created from it.
-        _control = std::make_shared<Set<T>*>();
+        _control.Reset();
 
         return static_cast<V&>(*this).clear();
     }
@@ -181,9 +183,13 @@ public:
         return iterator(it, _control);
     }
 
+    std::pair<iterator, bool> insert(const T& value) {
+        auto [it, inserted] = V::insert(value);
+        return {iterator(it, _control), inserted};
+    }
+
     // Methods of `std::set`. These methods *must not* cause any iterator invalidation.
     using V::empty;
-    using V::insert;
 
     friend bool operator==(const Set& a, const Set& b) { return static_cast<const V&>(a) == static_cast<const V&>(b); }
     friend bool operator!=(const Set& a, const Set& b) { return ! (a == b); }
@@ -252,4 +258,5 @@ inline std::ostream& operator<<(std::ostream& out, const Iterator<T>& x) {
     return out;
 }
 } // namespace set
+
 } // namespace hilti::rt

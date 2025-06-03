@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/iterator.h>
@@ -101,7 +102,8 @@ class Iterator {
     using V = Vector<T, Allocator>;
     friend V;
 
-    std::weak_ptr<V*> _control;
+    using Control = typename V::Control::Ref;
+    Control _control;
     typename V::size_type _index = 0;
 
 public:
@@ -113,8 +115,7 @@ public:
     using iterator_category = typename V::V::iterator::iterator_category;
 
     Iterator() = default;
-    Iterator(typename V::size_type&& index, const typename V::C& control)
-        : _control(control), _index(std::move(index)) {}
+    Iterator(typename V::size_type&& index, Control control) : _control(std::move(control)), _index(std::move(index)) {}
 
     reference operator*();
     const_reference operator*() const;
@@ -131,7 +132,7 @@ public:
     }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index == b._index;
     }
@@ -139,46 +140,42 @@ public:
     friend bool operator!=(const Iterator& a, const Iterator& b) { return ! (a == b); }
 
     friend auto operator<(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index < b._index;
     }
 
     friend auto operator<=(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index <= b._index;
     }
 
     friend auto operator>(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index > b._index;
     }
 
     friend auto operator>=(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index >= b._index;
     }
 
     friend difference_type operator-(const Iterator& a, const Iterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot perform arithmetic with iterators into different vectors");
         return a._index - b._index;
     }
-
-private:
-    // NOTE: This function returns a mutable reference so calling functions need
-    // to ensure to produce correct `const` semantics in the API exposed to users.
-    std::optional<std::reference_wrapper<V>> _container() const;
 };
 
 template<typename T, typename Allocator>
 class ConstIterator {
     using V = Vector<T, Allocator>;
 
-    std::weak_ptr<Vector<T, Allocator>*> _control;
+    using Control = typename V::Control::Ref;
+    Control _control;
     typename V::size_type _index = 0;
 
 public:
@@ -186,12 +183,12 @@ public:
     using value_type = typename V::V::const_iterator::value_type;
     using pointer = typename V::V::const_iterator::pointer;
     using reference = typename V::V::const_iterator::reference;
-    using const_reference = typename V::V::iterator::reference;
+    using const_reference = typename V::V::const_iterator::reference;
     using iterator_category = typename V::V::const_iterator::iterator_category;
 
     ConstIterator() = default;
-    ConstIterator(typename V::size_type&& index, const typename V::C& control)
-        : _control(control), _index(std::move(index)) {}
+    ConstIterator(typename V::size_type&& index, Control control)
+        : _control(std::move(control)), _index(std::move(index)) {}
 
     const_reference operator*() const;
 
@@ -207,7 +204,7 @@ public:
     }
 
     friend bool operator==(const ConstIterator& a, const ConstIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index == b._index;
     }
@@ -215,39 +212,34 @@ public:
     friend bool operator!=(const ConstIterator& a, const ConstIterator& b) { return ! (a == b); }
 
     friend auto operator<(const ConstIterator& a, const ConstIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index < b._index;
     }
 
     friend auto operator<=(const ConstIterator& a, const ConstIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index <= b._index;
     }
 
     friend auto operator>(const ConstIterator& a, const ConstIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index > b._index;
     }
 
     friend auto operator>=(const ConstIterator& a, const ConstIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot compare iterators into different vectors");
         return a._index >= b._index;
     }
 
     friend difference_type operator-(const ConstIterator& a, const ConstIterator& b) {
-        if ( a._control.lock() != b._control.lock() )
+        if ( a._control != b._control )
             throw InvalidArgument("cannot perform arithmetic with iterators into different vectors");
         return a._index - b._index;
     }
-
-private:
-    // NOTE: This function returns a mutable reference so calling functions need
-    // to ensure to produce correct `const` semantics in the API exposed to users.
-    std::optional<std::reference_wrapper<V>> _container() const;
 };
 
 } // namespace vector
@@ -338,7 +330,7 @@ public:
         if ( i >= V::size() )
             throw IndexError(fmt("vector index %" PRIu64 " out of range", i));
 
-        return const_iterator(static_cast<size_type>(i), getControl());
+        return const_iterator(static_cast<size_type>(i), _control);
     }
 
     /**
@@ -503,14 +495,14 @@ public:
         return pos;
     }
 
-    auto begin() { return iterator(0U, getControl()); }
-    auto end() { return iterator(size(), getControl()); }
+    auto begin() { return iterator(0U, _control); }
+    auto end() { return iterator(size(), _control); }
 
-    auto begin() const { return const_iterator(0U, getControl()); }
-    auto end() const { return const_iterator(size(), getControl()); }
+    auto begin() const { return const_iterator(0U, _control); }
+    auto end() const { return const_iterator(size(), _control); }
 
-    auto cbegin() const { return const_iterator(0U, getControl()); }
-    auto cend() const { return const_iterator(size(), getControl()); }
+    auto cbegin() const { return const_iterator(0U, _control); }
+    auto cend() const { return const_iterator(size(), _control); }
 
     auto unsafeBegin() const { return V::cbegin(); }
     auto unsafeEnd() const { return V::cend(); }
@@ -532,15 +524,10 @@ public:
         return static_cast<const V&>(a) == static_cast<const V&>(b);
     }
 
+    using Control = control::Block<Vector<T, Allocator>, InvalidIterator>;
+
 private:
-    const C& getControl() const {
-        if ( ! _control )
-            _control = std::make_shared<Vector<T, Allocator>*>(const_cast<Vector<T, Allocator>*>(this));
-
-        return _control;
-    }
-
-    mutable C _control;
+    Control _control{this};
 };
 
 namespace vector {
@@ -627,32 +614,24 @@ bool operator!=(const Vector<T, Allocator>& a, const Vector<T, Allocator>& b) {
 
 template<typename T, typename Allocator>
 typename vector::Iterator<T, Allocator>::reference vector::Iterator<T, Allocator>::operator*() {
-    if ( auto&& c = _container() ) {
-        auto&& data = c->get();
+    auto&& data = _control.get();
 
-        if ( _index >= data.size() ) {
-            throw InvalidIterator(fmt("index %s out of bounds", _index));
-        }
-
-        return data[_index];
+    if ( _index >= data.size() ) {
+        throw InvalidIterator(fmt("index %s out of bounds", _index));
     }
 
-    throw InvalidIterator("bound object has expired");
+    return data[_index];
 }
 
 template<typename T, typename Allocator>
 typename vector::Iterator<T, Allocator>::const_reference vector::Iterator<T, Allocator>::operator*() const {
-    if ( auto&& c = _container() ) {
-        auto&& data = c->get();
+    auto&& data = _control.get();
 
-        if ( _index >= data.size() ) {
-            throw InvalidIterator(fmt("index %s out of bounds", _index));
-        }
-
-        return data[_index];
+    if ( _index >= data.size() ) {
+        throw InvalidIterator(fmt("index %s out of bounds", _index));
     }
 
-    throw InvalidIterator("bound object has expired");
+    return data[_index];
 }
 
 namespace vector {
@@ -670,36 +649,14 @@ inline std::ostream& operator<<(std::ostream& out, const vector::ConstIterator<T
 } // namespace vector
 
 template<typename T, typename Allocator>
-std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::Iterator<T, Allocator>::_container() const {
-    if ( auto l = _control.lock() ) {
-        return {std::ref(**l)};
-    }
-
-    return std::nullopt;
-}
-
-template<typename T, typename Allocator>
 typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() const {
-    if ( auto&& c = _container() ) {
-        auto&& data = c->get();
+    auto&& data = _control.get();
 
-        if ( _index >= data.size() ) {
-            throw InvalidIterator(fmt("index %s out of bounds", _index));
-        }
-
-        return data[_index];
+    if ( _index >= data.size() ) {
+        throw InvalidIterator(fmt("index %s out of bounds", _index));
     }
 
-    throw InvalidIterator("bound object has expired");
-}
-
-template<typename T, typename Allocator>
-std::optional<std::reference_wrapper<Vector<T, Allocator>>> vector::ConstIterator<T, Allocator>::_container() const {
-    if ( auto l = _control.lock() ) {
-        return {std::ref(**l)};
-    }
-
-    return std::nullopt;
+    return data[_index];
 }
 
 } // namespace hilti::rt
