@@ -1,0 +1,13 @@
+# @TEST-DOC: Ensures the unit parameter constructor doesn't conflict with the field; regression test for #2063
+#
+# @TEST-EXEC: spicyc -j %INPUT
+
+module Test;
+
+public type Data = unit(depth: uint64&) {
+    inner: Inner(depth);
+};
+
+type Inner = unit(depth: uint64&) {
+    x: uint64;
+};

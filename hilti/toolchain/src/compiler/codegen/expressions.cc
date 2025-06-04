@@ -179,12 +179,18 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        if ( auto* p = decl->tryAs<declaration::Parameter>(); p && p->isTypeParameter() ) {
-            if ( p->type()->type()->isReferenceType() )
-                // Need to adjust here for potential automatic change to a weak reference.
-                result = fmt("%s->__p_%s.derefAsValue()", cg->self(), p->id());
+        if ( auto* param = decl->tryAs<declaration::Parameter>(); param && param->isTypeParameter() ) {
+            auto arg = fmt("%s->__p_%s", cg->self(), param->id());
+            if ( param->type()->type()->isReferenceType() ) {
+                auto derefed = fmt("%s.derefAsValue()", arg);
+                if ( auto* strong_ref = param->type()->type()->tryAs<type::StrongReference>() )
+                    result = fmt("::hilti::rt::StrongReference<%s>(%s)",
+                                 cg->compile(strong_ref->dereferencedType(), codegen::TypeUsage::Ctor), derefed);
+                else
+                    result = derefed;
+            }
             else
-                result = {fmt("%s->__p_%s", cg->self(), p->id()), Side::LHS};
+                result = {arg, Side::LHS};
 
             return;
         }

@@ -1,0 +1,23 @@
+# @TEST-DOC: Ensures that strong references can be coerced from weak references.
+#
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+import hilti;
+
+global strong_ref<bytes> initial = new b"xyz";
+global weak_ref<bytes> x = initial;
+global strong_ref<bytes> y = x;
+
+hilti::print(x);
+hilti::print(*x);
+hilti::print(y);
+hilti::print(*y);
+
+assert *x == *y;
+assert x;
+assert y;
+
+}
