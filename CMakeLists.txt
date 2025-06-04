@@ -110,6 +110,13 @@ endif ()
 
 if (USE_WERROR)
     set(werror_flags "-Werror")
+
+    # With versions >=13.0 GCC gained `-Warray-bounds` which reports false
+    # positives, see e.g., https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111273.
+    if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
+        string(APPEND werror_flags " -Wno-error=array-bounds")
+    endif ()
+
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${werror_flags}")
 endif ()
