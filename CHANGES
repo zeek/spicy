@@ -1,3 +1,7 @@
+1.14.0-dev.55 | 2025-06-04 10:34:41 +0200
+
+  * Add codspeed integration. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.53 | 2025-05-28 15:46:04 +0200
 
   * Fix fiber abortion. (Robin Sommer, Corelight)

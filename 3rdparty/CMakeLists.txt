@@ -40,13 +40,27 @@ set(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
 
-set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-set(BENCHMARK_ENABLE_TESTING OFF)
-set(BENCHMARK_ENABLE_INSTALL OFF)
-set(BENCHMARK_ENABLE_WERROR OFF)
-add_subdirectory(benchmark)
-set_target_properties(benchmark PROPERTIES EXCLUDE_FROM_ALL ON)
-set_target_properties(benchmark_main PROPERTIES EXCLUDE_FROM_ALL ON)
+# We use codspeed.io for benchmarking in CI. Pull in
+# their patched google-benchmark if we are running there.
+if (CODSPEED_MODE)
+    include(FetchContent)
+    set(BENCHMARK_DOWNLOAD_DEPENDENCIES ON)
+    FetchContent_Declare(
+        google_benchmark
+        GIT_REPOSITORY https://github.com/CodSpeedHQ/codspeed-cpp
+        SOURCE_SUBDIR google_benchmark
+        GIT_TAG 308c87992a7bbeb8bc1c7b14981d0f63947a2dd8
+    )
+    FetchContent_MakeAvailable(google_benchmark)
+else()
+    set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+    set(BENCHMARK_ENABLE_TESTING OFF)
+    set(BENCHMARK_ENABLE_INSTALL OFF)
+    set(BENCHMARK_ENABLE_WERROR OFF)
+    add_subdirectory(benchmark)
+    set_target_properties(benchmark PROPERTIES EXCLUDE_FROM_ALL ON)
+    set_target_properties(benchmark_main PROPERTIES EXCLUDE_FROM_ALL ON)
+endif()
 
 set(REPROC++ ON)
 set(REPROC_MULTITHREADED OFF)
