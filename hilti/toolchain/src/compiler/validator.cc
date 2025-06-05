@@ -136,6 +136,8 @@ struct VisitorPre : visitor::PreOrder, public validator::VisitorMixIn {
 struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     using hilti::validator::VisitorMixIn::VisitorMixIn;
 
+    std::unordered_set<ast::DeclarationIndex> _method_declarations; // tracks methods already seen
+
     // Ensures that the node represented by tag is allowed to have all of the
     // provided attributes. This does not use any context, if more information
     // is needed, then do the check elsewhere.
@@ -295,6 +297,18 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( n->id().namespace_() && ! n->linkedPrototypeIndex() && n->errors().empty() )
             n->addError(util::fmt("no such function: '%s'", n->id()));
+
+        if ( n->function()->ftype()->flavor() == type::function::Flavor::Method && n->function()->body() ) {
+            if ( auto index = n->linkedPrototypeIndex() ) {
+                auto* prototype = context()->lookup(index);
+                if ( auto* field = prototype->tryAs<declaration::Field>(); field && field->inlineFunction() )
+                    error(fmt("method '%s' is already defined inline", n->id()), n);
+                else if ( _method_declarations.find(index) != _method_declarations.end() )
+                    error(fmt("method '%s' is already defined elsewhere", n->id()), n);
+                else
+                    _method_declarations.insert(index);
+            }
+        }
     }
 
     void operator()(declaration::LocalVariable* n) final {
@@ -776,13 +790,21 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 
     void operator()(type::Struct* n) final {
-        std::set<ID> seen;
+        std::map<ID, type::Function*> seen;
 
         for ( const auto& f : n->fields() ) {
-            if ( seen.find(f->id()) != seen.end() && ! f->type()->type()->isA<type::Function>() )
-                error("duplicate attribute in struct type", n);
+            type::Function* func = (f->type()->type()->tryAs<type::Function>());
 
-            seen.insert(f->id());
+            if ( const auto& other = seen.find(f->id()); other != seen.end() ) {
+                if ( func && other->second ) {
+                    if ( type::areEquivalent(func, other->second) )
+                        error("duplicate method in struct type", n);
+                }
+                else
+                    error("duplicate attribute in struct type", n);
+            }
+
+            seen.insert({f->id(), func});
 
             if ( f->isStatic() && f->default_() )
                 error("&default is currently not supported for static fields", n);

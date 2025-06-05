@@ -504,3 +504,10 @@ protected:
 };
 
 } // namespace hilti
+
+namespace std {
+template<char Prefix>
+struct hash<hilti::ast::detail::ContextIndex<Prefix>> {
+    size_t operator()(hilti::ast::detail::ContextIndex<Prefix> x) const { return x.value().Ref(); }
+};
+} // namespace std
