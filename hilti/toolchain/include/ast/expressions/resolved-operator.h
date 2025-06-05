@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <hilti/ast/expression.h>
+#include <hilti/ast/operator-registry.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/type.h>
 
@@ -18,6 +19,8 @@ namespace hilti::expression {
  */
 class ResolvedOperator : public Expression {
 public:
+    ~ResolvedOperator() override { operator_::registry().removeResolved(_operator, this); }
+
     const auto& operator_() const { return *_operator; }
     auto kind() const { return _operator->kind(); }
 
@@ -49,7 +52,9 @@ public:
 protected:
     ResolvedOperator(ASTContext* ctx, node::Tags node_tags, const Operator* op, QualifiedType* result,
                      const Expressions& operands, Meta meta)
-        : Expression(ctx, node_tags, node::flatten(result, operands), std::move(meta)), _operator(op) {}
+        : Expression(ctx, node_tags, node::flatten(result, operands), std::move(meta)), _operator(op) {
+        operator_::registry().addResolved(_operator, this);
+    }
 
 private:
     const Operator* _operator = nullptr;

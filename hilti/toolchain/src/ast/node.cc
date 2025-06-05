@@ -11,6 +11,7 @@
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/operator-registry.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/visitor.h>
 #include <hilti/base/util.h>
@@ -156,6 +157,9 @@ Node* node::detail::deepcopy(ASTContext* ctx, Node* n, bool force) {
         return n;
 
     auto* clone = n->_clone(ctx);
+
+    if ( auto* op = clone->tryAs<expression::ResolvedOperator>(); op )
+        operator_::registry().addResolved(&op->operator_(), op);
 
     for ( const auto& c : n->children() )
         clone->addChild(ctx, c); // this will copy the children recursively (because they have a parent already)
