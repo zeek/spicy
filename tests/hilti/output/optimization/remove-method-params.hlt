@@ -1,0 +1,90 @@
+# @TEST-DOC: Tests removing unused method parameters optimizations
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+# @TEST-EXEC: hiltic %INPUT -dj
+
+module Test {
+
+import hilti;
+
+type S = struct {
+    bool b;
+
+    # CHECK: method void sanity_check(uint<64> x)
+    method void sanity_check(uint<64> x) {
+        hilti::print(x);
+    }
+
+    # CHECK: method void method_inline()
+    # CHECK-NOT: method void method_inline(uint<64> x)
+    method void method_inline(uint<64> x) {}
+
+    # CHECK: method void method_stubbed();
+    # CHECK-NOT: method void method_stubbed(uint<64> x);
+    method void method_stubbed(uint<64> x);
+
+    # CHECK: hook void hook_one();
+    # CHECK-NOT: hook void hook_one(uint<64> x);
+    hook void hook_one(uint<64> x);
+};
+
+# CHECK: method void S::method_stubbed() {
+method void S::method_stubbed(uint<64> x) {}
+
+# CHECK: hook void S::hook_one()
+# CHECK-NOT: hook void S::hook_one(uint<64> x)
+hook void S::hook_one(uint<64> x) {}
+
+global S s = [$b = True];
+
+# CHECK: s.sanity_check(1)
+s.sanity_check(1);
+
+# CHECK: s.method_inline()
+s.method_inline(1);
+
+# CHECK: s.method_stubbed()
+s.method_stubbed(1);
+
+# CHECK: s.hook_one()
+s.hook_one(1);
+
+}
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+# Ensure public structs don't get parameters removed
+public type P = struct {
+    # CHECK: method void method_inline(uint<64> y)
+    # CHECK-NOT: method void method_inline()
+    method void method_inline(uint<64> y) {}
+    # CHECK: method void method_stubbed(uint<64> y);
+    # CHECK-NOT: method void method_stubbed();
+    method void method_stubbed(uint<64> y);
+    # CHECK: hook void hook_one(uint<64> y);
+    # CHECK-NOT: hook void hook_one();
+    hook void hook_one(uint<64> y);
+};
+
+# CHECK: method void P::method_stubbed(uint<64> y) {
+# CHECK-NOT: method void P::method_stubbed() {
+method void P::method_stubbed(uint<64> y) {}
+
+# CHECK: hook void P::hook_one(uint<64> y) {
+# CHECK-NOT: hook void P::hook_one() {
+hook void P::hook_one(uint<64> y) {}
+
+global P p;
+# CHECK: p.method_inline(1);
+p.method_inline(1);
+# CHECK: p.method_stubbed(1);
+p.method_stubbed(1);
+# CHECK: p.hook_one(1);
+p.hook_one(1);
+
+}
