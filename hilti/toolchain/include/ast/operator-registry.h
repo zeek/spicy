@@ -57,7 +57,7 @@ public:
      *
      * @param op unresolved operator to match against
      * @returns tuple where the 1st element is a boolean indicating if the
-     * caller should proceed checking the candidates returned as the 2dn
+     * caller should proceed checking the candidates returned as the 2nd
      * element; if not, a match has been found but is valid for calling, and
      * hence the caller should abort resolution
      */
