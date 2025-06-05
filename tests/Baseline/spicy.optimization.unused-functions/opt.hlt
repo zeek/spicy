@@ -15,8 +15,8 @@ public type B = struct {
 } &on-heap;
 type C = struct {
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__C_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__C_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 public type D = struct {
     value_ref<C> _anon &optional &anonymous &no-emit;
@@ -162,7 +162,7 @@ init function void __register_foo_B() {
     spicy_rt::registerParser(foo::B::__parser, $scope, Null);
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_stage1(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     {
@@ -171,14 +171,14 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__C_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            __result = (*self).__parse_foo__C_stage2(__cur, __lah, __lahe, __error);
 
     }
 
     return __result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_foo__C_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_foo__C_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     hilti::debugDedent("spicy");
@@ -213,7 +213,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     # Begin parsing production: Unit: foo__C_2 ->
     __transient__anon = default<C>();
-    (__cur, __lah, __lahe, __error) = (*__transient__anon).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+    (__cur, __lah, __lahe, __error) = (*__transient__anon).__parse_stage1(__cur, __lah, __lahe, __error);
     # End parsing production: Unit: foo__C_2 ->
 
     hilti::debugDedent("spicy");

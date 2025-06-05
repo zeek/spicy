@@ -15,13 +15,13 @@ public type Pub2 = struct {
 } &on-heap;
 type Priv5 = struct {
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv5_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 type Priv6 = struct {
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv6_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__Priv6_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
 } &on-heap;
 public type Pub3 = struct {
     value_ref<Priv5> _anon_2 &optional &anonymous &no-emit;
@@ -225,7 +225,7 @@ init function void __register_foo_Priv3() {
 init function void __register_foo_Priv4() {
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_stage1(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:27:14-27:20"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     {
@@ -234,14 +234,14 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__Priv5_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            __result = (*self).__parse_foo__Priv5_stage2(__cur, __lah, __lahe, __error);
 
     }
 
     return __result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_foo__Priv5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::__parse_foo__Priv5_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:27:14-27:20"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     hilti::debugDedent("spicy");
@@ -252,7 +252,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 init function void __register_foo_Priv5() {
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_stage1(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:28:14-28:20"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     {
@@ -261,14 +261,14 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         local strong_ref<stream> filtered = Null;
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__Priv6_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            __result = (*self).__parse_foo__Priv6_stage2(__cur, __lah, __lahe, __error);
 
     }
 
     return __result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_foo__Priv6_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::__parse_foo__Priv6_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/unused-types.spicy:28:14-28:20"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     hilti::debugDedent("spicy");
@@ -303,7 +303,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     # Begin parsing production: Unit: foo__Priv5_2 ->
     __transient__anon_2 = default<Priv5>();
-    (__cur, __lah, __lahe, __error) = (*__transient__anon_2).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+    (__cur, __lah, __lahe, __error) = (*__transient__anon_2).__parse_stage1(__cur, __lah, __lahe, __error);
     # End parsing production: Unit: foo__Priv5_2 ->
 
     {
@@ -311,7 +311,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
         # Begin parsing production: Unit: foo__Priv6_2 ->
         (*self).x = default<Priv6>();
-        (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+        (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__cur, __lah, __lahe, __error);
         # End parsing production: Unit: foo__Priv6_2 ->
     }
 
