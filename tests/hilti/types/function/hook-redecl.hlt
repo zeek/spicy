@@ -1,0 +1,22 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT >stdout
+# @TEST-EXEC: btest-diff stdout
+
+module Foo {
+
+import hilti;
+
+declare public hook void f(string x);
+declare public hook void f(string x);
+
+hook void f(string x) {
+    hilti::print(x);
+}
+hook void f(string x) {
+    hilti::print(x);
+}
+hook void f(string x) {
+    hilti::print(x);
+}
+
+f("Hi!!");
+}
