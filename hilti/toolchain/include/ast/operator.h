@@ -338,6 +338,9 @@ public:
      */
     auto typename_() const { return _typename(); }
 
+    /** Returns a globally unique numeric identifier for the operator. */
+    uintptr_t identity() const { return reinterpret_cast<uintptr_t>(this); }
+
     /**
      * Returns the operator's result type, given specific operand expressions.
      * Must be implemented by operators if the signature does not define a
