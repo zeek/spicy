@@ -4,7 +4,11 @@
 
 module Test {
 
-function void my_regex(regexp r) {}
+import hilti;
+
+function void my_regex(regexp r) {
+    hilti::print(r);
+}
 
 const re = /abc/;
 
