@@ -261,7 +261,7 @@ struct Visitor : public hilti::visitor::PreOrder {
             result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
         else if ( auto* x = dst->type()->tryAs<type::StrongReference>() )
-            result = fmt("::hilti::rt::StrongReference<%s>(%s)",
+            result = fmt("::hilti::rt::StrongReference<%s>(%s.derefAsValue())",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
 
         else if ( dst->type()->isA<type::ValueReference>() )

@@ -1,3 +1,9 @@
+1.14.0-dev.59 | 2025-06-05 08:44:03 -0400
+
+  * GH-2063: Fix C++ compilation issue with weak->strong refs. (Evan Typanski, Corelight)
+
+    Fixes #2063
+
 1.14.0-dev.55 | 2025-06-04 10:34:41 +0200
 
   * Add codspeed integration. (Benjamin Bannier, Corelight)
