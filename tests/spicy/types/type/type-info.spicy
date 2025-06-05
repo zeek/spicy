@@ -10,6 +10,11 @@ type S = struct {
     b: int32;
 };
 
+type T = unit {
+    var x: S;
+    var y: type = typeinfo(self.x);
+};
+
 function f(ty: type) {
     print "in f:", ty;
 }
