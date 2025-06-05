@@ -1,0 +1,48 @@
+# @TEST-DOC: Tests removing unused method parameters optimizations
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+
+module Test {
+
+import hilti;
+
+type S = struct {
+    bool b;
+
+    # CHECK: method void sanity_check(uint<64> x)
+    method void sanity_check(uint<64> x) {
+        hilti::print(x);
+    }
+
+    # CHECK: method void method_inline()
+    # CHECK-NOT: method void method_inline(uint<64> x)
+    method void method_inline(uint<64> x) {}
+
+    # CHECK: method void method_stubbed();
+    # CHECK-NOT: method void method_stubbed(uint<64> x);
+    method void method_stubbed(uint<64> x);
+
+    # CHECK: hook void hook_one() {}
+    # CHECK-NOT: hook void hook_one(uint<64> x)
+    hook void hook_one(uint<64> x) {}
+};
+
+# CHECK: method void S::method_stubbed() {
+method void S::method_stubbed(uint<64> x) {}
+
+global S s = [$b = True];
+
+# CHECK: s.sanity_check(1)
+s.sanity_check(1);
+
+# CHECK: s.method_inline()
+s.method_inline(1);
+
+# CHECK: s.method_stubbed()
+s.method_stubbed(1);
+
+# CHECK: s.hook_one()
+s.hook_one(1);
+
+}
