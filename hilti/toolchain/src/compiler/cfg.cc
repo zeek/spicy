@@ -169,7 +169,7 @@ Node* CFG::addBlock(Node* parent, const Nodes& stmts, const Node* scope) {
 
         else if ( c->isA<statement::Continue>() || c->isA<statement::Break>() )
             // `continue`/`break` statements only add flow, but no data.
-            parent = addReturn(parent, nullptr);
+            ; // Nothing.
 
         else if ( auto&& call = c->tryAs<operator_::function::Call>() )
             parent = addCall(parent, call);
