@@ -73,6 +73,19 @@ static auto idFeatureFromConstant(const ID& featureConstant) -> std::optional<st
     return {{type_id, feature}};
 };
 
+using OperatorUses = std::map<const Operator*, std::vector<expression::ResolvedOperator*>>;
+
+// Collects uses of resolved operators
+struct CollectUsesPass : public hilti::visitor::PreOrder {
+    OperatorUses result;
+
+    OperatorUses collect(Node* node) {
+        visitor::visit(*this, node);
+        return result;
+    }
+
+    void operator()(expression::ResolvedOperator* node) override { result[&node->operator_()].push_back(node); }
+};
 
 class OptimizerVisitor : public visitor::MutatingPreOrder {
 public:
@@ -84,12 +97,25 @@ public:
 
     void removeNode(Node* old, const std::string& msg = "") { replaceNode(old, nullptr, msg); }
 
+    OptimizerVisitor(Builder* builder, const logging::DebugStream& dbg, const OperatorUses* op_uses)
+        : visitor::MutatingPreOrder(builder, dbg), _op_uses(op_uses) {}
+
     ~OptimizerVisitor() override = default;
     virtual void collect(Node*) {}
     virtual bool prune_uses(Node*) { return false; }
     virtual bool prune_decls(Node*) { return false; }
 
     void operator()(declaration::Module* n) final { _current_module = n; }
+
+    const OperatorUses::mapped_type* uses(const Operator* x) const {
+        if ( ! _op_uses->contains(x) )
+            return nullptr;
+
+        return &_op_uses->at(x);
+    }
+
+private:
+    const OperatorUses* _op_uses;
 };
 
 struct FunctionVisitor : OptimizerVisitor {
@@ -1577,22 +1603,26 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         v.transform(root);
     }
 
-    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder)> creators =
-        {{"constant_folding",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"functions",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"members",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"types", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer);
-          }}};
+    CollectUsesPass collect_uses{};
+    const auto& op_uses = collect_uses.collect(root);
+
+    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder, const OperatorUses& op_uses)>
+        creators = {{"constant_folding",
+                     [](Builder* builder, const OperatorUses& op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                         return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer,
+                                                                         op_uses);
+                     }},
+                    {"functions",
+                     [](Builder* builder, const OperatorUses& op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                         return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+                     }},
+                    {"members",
+                     [](Builder* builder, const OperatorUses& op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                         return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+                     }},
+                    {"types", [](Builder* builder, const OperatorUses& op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                         return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+                     }}};
 
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {
@@ -1610,7 +1640,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         vs.reserve(passes->size());
         for ( const auto& pass : *passes )
             if ( creators.contains(pass) )
-                vs.push_back(creators.at(pass)(builder));
+                vs.push_back(creators.at(pass)(builder, &op_uses));
 
         for ( auto& v : vs ) {
             HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("processing AST, round=%d", round));
