@@ -78,7 +78,7 @@ struct Transfer {
     std::unordered_set<Node*> use;
     std::unordered_map<Node*, Node*> gen;
     std::unordered_map<Node*, std::unordered_set<Node*>> kill;
-    std::unordered_set<Node*> aliases;
+    std::unordered_set<Node*> maybe_alias;
 
     bool keep = false; // Whether this node should be kept.
 

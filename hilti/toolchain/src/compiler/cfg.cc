@@ -446,7 +446,7 @@ std::string CFG::dot() const {
             }();
 
             auto aliases = [&]() {
-                auto xs = util::transformToVector(transfer.aliases, [&](auto* decl) {
+                auto xs = util::transformToVector(transfer.maybe_alias, [&](auto* decl) {
                     return escape(decl->template as<const hilti::Declaration>()->id());
                 });
                 std::sort(xs.begin(), xs.end());
@@ -623,7 +623,7 @@ struct DataflowVisitor : visitor::PreOrder {
 
             if ( auto* type = global->type()->type() ) {
                 if ( is_aliasing_type(*type) )
-                    transfer.aliases.insert(decl);
+                    transfer.maybe_alias.insert(decl);
             }
         }
 
@@ -684,7 +684,7 @@ void CFG::populateDataflow() {
         // references aliasing is stored symmetrically, i.e., if `a` aliases
         // `b`, `b` will also alias `a`.
         for ( auto&& [n, transfer] : _dataflow ) {
-            for ( const auto* alias : transfer.aliases ) {
+            for ( const auto* alias : transfer.maybe_alias ) {
                 auto* stmt = find_node(alias);
                 if ( ! stmt || ! _dataflow.count(stmt) )
                     // Could not find node declaring aliased name.
@@ -692,7 +692,7 @@ void CFG::populateDataflow() {
                         util::fmt(R"(could not find CFG node for "%s" aliased in "%s")", alias->print(), n->print()));
 
 
-                _dataflow.at(stmt).aliases.insert(n);
+                _dataflow.at(stmt).maybe_alias.insert(n);
             }
         }
 
@@ -703,7 +703,7 @@ void CFG::populateDataflow() {
                 if ( ! stmt || ! _dataflow.count(stmt) )
                     continue;
 
-                for ( auto* alias : _dataflow.at(stmt).aliases )
+                for ( auto* alias : _dataflow.at(stmt).maybe_alias )
                     transfer.use.insert(alias);
             }
         }
