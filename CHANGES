@@ -1,3 +1,7 @@
+1.14.0-dev.69 | 2025-06-06 15:53:34 +0200
+
+  * Make `-Wstringop-overflow` not fatal with gcc. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.67 | 2025-06-06 14:09:59 +0200
 
   * Fix `readability-qualified-auto` lint. (Benjamin Bannier, Corelight)
