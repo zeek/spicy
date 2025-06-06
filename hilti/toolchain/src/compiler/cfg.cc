@@ -170,7 +170,7 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
             ; // Nothing.
 
         else if ( auto&& call = c->tryAs<operator_::function::Call>() )
-            parent = addCall(parent, *call);
+            predecessor = addCall(predecessor, *call);
 
         else if ( auto&& block = c->tryAs<statement::Block>() )
             parent = addBlock(parent, block->statements(), block);
