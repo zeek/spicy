@@ -1,0 +1,38 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Catch if methods get implemented multiple times.
+
+module Test {
+
+type T = struct {
+    method int<64> test();
+};
+
+method int<64> T::test() { return 1; }
+method int<64> T::test() { return 2; }
+
+}
+
+# @TEST-START-NEXT
+
+module Test {
+
+type T = struct {
+    method int<64> test() { return 1; }
+};
+
+method int<64> T::test() { return 2; }
+
+}
+
+# @TEST-START-NEXT
+
+module Test {
+
+type T = struct {
+    method int<64> test() { return 1; }
+    method int<64> test() { return 2; }
+};
+
+}
