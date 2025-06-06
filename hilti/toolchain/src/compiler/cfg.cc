@@ -173,7 +173,7 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
             predecessor = addCall(predecessor, *call);
 
         else if ( auto&& block = c->tryAs<statement::Block>() )
-            parent = addBlock(parent, block->statements(), block);
+            predecessor = addBlock(predecessor, block->statements(), block);
 
         else {
             if ( ! c->isA<Statement>() )
@@ -181,16 +181,16 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
 
             auto* cc = getOrAddNode(c);
 
-            addEdge(parent, cc);
+            addEdge(predecessor, cc);
 
-            auto* x = addBlock(parent, c->children(), c);
+            auto* x = addBlock(predecessor, c->children(), c);
 
             // We might have added a dead edge to a `ScopeEnd` with
             // `add_block`, clean it up again.
             if ( x && x->isA<ScopeEnd>() )
                 g.removeNode(x->identity());
 
-            parent = cc;
+            predecessor = cc;
         }
     }
 
@@ -198,21 +198,21 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
     if ( has_dead_flow && last != stmts.end() ) {
         auto* next = addBlock(nullptr, Nodes{last, stmts.end()}, scope);
         auto* mix = getOrAddNode(create_meta_node<Flow>());
-        addEdge(parent, mix);
+        addEdge(predecessor, mix);
         addEdge(next, mix);
-        parent = mix;
+        predecessor = mix;
     }
 
     // Connect the scope end to prevent leaking of locals out of their blocks.
-    addEdge(parent, scope_end);
-    parent = scope_end;
+    addEdge(predecessor, scope_end);
+    predecessor = scope_end;
 
-    return parent;
+    return predecessor;
 }
 
-Node* CFG::addFor(Node* parent, const statement::For& for_) {
+Node* CFG::addFor(Node* predecessor, const statement::For& for_) {
     auto&& sequence = getOrAddNode(for_.sequence());
-    addEdge(parent, sequence);
+    addEdge(predecessor, sequence);
 
     auto&& local = getOrAddNode(for_.local());
     addEdge(sequence, local);
@@ -226,44 +226,44 @@ Node* CFG::addFor(Node* parent, const statement::For& for_) {
     return scope_end;
 }
 
-Node* CFG::addWhile(Node* parent, const statement::While& while_, Node* scope_end) {
+Node* CFG::addWhile(Node* predecessor, const statement::While& while_, Node* scope_end) {
     if ( auto* init = while_.init() ) {
         auto* init_ = getOrAddNode(init);
-        addEdge(parent, init_);
+        addEdge(predecessor, init_);
         addEdge(init_, scope_end);
 
-        parent = init_;
+        predecessor = init_;
     }
 
     if ( auto* c = while_.condition() ) {
         auto&& condition = getOrAddNode(c);
-        addEdge(parent, condition);
-        parent = condition;
+        addEdge(predecessor, condition);
+        predecessor = condition;
     }
 
-    auto* body_end = addBlock(parent, while_.body()->children(), while_.body());
-    addEdge(body_end, parent);
+    auto* body_end = addBlock(predecessor, while_.body()->children(), while_.body());
+    addEdge(body_end, predecessor);
 
     auto* mix = getOrAddNode(create_meta_node<Flow>());
-    addEdge(parent, mix);
+    addEdge(predecessor, mix);
 
     if ( auto&& else_ = while_.else_() ) {
-        auto&& else_end = addBlock(parent, else_->children(), else_);
+        auto&& else_end = addBlock(predecessor, else_->children(), else_);
         addEdge(else_end, mix);
     }
 
     return mix;
 }
 
-Node* CFG::addIf(Node* parent, const statement::If& if_) {
+Node* CFG::addIf(Node* predecessor, const statement::If& if_) {
     if ( auto* init = if_.init() ) {
         auto* init_ = getOrAddNode(init);
-        addEdge(parent, init_);
-        parent = init_;
+        addEdge(predecessor, init_);
+        predecessor = init_;
     }
 
     auto&& condition = getOrAddNode(if_.condition());
-    addEdge(parent, condition);
+    addEdge(predecessor, condition);
 
     auto* mix = getOrAddNode(create_meta_node<Flow>());
     auto* true_end = addBlock(condition, if_.true_()->children(), if_.true_());
@@ -281,8 +281,8 @@ Node* CFG::addIf(Node* parent, const statement::If& if_) {
     return mix;
 }
 
-Node* CFG::addTryCatch(Node* parent, const statement::Try& try_catch) {
-    auto* try_ = addBlock(parent, try_catch.body()->children(), try_catch.body());
+Node* CFG::addTryCatch(Node* predecessor, const statement::Try& try_catch) {
+    auto* try_ = addBlock(predecessor, try_catch.body()->children(), try_catch.body());
 
     // Connect into node combining flows from `try` and `catch` blocks.
     auto* mix_after = getOrAddNode(create_meta_node<Flow>());
@@ -301,27 +301,27 @@ Node* CFG::addTryCatch(Node* parent, const statement::Try& try_catch) {
     return mix_after;
 }
 
-Node* CFG::addReturn(Node* parent, const Node* expression) {
+Node* CFG::addReturn(Node* predecessor, const Node* expression) {
     if ( expression ) {
         // We store the return statement to make us of it in data flow analysis.
         auto* r = getOrAddNode(expression->parent());
-        addEdge(parent, r);
+        addEdge(predecessor, r);
         addEdge(r, _end);
         return _end;
     }
 
-    return parent;
+    return predecessor;
 }
 
-Node* CFG::addThrow(Node* parent, statement::Throw& throw_, Node* scope_end) {
+Node* CFG::addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end) {
     if ( auto* expression = throw_.expression() ) {
         auto* expr = getOrAddNode(expression);
 
-        addEdge(parent, expr);
+        addEdge(predecessor, expr);
         addEdge(expr, scope_end);
     }
     else
-        addEdge(parent, scope_end);
+        addEdge(predecessor, scope_end);
 
     return scope_end;
 }
