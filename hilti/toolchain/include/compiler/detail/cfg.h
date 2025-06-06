@@ -99,22 +99,22 @@ public:
     void addEdge(Node* from, Node* to);
 
     // Add flow for globals if `root` corresponds to a global module block.
-    [[nodiscard]] Node* addGlobals(Node* parent, const Node& root);
+    [[nodiscard]] Node* addGlobals(Node* predecessor, const Node& root);
 
     [[nodiscard]]
-    Node* addBlock(Node* parent, const Nodes& stmts, const Node* scope);
+    Node* addBlock(Node* predecessor, const Nodes& stmts, const Node* scope);
     [[nodiscard]]
-    Node* addFor(Node* parent, const statement::For& for_);
+    Node* addFor(Node* predecessor, const statement::For& for_);
     [[nodiscard]]
-    Node* addWhile(Node* parent, const statement::While& while_, Node* scope_end);
+    Node* addWhile(Node* predecessor, const statement::While& while_, Node* scope_end);
     [[nodiscard]]
-    Node* addIf(Node* parent, const statement::If& if_);
+    Node* addIf(Node* predecessor, const statement::If& if_);
     [[nodiscard]]
-    Node* addTryCatch(Node* parent, const statement::Try& try_);
+    Node* addTryCatch(Node* predecessor, const statement::Try& try_);
     [[nodiscard]]
-    Node* addReturn(Node* parent, const Node* expression);
+    Node* addReturn(Node* predecessor, const Node* expression);
     [[nodiscard]]
-    Node* addThrow(Node* parent, statement::Throw& throw_, Node* scope_end);
+    Node* addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end);
     [[nodiscard]]
     Node* addCall(Node* parent, operator_::function::Call& call);
 
