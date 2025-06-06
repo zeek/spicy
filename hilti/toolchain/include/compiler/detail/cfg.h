@@ -116,7 +116,7 @@ public:
     [[nodiscard]]
     Node* addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end);
     [[nodiscard]]
-    Node* addCall(Node* parent, operator_::function::Call& call);
+    Node* addCall(Node* predecessor, operator_::function::Call& call);
 
     std::unordered_set<Node*> unreachableNodes() const;
 
