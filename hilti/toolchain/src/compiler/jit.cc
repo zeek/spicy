@@ -36,11 +36,14 @@
 #pragma GCC diagnostic ignored "-Wchanges-meaning"
 #include <reproc++/drain.hpp>
 #include <reproc++/reproc.hpp>
+#include <reproc++/run.hpp>
 #pragma GCC diagnostic pop
 
 using namespace hilti;
 
 namespace {
+
+const auto UserDiagnosticsFile = rt::filesystem::path("hilti-jit-error.log");
 
 hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesystem::path& id, std::size_t hash) {
     const auto cc_hash = code.hash();
@@ -104,23 +107,6 @@ private:
 };
 
 } // namespace
-
-void hilti::JIT::Job::collectOutputs(int events) {
-    if ( ! process )
-        return;
-
-    if ( events & reproc::event::err ) {
-        std::array<uint8_t, 4096> buffer;
-        if ( auto [size, ec] = process->read(reproc::stream::err, buffer.begin(), buffer.size()); size && ! ec )
-            stderr_.append(reinterpret_cast<const char*>(buffer.begin()), size);
-    }
-
-    if ( events & reproc::event::out ) {
-        std::array<uint8_t, 4096> buffer;
-        if ( auto [size, ec] = process->read(reproc::stream::out, buffer.begin(), buffer.size()); size && ! ec )
-            stdout_.append(reinterpret_cast<const char*>(buffer.begin()), size);
-    }
-}
 
 namespace hilti::logging::debug {
 inline const DebugStream Driver("driver");
@@ -194,6 +180,45 @@ JIT::~JIT() {
 }
 
 hilti::Result<std::shared_ptr<const Library>> JIT::build() {
+    auto _guard = util::scope_exit([&]() {
+        // Point out user diagnostics file if it exists.
+        if ( ! hilti::rt::filesystem::exists(UserDiagnosticsFile) )
+            return;
+
+        std::cerr << util::fmt(R"(
+=== Uh oh ... C++ compilation failed ===
+
+This is unexpected and should not happen. Please help us fix the issue
+by opening a ticket at https://github.com/zeek/spicy/issues/new.
+
+Please include the content of the following file with your report:
+
+  %s
+
+That file contains diagnostics from the C++ compiler. Please also
+include your Spicy code that triggered this error, ideally reduced to
+a small snippet still exhibiting the issue if you can.
+
+===
+
+)",
+                               rt::filesystem::absolute(UserDiagnosticsFile));
+
+        if ( auto* show_output = getenv("HILTI_JIT_SHOW_CXX_OUTPUT"); show_output && *show_output ) {
+            // Also print the output of the C++ compiler to stderr.
+            std::ifstream in(UserDiagnosticsFile);
+            if ( in ) {
+                std::cerr << "### Begin of " << UserDiagnosticsFile << " ###\n\n";
+
+                std::string line;
+                while ( std::getline(in, line) )
+                    std::cerr << line << '\n';
+
+                std::cerr << "\n### End of " << UserDiagnosticsFile << " ###\n\n";
+            }
+        }
+    });
+
     util::timing::Collector _("hilti/jit");
 
     if ( auto rc = _checkCompiler(); ! rc )
@@ -478,12 +503,20 @@ Result<Nothing> JIT::JobRunner::_spawnJob() {
     jobs_pending.pop_front();
 
     Job& job = jobs[jid];
+    job.cmdline = util::join(cmdline, " ");
     job.process = std::make_unique<reproc::process>();
 
+    if ( auto path = hilti::rt::createTemporaryFile("hilti-jit-output") ) {
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] writing process output to %s", jid, *path));
+        job.output = *path;
+    }
+    else {
+        jobs.erase(jid);
+        return path.error();
+    }
+
     reproc::options options;
-    options.redirect.in.type = reproc::redirect::discard;
-    options.redirect.out.type = reproc::redirect::default_;
-    options.redirect.err.type = reproc::redirect::default_;
+    options.redirect.path = job.output.c_str();
 
     auto ec = job.process->start(cmdline, options);
 
@@ -530,12 +563,14 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
         auto j = std::thread::hardware_concurrency();
         if ( j == 0 )
             rt::warning(
-                "could not detect hardware level of concurrency, will use one thread for background compilation. Use "
+                "could not detect hardware level of concurrency, will use one thread for background compilation. "
+                "Use "
                 "`HILTI_JIT_PARALLELISM` to override");
         parallelism = std::max(j, 1U);
     }
 
     std::vector<result::Error> errors;
+    hilti::rt::filesystem::remove(UserDiagnosticsFile);
 
     while ( ! jobs_pending.empty() || ! jobs.empty() ) {
         // If we still have jobs pending, spawn up to `parallelism` parallel background jobs.
@@ -567,8 +602,6 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
             if ( ! source.events )
                 continue;
 
-            job.collectOutputs(source.events);
-
             if ( source.events & reproc::event::exit ) {
                 // Collect the exist status.
                 auto [status, ec] = job.process->wait(reproc::milliseconds(0));
@@ -580,18 +613,10 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
 
                 HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
 
-                if ( ! job.stdout_.empty() )
-                    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stdout: %s", id, util::trim(job.stdout_)));
-
-                if ( ! job.stderr_.empty() )
-                    HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] stderr: %s", id, util::trim(job.stderr_)));
-
                 if ( status != 0 ) {
-                    std::string stderr__ = job.stderr_.empty() ?
-                                               "(no error output)" :
-                                               std::string("JIT output: \n") + util::trim(job.stderr_);
+                    _recordUserDiagnostics(id, job);
                     jobs.erase(id);
-                    errors.emplace_back("JIT compilation failed", stderr__);
+                    errors.emplace_back("JIT compilation failed");
                 }
 
                 jobs.erase(id);
@@ -603,6 +628,42 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
         return errors.front();
 
     return Nothing();
+}
+
+void JIT::JobRunner::_recordUserDiagnostics(JobID jid, const Job& job) {
+    auto add_header = ! rt::filesystem::exists(UserDiagnosticsFile);
+
+    if ( add_header ) {
+        // Record version of C++ compiler.
+        reproc::options options;
+        options.redirect.path = UserDiagnosticsFile.c_str();
+        std::array<std::string, 2> cmdline = {hilti::configuration().cxx.c_str(), "--version"};
+        reproc::run(cmdline, options);
+    }
+
+    std::ofstream out(UserDiagnosticsFile, std::ios::app);
+    if ( ! out ) {
+        logger().warning(
+            util::fmt("could not open diagnostics file %s for writing: %s", UserDiagnosticsFile, ::strerror(errno)));
+        return;
+    }
+
+    // Copy the output of the process over into the diagnostics file
+    std::ifstream in(job.output);
+    if ( ! in ) {
+        logger().warning(
+            util::fmt("could not open process output file %s for reading: %s", job.output, ::strerror(errno)));
+        return;
+    }
+
+    if ( add_header )
+        out << "HILTI version " << hilti::configuration().version_string_long << "\n\n";
+
+    out << util::fmt("## [job %" PRIu64 "] %s\n\n", jid, job.cmdline);
+
+    std::string line;
+    while ( std::getline(in, line) )
+        out << line << '\n';
 }
 
 JIT::JobRunner::JobRunner() {
