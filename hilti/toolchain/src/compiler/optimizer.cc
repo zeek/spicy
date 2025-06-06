@@ -37,6 +37,8 @@
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
 
+#include "ast/operator.h"
+
 namespace hilti {
 
 namespace logging::debug {
@@ -1557,6 +1559,334 @@ struct MemberVisitor : OptimizerVisitor {
     }
 };
 
+/** Removes unused function parameters. */
+struct FunctionParamVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
+
+    // This stores the operator of the declaration we're in.
+    // TODO: I'm not sure if this is the best way, we can get enclosing operators
+    // in other ways that don't seem so flaky
+    const hilti::Operator* current_op;
+    // The unused parameters (the vector is of positions) for a given ID
+    // TODO: IDs here are a relatively bad indicator of a given function, but
+    // it worked best between overloads, hooks, and functions. This should probably
+    // be something else, though.
+    std::map<ID, std::vector<std::size_t>> fn_unused_params;
+    // TODO: Do this better :)
+    std::map<ID, bool> removed_uses;
+
+    void collect(Node* node) override {
+        fn_unused_params.clear();
+        _stage = Stage::COLLECT;
+
+        visitor::visit(*this, node);
+        // Visit TWICE in order to grab uses properly
+        // TODO: Is doing this twice actually necessary, and if so find another way
+        visitor::visit(*this, node);
+    }
+
+    bool prune_uses(Node* node) override {
+        _stage = Stage::PRUNE_USES;
+
+        bool any_modification = false;
+
+        while ( true ) {
+            clearModified();
+            visitor::visit(*this, node);
+
+            if ( ! isModified() )
+                break;
+
+            // TODO: This should actually make the PRUNE_USES step do nothing though
+            removed_uses.clear();
+            fn_unused_params.clear();
+
+            any_modification = true;
+        }
+
+        return any_modification;
+    }
+
+    void remove_params(hilti::Node* call, const std::vector<std::size_t>& positions) {
+        // TODO: Error? Assert? IDK
+        if ( ! call->isA<operator_::function::Call>() && ! call->isA<operator_::struct_::MemberCall>() )
+            return;
+
+        auto* fn_use = call->as<expression::ResolvedOperator>();
+
+        // TODO: Error? Assert? IDK
+        if ( ! fn_use->parent() )
+            return;
+
+        if ( positions.empty() )
+            return;
+
+        bool is_method = call->isA<operator_::struct_::MemberCall>();
+
+        // Make parameters, just without positions
+        Expressions params;
+        // Get the params as a tuple
+        auto* ctor = is_method ? fn_use->op2()->tryAs<expression::Ctor>() : fn_use->op1()->tryAs<expression::Ctor>();
+        if ( ! ctor )
+            return;
+        auto* tup = ctor->ctor()->tryAs<ctor::Tuple>();
+        if ( ! tup )
+            return;
+
+        for ( std::size_t i = 0; i < tup->value().size(); i++ ) {
+            if ( std::find(positions.begin(), positions.end(), i) == positions.end() )
+                params.push_back(tup->value()[i]);
+        }
+        auto* ntuple = builder()->expressionCtor(builder()->ctorTuple(params));
+        if ( is_method )
+            replaceNode(fn_use->op2(), ntuple);
+        else
+            replaceNode(fn_use->op1(), ntuple);
+    }
+
+    // Returns the last 3 parts of the ID, so that hooks in different modules (which
+    // have more than 3 parts) get the same ID as the original hook
+    ID idForIndexing(const ID& fqid) { return fqid.sub(-3) + fqid.sub(-2) + fqid.sub(-1); }
+
+    void operator()(declaration::Function* n) final {
+        // Collect any parameters that can be removed
+        declaration::Field* found_field = nullptr;
+        auto fqid = idForIndexing(n->fullyQualifiedID());
+        // TODO: Do this correlation better, if possible
+        if ( ! n->operator_() ) {
+            auto* lookup = context()->lookup(n->linkedDeclarationIndex());
+            if ( auto* decl = lookup->tryAs<declaration::Type>() ) {
+                if ( auto* struct_ = decl->type()->type()->tryAs<type::Struct>() ) {
+                    for ( auto& field : struct_->fields() ) {
+                        if ( field->fullyQualifiedID() == fqid ) {
+                            found_field = field;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        current_op = found_field ? found_field->operator_() : n->operator_();
+        // TODO: Nothing we can do if we don't find an op, but can we do this better?
+        if ( ! current_op )
+            return;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params.count(fqid) > 0 )
+                    return;
+                auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
+                if ( ! n->function()->body() ||
+                     (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) ) {
+                    // Reset if there's no body
+                    fn_unused_params[fqid].clear();
+                    break;
+                }
+                for ( std::size_t i = 0; i < n->function()->ftype()->parameters().size(); i++ )
+                    // TODO: Don't recompute hash each iteration
+                    fn_unused_params[fqid].push_back(i);
+
+                // Parse1 needs to have the same signature since it is passed around
+                // in the runtime library
+                //
+                // TODO: Do this better, or in one place?
+                if ( n->id().str().find("parse1") != std::string::npos ||
+                     n->id().str().find("parse2") != std::string::npos ||
+                     n->id().str().find("parse3") != std::string::npos ) {
+                    fn_unused_params[fqid].clear();
+                }
+
+                break;
+            }
+
+            case Stage::PRUNE_USES: {
+                auto this_unused_params = fn_unused_params[fqid];
+                if ( this_unused_params.empty() )
+                    return;
+                auto uses = operator_::registry().resolved(current_op);
+                if ( ! removed_uses[fqid] ) {
+                    for ( auto* use : uses ) {
+                        if ( ! use )
+                            continue;
+                        remove_params(use, this_unused_params);
+                    }
+                    removed_uses[fqid] = true;
+                }
+
+                auto params = n->function()->ftype()->parameters();
+
+                // Ensure they're sorted
+                std::sort(this_unused_params.begin(), this_unused_params.end(), std::greater<>());
+                for ( std::size_t index : this_unused_params ) {
+                    // Maybe unnecessary
+                    if ( index < params.size() )
+                        // TODO: ptrdiff_t cast is ugly
+                        params.erase(params.begin() + static_cast<std::ptrdiff_t>(index));
+                }
+                n->function()->ftype()->setParameters(builder()->context(), params);
+                if ( found_field ) {
+                    auto* ftype = found_field->type()->type()->tryAs<type::Function>();
+                    if ( ! ftype )
+                        return;
+                    ftype->setParameters(builder()->context(), params);
+                }
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                break;
+            }
+        }
+    }
+
+    void operator()(declaration::Field* n) final {
+        // Collect any parameters that can be removed
+        auto* ftype = n->type()->type()->tryAs<type::Function>();
+        if ( ! ftype )
+            return;
+
+        current_op = n->operator_();
+
+        auto fqid = idForIndexing(n->fullyQualifiedID());
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params.count(fqid) > 0 )
+                    return;
+
+                for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
+                    fn_unused_params[fqid].push_back(i);
+
+                if ( n->id().str().find("parse1") != std::string::npos ||
+                     n->id().str().find("parse2") != std::string::npos ||
+                     n->id().str().find("parse3") != std::string::npos ) {
+                    fn_unused_params[fqid].clear();
+                }
+                break;
+            }
+
+            case Stage::PRUNE_USES: {
+                if ( ! n->inlineFunction() )
+                    return;
+                auto uses = operator_::registry().resolved(current_op);
+
+                auto this_unused_params = fn_unused_params[fqid];
+                if ( this_unused_params.empty() )
+                    return;
+                for ( auto* use : uses ) {
+                    if ( ! use )
+                        continue;
+                    remove_params(use, this_unused_params);
+                }
+                auto params = n->inlineFunction()->ftype()->parameters();
+                std::sort(this_unused_params.begin(), this_unused_params.end(), std::greater<>());
+                for ( std::size_t index : this_unused_params ) {
+                    if ( index < params.size() ) { // Check if index is within bounds
+                        params.erase(params.begin() + static_cast<std::ptrdiff_t>(index));
+                    }
+                }
+                ftype->setParameters(builder()->context(), params);
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                break;
+            }
+        }
+    }
+
+    void operator()(expression::Name* n) final {
+        if ( ! current_op )
+            return;
+
+        type::Function* ftype = nullptr;
+        auto* current = n->parent();
+        ID id;
+        while ( current->parent() ) {
+            current = current->parent();
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                id = idForIndexing(fn_decl->fullyQualifiedID());
+                ftype = fn_decl->function()->ftype();
+                break;
+            }
+            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
+                id = idForIndexing(field->fullyQualifiedID());
+                ftype = field->inlineFunction()->ftype();
+                break;
+            }
+        }
+        if ( ! ftype )
+            return;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params[id].size() == 0 )
+                    return;
+
+                int i = 0;
+                for ( auto param : fn_unused_params[id] ) {
+                    if ( ftype->parameters()[param]->id() == n->id() ) {
+                        fn_unused_params[id].erase(fn_unused_params[id].begin() + i);
+                        return;
+                    }
+                    i++;
+                }
+            }
+            case Stage::PRUNE_USES: return;
+            case Stage::PRUNE_DECLS: return;
+        }
+    }
+
+    void operator()(expression::Keyword* n) final {
+        // TODO: Combine the boilerplate with Name
+        if ( ! current_op )
+            return;
+
+        type::Function* ftype = nullptr;
+        auto* current = n->parent();
+        ID fqid;
+        while ( current->parent() ) {
+            current = current->parent();
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                fqid = idForIndexing(fn_decl->fullyQualifiedID());
+                ftype = fn_decl->function()->ftype();
+                break;
+            }
+            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
+                fqid = idForIndexing(field->fullyQualifiedID());
+                ftype = field->inlineFunction()->ftype();
+                break;
+            }
+        }
+        if ( ! ftype )
+            return;
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params[fqid].size() == 0 )
+                    return;
+
+                int i = 0;
+                // TODO make this not suck and double check scope and stuff
+                std::string id;
+                switch ( n->kind() ) {
+                    case expression::keyword::Kind::Self: id = "__self"; break;
+                    case expression::keyword::Kind::DollarDollar: id = "__dd"; break;
+                    case expression::keyword::Kind::Captures: id = "__captures"; break;
+                    case expression::keyword::Kind::Scope: id = "__scope"; break;
+                }
+                for ( auto param : fn_unused_params[fqid] ) {
+                    if ( ftype->parameters()[param]->id().str() == id ) {
+                        fn_unused_params[fqid].erase(fn_unused_params[fqid].begin() + i);
+                        return;
+                    }
+                    i++;
+                }
+            }
+            case Stage::PRUNE_USES: return;
+            case Stage::PRUNE_DECLS: return;
+        }
+    }
+};
+
 void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1588,8 +1918,13 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
           [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer);
           }},
-         {"types", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+         {"types",
+          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer);
+          }},
+
+         {"remove_params", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<FunctionParamVisitor>(builder, hilti::logging::debug::Optimizer);
           }}};
 
     // If no user-specified passes are given enable all of them.
