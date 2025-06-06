@@ -807,7 +807,10 @@ void cxx::declaration::Constant::emit(cxx::Formatter& f) const {
     if ( linkage )
         f << linkage << ' ';
 
-    f << "const " << type << ' ' << id.local();
+    if ( ! util::startsWith(type, "const ") )
+        f << "const ";
+
+    f << type << ' ' << id.local();
 
     if ( init )
         f << " = " << *init;
