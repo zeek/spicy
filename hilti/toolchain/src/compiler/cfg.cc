@@ -326,9 +326,9 @@ Node* CFG::addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end
     return scope_end;
 }
 
-Node* CFG::addCall(Node* parent, operator_::function::Call& call) {
+Node* CFG::addCall(Node* predecessor, operator_::function::Call& call) {
     auto* c = getOrAddNode(&call);
-    addEdge(parent, c);
+    addEdge(predecessor, c);
     return c;
 }
 
