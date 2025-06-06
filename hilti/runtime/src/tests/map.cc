@@ -3,6 +3,7 @@
 #include <string>
 
 #include <hilti/rt/doctest.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/map.h>
@@ -74,7 +75,7 @@ TEST_CASE("subscript") {
         // Invalidating insertion of new entry.
         m.index_assign(2, 22);
         REQUIRE(m.contains(2));
-        CHECK_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
+        CHECK_THROWS_WITH_AS(*begin, "underlying object has expired", const InvalidIterator&);
     }
 }
 
@@ -106,7 +107,7 @@ TEST_CASE("Iterator") {
 
         // `clear` invalidates all iterators.
         m.clear();
-        CHECK_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
+        CHECK_THROWS_WITH_AS(*begin, "underlying object has expired", const InvalidIterator&);
         CHECK_THROWS_WITH_AS(++begin, "iterator is invalid", const IndexError&);
     }
 
@@ -128,8 +129,8 @@ TEST_CASE("Iterator") {
         // `erase` invalidates all iterators if an element is removed, not just
         // the iterator to the erased element.
         CHECK_EQ(m.erase(1), 1);
-        CHECK_THROWS_WITH_AS(*it1, "iterator is invalid", const IndexError&);
-        CHECK_THROWS_WITH_AS(*it2, "iterator is invalid", const IndexError&);
+        CHECK_THROWS_WITH_AS(*it1, "underlying object has expired", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*it2, "underlying object has expired", const InvalidIterator&);
     }
 
     SUBCASE("increment") {
@@ -180,7 +181,7 @@ TEST_CASE("index_assign") {
     // Inserting new elements does invalidate iterators.
     m.index_assign(2, 22);
     REQUIRE(m.contains(2));
-    CHECK_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
+    CHECK_THROWS_WITH_AS(*begin, "underlying object has expired", const InvalidIterator&);
 }
 
 TEST_SUITE_END();

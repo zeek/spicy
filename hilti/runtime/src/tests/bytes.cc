@@ -584,14 +584,14 @@ TEST_CASE("assign") {
     SUBCASE("rvalue") {
         b = "abc"_b;
         CHECK_EQ(to_string(b), "b\"abc\"");
-        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*it, "underlying object has expired", const InvalidIterator&);
     }
 
     SUBCASE("lvalue") {
         const auto bb = "abc"_b;
         b = bb;
         CHECK_EQ(to_string(b), "b\"abc\"");
-        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*it, "underlying object has expired", const InvalidIterator&);
     }
 }
 
@@ -603,7 +603,7 @@ TEST_CASE("Iterator") {
         CHECK_NOTHROW(*b.begin()); // Iterator valid since container is alife.
 
         auto it = ""_b.begin();
-        CHECK_THROWS_WITH_AS(*it, "bound object has expired", const InvalidIterator&);
+        CHECK_THROWS_WITH_AS(*it, "underlying object has expired", const InvalidIterator&);
     }
 
     SUBCASE("increment") {

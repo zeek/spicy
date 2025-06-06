@@ -46,11 +46,11 @@ jobs:
       - name: Build benchmarks
         run: |
           cmake -G Ninja -DCODSPEED_MODE=instrumentation -DCMAKE_BUILD_TYPE=RelWithDebInfo -Bbuild /spicy
-          ninja -C build spicy-rt-parsing-benchmark hilti-rt-fiber-benchmark
+          ninja -C build spicy-rt-parsing-benchmark hilti-rt-benchmark
 
       - uses: CodSpeedHQ/action@0010eb0ca6e89b80c88e8edaaa07cfe5f3e6664d
         with:
           run: |
-            ./build/bin/hilti-rt-fiber-benchmark
+            ./build/bin/hilti-rt-benchmark
             ./build/bin/spicy-rt-parsing-benchmark
           token: ${{ secrets.CODSPEED_TOKEN }}

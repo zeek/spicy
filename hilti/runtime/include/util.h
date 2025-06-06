@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
@@ -648,5 +649,141 @@ constexpr std::size_t hashCombine(std::size_t hash1, std::size_t hash2, Hashes..
     else
         return result;
 }
+
+namespace control {
+
+template<typename Data, typename Error>
+class Reference;
+
+/**
+ * Helper class for loosely tracking liveliness of some memory.
+ *
+ * Code using this would instantiate an instance of this pointing to some data.
+ * It can then pass out references to that control block by calling `Ref`.
+ * One can get values from these references as long as the original control
+ * block is live (this is checked).
+ *
+ * @tparam Data the type of data this Block controls
+ * @tparam Error the type of exception a Reference should throw if it became stale
+ */
+template<typename Data, typename Error>
+class Block {
+public:
+    /**
+     * The type of the Reference to this Block.
+     */
+    using Ref = Reference<Data, Error>;
+
+    Block() = default;
+    Block(Data* data) : _data(data) {}
+
+    Block(const Block& other) : Block(other._data) {}
+    Block(Block&&) = default;
+
+    Block& operator=(const Block& other) {
+        if ( this != &other ) {
+            _data = other._data;
+            _control.reset();
+        }
+
+        return *this;
+    }
+
+    Block& operator=(Block&&) = default;
+
+    friend bool operator==(const Block& a, const Block& b) {
+        return std::tie(a._control, a._data) == std::tie(b._control, b._data);
+    }
+
+    friend bool operator!=(const Block& a, const Block& b) { return ! (a == b); }
+
+    /**
+     * Get a Reference to this Block.
+     */
+    /* implicit */ operator Ref() const {
+        if ( ! _control )
+            _control = std::make_shared<bool>();
+
+        return {_control, _data};
+    }
+
+    /**
+     * Invalidate every Reference to this Block.
+     */
+    void Reset() { _control.reset(); }
+
+private:
+    mutable std::shared_ptr<void> _control;
+    Data* _data = nullptr;
+};
+
+/**
+ * A reference to some Block.
+ *
+ * @tparam Data the type of data this Block controls
+ * @tparam Error the type of exception a Reference should throw if it became stale
+ */
+template<typename Data, typename Error>
+class Reference {
+public:
+    Reference() = default;
+    Reference(const Reference&) = default;
+    Reference(Reference&&) = default;
+
+    Reference& operator=(const Reference&) = default;
+    Reference& operator=(Reference&&) = default;
+
+    /**
+     * Check whether getting a value with `get` would return a value.
+     */
+    bool isValid() const { return _data && ! _control.expired(); }
+
+    /**
+     * Get reference to the controlled object.
+     *
+     * @throws Error if the object has expired or the data is invalid.
+     */
+    const Data& get() const {
+        if ( ! _data )
+            throw Error("underlying object is invalid");
+
+        if ( _control.expired() )
+            throw Error("underlying object has expired");
+
+        return *_data;
+    }
+
+    /**
+     * Get reference to the controlled object.
+     *
+     * @throws Error if the object has expired or the data is invalid.
+     */
+    Data& get() {
+        if ( ! _data )
+            throw Error("underlying object is invalid");
+
+        if ( _control.expired() )
+            throw Error("underlying object has expired");
+
+        return *_data;
+    }
+
+    friend bool operator==(const Reference& a, const Reference& b) {
+        return ! a._control.owner_before(b._control) && ! b._control.owner_before(a._control);
+    }
+
+    friend bool operator!=(const Reference& a, const Reference& b) { return ! (a == b); }
+
+private:
+    template<typename T, typename E>
+    friend class Block;
+
+    Reference(std::weak_ptr<void> control, Data* data) : _control(std::move(control)), _data(data) {}
+
+    std::weak_ptr<void> _control;
+    Data* _data = nullptr;
+};
+
+} // namespace control
 
 } // namespace hilti::rt

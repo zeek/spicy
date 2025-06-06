@@ -119,7 +119,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
 
                     if ( offset ) {
                         o["start"] = tuple::get<0>(*offset).Ref();
-                        if ( auto& end = tuple::get<1>(*offset) )
+                        if ( const auto& end = tuple::get<1>(*offset) )
                             o["end"] = end->Ref();
                     }
 

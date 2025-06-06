@@ -1,6 +1,6 @@
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -14,6 +14,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
     bison \
     ccache \
+    cmake \
     doxygen \
     flex \
     g++ \
@@ -32,24 +33,20 @@ RUN apt-get update \
     python3-wheel \
     rsync \
     zlib1g-dev \
- && pip3 install --no-cache-dir "btest>=0.66" pre-commit \
+ && apt-get install -y pipx \
+ && pipx install "btest>=0.66" pre-commit \
  # Spicy doc dependencies.
  && apt-get install -y --no-install-recommends python3-sphinx python3-sphinx-rtd-theme doxygen \
- && pip3 install --no-cache-dir --upgrade pygments \
- # GCC.
- && apt-get install -y --no-install-recommends g++ gcc \
+ && pipx install pygments \
  # LLVM toolchain.
- && echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-20 main' >> /etc/apt/sources.list.d/llvm20.list \
- && echo 'deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-20 main' >> /etc/apt/sources.list.d/llvm20.list \
+ && curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+ && echo 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main' >> /etc/apt/sources.list.d/llvm20.list \
+ && echo 'deb-src http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main' >> /etc/apt/sources.list.d/llvm20.list \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
  && apt-get install -y --no-install-recommends llvm-20-dev clang-20 libclang-20-dev clang-tidy-20 libclang-rt-20-dev \
  && update-alternatives --install /usr/bin/FileCheck FileCheck $(which FileCheck-20) 100 \
- # Install a recent CMake for `SKIP_LINTING` support.
- && test -f /usr/share/doc/kitware-archive-keyring/copyright || \
-    curl https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
- && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
- && apt-get update \
- && apt-get install -y --no-install-recommends kitware-archive-keyring cmake \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
+
+ENV PATH=/root/.local/bin/:$PATH

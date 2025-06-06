@@ -1,3 +1,46 @@
+1.14.0-dev.67 | 2025-06-06 14:09:59 +0200
+
+  * Fix `readability-qualified-auto` lint. (Benjamin Bannier, Corelight)
+
+  * Bump main CI image to ubuntu-24.04. (Benjamin Bannier, Corelight)
+
+  * Make `-Warray-bounds` not fatal with gcc-13.0. (Benjamin Bannier, Corelight)
+
+    This diagnostic returns false positives in code we do not own and in
+    ways which are hard to work around with pragmas, see e.g.,
+    https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111273.
+
+  * Add benchmark for iteration of rt containers. (Benjamin Bannier, Corelight)
+
+    This patch repurposes the existing `hilti-rt-fiber-benchmark` to be a
+    more general benchmark suite of HILTI runtime behaviors.
+
+  * GH-1663: Speed up checking of iterator compatibility. (Benjamin Bannier, Corelight)
+
+    We were previously using a control block which held a weak_ptr to the
+    protected data. This was pretty inefficient for a number of reasons:
+
+    - access to the controlled data always required a `weak_ptr::lock` which
+      created a temporary shared_ptr copy and immediately destroyed it after
+      access
+    - to check whether the control block was expired we used `lock` instead
+      of `expired` which introduced the same overhead
+    - to check compatibility of iterators we compared shared_ptrs to the
+      control data which again required full locks instead of using
+      `owner_before`
+
+    This patch introduces a new control block data structure and uses it
+    across all classes which previously held ad hoc implementations
+    (`Bytes`, `Map`, `Set`, `Vector`). The main improvement is that we now
+    separate tracking liveliness and the data, and use a better
+    implementation for control block equality checks. With the new
+    implementation I see throughput improvements across the board for
+    anything needing to iterate, e.g., I see bytes iteration being up to 30x
+    faster in trivial setups; the code from the original issue is now 10x
+    faster.
+
+    Closes #1663.
+
 1.14.0-dev.61 | 2025-06-05 15:47:29 +0200
 
   * GH-2064: Ensure generated typeinfos are declared before used. (Robin Sommer, Corelight)
