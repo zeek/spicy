@@ -172,13 +172,13 @@ Node* CFG::addBlock(Node* parent, const Nodes& stmts, const Node* scope) {
             ; // Nothing.
 
         else if ( auto&& call = c->tryAs<operator_::function::Call>() )
-            parent = addCall(parent, call);
+            parent = addCall(parent, *call);
 
         else if ( auto&& block = c->tryAs<statement::Block>() )
             parent = addBlock(parent, block->statements(), block);
 
         else {
-            if ( ! c || ! c->isA<Statement>() )
+            if ( ! c->isA<Statement>() )
                 continue;
 
             auto* cc = getOrAddNode(c);
@@ -328,8 +328,8 @@ Node* CFG::addThrow(Node* parent, statement::Throw& throw_, Node* scope_end) {
     return scope_end;
 }
 
-Node* CFG::addCall(Node* parent, operator_::function::Call* call) {
-    auto* c = getOrAddNode(call);
+Node* CFG::addCall(Node* parent, operator_::function::Call& call) {
+    auto* c = getOrAddNode(&call);
     addEdge(parent, c);
     return c;
 }
