@@ -90,12 +90,12 @@ CFG::CFG(const Node* root)
     assert(root && root->isA<statement::Block>() && "only building from blocks currently supported");
 
     _begin = addGlobals(_begin, *root);
-    auto* last = addBlock(_begin, root->children(), root);
+    auto last = addBlock(_begin, root->children(), root);
     if ( last != _end )
         addEdge(last, _end);
 }
 
-Node* CFG::addGlobals(Node* predecessor, const Node& root) {
+GraphNode CFG::addGlobals(GraphNode predecessor, const Node& root) {
     auto* p = root.parent();
     if ( ! p )
         return predecessor;
@@ -113,7 +113,7 @@ Node* CFG::addGlobals(Node* predecessor, const Node& root) {
         if ( ! global->init() )
             continue;
 
-        auto* stmt = getOrAddNode(global);
+        auto stmt = getOrAddNode(global);
         addEdge(predecessor, stmt);
         predecessor = stmt;
     }
@@ -121,7 +121,7 @@ Node* CFG::addGlobals(Node* predecessor, const Node& root) {
     return predecessor;
 }
 
-Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
+GraphNode CFG::addBlock(GraphNode predecessor, const Nodes& stmts, const Node* scope) {
     // If `children` directly has any statements which change control flow like
     // `throw` or `return` any statements after that are unreachable. To model
     // such ASTs we add a flow with all statements up to the "last" semantic
@@ -140,7 +140,7 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
         last = std::next(last);
 
     // Node this block will eventually flow into.
-    auto* scope_end = getOrAddNode(create_meta_node<ScopeEnd>(scope));
+    auto scope_end = getOrAddNode(create_meta_node<ScopeEnd>(scope));
 
     // Add all statements which are part of the normal flow.
     for ( auto&& c : (last != stmts.end() ? Nodes(stmts.begin(), last) : stmts) ) {
@@ -163,7 +163,7 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
             predecessor = addThrow(predecessor, *throw_, scope_end);
 
         else if ( auto&& return_ = c->tryAs<statement::Return>() )
-            predecessor = addReturn(predecessor, return_->expression());
+            predecessor = addReturn(predecessor, *return_);
 
         else if ( c->isA<statement::Continue>() || c->isA<statement::Break>() )
             // `continue`/`break` statements only add flow, but no data.
@@ -175,19 +175,19 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
         else if ( auto&& block = c->tryAs<statement::Block>() )
             predecessor = addBlock(predecessor, block->statements(), block);
 
-        else {
-            if ( ! c->isA<Statement>() )
+        else if ( auto&& stmt = c->tryAs_<Statement>() ) {
+            if ( ! stmt->isA<Statement>() )
                 continue;
 
-            auto* cc = getOrAddNode(c);
+            auto cc = getOrAddNode(stmt);
 
             addEdge(predecessor, cc);
 
-            auto* x = addBlock(predecessor, c->children(), c);
+            auto x = addBlock(predecessor, stmt->children(), stmt);
 
             // We might have added a dead edge to a `ScopeEnd` with
             // `add_block`, clean it up again.
-            if ( x && x->isA<ScopeEnd>() )
+            if ( x.value() && x->isA<ScopeEnd>() )
                 g.removeNode(x->identity());
 
             predecessor = cc;
@@ -196,8 +196,8 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
 
     // Add unreachable flows.
     if ( has_dead_flow && last != stmts.end() ) {
-        auto* next = addBlock(nullptr, Nodes{last, stmts.end()}, scope);
-        auto* mix = getOrAddNode(create_meta_node<Flow>());
+        auto next = addBlock(GraphNode(), Nodes{last, stmts.end()}, scope);
+        auto mix = getOrAddNode(create_meta_node<Flow>());
         addEdge(predecessor, mix);
         addEdge(next, mix);
         predecessor = mix;
@@ -210,25 +210,25 @@ Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
     return predecessor;
 }
 
-Node* CFG::addFor(Node* predecessor, const statement::For& for_) {
+GraphNode CFG::addFor(GraphNode predecessor, const statement::For& for_) {
     auto&& sequence = getOrAddNode(for_.sequence());
     addEdge(predecessor, sequence);
 
     auto&& local = getOrAddNode(for_.local());
     addEdge(sequence, local);
 
-    auto* body_end = addBlock(local, for_.body()->children(), for_.body());
+    auto body_end = addBlock(local, for_.body()->children(), for_.body());
     addEdge(body_end, sequence);
 
-    auto* scope_end = getOrAddNode(create_meta_node<ScopeEnd>(&for_));
+    auto scope_end = getOrAddNode(create_meta_node<ScopeEnd>(&for_));
     addEdge(sequence, scope_end);
 
     return scope_end;
 }
 
-Node* CFG::addWhile(Node* predecessor, const statement::While& while_, Node* scope_end) {
+GraphNode CFG::addWhile(GraphNode predecessor, const statement::While& while_, GraphNode scope_end) {
     if ( auto* init = while_.init() ) {
-        auto* init_ = getOrAddNode(init);
+        auto init_ = getOrAddNode(init);
         addEdge(predecessor, init_);
         addEdge(init_, scope_end);
 
@@ -241,10 +241,10 @@ Node* CFG::addWhile(Node* predecessor, const statement::While& while_, Node* sco
         predecessor = condition;
     }
 
-    auto* body_end = addBlock(predecessor, while_.body()->children(), while_.body());
+    auto body_end = addBlock(predecessor, while_.body()->children(), while_.body());
     addEdge(body_end, predecessor);
 
-    auto* mix = getOrAddNode(create_meta_node<Flow>());
+    auto mix = getOrAddNode(create_meta_node<Flow>());
     addEdge(predecessor, mix);
 
     if ( auto&& else_ = while_.else_() ) {
@@ -255,9 +255,9 @@ Node* CFG::addWhile(Node* predecessor, const statement::While& while_, Node* sco
     return mix;
 }
 
-Node* CFG::addIf(Node* predecessor, const statement::If& if_) {
+GraphNode CFG::addIf(GraphNode predecessor, const statement::If& if_) {
     if ( auto* init = if_.init() ) {
-        auto* init_ = getOrAddNode(init);
+        auto init_ = getOrAddNode(init);
         addEdge(predecessor, init_);
         predecessor = init_;
     }
@@ -265,13 +265,13 @@ Node* CFG::addIf(Node* predecessor, const statement::If& if_) {
     auto&& condition = getOrAddNode(if_.condition());
     addEdge(predecessor, condition);
 
-    auto* mix = getOrAddNode(create_meta_node<Flow>());
-    auto* true_end = addBlock(condition, if_.true_()->children(), if_.true_());
+    auto mix = getOrAddNode(create_meta_node<Flow>());
+    auto true_end = addBlock(condition, if_.true_()->children(), if_.true_());
 
     addEdge(true_end, mix);
 
     if ( auto* false_ = if_.false_() ) {
-        auto* false_end = addBlock(condition, false_->children(), false_);
+        auto false_end = addBlock(condition, false_->children(), false_);
         addEdge(false_end, mix);
     }
 
@@ -281,19 +281,19 @@ Node* CFG::addIf(Node* predecessor, const statement::If& if_) {
     return mix;
 }
 
-Node* CFG::addTryCatch(Node* predecessor, const statement::Try& try_catch) {
-    auto* try_ = addBlock(predecessor, try_catch.body()->children(), try_catch.body());
+GraphNode CFG::addTryCatch(GraphNode predecessor, const statement::Try& try_catch) {
+    auto try_ = addBlock(predecessor, try_catch.body()->children(), try_catch.body());
 
     // Connect into node combining flows from `try` and `catch` blocks.
-    auto* mix_after = getOrAddNode(create_meta_node<Flow>());
+    auto mix_after = getOrAddNode(create_meta_node<Flow>());
     addEdge(try_, mix_after);
 
     // Since the `try` block can throw connect into node flowing into all `catch` blocks.
-    auto* mix_into_catches = getOrAddNode(create_meta_node<Flow>());
+    auto mix_into_catches = getOrAddNode(create_meta_node<Flow>());
     addEdge(try_, mix_into_catches);
 
     for ( auto&& catch_ : try_catch.catches() ) {
-        auto* catch_end = addBlock(mix_into_catches, catch_->body()->children(), catch_);
+        auto catch_end = addBlock(mix_into_catches, catch_->body()->children(), catch_);
 
         addEdge(catch_end, mix_after);
     }
@@ -301,10 +301,10 @@ Node* CFG::addTryCatch(Node* predecessor, const statement::Try& try_catch) {
     return mix_after;
 }
 
-Node* CFG::addReturn(Node* predecessor, const Node* expression) {
-    if ( expression ) {
+GraphNode CFG::addReturn(GraphNode predecessor, const statement::Return& return_) {
+    if ( return_.expression() ) {
         // We store the return statement to make us of it in data flow analysis.
-        auto* r = getOrAddNode(expression->parent());
+        auto r = getOrAddNode(const_cast<statement::Return*>(&return_));
         addEdge(predecessor, r);
         addEdge(r, _end);
         return _end;
@@ -313,9 +313,9 @@ Node* CFG::addReturn(Node* predecessor, const Node* expression) {
     return predecessor;
 }
 
-Node* CFG::addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end) {
+GraphNode CFG::addThrow(GraphNode predecessor, statement::Throw& throw_, GraphNode scope_end) {
     if ( auto* expression = throw_.expression() ) {
-        auto* expr = getOrAddNode(expression);
+        auto expr = getOrAddNode(expression);
 
         addEdge(predecessor, expr);
         addEdge(expr, scope_end);
@@ -326,13 +326,13 @@ Node* CFG::addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end
     return scope_end;
 }
 
-Node* CFG::addCall(Node* predecessor, operator_::function::Call& call) {
-    auto* c = getOrAddNode(&call);
+GraphNode CFG::addCall(GraphNode predecessor, operator_::function::Call& call) {
+    auto c = getOrAddNode(&call);
     addEdge(predecessor, c);
     return c;
 }
 
-Node* CFG::getOrAddNode(Node* n) {
+GraphNode CFG::getOrAddNode(GraphNode n) {
     if ( const auto* x = g.getNode(n->identity()) )
         return *x;
 
@@ -340,8 +340,8 @@ Node* CFG::getOrAddNode(Node* n) {
     return n;
 }
 
-void CFG::addEdge(Node* from, Node* to) {
-    if ( ! from || ! to )
+void CFG::addEdge(const GraphNode& from, const GraphNode& to) {
+    if ( ! from.value() || ! to.value() )
         return;
 
     // The end node does not have outgoing edges.
@@ -364,11 +364,12 @@ std::string CFG::dot() const {
 
     std::unordered_map<uintptr_t, size_t> node_ids; // Deterministic node ids.
 
-    std::vector<Node*> sorted_nodes;
+    std::vector<GraphNode> sorted_nodes;
     std::transform(g.nodes().begin(), g.nodes().end(), std::back_inserter(sorted_nodes),
                    [](const auto& p) { return p.second; });
-    std::sort(sorted_nodes.begin(), sorted_nodes.end(),
-              [](const Node* a, const Node* b) { return a && b && a->identity() < b->identity(); });
+    std::sort(sorted_nodes.begin(), sorted_nodes.end(), [](const GraphNode& a, const GraphNode& b) {
+        return a.value() && b.value() && a->identity() < b->identity();
+    });
 
     auto escape = [](std::string_view s) { return rt::escapeUTF8(s, rt::render_style::UTF8::EscapeQuotes); };
 
@@ -505,17 +506,17 @@ std::string CFG::dot() const {
 std::unordered_set<Node*> CFG::unreachableNodes() const {
     std::unordered_set<Node*> result;
     for ( auto&& [id, n] : g.nodes() ) {
-        if ( n && ! n->isA<MetaNode>() && g.neighborsUpstream(id).empty() )
-            result.insert(n);
+        if ( n.value() && ! n->isA<MetaNode>() && g.neighborsUpstream(id).empty() )
+            result.insert(n.value());
     }
 
     return result;
 }
 
 struct DataflowVisitor : visitor::PreOrder {
-    DataflowVisitor(Node* root_) : root(root_) {}
+    DataflowVisitor(GraphNode root_) : root(root_) {}
 
-    Node* root = nullptr;
+    GraphNode root;
     Transfer transfer;
 
     void operator()(statement::Assert*) override { transfer.keep = true; }
@@ -566,7 +567,7 @@ struct DataflowVisitor : visitor::PreOrder {
 
     void operator()(Expression* expression) override {
         // If the top-level CFG node is an expression we are looking at an expression for control flow -- keep it.
-        if ( expression == root )
+        if ( expression == root.value() )
             transfer.keep = true;
     }
 
@@ -575,10 +576,10 @@ struct DataflowVisitor : visitor::PreOrder {
         if ( ! decl )
             return;
 
-        auto* stmt = root;
+        auto stmt = root;
         // If the statement was a simple `Expression` unwrap it to get the more specific node.
         if ( stmt->isA<statement::Expression>() ) {
-            if ( auto* child = stmt->child(0) )
+            if ( auto* child = stmt->child(0)->tryAs<statement::Expression>() )
                 stmt = child;
         }
 
@@ -598,7 +599,7 @@ struct DataflowVisitor : visitor::PreOrder {
                 }
 
                 x = x->parent();
-            } while ( x && x != root );
+            } while ( x && x != root.value() );
             assert(side);
 
             // A use on either side uses the declaration.
@@ -653,52 +654,52 @@ struct DataflowVisitor : visitor::PreOrder {
 };
 
 void CFG::populateDataflow() {
-    auto visit_node = [](Node* n) -> Transfer {
+    auto visit_node = [](const GraphNode& n) -> Transfer {
         if ( n->isA<MetaNode>() )
             return {};
 
         auto v = DataflowVisitor(n);
-        visitor::visit(v, n);
+        visitor::visit(v, n.value());
 
         return std::move(v.transfer);
     };
 
     // Populate uses and the gen sets.
     for ( auto&& [id, n] : g.nodes() ) {
-        if ( n )
+        if ( n.value() )
             _dataflow[n] = visit_node(n);
     }
 
     { // Encode aliasing information.
-        auto find_node = [&](const hilti::Node* const n) -> Node* {
+        auto find_node = [&](const Node* n) -> GraphNode {
             const auto* x = g.getNode(n->identity());
             if ( x )
                 return *x;
 
-            return nullptr;
+            return GraphNode();
         };
 
         // First make aliasing symmetric: to handle the case of e.g.,
         // references aliasing is stored symmetrically, i.e., if `a` aliases
         // `b`, `b` will also alias `a`.
         for ( auto&& [n, transfer] : _dataflow ) {
-            for ( const auto* alias : transfer.maybe_alias ) {
-                auto* stmt = find_node(alias);
-                if ( ! stmt || ! _dataflow.count(stmt) )
+            for ( const auto& alias : transfer.maybe_alias ) {
+                auto stmt = find_node(alias);
+                if ( ! stmt.value() || ! _dataflow.count(stmt) )
                     // Could not find node declaring aliased name.
                     util::detail::internalError(
                         util::fmt(R"(could not find CFG node for "%s" aliased in "%s")", alias->print(), n->print()));
 
 
-                _dataflow.at(stmt).maybe_alias.insert(n);
+                _dataflow.at(stmt).maybe_alias.insert(n.value());
             }
         }
 
         // Now mark aliased nodes as used.
         for ( auto&& [n, transfer] : _dataflow ) {
             for ( const auto* use : transfer.use ) {
-                auto* stmt = find_node(use);
-                if ( ! stmt || ! _dataflow.count(stmt) )
+                auto stmt = find_node(use);
+                if ( ! stmt.value() || ! _dataflow.count(stmt) )
                     continue;
 
                 for ( auto* alias : _dataflow.at(stmt).maybe_alias )
@@ -708,7 +709,7 @@ void CFG::populateDataflow() {
     }
 
     { // Populate the kill sets.
-        std::map<const Node*, std::unordered_set<Node*>> gens;
+        std::map<const Node*, std::unordered_set<GraphNode>> gens;
         for ( auto&& [_, transfer] : _dataflow ) {
             for ( auto&& [d, n] : transfer.gen )
                 gens[d].insert(n);
@@ -724,7 +725,7 @@ void CFG::populateDataflow() {
                 if ( x == transfer.gen.end() )
                     continue;
 
-                for ( auto* nn : ns ) {
+                for ( const auto& nn : ns ) {
                     // Do not kill the gen in this node.
                     if ( x->second != nn )
                         transfer.kill[d_].insert(nn);
@@ -749,14 +750,14 @@ void CFG::populateReachableExpressions() {
         bool changed = false;
 
         for ( const auto& [id, n] : nodes ) {
-            if ( ! n )
+            if ( ! n.value() )
                 continue;
 
             auto& reachability = _dataflow[n].reachability;
             auto& in = reachability->in;
             auto& out = reachability->out;
 
-            auto* scope_end = n->tryAs<ScopeEnd>();
+            const auto* scope_end = n->tryAs<ScopeEnd>();
 
             // The in set is the union of all incoming nodes.
             for ( const auto& n : g.neighborsUpstream(n->identity()) ) {
@@ -822,7 +823,7 @@ std::vector<Node*> CFG::unreachableStatements() const {
     assert(! _dataflow.empty());
     assert(_dataflow.begin()->second.reachability);
 
-    std::map<Node*, uint64_t> uses;
+    std::map<GraphNode, uint64_t> uses;
 
     // Loop over all nodes.
     for ( const auto& [n, transfer] : _dataflow ) {
@@ -882,7 +883,7 @@ std::vector<Node*> CFG::unreachableStatements() const {
         if ( _dataflow.at(n).keep )
             continue;
 
-        result.push_back(n);
+        result.push_back(n.value());
     }
 
     return result;

@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -26,6 +28,7 @@ constexpr Tag ScopeEnd = 20004;
 } // namespace node::tag
 
 namespace detail::cfg {
+
 struct MetaNode : Node {
     // Some versions of GCC incorrectly diagnose maybe uninitialized members here.
 #pragma GCC diagnostic push
@@ -67,15 +70,63 @@ struct ScopeEnd : MetaNode {
     const Node* scope;
 };
 
+// The data we hold in the control flow graph.
+class GraphNode {
+public:
+    GraphNode(operator_::function::Call* x) : node(x) {}
+    GraphNode(Expression* x) : node(x) {}
+    GraphNode(statement::Return* x) : node(x) {}
+    GraphNode(Statement* x) : node(x) {}
+    GraphNode(MetaNode* x) : node(x) {}
+    GraphNode(declaration::LocalVariable* x) : node(x) {}
+    GraphNode(declaration::GlobalVariable* x) : node(x) {}
+
+    GraphNode() = default;
+    GraphNode(const GraphNode&) = default;
+
+    GraphNode& operator=(const GraphNode& x) {
+        if ( &x == this )
+            return *this;
+
+        node = x.node;
+        return *this;
+    }
+
+    Node* operator->() { return node; }
+    const Node* operator->() const { return node; }
+
+    Node* value() const { return node; }
+
+    friend bool operator==(const GraphNode& a, const GraphNode& b) { return a.node == b.node; }
+    friend bool operator!=(const GraphNode& a, const GraphNode& b) { return ! (a.node == b.node); }
+
+    friend bool operator<(const GraphNode& a, const GraphNode& b) { return a.node < b.node; }
+
+private:
+    Node* node = nullptr;
+};
+
+} // namespace detail::cfg
+} // namespace hilti
+
+namespace std {
+template<>
+struct hash<hilti::detail::cfg::GraphNode> {
+    auto operator()(const hilti::detail::cfg::GraphNode& n) const { return n.value() ? n->identity() : 0; }
+};
+} // namespace std
+
+namespace hilti::detail::cfg {
+
 struct Reachability {
-    std::unordered_set<Node*> in;
-    std::unordered_set<Node*> out;
+    std::unordered_set<GraphNode> in;
+    std::unordered_set<GraphNode> out;
 };
 
 struct Transfer {
     std::unordered_set<Node*> use;
-    std::unordered_map<Node*, Node*> gen;
-    std::unordered_map<Node*, std::unordered_set<Node*>> kill;
+    std::unordered_map<Node*, GraphNode> gen;
+    std::unordered_map<Node*, std::unordered_set<GraphNode>> kill;
     std::unordered_set<Node*> maybe_alias;
 
     bool keep = false; // Whether this node should be kept.
@@ -88,18 +139,15 @@ public:
     CFG(const Node* root);
 
     template<typename T, typename... Args, typename = std::enable_if_t<std::is_base_of_v<MetaNode, T>>>
-    Node* create_meta_node(Args... args) {
+    MetaNode* create_meta_node(Args... args) {
         auto n = std::make_unique<T>(args...);
         auto* r = n.get();
         _meta_nodes.insert(std::move(n));
         return r;
     }
 
-    Node* getOrAddNode(Node* n);
-    void addEdge(Node* from, Node* to);
-
-    // Add flow for globals if `root` corresponds to a global module block.
-    [[nodiscard]] Node* addGlobals(Node* predecessor, const Node& root);
+    GraphNode getOrAddNode(GraphNode n);
+    void addEdge(const GraphNode& from, const GraphNode& to);
 
     std::unordered_set<Node*> unreachableNodes() const;
 
@@ -109,24 +157,25 @@ public:
     void populateReachableExpressions();
     std::vector<Node*> unreachableStatements() const;
 
-    util::graph::DirectedGraph<Node*, uintptr_t> g;
+    util::graph::DirectedGraph<GraphNode, uintptr_t> g;
 
 private:
-    Node* addBlock(Node* predecessor, const Nodes& stmts, const Node* scope);
-    Node* addFor(Node* predecessor, const statement::For& for_);
-    Node* addWhile(Node* predecessor, const statement::While& while_, Node* scope_end);
-    Node* addIf(Node* predecessor, const statement::If& if_);
-    Node* addTryCatch(Node* predecessor, const statement::Try& try_);
-    Node* addReturn(Node* predecessor, const Node* expression);
-    Node* addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end);
-    Node* addCall(Node* predecessor, operator_::function::Call& call);
+    GraphNode addBlock(GraphNode predecessor, const Nodes& stmts, const Node* scope);
+    GraphNode addFor(GraphNode predecessor, const statement::For& for_);
+    GraphNode addWhile(GraphNode predecessor, const statement::While& while_, GraphNode scope_end);
+    GraphNode addIf(GraphNode predecessor, const statement::If& if_);
+    GraphNode addTryCatch(GraphNode predecessor, const statement::Try& try_);
+    GraphNode addReturn(GraphNode predecessor, const statement::Return& return_);
+    GraphNode addThrow(GraphNode predecessor, statement::Throw& throw_, GraphNode scope_end);
+    GraphNode addCall(GraphNode predecessor, operator_::function::Call& call);
+
+    // Add flow for globals if `root` corresponds to a global module block.
+    GraphNode addGlobals(GraphNode predecessor, const Node& root);
 
     std::unordered_set<std::unique_ptr<MetaNode>> _meta_nodes;
-    std::unordered_map<Node*, Transfer> _dataflow;
-    Node* _begin;
-    Node* _end;
+    std::unordered_map<GraphNode, Transfer> _dataflow;
+    GraphNode _begin;
+    GraphNode _end;
 };
 
-} // namespace detail::cfg
-
-} // namespace hilti
+} // namespace hilti::detail::cfg
