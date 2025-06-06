@@ -61,8 +61,6 @@
 
 namespace hilti::detail::cfg {
 
-uint64_t MetaNode::instances = 0;
-
 // Helper function to detect whether values of a type can alias their inputs.
 static bool is_aliasing_type(const UnqualifiedType& type) {
     // TODO(bbannier): Make this part of e.g., `UnqualifiedType` instead of a hardcoded list of types here?

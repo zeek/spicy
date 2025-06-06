@@ -35,8 +35,6 @@ struct MetaNode : Node {
     MetaNode(node::Tags node_tags) : Node(nullptr, node_tags, {}, {}) {}
 #pragma GCC diagnostic pop
 
-    uint64_t counter = instances++;
-    static uint64_t instances;
     HILTI_NODE_0(MetaNode, override);
 };
 
