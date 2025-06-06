@@ -95,14 +95,14 @@ CFG::CFG(const Node* root)
         addEdge(last, _end);
 }
 
-Node* CFG::addGlobals(Node* parent, const Node& root) {
+Node* CFG::addGlobals(Node* predecessor, const Node& root) {
     auto* p = root.parent();
     if ( ! p )
-        return parent;
+        return predecessor;
 
     auto* mod = p->tryAs<declaration::Module>();
     if ( ! mod )
-        return parent;
+        return predecessor;
 
     // A global variables with an init statement since they are effectively statements.
     for ( auto* decl : mod->declarations() ) {
@@ -114,14 +114,14 @@ Node* CFG::addGlobals(Node* parent, const Node& root) {
             continue;
 
         auto* stmt = getOrAddNode(global);
-        addEdge(parent, stmt);
-        parent = stmt;
+        addEdge(predecessor, stmt);
+        predecessor = stmt;
     }
 
-    return parent;
+    return predecessor;
 }
 
-Node* CFG::addBlock(Node* parent, const Nodes& stmts, const Node* scope) {
+Node* CFG::addBlock(Node* predecessor, const Nodes& stmts, const Node* scope) {
     // If `children` directly has any statements which change control flow like
     // `throw` or `return` any statements after that are unreachable. To model
     // such ASTs we add a flow with all statements up to the "last" semantic
@@ -148,22 +148,22 @@ Node* CFG::addBlock(Node* parent, const Nodes& stmts, const Node* scope) {
             continue;
 
         if ( auto&& while_ = c->tryAs<statement::While>() )
-            parent = addWhile(parent, *while_, scope_end);
+            predecessor = addWhile(predecessor, *while_, scope_end);
 
         else if ( auto&& for_ = c->tryAs<statement::For>() )
-            parent = addFor(parent, *for_);
+            predecessor = addFor(predecessor, *for_);
 
         else if ( auto&& if_ = c->tryAs<statement::If>() )
-            parent = addIf(parent, *if_);
+            predecessor = addIf(predecessor, *if_);
 
         else if ( auto&& try_catch = c->tryAs<statement::Try>() )
-            parent = addTryCatch(parent, *try_catch);
+            predecessor = addTryCatch(predecessor, *try_catch);
 
         else if ( auto&& throw_ = c->tryAs<statement::Throw>() )
-            parent = addThrow(parent, *throw_, scope_end);
+            predecessor = addThrow(predecessor, *throw_, scope_end);
 
         else if ( auto&& return_ = c->tryAs<statement::Return>() )
-            parent = addReturn(parent, return_->expression());
+            predecessor = addReturn(predecessor, return_->expression());
 
         else if ( c->isA<statement::Continue>() || c->isA<statement::Break>() )
             // `continue`/`break` statements only add flow, but no data.
