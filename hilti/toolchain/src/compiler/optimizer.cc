@@ -1581,30 +1581,16 @@ struct FunctionParamVisitor : OptimizerVisitor {
         _stage = Stage::COLLECT;
 
         visitor::visit(*this, node);
-        // Visit TWICE in order to grab uses properly
-        // TODO: Is doing this twice actually necessary, and if so find another way
-        visitor::visit(*this, node);
     }
 
     bool prune_uses(Node* node) override {
         _stage = Stage::PRUNE_USES;
 
-        bool any_modification = false;
+        // This pass only runs once!
+        visitor::visit(*this, node);
 
-        while ( true ) {
-            clearModified();
-            visitor::visit(*this, node);
-
-            if ( ! isModified() )
-                break;
-
-            // TODO: This should actually make the PRUNE_USES step do nothing though
-            removed_uses.clear();
-            fn_unused_params.clear();
-
-            any_modification = true;
-        }
-
+        bool any_modification = isModified();
+        clearModified();
         return any_modification;
     }
 
