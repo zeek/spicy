@@ -1572,7 +1572,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
     // TODO: IDs here are a relatively bad indicator of a given function, but
     // it worked best between overloads, hooks, and functions. This should probably
     // be something else, though.
-    std::map<ID, std::vector<std::size_t>> fn_unused_params;
+    std::map<ID, std::optional<std::vector<std::size_t>>> fn_unused_params;
     // TODO: Do this better :)
     std::map<ID, bool> removed_uses;
 
@@ -1677,16 +1677,17 @@ struct FunctionParamVisitor : OptimizerVisitor {
             case Stage::COLLECT: {
                 if ( fn_unused_params.count(fqid) > 0 )
                     return;
+                fn_unused_params[fqid] = std::vector<std::size_t>{};
                 auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
                 if ( ! n->function()->body() ||
                      (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) ) {
                     // Reset if there's no body
-                    fn_unused_params[fqid].clear();
+                    fn_unused_params[fqid]->clear();
                     break;
                 }
                 for ( std::size_t i = 0; i < n->function()->ftype()->parameters().size(); i++ )
                     // TODO: Don't recompute hash each iteration
-                    fn_unused_params[fqid].push_back(i);
+                    fn_unused_params[fqid]->push_back(i);
 
                 // Parse1 needs to have the same signature since it is passed around
                 // in the runtime library
@@ -1695,14 +1696,18 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 if ( n->id().str().find("parse1") != std::string::npos ||
                      n->id().str().find("parse2") != std::string::npos ||
                      n->id().str().find("parse3") != std::string::npos ) {
-                    fn_unused_params[fqid].clear();
+                    fn_unused_params[fqid]->clear();
                 }
 
                 break;
             }
 
             case Stage::PRUNE_USES: {
-                auto this_unused_params = fn_unused_params[fqid];
+                auto opt_this_unused_params = fn_unused_params[fqid];
+                if ( ! opt_this_unused_params.has_value() )
+                    return;
+
+                auto& this_unused_params = opt_this_unused_params.value();
                 if ( this_unused_params.empty() )
                     return;
                 auto uses = operator_::registry().resolved(current_op);
@@ -1753,14 +1758,15 @@ struct FunctionParamVisitor : OptimizerVisitor {
             case Stage::COLLECT: {
                 if ( fn_unused_params.count(fqid) > 0 )
                     return;
+                fn_unused_params[fqid] = std::vector<std::size_t>{};
 
                 for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
-                    fn_unused_params[fqid].push_back(i);
+                    fn_unused_params[fqid]->push_back(i);
 
                 if ( n->id().str().find("parse1") != std::string::npos ||
                      n->id().str().find("parse2") != std::string::npos ||
                      n->id().str().find("parse3") != std::string::npos ) {
-                    fn_unused_params[fqid].clear();
+                    fn_unused_params[fqid]->clear();
                 }
                 break;
             }
@@ -1768,11 +1774,15 @@ struct FunctionParamVisitor : OptimizerVisitor {
             case Stage::PRUNE_USES: {
                 if ( ! n->inlineFunction() )
                     return;
-                auto uses = operator_::registry().resolved(current_op);
+                auto opt_this_unused_params = fn_unused_params[fqid];
+                if ( ! opt_this_unused_params.has_value() )
+                    return;
 
-                auto this_unused_params = fn_unused_params[fqid];
+                auto& this_unused_params = opt_this_unused_params.value();
                 if ( this_unused_params.empty() )
                     return;
+
+                auto uses = operator_::registry().resolved(current_op);
                 for ( auto* use : uses ) {
                     if ( ! use )
                         continue;
@@ -1819,13 +1829,14 @@ struct FunctionParamVisitor : OptimizerVisitor {
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( fn_unused_params[id].size() == 0 )
+                if ( ! fn_unused_params[id].has_value() || fn_unused_params[id]->size() == 0 )
                     return;
 
                 int i = 0;
-                for ( auto param : fn_unused_params[id] ) {
+                auto& unused = fn_unused_params[id].value();
+                for ( auto param : unused ) {
                     if ( ftype->parameters()[param]->id() == n->id() ) {
-                        fn_unused_params[id].erase(fn_unused_params[id].begin() + i);
+                        unused.erase(unused.begin() + i);
                         return;
                     }
                     i++;
@@ -1861,7 +1872,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
             return;
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( fn_unused_params[fqid].size() == 0 )
+                if ( ! fn_unused_params[fqid].has_value() || fn_unused_params[fqid]->size() == 0 )
                     return;
 
                 int i = 0;
@@ -1873,9 +1884,10 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     case expression::keyword::Kind::Captures: id = "__captures"; break;
                     case expression::keyword::Kind::Scope: id = "__scope"; break;
                 }
-                for ( auto param : fn_unused_params[fqid] ) {
+                auto& unused = fn_unused_params[fqid].value();
+                for ( auto param : unused ) {
                     if ( ftype->parameters()[param]->id().str() == id ) {
-                        fn_unused_params[fqid].erase(fn_unused_params[fqid].begin() + i);
+                        unused.erase(unused.begin() + i);
                         return;
                     }
                     i++;

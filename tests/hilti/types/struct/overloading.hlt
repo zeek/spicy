@@ -14,17 +14,8 @@ type T = struct {
 global T t;
 
 method string T::test() { return "void"; }
-# TODO: There are issues with infinite loops for overloads in these cases since There
-# isn't a distinction between "empty params" and "should not be cleared"
-# Avoid that by printing the values, but later remove those prints
-method string T::test(bool x) {
-    hilti::print(x);
-    return "bool";
-}
-method string T::test(string x) {
-    hilti::print(x);
-    return "string";
-}
+method string T::test(bool x) { return "bool"; }
+method string T::test(string x) { return "string"; }
 
 hilti::print(t.test());
 hilti::print(t.test(True));
