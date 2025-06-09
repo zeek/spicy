@@ -1564,10 +1564,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
     using OptimizerVisitor::operator();
 
-    // This stores the operator of the declaration we're in.
-    // TODO: I'm not sure if this is the best way, we can get enclosing operators
-    // in other ways that don't seem so flaky
-    const hilti::Operator* current_op;
     // The unused parameters (the vector is of positions) for a given ID
     // TODO: IDs here are a relatively bad indicator of a given function, but
     // it worked best between overloads, hooks, and functions. This should probably
@@ -1654,7 +1650,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
             }
         }
 
-        current_op = found_field ? found_field->operator_() : n->operator_();
+        const auto* current_op = found_field ? found_field->operator_() : n->operator_();
         // TODO: Nothing we can do if we don't find an op, but can we do this better?
         if ( ! current_op )
             return;
@@ -1737,7 +1733,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
         if ( ! ftype )
             return;
 
-        current_op = n->operator_();
+        const auto* current_op = n->operator_();
 
         auto fqid = idForIndexing(n->fullyQualifiedID());
         switch ( _stage ) {
@@ -1791,9 +1787,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 
     void operator()(expression::Name* n) final {
-        if ( ! current_op )
-            return;
-
         type::Function* ftype = nullptr;
         auto* current = n->parent();
         ID id;
@@ -1835,9 +1828,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
 
     void operator()(expression::Keyword* n) final {
         // TODO: Combine the boilerplate with Name
-        if ( ! current_op )
-            return;
-
         type::Function* ftype = nullptr;
         auto* current = n->parent();
         ID fqid;
