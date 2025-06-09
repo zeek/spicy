@@ -1679,15 +1679,15 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     return;
                 fn_unused_params[fqid] = std::vector<std::size_t>{};
                 auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
+                auto& unused_params = fn_unused_params[fqid].value();
                 if ( ! n->function()->body() ||
                      (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) ) {
                     // Reset if there's no body
-                    fn_unused_params[fqid]->clear();
+                    unused_params.clear();
                     break;
                 }
                 for ( std::size_t i = 0; i < n->function()->ftype()->parameters().size(); i++ )
-                    // TODO: Don't recompute hash each iteration
-                    fn_unused_params[fqid]->push_back(i);
+                    unused_params.push_back(i);
 
                 // Parse1 needs to have the same signature since it is passed around
                 // in the runtime library
@@ -1696,26 +1696,26 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 if ( n->id().str().find("parse1") != std::string::npos ||
                      n->id().str().find("parse2") != std::string::npos ||
                      n->id().str().find("parse3") != std::string::npos ) {
-                    fn_unused_params[fqid]->clear();
+                    unused_params.clear();
                 }
 
                 break;
             }
 
             case Stage::PRUNE_USES: {
-                auto opt_this_unused_params = fn_unused_params[fqid];
-                if ( ! opt_this_unused_params.has_value() )
+                auto opt_unused_params = fn_unused_params[fqid];
+                if ( ! opt_unused_params.has_value() )
                     return;
 
-                auto& this_unused_params = opt_this_unused_params.value();
-                if ( this_unused_params.empty() )
+                auto& unused_params = opt_unused_params.value();
+                if ( unused_params.empty() )
                     return;
                 auto uses = operator_::registry().resolved(current_op);
                 if ( ! removed_uses[fqid] ) {
                     for ( auto* use : uses ) {
                         if ( ! use )
                             continue;
-                        remove_params(use, this_unused_params);
+                        remove_params(use, unused_params);
                     }
                     removed_uses[fqid] = true;
                 }
@@ -1723,8 +1723,8 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 auto params = n->function()->ftype()->parameters();
 
                 // Ensure they're sorted
-                std::sort(this_unused_params.begin(), this_unused_params.end(), std::greater<>());
-                for ( std::size_t index : this_unused_params ) {
+                std::sort(unused_params.begin(), unused_params.end(), std::greater<>());
+                for ( std::size_t index : unused_params ) {
                     // Maybe unnecessary
                     if ( index < params.size() )
                         // TODO: ptrdiff_t cast is ugly
@@ -1774,23 +1774,23 @@ struct FunctionParamVisitor : OptimizerVisitor {
             case Stage::PRUNE_USES: {
                 if ( ! n->inlineFunction() )
                     return;
-                auto opt_this_unused_params = fn_unused_params[fqid];
-                if ( ! opt_this_unused_params.has_value() )
+                auto opt_unused_params = fn_unused_params[fqid];
+                if ( ! opt_unused_params.has_value() )
                     return;
 
-                auto& this_unused_params = opt_this_unused_params.value();
-                if ( this_unused_params.empty() )
+                auto& unused_params = opt_unused_params.value();
+                if ( unused_params.empty() )
                     return;
 
                 auto uses = operator_::registry().resolved(current_op);
                 for ( auto* use : uses ) {
                     if ( ! use )
                         continue;
-                    remove_params(use, this_unused_params);
+                    remove_params(use, unused_params);
                 }
                 auto params = n->inlineFunction()->ftype()->parameters();
-                std::sort(this_unused_params.begin(), this_unused_params.end(), std::greater<>());
-                for ( std::size_t index : this_unused_params ) {
+                std::sort(unused_params.begin(), unused_params.end(), std::greater<>());
+                for ( std::size_t index : unused_params ) {
                     if ( index < params.size() ) { // Check if index is within bounds
                         params.erase(params.begin() + static_cast<std::ptrdiff_t>(index));
                     }
