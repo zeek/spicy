@@ -1640,12 +1640,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
             auto* lookup = context()->lookup(n->linkedDeclarationIndex());
             if ( auto* decl = lookup->tryAs<declaration::Type>() ) {
                 if ( auto* struct_ = decl->type()->type()->tryAs<type::Struct>() ) {
-                    for ( auto& field : struct_->fields() ) {
-                        if ( field->fullyQualifiedID() == fqid ) {
-                            found_field = field;
-                            break;
-                        }
-                    }
+                    found_field = struct_->field(fqid.local());
                 }
             }
         }
