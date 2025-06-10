@@ -1658,8 +1658,6 @@ struct FunctionBodyVisitor : OptimizerVisitor {
                 break;
 
             auto unreachable_nodes = cfg.unreachableNodes();
-            if ( unreachable_nodes.empty() )
-                break;
 
             // Remove unreachable control flow branches.
             // NOLINTNEXTLINE(bugprone-nondeterministic-pointer-iteration-order)
