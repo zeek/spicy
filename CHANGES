@@ -1,3 +1,24 @@
+1.14.0-dev.81 | 2025-06-10 21:33:18 +0200
+
+  * GH-2066: When C++ compilation fails, ask user for help. (Robin Sommer, Corelight)
+
+    This records the C++ compiler in a dedicated output file
+    "hilti-jit-error.log", and asks the user to file a ticket. If the
+    environment variable `HILTI_JIT_SHOW_CXX_OUTPUT` is set, the output
+    will also go to stderr. We set this variable inside CI.
+
+    Before, the process management code was trying to capture the output
+    in memory, but that didn't actually work, it always ended up on stderr
+    anyways. Now we tell reproc to just write all compiler output into a
+    temporary file, where we can then copy it from if needed.
+
+  * GH-2086: Fix scope resolution of local variables. (Robin Sommer, Corelight)
+
+    If usage of a local comes before its declaration, we now no longer
+    resolve that usage to this local. It'll either be resolved to an
+    upper layer ID (if there is one of the same name), or rejected if it's
+    otherwise unknown.
+
 1.14.0-dev.77 | 2025-06-10 17:48:03 +0200
 
   * GH-1988: Enforce that block-local declarations must be variables. (Robin Sommer, Corelight)

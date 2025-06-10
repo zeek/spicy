@@ -191,11 +191,9 @@ private:
     std::vector<hilti::rt::filesystem::path> _objects;
 
     struct Job {
+        std::string cmdline;
         std::unique_ptr<reproc::process> process;
-        std::string stdout_;
-        std::string stderr_;
-
-        void collectOutputs(int events);
+        hilti::rt::filesystem::path output; // path to file capturing process output
     };
 
     struct JobRunner {
@@ -206,6 +204,7 @@ private:
         Result<JobID> _scheduleJob(const hilti::rt::filesystem::path& cmd, std::vector<std::string> args);
         Result<Nothing> _spawnJob();
         Result<Nothing> _waitForJobs();
+        void _recordUserDiagnostics(JobID jid, const Job& job);
         void finish();
 
         using CmdLine = std::vector<std::string>;

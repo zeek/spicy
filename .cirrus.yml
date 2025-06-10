@@ -6,6 +6,9 @@ environment:
     # Enforce sequential JIT'ing of files for controlled memory usage.
     HILTI_JIT_SEQUENTIAL: 1
 
+    # Always report any C++ compiler errors to stderr.
+    HILTI_JIT_SHOW_CXX_OUTPUT: 1
+
     # Images for macOS. Currently Cirrus supports only macos Sonoma and would
     # automatically and silently upgrade any other macos image (e.g., historic
     # ones) to Sonoma.
