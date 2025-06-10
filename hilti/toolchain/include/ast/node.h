@@ -465,6 +465,30 @@ public:
     }
 
     /**
+     * Returns true if the node's children contain a particular child node.
+     *
+     * @param n child node to look for
+     * @param recurse if true, will also check children of children recursively
+     */
+    bool hasChild(const Node* n, bool recurse = false) const {
+        if ( ! n )
+            return false;
+
+        if ( std::find(_children.begin(), _children.end(), n) != _children.end() )
+            return true;
+
+        if ( ! recurse )
+            return false;
+
+        for ( const auto* c : _children ) {
+            if ( c && c->hasChild(n, recurse) )
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the subsequent sibling of given child node. This skips over null
      * children.
      *
