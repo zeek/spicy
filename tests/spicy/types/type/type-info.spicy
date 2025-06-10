@@ -27,8 +27,9 @@ global s1: type = S;
 global s2: type = typeinfo(S);
 global s3: type = typeinfo(bool);
 global s4 = typeinfo(0.5);
+const  s5 = typeinfo(bool);
 
-print s1, s2, s3, s4;
+print s1, s2, s3, s4, s5;
 print typeinfo(True);
 
 f(S);
