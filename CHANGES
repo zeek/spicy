@@ -1,3 +1,7 @@
+1.14.0-dev.71 | 2025-06-10 15:48:21 +0200
+
+  * Bump 3rdparty/utf8proc from `a1b99da` to `24e2a19` (dependabot[bot])
+
 1.14.0-dev.69 | 2025-06-06 15:53:34 +0200
 
   * Make `-Wstringop-overflow` not fatal with gcc. (Benjamin Bannier, Corelight)
