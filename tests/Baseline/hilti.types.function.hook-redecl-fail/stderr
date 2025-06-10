@@ -3,4 +3,5 @@
 [error] <...>/hook-redecl-fail.hlt:23:1-23:12:   candidates:
 [error] <...>/hook-redecl-fail.hlt:23:1-23:12:   - <X>.f(<string>) [<...>/hook-redecl-fail.hlt:23:1-23:12] [struct::MemberCall]
 [error] <...>/hook-redecl-fail.hlt:23:1-23:12:   - <X>.f(<string>) [<...>/hook-redecl-fail.hlt:23:1-23:12] [struct::MemberCall]
+[error] <...>/hook-redecl-fail.hlt:8:10-12:1: duplicate method in struct type
 [error] hiltic: aborting after errors
