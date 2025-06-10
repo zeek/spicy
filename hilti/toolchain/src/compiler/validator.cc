@@ -569,6 +569,12 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
     }
 
+    void operator()(statement::Declaration* n) final {
+        if ( ! n->declaration()->isA<declaration::LocalVariable>() )
+            error(fmt("only variables can be declared inside local scopes (not %ss)", n->declaration()->displayName()),
+                  n);
+    }
+
     void operator()(statement::Return* n) final {
         auto* func = n->parent<Function>();
 

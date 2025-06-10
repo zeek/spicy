@@ -317,12 +317,6 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
     void operator()(hilti::declaration::LocalVariable* n) final { checkVariable(n); }
 
-    void operator()(hilti::declaration::Constant* n) final {
-        if ( auto* parent = n->parent();
-             ! parent->isA<hilti::declaration::Module>() && ! parent->isA<hilti::type::Enum>() )
-            error("constant cannot be declared at local scope", n);
-    }
-
     void operator()(hilti::expression::Name* n) final {
         if ( n->id() == ID("__dd") ) {
             if ( auto* hook = n->parent<spicy::declaration::Hook>();

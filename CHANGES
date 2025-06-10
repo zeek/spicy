@@ -1,3 +1,14 @@
+1.14.0-dev.77 | 2025-06-10 17:48:03 +0200
+
+  * GH-1988: Enforce that block-local declarations must be variables. (Robin Sommer, Corelight)
+
+    Logically we already had this restriction in place, but so far it
+    would lead to either a crash or an internal error.
+
+  * GH-2078: Fix C++ output for constants of constant type. (Robin Sommer, Corelight)
+
+  * GH-2044: Catch if methods are implemented multiple times. (Robin Sommer, Corelight)
+
 1.14.0-dev.71 | 2025-06-10 15:48:21 +0200
 
   * Bump 3rdparty/utf8proc from `a1b99da` to `24e2a19` (dependabot[bot])
