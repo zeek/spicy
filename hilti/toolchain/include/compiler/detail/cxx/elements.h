@@ -145,6 +145,7 @@ struct Local : public DeclarationBase {
     std::vector<cxx::Expression> args;
     std::optional<cxx::Expression> init;
     Linkage linkage;
+    std::optional<cxx::Expression> typeinfo_bitfield; // for rendering anonymous bitfields inside structs
 
     // Returns true if the ID starts with two underscores, which is the
     // namespace reserved for internal IDs.

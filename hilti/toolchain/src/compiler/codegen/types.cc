@@ -236,6 +236,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     auto x = cxx::declaration::Local(cxx::ID(f->id()), std::move(t), {}, {},
                                                      (f->isStatic() ? "inline static" : ""));
 
+                    if ( f->type()->type()->isA<type::Bitfield>() )
+                        x.typeinfo_bitfield = cg->typeInfo(f->type());
 
                     fields.emplace_back(std::move(x));
                 }

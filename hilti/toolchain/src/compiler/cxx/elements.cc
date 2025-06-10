@@ -368,12 +368,31 @@ std::string cxx::declaration::Global::str() const { return fmtDeclaration(id, ty
 std::string cxx::type::Struct::str() const {
     std::vector<std::string> to_string_fields;
 
+    auto fmt_bitfield = [&](const declaration::Local* x) {
+        std::string out;
+
+        if ( ! x->isAnonymous() )
+            out = fmt(R"("$%s=("s + )", x->id.local());
+
+        out += fmt("::hilti::rt::bitfield::detail::render(%s, %s, %s)", x->id, *x->typeinfo_bitfield,
+                   (x->isAnonymous() ? "true" : "false"));
+
+        if ( ! x->isAnonymous() )
+            out += "+ \")\"";
+
+        to_string_fields.emplace_back(std::move(out));
+    };
+
     auto fmt_member = [&](const auto& f) {
         if ( auto x = std::get_if<declaration::Local>(&f) ) {
             if ( auto x = std::get_if<declaration::Local>(&f) ) {
                 if ( ! (x->isInternal() || x->linkage == "inline static") ) {
-                    auto id = (x->isAnonymous() ? cxx::ID("<anon>") : x->id);
-                    to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                    if ( x->typeinfo_bitfield )
+                        fmt_bitfield(x); // special-case bitfield printing
+                    else {
+                        auto id = (x->isAnonymous() ? cxx::ID("<anon>") : x->id);
+                        to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                    }
                 }
             }
 
@@ -470,7 +489,7 @@ std::string cxx::type::Struct::str() const {
     std::string __to_string() const {
         return "["s + %s + "]";
     })",
-                         util::join(to_string_fields, R"( + ", " )"));
+                         util::join(to_string_fields, R"( + ", "s + )"));
 
     return fmt("struct %s : ::hilti::rt::trait::isStruct%s, ::hilti::rt::Controllable<%s> {\n%s\n%s\n}", type_name,
                has_params, type_name, struct_fields_as_str, to_string);

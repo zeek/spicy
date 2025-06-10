@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/type-info.h>
 #include <hilti/rt/types/tuple.h>
 #include <hilti/rt/util.h>
 
@@ -53,6 +54,52 @@ ptrdiff_t elementOffset() {
     return tuple::elementOffset<decltype(Bitfield::value), Idx>();
 }
 
+namespace detail {
+
+// Helper for the HILTI codegen to render a bitfield's value into a string.
+template<typename... Ts>
+inline std::string render(const Bitfield<Ts...>& x, const hilti::rt::TypeInfo* type_info, bool is_anonymous) {
+    std::string out;
+
+    type_info::Value bitfield(&x, type_info);
+    for ( const auto& [b, v] : type_info->bitfield->iterate(bitfield) ) {
+        if ( ! out.empty() )
+            out += ", ";
+
+        if ( is_anonymous )
+            out += fmt("$%s=%s", b.name, v.to_string());
+        else
+            out += fmt("%s: %s", b.name, v.to_string());
+    }
+
+    return out;
+}
+
+// Helper for the HILTI codegen to render an optional bitfield value into a string.
+template<typename... Ts>
+inline std::string render(const std::optional<Bitfield<Ts...>>& x, const hilti::rt::TypeInfo* type_info,
+                          bool is_anonymous = false) {
+    if ( x.has_value() )
+        return render(*x, type_info, is_anonymous);
+
+    if ( ! is_anonymous )
+        return fmt("(not set)");
+
+    std::string out;
+
+    Bitfield<Ts...> empty;
+    type_info::Value bitfield(&empty, type_info);
+    for ( const auto& [b, v] : type_info->bitfield->iterate(bitfield) ) {
+        if ( ! out.empty() )
+            out += ", ";
+
+        out += fmt("$%s=(not set)", b.name);
+    }
+
+    return out;
+}
+
+} // namespace detail
 } // namespace bitfield
 
 // Helper to convert tuple to a vector of the elements' string representations.
