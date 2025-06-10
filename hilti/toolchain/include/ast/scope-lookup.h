@@ -17,7 +17,7 @@
 namespace hilti::scope {
 namespace detail {
 /** Internal backend to `hilti::lookupID()`. */
-std::pair<bool, Result<std::pair<Declaration*, ID>>> lookupID(const ID& id, const Node* n);
+std::pair<bool, Result<std::pair<Declaration*, ID>>> lookupID(const ID& id, const Node* n, const Node* orig_node);
 } // namespace detail
 
 /**
@@ -33,11 +33,13 @@ std::pair<bool, Result<std::pair<Declaration*, ID>>> lookupID(const ID& id, cons
  */
 template<typename D>
 Result<std::pair<D*, ID>> lookupID(ID id, Node* n, const std::string_view& what) {
+    const auto* orig_node = n; // remember node where we started the lookup, so we can pass it down to the backend
+
     if ( id.empty() )
         logger().internalError("lookupID() called with empty ID");
 
     while ( n ) {
-        auto [stop, resolved] = detail::lookupID(id, n);
+        auto [stop, resolved] = detail::lookupID(id, n, orig_node);
         if ( resolved ) {
             if ( ! resolved->first )
                 // null pointer means a forced not found.

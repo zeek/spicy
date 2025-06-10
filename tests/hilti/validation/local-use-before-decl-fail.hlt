@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Tests that locals can't be accessed before they are declared.
+
+module Test {
+
+{
+    x = x + 1;
+    local x = 5;
+}
+
+}
