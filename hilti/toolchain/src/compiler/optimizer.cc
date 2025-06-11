@@ -1735,7 +1735,11 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
             if ( pass != "cfg" )
                 passes->insert(pass);
 
-        passes->insert("cfg");
+        // TODO(bbannier): Control-flow based optimizations are not ready for
+        // prime-time yet and behind a feature guard.
+        if ( rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG").has_value() ) {
+            passes->insert("cfg");
+        }
     }
 
     size_t round = 0;
