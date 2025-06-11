@@ -956,7 +956,10 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
  * optimizations. Will run repeatedly until it performs no further changes.
  */
 struct PeepholeOptimizer : visitor::MutatingPostOrder {
-    using visitor::MutatingPostOrder::MutatingPostOrder;
+    bool has_cfg = false; // Whether general control-flow optimizations are also active.
+
+    PeepholeOptimizer(Builder* builder, bool has_cfg)
+        : hilti::visitor::MutatingPostOrder(builder, logging::debug::Optimizer), has_cfg(has_cfg) {}
 
     // Returns true if statement is `(*self).__error = __error`.
     bool isErrorPush(statement::Expression* n) {
@@ -1017,12 +1020,14 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
     }
 
     void operator()(statement::Expression* n) final {
-        // Remove expression statements of the form `default<void>`.
-        if ( auto* ctor = n->expression()->tryAs<expression::Ctor>();
-             ctor && ctor->ctor()->isA<ctor::Default>() && ctor->type()->type()->isA<type::Void>() ) {
-            recordChange(n, "removing default<void> statement");
-            n->parent()->removeChild(n);
-            return;
+        if ( ! has_cfg ) {
+            // Remove expression statements of the form `default<void>`.
+            if ( auto* ctor = n->expression()->tryAs<expression::Ctor>();
+                 ctor && ctor->ctor()->isA<ctor::Default>() && ctor->type()->type()->isA<type::Void>() ) {
+                recordChange(n, "removing default<void> statement");
+                n->parent()->removeChild(n);
+                return;
+            }
         }
 
         // Remove statement pairs of the form:
@@ -1728,6 +1733,10 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
          }},
     };
 
+    // TODO(bbannier): Control-flow based optimizations are not ready for
+    // prime-time yet and behind a feature guard.
+    bool has_cfg = rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG").has_value();
+
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {
         passes = std::set<std::string>();
@@ -1735,9 +1744,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
             if ( pass != "cfg" )
                 passes->insert(pass);
 
-        // TODO(bbannier): Control-flow based optimizations are not ready for
-        // prime-time yet and behind a feature guard.
-        if ( rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG").has_value() ) {
+        if ( has_cfg ) {
             passes->insert("cfg");
         }
     }
@@ -1767,7 +1774,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     }
 
     while ( true ) {
-        auto v = PeepholeOptimizer(builder, hilti::logging::debug::Optimizer);
+        auto v = PeepholeOptimizer(builder, has_cfg);
         visitor::visit(v, root);
         if ( ! v.isModified() )
             break;
