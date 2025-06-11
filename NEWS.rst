@@ -26,7 +26,7 @@ Version 1.13
   case for this is to pass type information to host applications, and debugging.
 
   A type value is typically created from either ``typeinfo(TYPE)`` or
-  ``typinfo(value)``, or coercion from an existing ID of a custom type like
+  ``typeinfo(value)``, or coercion from an existing ID of a custom type like
   ``global T: type = MyStruct);``. The resulting value can be printed or stored
   in a variable of type ``type``, e.g., ``global bool_t: type = typeinfo(bool);``.
 

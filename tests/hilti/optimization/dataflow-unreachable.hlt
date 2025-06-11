@@ -1,0 +1,21 @@
+# @TEST-DOC: Validate optimization of unreachable data.
+#
+# @TEST-EXEC: hiltic -p %INPUT -o /dev/null -D optimizer >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module x {
+
+public function uint<64> fn() {
+    local uint<64> a = 0;
+    a = 1;
+    local uint<64> b = 1;
+    b = a;
+    a = b + 1;
+    local uint<64> c = a;
+    return a + b;
+}
+
+# Call to mark function used.
+fn();
+
+}
