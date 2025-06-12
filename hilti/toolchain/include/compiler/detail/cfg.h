@@ -101,23 +101,6 @@ public:
     // Add flow for globals if `root` corresponds to a global module block.
     [[nodiscard]] Node* addGlobals(Node* predecessor, const Node& root);
 
-    [[nodiscard]]
-    Node* addBlock(Node* predecessor, const Nodes& stmts, const Node* scope);
-    [[nodiscard]]
-    Node* addFor(Node* predecessor, const statement::For& for_);
-    [[nodiscard]]
-    Node* addWhile(Node* predecessor, const statement::While& while_, Node* scope_end);
-    [[nodiscard]]
-    Node* addIf(Node* predecessor, const statement::If& if_);
-    [[nodiscard]]
-    Node* addTryCatch(Node* predecessor, const statement::Try& try_);
-    [[nodiscard]]
-    Node* addReturn(Node* predecessor, const Node* expression);
-    [[nodiscard]]
-    Node* addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end);
-    [[nodiscard]]
-    Node* addCall(Node* predecessor, operator_::function::Call& call);
-
     std::unordered_set<Node*> unreachableNodes() const;
 
     std::string dot() const;
