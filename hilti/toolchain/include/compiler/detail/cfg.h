@@ -112,6 +112,15 @@ public:
     util::graph::DirectedGraph<Node*, uintptr_t> g;
 
 private:
+    Node* addBlock(Node* predecessor, const Nodes& stmts, const Node* scope);
+    Node* addFor(Node* predecessor, const statement::For& for_);
+    Node* addWhile(Node* predecessor, const statement::While& while_, Node* scope_end);
+    Node* addIf(Node* predecessor, const statement::If& if_);
+    Node* addTryCatch(Node* predecessor, const statement::Try& try_);
+    Node* addReturn(Node* predecessor, const Node* expression);
+    Node* addThrow(Node* predecessor, statement::Throw& throw_, Node* scope_end);
+    Node* addCall(Node* predecessor, operator_::function::Call& call);
+
     std::unordered_set<std::unique_ptr<MetaNode>> _meta_nodes;
     std::unordered_map<Node*, Transfer> _dataflow;
     Node* _begin;
