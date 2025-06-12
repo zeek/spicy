@@ -193,7 +193,7 @@ Done: [$a=b"A", $b=(not set), $c=(not set), $d=b"D", $e=b"E"]
 [spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=2/0/2/2/2 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 [spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=2/0/2/2/2 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expected bytes literal "B" but input starts with "E" (<...>/synchronize.spicy:39:8-39:11)
+[error] processing failed with exception of type spicy::rt::ParseError: failed to synchronize: expected bytes literal "B" but input starts with "E" (<...>/synchronize.spicy:39:8-39:11)
 [spicy-verbose] - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="A" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -206,7 +206,7 @@ Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose]     failed to parse, will try to synchronize at 'd'
 [spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=1/0/1/1/1 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: expected 1 bytes for bytes literal "B" (0 available)) (<...>/synchronize.spicy:39:8-39:11)
+[error] processing failed with exception of type spicy::rt::ParseError: failed to synchronize: expected 1 bytes for bytes literal "B" (0 available)) (<...>/synchronize.spicy:39:8-39:11)
 [spicy-verbose] - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__A -> a b c d e
 [spicy-verbose]   - state: type=test::A input="1" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -225,7 +225,7 @@ Error: [$a=b"A", $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
 [spicy-verbose]     - trimming input
 [spicy-verbose]     - state: type=test::A input="" stream=0xXXXXXXXX offsets=3/0/3/3/3 chunks=0 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=yes
 Error: [$a=(not set), $b=(not set), $c=(not set), $d=(not set), $e=(not set)]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize.spicy:38:8-38:10)
+[error] processing failed with exception of type spicy::rt::ParseError: failed to synchronize: failed to match regular expression (<...>/synchronize.spicy:38:8-38:10)
 [spicy-verbose] - state: type=test::E input="B" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__E -> _anon Resolved_6 _anon_2
 [spicy-verbose]   - state: type=test::E input="B" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=no mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
@@ -414,7 +414,7 @@ Done: [$x=49]
 [spicy-verbose]     - trimming input
 [spicy-verbose]   - setting field 'x' to '49'
 Error: [$x=49]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: unit rejected outside of trial mode
+[error] processing failed with exception of type spicy::rt::ParseError: unit rejected outside of trial mode
 [spicy-verbose] - state: type=test::D input="1" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no
 [spicy-verbose] - parsing production: Unit: test__D -> x_3
 [spicy-verbose]   - state: type=test::D input="1" stream=0xXXXXXXXX offsets=0/0/0/1/1 chunks=1 frozen=yes mode=default trim=yes lah=n/a lah_token="n/a" recovering=no

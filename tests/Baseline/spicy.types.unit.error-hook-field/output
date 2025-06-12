@@ -3,7 +3,7 @@
 field A standard
 unit %done, [$a=b"A", $b=b"B", $c=b"C"]
 ---
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expected bytes literal "B" but input starts with "x" (<...>/error-hook-field.spicy:25:8-25:11)
+[error] processing failed with exception of type spicy::rt::ParseError: expected bytes literal "B" but input starts with "x" (<...>/error-hook-field.spicy:25:8-25:11)
 field A standard
 field B %error, attached, [$a=b"A", $b=(not set), $c=(not set)]
 field B %error, external, [$a=b"A", $b=(not set), $c=(not set)]
@@ -13,7 +13,7 @@ field B %error, inside unit, expected bytes literal "B" but input starts with "x
 unit %error, [$a=b"A", $b=(not set), $c=(not set)]
 unit %error, external, expected bytes literal "B" but input starts with "x" (<...>/error-hook-field.spicy:25:8-25:11), [$a=b"A", $b=(not set), $c=(not set)]
 ---
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expected bytes literal "C" but input starts with "x" (<...>/error-hook-field.spicy:26:8-26:11)
+[error] processing failed with exception of type spicy::rt::ParseError: expected bytes literal "C" but input starts with "x" (<...>/error-hook-field.spicy:26:8-26:11)
 field A standard
 unit %error, [$a=b"A", $b=b"B", $c=(not set)]
 unit %error, external, [$a=b"A", $b=b"B", $c=(not set)]
@@ -25,8 +25,8 @@ unit %done, [$foo=[$a=b"A", $b=b"B"], $c=b"C"]
 field A %error
 unit %done, [$foo=[$a=(not set), $b=(not set)], $c=b"C"]
 ---
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expected bytes literal "B" but input starts with "x" (<...>/error-hook-field.spicy:69:8-69:11)
+[error] processing failed with exception of type spicy::rt::ParseError: expected bytes literal "B" but input starts with "x" (<...>/error-hook-field.spicy:69:8-69:11)
 unit %error, [$foo=[$a=b"A", $b=(not set)], $c=(not set)]
 ===
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expected 5 bytes (4 available) (<...>/error-hook-field.spicy:74:5-74:55)
+[error] processing failed with exception of type spicy::rt::ParseError: expected 5 bytes (4 available) (<...>/error-hook-field.spicy:74:5-74:55)
 field x %error

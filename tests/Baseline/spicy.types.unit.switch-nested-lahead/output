@@ -8,4 +8,4 @@ foo::X {
 foo::X {
   c: c
 }
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: no expected look-ahead token found (<...>/switch-nested-lahead.spicy:18:10-18:20)
+[error] spicy-dump: processing failed with exception of type spicy::rt::ParseError: no expected look-ahead token found (<...>/switch-nested-lahead.spicy:18:10-18:20)

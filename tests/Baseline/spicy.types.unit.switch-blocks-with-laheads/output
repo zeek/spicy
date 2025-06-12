@@ -6,4 +6,4 @@ Test::X {
 Test::X {
   b: b
 }
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: no expected look-ahead token found (<...>/switch-blocks-with-laheads.spicy:17:9-17:19)
+[error] spicy-dump: processing failed with exception of type spicy::rt::ParseError: no expected look-ahead token found (<...>/switch-blocks-with-laheads.spicy:17:9-17:19)
