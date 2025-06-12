@@ -11,7 +11,7 @@
 #include <vector>
 
 namespace hilti::util::graph {
-enum class Direction : char { Downstream, Upstream };
+enum class Direction : char { Out, In };
 
 // FIXME(bbannier): remove customizable NodeId, EdgeId.
 template<typename T, typename NodeId_ = std::uint64_t, typename EdgeId_ = std::uint64_t>
@@ -93,12 +93,12 @@ struct DirectedGraph {
             auto [from, to] = nodes;
 
             switch ( dir ) {
-                case Direction::Downstream: {
+                case Direction::Out: {
                     if ( id == from )
                         xs.push_back(to);
                     break;
                 }
-                case Direction::Upstream: {
+                case Direction::In: {
                     if ( id == to )
                         xs.push_back(from);
                 }
@@ -108,8 +108,8 @@ struct DirectedGraph {
         return xs;
     }
 
-    std::vector<NodeId> neighborsDownstream(NodeId id) const { return neighbors(id, Direction::Downstream); }
-    std::vector<NodeId> neighborsUpstream(NodeId id) const { return neighbors(id, Direction::Upstream); }
+    std::vector<NodeId> neighborsDownstream(NodeId id) const { return neighbors(id, Direction::Out); }
+    std::vector<NodeId> neighborsUpstream(NodeId id) const { return neighbors(id, Direction::In); }
 };
 
 } // namespace hilti::util::graph

@@ -39,10 +39,10 @@ TEST_CASE("DirectedGraph") {
     REQUIRE(ee);
     CHECK_EQ(*ee, std::pair(n1, n2));
 
-    CHECK_EQ(g.neighbors(n1, Direction::Upstream), std::vector<G::NodeId>{});
-    CHECK_EQ(g.neighbors(n1, Direction::Downstream), std::vector{n2});
-    CHECK_EQ(g.neighbors(n2, Direction::Upstream), std::vector{n1});
-    CHECK_EQ(g.neighbors(n2, Direction::Downstream), std::vector<G::NodeId>{});
+    CHECK_EQ(g.neighbors(n1, Direction::In), std::vector<G::NodeId>{});
+    CHECK_EQ(g.neighbors(n1, Direction::Out), std::vector{n2});
+    CHECK_EQ(g.neighbors(n2, Direction::In), std::vector{n1});
+    CHECK_EQ(g.neighbors(n2, Direction::Out), std::vector<G::NodeId>{});
 
     g.removeNode(n2);
     CHECK_EQ(g.nodes().size(), 1);
