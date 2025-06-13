@@ -1316,8 +1316,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         if ( auto* match = matches[0]->tryAs<expression::ResolvedOperator>() ) {
+            type::Function* ftype = nullptr;
             if ( n->kind() == operator_::Kind::Call ) {
-                if ( auto* ftype = match->op0()->type()->type()->tryAs<type::Function>() )
+                if ( ftype = match->op0()->type()->type()->tryAs<type::Function>(); ftype )
                     recordAutoParameters(*ftype, match->op1());
             }
 
@@ -1325,11 +1326,14 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 if ( auto* stype = match->op0()->type()->type()->tryAs<type::Struct>() ) {
                     const auto& id = match->op1()->as<expression::Member>()->id();
                     if ( auto* field = stype->field(id) ) {
-                        auto* ftype = field->type()->type()->as<type::Function>();
+                        ftype = field->type()->type()->as<type::Function>();
                         recordAutoParameters(*ftype, match->op2());
                     }
                 }
             }
+
+            if ( ftype )
+                operator_::registry().addResolved(&match->operator_(), match);
         }
 
         replaceNode(n, matches[0]);

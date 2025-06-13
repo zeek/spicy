@@ -57,7 +57,7 @@ public:
      *
      * @param op unresolved operator to match against
      * @returns tuple where the 1st element is a boolean indicating if the
-     * caller should proceed checking the candidates returned as the 2dn
+     * caller should proceed checking the candidates returned as the 2nd
      * element; if not, a match has been found but is valid for calling, and
      * hence the caller should abort resolution
      */
@@ -66,6 +66,26 @@ public:
 
     /** Returns all available operators. */
     const auto& operators() const { return _operators; }
+
+    /** TODO: document these, or remove/change some? */
+    auto resolved(const Operator* op) { return _resolved[op->identity()]; }
+
+    void addResolved(const Operator* op, expression::ResolvedOperator* use) {
+        _resolved[op->identity()].push_back(use);
+    }
+
+    void removeResolved(const Operator* op, expression::ResolvedOperator* use) {
+        auto it = _resolved.find(op->identity());
+        if ( it != _resolved.end() ) {
+            auto& uses = it->second;
+            uses.erase(std::remove(uses.begin(), uses.end(), use), uses.end());
+        }
+    }
+
+    void replaceOp(const Operator* old, const Operator* new_) {
+        _resolved[new_->identity()] = _resolved[old->identity()];
+        _resolved.erase(old->identity());
+    }
 
     /**
      * Registers an operator with the registry. It will not immediately become
@@ -112,7 +132,8 @@ private:
     std::map<ID, std::vector<const Operator*>>
         _operators_by_builtin_function; // initialized operators by builtin call operators; empty ID collect all without
                                         // a static name
-    std::map<ID, std::vector<const Operator*>> _operators_by_method; // initialized operators by method
+    std::map<ID, std::vector<const Operator*>> _operators_by_method;           // initialized operators by method
+    std::map<uintptr_t, std::vector<expression::ResolvedOperator*>> _resolved; // Operators to all resolved instances
 };
 
 /**
