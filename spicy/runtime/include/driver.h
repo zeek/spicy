@@ -236,8 +236,7 @@ public:
      * @param increment if non-zero, will feed the data in small chunks at a
      * time; this is mainly for testing parsers; incremental parsing
      *
-     * @return error if the input couldn't be fed to the parser (excluding parse errors)
-     * @throws HILTI or Spocy runtime error if the parser into trouble
+     * @return error if the input couldn't be fed to the parser or parsing failed
      */
     hilti::rt::Result<spicy::rt::ParsedUnit> processInput(const spicy::rt::Parser& parser, std::istream& in,
                                                           int increment = 0);

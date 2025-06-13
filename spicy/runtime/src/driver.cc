@@ -156,7 +156,8 @@ Result<Nothing> Driver::listParsers(std::ostream& out, bool verbose) {
     return Nothing();
 }
 
-Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& parser, std::istream& in, int increment) {
+Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& parser, std::istream& in,
+                                                   int increment) try {
     if ( ! hilti::rt::isInitialized() )
         return Error("runtime not initialized");
 
@@ -208,6 +209,12 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
     }
 
     return std::move(*unit);
+} catch ( const std::exception& e ) {
+    return Error(
+        fmt("processing failed with exception of type %s: %s", hilti::rt::demangle(typeid(e).name()), e.what()));
+} catch ( ... ) {
+    return Error(fmt("processing failed with non-standard exception %s",
+                     hilti::rt::demangle(typeid(std::current_exception()).name())));
 }
 
 void driver::ParsingStateForDriver::debug(const std::string& msg) {

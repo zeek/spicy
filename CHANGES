@@ -1,3 +1,15 @@
+1.14.0-dev.83 | 2025-06-13 09:59:13 -0400
+
+  * GH-1996: Catch exceptions in `processInput` gracefully. (Evan Typanski, Corelight)
+
+    Fixes #1996
+
+    The exceptions bubbled up to `main` then got caught in those exception
+    handlers with `spicy-driver`, so something like `spicy-driver -Z` would
+    not emit profiling information if there was a parse error. This makes
+    exceptions get caught sooner so that the calling code can use the same
+    error mechanisms as already exist in order to gracefully exit.
+
 1.14.0-dev.81 | 2025-06-10 21:33:18 +0200
 
   * GH-2066: When C++ compilation fails, ask user for help. (Robin Sommer, Corelight)

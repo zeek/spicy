@@ -14,7 +14,7 @@ Parsing Y w/o any skipping since skip-pre and -post in the wrong place
 X, [$x=b"1"]
 X, [$x=b"A"]
 X, [$x=b"B"]
-[error] terminating with uncaught exception of type spicy::rt::ParseError: expected 1 bytes (0 available) (<...>/skip.spicy:41:5-41:21)
+[error] processing failed with exception of type spicy::rt::ParseError: expected 1 bytes (0 available) (<...>/skip.spicy:41:5-41:21)
 Parsing Y w/ skipping pre and post
 X, [$x=b"A"]
 X, [$x=b"B"]

@@ -25,4 +25,4 @@ test::Z {
     c: C
   }
 }
-[fatal error] terminating with uncaught exception of type spicy::rt::ParseError: successful synchronization never confirmed: expected bytes literal "A" but input starts with "1" (<...>/synchronize-confirm-elsewhere.spicy:28:8-28:11)
+[error] spicy-dump: processing failed with exception of type spicy::rt::ParseError: successful synchronization never confirmed: expected bytes literal "A" but input starts with "1" (<...>/synchronize-confirm-elsewhere.spicy:28:8-28:11)
