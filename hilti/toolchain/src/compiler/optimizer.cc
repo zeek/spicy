@@ -1627,22 +1627,25 @@ struct FunctionParamVisitor : OptimizerVisitor {
             replaceNode(fn_use->op1(), ntuple);
     }
 
-    // Returns the last 3 parts of the ID, so that hooks in different modules (which
-    // have more than 3 parts) get the same ID as the original hook
-    ID idForIndexing(const ID& fqid) { return fqid.sub(-3) + fqid.sub(-2) + fqid.sub(-1); }
+    // TODO: This is also done above, maybe move it into function decl?
+    ID functionID(declaration::Function* fn) {
+        if ( auto* prototype = context()->lookup(fn->linkedPrototypeIndex()) )
+            return prototype->fullyQualifiedID();
+
+        return fn->fullyQualifiedID();
+    }
 
     void operator()(declaration::Function* n) final {
-        // Collect any parameters that can be removed
-        auto fqid = idForIndexing(n->fullyQualifiedID());
+        ID function_id = functionID(n);
         const auto* current_op = n->operator_();
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( fn_unused_params.count(fqid) > 0 )
+                if ( fn_unused_params.count(function_id) > 0 )
                     return;
-                fn_unused_params[fqid] = std::vector<std::size_t>{};
+                fn_unused_params[function_id] = std::vector<std::size_t>{};
                 auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
-                auto& unused_params = fn_unused_params[fqid].value();
+                auto& unused_params = fn_unused_params[function_id].value();
                 if ( ! n->function()->body() ||
                      (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) ) {
                     // Reset if there's no body
@@ -1666,7 +1669,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
             }
 
             case Stage::PRUNE_USES: {
-                auto opt_unused_params = fn_unused_params[fqid];
+                auto opt_unused_params = fn_unused_params[function_id];
                 if ( ! opt_unused_params.has_value() )
                     return;
 
@@ -1675,13 +1678,13 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     return;
                 if ( current_op ) {
                     auto uses = operator_::registry().resolved(current_op);
-                    if ( ! removed_uses[fqid] ) {
+                    if ( ! removed_uses[function_id] ) {
                         for ( auto* use : uses ) {
                             if ( ! use )
                                 continue;
                             remove_params(use, unused_params);
                         }
-                        removed_uses[fqid] = true;
+                        removed_uses[function_id] = true;
                     }
                 }
 
@@ -1712,12 +1715,12 @@ struct FunctionParamVisitor : OptimizerVisitor {
 
         const auto* current_op = n->operator_();
 
-        auto fqid = idForIndexing(n->fullyQualifiedID());
+        const auto& function_id = n->fullyQualifiedID();
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( fn_unused_params.count(fqid) > 0 )
+                if ( fn_unused_params.count(function_id) > 0 )
                     return;
-                fn_unused_params[fqid] = std::vector<std::size_t>{};
+                fn_unused_params[function_id] = std::vector<std::size_t>{};
 
                 // Anything in C++ or whose parent is C++ should not be optimized.
                 if ( n->attributes()->has(hilti::attribute::kind::Cxxname) )
@@ -1732,18 +1735,18 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     return;
 
                 for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
-                    fn_unused_params[fqid]->push_back(i);
+                    fn_unused_params[function_id]->push_back(i);
 
                 if ( n->id().str().find("parse1") != std::string::npos ||
                      n->id().str().find("parse2") != std::string::npos ||
                      n->id().str().find("parse3") != std::string::npos ) {
-                    fn_unused_params[fqid]->clear();
+                    fn_unused_params[function_id]->clear();
                 }
                 break;
             }
 
             case Stage::PRUNE_USES: {
-                auto opt_unused_params = fn_unused_params[fqid];
+                auto opt_unused_params = fn_unused_params[function_id];
                 if ( ! opt_unused_params.has_value() )
                     return;
 
@@ -1765,9 +1768,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     }
                 }
                 ftype->setParameters(builder()->context(), params);
-                // Also need to set for inline function's type
-                // if ( n->inlineFunction() )
-                // n->inlineFunction()->ftype()->setParameters(builder()->context(), params);
                 break;
             }
             case Stage::PRUNE_DECLS: {
@@ -1779,16 +1779,16 @@ struct FunctionParamVisitor : OptimizerVisitor {
     void operator()(expression::Name* n) final {
         type::Function* ftype = nullptr;
         auto* current = n->parent();
-        ID id;
+        ID function_id;
         while ( current->parent() ) {
             current = current->parent();
             if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
-                id = idForIndexing(fn_decl->fullyQualifiedID());
+                function_id = functionID(fn_decl);
                 ftype = fn_decl->function()->ftype();
                 break;
             }
             else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
-                id = idForIndexing(field->fullyQualifiedID());
+                function_id = field->fullyQualifiedID();
                 ftype = field->inlineFunction()->ftype();
                 break;
             }
@@ -1798,11 +1798,11 @@ struct FunctionParamVisitor : OptimizerVisitor {
 
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( ! fn_unused_params[id].has_value() || fn_unused_params[id]->size() == 0 )
+                if ( ! fn_unused_params[function_id].has_value() || fn_unused_params[function_id]->size() == 0 )
                     return;
 
                 int i = 0;
-                auto& unused = fn_unused_params[id].value();
+                auto& unused = fn_unused_params[function_id].value();
                 for ( auto param : unused ) {
                     if ( ftype->parameters()[param]->id() == n->id() ) {
                         unused.erase(unused.begin() + i);
@@ -1820,16 +1820,16 @@ struct FunctionParamVisitor : OptimizerVisitor {
         // TODO: Combine the boilerplate with Name
         type::Function* ftype = nullptr;
         auto* current = n->parent();
-        ID fqid;
+        ID function_id;
         while ( current->parent() ) {
             current = current->parent();
             if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
-                fqid = idForIndexing(fn_decl->fullyQualifiedID());
+                function_id = functionID(fn_decl);
                 ftype = fn_decl->function()->ftype();
                 break;
             }
             else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
-                fqid = idForIndexing(field->fullyQualifiedID());
+                function_id = field->fullyQualifiedID();
                 ftype = field->inlineFunction()->ftype();
                 break;
             }
@@ -1838,7 +1838,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
             return;
         switch ( _stage ) {
             case Stage::COLLECT: {
-                if ( ! fn_unused_params[fqid].has_value() || fn_unused_params[fqid]->size() == 0 )
+                if ( ! fn_unused_params[function_id].has_value() || fn_unused_params[function_id]->size() == 0 )
                     return;
 
                 int i = 0;
@@ -1850,7 +1850,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     case expression::keyword::Kind::Captures: id = "__captures"; break;
                     case expression::keyword::Kind::Scope: id = "__scope"; break;
                 }
-                auto& unused = fn_unused_params[fqid].value();
+                auto& unused = fn_unused_params[function_id].value();
                 for ( auto param : unused ) {
                     if ( ftype->parameters()[param]->id().str() == id ) {
                         unused.erase(unused.begin() + i);
