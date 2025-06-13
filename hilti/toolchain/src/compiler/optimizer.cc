@@ -1707,6 +1707,34 @@ struct FunctionParamVisitor : OptimizerVisitor {
         }
     }
 
+    std::optional<std::tuple<type::Function*, ID>> enclosingFunction(Node* n) {
+        for ( auto* current = n->parent(); current; current = current->parent() ) {
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                return std::make_tuple(fn_decl->function()->ftype(), functionID(fn_decl));
+                break;
+            }
+            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
+                return std::make_tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    /** Removes the param_id as used within the function. */
+    void removeUsed(type::Function* ftype, const ID& function_id, const ID& param_id) {
+        int i = 0;
+        auto& unused = fn_unused_params[function_id].value();
+        for ( auto param : unused ) {
+            // TODO: maybe store the param ids in the map as tuple?
+            if ( ftype->parameters()[param]->id() == param_id ) {
+                unused.erase(unused.begin() + i);
+                return;
+            }
+            i++;
+        }
+    }
+
     void operator()(declaration::Field* n) final {
         // Collect any parameters that can be removed
         auto* ftype = n->type()->type()->tryAs<type::Function>();
@@ -1777,39 +1805,17 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 
     void operator()(expression::Name* n) final {
-        type::Function* ftype = nullptr;
-        auto* current = n->parent();
-        ID function_id;
-        while ( current->parent() ) {
-            current = current->parent();
-            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
-                function_id = functionID(fn_decl);
-                ftype = fn_decl->function()->ftype();
-                break;
-            }
-            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
-                function_id = field->fullyQualifiedID();
-                ftype = field->inlineFunction()->ftype();
-                break;
-            }
-        }
-        if ( ! ftype )
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
             return;
+        auto [ftype, function_id] = *opt_enclosing_fn;
 
         switch ( _stage ) {
             case Stage::COLLECT: {
                 if ( ! fn_unused_params[function_id].has_value() || fn_unused_params[function_id]->size() == 0 )
                     return;
 
-                int i = 0;
-                auto& unused = fn_unused_params[function_id].value();
-                for ( auto param : unused ) {
-                    if ( ftype->parameters()[param]->id() == n->id() ) {
-                        unused.erase(unused.begin() + i);
-                        return;
-                    }
-                    i++;
-                }
+                removeUsed(ftype, function_id, n->id());
             }
             case Stage::PRUNE_USES: return;
             case Stage::PRUNE_DECLS: return;
@@ -1817,32 +1823,17 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 
     void operator()(expression::Keyword* n) final {
-        // TODO: Combine the boilerplate with Name
-        type::Function* ftype = nullptr;
-        auto* current = n->parent();
-        ID function_id;
-        while ( current->parent() ) {
-            current = current->parent();
-            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
-                function_id = functionID(fn_decl);
-                ftype = fn_decl->function()->ftype();
-                break;
-            }
-            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
-                function_id = field->fullyQualifiedID();
-                ftype = field->inlineFunction()->ftype();
-                break;
-            }
-        }
-        if ( ! ftype )
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
             return;
+        auto [ftype, function_id] = *opt_enclosing_fn;
         switch ( _stage ) {
             case Stage::COLLECT: {
                 if ( ! fn_unused_params[function_id].has_value() || fn_unused_params[function_id]->size() == 0 )
                     return;
 
-                int i = 0;
-                // TODO make this not suck and double check scope and stuff
+                // TODO make this not suck and double check scope and stuff. And
+                // remove the string->id ctor
                 std::string id;
                 switch ( n->kind() ) {
                     case expression::keyword::Kind::Self: id = "__self"; break;
@@ -1850,14 +1841,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     case expression::keyword::Kind::Captures: id = "__captures"; break;
                     case expression::keyword::Kind::Scope: id = "__scope"; break;
                 }
-                auto& unused = fn_unused_params[function_id].value();
-                for ( auto param : unused ) {
-                    if ( ftype->parameters()[param]->id().str() == id ) {
-                        unused.erase(unused.begin() + i);
-                        return;
-                    }
-                    i++;
-                }
+                removeUsed(ftype, function_id, ID(id));
             }
             case Stage::PRUNE_USES: return;
             case Stage::PRUNE_DECLS: return;
