@@ -1633,22 +1633,8 @@ struct FunctionParamVisitor : OptimizerVisitor {
 
     void operator()(declaration::Function* n) final {
         // Collect any parameters that can be removed
-        declaration::Field* found_field = nullptr;
         auto fqid = idForIndexing(n->fullyQualifiedID());
-        // TODO: Do this correlation better, if possible
-        if ( ! n->operator_() ) {
-            auto* lookup = context()->lookup(n->linkedDeclarationIndex());
-            if ( auto* decl = lookup->tryAs<declaration::Type>() ) {
-                if ( auto* struct_ = decl->type()->type()->tryAs<type::Struct>() ) {
-                    found_field = struct_->field(fqid.local());
-                }
-            }
-        }
-
-        const auto* current_op = found_field ? found_field->operator_() : n->operator_();
-        // TODO: Nothing we can do if we don't find an op, but can we do this better?
-        if ( ! current_op )
-            return;
+        const auto* current_op = n->operator_();
 
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -1687,14 +1673,16 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 auto& unused_params = opt_unused_params.value();
                 if ( unused_params.empty() )
                     return;
-                auto uses = operator_::registry().resolved(current_op);
-                if ( ! removed_uses[fqid] ) {
-                    for ( auto* use : uses ) {
-                        if ( ! use )
-                            continue;
-                        remove_params(use, unused_params);
+                if ( current_op ) {
+                    auto uses = operator_::registry().resolved(current_op);
+                    if ( ! removed_uses[fqid] ) {
+                        for ( auto* use : uses ) {
+                            if ( ! use )
+                                continue;
+                            remove_params(use, unused_params);
+                        }
+                        removed_uses[fqid] = true;
                     }
-                    removed_uses[fqid] = true;
                 }
 
                 auto params = n->function()->ftype()->parameters();
@@ -1708,12 +1696,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
                         params.erase(params.begin() + static_cast<std::ptrdiff_t>(index));
                 }
                 n->function()->ftype()->setParameters(builder()->context(), params);
-                if ( found_field ) {
-                    auto* ftype = found_field->type()->type()->tryAs<type::Function>();
-                    if ( ! ftype )
-                        return;
-                    ftype->setParameters(builder()->context(), params);
-                }
                 break;
             }
             case Stage::PRUNE_DECLS: {
@@ -1737,6 +1719,18 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     return;
                 fn_unused_params[fqid] = std::vector<std::size_t>{};
 
+                // Anything in C++ or whose parent is C++ should not be optimized.
+                if ( n->attributes()->has(hilti::attribute::kind::Cxxname) )
+                    return;
+
+                // TODO: My lord?? Is it really this hard to find if the struct decl
+                // is declared with cxxname?
+                auto* ty = builder()->context()->lookup(n->linkedTypeIndex());
+                auto* decl = builder()->context()->lookup(ty->declarationIndex());
+                auto* ty_decl = decl->tryAs<declaration::Type>();
+                if ( ty_decl->attributes()->has(hilti::attribute::kind::Cxxname) )
+                    return;
+
                 for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
                     fn_unused_params[fqid]->push_back(i);
 
@@ -1749,8 +1743,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
             }
 
             case Stage::PRUNE_USES: {
-                if ( ! n->inlineFunction() )
-                    return;
                 auto opt_unused_params = fn_unused_params[fqid];
                 if ( ! opt_unused_params.has_value() )
                     return;
@@ -1765,7 +1757,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
                         continue;
                     remove_params(use, unused_params);
                 }
-                auto params = n->inlineFunction()->ftype()->parameters();
+                auto params = ftype->parameters();
                 std::sort(unused_params.begin(), unused_params.end(), std::greater<>());
                 for ( std::size_t index : unused_params ) {
                     if ( index < params.size() ) { // Check if index is within bounds
@@ -1773,6 +1765,9 @@ struct FunctionParamVisitor : OptimizerVisitor {
                     }
                 }
                 ftype->setParameters(builder()->context(), params);
+                // Also need to set for inline function's type
+                // if ( n->inlineFunction() )
+                // n->inlineFunction()->ftype()->setParameters(builder()->context(), params);
                 break;
             }
             case Stage::PRUNE_DECLS: {
