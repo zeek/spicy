@@ -11,6 +11,7 @@
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/operator-registry.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/visitor.h>
 #include <hilti/base/util.h>
@@ -107,6 +108,17 @@ std::string Node::printRaw() const {
     return out.str();
 }
 
+void Node::insertBefore(ASTContext* ctx, Node* before_this, Node* new_) {
+    for ( auto i = 0U; i < _children.size(); i++ ) {
+        if ( _children[i] == before_this ) {
+            addChild(ctx, new_, i);
+            return;
+        }
+    }
+
+    logger().internalError("child not found");
+}
+
 void Node::replaceChild(ASTContext* ctx, Node* old, Node* new_) {
     for ( auto i = 0U; i < _children.size(); i++ ) {
         if ( _children[i] == old ) {
@@ -156,6 +168,12 @@ Node* node::detail::deepcopy(ASTContext* ctx, Node* n, bool force) {
         return n;
 
     auto* clone = n->_clone(ctx);
+
+    if ( auto* op = n->tryAs<expression::ResolvedOperator>(); op ) {
+        operator_::registry().addResolved(&op->operator_(), clone->as<expression::ResolvedOperator>());
+        // TODO: Removing seems necessary, is it because removing node later isn't handled?
+        operator_::registry().removeResolved(&op->operator_(), op);
+    }
 
     for ( const auto& c : n->children() )
         clone->addChild(ctx, c); // this will copy the children recursively (because they have a parent already)

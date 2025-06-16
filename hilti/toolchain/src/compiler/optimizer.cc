@@ -37,6 +37,9 @@
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
 
+#include "ast/attribute.h"
+#include "ast/operator.h"
+
 namespace hilti {
 
 namespace logging::debug {
@@ -1557,6 +1560,307 @@ struct MemberVisitor : OptimizerVisitor {
     }
 };
 
+/** Removes unused function parameters. */
+struct FunctionParamVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
+
+    // The unused parameters (the vector is of positions) for a given ID
+    // TODO: IDs here are a relatively bad indicator of a given function, but
+    // it worked best between overloads, hooks, and functions. This should probably
+    // be something else, though.
+    std::map<ID, std::optional<std::vector<std::size_t>>> fn_unused_params;
+    // TODO: Do this better :)
+    std::map<ID, bool> removed_uses;
+
+    void collect(Node* node) override {
+        fn_unused_params.clear();
+        _stage = Stage::COLLECT;
+
+        visitor::visit(*this, node);
+    }
+
+    bool prune_uses(Node* node) override {
+        _stage = Stage::PRUNE_USES;
+
+        // This pass only runs once!
+        clearModified();
+        visitor::visit(*this, node);
+
+        return isModified();
+    }
+
+    bool prune_decls(Node* node) override {
+        _stage = Stage::PRUNE_DECLS;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return isModified();
+    }
+
+    void remove_params(expression::ResolvedOperator* call, const std::vector<std::size_t>& positions) {
+        if ( ! call->isA<operator_::function::Call>() && ! call->isA<operator_::struct_::MemberCall>() )
+            return;
+        if ( positions.empty() )
+            return;
+
+        bool is_method = call->isA<operator_::struct_::MemberCall>();
+
+        // Make parameters, just without positions
+        Expressions params;
+        Expressions removed_params;
+        // Get the params as a tuple
+        auto* ctor = is_method ? call->op2()->tryAs<expression::Ctor>() : call->op1()->tryAs<expression::Ctor>();
+        if ( ! ctor )
+            return;
+        auto* tup = ctor->ctor()->tryAs<ctor::Tuple>();
+        if ( ! tup )
+            return;
+
+        for ( std::size_t i = 0; i < tup->value().size(); i++ ) {
+            if ( std::find(positions.begin(), positions.end(), i) == positions.end() )
+                params.push_back(tup->value()[i]);
+            else
+                removed_params.push_back(tup->value()[i]);
+        }
+        auto* ntuple = builder()->expressionCtor(builder()->ctorTuple(params));
+
+        for ( auto* removed : removed_params ) {
+            // TODO: For now this will just emit any calls before, but it's
+            // wrong in a few ways. First, this doesn't work in the same order for
+            // nested function calls if multiple have removed params. Second, this
+            // really should just be removed later rather than the isa<> check.
+            // Third, the non-removed params need to be hoisted into temporaries
+            // in order to preserve order. Fourth, this applies to other expressions
+            // like f(my_global = 5) - which relates to point 2
+            if ( removed->isA<operator_::function::Call>() ) {
+                Node* prev = call;
+                for ( auto* current = call->parent(); current; current = current->parent() ) {
+                    if ( auto* block = current->tryAs<statement::Block>() ) {
+                        block->insertBefore(builder()->context(), prev, builder()->statementExpression(removed));
+                        break;
+                    }
+                    prev = current;
+                }
+            }
+        }
+
+        // TODO: here need to insert removed elements to a block
+        if ( is_method )
+            replaceNode(call->op2(), ntuple);
+        else
+            replaceNode(call->op1(), ntuple);
+    }
+
+    // TODO: This is also done above, maybe move it into function decl?
+    ID functionID(declaration::Function* fn) {
+        if ( auto* prototype = context()->lookup(fn->linkedPrototypeIndex()) )
+            return prototype->fullyQualifiedID();
+
+        return fn->fullyQualifiedID();
+    }
+
+    void pruneFromUses(const ID& function_id, const Operator* op) {
+        auto opt_unused_params = fn_unused_params[function_id];
+        if ( ! opt_unused_params.has_value() )
+            return;
+
+        auto& unused_params = opt_unused_params.value();
+        if ( unused_params.empty() )
+            return;
+        if ( op ) {
+            auto uses = operator_::registry().resolved(op);
+            if ( ! removed_uses[function_id] ) {
+                for ( auto* use : uses ) {
+                    remove_params(use, unused_params);
+                }
+                removed_uses[function_id] = true;
+            }
+        }
+    }
+
+    void pruneFromDecl(const ID& function_id, type::Function* ftype) {
+        auto opt_unused_params = fn_unused_params[function_id];
+        if ( ! opt_unused_params.has_value() )
+            return;
+
+        auto& unused_params = opt_unused_params.value();
+        if ( unused_params.empty() )
+            return;
+
+        auto params = ftype->parameters();
+
+        // Ensure they're sorted
+        std::sort(unused_params.begin(), unused_params.end(), std::greater<>());
+        for ( std::size_t index : unused_params ) {
+            // Maybe unnecessary
+            if ( index < params.size() )
+                // TODO: ptrdiff_t cast is ugly
+                params.erase(params.begin() + static_cast<std::ptrdiff_t>(index));
+        }
+        ftype->setParameters(builder()->context(), params);
+    }
+
+    void operator()(declaration::Function* n) final {
+        ID function_id = functionID(n);
+        const auto* current_op = n->operator_();
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params.count(function_id) > 0 )
+                    return;
+                fn_unused_params[function_id] = std::vector<std::size_t>{};
+
+                auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
+                auto& unused_params = fn_unused_params[function_id].value();
+                // Don't set if there's no body or multiple implementations
+                if ( ! n->function()->body() ||
+                     (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) )
+                    return;
+
+                for ( std::size_t i = 0; i < n->function()->ftype()->parameters().size(); i++ )
+                    unused_params.push_back(i);
+
+                break;
+            }
+
+            case Stage::PRUNE_USES: {
+                pruneFromUses(function_id, current_op);
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                pruneFromDecl(function_id, n->function()->ftype());
+                break;
+            }
+        }
+    }
+
+    void operator()(declaration::Field* n) final {
+        // Collect any parameters that can be removed
+        auto* ftype = n->type()->type()->tryAs<type::Function>();
+        if ( ! ftype )
+            return;
+        if ( ! n->parent()->isA<type::Struct>() )
+            return;
+
+        const auto* current_op = n->operator_();
+
+        const auto& function_id = n->fullyQualifiedID();
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params.count(function_id) > 0 )
+                    return;
+                fn_unused_params[function_id] = std::vector<std::size_t>{};
+
+                if ( n->attributes()->has(hilti::attribute::kind::Cxxname) ||
+                     n->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
+                    return;
+
+                if ( n->linkage() == declaration::Linkage::Public )
+                    return;
+
+                // The type decl can also be wrapped in &cxxname so it should not
+                // change.
+                auto* type_ = n->parent<declaration::Type>();
+                if ( type_ && type_->attributes()->has(hilti::attribute::kind::Cxxname) )
+                    return;
+
+                if ( n->id().str().find("parse1") != std::string::npos ||
+                     n->id().str().find("parse2") != std::string::npos ||
+                     n->id().str().find("parse3") != std::string::npos ) {
+                    return;
+                }
+
+                for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
+                    fn_unused_params[function_id]->push_back(i);
+
+                break;
+            }
+
+            case Stage::PRUNE_USES: {
+                pruneFromUses(function_id, current_op);
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                pruneFromDecl(function_id, ftype);
+                break;
+            }
+        }
+    }
+
+    std::optional<std::tuple<type::Function*, ID>> enclosingFunction(Node* n) {
+        for ( auto* current = n->parent(); current; current = current->parent() ) {
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                return std::make_tuple(fn_decl->function()->ftype(), functionID(fn_decl));
+                break;
+            }
+            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
+                return std::make_tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    /** Removes the param_id as used within the function. */
+    void removeUsed(type::Function* ftype, const ID& function_id, const ID& param_id) {
+        int i = 0;
+        auto& unused = fn_unused_params[function_id].value();
+        for ( auto param : unused ) {
+            // TODO: maybe store the param ids in the map as tuple?
+            if ( ftype->parameters()[param]->id() == param_id ) {
+                unused.erase(unused.begin() + i);
+                return;
+            }
+            i++;
+        }
+    }
+
+    void operator()(expression::Name* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+        auto [ftype, function_id] = *opt_enclosing_fn;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( ! fn_unused_params[function_id].has_value() || fn_unused_params[function_id]->size() == 0 )
+                    return;
+
+                removeUsed(ftype, function_id, n->id());
+            }
+            case Stage::PRUNE_USES: return;
+            case Stage::PRUNE_DECLS: return;
+        }
+    }
+
+    void operator()(expression::Keyword* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+        auto [ftype, function_id] = *opt_enclosing_fn;
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( ! fn_unused_params[function_id].has_value() || fn_unused_params[function_id]->size() == 0 )
+                    return;
+
+                ID keyword_id;
+                switch ( n->kind() ) {
+                    case expression::keyword::Kind::Self: keyword_id = "__self"; break;
+                    case expression::keyword::Kind::DollarDollar: keyword_id = "__dd"; break;
+                    case expression::keyword::Kind::Captures: keyword_id = "__captures"; break;
+                    case expression::keyword::Kind::Scope: return; // Scope is different
+                    default: util::cannotBeReached();
+                }
+                removeUsed(ftype, function_id, keyword_id);
+            }
+            case Stage::PRUNE_USES: return;
+            case Stage::PRUNE_DECLS: return;
+        }
+    }
+};
+
 void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1588,8 +1892,13 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
           [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer);
           }},
-         {"types", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+         {"types",
+          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer);
+          }},
+
+         {"remove_params", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<FunctionParamVisitor>(builder, hilti::logging::debug::Optimizer);
           }}};
 
     // If no user-specified passes are given enable all of them.
