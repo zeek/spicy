@@ -69,3 +69,26 @@ overload(1);
 overload(1, 2);
 
 }
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+# Make sure function calls with side effect appear before the call
+global uint<64> side_effect = 0;
+function uint<64> counter() {
+    side_effect += 1;
+    return side_effect;
+}
+
+# CHECK: function void func()
+function void func(uint<64> x, uint<64> y) { }
+
+# CHECK-COUNT-2: counter();
+# CHECK: func();
+func(counter(), counter());
+hilti::print(side_effect);
+
+}

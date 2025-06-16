@@ -1599,19 +1599,19 @@ struct FunctionParamVisitor : OptimizerVisitor {
         return isModified();
     }
 
-    void remove_params(hilti::Node* call, const std::vector<std::size_t>& positions) {
+    void remove_params(expression::ResolvedOperator* call, const std::vector<std::size_t>& positions) {
         if ( ! call->isA<operator_::function::Call>() && ! call->isA<operator_::struct_::MemberCall>() )
             return;
         if ( positions.empty() )
             return;
 
-        auto* fn_use = call->as<expression::ResolvedOperator>();
         bool is_method = call->isA<operator_::struct_::MemberCall>();
 
         // Make parameters, just without positions
         Expressions params;
+        Expressions removed_params;
         // Get the params as a tuple
-        auto* ctor = is_method ? fn_use->op2()->tryAs<expression::Ctor>() : fn_use->op1()->tryAs<expression::Ctor>();
+        auto* ctor = is_method ? call->op2()->tryAs<expression::Ctor>() : call->op1()->tryAs<expression::Ctor>();
         if ( ! ctor )
             return;
         auto* tup = ctor->ctor()->tryAs<ctor::Tuple>();
@@ -1621,12 +1621,36 @@ struct FunctionParamVisitor : OptimizerVisitor {
         for ( std::size_t i = 0; i < tup->value().size(); i++ ) {
             if ( std::find(positions.begin(), positions.end(), i) == positions.end() )
                 params.push_back(tup->value()[i]);
+            else
+                removed_params.push_back(tup->value()[i]);
         }
         auto* ntuple = builder()->expressionCtor(builder()->ctorTuple(params));
+
+        for ( auto* removed : removed_params ) {
+            // TODO: For now this will just emit any calls before, but it's
+            // wrong in a few ways. First, this doesn't work in the same order for
+            // nested function calls if multiple have removed params. Second, this
+            // really should just be removed later rather than the isa<> check.
+            // Third, the non-removed params need to be hoisted into temporaries
+            // in order to preserve order. Fourth, this applies to other expressions
+            // like f(my_global = 5) - which relates to point 2
+            if ( removed->isA<operator_::function::Call>() ) {
+                Node* prev = call;
+                for ( auto* current = call->parent(); current; current = current->parent() ) {
+                    if ( auto* block = current->tryAs<statement::Block>() ) {
+                        block->insertBefore(builder()->context(), prev, builder()->statementExpression(removed));
+                        break;
+                    }
+                    prev = current;
+                }
+            }
+        }
+
+        // TODO: here need to insert removed elements to a block
         if ( is_method )
-            replaceNode(fn_use->op2(), ntuple);
+            replaceNode(call->op2(), ntuple);
         else
-            replaceNode(fn_use->op1(), ntuple);
+            replaceNode(call->op1(), ntuple);
     }
 
     // TODO: This is also done above, maybe move it into function decl?
@@ -1649,8 +1673,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
             auto uses = operator_::registry().resolved(op);
             if ( ! removed_uses[function_id] ) {
                 for ( auto* use : uses ) {
-                    if ( ! use )
-                        continue;
                     remove_params(use, unused_params);
                 }
                 removed_uses[function_id] = true;

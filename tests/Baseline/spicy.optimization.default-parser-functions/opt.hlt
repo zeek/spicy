@@ -160,6 +160,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     }
     catch ( hilti::SystemException __except ) {
+        hilti::exception_what(__except);
         (*self).__on_0x25_error();
         throw;
     }

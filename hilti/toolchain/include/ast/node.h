@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cinttypes>
+#include <cstddef>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -513,7 +514,7 @@ public:
      * Adds a child node. The node will be appended to the end of the current
      * list of children, and its parent will be set to the current node. If the
      * node already has a parent, it will be deep-copied first, and the new
-     * instance will be added instead of the once passed in. ×
+     * instance will be added instead of the once passed in.
      *
      * @param ctx current context in use
      * @param n child node to add; it's ok for this to be null to leave a child slot unset
@@ -530,6 +531,32 @@ public:
             n->_meta = _meta;
 
         _children.emplace_back(n);
+        n->_parent = this;
+        n->retain();
+    }
+
+    /**
+     * Adds a child node at the given index. Its parent will be set to the current
+     * node. If the node already has a parent, it will be deep-copied first, and the
+     * new instance will be added instead of the once passed in.
+     *
+     * @param ctx current context in use
+     * @param n child node to add; it's ok for this to be null to leave a child slot unset
+     * @param index the index where n will get inserted
+     */
+    void addChild(ASTContext* ctx, Node* n, std::ptrdiff_t index) {
+        auto where = _children.begin() + index;
+        if ( ! n ) {
+            _children.insert(where, nullptr);
+            return;
+        }
+
+        n = _newChild(ctx, n);
+
+        if ( ! n->location() && _meta->location() )
+            n->_meta = _meta;
+
+        _children.insert(where, n);
         n->_parent = this;
         n->retain();
     }
@@ -629,6 +656,16 @@ public:
      * @param children new children to set
      */
     void replaceChildren(ASTContext* ctx, const Nodes& children);
+
+    /**
+     * Inserts the new_ node before the before_this node.
+     *
+     * @param ctx current context in use
+     * @param before_this child to insert before, which must exist (otherwise the
+     * method will abort with an internal error)
+     * @param new_ new child to insert before before_this
+     */
+    void insertBefore(ASTContext* ctx, Node* before_this, Node* new_);
 
     /**
      * Replaces a single child with a new one. The old one is removed, and the

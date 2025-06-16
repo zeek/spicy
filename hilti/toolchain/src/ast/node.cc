@@ -108,6 +108,17 @@ std::string Node::printRaw() const {
     return out.str();
 }
 
+void Node::insertBefore(ASTContext* ctx, Node* before_this, Node* new_) {
+    for ( auto i = 0U; i < _children.size(); i++ ) {
+        if ( _children[i] == before_this ) {
+            addChild(ctx, new_, i);
+            return;
+        }
+    }
+
+    logger().internalError("child not found");
+}
+
 void Node::replaceChild(ASTContext* ctx, Node* old, Node* new_) {
     for ( auto i = 0U; i < _children.size(); i++ ) {
         if ( _children[i] == old ) {
