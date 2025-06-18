@@ -190,7 +190,7 @@ struct Visitor : hilti::visitor::PreOrder {
                     result = derefed;
             }
             else
-                result = {arg, Side::LHS};
+                result = {std::move(arg), Side::LHS};
 
             return;
         }
