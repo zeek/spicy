@@ -11,7 +11,7 @@ namespace hilti::rt {
 
 namespace detail::adl {
 template<typename T>
-inline std::string to_string(std::optional<T> x, adl::tag /*unused*/) {
+inline std::string to_string(const std::optional<T>& x, adl::tag /*unused*/) {
     return x ? hilti::rt::to_string(*x) : "(not set)";
 }
 
