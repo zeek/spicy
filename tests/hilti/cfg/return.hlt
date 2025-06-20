@@ -21,4 +21,9 @@ function bool fn3() {
     return False;
 }
 
+function uint<64> fn4() {
+    local x = 1;
+    return x;
+}
+
 }
