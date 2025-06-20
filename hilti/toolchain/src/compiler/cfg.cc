@@ -194,6 +194,12 @@ GraphNode CFG::addBlock(GraphNode predecessor, const Nodes& stmts, const Node* s
         else if ( auto&& block = c->tryAs<statement::Block>() )
             predecessor = addBlock(predecessor, block->statements(), block);
 
+        else if ( auto&& expr = c->tryAs<statement::Expression>() ) {
+            auto n = getOrAddNode(expr);
+            addEdge(predecessor, n);
+            predecessor = n;
+        }
+
         else if ( auto&& stmt = c->tryAs_<Statement>() ) {
             auto cc = getOrAddNode(stmt);
 
