@@ -451,14 +451,14 @@ protected:
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST been
-     * finalized by a plugin. This hook will run after the AST has been be
+     * finalized by a plugin. This hook will run after the AST has been
      * fully processed by that plugin, but before it's being transformed.
      *
      * The hook may modify the AST further, including adding new modules. If it
      * does indicate so with its return value, AST processing will start over
      * again to fully resolve the modified AST. Once that's done, this hook
      * will execute again. Note, however, that the hook cannot add anything to
-     * the AST that depends on *previous& plugins, as they won't execute again.
+     * the AST that depends on *previous* plugins, as they won't execute again.
      *
      * @param plugin the plugin that has processed the AST
      * @param root the AST that has been processed
