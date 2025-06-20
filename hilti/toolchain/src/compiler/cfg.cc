@@ -326,7 +326,7 @@ GraphNode CFG::addReturn(GraphNode predecessor, const statement::Return& return_
     addEdge(predecessor, r);
     addEdge(r, _end);
 
-    return predecessor;
+    return _end;
 }
 
 GraphNode CFG::addThrow(GraphNode predecessor, statement::Throw& throw_, GraphNode scope_end) {
