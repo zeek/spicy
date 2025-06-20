@@ -208,6 +208,7 @@ GraphNode CFG::addBlock(GraphNode predecessor, const Nodes& stmts, const Node* s
             // `add_block`, clean it up again.
             if ( x.value() && x->isA<End>() ) {
                 g.removeNode(x->identity());
+            }
 
             predecessor = cc;
         }
