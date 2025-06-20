@@ -240,7 +240,7 @@ GraphNode CFG::addFor(GraphNode predecessor, const statement::For& for_) {
     auto body_end = addBlock(local, for_.body()->children(), for_.body());
     addEdge(body_end, sequence);
 
-    auto scope_end = getOrAddNode(create_meta_node<ScopeEnd>(&for_));
+    auto scope_end = getOrAddNode(create_meta_node<End>(&for_));
     addEdge(sequence, scope_end);
 
     return scope_end;
@@ -322,13 +322,9 @@ GraphNode CFG::addTryCatch(GraphNode predecessor, const statement::Try& try_catc
 }
 
 GraphNode CFG::addReturn(GraphNode predecessor, const statement::Return& return_) {
-    if ( return_.expression() ) {
-        // We store the return statement to make us of it in data flow analysis.
-        auto r = getOrAddNode(const_cast<statement::Return*>(&return_));
-        addEdge(predecessor, r);
-        addEdge(r, _end);
-        return _end;
-    }
+    auto r = getOrAddNode(const_cast<statement::Return*>(&return_));
+    addEdge(predecessor, r);
+    addEdge(r, _end);
 
     return predecessor;
 }
