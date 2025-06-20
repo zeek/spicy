@@ -770,7 +770,7 @@ void CFG::populateReachableExpressions() {
             auto& in = reachability->in;
             auto& out = reachability->out;
 
-            const auto* scope_end = n->tryAs<ScopeEnd>();
+            const auto* scope_end = n->tryAs<End>();
 
             // The in set is the union of all incoming nodes.
             for ( const auto& n : g.neighborsUpstream(n->identity()) ) {
