@@ -589,7 +589,7 @@ struct DataflowVisitor : visitor::PreOrder {
         auto stmt = root;
         // If the statement was a simple `Expression` unwrap it to get the more specific node.
         if ( stmt->isA<statement::Expression>() ) {
-            if ( auto* child = stmt->child(0)->tryAs<statement::Expression>() )
+            if ( auto* child = stmt->childTryAs<statement::Expression>(0) )
                 stmt = child;
         }
 
