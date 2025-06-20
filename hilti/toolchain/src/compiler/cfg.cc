@@ -195,9 +195,6 @@ GraphNode CFG::addBlock(GraphNode predecessor, const Nodes& stmts, const Node* s
             predecessor = addBlock(predecessor, block->statements(), block);
 
         else if ( auto&& stmt = c->tryAs_<Statement>() ) {
-            if ( ! stmt->isA<Statement>() )
-                continue;
-
             auto cc = getOrAddNode(stmt);
 
             addEdge(predecessor, cc);
