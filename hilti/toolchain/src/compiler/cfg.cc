@@ -483,15 +483,12 @@ std::string CFG::dot() const {
             if ( meta->isA<Start>() )
                 ss << util::fmt("    %s [label=start shape=Mdiamond %s];\n", id, xlabel ? *xlabel : "");
 
-            else if ( meta->isA<End>() )
-                ss << util::fmt("    %s [label=end shape=Msquare %s];\n", id, xlabel ? *xlabel : "");
-
             else if ( meta->isA<Flow>() )
                 ss << util::fmt("    %s [shape=point %s];\n", id, xlabel ? *xlabel : "");
 
-            else if ( auto* scope = meta->tryAs<ScopeEnd>() ) {
-                ss << util::fmt("    %s [label=\"scope_end %s\" shape=triangle %s];\n", id,
-                                scope->scope->meta().location(), xlabel ? *xlabel : "");
+            else if ( auto* scope = meta->tryAs<End>() ) {
+                ss << util::fmt("    %s [label=\"end %s\" shape=triangle %s];\n", id, scope->scope->meta().location(),
+                                xlabel ? *xlabel : "");
             }
 
             else
