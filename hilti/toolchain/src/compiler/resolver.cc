@@ -123,26 +123,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         recordChange(d, util::fmt("set declaration's fully qualified ID to %s", d->fullyQualifiedID()));
     }
 
-    // If an expression is a reference, dereference it; otherwise return the
-    // expression itself.
-    Expression* skipReferenceValue(Expression* op) {
-        static const auto* value_reference_deref = operator_::get("value_reference::Deref");
-        static const auto* strong_reference_deref = operator_::get("strong_reference::Deref");
-        static const auto* weak_reference_deref = operator_::get("weak_reference::Deref");
-
-        if ( ! op->type()->type()->isReferenceType() )
-            return op;
-
-        if ( op->type()->type()->isA<type::ValueReference>() )
-            return *value_reference_deref->instantiate(builder(), {op}, op->meta());
-        else if ( op->type()->type()->isA<type::StrongReference>() )
-            return *strong_reference_deref->instantiate(builder(), {op}, op->meta());
-        else if ( op->type()->type()->isA<type::WeakReference>() )
-            return *weak_reference_deref->instantiate(builder(), {op}, op->meta());
-        else
-            logger().internalError("unknown reference type");
-    }
-
     // If a type is a reference type, dereference it; otherwise return the type
     // itself.
     QualifiedType* skipReferenceType(QualifiedType* t) {
