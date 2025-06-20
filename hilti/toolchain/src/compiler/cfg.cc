@@ -86,13 +86,32 @@ static bool contains(const Node& outer, const Node& inner) {
 }
 
 CFG::CFG(const Node* root)
-    : _begin(getOrAddNode(create_meta_node<Start>())), _end(getOrAddNode(create_meta_node<End>())) {
+    : _begin(getOrAddNode(create_meta_node<Start>())), _end(getOrAddNode(create_meta_node<End>(root))) {
     assert(root && root->isA<statement::Block>() && "only building from blocks currently supported");
 
     _begin = addGlobals(_begin, *root);
     auto last = addBlock(_begin, root->children(), root);
     if ( last != _end )
         addEdge(last, _end);
+
+    // Clean up artifacts from CFG construction.
+    //
+    // - `End` nodes with no incoming edges. These can arise if blocks never
+    //   flow through their end node, e.g., due to early return.
+    while ( true ) {
+        std::set<uintptr_t> dead_ends;
+
+        for ( auto&& [id, n] : g.nodes() ) {
+            if ( n.value()->isA<End>() && g.neighborsUpstream(id).empty() )
+                dead_ends.insert(id);
+        }
+
+        for ( auto&& id : dead_ends )
+            g.removeNode(id);
+
+        if ( dead_ends.empty() )
+            break;
+    }
 }
 
 GraphNode CFG::addGlobals(GraphNode predecessor, const Node& root) {

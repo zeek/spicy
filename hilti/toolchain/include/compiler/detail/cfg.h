@@ -47,12 +47,6 @@ struct Start : MetaNode {
     HILTI_NODE_1(Start, MetaNode, final);
 };
 
-// A meta node for the end of a control flow.
-struct End : MetaNode {
-    End() : MetaNode(NodeTags) {}
-    HILTI_NODE_1(End, MetaNode, final);
-};
-
 // A meta node joining or splitting control flow with no matching source statement.
 struct Flow : MetaNode {
     Flow() : MetaNode(NodeTags) {}
@@ -60,12 +54,12 @@ struct Flow : MetaNode {
 };
 
 // A meta node to signify end of a scope carrying the source range of that scope.
-struct ScopeEnd : MetaNode {
-    ScopeEnd(const Node* scope) : MetaNode(NodeTags), scope(scope) {
+struct End : MetaNode {
+    End(const Node* scope) : MetaNode(NodeTags), scope(scope) {
         assert(scope); // Should always contain a valid scope.
     }
 
-    HILTI_NODE_1(ScopeEnd, MetaNode, final);
+    HILTI_NODE_1(End, MetaNode, final);
 
     const Node* scope;
 };
