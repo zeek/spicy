@@ -1,0 +1,22 @@
+# @TEST-EXEC: hiltic -p -o foo.hlt -D cfg-final %INPUT -D optimizer >output 2>&1
+# @TEST-EXEC: hiltic -p -o processed.hlt %INPUT
+# @TEST-EXEC: btest-diff processed.hlt
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+# function int<8> f() {
+function void f() {
+    {
+        hilti::print("hey");
+        return;
+    }
+    hilti::print("bad!");
+    return;
+}
+
+f();
+
+}
