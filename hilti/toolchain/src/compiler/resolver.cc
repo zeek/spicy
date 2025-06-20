@@ -1349,6 +1349,23 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(operator_::function::Call* n) final {
+        auto* ctor = n->op1()->as<expression::Ctor>()->ctor();
+
+        if ( auto* x = ctor->tryAs<ctor::Coerced>() )
+            ctor = x->coercedCtor();
+
+        auto args = ctor->as<ctor::Tuple>()->value();
+
+        auto* decl = context()->lookup(n->op0()->as<expression::Name>()->resolvedDeclarationIndex());
+        auto* f = decl->as<declaration::Function>();
+        if ( auto coerced = coerceCallArguments(args, f->function()->ftype()->parameters()); coerced && *coerced ) {
+            auto* ntuple = builder()->expressionCtor(builder()->ctorTuple(**coerced), n->op1()->meta());
+            recordChange(n, ntuple, "type arguments");
+            n->setOp1(context(), ntuple);
+        }
+    }
+
     void operator()(operator_::map::Get* n) final {
         if ( auto nargs = coerceMethodArgument(n, 1, n->result()) ) {
             if ( *nargs ) {
