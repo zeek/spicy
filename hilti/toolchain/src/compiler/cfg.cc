@@ -159,7 +159,7 @@ GraphNode CFG::addBlock(GraphNode predecessor, const Nodes& stmts, const Node* s
         last = std::next(last);
 
     // Node this block will eventually flow into.
-    auto scope_end = getOrAddNode(create_meta_node<ScopeEnd>(scope));
+    auto scope_end = getOrAddNode(create_meta_node<End>(scope));
 
     // Add all statements which are part of the normal flow.
     for ( auto&& c : (last != stmts.end() ? Nodes(stmts.begin(), last) : stmts) ) {
@@ -206,7 +206,7 @@ GraphNode CFG::addBlock(GraphNode predecessor, const Nodes& stmts, const Node* s
 
             // We might have added a dead edge to a `ScopeEnd` with
             // `add_block`, clean it up again.
-            if ( x.value() && x->isA<ScopeEnd>() )
+            if ( x.value() && x->isA<End>() ) {
                 g.removeNode(x->identity());
 
             predecessor = cc;
