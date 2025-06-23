@@ -274,11 +274,7 @@ struct FunctionVisitor : OptimizerVisitor {
     }
 
     void operator()(declaration::Function* n) final {
-        ID function_id;
-        if ( auto* prototype = context()->lookup(n->linkedPrototypeIndex()) )
-            function_id = prototype->fullyQualifiedID();
-        else
-            function_id = n->fullyQualifiedID();
+        ID function_id = n->functionID(context());
 
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -1639,14 +1635,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
             replaceNode(call->op1(), ntuple, "removing unused arguments from call");
     }
 
-    // TODO: This is also done above, maybe move it into function decl?
-    ID functionID(declaration::Function* fn) {
-        if ( auto* prototype = context()->lookup(fn->linkedPrototypeIndex()) )
-            return prototype->fullyQualifiedID();
-
-        return fn->fullyQualifiedID();
-    }
-
     void pruneFromUses(const ID& function_id, const Operator* op) {
         auto unused = fn_unused_params.at(function_id);
         if ( unused.removed_uses || unused.unused_params.empty() || ! op )
@@ -1713,7 +1701,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 
     void operator()(declaration::Function* n) final {
-        ID function_id = functionID(n);
+        ID function_id = n->functionID(context());
 
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -1808,7 +1796,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
     std::optional<std::tuple<type::Function*, ID>> enclosingFunction(Node* n) {
         for ( auto* current = n->parent(); current; current = current->parent() ) {
             if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
-                return std::tuple(fn_decl->function()->ftype(), functionID(fn_decl));
+                return std::tuple(fn_decl->function()->ftype(), fn_decl->functionID(context()));
             }
             else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
                 return std::tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
