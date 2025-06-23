@@ -506,6 +506,24 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@Pub3%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@Pub3%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@Pub3%uses_stream" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "(*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());" -> null (statement result unused)
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
@@ -522,11 +540,24 @@
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
-[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
-[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
-[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
-[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
-[debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__cur = __cur.advance((*(*self).__position_update));" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__error = (*self).__error;" -> null (statement result unused)
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
@@ -554,24 +585,6 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); }" -> null
@@ -705,15 +718,15 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { foo::Priv4::__parser = [$name="foo::Priv4", $is_public=False, $parse1=foo::Priv4::parse1, $parse2=foo::Priv4::parse2, $parse3=foo::Priv4::parse3, $context_new=Null, $type_=foo::Priv4, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::Priv4::__parser, $scope, Null); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { foo::Priv5::__parser = [$name="foo::Priv5", $is_public=False, $parse1=foo::Priv5::parse1, $parse2=foo::Priv5::parse2, $parse3=foo::Priv5::parse3, $context_new=Null, $type_=foo::Priv5, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::Priv5::__parser, $scope, Null); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { foo::Priv6::__parser = [$name="foo::Priv6", $is_public=False, $parse1=foo::Priv6::parse1, $parse2=foo::Priv6::parse2, $parse3=foo::Priv6::parse3, $context_new=Null, $type_=foo::Priv6, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::Priv6::__parser, $scope, Null); }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
-[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) (*self).__position_update = Null; }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
