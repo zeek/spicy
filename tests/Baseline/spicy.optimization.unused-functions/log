@@ -433,6 +433,16 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__B_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { throw; }" -> replacing rethrowing try/catch with just the block
 [debug/optimizer] [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__B_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__B_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }"
 [debug/optimizer] [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__C_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { throw; }" -> replacing rethrowing try/catch with just the block

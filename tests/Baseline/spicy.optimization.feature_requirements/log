@@ -655,6 +655,20 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( True ) { (*(*self).data).close(); }" -> statement::Block "{ (*(*self).data).close(); }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { (*(*self).data).close(); }" -> statement::Block "{ (*(*self).data).close(); }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { (*__unit).__begin = begin(__ncur); }" -> statement::Block "{ (*__unit).__begin = begin(__ncur); }"
@@ -691,6 +705,8 @@
 [debug/optimizer] [<no location>] statement::If "if ( True ) { spicy_rt::filter_disconnect(self); }" -> statement::Block "{ spicy_rt::filter_disconnect(self); }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { spicy_rt::filter_forward_eod(self); }" -> statement::Block "{ spicy_rt::filter_forward_eod(self); }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { spicy_rt::filter_forward_eod(self); }" -> statement::Block "{ spicy_rt::filter_forward_eod(self); }"
+[debug/optimizer] [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ }"
+[debug/optimizer] [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ }"
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X0%supports_filters = False;" -> disabled feature 'supports_filters' of type 'foo::X0' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X0%supports_sinks = False;" -> disabled feature 'supports_sinks' of type 'foo::X0' since it is not used
 [debug/optimizer] [feature_requirements.spicy:10:1-51:2] declaration::Constant "const bool __feat%foo@@X0%synchronization = False;" -> disabled feature 'synchronization' of type 'foo::X0' since it is not used
