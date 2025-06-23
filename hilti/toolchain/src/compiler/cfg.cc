@@ -634,8 +634,6 @@ struct DataflowVisitor : visitor::PreOrder {
             // Names in the global declaration appear on the RHS.
             transfer.use.insert(decl);
 
-            // FIXME(bbannier): handle local declarations as well?
-
             if ( auto* type = global->type()->type() ) {
                 if ( is_aliasing_type(*type) )
                     transfer.maybe_alias.insert(decl);
