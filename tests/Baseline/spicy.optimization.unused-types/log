@@ -801,6 +801,24 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::Try "try { # "<...>/unused-types.spicy:28:14-28:20" # Begin parsing production: Unit: foo__Priv6_2 -> (*self).x = default<foo::Priv6>(); (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error); # End parsing production: Unit: foo__Priv6_2 -> } catch ( hilti::SystemException __except ) { throw; }" -> replacing rethrowing try/catch with just the block
 [debug/optimizer] [<no location>] statement::Try "try { # "<...>/unused-types.spicy:28:14-28:20" # Begin parsing production: Unit: foo__Priv6_2 -> (*self).x = default<foo::Priv6>(); (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error); # End parsing production: Unit: foo__Priv6_2 -> } catch ( hilti::SystemException __except ) { throw; }" -> statement::Block "{ # "<...>/unused-types.spicy:28:14-28:20" # Begin parsing production: Unit: foo__Priv6_2 -> (*self).x = default<foo::Priv6>(); (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error); # End parsing production: Unit: foo__Priv6_2 -> }"
 [debug/optimizer] [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__Priv10_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { throw; }" -> replacing rethrowing try/catch with just the block
