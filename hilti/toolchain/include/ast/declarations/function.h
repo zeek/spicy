@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/declaration.h>
 #include <hilti/ast/declarations/type.h>
@@ -50,6 +47,12 @@ public:
         assert(index);
         _linked_prototype_index = index;
     }
+
+    /**
+     * Returns the ID for the function declaration, regardless of the module which
+     * it was implemented in. Only valid once the AST has been resolved.
+     */
+    ID functionID(ASTContext* ctx);
 
     std::string_view displayName() const final { return "function"; }
 
