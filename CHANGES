@@ -1,3 +1,20 @@
+1.14.0-dev.89 | 2025-06-23 08:41:57 -0400
+
+  * GH-2091: Fix strong->value reference coercion in calls. (Evan Typanski, Corelight)
+
+    Fixes #2091
+
+    Calls would auto-deref any strong references when resolving the function
+    call. But, this auto-deref gets removed for units because of
+    7f269c5da866bd9da744ebdb7784641e1affce3f. For `new` calls, this
+    continued to work because they then got *re-resolved*. Calls did not
+    have this. This simply adds that re-resolution to function calls.
+
+    Technically this could apply to methods, but I couldn't trigger it in
+    Spicy, so I left it.
+
+  * Cleanup comments and unused function. (Evan Typanski, Corelight)
+
 1.14.0-dev.86 | 2025-06-18 12:34:03 +0200
 
   * Bump pre-commit hooks. (Benjamin Bannier, Corelight)

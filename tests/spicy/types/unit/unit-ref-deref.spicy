@@ -1,0 +1,20 @@
+# @TEST-DOC: Ensures units that are coerced in a function call to deref work; regression test for #2091
+#
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+type MyUnit = unit {};
+
+global my_global: MyUnit&;
+my_fn(my_global);
+my_inout_fn(my_global);
+
+public function my_fn(param: MyUnit): void { print "my_fn"; }
+public function my_inout_fn(inout param: MyUnit): void { print "my_inout_fn"; }
+
+# The case that caused #2091
+type Data = unit(unit_param: MyUnit&) {
+    on %done { my_fn(unit_param); }
+};
