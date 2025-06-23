@@ -88,3 +88,32 @@ function void last_used(uint<64> a, uint<64> b, uint<64> c) {
 last_used(1, 2, 3);
 
 }
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+function uint<64> side_effect() {
+    hilti::print("side effect!");
+    return 1;
+}
+
+# The only caller of this has side effects
+# CHECK: function void called_with_side_effects(uint<64> x)
+function void called_with_side_effects(uint<64> x) { }
+
+# One of multiple callers of this has a side effect in params
+# CHECK: function void called_with_one_side_effect(uint<64> x, uint<64> y)
+function void called_with_one_side_effect(uint<64> x, uint<64> y) { }
+
+# CHECK: called_with_side_effects(side_effect())
+called_with_side_effects(side_effect());
+
+# CHECK: called_with_one_side_effect(1, 2)
+called_with_one_side_effect(1, 2);
+# CHECK: called_with_one_side_effect(side_effect(), 3)
+called_with_one_side_effect(side_effect(), 3);
+
+}

@@ -1682,6 +1682,36 @@ struct FunctionParamVisitor : OptimizerVisitor {
         ftype->setParameters(builder()->context(), params);
     }
 
+    /** Determines if the uses of this operator contain any side effects. */
+    bool usesContainSideEffects(const Operator* op) {
+        if ( op_uses.count(op) == 0 )
+            return false;
+
+        auto uses = op_uses.at(op);
+        for ( auto* use : uses ) {
+            if ( ! use->isA<operator_::function::Call>() && ! use->isA<operator_::struct_::MemberCall>() )
+                continue;
+
+            bool is_method = use->isA<operator_::struct_::MemberCall>();
+
+            // Get the params as a tuple
+            auto* ctor = is_method ? use->op2()->tryAs<expression::Ctor>() : use->op1()->tryAs<expression::Ctor>();
+            if ( ! ctor )
+                continue;
+
+            auto* tup = ctor->ctor()->tryAs<ctor::Tuple>();
+            if ( ! tup )
+                continue;
+
+            for ( auto* arg : tup->value() ) {
+                if ( arg->isA<operator_::function::Call>() )
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     void operator()(declaration::Function* n) final {
         ID function_id = functionID(n);
 
@@ -1699,6 +1729,10 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 // Don't set if there's no body or multiple implementations
                 if ( ! n->function()->body() ||
                      (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) )
+                    return;
+
+                // Don't set if a use may have side effects
+                if ( usesContainSideEffects(n->operator_()) )
                     return;
 
                 for ( std::size_t i = 0; i < n->function()->ftype()->parameters().size(); i++ )
@@ -1742,6 +1776,10 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 // If the type is public, we cannot change its fields.
                 auto* type_ = n->parent<declaration::Type>();
                 if ( type_ && type_->linkage() == declaration::Linkage::Public )
+                    return;
+
+                // Don't set if a use may have side effects
+                if ( usesContainSideEffects(n->operator_()) )
                     return;
 
                 if ( n->id().str().find("parse1") != std::string::npos ||
