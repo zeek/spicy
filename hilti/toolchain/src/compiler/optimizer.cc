@@ -1755,7 +1755,8 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 auto& unused = fn_unused_params[function_id];
 
                 if ( n->attributes()->has(hilti::attribute::kind::Cxxname) ||
-                     n->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
+                     n->attributes()->has(hilti::attribute::kind::AlwaysEmit) ||
+                     n->attributes()->has(hilti::attribute::kind::PublicSignature) )
                     return;
 
                 if ( n->linkage() == declaration::Linkage::Public )
@@ -1769,12 +1770,6 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 // Don't set if a use may have side effects
                 if ( usesContainSideEffects(n->operator_()) )
                     return;
-
-                if ( n->id().str().find("parse1") != std::string::npos ||
-                     n->id().str().find("parse2") != std::string::npos ||
-                     n->id().str().find("parse3") != std::string::npos ) {
-                    return;
-                }
 
                 for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
                     unused.unused_params.push_back(i);
