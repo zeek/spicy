@@ -146,12 +146,12 @@ TEST_CASE("registerParser") {
         REQUIRE_FALSE(parser.__hook_skipped);
         REQUIRE_FALSE(parser.__hook_undelivered);
 
-        detail::registerParser(parser, "xyz", UnitRef<int>(), nullptr);
+        detail::registerParser(parser, 123, UnitRef<int>(), nullptr);
 
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
-        CHECK_EQ(parser.linker_scope, "xyz");
+        CHECK_EQ(parser.linker_scope, 123);
         CHECK_FALSE(parser.__parse_sink);
         CHECK_FALSE(parser.__hook_gap);
         CHECK_FALSE(parser.__hook_overlap);
@@ -171,12 +171,12 @@ TEST_CASE("registerParser") {
         REQUIRE_FALSE(parser.__hook_skipped);
         REQUIRE_FALSE(parser.__hook_undelivered);
 
-        detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>(), nullptr);
+        detail::registerParser(parser, 123, UnitRef<UnitWithSinkSupport>(), nullptr);
 
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
 
-        CHECK_EQ(parser.linker_scope, "xyz");
+        CHECK_EQ(parser.linker_scope, 123);
         CHECK(parser.__parse_sink);
         CHECK(parser.__hook_gap);
         CHECK(parser.__hook_overlap);
@@ -191,7 +191,7 @@ TEST_CASE("registerParser") {
         Parser parser;
         parser.mime_types = {MIMEType("foo/bar"), MIMEType("foo/*")};
 
-        detail::registerParser(parser, "xyz", UnitRef<UnitWithSinkSupport>(), nullptr);
+        detail::registerParser(parser, 123, UnitRef<UnitWithSinkSupport>(), nullptr);
 
         REQUIRE_EQ(detail::globalState()->parsers.size(), 1U);
         CHECK_EQ(detail::globalState()->parsers.at(0), &parser);
@@ -205,7 +205,7 @@ TEST_CASE("registerParserAlias") {
     Parser parser;
     parser.name = "parser";
     parser.is_public = true;
-    detail::registerParser(parser, "xyz", UnitRef<int>(), nullptr);
+    detail::registerParser(parser, 123, UnitRef<int>(), nullptr);
     detail::__global_state->runtime_is_initialized = false;
     init(); // populates the alias table
 

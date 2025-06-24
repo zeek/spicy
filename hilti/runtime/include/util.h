@@ -786,4 +786,25 @@ private:
 
 } // namespace control
 
+/**
+ * Clone of `std::experimental::scope_exit` that calls an exit function on destruction.
+ */
+template<typename EF>
+struct scope_exit {
+    scope_exit(EF&& f) noexcept : _f(std::forward<EF>(f)) {}
+
+    scope_exit(const scope_exit&) = delete;
+    scope_exit(scope_exit&&) = delete;
+
+    ~scope_exit() noexcept {
+        try {
+            _f();
+        } catch ( ... ) {
+            // Ignore.
+        }
+    }
+
+    EF _f;
+};
+
 } // namespace hilti::rt

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace hilti::rt {
 
 struct Context;
@@ -30,7 +32,7 @@ namespace detail {
  * for every module it compiles. */
 struct HiltiModule {
     const char* name{};              /**< name of the HILTI module; for informational purposes */
-    const char* id = nullptr;        /**< unique identifier for the module */
+    uint64_t id = 0;                 /**< unique identifier for the module */
     void (*init_module)() = nullptr; /**< callback for executing any top-level module code when the runtime library is
                                 being initialized; null if not needed */
     void (*init_globals)(hilti::rt::Context* ctx) =

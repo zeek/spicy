@@ -6,7 +6,7 @@
 
 #include <hilti/rt/libhilti.h>
 
-extern const char* __hlt_hlto_scope;
+extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Foo {
     extern void __register_module();
@@ -14,4 +14,8 @@ namespace __hlt::Foo {
 
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
-extern void __hlt::Foo::__register_module() { ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr, nullptr}); }
+extern void __hlt::Foo::__register_module() {
+    __hlt_hlto_scope = <...>
+    ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr, nullptr});
+}
+

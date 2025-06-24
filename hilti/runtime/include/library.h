@@ -101,9 +101,28 @@ public:
      */
     hilti::rt::Result<Nothing> remove() const;
 
+    /**
+     * Returns the linker scope to be used for the library currently being
+     * loaded. If a library is currently being loaded through `open()`, the
+     * scope is (stable) hash of that library's absolute path. If we're outside
+     * of library loading, this returns a scope that's guaranteed to be unique
+     * across all calls to this method.
+     *
+     * This method is meant to be called only from the generated linker code to
+     * set a module's global scope variable. Its semantics are tailored to that
+     * use case.
+     *
+     * @return linker scope to use
+     */
+    static uint64_t currentScope();
+
 private:
     hilti::rt::filesystem::path _path; // Absolute path to the physical file wrapped by this instance.
     mutable void* _handle = nullptr;   // Handle to the library.
+
+    static std::optional<hilti::rt::filesystem::path>
+        _current_path;              // absolute path to library currently being loaded, if any
+    static uint64_t _scope_counter; // counter for creating unique scopes
 };
 
 } // namespace hilti::rt

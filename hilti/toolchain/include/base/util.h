@@ -620,26 +620,7 @@ constexpr auto to_string(Enum value, const Value<Enum> (&values)[Size]) {
  */
 std::optional<hilti::rt::filesystem::path> cacheDirectory(const hilti::Configuration& configuration);
 
-/**
- * Clone of `std::experimental::scope_exit`that calls an exit function on destruction.
- */
-template<typename EF>
-struct scope_exit {
-    scope_exit(EF&& f) noexcept : _f(std::forward<EF>(f)) {}
-
-    scope_exit(const scope_exit&) = delete;
-    scope_exit(scope_exit&&) = delete;
-
-    ~scope_exit() noexcept {
-        try {
-            _f();
-        } catch ( ... ) {
-            // Ignore.
-        }
-    }
-
-    EF _f;
-};
+using rt::scope_exit;
 
 } // namespace util
 

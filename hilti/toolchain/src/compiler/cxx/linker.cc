@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <random>
+
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/util.h>
@@ -57,17 +59,10 @@ void cxx::Linker::finalize() {
     unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_library_version = R\"(%s)\";", version.toJSON()));
     unit->add("const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();");
 
-    // Create a scope string that's likely to be unique to this linker module.
-    std::size_t hash = 0;
-    for ( const auto& [id, path] : _modules ) {
-        std::ifstream ifs(path);
-        std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-        hash = rt::hashCombine(hash, std::hash<std::string>()(content));
-    }
-
+    // Create a variable for the linker scope, but leave it unset. We will
+    // inject the actual scope at runtime when the library is loaded.
     const auto& cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
-    auto scope = hilti::rt::fmt("%" PRIx64, hash);
-    unit->add(fmt("const char HILTI_WEAK * %s_hlto_scope = \"%s\";", cxx_namespace, scope));
+    unit->add(fmt("HILTI_EXPORT HILTI_WEAK uint64_t %s_hlto_scope = 0;", cxx_namespace));
 
     for ( const auto& j : _joins ) {
         for ( const auto& c : j.second ) {

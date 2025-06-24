@@ -73,9 +73,9 @@ struct Visitor : hilti::visitor::PreOrder {
             case expression::keyword::Kind::Captures: result = {"__captures", Side::LHS}; break;
             case expression::keyword::Kind::Scope: {
                 auto scope = fmt("%s_hlto_scope", cg->options().cxx_namespace_intern);
-                auto extern_scope = cxx::declaration::Global(cxx::ID(scope), "const char*", {}, {}, "extern");
+                auto extern_scope = cxx::declaration::Global(cxx::ID(scope), "uint64_t", {}, {}, "extern");
                 cg->unit()->add(extern_scope);
-                result = {fmt("std::string(%s)", scope), Side::RHS};
+                result = {scope, Side::RHS};
                 break;
             }
 

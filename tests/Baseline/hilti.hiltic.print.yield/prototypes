@@ -6,7 +6,7 @@
 
 #include <hilti/rt/libhilti.h>
 
-extern const char* __hlt_hlto_scope;
+extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Foo {
     extern auto test(const std::string& x) -> std::string;
