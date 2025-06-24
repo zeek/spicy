@@ -722,7 +722,15 @@ void CFG::populateDataflow() {
         }
     }
 
-    { // Populate the kill sets.
+    {
+        // Populate the kill sets.
+        //
+        // TODO(bbannier): kill sets are currently not flow-aware at all, i.e.,
+        // a gen might kill another gen which only happens after. This should
+        // cause no bad side-effects, but clutters the output; we should
+        // consider pruning the kill set so it only contains gens flowing into
+        // the node.
+
         std::map<const Node*, std::unordered_set<GraphNode>> gens;
         for ( auto&& [_, transfer] : _dataflow ) {
             for ( auto&& [d, n] : transfer.gen )
