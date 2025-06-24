@@ -1,3 +1,7 @@
+1.14.0-dev.93 | 2025-06-24 10:40:39 +0200
+
+  * Bump 3rdparty/utfcpp from `65701fe` to `0bef8b2` (dependabot[bot])
+
 1.14.0-dev.91 | 2025-06-24 10:40:26 +0200
 
   * Bump 3rdparty/utf8proc from `24e2a19` to `b2f72ca` (dependabot[bot])
