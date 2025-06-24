@@ -147,7 +147,8 @@ public:
 
     void populateDataflow();
     void populateReachableExpressions();
-    std::vector<Node*> unreachableStatements() const;
+
+    const auto& dataflow() const { return _dataflow; }
 
     util::graph::DirectedGraph<GraphNode, uintptr_t> g;
 
