@@ -15,7 +15,7 @@ public type Bar = unit {
     on %done    { print "Bar done", self; }
     on %error   { print "Bar error - must not see", self; }
     on %finally { print "Bar finally - 1", self;
-                  1/0;
+                  print 1/0;
                   print "Bar finally - 2 - must not see";
                 }
 };
