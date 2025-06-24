@@ -94,6 +94,7 @@ const Kind Nosub("&nosub");
 const Kind OnHeap("&on-heap");
 const Kind Optional("&optional");
 const Kind Priority("&priority");
+const Kind Public("&public");
 const Kind RequiresTypeFeature("&requires-type-feature");
 const Kind Static("&static");
 
