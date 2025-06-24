@@ -72,8 +72,8 @@ struct Visitor : hilti::visitor::PreOrder {
                 values.emplace_back(fmt("std::optional<%s>{}", itype));
         }
 
-        result = fmt("::hilti::rt::Bitfield<%s>(hilti::rt::tuple::make_from_optionals(%s))", util::join(types, ", "),
-                     util::join(values, ", "));
+        result = fmt("::hilti::rt::Bitfield<%s>(hilti::rt::tuple::make_from_optionals(%s), %s)",
+                     util::join(types, ", "), util::join(values, ", "), cg->typeInfo(n->type()));
     }
     void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool(%s)", n->value() ? "true" : "false"); }
 

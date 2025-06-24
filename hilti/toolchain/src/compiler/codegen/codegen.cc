@@ -861,10 +861,12 @@ void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
     block->addStatement(cxx::Expression(fmt("::hilti::rt::profiler::stop(%s)", profiler)));
 }
 
-cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx::Expression& value,
+cxx::Expression CodeGen::unsignedIntegerToBitfield(QualifiedType* t, const cxx::Expression& value,
                                                    const cxx::Expression& bitorder) {
+    auto* bf = t->type()->as<type::Bitfield>();
+
     std::vector<cxx::Expression> bits;
-    for ( const auto& b : t->bits(false) ) {
+    for ( const auto& b : bf->bits(false) ) {
         auto x = fmt("::hilti::rt::integer::bits(%s, %d, %d, %s)", value, b->lower(), b->upper(), bitorder);
 
         if ( auto* a = b->attributes()->find(hilti::attribute::kind::Convert) ) {
@@ -880,7 +882,7 @@ cxx::Expression CodeGen::unsignedIntegerToBitfield(type::Bitfield* t, const cxx:
     // doesn't like the expression we are building, not sure why.
     bits.emplace_back(fmt("::hilti::rt::integer::noop(%s)", value));
 
-    return fmt("::hilti::rt::make_bitfield(%s)", util::join(bits, ", "));
+    return fmt("::hilti::rt::make_bitfield(%s, %s)", typeInfo(t), util::join(bits, ", "));
 }
 
 std::pair<std::string, std::string> CodeGen::cxxTypeForVector(QualifiedType* element_type, bool want_iterator) {

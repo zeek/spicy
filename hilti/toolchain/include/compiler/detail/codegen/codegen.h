@@ -110,7 +110,7 @@ public:
     cxx::Expression startProfiler(const std::string& name, cxx::Block* block = nullptr, bool insert_at_front = false);
     void stopProfiler(const cxx::Expression& profiler, cxx::Block* block = nullptr);
 
-    cxx::Expression unsignedIntegerToBitfield(type::Bitfield* t, const cxx::Expression& value,
+    cxx::Expression unsignedIntegerToBitfield(QualifiedType* t, const cxx::Expression& value,
                                               const cxx::Expression& bitorder);
 
     // Helper factoring out common code to generate C++ types and default

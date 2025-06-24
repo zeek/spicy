@@ -270,15 +270,22 @@ struct VisitorTypesInit {
                 const auto* x = type.tuple;
                 auto s = x->iterate(v);
                 auto i = s.begin();
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i->second)->get(i->second), "string");
+
+                auto opt1 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(opt1)->get(opt1), "string");
                 CHECK_EQ(i->first.name, "a");
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(i->second)->get(i->second), 6);
+
+                auto opt2 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
+                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(opt2)->get(opt2), 6);
                 CHECK_EQ(i->first.name, "b");
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(i->second)->get(i->second), 31);
+
+                auto opt3 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
+                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(opt3)->get(opt3), 31);
                 CHECK_EQ(i->first.name, "c");
                 ++i;
+
                 CHECK(i == s.end());
                 CHECK_EQ(x->elements().size(), 3);
                 break;
