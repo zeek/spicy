@@ -2149,7 +2149,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     auto* attr_ext_overload = builder()->attributeSet(
         {builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("is_filter")),
          builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("supports_sinks")),
-         builder()->attribute(hilti::attribute::kind::Static)});
+         builder()->attribute(hilti::attribute::kind::Static), builder()->attribute(hilti::attribute::kind::Public)});
 
     auto* f_ext_overload1_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
     auto* f_ext_overload1 =
