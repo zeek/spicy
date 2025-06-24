@@ -1601,6 +1601,10 @@ struct MemberVisitor : OptimizerVisitor {
 struct FunctionBodyVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
 
+    std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG& cfg) const;
+
+    std::vector<Node*> unreachableStatements(const detail::cfg::CFG& cfg) const;
+
     bool prune_uses(Node* node) override {
         visitor::visit(*this, node);
         return isModified();
@@ -1656,7 +1660,7 @@ struct FunctionBodyVisitor : OptimizerVisitor {
             auto cfg = detail::cfg::CFG(n);
             cfg.populateReachableExpressions();
 
-            for ( auto&& x : cfg.unreachableStatements() )
+            for ( auto&& x : unreachableStatements(cfg) )
                 modified |= remove_node(cfg, x, "statement result unused");
 
             if ( modified )
