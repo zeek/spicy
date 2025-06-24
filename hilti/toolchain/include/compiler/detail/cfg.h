@@ -143,8 +143,6 @@ public:
     GraphNode getOrAddNode(GraphNode n);
     void addEdge(const GraphNode& from, const GraphNode& to);
 
-    std::unordered_set<Node*> unreachableNodes() const;
-
     std::string dot() const;
 
     void populateDataflow();
