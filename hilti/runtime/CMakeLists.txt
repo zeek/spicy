@@ -130,7 +130,6 @@ install_headers(${PROJECT_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tiny
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/single_include/nlohmann
                 hilti/rt/3rdparty/nlohmann)
-install_headers(${PROJECT_SOURCE_DIR}/3rdparty/any hilti/rt/3rdparty/any)
 
 ##### Tests
 

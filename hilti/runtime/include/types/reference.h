@@ -706,7 +706,7 @@ public:
      * */
     template<typename T>
     T* as() const {
-        if ( _ptr.empty() )
+        if ( ! _ptr.has_value() )
             return nullptr;
 
         try {
@@ -723,7 +723,7 @@ public:
      */
     template<typename T>
     ValueReference<T> derefAsValue() const {
-        if ( _ptr.empty() )
+        if ( ! _ptr.has_value() )
             return {};
 
         try {
@@ -734,7 +734,7 @@ public:
     }
 
     /** Releases the bound reference. */
-    void reset() { _ptr.clear(); }
+    void reset() { _ptr.reset(); }
 
 private:
     hilti::rt::any _ptr;
