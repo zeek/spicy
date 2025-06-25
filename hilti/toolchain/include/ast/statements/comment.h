@@ -14,9 +14,9 @@ enum class Separator { After, BeforeAndAfter, Before };
 
 namespace detail {
 constexpr util::enum_::Value<Separator> Conventions[] = {
-    {Separator::After, "after"},
-    {Separator::BeforeAndAfter, "before-and-after"},
-    {Separator::Before, "before"},
+    {.value = Separator::After, .name = "after"},
+    {.value = Separator::BeforeAndAfter, .name = "before-and-after"},
+    {.value = Separator::Before, .name = "before"},
 };
 } // namespace detail
 

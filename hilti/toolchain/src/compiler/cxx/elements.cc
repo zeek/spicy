@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <cstring>
 
 #include <hilti/base/logger.h>
@@ -139,10 +140,10 @@ std::optional<std::string> cxx::normalizeID(std::string_view id) {
     if ( id.empty() )
         return std::nullopt;
 
-    if ( reserved_keywords.count(id) )
+    if ( reserved_keywords.contains(id) )
         return std::string(id) + "_";
 
-    if ( std::all_of(id.begin(), id.end(), [](auto c) { return std::isalnum(c) || c == '_'; }) )
+    if ( std::ranges::all_of(id, [](auto c) { return std::isalnum(c) || c == '_'; }) )
         // Fast-path: no special-characters, no leading digits.
         return std::nullopt;
 

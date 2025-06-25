@@ -74,13 +74,17 @@ private:
 };
 
 // TODO(robin): Can we factor out these operators into code-formatter.h?
-template<typename T, IF_DERIVED_FROM(T, code_formatter::isManipulator)>
-inline Formatter& operator<<(Formatter& f, const T& t) {
+template<typename T>
+inline Formatter& operator<<(Formatter& f, const T& t)
+    requires std::is_base_of_v<code_formatter::isManipulator, T>
+{
     return t(f);
 }
 
-template<typename T, typename std::enable_if_t<std::is_scalar_v<T>>* = nullptr>
-inline Formatter& operator<<(Formatter& f, const T& t) {
+template<typename T>
+inline Formatter& operator<<(Formatter& f, const T& t)
+    requires(std::is_scalar_v<T>)
+{
     f.next();
     f.stream() << t;
     return f;

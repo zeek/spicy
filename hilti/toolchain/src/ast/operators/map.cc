@@ -22,7 +22,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeMapIterator(type::Wildcard())},
             .result_doc = "<dereferenced type>",
             .ns = "map::iterator",
             .doc = "Returns the map element that the iterator refers to.",
@@ -42,7 +42,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeMapIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeMapIterator(type::Wildcard())},
             .result_doc = "iterator<map<*>>",
             .ns = "map::iterator",
             .doc = "Advances the iterator by one map element, returning the previous position.",
@@ -62,7 +62,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeMapIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeMapIterator(type::Wildcard())},
             .result_doc = "iterator<map<*>>",
             .ns = "map::iterator",
             .doc = "Advances the iterator by one map element, returning the new position.",
@@ -82,9 +82,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeMapIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMapIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to the same location.",
         };
@@ -104,9 +104,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeMapIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeMapIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMapIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to different locations.",
         };
@@ -128,8 +128,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "map",
             .doc = "Returns the number of elements a map contains.",
         };
@@ -144,9 +144,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
         };
@@ -166,9 +166,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
         };
@@ -188,9 +188,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::In,
-            .op0 = {parameter::Kind::In, builder->typeAny()},
-            .op1 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Returns true if an element is part of the map.",
         };
@@ -212,9 +212,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Delete,
-            .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeAny()},
-            .result = {Constness::Const, builder->typeVoid()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeMap(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "map",
             .doc = "Removes an element from the map.",
         };
@@ -237,8 +237,8 @@ public:
         return Signature{
             .kind = Kind::Index,
             .priority = Priority::Low,
-            .op0 = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeAny()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
             .result_doc = "<type of element>",
             .ns = "map",
             .doc =
@@ -268,8 +268,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Index,
-            .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeAny()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeMap(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
             .result_doc = "<type of element>",
             .ns = "map",
             .doc =
@@ -298,10 +298,10 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IndexAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeAny()},
-            .op2 = {parameter::Kind::In, builder->typeAny()},
-            .result = {Constness::Const, builder->typeVoid()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeMap(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
+            .op2 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "map",
             .doc = "Updates the map value for a given key. If the key does not exist a new element is inserted.",
         };
@@ -325,17 +325,17 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
             .member = "get",
             .param0 =
                 {
                     .name = "key",
-                    .type = {parameter::Kind::In, builder->typeAny()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeAny()},
                 },
             .param1 =
                 {
                     .name = "default",
-                    .type = {parameter::Kind::In, builder->typeAny()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeAny()},
                     .optional = true,
                 },
             .result_doc = "<type of element>",
@@ -360,12 +360,12 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeMap(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeMap(type::Wildcard())},
             .member = "get_optional",
             .param0 =
                 {
                     .name = "key",
-                    .type = {parameter::Kind::In, builder->typeAny()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeAny()},
                 },
             .result_doc = "optional<type of element>",
             .ns = "map",
@@ -390,9 +390,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::InOut, builder->typeMap(type::Wildcard())},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeMap(type::Wildcard())},
             .member = "clear",
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "map",
             .doc = R"(
 Removes all elements from the map.

@@ -42,18 +42,6 @@ namespace hilti {
 
 struct Configuration;
 
-/** Tests if class is derived from another. */
-#define IF_DERIVED_FROM(t, cls) typename std::enable_if_t<std::is_base_of_v<cls, t>>* = nullptr
-
-/** Tests if class is not  derived from another. */
-#define IF_NOT_DERIVED_FROM(t, cls) typename std::enable_if_t<! std::is_base_of_v<cls, t>>* = nullptr
-
-/** Tests if two are class are the same. */
-#define IF_SAME(t, cls) typename std::enable_if_t<std::is_same_v<cls, t>>* = nullptr
-
-/** Tests if two are class are not the same. */
-#define IF_NOT_SAME(t, cls) typename std::enable_if_t<! std::is_same_v<cls, t>>* = nullptr
-
 namespace util {
 
 /** Wrapper around the ABI's C++ demangle function. */
@@ -66,7 +54,7 @@ extern void cannotBeReached() __attribute__((noreturn));
 template<typename T>
 std::string typename_() {
     std::string id = demangle(typeid(T).name());
-    if ( id.find("hilti::") == 0 )
+    if ( id.starts_with("hilti::") )
         id = id.substr(sizeof("hilti::") - 1);
 
     return id;
@@ -296,7 +284,7 @@ extern std::string rtrim(const std::string& s);
 extern std::string ltrim(const std::string& s);
 
 /** Returns true if a string begins with another. */
-inline bool startsWith(const std::string& s, const std::string& prefix) { return s.find(prefix) == 0; }
+inline bool startsWith(const std::string& s, const std::string& prefix) { return s.starts_with(prefix); }
 
 /** Returns true if a string ends with another. */
 extern bool endsWith(const std::string& s, const std::string& suffix);

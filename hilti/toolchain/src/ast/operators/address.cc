@@ -14,9 +14,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeAddress()},
-            .op1 = {parameter::Kind::In, builder->typeAddress()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAddress()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAddress()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "address",
             .doc = "Compares two address values.",
         };
@@ -31,9 +31,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeAddress()},
-            .op1 = {parameter::Kind::In, builder->typeAddress()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAddress()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAddress()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "address",
             .doc = "Compares two address values.",
         };
@@ -48,9 +48,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeAddress()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeAddress()},
             .member = "family",
-            .result = {Constness::Const, builder->typeName("hilti::AddressFamily")},
+            .result = {.constness = Constness::Const, .type = builder->typeName("hilti::AddressFamily")},
             .ns = "address",
             .doc = R"(
 Returns the protocol family of the address, which can be IPv4 or IPv6.

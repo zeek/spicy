@@ -31,9 +31,9 @@ enum class Flavor {
 
 namespace detail {
 constexpr util::enum_::Value<Flavor> Flavors[] = {
-    {Flavor::Hook, "hook"},
-    {Flavor::Method, "method"},
-    {Flavor::Function, "function"},
+    {.value = Flavor::Hook, .name = "hook"},
+    {.value = Flavor::Method, .name = "method"},
+    {.value = Flavor::Function, .name = "function"},
 };
 } // namespace detail
 

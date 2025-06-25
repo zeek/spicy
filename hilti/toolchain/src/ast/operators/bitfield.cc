@@ -1,8 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <string>
-#include <vector>
-
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/member.h>
@@ -37,8 +34,12 @@ class Member : public Operator {
 public:
     Signature signature(Builder* builder) const final {
         return Signature{.kind = Kind::Member,
-                         .op0 = {parameter::Kind::In, builder->typeBitfield(type::Wildcard()), "<bitfield>"},
-                         .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<name>"},
+                         .op0 = {.kind = parameter::Kind::In,
+                                 .type = builder->typeBitfield(type::Wildcard()),
+                                 .doc = "<bitfield>"},
+                         .op1 = {.kind = parameter::Kind::In,
+                                 .type = builder->typeMember(type::Wildcard()),
+                                 .doc = "<name>"},
                          .result_doc = "<field type>",
                          .ns = "bitfield",
                          .doc = R"(
@@ -63,9 +64,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::HasMember,
-            .op0 = {parameter::Kind::In, builder->typeBitfield(type::Wildcard()), "<bitfield>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<name>"},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBitfield(type::Wildcard()), .doc = "<bitfield>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<name>"},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bitfield",
             .doc = "Returns true if the bitfield's element has a value.",
         };

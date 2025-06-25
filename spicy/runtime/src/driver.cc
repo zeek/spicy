@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <ios>
 #include <iostream>
-#include <map>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -467,7 +466,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             else
                 return hilti::rt::result::Error(hilti::rt::fmt("unknown session type '%s'", m[2]));
 
-            if ( connections.find(cid) != connections.end() ) {
+            if ( connections.contains(cid) ) {
                 // already exists, ignore
                 DRIVER_DEBUG(hilti::rt::fmt("connection %s exists, skipping", cid));
                 continue;
