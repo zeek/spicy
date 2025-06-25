@@ -38,6 +38,12 @@ class Iterator {
     typename S::V::iterator _iterator;
 
 public:
+    using iterator_category = typename S::V::iterator::iterator_category;
+    using value_type = typename S::V::value_type;
+    using difference_type = typename S::V::difference_type;
+    using pointer = typename S::V::pointer;
+    using reference = typename S::V::reference;
+
     Iterator() = default;
 
     typename S::reference operator*() const {
