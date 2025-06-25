@@ -88,6 +88,7 @@ const Kind Debug("&debug");
 const Kind Default("&default");
 const Kind HavePrototype("&have_prototype");
 const Kind Internal("&internal");
+const Kind KeepSignature("&keep-signature");
 const Kind NeededByFeature("&needed-by-feature");
 const Kind NoEmit("&no-emit");
 const Kind Nosub("&nosub");

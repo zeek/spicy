@@ -891,6 +891,7 @@ struct Visitor : hilti::visitor::PreOrder {
         auto args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         const auto& id = n->op1()->as<expression::Member>()->id();
 
+        assert(args.size() == ft->parameters().size());
         std::vector<std::pair<Expression*, bool>> zipped;
 
         zipped.reserve(args.size());
