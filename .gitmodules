@@ -31,9 +31,6 @@
 [submodule "3rdparty/reproc"]
 	path = 3rdparty/reproc
 	url = https://github.com/DaanDeMeyer/reproc.git
-[submodule "3rdparty/any"]
-	path = 3rdparty/any
-	url = https://github.com/thelink2012/any.git
 [submodule "3rdparty/utfcpp"]
 	path = 3rdparty/utfcpp
 	url = https://github.com/nemtrif/utfcpp.git
