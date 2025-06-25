@@ -64,7 +64,7 @@ struct Visitor : public visitor::PreOrder {
             needs_check = true;
         else {
             auto tokens = pb()->cg()->astInfo().look_aheads_in_use;
-            needs_check = tokens.find(lp->production->tokenID()) != tokens.end();
+            needs_check = tokens.contains(lp->production->tokenID());
         }
 
         if ( pb()->options().debug && ! needs_check )

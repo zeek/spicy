@@ -17,28 +17,30 @@
 
 using spicy::rt::fmt;
 
-static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
-                                              {"require-accept", no_argument, nullptr, 'c'},
-                                              {"compiler-debug", required_argument, nullptr, 'D'},
-                                              {"debug", no_argument, nullptr, 'd'},
-                                              {"debug-addl", required_argument, nullptr, 'X'},
-                                              {"disable-optimizations", no_argument, nullptr, 'g'},
-                                              {"enable-profiling", no_argument, nullptr, 'Z'},
-                                              {"file", required_argument, nullptr, 'f'},
-                                              {"batch-file", required_argument, nullptr, 'F'},
-                                              {"help", no_argument, nullptr, 'h'},
-                                              {"increment", required_argument, nullptr, 'i'},
-                                              {"library-path", required_argument, nullptr, 'L'},
-                                              {"list-parsers", no_argument, nullptr, 'l'},
-                                              {"parser", required_argument, nullptr, 'p'},
-                                              {"parser-alias", required_argument, nullptr, 'P'},
-                                              {"report-times", required_argument, nullptr, 'R'},
-                                              {"show-backtraces", required_argument, nullptr, 'B'},
-                                              {"skip-dependencies", no_argument, nullptr, 'S'},
-                                              {"report-resource-usage", no_argument, nullptr, 'U'},
-                                              {"skip-validation", no_argument, nullptr, 'V'},
-                                              {"version", no_argument, nullptr, 'v'},
-                                              {nullptr, 0, nullptr, 0}};
+static struct option long_driver_options[] = {
+    {.name = "abort-on-exceptions", .has_arg = required_argument, .flag = nullptr, .val = 'A'},
+    {.name = "require-accept", .has_arg = no_argument, .flag = nullptr, .val = 'c'},
+    {.name = "compiler-debug", .has_arg = required_argument, .flag = nullptr, .val = 'D'},
+    {.name = "debug", .has_arg = no_argument, .flag = nullptr, .val = 'd'},
+    {.name = "debug-addl", .has_arg = required_argument, .flag = nullptr, .val = 'X'},
+    {.name = "disable-optimizations", .has_arg = no_argument, .flag = nullptr, .val = 'g'},
+    {.name = "enable-profiling", .has_arg = no_argument, .flag = nullptr, .val = 'Z'},
+    {.name = "file", .has_arg = required_argument, .flag = nullptr, .val = 'f'},
+    {.name = "batch-file", .has_arg = required_argument, .flag = nullptr, .val = 'F'},
+    {.name = "help", .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+    {.name = "increment", .has_arg = required_argument, .flag = nullptr, .val = 'i'},
+    {.name = "library-path", .has_arg = required_argument, .flag = nullptr, .val = 'L'},
+    {.name = "list-parsers", .has_arg = no_argument, .flag = nullptr, .val = 'l'},
+    {.name = "parser", .has_arg = required_argument, .flag = nullptr, .val = 'p'},
+    {.name = "parser-alias", .has_arg = required_argument, .flag = nullptr, .val = 'P'},
+    {.name = "report-times", .has_arg = required_argument, .flag = nullptr, .val = 'R'},
+    {.name = "show-backtraces", .has_arg = required_argument, .flag = nullptr, .val = 'B'},
+    {.name = "skip-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'S'},
+    {.name = "report-resource-usage", .has_arg = no_argument, .flag = nullptr, .val = 'U'},
+    {.name = "skip-validation", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+    {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
+    {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0},
+};
 
 static bool require_accept = false; // --require-accept
 

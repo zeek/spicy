@@ -11,6 +11,7 @@
 
 #include <hilti/ast/forward.h>
 #include <hilti/ast/id.h>
+#include <hilti/ast/node.h>
 #include <hilti/base/util.h>
 
 namespace hilti {
@@ -104,8 +105,10 @@ public:
     void pushScope(ID id) { state().scopes.push_back(std::move(id)); }
     void popScope() { state().scopes.pop_back(); }
 
-    template<typename T, IF_DERIVED_FROM(T, Node)>
-    Stream& operator<<(T* t) {
+    template<typename T>
+    Stream& operator<<(T* t)
+        requires std::is_base_of_v<Node, T>
+    {
         _flush_pending();
         _print(t);
         return *this;
@@ -113,8 +116,10 @@ public:
 
     Stream& operator<<(const ID& id);
 
-    template<typename T, IF_NOT_DERIVED_FROM(T, Node)>
-    Stream& operator<<(const T& t) {
+    template<typename T>
+    Stream& operator<<(const T& t)
+        requires(! std::is_base_of_v<Node, T>)
+    {
         state().wrote_nl = false;
         _flush_pending();
         _stream << t;

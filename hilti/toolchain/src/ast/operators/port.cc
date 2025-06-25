@@ -16,9 +16,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typePort()},
-            .op1 = {parameter::Kind::In, builder->typePort()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typePort()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typePort()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "port",
             .doc = "Compares two port values.",
         };
@@ -33,9 +33,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typePort()},
-            .op1 = {parameter::Kind::In, builder->typePort()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typePort()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typePort()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "port",
             .doc = "Compares two port values.",
         };
@@ -51,9 +51,10 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "port",
-            .param0 = {.name = "port", .type = {parameter::Kind::In, builder->typeUnsignedInteger(16)}},
-            .param1 = {.name = "protocol", .type = {parameter::Kind::In, builder->typeName("hilti::Protocol")}},
-            .result = {Constness::Const, builder->typePort()},
+            .param0 = {.name = "port", .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(16)}},
+            .param1 = {.name = "protocol",
+                       .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::Protocol")}},
+            .result = {.constness = Constness::Const, .type = builder->typePort()},
             .ns = "port",
             .doc = "Creates a port instance.",
         };
@@ -67,9 +68,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typePort()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typePort()},
             .member = "protocol",
-            .result = {Constness::Const, builder->typeName("hilti::Protocol")},
+            .result = {.constness = Constness::Const, .type = builder->typeName("hilti::Protocol")},
             .ns = "port",
             .doc = R"(
 Returns the protocol the port is using (such as UDP or TCP).

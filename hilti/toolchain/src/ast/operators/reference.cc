@@ -16,7 +16,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "(T&)"},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStrongReference(type::Wildcard()), .doc = "(T&)"},
             .result_doc = "<dereferenced type>",
             .ns = "strong_reference",
             .doc = "Returns the referenced instance, or throws an exception if none or expired.",
@@ -36,9 +36,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
-            .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStrongReference(type::Wildcard()), .doc = "T&"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStrongReference(type::Wildcard()), .doc = "T&"},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if both operands reference the same instance.",
         };
@@ -58,9 +58,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
-            .op1 = {parameter::Kind::In, builder->typeStrongReference(type::Wildcard()), "T&"},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStrongReference(type::Wildcard()), .doc = "T&"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStrongReference(type::Wildcard()), .doc = "T&"},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if the two operands reference different instances.",
         };
@@ -84,7 +84,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeWeakReference(type::Wildcard())},
             .result_doc = "<dereferenced type>",
             .ns = "weak_reference",
             .doc = "Returns the referenced instance, or throws an exception if none or expired.",
@@ -104,9 +104,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeWeakReference(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeWeakReference(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "weak_reference",
             .doc = "Returns true if both operands reference the same instance.",
         };
@@ -126,9 +126,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeWeakReference(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeWeakReference(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeWeakReference(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "weak_reference",
             .doc = "Returns true if the two operands reference different instances.",
         };
@@ -152,7 +152,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeValueReference(type::Wildcard())},
             .result_doc = "<dereferenced type>",
             .ns = "value_reference",
             .doc = "Returns the referenced instance, or throws an exception if none or expired.",
@@ -172,9 +172,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeValueReference(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeValueReference(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "value_reference",
             .doc = "Returns true if the values of both operands are equal.",
         };
@@ -194,9 +194,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeValueReference(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeValueReference(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeValueReference(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "value_reference",
             .doc = "Returns true if the values of both operands are not equal.",
         };

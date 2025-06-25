@@ -18,9 +18,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "tuple",
             .doc = "Compares two tuples element-wise.",
         };
@@ -40,9 +40,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "tuple",
             .doc = "Compares two tuples element-wise.",
         };
@@ -62,8 +62,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Index,
-            .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
             .result_doc = "<type of element>",
             .ns = "tuple",
             .doc = "Extracts the tuple element at the given index. The index must be a constant unsigned integer.",
@@ -109,8 +109,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Member,
-            .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<id>"},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<id>"},
             .result_doc = "<type of element>",
             .ns = "tuple",
             .doc = "Extracts the tuple element corresponding to the given ID.",
@@ -155,8 +155,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::CustomAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeMember(type::Wildcard()), "(x,...,y)"},
-            .op1 = {parameter::Kind::InOut, builder->typeTuple(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeMember(type::Wildcard()), .doc = "(x,...,y)"},
+            .op1 = {.kind = parameter::Kind::InOut, .type = builder->typeTuple(type::Wildcard())},
             .result_doc = "<tuple>",
             .ns = "tuple",
             .doc = "Assigns element-wise to the left-hand-side tuple.",

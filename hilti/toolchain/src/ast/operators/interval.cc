@@ -16,9 +16,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
         };
@@ -33,9 +33,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
         };
@@ -50,9 +50,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeInterval()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Returns the sum of the intervals.",
         };
@@ -67,9 +67,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Difference,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeInterval()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Returns the difference of the intervals.",
         };
@@ -84,9 +84,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Greater,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -101,9 +101,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::GreaterEqual,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -118,9 +118,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Lower,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -135,9 +135,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::LowerEqual,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
         };
@@ -152,9 +152,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Multiple,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Constness::Const, builder->typeInterval()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Multiples the interval with the given factor.",
         };
@@ -169,9 +169,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Multiple,
-            .op0 = {parameter::Kind::In, builder->typeInterval()},
-            .op1 = {parameter::Kind::In, builder->typeReal()},
-            .result = {Constness::Const, builder->typeInterval()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Multiplies the interval with the given factor.",
         };
@@ -189,9 +189,9 @@ public:
             .member = "interval_ns",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of nanoseconds.",
         };
@@ -209,9 +209,9 @@ public:
             .member = "interval",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of seconds.",
         };
@@ -229,9 +229,9 @@ public:
             .member = "interval_ns",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of nanoseconds.",
         };
@@ -249,9 +249,9 @@ public:
             .member = "interval",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of seconds.",
         };
@@ -269,9 +269,9 @@ public:
             .member = "interval",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeReal()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeReal()},
                 },
-            .result = {Constness::Const, builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Creates an interval interpreting the argument as number of seconds.",
         };
@@ -286,9 +286,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeInterval()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
             .member = "seconds",
-            .result = {Constness::Const, builder->typeReal()},
+            .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "interval",
             .doc = R"(
 Returns the interval as a real value representing seconds.
@@ -305,9 +305,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeInterval()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
             .member = "nanoseconds",
-            .result = {Constness::Const, builder->typeSignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeSignedInteger(64)},
             .ns = "interval",
             .doc = R"(
 Returns the interval as an integer value representing nanoseconds.

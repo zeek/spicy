@@ -22,14 +22,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeRegExp()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeRegExp()},
             .member = "match",
             .param0 =
                 {
                     .name = "data",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Const, builder->typeSignedInteger(32)},
+            .result = {.constness = Constness::Const, .type = builder->typeSignedInteger(32)},
             .ns = "regexp",
             .doc = R"(
 Matches the regular expression against *data*. If it matches, returns an
@@ -53,15 +53,15 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeRegExp()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeRegExp()},
             .member = "find",
             .param0 =
                 {
                     .name = "data",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Const,
-                       builder->typeTuple(
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeTuple(
                            QualifiedTypes{builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
                                           builder->qualifiedType(builder->typeBytes(), Constness::Mutable)})},
             .ns = "regexp",
@@ -87,15 +87,15 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeRegExp()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeRegExp()},
             .member = "match_groups",
             .param0 =
                 {
                     .name = "data",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Mutable,
-                       builder->typeVector(builder->qualifiedType(builder->typeBytes(), Constness::Mutable))},
+            .result = {.constness = Constness::Mutable,
+                       .type = builder->typeVector(builder->qualifiedType(builder->typeBytes(), Constness::Mutable))},
             .ns = "regexp",
             .doc = R"(
 Matches the regular expression against *data*. If it matches, returns a vector
@@ -120,9 +120,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeRegExp()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeRegExp()},
             .member = "token_matcher",
-            .result = {Constness::Const, builder->typeName("hilti::MatchState")},
+            .result = {.constness = Constness::Const, .type = builder->typeName("hilti::MatchState")},
             .ns = "regexp",
             .doc = R"(
 Initializes state for matching regular expression incrementally against chunks
@@ -141,21 +141,21 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeName("hilti::MatchState")},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::MatchState")},
             .member = "advance",
             .param0 =
                 {
                     .name = "data",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
             .param1 =
                 {
                     .name = "final",
-                    .type = {parameter::Kind::In, builder->typeBool()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBool()},
                     .default_ = builder->expressionCtor(builder->ctorBool(false)),
                 },
-            .result = {Constness::Const,
-                       builder->typeTuple(
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeTuple(
                            QualifiedTypes{builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
                                           builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
             .ns = "regexp_match_state",
@@ -180,21 +180,21 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeName("hilti::MatchState")},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::MatchState")},
             .member = "advance",
             .param0 =
                 {
                     .name = "data",
-                    .type = {parameter::Kind::In, builder->typeStreamView()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
                 },
             .param1 =
                 {
                     .name = "final",
-                    .type = {parameter::Kind::In, builder->typeBool()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBool()},
                     .default_ = builder->expressionCtor(builder->ctorBool(false)),
                 },
-            .result = {Constness::Const,
-                       builder->typeTuple(
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeTuple(
                            QualifiedTypes{builder->qualifiedType(builder->typeSignedInteger(32), Constness::Const),
                                           builder->qualifiedType(builder->typeStreamView(), Constness::Mutable)})},
             .ns = "regexp_match_state",
