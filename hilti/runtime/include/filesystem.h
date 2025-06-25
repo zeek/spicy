@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <hilti/rt/3rdparty/ghc/filesystem.hpp>
+#include <filesystem> // IWYU pragma: keep
 
 namespace hilti::rt {
-namespace filesystem = ::ghc::filesystem; // NOLINT(misc-unused-alias-decls)
+namespace filesystem = ::std::filesystem; // NOLINT(misc-unused-alias-decls)
 } // namespace hilti::rt
