@@ -121,9 +121,9 @@ public:
         auto* ftype = hilti::type::Function::create(ctx,
                                                     QualifiedType::create(ctx, hilti::type::Void::create(ctx, m),
                                                                           hilti::Constness::Const),
-                                                    parameters, hilti::type::function::Flavor::Hook, m);
-        auto* func = hilti::Function::create(ctx, hilti::ID(), ftype, body,
-                                             hilti::function::CallingConvention::Standard, attrs, m);
+                                                    parameters, hilti::type::function::Flavor::Hook,
+                                                    hilti::type::function::CallingConvention::Standard, m);
+        auto* func = hilti::Function::create(ctx, hilti::ID(), ftype, body, attrs, m);
         return ctx->make<Hook>(ctx, {func, nullptr}, m);
     }
 

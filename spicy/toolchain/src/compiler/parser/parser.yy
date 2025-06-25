@@ -282,7 +282,7 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::type::function::Parameter*> func_param
 %type <hilti::parameter::Kind>              opt_func_param_kind
 %type <hilti::type::function::Flavor>       opt_func_flavor
-%type <hilti::function::CallingConvention>  opt_func_cc
+%type <hilti::type::function::CallingConvention>  opt_func_cc
 %type <hilti::declaration::Linkage>         opt_linkage
 %type <hilti::declaration::Parameters>      func_params opt_func_params opt_unit_params opt_unit_hook_params
 %type <hilti::Statement*>                 stmt stmt_decl stmt_expr block braced_block opt_else_block
@@ -444,8 +444,8 @@ global_decl_type_and_init
 function_decl : opt_linkage FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
                                                  { _docs.emplace_back(driver->docGetAndClear()); }
                 ';'                              {
-                                                    auto ftype = builder->typeFunction($9, $7, $3, __loc__);
-                                                    auto func = builder->function($5, std::move(ftype), {}, $4, $10, __loc__);
+                                                    auto ftype = builder->typeFunction($9, $7, $3, $4, __loc__);
+                                                    auto func = builder->function($5, std::move(ftype), {}, $10, __loc__);
                                                     $$ = builder->declarationFunction(std::move(func), $1, __loc__);
                                                     $$->setDocumentation(_docs.back());
                                                     _docs.pop_back();
@@ -454,8 +454,8 @@ function_decl : opt_linkage FUNCTION opt_func_flavor opt_func_cc scoped_id '(' o
               | opt_linkage FUNCTION opt_func_flavor opt_func_cc scoped_id '(' opt_func_params ')' opt_func_result opt_attributes
                                                  { _docs.emplace_back(driver->docGetAndClear()); }
                 braced_block                     {
-                                                    auto ftype = builder->typeFunction($9, $7, $3, __loc__);
-                                                    auto func = builder->function($5, std::move(ftype), $12, $4, $10, __loc__);
+                                                    auto ftype = builder->typeFunction($9, $7, $3, $4, __loc__);
+                                                    auto func = builder->function($5, std::move(ftype), $12, $10, __loc__);
                                                     $$ = builder->declarationFunction(std::move(func), $1, __loc__);
                                                     $$->setDocumentation(_docs.back());
                                                     _docs.pop_back();
@@ -487,12 +487,12 @@ opt_linkage   : PUBLIC                           { $$ = hilti::declaration::Link
 opt_func_flavor : /* empty */                    { $$ = hilti::type::function::Flavor::Function; }
 
 opt_func_cc   : CSTRING                          { try {
-                                                       $$ = hilti::function::calling_convention::from_string($1);
+                                                       $$ = hilti::type::function::calling_convention::from_string($1);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, "unknown calling convention");
                                                    }
                                                  }
-              | /* empty */                      { $$ = hilti::function::CallingConvention::Standard; }
+              | /* empty */                      { $$ = hilti::type::function::CallingConvention::Standard; }
 
 
 opt_func_params

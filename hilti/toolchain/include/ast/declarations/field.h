@@ -2,10 +2,7 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/declaration.h>
@@ -16,13 +13,13 @@
 #include <hilti/ast/operator-registry.h>
 #include <hilti/ast/operators/struct.h>
 #include <hilti/ast/types/auto.h>
+#include <hilti/ast/types/function.h>
 
 namespace hilti::declaration {
 
 /** AST node for a struct/union field declaration. */
 class Field : public Declaration {
 public:
-    auto callingConvention() const { return _cc; }
     auto attributes() const { return child<AttributeSet>(1); }
     auto inlineFunction() const { return child<hilti::Function>(2); }
 
@@ -36,6 +33,13 @@ public:
         else
             return child<QualifiedType>(0);
     }
+
+    // std::optional<type::function::CallingConvention> callingConvention() const {
+    //     if ( auto* ftype = type()->type()->tryAs<type::Function>() )
+    //         return ftype->callingConvention();
+
+    //     return std::nullopt;
+    // }
 
     bool isResolved(node::CycleDetector* cd = nullptr) const {
         if ( auto* func = inlineFunction() )
@@ -82,27 +86,26 @@ public:
             // make it assignable
             type = type->recreateAsLhs(ctx);
 
-        return ctx->make<Field>(ctx, {type, attrs, nullptr}, std::move(id), std::nullopt, std::move(meta));
+        return ctx->make<Field>(ctx, {type, attrs, nullptr}, std::move(id), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, ::hilti::function::CallingConvention cc, type::Function* ftype,
-                       AttributeSet* attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, type::Function* ftype, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         return ctx->make<Field>(ctx, {QualifiedType::create(ctx, ftype, Constness::Const), attrs, nullptr},
-                                std::move(id), cc, std::move(meta));
+                                std::move(id), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, hilti::Function* inline_func, AttributeSet* attrs, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return ctx->make<Field>(ctx, {nullptr, attrs, inline_func}, std::move(id), std::nullopt, std::move(meta));
+        return ctx->make<Field>(ctx, {nullptr, attrs, inline_func}, std::move(id), std::move(meta));
     }
 
 protected:
-    Field(ASTContext* ctx, Nodes children, ID id, std::optional<::hilti::function::CallingConvention> cc, Meta meta)
+    Field(ASTContext* ctx, Nodes children, ID id, Meta meta)
         : Declaration(ctx, NodeTags, std::move(children), std::move(id), declaration::Linkage::Struct,
                       std::move(meta)) {}
 
@@ -111,7 +114,6 @@ protected:
     HILTI_NODE_1(declaration::Field, Declaration, final);
 
 private:
-    std::optional<::hilti::function::CallingConvention> _cc;
     const Operator* _operator = nullptr;
     ast::TypeIndex _linked_type_index;
 };

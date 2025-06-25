@@ -361,13 +361,13 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     if ( auto* convert = unit->attributes()->find(attribute::kind::Convert) ) {
         auto* expression = *convert->valueAsExpression();
         auto* result = builder()->qualifiedType(builder()->typeAuto(), hilti::Constness::Mutable);
-        auto* ftype = builder()->typeFunction(result, {}, hilti::type::function::Flavor::Method, expression->meta());
+        auto* ftype = builder()->typeFunction(result, {}, hilti::type::function::Flavor::Method,
+                                              hilti::type::function::CallingConvention::Standard, expression->meta());
 
         _pb.pushBuilder();
         _pb.builder()->addReturn(expression);
         auto body = _pb.popBuilder();
-        auto* function =
-            builder()->function(ID("__convert"), ftype, body->block(), hilti::function::CallingConvention::Standard);
+        auto* function = builder()->function(ID("__convert"), ftype, body->block());
         auto* convert_ = builder()->declarationField(ID("__convert"), function, {});
         v.addField(convert_);
     }

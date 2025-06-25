@@ -460,7 +460,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X0::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X0::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:13:11-15:1"
     local value_ref<X0> __unit = default<X0>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -487,7 +487,7 @@ method extern view<stream> foo::X0::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X0::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X0::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:13:11-15:1"
     local value_ref<X0> __unit = default<X0>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -515,7 +515,7 @@ method extern view<stream> foo::X0::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X0::parse2(inout value_ref<X0> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X0::parse2(inout value_ref<X0> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:13:11-15:1"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -712,7 +712,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X1::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X1::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:18:11-20:1"
     local value_ref<X1> __unit = default<X1>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -739,7 +739,7 @@ method extern view<stream> foo::X1::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X1::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X1::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:18:11-20:1"
     local value_ref<X1> __unit = default<X1>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -767,7 +767,7 @@ method extern view<stream> foo::X1::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X1::parse2(inout value_ref<X1> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X1::parse2(inout value_ref<X1> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:18:11-20:1"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -960,7 +960,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X2::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X2::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:23:11-23:17"
     local value_ref<X2> __unit = default<X2>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -987,7 +987,7 @@ method extern view<stream> foo::X2::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X2::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:23:11-23:17"
     local value_ref<X2> __unit = default<X2>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -1015,7 +1015,7 @@ method extern view<stream> foo::X2::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X2::parse2(inout value_ref<X2> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X2::parse2(inout value_ref<X2> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:23:11-23:17"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1216,7 +1216,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X3::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X3::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:26:11-28:1"
     local value_ref<X3> __unit = default<X3>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -1243,7 +1243,7 @@ method extern view<stream> foo::X3::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X3::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:26:11-28:1"
     local value_ref<X3> __unit = default<X3>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -1271,7 +1271,7 @@ method extern view<stream> foo::X3::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X3::parse2(inout value_ref<X3> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X3::parse2(inout value_ref<X3> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:26:11-28:1"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1472,7 +1472,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X4::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X4::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:32:11-34:1"
     local value_ref<X4> __unit = default<X4>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -1499,7 +1499,7 @@ method extern view<stream> foo::X4::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X4::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X4::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:32:11-34:1"
     local value_ref<X4> __unit = default<X4>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -1527,7 +1527,7 @@ method extern view<stream> foo::X4::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X4::parse2(inout value_ref<X4> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X4::parse2(inout value_ref<X4> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:32:11-34:1"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1724,7 +1724,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X5::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X5::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:36:18-40:1"
     local value_ref<X5> __unit = default<X5>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -1751,7 +1751,7 @@ method extern view<stream> foo::X5::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X5::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X5::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:36:18-40:1"
     local value_ref<X5> __unit = default<X5>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -1779,7 +1779,7 @@ method extern view<stream> foo::X5::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X5::parse2(inout value_ref<X5> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X5::parse2(inout value_ref<X5> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:36:18-40:1"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -1972,7 +1972,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X6::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X6::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:43:11-46:1"
     local value_ref<X6> __unit = default<X6>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -1999,7 +1999,7 @@ method extern view<stream> foo::X6::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X6::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X6::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:43:11-46:1"
     local value_ref<X6> __unit = default<X6>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -2027,7 +2027,7 @@ method extern view<stream> foo::X6::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X6::parse2(inout value_ref<X6> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X6::parse2(inout value_ref<X6> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:43:11-46:1"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;
@@ -2220,7 +2220,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     return __result;
 }
 
-method extern view<stream> foo::X7::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X7::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:49:11-51:1"
     local value_ref<X7> __unit = default<X7>();
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
@@ -2247,7 +2247,7 @@ method extern view<stream> foo::X7::parse1(inout value_ref<stream> __data, optio
     return __ncur;
 }
 
-method extern view<stream> foo::X7::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X7::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:49:11-51:1"
     local value_ref<X7> __unit = default<X7>();
     spicy_rt::initializeParsedUnit((*__gunit), __unit);
@@ -2275,7 +2275,7 @@ method extern view<stream> foo::X7::parse3(inout value_ref<spicy_rt::ParsedUnit>
     return __ncur;
 }
 
-method extern view<stream> foo::X7::parse2(inout value_ref<X7> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
+method view<stream> foo::X7::parse2(inout value_ref<X7> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static {
     # "<...>/feature_requirements.spicy:49:11-51:1"
     local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
     local int<64> __lahead = 0;

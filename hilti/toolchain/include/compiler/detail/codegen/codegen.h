@@ -83,7 +83,6 @@ public:
     cxx::Expression compile(hilti::expression::ResolvedOperator* o, bool lhs = false);
     cxx::Block compile(hilti::Statement* s, cxx::Block* b = nullptr);
     cxx::declaration::Function compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
-                                       function::CallingConvention cc = function::CallingConvention::Standard,
                                        AttributeSet* fattrs = {}, std::optional<cxx::ID> namespace_ = {});
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
                                                       const hilti::node::Set<declaration::Parameter>& params);

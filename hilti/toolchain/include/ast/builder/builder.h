@@ -158,28 +158,20 @@ public:
     auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params,
                   type::function::Flavor flavor = type::function::Flavor::Function,
                   declaration::Linkage linkage = declaration::Linkage::Private,
-                  function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
-                  const Meta& m = Meta()) {
-        auto* ft = typeFunction(result, params, flavor, m);
-        auto* f = function(id, ft, {}, cc, attrs, m);
+                  type::function::CallingConvention cc = type::function::CallingConvention::Standard,
+                  AttributeSet* attrs = {}, const Meta& m = Meta()) {
+        auto* ft = typeFunction(result, params, flavor, cc, m);
+        auto* f = function(id, ft, {}, attrs, m);
         return declarationFunction(f, linkage, m);
     }
 
     auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params, Statement* body,
                   type::function::Flavor flavor = type::function::Flavor::Function,
                   declaration::Linkage linkage = declaration::Linkage::Private,
-                  function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
-                  const Meta& m = Meta()) {
-        auto* ft = typeFunction(result, params, flavor, m);
-        auto* f = function(id, ft, body, cc, attrs, m);
-        return declarationFunction(f, linkage, m);
-    }
-
-    auto function(const ID& id, type::Function* ftype, Statement* body,
-                  declaration::Linkage linkage = declaration::Linkage::Private,
-                  function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = {},
-                  const Meta& m = Meta()) {
-        auto* f = function(id, ftype, body, cc, attrs, m);
+                  type::function::CallingConvention cc = type::function::CallingConvention::Standard,
+                  AttributeSet* attrs = {}, const Meta& m = Meta()) {
+        auto* ft = typeFunction(result, params, flavor, cc, m);
+        auto* f = function(id, ft, body, attrs, m);
         return declarationFunction(f, linkage, m);
     }
 

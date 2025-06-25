@@ -4,10 +4,10 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/ast/all.h>
 #include <hilti/ast/ast-context.h>
+#include <hilti/ast/types/function.h>
 
 namespace hilti::builder {
 
@@ -176,9 +176,8 @@ public:
     auto declarationExpression(ID id, Expression* expr, declaration::Linkage linkage, Meta meta = {}) {
         return hilti::declaration::Expression::create(context(), std::move(id), expr, linkage, std::move(meta));
     }
-    auto declarationField(ID id, ::hilti::function::CallingConvention cc, type::Function* ftype, AttributeSet* attrs,
-                          Meta meta = {}) {
-        return hilti::declaration::Field::create(context(), std::move(id), cc, ftype, attrs, std::move(meta));
+    auto declarationField(ID id, type::Function* ftype, AttributeSet* attrs, Meta meta = {}) {
+        return hilti::declaration::Field::create(context(), std::move(id), ftype, attrs, std::move(meta));
     }
     auto declarationField(ID id, QualifiedType* type, AttributeSet* attrs, Meta meta = {}) {
         return hilti::declaration::Field::create(context(), std::move(id), type, attrs, std::move(meta));
@@ -350,10 +349,9 @@ public:
         return hilti::expression::UnresolvedOperator::create(context(), kind, operands, meta);
     }
     auto expressionVoid(const Meta& meta = {}) { return hilti::expression::Void::create(context(), meta); }
-    auto function(const ID& id, type::Function* ftype, Statement* body,
-                  function::CallingConvention cc = function::CallingConvention::Standard, AttributeSet* attrs = nullptr,
+    auto function(const ID& id, type::Function* ftype, Statement* body, AttributeSet* attrs = nullptr,
                   const Meta& meta = {}) {
-        return hilti::Function::create(context(), id, ftype, body, cc, attrs, meta);
+        return hilti::Function::create(context(), id, ftype, body, attrs, meta);
     }
     auto qualifiedType(UnqualifiedType* t, Constness const_, Meta m = Meta()) {
         return hilti::QualifiedType::create(context(), t, const_, std::move(m));
@@ -484,8 +482,10 @@ public:
         return hilti::type::Exception::create(context(), _, m);
     }
     auto typeFunction(QualifiedType* result, const declaration::Parameters& params,
-                      type::function::Flavor flavor = type::function::Flavor::Function, Meta meta = {}) {
-        return hilti::type::Function::create(context(), result, params, flavor, std::move(meta));
+                      type::function::Flavor flavor = type::function::Flavor::Function,
+                      type::function::CallingConvention cc = type::function::CallingConvention::Standard,
+                      Meta meta = {}) {
+        return hilti::type::Function::create(context(), result, params, flavor, cc, std::move(meta));
     }
     auto typeFunction(type::Wildcard _, const Meta& m = Meta()) {
         return hilti::type::Function::create(context(), _, m);
