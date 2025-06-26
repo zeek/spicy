@@ -34,13 +34,6 @@ public:
             return child<QualifiedType>(0);
     }
 
-    // std::optional<type::function::CallingConvention> callingConvention() const {
-    //     if ( auto* ftype = type()->type()->tryAs<type::Function>() )
-    //         return ftype->callingConvention();
-
-    //     return std::nullopt;
-    // }
-
     bool isResolved(node::CycleDetector* cd = nullptr) const {
         if ( auto* func = inlineFunction() )
             return func->type()->isResolved(cd);
