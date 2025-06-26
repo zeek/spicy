@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <ostream>
+#include <ranges>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -243,9 +244,9 @@ public:
     /** Returns the node tag associated with the instance's class. */
     node::Tag nodeTag() const {
         // Get the last non-zero tag. The last element(s) may be unset
-        for ( auto it = _node_tags.rbegin(); it != _node_tags.rend(); it++ ) {
-            if ( *it != 0 )
-                return *it;
+        for ( auto _node_tag : std::ranges::reverse_view(_node_tags) ) {
+            if ( _node_tag != 0 )
+                return _node_tag;
         }
 
         return 0;
