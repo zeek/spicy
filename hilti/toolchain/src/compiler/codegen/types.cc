@@ -11,6 +11,7 @@
 #include <hilti/compiler/detail/ast-dumper.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
+#include <hilti/compiler/printer.h>
 #include <hilti/compiler/unit.h>
 
 using namespace hilti;

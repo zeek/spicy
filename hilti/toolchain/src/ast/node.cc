@@ -15,6 +15,7 @@
 #include <hilti/ast/visitor.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/ast-dumper.h>
+#include <hilti/compiler/printer.h>
 
 using namespace hilti;
 using namespace hilti::detail;

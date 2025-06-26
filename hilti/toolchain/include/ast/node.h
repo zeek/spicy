@@ -1187,8 +1187,10 @@ inline Nodes flatten() { return Nodes(); }
  * Creates `Node` instances for objects all implementing the `Node`
  * interface.
  */
-template<typename T, typename... Ts, std::enable_if_t<(0 != sizeof...(Ts))>* = nullptr>
-Nodes flatten(T t, Ts... ts) {
+template<typename T, typename... Ts>
+Nodes flatten(T t, Ts... ts)
+    requires(0 != sizeof...(Ts))
+{
     return util::concat(std::move(flatten(std::move(t))), flatten(std::move(ts)...));
 }
 
