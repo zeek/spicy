@@ -1127,7 +1127,7 @@ private:
 class CycleDetector {
 public:
     void recordSeen(const Node* n) { _seen.insert(n); }
-    bool haveSeen(const Node* n) const { return _seen.find(n) != _seen.end(); }
+    bool haveSeen(const Node* n) const { return _seen.contains(n); }
     void clear() { _seen.clear(); }
 
 private:

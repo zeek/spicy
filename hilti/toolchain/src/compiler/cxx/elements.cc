@@ -140,7 +140,7 @@ std::optional<std::string> cxx::normalizeID(std::string_view id) {
     if ( id.empty() )
         return std::nullopt;
 
-    if ( reserved_keywords.count(id) )
+    if ( reserved_keywords.contains(id) )
         return std::string(id) + "_";
 
     if ( std::ranges::all_of(id, [](auto c) { return std::isalnum(c) || c == '_'; }) )

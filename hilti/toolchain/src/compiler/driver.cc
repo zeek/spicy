@@ -517,7 +517,7 @@ void Driver::updateProcessExtension(const declaration::module::UID& uid, const h
     auto new_uid = uid;
     new_uid.process_extension = ext;
 
-    if ( _units.find(new_uid) != _units.end() )
+    if ( _units.contains(new_uid) )
         logger().internalError(
             util::fmt("attempt to update process extension of unit %s to %s, but that already exists", uid,
                       ext.native()));
@@ -534,7 +534,7 @@ void Driver::updateProcessExtension(const declaration::module::UID& uid, const h
 }
 
 void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
-    if ( _units.find(unit->uid()) != _units.end() )
+    if ( _units.contains(unit->uid()) )
         return;
 
     HILTI_DEBUG(logging::debug::Driver, fmt("adding unit %s (%s)", unit->uid(), unit->uid().path.native()));
@@ -570,7 +570,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
             return result::Error(fmt("could not compute absolute path for %s", path_normalized));
     }
 
-    if ( _processed_paths.count(path_normalized.native()) )
+    if ( _processed_paths.contains(path_normalized.native()) )
         return Nothing();
 
     // Calling hook before stage check so that it can execute initialize()
@@ -619,7 +619,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
         try {
-            if ( ! _libraries.count(path) ) {
+            if ( ! _libraries.contains(path) ) {
                 _libraries.insert({path, Library(path)});
                 if ( auto load = _libraries.at(path).open(); ! load )
                     return error(util::fmt("could not load library file %s: %s", path, load.error()));

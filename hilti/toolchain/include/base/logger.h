@@ -189,7 +189,7 @@ public:
     void debugDisable(const logging::DebugStream& dbg) { _debug_streams.erase(dbg); }
     bool debugDisable(const std::string& dbg);
 
-    bool isEnabled(const logging::DebugStream& dbg) { return _debug_streams.find(dbg) != _debug_streams.end(); }
+    bool isEnabled(const logging::DebugStream& dbg) { return _debug_streams.contains(dbg); }
 
     void debugPushIndent(const logging::DebugStream& dbg) {
         if ( isEnabled(dbg) )
