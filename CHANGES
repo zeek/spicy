@@ -1,3 +1,7 @@
+1.14.0-dev.95 | 2025-06-26 09:55:25 +0200
+
+  * Fully implement iterator interface for `set::Iterator`. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.93 | 2025-06-24 10:40:39 +0200
 
   * Bump 3rdparty/utfcpp from `65701fe` to `0bef8b2` (dependabot[bot])
