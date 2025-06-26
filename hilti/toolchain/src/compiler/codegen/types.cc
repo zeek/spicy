@@ -235,6 +235,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     auto x = cxx::declaration::Local(cxx::ID(f->id()), std::move(t), {}, {},
                                                      (f->isStatic() ? "inline static" : ""));
 
+                    if ( f->type()->type()->isA<type::Bitfield>() )
+                        x.typeinfo_bitfield = cg->typeInfo(f->type());
 
                     fields.emplace_back(std::move(x));
                 }
@@ -373,7 +375,8 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         });
 
         auto t = fmt("::hilti::rt::Bitfield<%s>", util::join(x, ", "));
-        result = CxxTypes{.base_type = t};
+        auto ti = cg->typeInfo(type);
+        result = CxxTypes{.base_type = t, .default_ = cxx::Expression(fmt("%s{%s}", t, ti))};
     }
 
     void operator()(type::Bytes* n) final { result = CxxTypes{.base_type = "::hilti::rt::Bytes"}; }
@@ -808,7 +811,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
             elems.push_back(
                 fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, ::hilti::rt::bitfield::elementOffset<%s, "
                     "%d>() }",
-                    b->id(), cg->typeInfo(b->itemType()), ttype, i++));
+                    b->id(), cg->typeInfo(b->itemTypeWithOptional()), ttype, i++));
 
         result = fmt("::hilti::rt::type_info::Bitfield(std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
                      util::join(elems, ", "));

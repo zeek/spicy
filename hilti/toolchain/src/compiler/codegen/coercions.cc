@@ -249,8 +249,8 @@ struct Visitor : public hilti::visitor::PreOrder {
         else if ( auto* x = dst->type()->tryAs<type::UnsignedInteger>() )
             result = fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", x->width(), expr);
 
-        else if ( auto* t = dst->type()->tryAs<type::Bitfield>() )
-            result = cg->unsignedIntegerToBitfield(t, expr, cxx::Expression("::hilti::rt::integer::BitOrder::LSB0"));
+        else if ( dst->type()->isA<type::Bitfield>() )
+            result = cg->unsignedIntegerToBitfield(dst, expr, cxx::Expression("::hilti::rt::integer::BitOrder::LSB0"));
         else
             logger().internalError(
                 fmt("codegen: unexpected type coercion from unsigned integer to %s", dst->type()->typename_()));

@@ -12,6 +12,7 @@
 #include <hilti/ast/id.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/integer.h>
+#include <hilti/ast/types/optional.h>
 
 namespace hilti::type {
 
@@ -27,7 +28,18 @@ public:
     auto lower() const { return _lower; }
     auto upper() const { return _upper; }
     auto fieldWidth() const { return _field_width; }
-    auto itemType() const { return child<QualifiedType>(0); }
+
+    auto itemType() const { // returns the integer type (not wrapped into an optional)
+        if ( child<QualifiedType>(0)->type()->isA<type::Optional>() )
+            return child<QualifiedType>(0)->type()->as<type::Optional>()->dereferencedType();
+        else
+            return child<QualifiedType>(0);
+    }
+
+    auto itemTypeWithOptional() const { // return the integer type wrapped into an optional
+        return child<QualifiedType>(0);
+    }
+
     auto attributes() const { return child<AttributeSet>(1); }
     auto ctorValue() const { return child<Expression>(2); }
     auto dd() const { return child<declaration::Expression>(3); }
@@ -45,7 +57,11 @@ public:
         return Declaration::properties() + std::move(p);
     }
 
-    void setItemType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
+    void setItemTypeWithOptional(ASTContext* ctx, QualifiedType* t) {
+        assert(t->type()->isA<type::Optional>());
+        setChild(ctx, 0, t);
+    }
+
     void setAttributes(ASTContext* ctx, AttributeSet* attrs) { setChild(ctx, 1, attrs); }
     void setCtorValue(ASTContext* ctx, Expression* e) { setChild(ctx, 2, e); }
 

@@ -1547,7 +1547,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             if ( t->isResolved() ) {
                 recordChange(n, t, "set item type");
-                n->setItemType(context(), t);
+                n->setItemTypeWithOptional(context(),
+                                           builder()->qualifiedType(builder()->typeOptional(t), Constness::Const));
             }
         }
 

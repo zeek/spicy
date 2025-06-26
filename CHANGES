@@ -1,3 +1,36 @@
+1.14.0-dev.100 | 2025-06-26 10:53:29 +0200
+
+  * Render all bitfield instances with included field names. (Robin Sommer, Corelight)
+
+    This requires passing the bitfield type information into bitfield
+    instances, which then allows us to unify the printing.
+
+    Most of the change is pretty mechanical to get us access to the
+    typeninfo. Plus, this also contains a fix where the `bits` typeninfo
+    previously would point directly to the stored integer type, even
+    though we wrap the integers into `optional` values and hence the
+    typeninfo should correctly reflect that.
+
+  * GH-1660: When printing anonymous bitfields inside a struct, lift up the fields. (Robin Sommer, Corelight)
+
+    This now prints, e.g.,  `[$fin=1, $rsv=0, $opcode=2, $remaining=255]`
+    instead of `[$<anon>=(1, 0, 2, 255)]`.
+
+    In addition, we also prettify non-anonymous bitfields. They now print
+    as, e.g., `[$y=(a: 4, b: 8)]` instead of `[$y=(4, 8)]`.
+
+    The implementation is a bit of hack (because we normally don't convey
+    type information through `cxx::*` elements) but can't of think
+    anything nicer.
+
+    Tested through updates to existing tests.
+
+  * GH-2052: Move calling convention from function to function type.
+    (Evan Typanski / Robin Sommer, Corelight)
+
+    Includes slight cleanup for printing out methods: we now prefix them
+    just with `method` instead of `method extern`.
+
 1.14.0-dev.95 | 2025-06-26 09:55:25 +0200
 
   * Fully implement iterator interface for `set::Iterator`. (Benjamin Bannier, Corelight)
