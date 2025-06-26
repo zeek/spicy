@@ -54,7 +54,7 @@ extern void cannotBeReached() __attribute__((noreturn));
 template<typename T>
 std::string typename_() {
     std::string id = demangle(typeid(T).name());
-    if ( id.find("hilti::") == 0 )
+    if ( id.starts_with("hilti::") )
         id = id.substr(sizeof("hilti::") - 1);
 
     return id;
@@ -284,7 +284,7 @@ extern std::string rtrim(const std::string& s);
 extern std::string ltrim(const std::string& s);
 
 /** Returns true if a string begins with another. */
-inline bool startsWith(const std::string& s, const std::string& prefix) { return s.find(prefix) == 0; }
+inline bool startsWith(const std::string& s, const std::string& prefix) { return s.starts_with(prefix); }
 
 /** Returns true if a string ends with another. */
 extern bool endsWith(const std::string& s, const std::string& suffix);
