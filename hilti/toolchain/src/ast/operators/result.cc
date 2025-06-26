@@ -14,7 +14,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeResult(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeResult(type::Wildcard())},
             .result_doc = "<type of stored value>",
             .ns = "result",
             .doc =
@@ -40,9 +40,9 @@ class Error : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
         return Signature{.kind = Kind::MemberCall,
-                         .self = {parameter::Kind::In, builder->typeResult(type::Wildcard())},
+                         .self = {.kind = parameter::Kind::In, .type = builder->typeResult(type::Wildcard())},
                          .member = "error",
-                         .result = {Constness::Const, builder->typeError()},
+                         .result = {.constness = Constness::Const, .type = builder->typeError()},
                          .ns = "result",
                          .doc =
                              "Retrieves the error stored inside the result instance. Will throw a ``NoError`` "

@@ -19,7 +19,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeListIterator(type::Wildcard())},
             .result_doc = "<dereferenced type>",
             .ns = "list::iterator",
             .doc = "Returns the list element that the iterator refers to.",
@@ -40,7 +40,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeListIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeListIterator(type::Wildcard())},
             .result_doc = "iterator<list<*>>",
             .ns = "list::iterator",
             .doc = "Advances the iterator by one list element, returning the previous position.",
@@ -61,7 +61,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeListIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeListIterator(type::Wildcard())},
             .result_doc = "iterator<list<*>>",
             .ns = "list::iterator",
             .doc = "Advances the iterator by one list element, returning the new position.",
@@ -81,9 +81,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeListIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeListIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list::iterator",
             .doc = "Returns true if two lists iterators refer to the same location.",
         };
@@ -103,9 +103,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeListIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeListIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeListIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list::iterator",
             .doc = "Returns true if two lists iterators refer to different locations.",
         };
@@ -126,8 +126,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeList(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "list",
             .doc = "Returns the number of elements a list contains.",
         };
@@ -142,9 +142,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeList(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeList(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list",
             .doc = "Compares two lists element-wise.",
         };
@@ -164,9 +164,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeList(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeList(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeList(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list",
             .doc = "Compares two lists element-wise.",
         };

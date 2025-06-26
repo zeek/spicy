@@ -26,9 +26,9 @@ enum class CallingConvention {
 
 namespace detail {
 constexpr util::enum_::Value<CallingConvention> Conventions[] = {
-    {CallingConvention::Extern, "extern"},
-    {CallingConvention::ExternNoSuspend, "extern-no-suspend"},
-    {CallingConvention::Standard, "<standard>"},
+    {.value = CallingConvention::Extern, .name = "extern"},
+    {.value = CallingConvention::ExternNoSuspend, .name = "extern-no-suspend"},
+    {.value = CallingConvention::Standard, .name = "<standard>"},
 };
 } // namespace detail
 

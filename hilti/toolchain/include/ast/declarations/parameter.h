@@ -26,10 +26,10 @@ enum class Kind {
 
 namespace detail {
 constexpr util::enum_::Value<Kind> Kinds[] = {
-    {Kind::Unknown, "unknown"},
-    {Kind::Copy, "copy"},
-    {Kind::In, "in"},
-    {Kind::InOut, "inout"},
+    {.value = Kind::Unknown, .name = "unknown"},
+    {.value = Kind::Copy, .name = "copy"},
+    {.value = Kind::In, .name = "in"},
+    {.value = Kind::InOut, .name = "inout"},
 };
 } // namespace detail
 
