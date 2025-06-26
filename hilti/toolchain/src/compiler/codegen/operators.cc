@@ -910,7 +910,11 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::struct_::HasMember* n) final {
         const auto& id = n->op1()->as<expression::Member>()->id();
 
-        if ( auto* f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() )
+        auto* type = n->op0()->type()->type();
+        if ( type->isReferenceType() )
+            type = type->dereferencedType()->type();
+
+        if ( auto* f = type->as<type::Struct>()->field(id); f->isOptional() )
             result = fmt("%s.has_value()", memberAccess(n, id));
         else
             result = "true";
@@ -920,7 +924,11 @@ struct Visitor : hilti::visitor::PreOrder {
         const auto& id = n->op1()->as<expression::Member>()->id();
         assert(! lhs);
 
-        if ( auto* f = n->op0()->type()->type()->as<type::Struct>()->field(id); f->isOptional() ) {
+        auto* type = n->op0()->type()->type();
+        if ( type->isReferenceType() )
+            type = type->dereferencedType()->type();
+
+        if ( auto* f = type->as<type::Struct>()->field(id); f->isOptional() ) {
             auto attr = memberAccess(n, id);
 
             if ( auto* d = f->default_() )

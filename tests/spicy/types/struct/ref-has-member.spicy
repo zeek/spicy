@@ -1,0 +1,16 @@
+# @TEST-EXEC: spicyc -c -d %INPUT
+#
+# @TEST-DOC: Check compilation of struct has-member operator on value_ref; regression test for issue #2100
+
+module Test;
+
+function stringify(data: Data) {
+    local elements = data?.elements ? data.elements : data.elements;
+    for (ele in elements) {
+        stringify(ele);
+    }
+}
+
+type Data = unit {
+    elements: Data[1];
+};
