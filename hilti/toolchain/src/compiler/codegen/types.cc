@@ -107,8 +107,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                         continue;
 
                     if ( auto* ft = f->type()->type()->tryAs<type::Function>() ) {
-                        auto d = cg->compile(f, ft, declaration::Linkage::Struct, function::CallingConvention::Standard,
-                                             f->attributes());
+                        auto d = cg->compile(f, ft, declaration::Linkage::Struct, f->attributes());
 
                         if ( f->isStatic() )
                             d.linkage = "static";

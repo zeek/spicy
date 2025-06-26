@@ -255,7 +255,7 @@ static int _field_width = 0;
 %type <hilti::type::function::Parameter*>     func_param
 %type <hilti::parameter::Kind>                  opt_func_param_kind
 %type <hilti::type::function::Flavor>           func_flavor opt_func_flavor
-%type <hilti::function::CallingConvention>      opt_func_cc
+%type <hilti::type::function::CallingConvention> opt_func_cc
 %type <hilti::declaration::Linkage>             opt_linkage
 %type <hilti::type::function::Parameters>       func_params opt_func_params opt_struct_params
 %type <hilti::Statement*>                     stmt stmt_decl stmt_expr block braced_block opt_else_block
@@ -406,29 +406,29 @@ scoped_function_id:
 function_with_body
               : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
-                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Function, __loc__);
-                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $1, $7, __loc__);
+                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Function, $1, __loc__);
+                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $7, __loc__);
                                                  }
 
 method_with_body
               : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
-                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Method, __loc__);
-                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $1, $7, __loc__);
+                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Method, $1, __loc__);
+                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $7, __loc__);
                                                  }
 
 hook_with_body
               : opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes braced_block
                                                  {
-                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Hook, __loc__);
-                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $1, $7, __loc__);
+                                                    auto ftype = builder->typeFunction($2, $5, type::function::Flavor::Hook, $1, __loc__);
+                                                    $$ = builder->function($3, ftype->as<type::Function>(), $8, $7, __loc__);
                                                  }
 
 function_without_body
               : opt_func_flavor opt_func_cc qtype scoped_function_id '(' opt_func_params ')' opt_attributes
                                                  {
-                                                    auto ftype = builder->typeFunction($3, $6, $1, __loc__);
-                                                    $$ = builder->function($4, std::move(ftype), {}, $2, $8, __loc__);
+                                                    auto ftype = builder->typeFunction($3, $6, $1, $2, __loc__);
+                                                    $$ = builder->function($4, std::move(ftype), {}, $8, __loc__);
                                                  }
 
 opt_func_flavor : func_flavor                    { $$ = $1; }
@@ -437,9 +437,9 @@ opt_func_flavor : func_flavor                    { $$ = $1; }
 func_flavor     : METHOD                         { $$ = hilti::type::function::Flavor::Method; }
                 | HOOK                           { $$ = hilti::type::function::Flavor::Hook; }
 
-opt_func_cc     : EXTERN                         { $$ = hilti::function::CallingConvention::Extern; }
-                | EXTERN_NO_SUSPEND              { $$ = hilti::function::CallingConvention::ExternNoSuspend; }
-                | /* empty */                    { $$ = hilti::function::CallingConvention::Standard; }
+opt_func_cc     : EXTERN                         { $$ = hilti::type::function::CallingConvention::Extern; }
+                | EXTERN_NO_SUSPEND              { $$ = hilti::type::function::CallingConvention::ExternNoSuspend; }
+                | /* empty */                    { $$ = hilti::type::function::CallingConvention::Standard; }
 
 opt_func_params : func_params                    { $$ = std::move($1); }
                | /* empty */                     { $$ = hilti::type::function::Parameters(); }
@@ -654,7 +654,7 @@ type_param_end:
               { driver->enableExpressionMode(); }
 
 function_type : opt_func_flavor FUNCTION '(' opt_func_params ')' ARROW qtype
-                                                 { $$ = builder->typeFunction($7, $4, $1, __loc__); }
+                                                 { $$ = builder->typeFunction($7, $4, $1, type::function::CallingConvention::Standard, __loc__); }
               ;
 
 tuple_type    : TUPLE type_param_begin '*' type_param_end                { $$ = builder->typeTuple(hilti::type::Wildcard(), __loc__); }
@@ -683,12 +683,12 @@ struct_fields : struct_fields struct_field       { $$ = std::move($1); $$.push_b
 
 struct_field  : qtype local_id opt_attributes ';' { $$ = builder->declarationField(std::move($2), std::move($1), std::move($3), __loc__); }
               | func_flavor opt_func_cc qtype function_id '(' opt_func_params ')' opt_attributes ';' {
-                                                   auto ftype = builder->typeFunction(std::move($3), std::move($6), $1, __loc__);
-                                                   $$ = builder->declarationField(std::move($4), $2, std::move(ftype), $8, __loc__);
+                                                   auto ftype = builder->typeFunction(std::move($3), std::move($6), $1, $2, __loc__);
+                                                   $$ = builder->declarationField(std::move($4), std::move(ftype), $8, __loc__);
                                                    }
               | func_flavor opt_func_cc qtype function_id '(' opt_func_params ')' opt_attributes braced_block {
-                                                   auto ftype = builder->typeFunction(std::move($3), std::move($6), $1, __loc__);
-                                                   auto func = builder->function($4, std::move(ftype), std::move($9), $2, {});
+                                                   auto ftype = builder->typeFunction(std::move($3), std::move($6), $1, $2, __loc__);
+                                                   auto func = builder->function($4, std::move(ftype), std::move($9), {});
                                                    $$ = builder->declarationField($4, std::move(func), $8, __loc__);
                                                    }
 

@@ -710,14 +710,15 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     if ( ! id.namespace_().empty() )
         hid = fmt("%s::%s", id.namespace_(), hid);
 
-    auto* ft = builder()->typeFunction(result, params, hilti::type::function::Flavor::Hook, meta);
+    auto* ft = builder()->typeFunction(result, params, hilti::type::function::Flavor::Hook,
+                                       hilti::type::function::CallingConvention::Standard, meta);
 
     AttributeSet* attrs = builder()->attributeSet();
 
     if ( priority )
         attrs->add(context(), builder()->attribute(attribute::kind::Priority, priority));
 
-    auto* f = builder()->function(ID(hid), ft, body, hilti::function::CallingConvention::Standard, attrs, meta);
+    auto* f = builder()->function(ID(hid), ft, body, attrs, meta);
     return builder()->declarationFunction(f, hilti::declaration::Linkage::Struct, meta);
 }
 

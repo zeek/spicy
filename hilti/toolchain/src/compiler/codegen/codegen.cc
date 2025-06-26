@@ -279,6 +279,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         auto id = n->id();
         auto linkage = n->linkage();
         auto is_hook = (n->function()->ftype()->flavor() == type::function::Flavor::Hook);
+        auto calling_conv = ft->callingConvention();
 
         auto id_module = n->id().sub(-3);
 
@@ -298,7 +299,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             }
         }
 
-        auto d = cg->compile(n, ft, linkage, f->callingConvention(), f->attributes(), cid);
+        auto d = cg->compile(n, ft, linkage, f->attributes(), cid);
 
         if ( auto* a = n->function()->attributes()->find(hilti::attribute::kind::Cxxname) ) {
             // Just add the prototype. Make sure to skip any custom namespacing.
@@ -502,7 +503,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         cg->unit()->add(cxx_func);
 
-        if ( f->callingConvention() == function::CallingConvention::Extern ) {
+        if ( calling_conv == type::function::CallingConvention::Extern ) {
             // Create a separate function that we expose to C++. Inside that
             // wrapper we execute the actual function inside a lambda function
             // prepared to suspend. We move also of the functions arguments to
@@ -560,7 +561,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             cg->unit()->add(extern_d);
         }
 
-        if ( f->callingConvention() == function::CallingConvention::ExternNoSuspend ) {
+        if ( calling_conv == type::function::CallingConvention::ExternNoSuspend ) {
             // Create a separate function to expose under the externally
             // visible name, which will simply forward to the actual function.
             auto body = cxx::Block();
@@ -634,8 +635,7 @@ codegen::TypeUsage CodeGen::parameterKindToTypeUsage(parameter::Kind k) {
 }
 
 cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
-                                            function::CallingConvention cc, AttributeSet* fattrs,
-                                            std::optional<cxx::ID> namespace_) {
+                                            AttributeSet* fattrs, std::optional<cxx::ID> namespace_) {
     auto result_ = [&]() {
         auto rt = compile(ft->result(), codegen::TypeUsage::FunctionResult);
 
@@ -653,7 +653,8 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
     };
 
     auto linkage_ = [&]() {
-        if ( cc == function::CallingConvention::Extern || cc == function::CallingConvention::ExternNoSuspend )
+        if ( ft->callingConvention() == type::function::CallingConvention::Extern ||
+             ft->callingConvention() == type::function::CallingConvention::ExternNoSuspend )
             return "extern";
 
         switch ( linkage ) {

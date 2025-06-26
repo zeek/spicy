@@ -1397,13 +1397,13 @@ struct ProductionVisitor : public production::Visitor {
                         const Meta& m = {}) {
         auto qualified_id = pb->state().unit_id + id;
         auto* ftype = pb->parseMethodFunctionType(addl_param, m);
-        auto* func = builder()->function(qualified_id, ftype, body, hilti::declaration::Linkage::Struct,
-                                         hilti::function::CallingConvention::Standard, {}, m);
+        auto* func = builder()->function(qualified_id, ftype, body, {}, m);
+        auto* decl = builder()->declarationFunction(func, hilti::declaration::Linkage::Struct, m);
 
         if ( add_decl )
-            new_fields.emplace_back(builder()->declarationField(id, func->function()->type(), nullptr));
+            new_fields.emplace_back(builder()->declarationField(id, ftype, nullptr));
 
-        cg()->addDeclaration(func);
+        cg()->addDeclaration(decl);
     }
 
     // Redirects input to be read from given bytes value next.
@@ -2116,7 +2116,8 @@ hilti::type::Function* ParserBuilder::parseMethodFunctionType(hilti::type::funct
         params.push_back(addl_param);
 
     return builder()->typeFunction(builder()->qualifiedType(result, hilti::Constness::Const), params,
-                                   hilti::type::function::Flavor::Method, m);
+                                   hilti::type::function::Flavor::Method,
+                                   hilti::type::function::CallingConvention::Standard, m);
 }
 
 ASTContext* ParserBuilder::context() const { return _cg->context(); }
@@ -2153,7 +2154,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     auto* f_ext_overload1_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
     auto* f_ext_overload1 =
         builder()->function(id_ext_overload1, f_ext_overload1_result, params, hilti::type::function::Flavor::Method,
-                            hilti::declaration::Linkage::Struct, hilti::function::CallingConvention::Extern,
+                            hilti::declaration::Linkage::Struct, hilti::type::function::CallingConvention::Extern,
                             attr_ext_overload, t->meta());
 
     auto* f_ext_overload2_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
@@ -2176,7 +2177,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
                                                                         hilti::Constness::Mutable)))},
         hilti::type::function::Flavor::Method, hilti::declaration::Linkage::Struct,
-        hilti::function::CallingConvention::Extern, attr_ext_overload, t->meta());
+        hilti::type::function::CallingConvention::Extern, attr_ext_overload, t->meta());
 
     auto* f_ext_overload3_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
     auto* f_ext_overload3 = builder()->function(
@@ -2199,13 +2200,14 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
                                                                         hilti::Constness::Mutable)))},
         hilti::type::function::Flavor::Method, hilti::declaration::Linkage::Struct,
-        hilti::function::CallingConvention::Extern, attr_ext_overload, t->meta());
+        hilti::type::function::CallingConvention::Extern, attr_ext_overload, t->meta());
 
     auto* f_ext_context_new_result =
         builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"), hilti::Constness::Mutable);
     auto* f_ext_context_new =
         builder()->function(id_ext_context_new, f_ext_context_new_result, {}, hilti::type::function::Flavor::Method,
-                            hilti::declaration::Linkage::Struct, hilti::function::CallingConvention::ExternNoSuspend,
+                            hilti::declaration::Linkage::Struct,
+                            hilti::type::function::CallingConvention::ExternNoSuspend,
                             builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Static)}), t->meta());
 
     // We only actually add the functions we just build if the unit is
@@ -2213,16 +2215,16 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     // because doing so triggers generation of the whole parser, including
     // the internal parsing functions.
     auto* sf_ext_overload1 =
-        builder()->declarationField(f_ext_overload1->id().local(), hilti::function::CallingConvention::Extern,
-                                    f_ext_overload1->function()->ftype(), f_ext_overload1->function()->attributes());
+        builder()->declarationField(f_ext_overload1->id().local(), f_ext_overload1->function()->ftype(),
+                                    f_ext_overload1->function()->attributes());
 
     auto* sf_ext_overload2 =
-        builder()->declarationField(f_ext_overload2->id().local(), hilti::function::CallingConvention::Extern,
-                                    f_ext_overload2->function()->ftype(), f_ext_overload2->function()->attributes());
+        builder()->declarationField(f_ext_overload2->id().local(), f_ext_overload2->function()->ftype(),
+                                    f_ext_overload2->function()->attributes());
 
     auto* sf_ext_overload3 =
-        builder()->declarationField(f_ext_overload3->id().local(), hilti::function::CallingConvention::Extern,
-                                    f_ext_overload3->function()->ftype(), f_ext_overload3->function()->attributes());
+        builder()->declarationField(f_ext_overload3->id().local(), f_ext_overload3->function()->ftype(),
+                                    f_ext_overload3->function()->attributes());
 
     s->addField(context(), sf_ext_overload1);
     s->addField(context(), sf_ext_overload2);
@@ -2230,8 +2232,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
     if ( t->contextType() ) {
         auto* sf_ext_ctor =
-            builder()->declarationField(f_ext_context_new->id().local(), hilti::function::CallingConvention::Extern,
-                                        f_ext_context_new->function()->ftype(),
+            builder()->declarationField(f_ext_context_new->id().local(), f_ext_context_new->function()->ftype(),
                                         f_ext_context_new->function()->attributes());
 
         s->addField(context(), sf_ext_ctor);

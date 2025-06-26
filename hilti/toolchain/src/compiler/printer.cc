@@ -35,7 +35,7 @@ namespace {
 struct Printer : visitor::PreOrder {
     Printer(printer::Stream& out) : _out(out) {} // NOLINT
 
-    void printFunctionType(const type::Function& ftype, const ID& id, function::CallingConvention calling_conv) {
+    void printFunctionType(const type::Function& ftype, const ID& id) {
         if ( ftype.isWildcard() ) {
             _out << "<function>";
             return;
@@ -43,8 +43,10 @@ struct Printer : visitor::PreOrder {
 
         _out << to_string(ftype.flavor()) << ' ';
 
-        if ( calling_conv != function::CallingConvention::Standard )
-            _out << to_string(calling_conv) << ' ';
+        if ( ftype.flavor() == type::function::Flavor::Function ) {
+            if ( ftype.callingConvention() != type::function::CallingConvention::Standard )
+                _out << to_string(ftype.callingConvention()) << ' ';
+        }
 
         _out << ftype.result() << ' ';
 
@@ -118,7 +120,7 @@ struct Printer : visitor::PreOrder {
     }
 
     void operator()(Function* n) final {
-        printFunctionType(*n->ftype(), n->id(), n->callingConvention());
+        printFunctionType(*n->ftype(), n->id());
 
         if ( auto attrs = n->attributes()->attributes(); ! attrs.empty() )
             _out << ' ' << std::make_pair(attrs, " ");
@@ -331,8 +333,10 @@ struct Printer : visitor::PreOrder {
         if ( auto* ft = n->type()->type()->tryAs<type::Function>() ) {
             _out << to_string(ft->flavor()) << " ";
 
-            if ( auto cc = n->callingConvention(); cc && *cc != function::CallingConvention::Standard )
-                _out << to_string(*cc) << ' ';
+            if ( ft->flavor() == type::function::Flavor::Function ) {
+                if ( auto cc = ft->callingConvention(); cc != type::function::CallingConvention::Standard )
+                    _out << to_string(cc) << ' ';
+            }
 
             _out << ft->result() << " " << n->id() << "(" << std::make_pair(ft->parameters(), ", ") << ")";
         }
@@ -854,7 +858,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(type::Function* n) final {
         _out << "function ";
-        printFunctionType(*n, {}, function::CallingConvention::Standard);
+        printFunctionType(*n, {});
     }
 
     void operator()(type::Interval* n) final { _out << "interval"; }

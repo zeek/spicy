@@ -318,9 +318,9 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 auto* const decl = context()->lookup(n->linkedDeclarationIndex());
 
-                switch ( fn->callingConvention() ) {
-                    case function::CallingConvention::ExternNoSuspend:
-                    case function::CallingConvention::Extern: {
+                switch ( fn->ftype()->callingConvention() ) {
+                    case type::function::CallingConvention::ExternNoSuspend:
+                    case type::function::CallingConvention::Extern: {
                         // If the declaration is `extern` and the unit is `public`, the function
                         // is part of an externally visible API and potentially used elsewhere.
 
@@ -332,7 +332,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
                         break;
                     }
-                    case function::CallingConvention::Standard:
+                    case type::function::CallingConvention::Standard:
                         // Nothing.
                         break;
                 }

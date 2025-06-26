@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <utility>
 
 #include <hilti/ast/attribute.h>
@@ -15,32 +14,6 @@
 
 namespace hilti {
 
-namespace function {
-
-/** A function's calling convention. */
-enum class CallingConvention {
-    Extern,          /**< function can be called from external C++ code */
-    ExternNoSuspend, /**< function can be called from external C++ code, and is guaranteed to not suspend. */
-    Standard         /**< default, nothing special */
-};
-
-namespace detail {
-constexpr util::enum_::Value<CallingConvention> Conventions[] = {
-    {CallingConvention::Extern, "extern"},
-    {CallingConvention::ExternNoSuspend, "extern-no-suspend"},
-    {CallingConvention::Standard, "<standard>"},
-};
-} // namespace detail
-
-constexpr auto to_string(CallingConvention cc) { return util::enum_::to_string(cc, detail::Conventions); }
-
-namespace calling_convention {
-constexpr auto from_string(std::string_view s) {
-    return util::enum_::from_string<CallingConvention>(s, detail::Conventions);
-}
-} // namespace calling_convention
-
-} // namespace function
 /** Base class for function nodes. */
 class Function : public Node {
 public:
@@ -49,7 +22,6 @@ public:
     auto ftype() const { return child<QualifiedType>(0)->type()->as<type::Function>(); }
     auto body() const { return child<Statement>(1); }
     auto attributes() const { return child<AttributeSet>(2); }
-    auto callingConvention() const { return _cc; }
     auto isStatic() const { return attributes()->find(hilti::attribute::kind::Static) != nullptr; }
 
     void setBody(ASTContext* ctx, Statement* b) { setChild(ctx, 1, b); }
@@ -57,23 +29,22 @@ public:
     void setResultType(ASTContext* ctx, QualifiedType* t) { ftype()->setResultType(ctx, t); }
 
     node::Properties properties() const override {
-        auto p = node::Properties{{"id", _id}, {"cc", to_string(_cc)}};
+        auto p = node::Properties{{"id", _id}};
         return Node::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, const ID& id, type::Function* ftype, Statement* body,
-                       function::CallingConvention cc = function::CallingConvention::Standard,
                        AttributeSet* attrs = nullptr, const Meta& meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         return ctx->make<Function>(ctx, {QualifiedType::create(ctx, ftype, Constness::Const, meta), body, attrs}, id,
-                                   cc, meta);
+                                   meta);
     }
 
 protected:
-    Function(ASTContext* ctx, Nodes children, ID id, function::CallingConvention cc, Meta meta = {})
-        : Node(ctx, NodeTags, std::move(children), std::move(meta)), _id(std::move(id)), _cc(cc) {}
+    Function(ASTContext* ctx, Nodes children, ID id, Meta meta = {})
+        : Node(ctx, NodeTags, std::move(children), std::move(meta)), _id(std::move(id)) {}
 
     std::string _dump() const override;
 
@@ -81,7 +52,6 @@ protected:
 
 private:
     ID _id;
-    function::CallingConvention _cc;
 };
 
 } // namespace hilti

@@ -43,6 +43,29 @@ namespace flavor {
 constexpr auto from_string(std::string_view s) { return util::enum_::from_string<Flavor>(s, detail::Flavors); }
 } // namespace flavor
 
+/** A function's calling convention. */
+enum class CallingConvention {
+    Extern,          /**< function can be called from external C++ code */
+    ExternNoSuspend, /**< function can be called from external C++ code, and is guaranteed to not suspend. */
+    Standard         /**< default, nothing special */
+};
+
+namespace detail {
+constexpr util::enum_::Value<CallingConvention> Conventions[] = {
+    {CallingConvention::Extern, "extern"},
+    {CallingConvention::ExternNoSuspend, "extern-no-suspend"},
+    {CallingConvention::Standard, "<standard>"},
+};
+} // namespace detail
+
+constexpr auto to_string(CallingConvention cc) { return util::enum_::to_string(cc, detail::Conventions); }
+
+namespace calling_convention {
+constexpr auto from_string(std::string_view s) {
+    return util::enum_::from_string<CallingConvention>(s, detail::Conventions);
+}
+} // namespace calling_convention
+
 } // namespace function
 
 /** AST node for a `function` type. */
@@ -50,6 +73,7 @@ class Function : public UnqualifiedType {
 public:
     auto result() const { return child<QualifiedType>(0); }
     auto flavor() const { return _flavor; }
+    auto callingConvention() const { return _cc; }
     const auto& functionNameForPrinting() const { return _id; }
 
     std::string_view typeClass() const final { return "function"; }
@@ -72,13 +96,14 @@ public:
     }
 
     node::Properties properties() const final {
-        auto p = node::Properties{{"flavor", to_string(_flavor)}};
+        auto p = node::Properties{{"flavor", to_string(_flavor)}, {"cc", to_string(_cc)}};
         return UnqualifiedType::properties() + std::move(p);
     }
 
     static auto create(ASTContext* ctx, QualifiedType* result, const declaration::Parameters& params,
-                       function::Flavor flavor = function::Flavor::Function, Meta meta = {}) {
-        return ctx->make<Function>(ctx, flatten(result, params), flavor, std::move(meta));
+                       function::Flavor flavor = function::Flavor::Function,
+                       function::CallingConvention cc = function::CallingConvention::Standard, Meta meta = {}) {
+        return ctx->make<Function>(ctx, flatten(result, params), flavor, cc, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
@@ -87,8 +112,8 @@ public:
     }
 
 protected:
-    Function(ASTContext* ctx, Nodes children, function::Flavor flavor, Meta meta)
-        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)), _flavor(flavor) {}
+    Function(ASTContext* ctx, Nodes children, function::Flavor flavor, function::CallingConvention cc, Meta meta)
+        : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)), _flavor(flavor), _cc(cc) {}
 
     Function(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"function(*)"}, std::move(children), std::move(meta)),
@@ -98,6 +123,7 @@ protected:
 
 private:
     function::Flavor _flavor;
+    function::CallingConvention _cc;
     ID _id;
 };
 

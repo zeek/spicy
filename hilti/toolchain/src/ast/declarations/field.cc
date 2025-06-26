@@ -8,8 +8,7 @@ using namespace hilti;
 using namespace hilti::declaration;
 
 node::Properties declaration::Field::properties() const {
-    auto p =
-        node::Properties{{"cc", _cc ? to_string(*_cc) : "<unset>"}, {"linked-type", to_string(_linked_type_index)}};
+    auto p = node::Properties{{"linked-type", to_string(_linked_type_index)}};
     return Declaration::properties() + std::move(p);
 }
 
