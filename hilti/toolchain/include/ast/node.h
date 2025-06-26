@@ -474,7 +474,7 @@ public:
         if ( ! n )
             return false;
 
-        if ( std::find(_children.begin(), _children.end(), n) != _children.end() )
+        if ( std::ranges::find(_children, n) != _children.end() )
             return true;
 
         if ( ! recurse )
@@ -496,7 +496,7 @@ public:
      * @return sibling of *n*, or null if *n* is the last child or not child at all
      **/
     Node* sibling(Node* n) const {
-        auto i = std::find(_children.begin(), _children.end(), n);
+        auto i = std::ranges::find(_children, n);
         if ( i == _children.end() )
             return nullptr;
 
@@ -556,7 +556,7 @@ public:
         if ( ! n )
             return;
 
-        if ( auto i = std::find(_children.begin(), _children.end(), n); i != _children.end() ) {
+        if ( auto i = std::ranges::find(_children, n); i != _children.end() ) {
             (*i)->_parent = nullptr;
             (*i)->release();
             _children.erase(i);

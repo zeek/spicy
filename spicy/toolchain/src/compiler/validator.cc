@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <unordered_set>
 
 #include <spicy/rt/mime.h>
@@ -128,8 +129,8 @@ hilti::Result<hilti::Nothing> checkFieldAttributes(type::unit::item::Field* f) {
         if ( attrs_present->size() > 1 ) {
             // Transform attribute kinds into strings for the diagnostic
             std::vector<std::string> attr_strings(attrs_present->size());
-            std::transform(attrs_present->begin(), attrs_present->end(), attr_strings.begin(),
-                           [](const hilti::attribute::Kind& kind) { return to_string(kind); });
+            std::ranges::transform(*attrs_present, attr_strings.begin(),
+                                   [](const hilti::attribute::Kind& kind) { return to_string(kind); });
             return hilti::result::Error(
                 fmt("attributes cannot be combined: %s", hilti::util::join(attr_strings, ", ")));
         }
@@ -160,8 +161,8 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
         }
 
         std::vector<std::string> attr_strings(required_one_of.size());
-        std::transform(required_one_of.begin(), required_one_of.end(), attr_strings.begin(),
-                       [](const hilti::attribute::Kind& kind) { return to_string(kind); });
+        std::ranges::transform(required_one_of, attr_strings.begin(),
+                               [](const hilti::attribute::Kind& kind) { return to_string(kind); });
         return hilti::result::Error(fmt("bytes field requires one of %s", hilti::util::join(attr_strings, ", ")));
     }
 

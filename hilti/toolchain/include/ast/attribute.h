@@ -64,7 +64,7 @@ private:
 
 /** Returns whether `kind` is in `kinds` */
 inline bool isOneOf(const Kind& kind, std::initializer_list<Kind> kinds) {
-    return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
+    return std::ranges::find(kinds, kind) != kinds.end();
 }
 
 inline auto to_string(const Kind& kind) { return std::string(kind); }
