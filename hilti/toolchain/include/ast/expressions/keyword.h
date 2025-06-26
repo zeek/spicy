@@ -22,10 +22,10 @@ enum class Kind {
 };
 
 namespace detail {
-constexpr util::enum_::Value<Kind> Kinds[] = {{Kind::Self, "self"},
-                                              {Kind::DollarDollar, "$$"},
-                                              {Kind::Captures, "$@"},
-                                              {Kind::Scope, "$scope"}};
+constexpr util::enum_::Value<Kind> Kinds[] = {{.value = Kind::Self, .name = "self"},
+                                              {.value = Kind::DollarDollar, .name = "$$"},
+                                              {.value = Kind::Captures, .name = "$@"},
+                                              {.value = Kind::Scope, .name = "$scope"}};
 } // namespace detail
 
 namespace kind {

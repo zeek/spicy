@@ -1141,7 +1141,9 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
             auto forward = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", {}, "extern");
             unit()->add(forward);
 
-            return CxxTypeInfo{false, fmt("&%s", std::string(ID("type_info", tid.local()))), forward};
+            return CxxTypeInfo{.predefined = false,
+                               .reference = fmt("&%s", std::string(ID("type_info", tid.local()))),
+                               .forward = forward};
         },
         [&](auto& ti) {
             if ( ti.predefined )

@@ -17,9 +17,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares two time values.",
         };
@@ -34,9 +34,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares two time values.",
         };
@@ -51,9 +51,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeTime()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Adds the interval to the time.",
         };
@@ -68,9 +68,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Difference,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Constness::Const, builder->typeInterval()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "time",
             .doc = "Returns the difference of the times.",
         };
@@ -85,9 +85,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Difference,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeInterval()},
-            .result = {Constness::Const, builder->typeTime()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeInterval()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Subtracts the interval from the time.",
         };
@@ -102,9 +102,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Greater,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -119,9 +119,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::GreaterEqual,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -136,9 +136,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Lower,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -153,9 +153,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::LowerEqual,
-            .op0 = {parameter::Kind::In, builder->typeTime()},
-            .op1 = {parameter::Kind::In, builder->typeTime()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
         };
@@ -173,9 +173,9 @@ public:
             .member = "time_ns",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of nanoseconds.",
         };
@@ -193,9 +193,9 @@ public:
             .member = "time",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of seconds.",
         };
@@ -213,9 +213,9 @@ public:
             .member = "time_ns",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of nanoseconds.",
         };
@@ -233,9 +233,9 @@ public:
             .member = "time",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of seconds.",
         };
@@ -253,9 +253,9 @@ public:
             .member = "time",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeReal()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeReal()},
                 },
-            .result = {Constness::Const, builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Creates an time interpreting the argument as number of seconds.",
         };
@@ -270,9 +270,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeTime()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeTime()},
             .member = "seconds",
-            .result = {Constness::Const, builder->typeReal()},
+            .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "time",
             .doc = R"(
 Returns the time as a real value representing seconds since the UNIX epoch.
@@ -289,9 +289,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeTime()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeTime()},
             .member = "nanoseconds",
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "time",
             .doc = R"(
 Returns the time as an integer value representing nanoseconds since the UNIX epoch.

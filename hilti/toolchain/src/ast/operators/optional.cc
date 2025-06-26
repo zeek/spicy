@@ -13,7 +13,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeOptional(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeOptional(type::Wildcard())},
             .result_doc = "<dereferenced type>",
             .ns = "optional",
             .doc = "Returns the element stored, or throws an exception if none.",

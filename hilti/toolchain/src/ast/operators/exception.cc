@@ -16,11 +16,11 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Call,
-            .self = {parameter::Kind::In, builder->ctorType(builder->typeException(type::Wildcard()))},
+            .self = {.kind = parameter::Kind::In, .type = builder->ctorType(builder->typeException(type::Wildcard()))},
             .param0 =
                 {
                     .name = "msg",
-                    .type = {parameter::Kind::In, builder->typeString()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeString()},
                 },
             .result_doc = "exception value",
             .ns = "exception",
@@ -43,9 +43,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeException(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeException(type::Wildcard())},
             .member = "description",
-            .result = {Constness::Const, builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "exception",
             .doc = R"(
 Returns the textual message associated with an exception object.

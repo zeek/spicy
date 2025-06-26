@@ -20,8 +20,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream::iterator",
             .doc = "Returns the character the iterator is pointing to.",
         };
@@ -36,8 +36,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
-            .result = {Constness::Mutable, builder->typeStreamIterator()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Mutable, .type = builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by one byte, returning the previous position.",
         };
@@ -52,8 +52,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
-            .result = {Constness::Mutable, builder->typeStreamIterator()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Mutable, .type = builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by one byte, returning the new position.",
         };
@@ -68,9 +68,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -87,9 +87,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -106,9 +106,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Lower,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -125,9 +125,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::LowerEqual,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -144,9 +144,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Greater,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -163,9 +163,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::GreaterEqual,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
@@ -182,9 +182,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Difference,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .result = {Constness::Const, builder->typeSignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeSignedInteger(64)},
             .ns = "stream::iterator",
             .doc =
                 "Returns the number of stream between the two iterators. The result will be negative if the second "
@@ -204,9 +204,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Constness::Const, builder->typeStreamIterator()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by the given number of stream.",
         };
@@ -221,9 +221,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeStreamIterator()},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Constness::Const, builder->typeStreamIterator()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStreamIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by the given number of stream.",
         };
@@ -238,9 +238,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamIterator()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
             .member = "offset",
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream::iterator",
             .doc = R"(
 Returns the offset of the byte that the iterator refers to relative to the
@@ -258,9 +258,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamIterator()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
             .member = "is_frozen",
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::iterator",
             .doc = R"(
 Returns whether the stream value that the iterator refers to has been frozen.
@@ -281,8 +281,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream::view",
             .doc = "Returns the number of stream the view contains.",
         };
@@ -297,9 +297,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::In,
-            .op0 = {parameter::Kind::In, builder->typeStreamView()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side view contains the left-hand-side bytes as a subsequence.",
         };
@@ -314,9 +314,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::In,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side bytes contains the left-hand-side view as a subsequence.",
         };
@@ -331,9 +331,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeStreamView()},
-            .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares the views lexicographically.",
         };
@@ -348,9 +348,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeStreamView()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares a stream view and a bytes instance lexicographically.",
         };
@@ -365,9 +365,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeStreamView()},
-            .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares two views lexicographically.",
         };
@@ -382,9 +382,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeStreamView()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares a stream view and a bytes instance lexicographically.",
         };
@@ -399,9 +399,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "offset",
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream::view",
             .doc = R"(
 Returns the offset of the view's starting position within the associated stream value.
@@ -418,14 +418,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "advance",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeStreamIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
                 },
-            .result = {Constness::Const, builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Advances the view's starting position to a given iterator *i*, returning the new
@@ -444,9 +444,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "advance_to_next_data",
-            .result = {Constness::Const, builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Advances the view's starting position to the next non-gap position. This always
@@ -464,14 +464,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "limit",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view that keeps the current start but cuts off the end *i*
@@ -490,14 +490,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "advance",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Advances the view's starting position by *i* stream, returning the new view.
@@ -514,15 +514,15 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "find",
             .param0 =
                 {
                     .name = "needle",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Const,
-                       builder->typeTuple(
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeTuple(
                            QualifiedTypes{builder->qualifiedType(builder->typeBool(), Constness::Const),
                                           builder->qualifiedType(builder->typeStreamIterator(), Constness::Mutable)})},
             .ns = "stream::view",
@@ -548,14 +548,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "at",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamIterator()},
             .ns = "stream::view",
             .doc = R"(
 Returns an iterator representing the offset *i* inside the view.
@@ -572,14 +572,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "starts_with",
             .param0 =
                 {
                     .name = "b",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = R"(
 Returns true if the view starts with *b*.
@@ -596,19 +596,19 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "sub",
             .param0 =
                 {
                     .name = "begin",
-                    .type = {parameter::Kind::In, builder->typeStreamIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
                 },
             .param1 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeStreamIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
                 },
-            .result = {Constness::Const, builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view of the subsequence from *begin* up to (but not including)
@@ -626,14 +626,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "sub",
             .param0 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeStreamIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
                 },
-            .result = {Constness::Const, builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view of the subsequence from the beginning of the stream up to
@@ -651,19 +651,19 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStreamView()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .member = "sub",
             .param0 =
                 {
                     .name = "begin",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
             .param1 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
             .ns = "stream::view",
             .doc = R"(
 Returns a new view of the subsequence from offset *begin* to (but not including)
@@ -686,9 +686,9 @@ public:
             .member = "stream",
             .param0 =
                 {
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Mutable, builder->typeStream()},
+            .result = {.constness = Constness::Mutable, .type = builder->typeStream()},
             .ns = "stream",
             .doc = "Creates a stream instance pre-initialized with the given data.",
         };
@@ -703,8 +703,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeStream()},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStream()},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream",
             .doc = "Returns the number of stream the value contains.",
         };
@@ -719,9 +719,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeStream()},
-            .op1 = {parameter::Kind::In, builder->typeStream()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStream()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStream()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream",
             .doc = "Compares two stream values lexicographically.",
         };
@@ -736,9 +736,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeStream()},
-            .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Constness::Const, builder->typeStream()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStream()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeStream()},
             .ns = "stream",
             .doc = "Concatenates another stream's view to the target stream.",
         };
@@ -753,9 +753,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeStream()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeStream()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStream()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeStream()},
             .ns = "stream",
             .doc = "Concatenates data to the stream.",
         };
@@ -770,9 +770,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::InOut, builder->typeStream()},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeStream()},
             .member = "freeze",
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "stream",
             .doc = R"(
 Freezes the stream value. Once frozen, one cannot append any more data to a
@@ -791,9 +791,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStream()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStream()},
             .member = "unfreeze",
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "stream",
             .doc = R"(
 Unfreezes the stream value. A unfrozen stream value can be further modified. If
@@ -812,9 +812,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStream()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStream()},
             .member = "is_frozen",
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream",
             .doc = R"(
 Returns true if the stream value has been frozen.
@@ -831,14 +831,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStream()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStream()},
             .member = "at",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeStreamIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeStreamIterator()},
             .ns = "stream",
             .doc = R"(
 Returns an iterator representing the offset *i* inside the stream value.
@@ -855,14 +855,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::InOut, builder->typeStream()},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeStream()},
             .member = "trim",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeStreamIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeStreamIterator()},
                 },
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "stream",
             .doc = R"(
 Trims the stream value by removing all data from its beginning up to (but not
@@ -885,9 +885,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeStream()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStream()},
             .member = "statistics",
-            .result = {Constness::Const, builder->typeName("hilti::StreamStatistics")},
+            .result = {.constness = Constness::Const, .type = builder->typeName("hilti::StreamStatistics")},
             .ns = "stream",
             .doc = R"(
 Returns statistics about the stream input received so far. Note that

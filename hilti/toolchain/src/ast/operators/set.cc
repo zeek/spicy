@@ -20,7 +20,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeSetIterator(type::Wildcard())},
             .result_doc = "<dereferenced type>",
             .ns = "set::iterator",
             .doc = "Returns the set element that the iterator refers to.",
@@ -40,7 +40,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeSetIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeSetIterator(type::Wildcard())},
             .result_doc = "iterator<set<*>>",
             .ns = "set::iterator",
             .doc = "Advances the iterator by one set element, returning the previous position.",
@@ -60,7 +60,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeSetIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeSetIterator(type::Wildcard())},
             .result_doc = "iterator<set<*>>",
             .ns = "set::iterator",
             .doc = "Advances the iterator by one set element, returning the new position.",
@@ -81,9 +81,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeSetIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeSetIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set::iterator",
             .doc = "Returns true if two sets iterators refer to the same location.",
         };
@@ -103,9 +103,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeSetIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeSetIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeSetIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set::iterator",
             .doc = "Returns true if two sets iterators refer to different locations.",
         };
@@ -127,8 +127,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeSet(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "set",
             .doc = "Returns the number of elements a set contains.",
         };
@@ -143,9 +143,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeSet(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeSet(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set",
             .doc = "Compares two sets element-wise.",
         };
@@ -165,9 +165,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeSet(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeSet(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set",
             .doc = "Compares two sets element-wise.",
         };
@@ -187,9 +187,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::In,
-            .op0 = {parameter::Kind::In, builder->typeAny()},
-            .op1 = {parameter::Kind::In, builder->typeSet(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeSet(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set",
             .doc = "Returns true if an element is part of the set.",
         };
@@ -204,9 +204,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Add,
-            .op0 = {parameter::Kind::InOut, builder->typeSet(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeAny(), "element"},
-            .result = {Constness::Const, builder->typeVoid()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeSet(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "element"},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "set",
             .doc = "Adds an element to the set.",
         };
@@ -228,9 +228,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Delete,
-            .op0 = {parameter::Kind::InOut, builder->typeSet(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeAny(), "element"},
-            .result = {Constness::Const, builder->typeVoid()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeSet(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "element"},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "set",
             .doc = "Removes an element from the set.",
         };
@@ -252,9 +252,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::InOut, builder->typeSet(type::Wildcard())},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeSet(type::Wildcard())},
             .member = "clear",
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "set",
             .doc = R"(
 Removes all elements from the set.

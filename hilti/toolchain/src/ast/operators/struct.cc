@@ -24,10 +24,10 @@ operator_::Signature hilti::struct_::MemberCall::signature(Builder* builder) con
 
     return Signature{
         .kind = Kind::MemberCall,
-        .self = {parameter::Kind::InOut, nullptr, "", stype},
-        .op1 = {parameter::Kind::In, builder->typeMember(ID(_fdecl->id()))},
-        .op2 = {parameter::Kind::In, params},
-        .result = {result->constness(), result->type()},
+        .self = {.kind = parameter::Kind::InOut, .type = nullptr, .doc = "", .external_type = stype},
+        .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(ID(_fdecl->id()))},
+        .op2 = {.kind = parameter::Kind::In, .type = params},
+        .result = {.constness = result->constness(), .type = result->type()},
         .skip_doc = true,
     };
 }
@@ -88,9 +88,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unset,
-            .op0 = {parameter::Kind::InOut, builder->typeStruct(type::Wildcard()), "<struct>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
-            .result = {Constness::Const, builder->typeVoid()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStruct(type::Wildcard()), .doc = "<struct>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "struct",
             .doc = R"(
 Clears an optional field.
@@ -109,8 +109,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Member,
-            .op0 = {parameter::Kind::InOut, builder->typeStruct(type::Wildcard()), "<struct>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStruct(type::Wildcard()), .doc = "<struct>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "struct",
             .doc = R"(
@@ -137,8 +137,8 @@ public:
         return Signature{
             .kind = Kind::Member,
             .priority = Priority::Low, // prefer the non-const version
-            .op0 = {parameter::Kind::In, builder->typeStruct(type::Wildcard()), "<struct>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStruct(type::Wildcard()), .doc = "<struct>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "struct",
             .doc = R"(
@@ -164,8 +164,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::TryMember,
-            .op0 = {parameter::Kind::InOut, builder->typeStruct(type::Wildcard()), "<struct>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeStruct(type::Wildcard()), .doc = "<struct>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "struct",
             .doc = R"(
@@ -194,9 +194,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::HasMember,
-            .op0 = {parameter::Kind::In, builder->typeStruct(type::Wildcard()), "<struct>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeStruct(type::Wildcard()), .doc = "<struct>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "struct",
             .doc = "Returns true if the struct's field has a value assigned (not counting any ``&default``).",
         };
