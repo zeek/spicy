@@ -55,9 +55,11 @@ inline void print(std::string_view stream, std::string_view s) {
         ::hilti::rt::detail::globalState()->debug_logger->print(stream, hilti::rt::escapeBytes(s));
 }
 
-template<typename T, typename std::enable_if_t<not std::is_convertible_v<T, std::string_view>>* = nullptr>
-/** Prints the string representastion of a HILTI runtime value to a specific debug stream. */
-inline void print(std::string_view stream, const T& t) {
+template<typename T>
+/** Prints the string representation of a HILTI runtime value to a specific debug stream. */
+inline void print(std::string_view stream, const T& t)
+    requires(! std::is_convertible_v<T, std::string_view>)
+{
     if ( ::hilti::rt::detail::globalState()->debug_logger )
         ::hilti::rt::detail::globalState()->debug_logger->print(stream, hilti::rt::to_string_for_print(t));
 }

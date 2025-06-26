@@ -79,9 +79,11 @@ public:
 
     void setUsesGlobals() { _uses_globals = true; }
 
-    template<typename Declaration,
-             typename std::enable_if_t<std::is_base_of_v<declaration::DeclarationBase, Declaration>>* = nullptr>
-    void add(const Declaration& d, const Meta& m = Meta());  // add C++ declaration
+    // add C++ declaration
+    template<typename Declaration>
+    void add(const Declaration& d, const Meta& m = Meta())
+        requires(std::is_base_of_v<declaration::DeclarationBase, Declaration>);
+
     void add(std::string_view stmt, const Meta& m = Meta()); // add generic top-level item
     void add(const linker::Join& f);                         // add linker joined function
 
@@ -148,8 +150,10 @@ private:
     cxx::Block _init_globals;
 };
 
-template<typename Declaration, typename std::enable_if_t<std::is_base_of_v<declaration::DeclarationBase, Declaration>>*>
-void Unit::add(const Declaration& d, const Meta& m) {
+template<typename Declaration>
+void Unit::add(const Declaration& d, const Meta& m)
+    requires(std::is_base_of_v<declaration::DeclarationBase, Declaration>)
+{
     static_assert(std::is_base_of_v<declaration::DeclarationBase, Declaration>,
                   "Declaration must be derived from DeclarationBase");
 

@@ -95,8 +95,10 @@ public:
 };
 
 namespace detail::adl {
-template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isUnion, T>>* = nullptr>
-inline std::string to_string(const T& x, adl::tag /*unused*/) {
+template<typename T>
+inline std::string to_string(const T& x, adl::tag /*unused*/)
+    requires(std::is_base_of_v<trait::isUnion, T>)
+{
     return x.__to_string();
 }
 

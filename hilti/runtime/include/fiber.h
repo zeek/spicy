@@ -310,8 +310,10 @@ public:
      *
      * @param f function to be executed
      */
-    template<typename Function, typename = std::enable_if_t<std::is_invocable_v<Function, resumable::Handle*>>>
-    Resumable(Function f) : _fiber(detail::Fiber::create()) {
+    template<typename Function>
+    Resumable(Function f)
+        requires(std::is_invocable_v<Function, resumable::Handle*>)
+        : _fiber(detail::Fiber::create()) {
         _fiber->init(std::move(f));
     }
 

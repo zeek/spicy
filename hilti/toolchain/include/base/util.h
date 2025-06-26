@@ -42,18 +42,6 @@ namespace hilti {
 
 struct Configuration;
 
-/** Tests if class is derived from another. */
-#define IF_DERIVED_FROM(t, cls) typename std::enable_if_t<std::is_base_of_v<cls, t>>* = nullptr
-
-/** Tests if class is not  derived from another. */
-#define IF_NOT_DERIVED_FROM(t, cls) typename std::enable_if_t<! std::is_base_of_v<cls, t>>* = nullptr
-
-/** Tests if two are class are the same. */
-#define IF_SAME(t, cls) typename std::enable_if_t<std::is_same_v<cls, t>>* = nullptr
-
-/** Tests if two are class are not the same. */
-#define IF_NOT_SAME(t, cls) typename std::enable_if_t<! std::is_same_v<cls, t>>* = nullptr
-
 namespace util {
 
 /** Wrapper around the ABI's C++ demangle function. */

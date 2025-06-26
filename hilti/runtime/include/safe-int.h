@@ -24,8 +24,9 @@ using safe = SafeInt<T, detail::SafeIntException>;
 
 // Needs to be a top level.
 template<typename O, typename T>
-inline auto operator<<(O& out, const hilti::rt::integer::safe<T>& x)
-    -> std::enable_if_t<std::is_base_of_v<std::ostream, O>, O>& {
+inline auto operator<<(O& out, const hilti::rt::integer::safe<T>& x) -> O&
+    requires(std::is_base_of_v<std::ostream, O>)
+{
     if ( std::is_same<T, int8_t>() )
         out << static_cast<int16_t>(x);
     else if ( std::is_same<T, uint8_t>() )
