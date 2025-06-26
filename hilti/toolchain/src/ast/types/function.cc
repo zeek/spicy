@@ -41,7 +41,7 @@ hilti::Result<Nothing> type::isValidOverload(Function* f1, Function* f2) {
 
     auto non_defaulted = [](const node::Set<function::Parameter>& p) {
         node::Set<function::Parameter> r;
-        std::copy_if(p.begin(), p.end(), std::back_inserter(r), [](function::Parameter* p) { return ! p->default_(); });
+        std::ranges::copy_if(p, std::back_inserter(r), [](function::Parameter* p) { return ! p->default_(); });
         return r;
     };
 

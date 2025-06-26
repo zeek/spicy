@@ -23,7 +23,7 @@ std::optional<std::pair<int, type::tuple::Element*>> type::Tuple::elementByID(co
 bool type::Tuple::isResolved(node::CycleDetector* cd) const {
     const auto& cs = children();
 
-    return std::all_of(cs.begin(), cs.end(), [&](const auto& c) {
+    return std::ranges::all_of(cs, [&](const auto& c) {
         auto t = c->template tryAs<QualifiedType>();
         return ! t || t->isResolved(cd);
     });

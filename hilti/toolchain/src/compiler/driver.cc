@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <getopt.h>
 
+#include <algorithm>
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -258,7 +259,7 @@ Result<Nothing> Driver::_setCxxNamespacesFromPrefix(const char* prefix) {
     if ( s.empty() )
         return Nothing();
 
-    if ( ! isdigit(s[0]) && std::all_of(s.begin(), s.end(), [](auto c) { return std::isalnum(c) || c == '_'; }) ) {
+    if ( ! isdigit(s[0]) && std::ranges::all_of(s, [](auto c) { return std::isalnum(c) || c == '_'; }) ) {
         _compiler_options.cxx_namespace_extern = hilti::util::fmt("hlt_%s", s);
         _compiler_options.cxx_namespace_intern = hilti::util::fmt("__hlt_%s", s);
         return Nothing();

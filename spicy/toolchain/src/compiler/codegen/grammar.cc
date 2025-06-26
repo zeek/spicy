@@ -126,6 +126,7 @@ void Grammar::_simplify() {
 
         for ( const auto& p : hilti::util::setDifference(values, closure) ) {
             _prods.erase(p->symbol());
+            // NOLINTNEXTLINE(modernize-use-ranges)
             _nterms.erase(std::remove(_nterms.begin(), _nterms.end(), p->symbol()), _nterms.end());
             changed = true;
         }

@@ -11,6 +11,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <ranges>
 
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/util.h>
@@ -100,25 +101,26 @@ std::string util::replace(const std::string& s, const std::string& o, const std:
 
 std::string util::tolower(const std::string& s) {
     std::string t = s;
-    std::transform(t.begin(), t.end(), t.begin(), ::tolower);
+    std::ranges::transform(t, t.begin(), ::tolower);
     return t;
 }
 
 std::string util::toupper(const std::string& s) {
     std::string t = s;
-    std::transform(t.begin(), t.end(), t.begin(), ::toupper);
+    std::ranges::transform(t, t.begin(), ::toupper);
     return t;
 }
 
 std::string util::rtrim(const std::string& s) {
     auto t = s;
-    t.erase(std::find_if(t.rbegin(), t.rend(), [](char c) { return ! std::isspace(c); }).base(), t.end());
+    t.erase(std::ranges::find_if(std::ranges::reverse_view(t), [](char c) { return ! std::isspace(c); }).base(),
+            t.end());
     return t;
 }
 
 std::string util::ltrim(const std::string& s) {
     auto t = s;
-    t.erase(t.begin(), std::find_if(t.begin(), t.end(), [](char c) { return ! std::isspace(c); }));
+    t.erase(t.begin(), std::ranges::find_if(t, [](char c) { return ! std::isspace(c); }));
     return t;
 }
 
@@ -205,7 +207,7 @@ std::string util::toIdentifier(std::string s) {
     if ( s.empty() )
         return s;
 
-    if ( ! isdigit(s[0]) && std::all_of(s.begin(), s.end(), [](auto c) { return std::isalnum(c) || c == '_'; }) )
+    if ( ! isdigit(s[0]) && std::ranges::all_of(s, [](auto c) { return std::isalnum(c) || c == '_'; }) )
         // Fast-path: no special-characters, no leading digits.
         return s;
 

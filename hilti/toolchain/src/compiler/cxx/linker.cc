@@ -1,6 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/util.h>
@@ -78,8 +77,7 @@ void cxx::Linker::finalize() {
         std::optional<cxx::declaration::Function> impl;
 
         auto sorted_joins = j.second;
-        std::sort(sorted_joins.begin(), sorted_joins.end(),
-                  [](const auto& x, const auto& y) { return x.priority > y.priority; });
+        std::ranges::sort(sorted_joins, [](const auto& x, const auto& y) { return x.priority > y.priority; });
 
         for ( const auto& c : sorted_joins ) {
             if ( ! impl ) {

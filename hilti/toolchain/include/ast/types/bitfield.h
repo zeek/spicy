@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -139,7 +140,7 @@ public:
     bool isMutable() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final {
         auto bs = bits();
-        return std::all_of(bs.begin(), bs.end(), [&](const auto& b) { return b->itemType()->isResolved(cd); });
+        return std::ranges::all_of(bs, [&](const auto& b) { return b->itemType()->isResolved(cd); });
     }
 
     node::Properties properties() const final {

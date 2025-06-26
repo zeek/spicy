@@ -304,8 +304,7 @@ inline auto parsers() {
     const auto& parsers = detail::globalState()->parsers;
 
     std::vector<const Parser*> public_parsers;
-    std::copy_if(parsers.begin(), parsers.end(), std::back_inserter(public_parsers),
-                 [](const auto& p) { return p->is_public; });
+    std::ranges::copy_if(parsers, std::back_inserter(public_parsers), [](const auto& p) { return p->is_public; });
 
     return public_parsers;
 }
