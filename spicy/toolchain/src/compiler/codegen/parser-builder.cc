@@ -2708,7 +2708,7 @@ hilti::Attributes ParserBuilder::removeGenericParseAttributes(hilti::AttributeSe
 
     hilti::Attributes filtered;
     for ( auto* a : attrs->attributes() ) {
-        if ( ! generic_attributes.count(a->kind()) )
+        if ( ! generic_attributes.contains(a->kind()) )
             filtered.emplace_back(a);
     }
 

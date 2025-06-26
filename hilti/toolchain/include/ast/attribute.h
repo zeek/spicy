@@ -49,7 +49,7 @@ public:
     // the known attributes created so far. Otherwise throws an `out_of_range`
     // exception.
     static Kind fromString(const std::string_view& s) {
-        if ( _known_attributes && _known_attributes->count(std::string(s)) > 0 )
+        if ( _known_attributes && _known_attributes->contains(std::string(s)) )
             return Kind(std::string(s));
         else
             throw std::out_of_range("unknown attribute kind: " + std::string(s));

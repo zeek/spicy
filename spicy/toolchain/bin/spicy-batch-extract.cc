@@ -22,7 +22,7 @@ static void processPreBatchedInput(std::string needle, std::istream& in, std::os
     out << magic << '\n';
 
     std::set<std::string> needles = {std::move(needle)};
-    auto is_needle = [&](const std::string& n) { return needles.find(n) != needles.end(); };
+    auto is_needle = [&](const std::string& n) { return needles.contains(n); };
 
     while ( in.good() && ! in.eof() ) {
         std::string cmd;

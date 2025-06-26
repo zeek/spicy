@@ -108,7 +108,7 @@ struct FieldBuilder : public visitor::PreOrder {
         for ( const auto&& [n, c] : hilti::util::enumerate(f->cases()) ) {
             for ( const auto& i : c->block()->items() ) {
                 if ( auto* f = i->tryAs<spicy::type::unit::item::Field>() ) {
-                    if ( seen.find(f->id()) != seen.end() )
+                    if ( seen.contains(f->id()) )
                         // Validator ensures two fields with the same name are equivalent.
                         continue;
 

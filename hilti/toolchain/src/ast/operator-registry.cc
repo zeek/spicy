@@ -29,7 +29,7 @@ void Registry::initPending(Builder* builder) {
             continue;
 
         if ( (op->kind() != Kind::Call || op->isBuiltIn()) && op->kind() != Kind::MemberCall ) {
-            assert(_operators_by_name.find(op->name()) == _operators_by_name.end());
+            assert(! _operators_by_name.contains(op->name()));
             _operators_by_name[op->name()] = op.get();
         }
 

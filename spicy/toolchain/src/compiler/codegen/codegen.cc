@@ -144,7 +144,7 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         n->setType(context(), qstruct);
         n->addAttribute(context(), builder()->attribute(hilti::attribute::kind::OnHeap));
 
-        if ( info->uses_sync_advance.find(u->typeID()) != info->uses_sync_advance.end() )
+        if ( info->uses_sync_advance.contains(u->typeID()) )
             // Unit has an implementation of `%sync_advance`, so add feature
             // requirement for %sync_advance to the struct's type
             // declaration.

@@ -161,7 +161,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         auto allowed = it->second;
 
         for ( const auto& attr : attributes->attributes() ) {
-            if ( allowed.find(attr->kind()) == allowed.end() )
+            if ( ! allowed.contains(attr->kind()) )
                 error(hilti::util::fmt("invalid attribute '%s' in %s", to_string(attr->kind()), where), attr);
         }
     }
@@ -302,7 +302,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 auto* prototype = context()->lookup(index);
                 if ( auto* field = prototype->tryAs<declaration::Field>(); field && field->inlineFunction() )
                     error(fmt("method '%s' is already defined inline", n->id()), n);
-                else if ( _method_declarations.find(index) != _method_declarations.end() )
+                else if ( _method_declarations.contains(index) )
                     error(fmt("method '%s' is already defined elsewhere", n->id()), n);
                 else
                     _method_declarations.insert(index);
@@ -853,7 +853,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         std::set<ID> seen;
 
         for ( const auto& f : n->fields() ) {
-            if ( seen.find(f->id()) != seen.end() )
+            if ( seen.contains(f->id()) )
                 error("duplicate attribute in union type", n);
 
             seen.insert(f->id());

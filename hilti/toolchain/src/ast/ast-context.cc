@@ -177,7 +177,7 @@ void DependencyTracker::computeSingleDependency(Declaration* d) {
     assert(d && d->pathLength() <= 2); // global declarations only
     assert(level == 0); // assure we aren't calling this method recursively; that's what follow() is for instead
 
-    if ( dependencies.count(d) > 0 )
+    if ( dependencies.contains(d) )
         // Dependencies are already fully computed.
         return;
 
@@ -520,7 +520,7 @@ UnqualifiedType* ASTContext::lookup(ast::TypeIndex index) {
 }
 
 declaration::module::UID ASTContext::_addModuleToAST(declaration::Module* module) {
-    assert(_modules_by_uid.find(module->uid()) == _modules_by_uid.end());
+    assert(! _modules_by_uid.contains(module->uid()));
     assert(! module->hasParent()); // don't want to end up copying the whole AST
     auto uid = module->uid();
 
@@ -662,7 +662,7 @@ void ASTContext::_checkAST(bool finished) const {
     // Detect cycles, we shouldn't have them.
     std::set<Node*> seen = {};
     for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) ) {
-        if ( seen.find(n) != seen.end() )
+        if ( seen.contains(n) )
             logger().internalError("cycle in AST detected");
 
         seen.insert(n);
@@ -1008,7 +1008,7 @@ static void _reportErrors(const std::vector<node::Error>& errors) {
             if ( e.priority != p )
                 continue;
 
-            if ( reported.find(e) == reported.end() ) {
+            if ( ! reported.contains(e) ) {
                 logger().error(e.message, e.context, e.location);
                 reported.insert(e);
             }

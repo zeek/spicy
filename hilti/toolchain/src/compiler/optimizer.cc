@@ -224,7 +224,7 @@ struct FunctionVisitor : OptimizerVisitor {
                         }
 
                         auto it = _features.find(type->type()->type()->typeID());
-                        if ( it == _features.end() || ! it->second.count(feature) ) {
+                        if ( it == _features.end() || ! it->second.contains(feature) ) {
                             // This feature requirement has not yet been collected.
                             continue;
                         }
@@ -303,7 +303,7 @@ struct FunctionVisitor : OptimizerVisitor {
                         }
 
                         auto it = _features.find(decl->fullyQualifiedID());
-                        if ( it == _features.end() || ! it->second.count(feature) ) {
+                        if ( it == _features.end() || ! it->second.contains(feature) ) {
                             // This feature requirement has not yet been collected.
                             continue;
                         }
@@ -1152,7 +1152,8 @@ public:
                     }
 
                     for ( const auto& requirement : requirements[i] ) {
-                        if ( ! ignored_features.count(type_id) || ! ignored_features.at(type_id).count(requirement) )
+                        if ( ! ignored_features.contains(type_id) ||
+                             ! ignored_features.at(type_id).contains(requirement) )
                             // Enable the required feature.
                             _features[type_id][requirement] = true;
                     }
@@ -1192,7 +1193,7 @@ public:
                     for ( const auto& requirement :
                           field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                         const auto feature = *requirement->valueAsString();
-                        if ( ! ignored_features.count(type_id) || ! ignored_features.at(type_id).count(feature) )
+                        if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
                             // Enable the required feature.
                             _features[type_id][*requirement->valueAsString()] = true;
                     }
@@ -1224,7 +1225,8 @@ public:
                         for ( const auto& requirement :
                               param->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
                             const auto feature = *requirement->valueAsString();
-                            if ( ! ignored_features.count(type_id) || ! ignored_features.at(type_id).count(feature) ) {
+                            if ( ! ignored_features.contains(type_id) ||
+                                 ! ignored_features.at(type_id).contains(feature) ) {
                                 // Enable the required feature.
                                 _features[type_id][feature] = true;
                             }
@@ -1329,7 +1331,7 @@ public:
                     const auto feature = *requirement->valueAsString();
 
                     // Enable the required feature if it is not ignored here.
-                    if ( ! ignored_features.count(type_id) || ! ignored_features.at(type_id).count(feature) )
+                    if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
                         _features[type_id][feature] = true;
                 }
 
@@ -1355,7 +1357,7 @@ public:
             }
 
             case Stage::TRANSFORM: {
-                if ( ! _features.count(n->fullyQualifiedID()) )
+                if ( ! _features.contains(n->fullyQualifiedID()) )
                     break;
 
                 // Add type comment documenting enabled features.
@@ -1457,7 +1459,7 @@ struct MemberVisitor : OptimizerVisitor {
                 if ( ! _used.at(member_id) ) {
                     // Check whether the field depends on an active feature in which case we do not remove the
                     // field.
-                    if ( _features.count(type_id) ) {
+                    if ( _features.contains(type_id) ) {
                         const auto& features = _features.at(type_id);
 
                         auto dependent_features =
@@ -1469,7 +1471,7 @@ struct MemberVisitor : OptimizerVisitor {
                             auto dependent_feature = *dependent_feature_->valueAsString();
 
                             // The feature flag is known and the feature is active.
-                            if ( features.count(dependent_feature) && features.at(dependent_feature) )
+                            if ( features.contains(dependent_feature) && features.at(dependent_feature) )
                                 return; // Use `return` instead of `break` here to break out of `switch`.
                         }
                     }
@@ -1566,7 +1568,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
                             std::optional<std::set<std::string>>();
 
-    if ( ! passes || passes->count("feature_requirements") ) {
+    if ( ! passes || passes->contains("feature_requirements") ) {
         // The `FeatureRequirementsVisitor` enables or disables code
         // paths and needs to be run before all other passes since
         // it needs to see the code before any optimization edits.
@@ -1607,7 +1609,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         std::vector<std::unique_ptr<OptimizerVisitor>> vs;
         vs.reserve(passes->size());
         for ( const auto& pass : *passes )
-            if ( creators.count(pass) )
+            if ( creators.contains(pass) )
                 vs.push_back(creators.at(pass)(builder));
 
         for ( auto& v : vs ) {
