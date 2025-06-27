@@ -2,9 +2,9 @@
 # the binary code that will then lead to duplicate symbols.
 # @TEST-REQUIRES: ! have-sanitizer
 #
-# @TEST-EXEC: hiltic -j -o %INPUT.1.hlto %INPUT
-# @TEST-EXEC: hiltic -j -o %INPUT.2.hlto %INPUT
-# @TEST-EXEC: hiltic -j %INPUT.1.hlto %INPUT.2.hlto >output
+# @TEST-EXEC: hiltic --cxx-enable-dynamic-globals -j -o %INPUT.1.hlto %INPUT
+# @TEST-EXEC: hiltic --cxx-enable-dynamic-globals -j -o %INPUT.2.hlto %INPUT
+# @TEST-EXEC: hiltic --cxx-enable-dynamic-globals -j %INPUT.1.hlto %INPUT.2.hlto >output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-GROUP: spicy-core

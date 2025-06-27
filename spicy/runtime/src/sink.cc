@@ -380,7 +380,7 @@ void Sink::_debugReassemblerBuffer(std::string_view msg) const {
         _debugReassembler(fmt("  * chunk %d:", i), c.data, c.rseq, (c.rupper - c.rseq));
 }
 
-void Sink::connect_mime_type(const MIMEType& mt, std::string_view scope) {
+void Sink::connect_mime_type(const MIMEType& mt, uint64_t scope) {
     auto connect_matching = [&](const auto& mt) {
         if ( const auto& x = detail::globalState()->parsers_by_mime_type.find(mt.asKey());
              x != detail::globalState()->parsers_by_mime_type.end() ) {

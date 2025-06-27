@@ -44,14 +44,15 @@ void hilti::rt::init() {
 
     for ( const auto& m : globalState()->hilti_modules ) {
         if ( m.init_globals ) {
-            HILTI_RT_DEBUG("libhilti", fmt("initializing globals for module %s", m.name));
+            HILTI_RT_DEBUG("libhilti", fmt("initializing globals for module %s (scope 0x%" PRIx64 ")", m.name, m.id));
             (*m.init_globals)(context::detail::master());
         }
     }
 
     for ( const auto& m : globalState()->hilti_modules ) {
         if ( m.init_module ) {
-            HILTI_RT_DEBUG("libhilti", fmt("executing initialization code for module %s", m.name));
+            HILTI_RT_DEBUG("libhilti",
+                           fmt("executing initialization code for module %s (scope 0x%" PRIx64 ")", m.name, m.id));
             (*m.init_module)();
         }
     }
@@ -76,7 +77,7 @@ void hilti::rt::done() {
 
     for ( const auto& m : globalState()->hilti_modules ) {
         if ( m.destroy_globals ) {
-            HILTI_RT_DEBUG("libhilti", fmt("destroying globals for module %s", m.name));
+            HILTI_RT_DEBUG("libhilti", fmt("destroying globals for module %s (scope 0x%" PRIx64 ")", m.name, m.id));
             (*m.destroy_globals)(context::detail::master());
         }
     }
@@ -91,7 +92,7 @@ bool hilti::rt::isInitialized() { return __global_state && __global_state->runti
 void hilti::rt::detail::registerModule(HiltiModule module) {
     // Check whether the module was previously registered.
     for ( const auto& m : globalState()->hilti_modules ) {
-        if ( std::strcmp(m.name, module.name) == 0 && std::strcmp(m.id, module.id) == 0 ) {
+        if ( std::strcmp(m.name, module.name) == 0 && m.id == module.id ) {
             HILTI_RT_DEBUG("libhilti",
                            fmt("skipping registration of module %s since the module was registered previously",
                                module.name));

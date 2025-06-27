@@ -14,6 +14,9 @@
 
 using namespace hilti::rt;
 
+std::optional<hilti::rt::filesystem::path> Library::_current_path;
+uint64_t Library::_scope_counter = 0;
+
 std::string hilti::rt::library::Version::toJSON() const {
     auto version = nlohmann::json{{"magic", magic}, {"hilti_version", hilti_version}, {"debug", debug}};
     std::stringstream json;
@@ -53,6 +56,10 @@ hilti::rt::Library::~Library() {
 }
 
 hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const {
+    // Set the current library path while this method is running.
+    auto _ = hilti::rt::scope_exit([&]() { hilti::rt::Library::_current_path.reset(); });
+    hilti::rt::Library::_current_path = hilti::rt::filesystem::absolute(_path);
+
     constexpr auto mode = RTLD_NOW | RTLD_GLOBAL;
 
     if ( ! _handle ) {
@@ -108,6 +115,17 @@ hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
         return result::Error(fmt("could not remove library %s from store: %s", _path, ec.message()));
 
     return Nothing();
+}
+
+uint64_t hilti::rt::Library::currentScope() {
+    std::string scope;
+
+    if ( _current_path )
+        scope = _current_path->native();
+    else
+        scope = fmt("<scope-%>" PRIu64, ++_scope_counter);
+
+    return std::hash<std::string>()(scope);
 }
 
 hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::filesystem::path& path) const {

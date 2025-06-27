@@ -217,7 +217,7 @@ struct Parser {
      * disambiguation between linked units. Will be set/overidden by
      * `registerParser()`.
      */
-    std::string linker_scope;
+    uint64_t linker_scope;
 
     /**
      * Function performing parsing of given input into a temporary instance.
@@ -395,13 +395,13 @@ namespace detail {
  */
 template<typename UnitRef>
 inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-references)
-                           std::string linker_scope, UnitRef /* not used, just for template instantiation */,
+                           uint64_t linker_scope, UnitRef /* not used, just for template instantiation */,
                            const hilti::rt::TypeInfo* /* utype */) {
     // Note: This may may be called before spicy::rt::init(), and during
     // hilti::rt::init(). Cannot rely on any library functionality being
     // initialized yet.
 
-    p.linker_scope = std::move(linker_scope);
+    p.linker_scope = linker_scope;
     globalState()->parsers.emplace_back(&p);
 
     using unit_type = typename UnitRef::element_type;

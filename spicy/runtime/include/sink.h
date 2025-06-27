@@ -149,7 +149,7 @@ public:
      * @param mt MIME type to connect units for
      * @param scope identifier for the desired scope
      */
-    void connect_mime_type(const MIMEType& mt, std::string_view scope);
+    void connect_mime_type(const MIMEType& mt, uint64_t scope);
 
     /**
      * Connects new instances of all units to the sink that support a given
@@ -161,7 +161,7 @@ public:
      * @param scope identifier for the desired scope
      * @throws ``mime::InvalidType`` if the type cannot be parsed
      */
-    void connect_mime_type(const std::string& mt, std::string_view scope) { connect_mime_type(MIMEType(mt), scope); }
+    void connect_mime_type(const std::string& mt, uint64_t scope) { connect_mime_type(MIMEType(mt), scope); }
 
     /**
      * Connects new instances of all units to the sink that support a given
@@ -173,9 +173,7 @@ public:
      * @param scope identifier for the desired scope
      * @throws ``mime::InvalidType`` if the type cannot be parsed
      */
-    void connect_mime_type(const hilti::rt::Bytes& mt, std::string_view scope) {
-        connect_mime_type(MIMEType(mt.str()), scope);
-    }
+    void connect_mime_type(const hilti::rt::Bytes& mt, uint64_t scope) { connect_mime_type(MIMEType(mt.str()), scope); }
 
     /**
      * Reports a gap in the input stream.

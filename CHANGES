@@ -1,3 +1,27 @@
+1.14.0-dev.108 | 2025-06-27 07:45:06 +0200
+
+  * GH-1085: Allow registering a module twice. (Robin Sommer, Corelight)
+
+    So far, if one compiled the same HILTI module twice, each into its own
+    HLTO, then when loading the two HLTOs, the runtime system would skip
+    the second instance. However, that's not really what we want: a module
+    could intentionally be part of multiple HLTOs, in which case each
+    should get its own copy of that module state (i.e., its globals).
+
+    This change allows the same module to be registered multiple times,
+    with the HLTO linker scope distinguishing between the instances at
+    runtime, as usual. To make that work, we move computation of the scope
+    from compile time to runtime, using the library's absolute path as the
+    scope.
+
+    A complication is that we don't always load modules through HLTO
+    files: they can also be turned into C++ code that is then manually
+    compiled. In that case, generate unique scope IDs for each such
+    module.
+
+    Internally, to simplify memory management, we switch the scopes from
+    a string representation to an uint64 hash of a string.
+
 1.14.0-dev.106 | 2025-06-26 17:26:52 +0200
 
   * Remove stale code. (Robin Sommer, Corelight)
