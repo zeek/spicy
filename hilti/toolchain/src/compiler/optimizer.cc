@@ -1694,6 +1694,9 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 // Create the unused params
                 auto& unused = fn_unused_params[function_id];
 
+                if ( n->linkage() == declaration::Linkage::Public )
+                    return;
+
                 auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
                 // Don't set if there's no body or multiple implementations
                 if ( ! n->function()->body() ||
@@ -1743,10 +1746,9 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 if ( n->linkage() == declaration::Linkage::Public )
                     return;
 
-                // The type decl can also be wrapped in &cxxname so it should not
-                // change.
+                // If the type is public, we cannot change its fields.
                 auto* type_ = n->parent<declaration::Type>();
-                if ( type_ && type_->attributes()->has(hilti::attribute::kind::Cxxname) )
+                if ( type_ && type_->linkage() == declaration::Linkage::Public )
                     return;
 
                 // Don't set if a use may have side effects
