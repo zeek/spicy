@@ -45,8 +45,7 @@ hook void hook1(uint<64> x) {
     hilti::print("Hook number two");
 }
 
-# TODO: I missed this case with gathering uses :'(
-# COM: CHECK: hook1()
+# CHECK: hook1()
 hook1(1);
 
 }
