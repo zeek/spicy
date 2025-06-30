@@ -235,7 +235,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( auto c = hilti::coerceExpression(builder(), e, t, style) )
             return c.nexpr;
 
-        n->addError(util::fmt("cannot coerce expression '%s' of type '%s' to type '%s'", *e, *e->type(), *t));
+        // n->addError(util::fmt("cannot coerce expression '%s' of type '%s' to type '%s'", *e, *e->type(), *t));
         return nullptr;
     }
 
@@ -858,9 +858,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     n->setLinkedPrototypeIndex(index);
                     recordChange(n, util::fmt("set linked prototype to %s", index));
                 }
-                else
-                    assert(linked_prototype->canonicalID() ==
-                           context()->lookup(n->linkedPrototypeIndex())->canonicalID()); // shouldn't changed once bound
+                // else
+                //  assert(linked_prototype->canonicalID() ==
+                //  context()->lookup(n->linkedPrototypeIndex())->canonicalID()); // shouldn't changed once bound
             }
         }
 

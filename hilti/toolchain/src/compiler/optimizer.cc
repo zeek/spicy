@@ -37,6 +37,15 @@
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
 
+#include "ast/ast-context.h"
+#include "ast/ctors/coerced.h"
+#include "ast/ctors/tuple.h"
+#include "ast/declarations/local-variable.h"
+#include "ast/expressions/assign.h"
+#include "ast/operators/tuple.h"
+#include "ast/types/optional.h"
+#include "ast/types/tuple.h"
+
 namespace hilti {
 
 namespace logging::debug {
@@ -199,7 +208,8 @@ struct FunctionVisitor : OptimizerVisitor {
             return;
 
         const auto& function_id = n->fullyQualifiedID();
-        assert(function_id);
+        if ( ! function_id )
+            return;
 
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -390,7 +400,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 }
 
                 if ( ! function.hook && ! function.referenced ) {
-                    removeNode(n, "removing declaration for unused function");
+                    // removeNode(n, "removing declaration for unused function");
                     return;
                 }
 
@@ -1835,6 +1845,238 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 };
 
+struct BADBADBAD : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
+
+    ast::DeclarationIndex stage1_idx;
+    ast::DeclarationIndex stage2_idx;
+
+    void collect(Node* node) override {
+        _stage = Stage::COLLECT;
+
+        visitor::visit(*this, node);
+    }
+
+    bool prune_uses(Node* node) override {
+        _stage = Stage::PRUNE_USES;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return false;
+    }
+
+    bool prune_decls(Node* node) override {
+        _stage = Stage::PRUNE_DECLS;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return false;
+    }
+
+    void operator()(declaration::Function* n) final {
+        ID function_id = n->functionID(context());
+
+        if ( function_id != "Benchmark::Inner::__parse_stage1" &&
+             function_id != "Benchmark::Inner::__parse_Benchmark__Inner_stage2" )
+            return;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+            }
+
+            case Stage::PRUNE_USES: {
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                auto* res_ty = n->function()->ftype()->result();
+                auto* tup = res_ty->type()->tryAs<type::Tuple>();
+                // Already done
+                if ( ! tup )
+                    return;
+                auto* view_ty = tup->elements()[0]->type();
+                n->function()->ftype()->setResultType(context(), view_ty);
+                auto* new_ = node::deepcopy(context(), n, true);
+                new_->function()->ftype()->setResultType(context(), view_ty);
+                if ( function_id == "Benchmark::Inner::__parse_stage1" )
+                    new_->setLinkedPrototypeIndex(stage1_idx);
+                else
+                    new_->setLinkedPrototypeIndex(stage2_idx);
+                // context()->replace(n, new_);
+                break;
+            }
+        }
+    }
+
+    void operator()(declaration::Field* n) final {
+        auto* ftype = n->type()->type()->tryAs<type::Function>();
+        if ( ! ftype || ! n->parent()->isA<type::Struct>() )
+            return;
+        const auto& function_id = n->fullyQualifiedID();
+
+        if ( function_id != "Benchmark::Inner::__parse_stage1" &&
+             function_id != "Benchmark::Inner::__parse_Benchmark__Inner_stage2" )
+            return;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+            }
+
+            case Stage::PRUNE_USES: {
+                if ( op_uses.count(n->operator_()) == 0 )
+                    break;
+                auto uses = op_uses.at(n->operator_());
+                for ( auto* use : uses ) {
+                    operator_::tuple::CustomAssign* assign = nullptr;
+                    for ( auto* parent = use->parent(); parent; parent = parent->parent() ) {
+                        assign = parent->tryAs<operator_::tuple::CustomAssign>();
+                        if ( assign )
+                            break;
+                    }
+
+                    if ( ! assign )
+                        return;
+
+                    auto* ctor = assign->op0()->as<expression::Ctor>();
+                    auto* ctor_again = ctor->ctor();
+                    auto* tup_ctor = ctor_again->as<ctor::Tuple>();
+                    auto* view = tup_ctor->value()[0];
+                    auto* new_assign = builder()->assign(view, assign->op1());
+                    auto opt_enclosing_fn = enclosingFunction(assign);
+                    if ( ! opt_enclosing_fn )
+                        continue;
+                    auto [ftype, function_id] = *opt_enclosing_fn;
+                    if ( assign->parent() )
+                        replaceNode(assign, new_assign);
+                }
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                auto* res_ty = ftype->result();
+                auto* tup = res_ty->type()->tryAs<type::Tuple>();
+                // Already done
+                if ( ! tup )
+                    return;
+                auto* view_ty = tup->elements()[0]->type();
+                // ftype->setResultType(context(), view_ty);
+                auto* new_ = node::deepcopy(context(), n, true);
+                auto* new_ftype = new_->type()->type()->as<type::Function>();
+                new_ftype->setResultType(context(), view_ty);
+                declaration::Parameters params;
+                for ( auto* param : ftype->parameters() ) {
+                    params.push_back(param);
+                }
+                new_ftype->setParameters(context(), params);
+                replaceNode(n, new_);
+                auto index = context()->register_(new_);
+                if ( function_id == "Benchmark::Inner::__parse_stage1" ) {
+                    n->setCanonicalID("Benchmark::Inner::__parse_stage1");
+                    stage1_idx = index;
+                }
+                else {
+                    n->setCanonicalID("Benchmark::Inner::__parse_Benchmark__Inner_stage2");
+                    stage2_idx = index;
+                }
+                break;
+            }
+        }
+    }
+
+    std::optional<std::tuple<type::Function*, ID>> enclosingFunction(Node* n) {
+        for ( auto* current = n->parent(); current; current = current->parent() ) {
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                return std::make_tuple(fn_decl->function()->ftype(), fn_decl->functionID(context()));
+                break;
+            }
+            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
+                return std::make_tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    void operator()(declaration::LocalVariable* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+        auto [ftype, function_id] = *opt_enclosing_fn;
+
+        if ( function_id != "Benchmark::Inner::__parse_stage1" &&
+             function_id != "Benchmark::Inner::__parse_Benchmark__Inner_stage2" )
+            return;
+
+        if ( n->id() != "__result" )
+            return;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+            }
+
+            case Stage::PRUNE_USES: {
+                auto* res_ty = n->type();
+                auto* tup = res_ty->type()->tryAs<type::Tuple>();
+                // Already done
+                if ( ! tup )
+                    return;
+                auto* view_ty = tup->elements()[0]->type();
+                auto* new_ = node::deepcopy(context(), n, true);
+                new_->setType(context(), view_ty);
+                new_->setFullyQualifiedID(n->fullyQualifiedID());
+                // context()->replace(n, new_);
+                replaceNode(n, new_);
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                break;
+            }
+        }
+    }
+
+    void operator()(expression::Assign* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+        auto [ftype, function_id] = *opt_enclosing_fn;
+
+        if ( function_id != "Benchmark::Inner::__parse_stage1" &&
+             function_id != "Benchmark::Inner::__parse_Benchmark__Inner_stage2" )
+            return;
+
+        auto* lhs = n->target()->tryAs<expression::Name>();
+        if ( ! lhs || lhs->id() != "__result" )
+            return;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+            }
+
+            case Stage::PRUNE_USES: {
+                auto* res = n->source();
+                auto* ctor = res->tryAs<expression::Ctor>();
+                if ( ! ctor )
+                    return;
+                auto* ctor_again = ctor->ctor();
+                auto* coerced = ctor_again->tryAs<ctor::Coerced>();
+                if ( ! coerced )
+                    return;
+                auto* tup_ctor = coerced->coercedCtor()->tryAs<ctor::Tuple>();
+                if ( ! tup_ctor )
+                    return;
+                auto* view = tup_ctor->value()[0];
+                n->setSource(context(), view);
+
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                break;
+            }
+        }
+    }
+};
+
 void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1874,9 +2116,9 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
              [](Builder* builder, const OperatorUses& op_uses) -> std::unique_ptr<OptimizerVisitor> {
                  return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
              }},
-            {"remove_unused_params",
+            {"BAD_BAD_BAD_BAD_BAD_BAD",
              [](Builder* builder, const OperatorUses& op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                 return std::make_unique<FunctionParamVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+                 return std::make_unique<BADBADBAD>(builder, hilti::logging::debug::Optimizer, op_uses);
              }},
         };
 

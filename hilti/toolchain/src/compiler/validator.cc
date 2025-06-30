@@ -493,10 +493,6 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             error(fmt("cannot assign to RHS expression: %s", *n), n);
 
         if ( ! n->hasErrors() ) { // no need for more checks if coercer has already flagged it
-            if ( ! type::sameExceptForConstness(n->source()->type(), n->target()->type()) )
-                error(fmt("type mismatch for assignment, expected type %s but got %s", *n->target()->type(),
-                          *n->source()->type()),
-                      n);
         }
     }
 

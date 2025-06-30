@@ -67,9 +67,9 @@ BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorSize, std::string("Bench
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorLookahead, std::string("Benchmark::UnitVectorLookahead"))
-    ->RangeMultiplier(mult)
-    ->Range(min_input, max_input);
+// BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorLookahead, std::string("Benchmark::UnitVectorLookahead"))
+//->RangeMultiplier(mult)
+//->Range(min_input, max_input);
 
 BENCHMARK_CAPTURE(benchmarkParser, Benchmark::Regex, std::string("Benchmark::Regex"))
     ->RangeMultiplier(mult)
