@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
-#include <utility>
 
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/operators/common.h>
