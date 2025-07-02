@@ -24,14 +24,14 @@ public:
     /** Returns the AST context in use for creating nodes. */
     ASTContext* context() const { return _context; }
 
-    auto attribute(hilti::attribute::Kind kind, Expression* v, const Meta& m = Meta()) {
+    auto attribute(const hilti::attribute::Kind& kind, Expression* v, const Meta& m = Meta()) {
         return hilti::Attribute::create(context(), kind, v, m);
     }
-    auto attribute(hilti::attribute::Kind kind, const Meta& m = Meta()) {
+    auto attribute(const hilti::attribute::Kind& kind, const Meta& m = Meta()) {
         return hilti::Attribute::create(context(), kind, m);
     }
-    auto attributeSet(Attributes attrs = {}, Meta m = Meta()) {
-        return hilti::AttributeSet::create(context(), std::move(attrs), std::move(m));
+    auto attributeSet(const Attributes& attrs = {}, Meta m = Meta()) {
+        return hilti::AttributeSet::create(context(), attrs, std::move(m));
     }
     auto ctorAddress(hilti::rt::Address v, const Meta& meta = {}) {
         return hilti::ctor::Address::create(context(), v, meta);
@@ -49,8 +49,8 @@ public:
     auto ctorCoerced(Ctor* orig, Ctor* new_, Meta meta = {}) {
         return hilti::ctor::Coerced::create(context(), orig, new_, std::move(meta));
     }
-    auto ctorDefault(UnqualifiedType* type, Expressions type_args, const Meta& meta = {}) {
-        return hilti::ctor::Default::create(context(), type, std::move(type_args), meta);
+    auto ctorDefault(UnqualifiedType* type, const Expressions& type_args, const Meta& meta = {}) {
+        return hilti::ctor::Default::create(context(), type, type_args, meta);
     }
     auto ctorDefault(UnqualifiedType* type, const Meta& meta = {}) {
         return hilti::ctor::Default::create(context(), type, meta);
@@ -73,17 +73,17 @@ public:
     auto ctorLibrary(Ctor* ctor, QualifiedType* type, const Meta& meta = {}) {
         return hilti::ctor::Library::create(context(), ctor, type, meta);
     }
-    auto ctorList(Expressions exprs, Meta meta = {}) {
-        return hilti::ctor::List::create(context(), std::move(exprs), std::move(meta));
+    auto ctorList(const Expressions& exprs, Meta meta = {}) {
+        return hilti::ctor::List::create(context(), exprs, std::move(meta));
     }
-    auto ctorList(QualifiedType* etype, Expressions exprs, Meta meta = {}) {
-        return hilti::ctor::List::create(context(), etype, std::move(exprs), std::move(meta));
+    auto ctorList(QualifiedType* etype, const Expressions& exprs, Meta meta = {}) {
+        return hilti::ctor::List::create(context(), etype, exprs, std::move(meta));
     }
-    auto ctorMap(QualifiedType* key, QualifiedType* value, ctor::map::Elements elements, Meta meta = {}) {
-        return hilti::ctor::Map::create(context(), key, value, std::move(elements), std::move(meta));
+    auto ctorMap(QualifiedType* key, QualifiedType* value, const ctor::map::Elements& elements, Meta meta = {}) {
+        return hilti::ctor::Map::create(context(), key, value, elements, std::move(meta));
     }
-    auto ctorMap(ctor::map::Elements elements, Meta meta = {}) {
-        return hilti::ctor::Map::create(context(), std::move(elements), std::move(meta));
+    auto ctorMap(const ctor::map::Elements& elements, Meta meta = {}) {
+        return hilti::ctor::Map::create(context(), elements, std::move(meta));
     }
     auto ctorMapElement(Expression* key, Expression* value, Meta meta = {}) {
         return hilti::ctor::map::Element::create(context(), key, value, std::move(meta));
@@ -109,11 +109,11 @@ public:
     auto ctorResult(QualifiedType* type, const Meta& meta = {}) {
         return hilti::ctor::Result::create(context(), type, meta);
     }
-    auto ctorSet(Expressions exprs, Meta meta = {}) {
-        return hilti::ctor::Set::create(context(), std::move(exprs), std::move(meta));
+    auto ctorSet(const Expressions& exprs, Meta meta = {}) {
+        return hilti::ctor::Set::create(context(), exprs, std::move(meta));
     }
-    auto ctorSet(QualifiedType* etype, Expressions exprs, Meta meta = {}) {
-        return hilti::ctor::Set::create(context(), etype, std::move(exprs), std::move(meta));
+    auto ctorSet(QualifiedType* etype, const Expressions& exprs, Meta meta = {}) {
+        return hilti::ctor::Set::create(context(), etype, exprs, std::move(meta));
     }
     auto ctorSignedInteger(int64_t value, unsigned int width, const Meta& meta = {}) {
         return hilti::ctor::SignedInteger::create(context(), value, width, meta);
@@ -127,11 +127,11 @@ public:
     auto ctorStrongReference(QualifiedType* t, const Meta& meta = {}) {
         return hilti::ctor::StrongReference::create(context(), t, meta);
     }
-    auto ctorStruct(ctor::struct_::Fields fields, QualifiedType* t, Meta meta = {}) {
-        return hilti::ctor::Struct::create(context(), std::move(fields), t, std::move(meta));
+    auto ctorStruct(const ctor::struct_::Fields& fields, QualifiedType* t, Meta meta = {}) {
+        return hilti::ctor::Struct::create(context(), fields, t, std::move(meta));
     }
-    auto ctorStruct(ctor::struct_::Fields fields, const Meta& meta = {}) {
-        return hilti::ctor::Struct::create(context(), std::move(fields), meta);
+    auto ctorStruct(const ctor::struct_::Fields& fields, const Meta& meta = {}) {
+        return hilti::ctor::Struct::create(context(), fields, meta);
     }
     auto ctorStructField(ID id, Expression* expr, Meta meta = {}) {
         return hilti::ctor::struct_::Field::create(context(), std::move(id), expr, std::move(meta));
@@ -152,11 +152,11 @@ public:
     auto ctorValueReference(Expression* expr, Meta meta = {}) {
         return hilti::ctor::ValueReference::create(context(), expr, std::move(meta));
     }
-    auto ctorVector(Expressions exprs, Meta meta = {}) {
-        return hilti::ctor::Vector::create(context(), std::move(exprs), std::move(meta));
+    auto ctorVector(const Expressions& exprs, Meta meta = {}) {
+        return hilti::ctor::Vector::create(context(), exprs, std::move(meta));
     }
-    auto ctorVector(QualifiedType* etype, Expressions exprs, Meta meta = {}) {
-        return hilti::ctor::Vector::create(context(), etype, std::move(exprs), std::move(meta));
+    auto ctorVector(QualifiedType* etype, const Expressions& exprs, Meta meta = {}) {
+        return hilti::ctor::Vector::create(context(), etype, exprs, std::move(meta));
     }
     auto ctorWeakReference(QualifiedType* t, const Meta& meta = {}) {
         return hilti::ctor::WeakReference::create(context(), t, meta);
@@ -243,8 +243,8 @@ public:
         return hilti::declaration::Module::create(context(), uid, scope, std::move(meta));
     }
     auto declarationModule(const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
-                           Statements stmts, Meta meta = {}) {
-        return hilti::declaration::Module::create(context(), uid, scope, decls, std::move(stmts), std::move(meta));
+                           const Statements& stmts, Meta meta = {}) {
+        return hilti::declaration::Module::create(context(), uid, scope, decls, stmts, std::move(meta));
     }
     auto declarationModule(const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
                            Meta meta = {}) {
@@ -367,8 +367,8 @@ public:
         return hilti::statement::Assert::create(context(), _unused, expr, excpt, msg, std::move(meta));
     }
     auto statementBlock(const Meta& meta = {}) { return hilti::statement::Block::create(context(), meta); }
-    auto statementBlock(Statements stmts, Meta meta = {}) {
-        return hilti::statement::Block::create(context(), std::move(stmts), std::move(meta));
+    auto statementBlock(const Statements& stmts, Meta meta = {}) {
+        return hilti::statement::Block::create(context(), stmts, std::move(meta));
     }
     auto statementBreak(Meta meta = {}) { return hilti::statement::Break::create(context(), std::move(meta)); }
     auto statementComment(std::string comment,
@@ -441,8 +441,8 @@ public:
     auto typeAddress(const Meta& m = Meta()) { return hilti::type::Address::create(context(), m); }
     auto typeAny(Meta m = Meta()) { return hilti::type::Any::create(context(), std::move(m)); }
     auto typeAuto(const Meta& m = Meta()) { return hilti::type::Auto::create(context(), m); }
-    auto typeBitfield(int width, type::bitfield::BitRanges bits, AttributeSet* attrs, const Meta& m = Meta()) {
-        return hilti::type::Bitfield::create(context(), width, std::move(bits), attrs, m);
+    auto typeBitfield(int width, const type::bitfield::BitRanges& bits, AttributeSet* attrs, const Meta& m = Meta()) {
+        return hilti::type::Bitfield::create(context(), width, bits, attrs, m);
     }
     auto typeBitfield(type::Wildcard _, const Meta& m = Meta()) {
         return hilti::type::Bitfield::create(context(), _, m);
@@ -590,11 +590,11 @@ public:
     auto typeStruct(const Declarations& fields, Meta meta = {}) {
         return hilti::type::Struct::create(context(), fields, std::move(meta));
     }
-    auto typeStruct(const declaration::Parameters& params, Declarations fields, Meta meta = {}) {
-        return hilti::type::Struct::create(context(), params, std::move(fields), std::move(meta));
+    auto typeStruct(const declaration::Parameters& params, const Declarations& fields, Meta meta = {}) {
+        return hilti::type::Struct::create(context(), params, fields, std::move(meta));
     }
-    auto typeStruct(type::Struct::AnonymousStruct _, Declarations fields, Meta meta = {}) {
-        return hilti::type::Struct::create(context(), _, std::move(fields), std::move(meta));
+    auto typeStruct(type::Struct::AnonymousStruct _, const Declarations& fields, Meta meta = {}) {
+        return hilti::type::Struct::create(context(), _, fields, std::move(meta));
     }
     auto typeStruct(type::Wildcard _, Meta meta = {}) {
         return hilti::type::Struct::create(context(), _, std::move(meta));
@@ -604,8 +604,8 @@ public:
         return hilti::type::Tuple::create(context(), types, std::move(meta));
     }
     auto typeTuple(type::Wildcard _, const Meta& m = Meta()) { return hilti::type::Tuple::create(context(), _, m); }
-    auto typeTuple(type::tuple::Elements elements, Meta meta = {}) {
-        return hilti::type::Tuple::create(context(), std::move(elements), std::move(meta));
+    auto typeTuple(const type::tuple::Elements& elements, Meta meta = {}) {
+        return hilti::type::Tuple::create(context(), elements, std::move(meta));
     }
     auto typeTupleElement(ID id, QualifiedType* type, Meta meta = {}) {
         return hilti::type::tuple::Element::create(context(), std::move(id), type, std::move(meta));
@@ -620,11 +620,11 @@ public:
     auto typeUnion(const Declarations& fields, Meta meta = {}) {
         return hilti::type::Union::create(context(), fields, std::move(meta));
     }
-    auto typeUnion(const declaration::Parameters& params, Declarations fields, Meta meta = {}) {
-        return hilti::type::Union::create(context(), params, std::move(fields), std::move(meta));
+    auto typeUnion(const declaration::Parameters& params, const Declarations& fields, Meta meta = {}) {
+        return hilti::type::Union::create(context(), params, fields, std::move(meta));
     }
-    auto typeUnion(type::Union::AnonymousUnion _, Declarations fields, Meta meta = {}) {
-        return hilti::type::Union::create(context(), _, std::move(fields), std::move(meta));
+    auto typeUnion(type::Union::AnonymousUnion _, const Declarations& fields, Meta meta = {}) {
+        return hilti::type::Union::create(context(), _, fields, std::move(meta));
     }
     auto typeUnion(type::Wildcard _, Meta meta = {}) {
         return hilti::type::Union::create(context(), _, std::move(meta));

@@ -373,7 +373,7 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     }
 
     assert(unit->typeID());
-    auto* s = builder()->typeStruct(unit->parameters(), std::move(v.fields));
+    auto* s = builder()->typeStruct(unit->parameters(), v.fields);
     _pb.addParserMethods(s, unit, declare_only);
 
     if ( ! declare_only )
@@ -470,10 +470,10 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
              builder()->ctorStructField(ID("mime_types"),
                                         builder()->vector(builder()->qualifiedType(ty_mime_types,
                                                                                    hilti::Constness::Const),
-                                                          std::move(mime_types))),
+                                                          mime_types)),
              builder()->ctorStructField(ID("ports"),
                                         builder()->vector(builder()->qualifiedType(ty_ports, hilti::Constness::Const),
-                                                          std::move(ports)))},
+                                                          ports))},
             unit->meta());
 
         _pb.builder()->addAssign(builder()->id(ID(struct_id, "__parser")), parser);

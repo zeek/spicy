@@ -663,9 +663,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 fields.emplace_back(builder()->declarationField(f->id(), f->expression()->type(),
                                                                 builder()->attributeSet({}), f->meta()));
 
-            auto* ntype = builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(),
-                                                                         std::move(fields), n->meta()),
-                                                   Constness::Mutable);
+            auto* ntype =
+                builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(), fields, n->meta()),
+                                         Constness::Mutable);
             recordChange(n, ntype, "type");
             n->setType(context(), ntype);
         }

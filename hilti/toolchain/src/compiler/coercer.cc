@@ -60,7 +60,7 @@ struct VisitorCtor : visitor::PreOrder {
                     return;
             }
 
-            result = builder->ctorMap(t->keyType(), t->elementType(), std::move(nelemns), n->meta());
+            result = builder->ctorMap(t->keyType(), t->elementType(), nelemns, n->meta());
         }
     }
 
@@ -96,7 +96,7 @@ struct VisitorCtor : visitor::PreOrder {
                 else
                     return;
             }
-            result = builder->ctorList(t->elementType(), std::move(nexprs), n->meta());
+            result = builder->ctorList(t->elementType(), nexprs, n->meta());
         }
 
         if ( auto* t = dst->type()->tryAs<type::Vector>() ) {
@@ -109,7 +109,7 @@ struct VisitorCtor : visitor::PreOrder {
                 else
                     return;
             }
-            result = builder->ctorVector(dt, std::move(nexprs), n->meta());
+            result = builder->ctorVector(dt, nexprs, n->meta());
         }
 
         if ( auto* t = dst->type()->tryAs<type::Set>() ) {
@@ -122,7 +122,7 @@ struct VisitorCtor : visitor::PreOrder {
                 else
                     return;
             }
-            result = builder->ctorSet(dt, std::move(nexprs), n->meta());
+            result = builder->ctorSet(dt, nexprs, n->meta());
         }
     }
 
@@ -190,7 +190,7 @@ struct VisitorCtor : visitor::PreOrder {
                 else
                     return;
             }
-            result = builder->ctorSet(t->elementType(), std::move(nexprs), n->meta());
+            result = builder->ctorSet(t->elementType(), nexprs, n->meta());
         }
     }
 
@@ -265,7 +265,7 @@ struct VisitorCtor : visitor::PreOrder {
                 else
                     return;
             }
-            result = builder->ctorVector(t->elementType(), std::move(nexprs), n->meta());
+            result = builder->ctorVector(t->elementType(), nexprs, n->meta());
         }
     }
 
@@ -407,7 +407,7 @@ struct VisitorCtor : visitor::PreOrder {
                     return;
             }
 
-            result = builder->ctorStruct(std::move(nf), dst_, n->meta());
+            result = builder->ctorStruct(nf, dst_, n->meta());
         }
 
         if ( auto* dtype = dst_->type()->tryAs<type::Bitfield>() ) {

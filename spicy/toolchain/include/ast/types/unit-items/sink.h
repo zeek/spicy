@@ -32,7 +32,7 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        auto sink = QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::Mutable);
+        auto* sink = QualifiedType::create(ctx, type::Sink::create(ctx), hilti::Constness::Mutable);
         return ctx->make<Sink>(ctx,
                                {attrs, QualifiedType::create(ctx, hilti::type::StrongReference::create(ctx, sink, meta),
                                                              hilti::Constness::Const, meta)},

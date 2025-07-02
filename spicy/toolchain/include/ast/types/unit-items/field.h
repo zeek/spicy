@@ -45,13 +45,13 @@ public:
     auto emitHook() const { return ! isAnonymous() || hooks().size(); }
 
     QualifiedType* originalType() const {
-        if ( auto t = child<QualifiedType>(1) )
+        if ( auto* t = child<QualifiedType>(1) )
             return t;
 
-        if ( auto c = ctor() )
+        if ( auto* c = ctor() )
             return c->type();
 
-        if ( auto i = item() )
+        if ( auto* i = item() )
             return i->itemType();
 
         hilti::util::cannotBeReached();
@@ -60,14 +60,14 @@ public:
     auto parseType() const { return child<QualifiedType>(2); }
 
     QualifiedType* ddType() const {
-        if ( auto x = childTryAs<hilti::declaration::Expression>(0) )
+        if ( auto* x = childTryAs<hilti::declaration::Expression>(0) )
             return x->expression()->type();
         else
             return child<QualifiedType>(0); // `auto` by default
     }
 
     Declaration* dd() const {
-        if ( auto x = childTryAs<hilti::declaration::Expression>(0) )
+        if ( auto* x = childTryAs<hilti::declaration::Expression>(0) )
             return x;
         else
             return {};
@@ -150,7 +150,7 @@ private:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        auto auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
+        auto* auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
         auto num_args = args.size();
         auto num_sinks = sinks.size();
         auto num_hooks = hooks.size();

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <initializer_list>
 #include <memory>
 #include <string>
@@ -54,7 +53,7 @@ public:
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
     IDBase(std::initializer_list<std::string_view> x) { _init(util::join(x, "::"), false); }
 
-    IDBase(const IDBase& other) : _id(std::move(other._id)) {}
+    IDBase(const IDBase& other) : _id(other._id) {}
 
     IDBase(IDBase&& other) noexcept : _id(std::move(other._id)) {}
 
