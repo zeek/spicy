@@ -30,33 +30,6 @@ public:
     /** Tag for creating IDs from an already normalized string. */
     struct AlreadyNormalized {};
 
-    /** Creates an empty ID. */
-    IDBase() { _init("", false); }
-
-    /** Creates an ID from an (not normalized) string. */
-    IDBase(const char* s) { _init(s, false); }
-    explicit IDBase(std::string_view s) { _init(s, false); }
-
-    /**
-     * Creates an ID from a string that's already normalized. The assumption is
-     * that the input string is the output of a prior `str()` call on an
-     * existing ID object.
-     */
-    IDBase(std::string_view s, AlreadyNormalized) { _init(s, true); }
-
-    /** Concatenates multiple strings into a single ID, separating them with `::`. */
-    template<typename... T, typename enable = std::enable_if_t<(... && std::is_convertible_v<T, std::string_view>)>>
-    explicit IDBase(const T&... s) {
-        _init((util::join<std::string>({s...}, "::")), false);
-    }
-
-    /** Concatenates multiple strings into a single ID, separating them with `::`. */
-    IDBase(std::initializer_list<std::string_view> x) { _init(util::join(x, "::"), false); }
-
-    IDBase(const IDBase& other) : _id(other._id) {}
-
-    IDBase(IDBase&& other) noexcept : _id(std::move(other._id)) {}
-
     ~IDBase() = default;
 
     IDBase& operator=(const IDBase& other) {
@@ -198,6 +171,35 @@ public:
     operator std::string_view() const { return _id; }
 
 private:
+    friend Derived;
+
+    /** Creates an empty ID. */
+    IDBase() { _init("", false); }
+
+    /** Creates an ID from an (not normalized) string. */
+    IDBase(const char* s) { _init(s, false); }
+    explicit IDBase(std::string_view s) { _init(s, false); }
+
+    /**
+     * Creates an ID from a string that's already normalized. The assumption is
+     * that the input string is the output of a prior `str()` call on an
+     * existing ID object.
+     */
+    IDBase(std::string_view s, AlreadyNormalized) { _init(s, true); }
+
+    /** Concatenates multiple strings into a single ID, separating them with `::`. */
+    template<typename... T, typename enable = std::enable_if_t<(... && std::is_convertible_v<T, std::string_view>)>>
+    explicit IDBase(const T&... s) {
+        _init((util::join<std::string>({s...}, "::")), false);
+    }
+
+    /** Concatenates multiple strings into a single ID, separating them with `::`. */
+    IDBase(std::initializer_list<std::string_view> x) { _init(util::join(x, "::"), false); }
+
+    IDBase(const IDBase& other) : _id(other._id) {}
+
+    IDBase(IDBase&& other) noexcept : _id(std::move(other._id)) {}
+
     // Caches views into the ID string.
     struct Views {
         std::vector<std::string_view> path; // views into _id; empty for empty ID
