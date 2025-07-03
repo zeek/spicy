@@ -1,6 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <random>
 
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/library.h>
@@ -59,8 +58,9 @@ void cxx::Linker::finalize() {
     unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_library_version = R\"(%s)\";", version.toJSON()));
     unit->add("const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();");
 
-    // Create a variable for the linker scope, but leave it unset. We will
-    // inject the actual scope at runtime when the library is loaded.
+    // Create a variable for the linker scope, but initialize it to magic value
+    // `0` encoding unset. We will inject the actual scope at runtime when the
+    // library is loaded.
     const auto& cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
     unit->add(fmt("HILTI_EXPORT HILTI_WEAK uint64_t %s_hlto_scope = 0;", cxx_namespace));
 

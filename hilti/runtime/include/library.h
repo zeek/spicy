@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 #include <hilti/rt/filesystem.h>
@@ -102,8 +103,9 @@ public:
     hilti::rt::Result<Nothing> remove() const;
 
     /**
-     * Returns the linker scope to be used for the library currently being
-     * loaded. If a library is currently being loaded through `open()`, the
+     * Sets the passed linker scope.
+     *
+     * If a library is currently being loaded through `open()`, the
      * scope is (stable) hash of that library's absolute path. If we're outside
      * of library loading, this returns a scope that's guaranteed to be unique
      * across all calls to this method.
@@ -112,17 +114,16 @@ public:
      * set a module's global scope variable. Its semantics are tailored to that
      * use case.
      *
-     * @return linker scope to use
+     * @param a non-null pointer to the scope to update.
      */
-    static uint64_t currentScope();
+    static void setScope(uint64_t* scope);
 
 private:
     hilti::rt::filesystem::path _path; // Absolute path to the physical file wrapped by this instance.
     mutable void* _handle = nullptr;   // Handle to the library.
 
     static std::optional<hilti::rt::filesystem::path>
-        _current_path;              // absolute path to library currently being loaded, if any
-    static uint64_t _scope_counter; // counter for creating unique scopes
+        _current_path; // absolute path to library currently being loaded, if any
 };
 
 } // namespace hilti::rt
