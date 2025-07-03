@@ -17,6 +17,5 @@ cat \
   | sed 's#\(Compiled by HILTI version\) .*#\1 X.X.X#g' \
   | sed 's#__hlt_hlto_library_version = .*#__hlt_hlto_library_version = <...>#g' \
   | sed 's#__hlt_hlto_bind_to_version = .*#__hlt_hlto_bind_to_version = <...>#g' \
-  | sed 's#__hlt_hlto_scope = .*#__hlt_hlto_scope = <...>#g' \
   | sed 's/\[\(@.:\)[0-9a-f]\{1,\}\]/[\1XXX]/g' \
   | sed 's/\[\(parent @.:\)[0-9a-f]\{1,\}\]/[\1XXX]/g' \
