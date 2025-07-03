@@ -120,7 +120,7 @@ private:
  * operator available under that name.
  */
 inline auto get(std::string_view name) {
-    if ( auto op = Registry::singleton().byName(name) )
+    if ( const auto* op = Registry::singleton().byName(name) )
         return op;
     else
         logger().internalError(util::fmt("unknown operator '%s'", name));

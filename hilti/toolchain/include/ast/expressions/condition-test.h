@@ -23,7 +23,7 @@ public:
     void setError(ASTContext* ctx, Expression* error) { setChild(ctx, 2, error); }
 
     static auto create(ASTContext* ctx, Expression* cond, Expression* error, Meta meta = {}) {
-        auto result =
+        auto* result =
             QualifiedType::create(ctx,
                                   type::Result::create(ctx, QualifiedType::create(ctx, type::Void::create(ctx),
                                                                                   Constness::Const)),

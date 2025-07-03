@@ -73,5 +73,5 @@ Checks: '
   -readability-implicit-bool-conversion,
   '
 
-HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z]+/include/([a-zA-Z]+/)*[a-zA-Z]+\.h'
+HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z-]+/include/([a-zA-Z-]+/)*[a-zA-Z-]+\.h'
 WarningsAsErrors: '*'

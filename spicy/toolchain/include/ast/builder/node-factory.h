@@ -23,11 +23,11 @@ public:
     /** Returns the AST context in use for creating nodes. */
     ASTContext* context() const { return _context; }
 
-    auto ctorUnit(ctor::unit::Fields fields, QualifiedType* t, Meta meta = {}) {
-        return spicy::ctor::Unit::create(context(), std::move(fields), t, std::move(meta));
+    auto ctorUnit(const ctor::unit::Fields& fields, QualifiedType* t, Meta meta = {}) {
+        return spicy::ctor::Unit::create(context(), fields, t, std::move(meta));
     }
-    auto ctorUnit(ctor::unit::Fields fields, Meta meta = {}) {
-        return spicy::ctor::Unit::create(context(), std::move(fields), std::move(meta));
+    auto ctorUnit(const ctor::unit::Fields& fields, Meta meta = {}) {
+        return spicy::ctor::Unit::create(context(), fields, std::move(meta));
     }
     auto declarationHook(const hilti::declaration::Parameters& parameters, Statement* body, AttributeSet* attrs,
                          const Meta& m = Meta()) {
@@ -37,15 +37,15 @@ public:
         return spicy::declaration::UnitHook::create(context(), id, hook, std::move(meta));
     }
     auto statementConfirm(Meta meta = {}) { return spicy::statement::Confirm::create(context(), std::move(meta)); }
-    auto statementPrint(Expressions expressions, Meta meta = {}) {
-        return spicy::statement::Print::create(context(), std::move(expressions), std::move(meta));
+    auto statementPrint(const Expressions& expressions, Meta meta = {}) {
+        return spicy::statement::Print::create(context(), expressions, std::move(meta));
     }
     auto statementReject(Meta meta = {}) { return spicy::statement::Reject::create(context(), std::move(meta)); }
     auto statementStop(Meta meta = {}) { return spicy::statement::Stop::create(context(), std::move(meta)); }
     auto typeSink(Meta meta = {}) { return spicy::type::Sink::create(context(), std::move(meta)); }
-    auto typeUnit(const hilti::declaration::Parameters& params, type::unit::Items items, AttributeSet* attrs,
+    auto typeUnit(const hilti::declaration::Parameters& params, const type::unit::Items& items, AttributeSet* attrs,
                   Meta meta = {}) {
-        return spicy::type::Unit::create(context(), params, std::move(items), attrs, std::move(meta));
+        return spicy::type::Unit::create(context(), params, items, attrs, std::move(meta));
     }
     auto typeUnit(hilti::type::Wildcard _, Meta meta = {}) {
         return spicy::type::Unit::create(context(), _, std::move(meta));

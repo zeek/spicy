@@ -90,9 +90,37 @@ extern std::optional<std::string> normalizeID(std::string_view id);
 class ID : public detail::IDBase<ID, normalizeID> {
 public:
     using Base = detail::IDBase<ID, normalizeID>;
-    using Base::IDBase;
-    ID() = default;
-    explicit ID(const ::hilti::ID& id) : Base(id.str()) {}
+
+    /** Creates an empty ID. */
+    ID() {}
+
+    /** Creates an ID from an (not normalized) string. */
+    ID(const char* s) : Base(s) {}
+    explicit ID(std::string_view s) : Base(s) {}
+
+    /**
+     * Creates an ID from a string that's already normalized. The assumption is
+     * that the input string is the output of a prior `str()` call on an
+     * existing ID object.
+     */
+    ID(std::string_view s, AlreadyNormalized n) : Base(s, n) {}
+
+    /** Concatenates multiple strings into a single ID, separating them with `::`. */
+    template<typename... T,
+             typename enable = std::enable_if_t<
+                 (... && std::is_convertible_v<
+                             T, // NOLINT(modernize-type-traits), see https://github.com/llvm/llvm-project/issues/110502
+                             std::string_view>)>>
+    explicit ID(const T&... s) : Base(s...) {}
+
+
+    /** Concatenates multiple strings into a single ID, separating them with `::`. */
+    ID(std::initializer_list<std::string_view> x) : Base(x) {}
+
+    ID(const Base& other) : Base(other) {}
+
+    ID(Base&& other) noexcept : Base(other) {}
+
     ID& operator=(const ::hilti::ID& id) {
         *this = ID(id);
         return *this;

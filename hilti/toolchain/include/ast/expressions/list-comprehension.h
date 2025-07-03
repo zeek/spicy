@@ -33,9 +33,9 @@ public:
 
     static auto create(ASTContext* ctx, Expression* input, Expression* output, const ID& id, Expression* cond,
                        Meta meta = {}) {
-        auto local = declaration::LocalVariable::create(ctx, id, QualifiedType::createAuto(ctx, meta), meta);
-        auto list = QualifiedType::create(ctx, type::List::create(ctx, QualifiedType::createAuto(ctx, meta), meta),
-                                          Constness::Const);
+        auto* local = declaration::LocalVariable::create(ctx, id, QualifiedType::createAuto(ctx, meta), meta);
+        auto* list = QualifiedType::create(ctx, type::List::create(ctx, QualifiedType::createAuto(ctx, meta), meta),
+                                           Constness::Const);
         return ctx->make<ListComprehension>(ctx, {input, output, local, cond, list}, std::move(meta));
     }
 

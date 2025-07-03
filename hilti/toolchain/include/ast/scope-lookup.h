@@ -78,14 +78,14 @@ Result<std::pair<D*, ID>> lookupID(ID id, Node* n, const std::string_view& what)
         // type declaration, we need to check the declaration's scope still as
         // well; that's the "if" clause below allowing to go one further step
         // up, and the "else" clause then stopping during the next round.
-        if ( auto t = n->tryAs<UnqualifiedType>(); t && ! t->inheritScope() ) {
+        if ( auto* t = n->tryAs<UnqualifiedType>(); t && ! t->inheritScope() ) {
             if ( n->parent() && n->parent()->tryAs<declaration::Type>() )
                 // Ignore, we'll cover this in next round in the case below.
                 continue;
 
             skip_to_module = true;
         }
-        else if ( auto t = n->tryAs<declaration::Type>(); t && ! t->type()->inheritScope() )
+        else if ( auto* t = n->tryAs<declaration::Type>(); t && ! t->type()->inheritScope() )
             skip_to_module = true;
 
         if ( skip_to_module ) {

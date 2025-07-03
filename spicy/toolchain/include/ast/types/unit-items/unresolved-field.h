@@ -78,8 +78,8 @@ public:
     static auto create(ASTContext* ctx, ID id, ID unresolved_id, bool skip, Expressions args, Expression* repeat,
                        Expressions sinks, AttributeSet* attrs, Expression* cond, spicy::declaration::Hooks hooks,
                        Meta meta = {}) {
-        auto f = _create(ctx, std::move(id), nullptr, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
-                         std::move(hooks), std::move(meta));
+        auto* f = _create(ctx, std::move(id), nullptr, skip, std::move(args), repeat, std::move(sinks), attrs, cond,
+                          std::move(hooks), std::move(meta));
         f->_unresolved_id = std::move(unresolved_id);
         return f;
     }
@@ -106,7 +106,7 @@ private:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        auto auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
+        auto* auto_ = QualifiedType::create(ctx, hilti::type::Auto::create(ctx), hilti::Constness::Const, meta);
         auto num_args = args.size();
         auto num_sinks = sinks.size();
         auto num_hooks = hooks.size();

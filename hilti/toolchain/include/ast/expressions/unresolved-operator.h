@@ -22,7 +22,7 @@ public:
     // checked anytime, whereas unification is computed regularly but may not
     // always fully reflect the current state.
     bool areOperandsUnified() const {
-        for ( auto e : children<Expression>(1, {}) ) {
+        for ( auto* e : children<Expression>(1, {}) ) {
             if ( ! e->type()->type()->unification() )
                 return false;
         }

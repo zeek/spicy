@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
-
 #include <hilti/ast/operators/common.h>
 
 namespace hilti::operator_ {

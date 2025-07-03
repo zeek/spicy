@@ -1,3 +1,13 @@
+1.14.0-dev.112 | 2025-07-03 09:51:05 -0400
+
+  * Fix clang-tidy CRTP lint in IDBase. (Evan Typanski, Corelight)
+
+    The warning is bugprone-crtp-constructor-accessibility.
+
+  * Update clang-tidy config to run on files with `-`. (Evan Typanski, Corelight)
+
+  * Fix random includes, copyright, and `auto` use. (Evan Typanski, Corelight)
+
 1.14.0-dev.108 | 2025-06-27 07:45:06 +0200
 
   * GH-1085: Allow registering a module twice. (Robin Sommer, Corelight)

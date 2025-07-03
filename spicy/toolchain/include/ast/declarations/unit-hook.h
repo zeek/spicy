@@ -18,7 +18,7 @@ public:
     std::string_view displayName() const final { return "unit hook"; }
 
     static auto create(ASTContext* ctx, const ID& id, declaration::Hook* hook, Meta meta = {}) {
-        auto h = ctx->make<UnitHook>(ctx, {hook}, id, std::move(meta));
+        auto* h = ctx->make<UnitHook>(ctx, {hook}, id, std::move(meta));
         h->hook()->setID(id);
         return h;
     }

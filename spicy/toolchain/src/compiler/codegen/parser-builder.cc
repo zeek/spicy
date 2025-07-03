@@ -655,7 +655,7 @@ struct ProductionVisitor : public production::Visitor {
 
                 if ( meta.field() ) {
                     Expression* default_ = builder()->default_(builder()->typeName(unit->unitType()->typeID()),
-                                                               std::move(type_args), std::move(location));
+                                                               type_args, std::move(location));
                     builder()->addAssign(destination(), default_);
                 }
 

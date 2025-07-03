@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <utility>
-
 #include <hilti/ast/node-tag.h>
 #include <hilti/ast/visitor-dispatcher.h>
 

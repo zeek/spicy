@@ -200,8 +200,8 @@ public:
 
     auto default_(UnqualifiedType* t, const Meta& m = Meta()) { return expressionCtor(ctorDefault(t, m), m); }
 
-    auto default_(UnqualifiedType* t, Expressions type_args, const Meta& m = Meta()) {
-        return expressionCtor(ctorDefault(t, std::move(type_args), m), m);
+    auto default_(UnqualifiedType* t, const Expressions& type_args, const Meta& m = Meta()) {
+        return expressionCtor(ctorDefault(t, type_args, m), m);
     }
 
     auto exception(UnqualifiedType* t, const std::string& msg, const Meta& m = Meta()) {
@@ -244,20 +244,18 @@ public:
 
     auto stream(std::string s, const Meta& m = Meta()) { return expressionCtor(ctorStream(std::move(s), m), m); }
 
-    auto struct_(ctor::struct_::Fields f, const Meta& m = Meta()) {
-        return expressionCtor(ctorStruct(std::move(f), m), m);
-    }
+    auto struct_(const ctor::struct_::Fields& f, const Meta& m = Meta()) { return expressionCtor(ctorStruct(f, m), m); }
 
-    auto struct_(ctor::struct_::Fields f, QualifiedType* t, const Meta& m = Meta()) {
-        return expressionCtor(ctorStruct(std::move(f), t, m), m);
+    auto struct_(const ctor::struct_::Fields& f, QualifiedType* t, const Meta& m = Meta()) {
+        return expressionCtor(ctorStruct(f, t, m), m);
     }
 
     auto tuple(const Expressions& v, const Meta& m = Meta()) { return expressionCtor(ctorTuple(v, m), m); }
 
     auto vector(const Expressions& v, const Meta& m = Meta()) { return expressionCtor(ctorVector(v, m), m); }
 
-    auto vector(QualifiedType* t, Expressions v, const Meta& m = Meta()) {
-        return expressionCtor(ctorVector(t, std::move(v), m), m);
+    auto vector(QualifiedType* t, const Expressions& v, const Meta& m = Meta()) {
+        return expressionCtor(ctorVector(t, v, m), m);
     }
 
     auto vector(QualifiedType* t, const Meta& m = Meta()) { return expressionCtor(ctorVector(t, {}, m), m); }
