@@ -74,7 +74,7 @@ void Unit::_addModuleInitFunction() {
         add(extern_scope);
 
         cxx::Block register_;
-        register_.addStatement(fmt("%s = ::hilti::rt::Library::currentScope()", scope));
+        register_.addStatement(fmt("::hilti::rt::Library::setScope(&%s)", scope));
         register_.addStatement(
             fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})", cxxModuleID(), scope,
                 _init_module ? "&__init_module" : "nullptr", _uses_globals ? "&__init_globals" : "nullptr",

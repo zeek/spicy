@@ -47,7 +47,7 @@
 [debug/resolver] [spicy_rt.hlt:71:3-71:30] Attribute "&cxxname="spicy::rt::Parser"" -> Attribute "&cxxname="::spicy::rt::Parser""
 [debug/resolver] [spicy_rt.hlt:73:44-73:82] Attribute "&cxxname="hilti::rt::integer::BitOrder"" -> Attribute "&cxxname="::hilti::rt::integer::BitOrder""
 [debug/resolver] [spicy_rt.hlt:74:62-74:92] Attribute "&cxxname="spicy::rt::Direction"" -> Attribute "&cxxname="::spicy::rt::Direction""
-[debug/resolver] [spicy_rt.hlt:79:96-79:139] Attribute "&cxxname="spicy::rt::detail::registerParser"" -> Attribute "&cxxname="::spicy::rt::detail::registerParser""
+[debug/resolver] [spicy_rt.hlt:79:98-79:141] Attribute "&cxxname="spicy::rt::detail::registerParser"" -> Attribute "&cxxname="::spicy::rt::detail::registerParser""
 [debug/resolver] [spicy_rt.hlt:80:249-80:294] Attribute "&cxxname="spicy::rt::detail::printParserState"" -> Attribute "&cxxname="::spicy::rt::detail::printParserState""
 [debug/resolver] [spicy_rt.hlt:82:122-82:168] Attribute "&cxxname="spicy::rt::detail::waitForInputOrEod"" -> Attribute "&cxxname="::spicy::rt::detail::waitForInputOrEod""
 [debug/resolver] [spicy_rt.hlt:83:134-83:180] Attribute "&cxxname="spicy::rt::detail::waitForInputOrEod"" -> Attribute "&cxxname="::spicy::rt::detail::waitForInputOrEod""

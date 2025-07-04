@@ -3,6 +3,8 @@
 #include <dlfcn.h>
 #include <sys/stat.h>
 
+#include <cassert>
+#include <functional>
 #include <utility>
 
 #include <hilti/rt/autogen/version.h>
@@ -15,7 +17,6 @@
 using namespace hilti::rt;
 
 std::optional<hilti::rt::filesystem::path> Library::_current_path;
-uint64_t Library::_scope_counter = 0;
 
 std::string hilti::rt::library::Version::toJSON() const {
     auto version = nlohmann::json{{"magic", magic}, {"hilti_version", hilti_version}, {"debug", debug}};
@@ -117,17 +118,6 @@ hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
     return Nothing();
 }
 
-uint64_t hilti::rt::Library::currentScope() {
-    std::string scope;
-
-    if ( _current_path )
-        scope = _current_path->native();
-    else
-        scope = fmt("<scope-%>" PRIu64, ++_scope_counter);
-
-    return std::hash<std::string>()(scope);
-}
-
 hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::filesystem::path& path) const {
     std::error_code ec;
 
@@ -157,4 +147,18 @@ hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::
         rt::fatalError(fmt("could not preserve permissions of file %s: %s", path, ec.message()));
 
     return hilti::rt::Nothing();
+}
+
+void hilti::rt::Library::setScope(uint64_t* scope) {
+    static uint64_t scope_counter = 0;
+
+    assert(scope);
+
+    // Currently loading a library.
+    if ( _current_path )
+        *scope = std::hash<std::string>{}(_current_path->native());
+
+    // The passed scope is unset.
+    else if ( *scope == 0 )
+        *scope = std::hash<uint64_t>{}(++scope_counter);
 }

@@ -1379,7 +1379,7 @@ namespace __hlt::Foo {
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__register_module() {
-    __hlt_hlto_scope = <...>
+    ::hilti::rt::Library::setScope(&__hlt_hlto_scope);
     ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr, nullptr});
 }
 
