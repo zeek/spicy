@@ -35,8 +35,8 @@ namespace hilti { namespace detail { class Parser; } }
 %verbose
 
 %glr-parser
-%expect 113
-%expect-rr 211
+%expect 93
+%expect-rr 167
 
 %{
 
@@ -249,7 +249,7 @@ static int _field_width = 0;
 %type <hilti::UnqualifiedType*>               base_type_no_attrs base_type type function_type tuple_type struct_type enum_type union_type func_param_type bitfield_type
 %type <hilti::QualifiedType*>                 qtype
 %type <hilti::Ctor*>                          ctor tuple struct_ list regexp map set
-%type <hilti::Expression*>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_0 expr_1 expr_2 expr_3 expr_4 expr_5 expr_6 expr_7 expr_8 expr_9 expr_a expr_b expr_c expr_d expr_e expr_f expr_g opt_func_default_expr expr_no_or_error
+%type <hilti::Expression*>                    expr tuple_elem tuple_expr member_expr ctor_expr expr_or_error expr_1 opt_func_default_expr expr_no_or_error call_expr
 %type <hilti::Expressions>                      opt_tuple_elems1 opt_tuple_elems2 exprs opt_exprs opt_type_arguments case_exprs
 %type <hilti::Function*>                      function_with_body method_with_body hook_with_body function_without_body
 %type <hilti::type::function::Parameter*>     func_param
@@ -280,6 +280,23 @@ static int _field_width = 0;
 %type <hilti::statement::try_::Catches>         try_catches
 
 %type <std::pair<Declarations, Statements>>     global_scope_items
+
+%left '=' MINUSASSIGN PLUSASSIGN TIMESASSIGN DIVIDEASSIGN
+%left '?' ':'
+%left OR
+%left AND
+%left IN NOT_IN
+%left EQ NEQ
+%left '<' '>' GEQ LEQ
+%left '|'
+%left '^'
+%left '&'
+%left SHIFTLEFT SHIFTRIGHT
+%left '+' '-'
+%left '%' '*' '/'
+%right POW
+%right UNARY_PREC MINUSMINUS PLUSPLUS
+%left '.' '[' HASATTR TRYATTR
 
 %%
 
@@ -737,7 +754,7 @@ bitfield_bit_range
                                                  { $$ = builder->typeBitfieldBitRange(std::move($1), $3, $3, _field_width, std::move($4), __loc__); }
 /* Expressions */
 
-expr          : expr_0                           { $$ = std::move($1); }
+expr          : expr_or_error                    { $$ = std::move($1); }
               ;
 
 expr_no_or_error
@@ -749,103 +766,75 @@ opt_exprs     : exprs                            { $$ = std::move($1); }
 exprs         : exprs ',' expr                   { $$ = std::move($1); $$.push_back(std::move($3)); }
               | expr                             { $$ = hilti::Expressions{std::move($1)}; }
 
-expr_0        : expr_1                           { $$ = std::move($1); }
+expr_or_error : expr_1                           { $$ = std::move($1); }
               | expr_1 ':' expr                  { $$ = builder->expressionConditionTest(std::move($1), std::move($3), __loc__); }
               ;
 
-expr_1        : expr_2 '=' expr_1                { $$ = builder->expressionAssign(std::move($1), std::move($3), __loc__); }
-              | expr_2 MINUSASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DifferenceAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 PLUSASSIGN expr_1         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SumAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 TIMESASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MultipleAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 DIVIDEASSIGN expr_1       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DivisionAssign, {std::move($1), std::move($3)}, __loc__); }
-              | expr_2 '?' expr_1 ':' expr       { $$ = builder->expressionTernary(std::move($1), std::move($3), std::move($5), __loc__); }
-              | expr_2                           { $$ = std::move($1); }
-
-expr_2        : expr_2 OR expr_3                 { $$ = builder->expressionLogicalOr(std::move($1), std::move($3), __loc__); }
-              | expr_3                           { $$ = std::move($1); }
-
-expr_3        : expr_3 AND expr_4                { $$ = builder->expressionLogicalAnd(std::move($1), std::move($3), __loc__); }
-              | expr_4                           { $$ = std::move($1); }
-
-expr_4        : expr_4 EQ expr_5                 { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Equal, {std::move($1), std::move($3)}, __loc__); }
-              | expr_4 NEQ expr_5                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Unequal, {std::move($1), std::move($3)}, __loc__); }
-              | expr_5                           { $$ = std::move($1); }
-
-expr_5        : expr_5 '<' expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Lower, {std::move($1), std::move($3)}, __loc__); }
-              | expr_5 '>' expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Greater, {std::move($1), std::move($3)}, __loc__); }
-              | expr_5 GEQ expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::GreaterEqual, {std::move($1), std::move($3)}, __loc__); }
-              | expr_5 LEQ expr_6                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::LowerEqual, {std::move($1), std::move($3)}, __loc__); }
-              | expr_6                           { $$ = std::move($1); }
-
-expr_6        : expr_6 '|' expr_7                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitOr, {std::move($1), std::move($3)}, __loc__); }
-              | expr_7                           { $$ = std::move($1); }
-
-expr_7        : expr_7 '^' expr_8                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitXor, {std::move($1), std::move($3)}, __loc__); }
-              | expr_8                           { $$ = std::move($1); }
-
-expr_8        : expr_8 '&' expr_9                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitAnd, {std::move($1), std::move($3)}, __loc__); }
-              | expr_9                           { $$ = std::move($1); }
-
-expr_9        : expr_9 SHIFTLEFT expr_a          { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::ShiftLeft, {std::move($1), std::move($3)}, __loc__); }
-              | expr_9 SHIFTRIGHT expr_a         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::ShiftRight, {std::move($1), std::move($3)}, __loc__); }
-              | expr_a                           { $$ = std::move($1); }
-
-expr_a        : expr_a '+' expr_b                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Sum, {std::move($1), std::move($3)}, __loc__); }
-              | expr_a '-' expr_b                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Difference, {std::move($1), std::move($3)}, __loc__); }
-              | expr_b                           { $$ = std::move($1); }
-
-expr_b        : expr_b '%' expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Modulo, {std::move($1), std::move($3)}, __loc__); }
-              | expr_b '*' expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Multiple, {std::move($1), std::move($3)}, __loc__); }
-              | expr_b '/' expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Division, {std::move($1), std::move($3)}, __loc__); }
-              | expr_b POW expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Power, {std::move($1), std::move($3)}, __loc__); }
-              | expr_c                           { $$ = std::move($1); }
-
-expr_c        : '!' expr_c                       { $$ = builder->expressionLogicalNot(std::move($2), __loc__); }
-              | '*' expr_c                       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Deref, {std::move($2)}, __loc__); }
-              | '~' expr_c                       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Negate, {std::move($2)}, __loc__); }
-              | '|' expr_c '|'                   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Size, {std::move($2)}, __loc__); }
-              | MINUSMINUS expr_c                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DecrPrefix, {std::move($2)}, __loc__); }
-              | PLUSPLUS expr_c                  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::IncrPrefix, {std::move($2)}, __loc__); }
-              | expr_d                           { $$ = std::move($1); }
-
-expr_d        : expr_d '(' opt_exprs ')'         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Call, {std::move($1), builder->expressionCtor(builder->ctorTuple(std::move($3), __loc__))}, __loc__); }
-              | expr_d '.' member_expr           { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Member, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d '.' member_expr '(' opt_exprs ')' { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MemberCall, {std::move($1), std::move($3), builder->expressionCtor(builder->ctorTuple(std::move($5), __loc__))}, __loc__); }
-              | expr_d '[' expr ']'              { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Index, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d HASATTR member_expr       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::HasMember, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d IN expr_d                 { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__); }
-              | expr_d NOT_IN expr_d             { $$ = builder->expressionLogicalNot(builder->expressionUnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__)); }
-              | expr_d MINUSMINUS                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DecrPostfix, {std::move($1)}, __loc__); }
-              | expr_d PLUSPLUS                  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::IncrPostfix, {std::move($1)}, __loc__); }
-              | expr_d TRYATTR member_expr       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::TryMember, {std::move($1), std::move($3)}, __loc__); }
-              | expr_e                           { $$ = std::move($1); }
-
-expr_e        : BEGIN_ '(' expr ')'              { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
+expr_1        : expr_1 '=' expr_1                { $$ = builder->expressionAssign(std::move($1), std::move($3), __loc__); }
+              | expr_1 MINUSASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DifferenceAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 PLUSASSIGN expr_1         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SumAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 TIMESASSIGN expr_1        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MultipleAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 DIVIDEASSIGN expr_1       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DivisionAssign, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '?' expr_1 ':' expr_1     { $$ = builder->expressionTernary(std::move($1), std::move($3), std::move($5), __loc__); }
+              | expr_1 OR expr_1                 { $$ = builder->expressionLogicalOr(std::move($1), std::move($3), __loc__); }
+              | expr_1 AND expr_1                { $$ = builder->expressionLogicalAnd(std::move($1), std::move($3), __loc__); }
+              | expr_1 EQ expr_1                 { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Equal, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 NEQ expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Unequal, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '<' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Lower, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '>' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Greater, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 GEQ expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::GreaterEqual, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 LEQ expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::LowerEqual, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '|' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitOr, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '^' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitXor, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '&' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::BitAnd, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 SHIFTLEFT expr_1          { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::ShiftLeft, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 SHIFTRIGHT expr_1         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::ShiftRight, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '+' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Sum, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '-' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Difference, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '%' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Modulo, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '*' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Multiple, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '/' expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Division, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 POW expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Power, {std::move($1), std::move($3)}, __loc__); }
+              | '!' expr_1 %prec UNARY_PREC      { $$ = builder->expressionLogicalNot(std::move($2), __loc__); }
+              | '*' expr_1 %prec UNARY_PREC      { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Deref, {std::move($2)}, __loc__); }
+              | '~' expr_1 %prec UNARY_PREC      { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Negate, {std::move($2)}, __loc__); }
+              | '-' expr_1 %prec UNARY_PREC      { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
+              | '|' expr_1 '|' %prec UNARY_PREC  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Size, {std::move($2)}, __loc__); }
+              | MINUSMINUS expr_1                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DecrPrefix, {std::move($2)}, __loc__); }
+              | PLUSPLUS expr_1                  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::IncrPrefix, {std::move($2)}, __loc__); }
+              | expr_1 '[' expr ']'              { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Index, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '.' member_expr           { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Member, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 '.' member_expr '(' opt_exprs ')'   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::MemberCall, {std::move($1), std::move($3), builder->expressionCtor(builder->ctorTuple(std::move($5), __loc__))}, __loc__); }
+              | expr_1 MINUSMINUS                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::DecrPostfix, {std::move($1)}, __loc__); }
+              | expr_1 PLUSPLUS                  { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::IncrPostfix, {std::move($1)}, __loc__); }
+              | expr_1 HASATTR member_expr       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::HasMember, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 TRYATTR member_expr       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::TryMember, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 IN expr_1                 { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__); }
+              | expr_1 NOT_IN expr_1             { $$ = builder->expressionLogicalNot(builder->expressionUnresolvedOperator(hilti::operator_::Kind::In, {std::move($1), std::move($3)}, __loc__)); }
+              | call_expr                        { $$ = std::move($1); }
               | CAST type_param_begin qtype type_param_end '(' expr ')'   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Cast, {std::move($6), builder->expressionType(std::move($3))}, __loc__); }
-              | END_ '(' expr ')'                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
-              | MOVE '(' expr ')'                { $$ = builder->expressionMove(std::move($3), __loc__); }
               | PACK tuple_expr   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Pack, {std::move($2)}, __loc__); }
               | UNPACK type_param_begin qtype type_param_end tuple_expr   { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Unpack, {builder->expressionType(std::move($3)), std::move($5), builder->expressionCtor(builder->ctorBool(false), __loc__)}, __loc__); }
-              | NEW expr                         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {std::move($2), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
+              | BEGIN_ '(' expr ')'              { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Begin, {std::move($3)}, __loc__); }
+              | END_ '(' expr ')'                { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::End, {std::move($3)}, __loc__); }
+              | MOVE '(' expr ')'                { $$ = builder->expressionMove(std::move($3), __loc__); }
+              | NEW ctor                         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionCtor(std::move($2), __loc__),             builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
               | NEW qtype                        { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionType(std::move($2)), builder->expressionCtor(builder->ctorTuple({}, __loc__))}, __loc__); }
               | NEW qtype '(' opt_exprs ')'      { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::New, {builder->expressionType(std::move($2)), builder->expressionCtor(builder->ctorTuple(std::move($4), __loc__))}, __loc__); }
               | TYPEINFO '(' expr ')'            { $$ = builder->expressionTypeInfo(std::move($3), __loc__); }
               | TYPEINFO '(' base_type ')'       { $$ = builder->expressionTypeInfo(builder->expressionType(builder->qualifiedType(std::move($3), Constness::Mutable)), __loc__); }
-              | expr_f                           { $$ = std::move($1); }
-
-expr_f        : ctor                             { $$ = builder->expressionCtor(std::move($1), __loc__); }
+              | ctor                             { $$ = builder->expressionCtor(std::move($1), __loc__); }
               | ctor_expr                        { $$ = std::move($1); }
-              | '-' expr_f                       { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::SignNeg, {std::move($2)}, __loc__); }
-              | '[' expr FOR local_id IN expr ']'
-                                                 { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
-              | '[' expr FOR local_id IN expr IF expr ']'
-                                                 { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
-              | expr_g                           { $$ = std::move($1); }
-
-expr_g        : '(' expr ')'                     { $$ = builder->expressionGrouping(std::move($2)); }
+              | '[' expr FOR local_id IN expr ']'{ $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
+              | '[' expr FOR local_id IN expr IF expr ']'   { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
+              | '(' expr ')'                     { $$ = builder->expressionGrouping(std::move($2)); }
               | scoped_id                        { $$ = builder->expressionName(std::move($1), __loc__); }
-              | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("__dd"), __loc__);}
+              | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("__dd"), __loc__); }
               | SCOPE                            { $$ = builder->expressionKeyword(hilti::expression::keyword::Kind::Scope, __loc__); }
+              ;
+
+call_expr     : expr_1 '(' opt_exprs ')'         { $$ = builder->expressionUnresolvedOperator(hilti::operator_::Kind::Call, {std::move($1), builder->expressionCtor(builder->ctorTuple(std::move($3), __loc__))}, __loc__); }
+              ;
 
 
 member_expr   : local_id                         { $$ = builder->expressionMember(std::move($1), __loc__); }
