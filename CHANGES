@@ -1,3 +1,7 @@
+1.14.0-dev.114 | 2025-07-08 09:58:31 +0200
+
+  * Bump 3rdparty/utfcpp from `0bef8b2` to `da71cf9` (dependabot[bot])
+
 1.14.0-dev.112 | 2025-07-03 09:51:05 -0400
 
   * Fix clang-tidy CRTP lint in IDBase. (Evan Typanski, Corelight)
