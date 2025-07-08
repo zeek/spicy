@@ -320,6 +320,8 @@ static std::vector<hilti::DocString> _docs;
 %type <uint64_t> const_uint
 %type <bool>     opt_skip opt_skip_
 
+// NOTE: Operator precedence is documented in doc/programming/language/precedence.rst
+// Update that file when any changes are made here.
 %left '=' MINUSASSIGN PLUSASSIGN TIMESASSIGN DIVIDEASSIGN
 %left '?' ':'
 %left OR
