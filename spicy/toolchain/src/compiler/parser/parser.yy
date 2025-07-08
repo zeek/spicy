@@ -324,6 +324,7 @@ static std::vector<hilti::DocString> _docs;
 %left '?' ':'
 %left OR
 %left AND
+%left IN NOT_IN
 %left EQ NEQ
 %left '<' '>' GEQ LEQ
 %left '|'
@@ -334,7 +335,7 @@ static std::vector<hilti::DocString> _docs;
 %left '%' '*' '/'
 %right POW
 %right UNARY_PREC MINUSMINUS PLUSPLUS
-%left '.' '[' HASATTR TRYATTR IN NOT_IN
+%left '.' '[' HASATTR TRYATTR
 
 %%
 
