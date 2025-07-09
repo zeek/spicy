@@ -62,7 +62,7 @@ void cxx::Linker::finalize() {
     // `0` encoding unset. We will inject the actual scope at runtime when the
     // library is loaded.
     const auto& cxx_namespace = _codegen->context()->options().cxx_namespace_intern;
-    unit->add(fmt("HILTI_EXPORT HILTI_WEAK uint64_t %s_hlto_scope = 0;", cxx_namespace));
+    unit->add(fmt("HILTI_HIDDEN uint64_t %s_hlto_scope = 0;", cxx_namespace));
 
     for ( const auto& j : _joins ) {
         for ( const auto& c : j.second ) {
