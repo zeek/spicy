@@ -999,16 +999,7 @@ private:
         if ( end > begin )
             return end;
         else {
-            // Some versions of GCC diagnose a maybe uninitialized variable
-            // here. Since we just return an unset optional, this should not be
-            // possible. (pragmas copied from intrusive-ptr.h, where there's a
-            // similar issue.)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             return {};
-#pragma GCC diagnostic pop
         }
     }
 
