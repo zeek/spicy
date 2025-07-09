@@ -9,7 +9,7 @@ RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.6
       ccache \
       cmake \
       flex \
-      gcc9-c++ \
+      gcc14-c++ \
       git \
       ninja \
       python3 \
@@ -21,5 +21,5 @@ RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.6
 
 RUN pip3 install "btest>=0.66" sphinx-rtd-theme diagrams
 
-ENV CXX=g++-9
-ENV CC=gcc-9
+ENV CXX=g++-14
+ENV CC=gcc-14
