@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <utf8proc/utf8proc.h>
 
+#ifdef __linux__
+#include <endian.h>
+#endif
+
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
