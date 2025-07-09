@@ -128,6 +128,10 @@ if (USE_WERROR)
         # `__builtin_memcpy` in e.g., its `bits/char_traits.h`.
         string(APPEND werror_flags " -Wno-error=restrict")
 
+        # When optimizing GCC often reports false positives around maybe
+        # uninitialized values, e.g., in its string implementation. These are
+        # extremely tedious to silence, so just disable the warning altogether.
+        string(APPEND werror_flags " -Wno-error=maybe-uninitialized")
     endif ()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
