@@ -213,6 +213,9 @@ TEST_CASE("registerParserAlias") {
     auto parser_ = driver.lookupParser("parser");
     CHECK(parser_);
 
+    CHECK(driver.lookupParser("parser", 123));
+    CHECK(! driver.lookupParser("parser", 9999));
+
     CHECK(registerParserAlias("parser", "alias1"));
     CHECK_EQ(driver.lookupParser("alias1"), parser_);
     CHECK_EQ(driver.lookupParser("alias1%orig"), parser_);
