@@ -24,8 +24,24 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wpessimizing-move"
+
+// Pathfind relies on the presence of `BSD` to detect whether it is running on
+// FreeBSD. Since it is not always present define it if we detect FreeBSD
+// through other means.
+#ifdef __FreeBSD__
+#ifndef BSD
+#define BSD
+#define SPICY_BSD_DEFINED
+#endif
+#endif
+
 // NOLINTNEXTLINE(bugprone-suspicious-include)
 #include <pathfind/src/pathfind.cpp>
+
+#ifdef SPICY_BSD_DEFINED
+#undef BSD
+#undef SPICY_BSD_DEFINED
+#endif
 #pragma GCC diagnostic pop
 
 using namespace hilti;
