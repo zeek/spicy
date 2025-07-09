@@ -15,7 +15,7 @@ namespace __hlt::Foo {
 HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__register_module() {
-    __hlt_hlto_scope = <...>
+    ::hilti::rt::Library::setScope(&__hlt_hlto_scope);
     ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr, nullptr});
 }
 
@@ -32,5 +32,5 @@ extern void __hlt::Foo::__register_module() {
 
 const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_library_version = <...>
 const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_bind_to_version = <...>
-HILTI_EXPORT HILTI_WEAK uint64_t __hlt_hlto_scope = <...>
+HILTI_HIDDEN uint64_t __hlt_hlto_scope = 0;
 

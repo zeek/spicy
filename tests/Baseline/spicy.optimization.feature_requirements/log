@@ -916,8 +916,8 @@
 [debug/optimizer] [feature_requirements.spicy:49:11-51:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [feature_requirements.spicy:49:11-51:1] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [feature_requirements.spicy:50:5-50:14] declaration::Field "strong_ref<spicy_rt::Sink> data &default=new spicy_rt::Sink() &internal &needed-by-feature="supports_sinks";" -> null (removing unused member)
-[debug/optimizer] [spicy_rt.hlt:27:5-27:76] declaration::Field "method void connect_mime_type(string mime_type, string scope) &internal;" -> null (removing unused member)
-[debug/optimizer] [spicy_rt.hlt:28:5-28:75] declaration::Field "method void connect_mime_type(bytes mime_type, string scope) &internal;" -> null (removing unused member)
+[debug/optimizer] [spicy_rt.hlt:27:5-27:78] declaration::Field "method void connect_mime_type(string mime_type, uint<64> scope) &internal;" -> null (removing unused member)
+[debug/optimizer] [spicy_rt.hlt:28:5-28:77] declaration::Field "method void connect_mime_type(bytes mime_type, uint<64> scope) &internal;" -> null (removing unused member)
 [debug/optimizer] removing field for unused method foo::X0::__hook_to_string
 [debug/optimizer] removing field for unused method foo::X0::__on_0x25_confirmed
 [debug/optimizer] removing field for unused method foo::X0::__on_0x25_done

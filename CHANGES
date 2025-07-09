@@ -1,3 +1,48 @@
+1.14.0-dev.120 | 2025-07-09 17:23:49 +0200
+
+  * Fix visibility of C++ globals storing linker scopes. (Robin Sommer, Corelight)
+
+    We emitted them as weak symbols, but that wasn't right because that
+    way multiple HLTOs could end up using the same scope value.
+
+    The requirements for the scope symbols are: (1) inside a single HLTO,
+    all object files link to the same symbol; and (2) across HLTOs, they
+    must not be visible. Setting their visibility to `hidden` archives this.
+
+    (I checked our other weak symbols as well, and I believe they work
+    correctly as is.)
+
+  * Add linker scope to more debugging output. (Robin Sommer, Corelight)
+
+  * When looking up parsers, allow to consider linker scope. (Robin Sommer, Corelight)
+
+    This is optional and doesn't change existing behavior. No immediate
+    need for this actually, but it seems that (1) it's reasonable to
+    offer, and (2) it lets callers think about if scopes matter for them.
+
+  * Fix remaining places where we passed scopes as `string`. (Benjamin Bannier, Corelight)
+
+    This is a fixup for 2ac6fa117615662472a0b578a991e76fc582a518.
+
+  * Allow registering multiple modules in the same scope. (Benjamin Bannier, Corelight)
+
+    In 2ac6fa117615662472a0b578a991e76fc582a518 we switched to dynamically
+    injecting scopes for libraries. This assumed that
+    `Library::currentScope` was called exactly once per collection of
+    inputs, but this is not the case if there are multiple modules in such a
+    collection which each need to register. `Library::currentScope` was
+    called once per module, but if one does not compile to a HLTO file it
+    uses an implementation which returns a new value for each invocation.
+    This was a problem in e.g., Zeek where we do not use HLTO files, but
+    instead generate C++ code for all files of a collection
+
+    This patch changes generated code so it only override the scope variable
+    embedded in generated code if it was not already set up. We need an
+    extra twist for the case of separately compiled linker files as tested
+    by `tests/hilti/hiltic/cc/separate-units.hlt`; for that we add a new
+    method to `Library` which allows to detect whether `currentScope` would
+    return a stable or generated value.
+
 1.14.0-dev.114 | 2025-07-08 09:58:31 +0200
 
   * Bump 3rdparty/utfcpp from `0bef8b2` to `da71cf9` (dependabot[bot])

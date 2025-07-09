@@ -331,9 +331,14 @@ hilti::rt::Result<hilti::rt::Nothing> registerParserAlias(const std::string& par
  * port or MIME type as defined by a unit's properties. If no name is given
  * and there's only one parser available, that one is taken automatically.
  *
+ * @param linker_scope if provided, only parsers with matching scopes are
+ * considered; if omitted, the first parser with a matching name is returned,
+ * independent of its scope
+ *
  * @return the parser, or an error if it could not be retrieved
  */
-hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "");
+hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "",
+                                                         const std::optional<uint64_t>& linker_scope = {});
 
 /**
  * Exception thrown by generated parser code when an parsing failed.

@@ -1105,7 +1105,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(expression::Keyword* n) final {
         if ( n->kind() == expression::keyword::Kind::Scope && ! n->type()->isResolved() ) {
-            auto* ntype = builder()->qualifiedType(builder()->typeString(), Constness::Const);
+            auto* ntype = builder()->qualifiedType(builder()->typeUnsignedInteger(64), Constness::Const);
             recordChange(n, ntype);
             n->setType(context(), ntype);
         }

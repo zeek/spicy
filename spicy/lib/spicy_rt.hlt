@@ -24,8 +24,8 @@ public type Sink = struct {
     method void connect_filter(strong_ref<*> unit &requires-type-feature="is_filter");
     method void connect_mime_type(string mime_type);
     method void connect_mime_type(bytes mime_type);
-    method void connect_mime_type(string mime_type, string scope) &internal;
-    method void connect_mime_type(bytes mime_type, string scope) &internal;
+    method void connect_mime_type(string mime_type, uint<64> scope) &internal;
+    method void connect_mime_type(bytes mime_type, uint<64> scope) &internal;
     method void gap(uint<64> seq, uint<64> len);
     method uint<64> sequence_number();
     method void set_auto_trim(bool enable);
@@ -76,7 +76,7 @@ public type FindDirection = __library_type("hilti::rt::stream::Direction");
 public type MIMEType = __library_type("spicy::rt::MIMEType");
 public type ParserPort = __library_type("spicy::rt::ParserPort");
 
-declare public void registerParser(inout Parser parse_func, string linker_scope, any instance) &cxxname="spicy::rt::detail::registerParser" &have_prototype;
+declare public void registerParser(inout Parser parse_func, uint<64> linker_scope, any instance) &cxxname="spicy::rt::detail::registerParser" &have_prototype;
 declare public void printParserState(string unit_id, value_ref<stream> data, optional<iterator<stream>> begin_, view<stream> cur, int<64> lahead, iterator<stream> lahead_end, string literal_mode, bool trim, optional<hilti::RecoverableFailure> err) &cxxname="spicy::rt::detail::printParserState" &have_prototype;
 
 declare public bool waitForInputOrEod(inout value_ref<stream> data, view<stream> cur, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::waitForInputOrEod" &have_prototype;
