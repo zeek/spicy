@@ -123,6 +123,11 @@ if (USE_WERROR)
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
             string(APPEND werror_flags " -Wno-error=array-bounds")
         endif ()
+
+        # GCC regularly diagnoses out of bounds access in its own use of
+        # `__builtin_memcpy` in e.g., its `bits/char_traits.h`.
+        string(APPEND werror_flags " -Wno-error=restrict")
+
     endif ()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
