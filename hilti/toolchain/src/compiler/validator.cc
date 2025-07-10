@@ -68,7 +68,7 @@ using util::fmt;
 static std::unordered_map<node::Tag, std::unordered_set<attribute::Kind>> allowed_attributes{
     {node::tag::Function,
      {attribute::kind::Cxxname, attribute::kind::HavePrototype, attribute::kind::Priority, attribute::kind::Static,
-      attribute::kind::NeededByFeature, attribute::kind::Debug}},
+      attribute::kind::NeededByFeature, attribute::kind::Debug, attribute::kind::Public}},
     {node::tag::declaration::Parameter, {attribute::kind::RequiresTypeFeature}},
 };
 
