@@ -1,3 +1,23 @@
+1.14.0-dev.124 | 2025-07-10 09:06:27 -0400
+
+  * Document operator precedence. (Evan Typanski, Corelight)
+
+  * GH-1905: Make `in` have less binding power. (Evan Typanski, Corelight)
+
+    Closes #1905
+
+    It was really unintuitive that `in` would bind so closely.
+
+  * Clean up operator precedence in spicy grammar. (Evan Typanski, Corelight)
+
+    This should have minimal changes to functionality. Some known changes
+    include:
+
+    - Function calls were updated to only parse from scoped IDs
+    - `++` and `--` now share a precedence, with right associativity. This
+      should manifest very, very rarely.
+    - Unary negate had its precedence changed to match other unary operators
+
 1.14.0-dev.120 | 2025-07-09 17:23:49 +0200
 
   * Fix visibility of C++ globals storing linker scopes. (Robin Sommer, Corelight)

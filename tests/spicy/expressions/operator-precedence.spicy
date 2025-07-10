@@ -1,0 +1,27 @@
+# @TEST-EXEC: spicyc -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check precedence of certain operators; test for issue #1905
+
+module Test;
+
+function f() : uint8 {
+    return 1;
+}
+
+# Random arithmetic
+print 1 + 2 * 3;
+print 6 / 2 + 1 * 3;
+print ((f()) + 1);
+
+global a: uint64 = 10;
+print a -= 5 * 2;
+print a += 10 / 2 + 5;
+
+print 2 + 2 > 3;
+print True && True || False; # && should apply first so this is True
+
+# Some derefs and whatnot
+print *begin(b"hi") == 'h';
+print *begin(b"hi") in set<uint8>('h', 'i');
+print (*begin(b"hi")) in set<uint8>('h', 'i');
