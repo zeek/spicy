@@ -8,6 +8,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
+#include <hilti/compiler/printer.h>
 #include <hilti/compiler/unit.h>
 
 using namespace hilti;

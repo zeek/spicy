@@ -115,8 +115,10 @@ public:
 
     IntrusivePtr(const IntrusivePtr& other) noexcept : IntrusivePtr(intrusive_ptr::NewRef{}, other.get()) {}
 
-    template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>
-    IntrusivePtr(IntrusivePtr<U> other) noexcept : ptr_(other.release()) {
+    template<class U>
+    IntrusivePtr(IntrusivePtr<U> other) noexcept
+        requires(std::is_convertible_v<U*, T*>)
+        : ptr_(other.release()) {
         // nop
     }
 
@@ -144,16 +146,7 @@ public:
         return *this;
     }
 
-    pointer get() const noexcept {
-        // Some versions of GCC diagnose a maybe uninitialized variable here.
-        // Since we always initialize the field this should not be possible.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-        return ptr_;
-#pragma GCC diagnostic pop
-    }
+    pointer get() const noexcept { return ptr_; }
 
     pointer operator->() const noexcept { return ptr_; }
 

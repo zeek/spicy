@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <getopt.h>
 
+#include <algorithm>
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -34,35 +35,35 @@ constexpr int OptCxxLink = 1000;
 constexpr int OptCxxEnableDynamicGlobals = 1001;
 constexpr int OptSkipStdImports = 1002;
 
-static struct option long_driver_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
-                                              {"show-backtraces", no_argument, nullptr, 'B'},
-                                              {"compiler-debug", required_argument, nullptr, 'D'},
-                                              {"cxx-enable-dynamic-globals", no_argument, nullptr,
-                                               OptCxxEnableDynamicGlobals},
-                                              {"cxx-link", required_argument, nullptr, OptCxxLink},
-                                              {"debug", no_argument, nullptr, 'd'},
-                                              {"debug-addl", required_argument, nullptr, 'X'},
-                                              {"disable-optimizations", no_argument, nullptr, 'g'},
-                                              {"enable-profiling", no_argument, nullptr, 'Z'},
-                                              {"dump-code", no_argument, nullptr, 'C'},
-                                              {"help", no_argument, nullptr, 'h'},
-                                              {"keep-tmps", no_argument, nullptr, 'T'},
-                                              {"library-path", required_argument, nullptr, 'L'},
-                                              {"output", required_argument, nullptr, 'o'},
-                                              {"output-c++", no_argument, nullptr, 'c'},
-                                              {"output-c++-files", no_argument, nullptr, 'x'},
-                                              {"output-hilti", no_argument, nullptr, 'p'},
-                                              {"execute-code", no_argument, nullptr, 'j'},
-                                              {"output-linker", no_argument, nullptr, 'l'},
-                                              {"output-prototypes", required_argument, nullptr, 'P'},
-                                              {"output-all-dependencies", no_argument, nullptr, 'e'},
-                                              {"output-code-dependencies", no_argument, nullptr, 'E'},
-                                              {"report-times", required_argument, nullptr, 'R'},
-                                              {"skip-validation", no_argument, nullptr, 'V'},
-                                              {"skip-dependencies", no_argument, nullptr, 'S'},
-                                              {"skip-standard-imports", no_argument, nullptr, OptSkipStdImports},
-                                              {"version", no_argument, nullptr, 'v'},
-                                              {nullptr, 0, nullptr, 0}};
+static struct option long_driver_options[] =
+    {{.name = "abort-on-exceptions", .has_arg = required_argument, .flag = nullptr, .val = 'A'},
+     {.name = "show-backtraces", .has_arg = no_argument, .flag = nullptr, .val = 'B'},
+     {.name = "compiler-debug", .has_arg = required_argument, .flag = nullptr, .val = 'D'},
+     {.name = "cxx-enable-dynamic-globals", .has_arg = no_argument, .flag = nullptr, .val = OptCxxEnableDynamicGlobals},
+     {.name = "cxx-link", .has_arg = required_argument, .flag = nullptr, .val = OptCxxLink},
+     {.name = "debug", .has_arg = no_argument, .flag = nullptr, .val = 'd'},
+     {.name = "debug-addl", .has_arg = required_argument, .flag = nullptr, .val = 'X'},
+     {.name = "disable-optimizations", .has_arg = no_argument, .flag = nullptr, .val = 'g'},
+     {.name = "enable-profiling", .has_arg = no_argument, .flag = nullptr, .val = 'Z'},
+     {.name = "dump-code", .has_arg = no_argument, .flag = nullptr, .val = 'C'},
+     {.name = "help", .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+     {.name = "keep-tmps", .has_arg = no_argument, .flag = nullptr, .val = 'T'},
+     {.name = "library-path", .has_arg = required_argument, .flag = nullptr, .val = 'L'},
+     {.name = "output", .has_arg = required_argument, .flag = nullptr, .val = 'o'},
+     {.name = "output-c++", .has_arg = no_argument, .flag = nullptr, .val = 'c'},
+     {.name = "output-c++-files", .has_arg = no_argument, .flag = nullptr, .val = 'x'},
+     {.name = "output-hilti", .has_arg = no_argument, .flag = nullptr, .val = 'p'},
+     {.name = "execute-code", .has_arg = no_argument, .flag = nullptr, .val = 'j'},
+     {.name = "output-linker", .has_arg = no_argument, .flag = nullptr, .val = 'l'},
+     {.name = "output-prototypes", .has_arg = required_argument, .flag = nullptr, .val = 'P'},
+     {.name = "output-all-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'e'},
+     {.name = "output-code-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'E'},
+     {.name = "report-times", .has_arg = required_argument, .flag = nullptr, .val = 'R'},
+     {.name = "skip-validation", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+     {.name = "skip-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'S'},
+     {.name = "skip-standard-imports", .has_arg = no_argument, .flag = nullptr, .val = OptSkipStdImports},
+     {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
+     {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}};
 
 Driver::Driver(std::string name) : _name(std::move(name)) { configuration().initLocation(false); }
 
@@ -258,7 +259,7 @@ Result<Nothing> Driver::_setCxxNamespacesFromPrefix(const char* prefix) {
     if ( s.empty() )
         return Nothing();
 
-    if ( ! isdigit(s[0]) && std::all_of(s.begin(), s.end(), [](auto c) { return std::isalnum(c) || c == '_'; }) ) {
+    if ( ! isdigit(s[0]) && std::ranges::all_of(s, [](auto c) { return std::isalnum(c) || c == '_'; }) ) {
         _compiler_options.cxx_namespace_extern = hilti::util::fmt("hlt_%s", s);
         _compiler_options.cxx_namespace_intern = hilti::util::fmt("__hlt_%s", s);
         return Nothing();
@@ -516,7 +517,7 @@ void Driver::updateProcessExtension(const declaration::module::UID& uid, const h
     auto new_uid = uid;
     new_uid.process_extension = ext;
 
-    if ( _units.find(new_uid) != _units.end() )
+    if ( _units.contains(new_uid) )
         logger().internalError(
             util::fmt("attempt to update process extension of unit %s to %s, but that already exists", uid,
                       ext.native()));
@@ -533,7 +534,7 @@ void Driver::updateProcessExtension(const declaration::module::UID& uid, const h
 }
 
 void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
-    if ( _units.find(unit->uid()) != _units.end() )
+    if ( _units.contains(unit->uid()) )
         return;
 
     HILTI_DEBUG(logging::debug::Driver, fmt("adding unit %s (%s)", unit->uid(), unit->uid().path.native()));
@@ -569,7 +570,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
             return result::Error(fmt("could not compute absolute path for %s", path_normalized));
     }
 
-    if ( _processed_paths.count(path_normalized.native()) )
+    if ( _processed_paths.contains(path_normalized.native()) )
         return Nothing();
 
     // Calling hook before stage check so that it can execute initialize()
@@ -618,7 +619,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
         try {
-            if ( ! _libraries.count(path) ) {
+            if ( ! _libraries.contains(path) ) {
                 _libraries.insert({path, Library(path)});
                 if ( auto load = _libraries.at(path).open(); ! load )
                     return error(util::fmt("could not load library file %s: %s", path, load.error()));

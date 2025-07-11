@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <utility>
+
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/util.h>
 
@@ -35,7 +37,7 @@ void Port::_parse(const std::string& port) {
         throw RuntimeError("cannot parse port specification");
     }
 
-    if ( port_ > std::numeric_limits<uint16_t>::max() ) {
+    if ( std::cmp_greater(port_, std::numeric_limits<uint16_t>::max()) ) {
         throw RuntimeError("cannot parse port specification");
     }
 

@@ -58,8 +58,7 @@ void Configuration::init(bool use_build_directory) {
     std::string installation_tag = (use_build_directory ? "BUILD" : "INSTALL");
 
     compiler_id = "${CMAKE_CXX_COMPILER_ID}";
-    std::transform(compiler_id.begin(), compiler_id.end(), compiler_id.begin(),
-                   [](auto& c) { return std::tolower(c); });
+    std::ranges::transform(compiler_id, compiler_id.begin(), [](auto& c) { return std::tolower(c); });
 
     // Allow to set a compiler wrapper through the environment.
     if ( auto* hilti_cxx = getenv("HILTI_CXX"); hilti_cxx && *hilti_cxx )
@@ -141,12 +140,12 @@ void Configuration::init(bool use_build_directory) {
     // (3) it helps the optimizer to know that symbols won't be accessed
     // externally.
     runtime_cxx_flags_debug =
-        flatten({"-fPIC", "-std=c++17", "-g", "-O0", "-fvisibility=hidden", "-Wno-invalid-offsetof",
+        flatten({"-fPIC", "-std=c++20", "-g", "-O0", "-fvisibility=hidden", "-Wno-invalid-offsetof",
                  prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
                  prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});
 
     runtime_cxx_flags_release =
-        flatten({"-fPIC", "-std=c++17", "-g", "-O3", "-DNDEBUG", "-fvisibility=hidden", "-Wno-invalid-offsetof",
+        flatten({"-fPIC", "-std=c++20", "-g", "-O3", "-DNDEBUG", "-fvisibility=hidden", "-Wno-invalid-offsetof",
                  prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
                  prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
 

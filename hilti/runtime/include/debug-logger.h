@@ -20,7 +20,7 @@ public:
     void print(std::string_view stream, std::string_view msg);
     void enable(std::string_view streams);
 
-    bool isEnabled(std::string_view stream) { return _streams.find(stream) != _streams.end(); }
+    bool isEnabled(std::string_view stream) { return _streams.contains(stream); }
 
     void indent(std::string_view stream) {
         if ( auto s = _streams.find(stream); s != _streams.end() ) {

@@ -31,9 +31,9 @@ HILTI_OPERATOR_IMPLEMENTATION(CastedCoercion);
 operator_::Signature CastedCoercion::signature(Builder* builder) const {
     return Signature{
         .kind = Kind::Cast,
-        .op0 = {parameter::Kind::In, builder->typeAny(), "<dynamic - no doc>"},
-        .op1 = {parameter::Kind::In, builder->typeAny(), "<dynamic - no doc>"},
-        .op2 = {parameter::Kind::In, builder->typeAny(), "<dynamic - no doc>"},
+        .op0 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "<dynamic - no doc>"},
+        .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "<dynamic - no doc>"},
+        .op2 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "<dynamic - no doc>"},
         .result_doc = "<dynamic - no result>",
         .ns = "<dynamic - no ns>",
         .skip_doc = true,
@@ -60,8 +60,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Pack,
-            .op0 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .result = {Constness::Mutable, builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .result = {.constness = Constness::Mutable, .type = builder->typeBytes()},
             .ns = "generic",
             .doc = "Packs a value into a binary representation. See :ref:`packing` for details.",
         };
@@ -123,9 +123,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unpack,
-            .op0 = {parameter::Kind::In, builder->typeType(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
-            .op2 = {parameter::Kind::In, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeType(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
+            .op2 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
             .result_doc = "<unpacked value>",
             .ns = "generic",
             .doc = "Unpacks a value from a binary representation. See :ref:`packing` for details.",
@@ -225,7 +225,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Begin,
-            .op0 = {parameter::Kind::In, builder->typeAny(), "<container>"},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "<container>"},
             .result_doc = "<iterator>",
             .ns = "generic",
             .doc = "Returns an iterator to the beginning of the container's content.",
@@ -253,7 +253,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::End,
-            .op0 = {parameter::Kind::In, builder->typeAny(), "<container>"},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "<container>"},
             .result_doc = "<iterator>",
             .ns = "generic",
             .doc = "Returns an iterator to the end of the container's content.",
@@ -281,8 +281,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::New,
-            .op0 = {parameter::Kind::In, builder->typeAny(), "T"},
-            .op1 = {parameter::Kind::In, builder->typeTuple(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAny(), .doc = "T"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeTuple(type::Wildcard())},
             .result_doc = "T&",
             .ns = "generic",
             .doc = R"(

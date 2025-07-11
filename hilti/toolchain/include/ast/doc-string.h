@@ -5,9 +5,11 @@
 #include <string>
 #include <vector>
 
-#include <hilti/compiler/printer.h>
-
 namespace hilti {
+
+namespace printer {
+class Stream;
+}
 
 /** Represents an AST node's documentation string. */
 class DocString {

@@ -76,9 +76,11 @@ enum class TypesMode {
 };
 
 namespace detail {
-constexpr hilti::util::enum_::Value<LiteralMode> LiteralModes[] = {{LiteralMode::Default, "default"},
-                                                                   {LiteralMode::Try, "try"},
-                                                                   {LiteralMode::Search, "search"}};
+constexpr hilti::util::enum_::Value<LiteralMode> LiteralModes[] = {
+    {.value = LiteralMode::Default, .name = "default"},
+    {.value = LiteralMode::Try, .name = "try"},
+    {.value = LiteralMode::Search, .name = "search"},
+};
 } // namespace detail
 
 constexpr auto to_string(LiteralMode cc) { return hilti::util::enum_::to_string(cc, detail::LiteralModes); }

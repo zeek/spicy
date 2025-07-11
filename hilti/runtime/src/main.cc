@@ -10,7 +10,7 @@
 
 #include <hilti/rt/libhilti.h>
 
-static struct option long_options[] = {{nullptr, 0, nullptr, 0}};
+static struct option long_options[] = {{.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}};
 
 static void usage(const char* prog) {
     std::cerr << hilti::rt::

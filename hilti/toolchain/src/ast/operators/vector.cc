@@ -19,7 +19,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVectorIterator(type::Wildcard())},
             .result_doc = "<dereferenced type>",
             .ns = "vector::iterator",
             .doc = "Returns the vector element that the iterator refers to.",
@@ -39,7 +39,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeVectorIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeVectorIterator(type::Wildcard())},
             .result_doc = "iterator<vector<*>>",
             .ns = "vector::iterator",
             .doc = "Advances the iterator by one vector element, returning the previous position.",
@@ -59,7 +59,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeVectorIterator(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeVectorIterator(type::Wildcard())},
             .result_doc = "iterator<vector<*>>",
             .ns = "vector::iterator",
             .doc = "Advances the iterator by one vector element, returning the new position.",
@@ -79,9 +79,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVectorIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeVectorIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector::iterator",
             .doc = "Returns true if two vector iterators refer to the same location.",
         };
@@ -102,9 +102,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeVectorIterator(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVectorIterator(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeVectorIterator(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector::iterator",
             .doc = "Returns true if two vector iterators refer to different locations.",
         };
@@ -126,8 +126,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "vector",
             .doc = "Returns the number of elements a vector contains.",
         };
@@ -142,9 +142,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector",
             .doc = "Compares two vectors element-wise.",
         };
@@ -164,9 +164,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector",
             .doc = "Compares two vectors element-wise.",
         };
@@ -187,8 +187,8 @@ public:
         return Signature{
             .kind = Kind::Index,
             .priority = Priority::Low,
-            .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
             .result_doc = "<type of element>",
             .ns = "vector",
             .doc = "Returns the vector element at the given index.",
@@ -208,8 +208,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Index,
-            .op0 = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeVector(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
             .result_doc = "<type of element>",
             .ns = "vector",
             .doc = "Returns the vector element at the given index.",
@@ -229,8 +229,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .result_doc = "vector<*>",
             .ns = "vector",
             .doc = "Returns the concatenation of two vectors.",
@@ -255,8 +255,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeVector(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .result_doc = "vector<*>",
             .ns = "vector",
             .doc = "Concatenates another vector to the vector.",
@@ -282,19 +282,19 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "assign",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
             .param1 =
                 {
                     .name = "x",
-                    .type = {parameter::Kind::In, builder->typeAny()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeAny()},
                 },
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Assigns *x* to the *i*th element of the vector. If the vector contains less
@@ -313,14 +313,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeVector(type::Wildcard())},
             .member = "push_back",
             .param0 =
                 {
                     .name = "x",
-                    .type = {parameter::Kind::In, builder->typeAny()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeAny()},
                 },
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Appends *x* to the end of the vector.
@@ -337,9 +337,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::InOut, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeVector(type::Wildcard())},
             .member = "pop_back",
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Removes the last element from the vector, which must be non-empty.
@@ -356,7 +356,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "front",
             .result_doc = "<type of element>",
             .ns = "vector",
@@ -380,7 +380,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "back",
             .result_doc = "<type of element>",
             .ns = "vector",
@@ -404,14 +404,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "reserve",
             .param0 =
                 {
                     .name = "n",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Reserves space for at least *n* elements. This operation does not change the
@@ -430,14 +430,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "resize",
             .param0 =
                 {
                     .name = "n",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeVoid()},
+            .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "vector",
             .doc = R"(
 Resizes the vector to hold exactly *n* elements. If *n* is larger than the
@@ -456,12 +456,12 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "at",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
             .result_doc = "<iterator>",
             .ns = "vector",
@@ -484,17 +484,17 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "sub",
             .param0 =
                 {
                     .name = "begin",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
             .param1 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
             .result_doc = "vector<*>",
             .ns = "vector",
@@ -518,12 +518,12 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
             .member = "sub",
             .param0 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
             .result_doc = "vector<*>",
             .ns = "vector",

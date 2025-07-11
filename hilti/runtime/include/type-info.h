@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
@@ -995,8 +996,8 @@ public:
 
     auto fields(bool include_internal = false) const {
         std::vector<std::reference_wrapper<const struct_::Field>> fields;
-        std::copy_if(_fields.begin(), _fields.end(), std::back_inserter(fields),
-                     [=](const struct_::Field& f) { return include_internal || ! f.isInternal(); });
+        std::ranges::copy_if(_fields, std::back_inserter(fields),
+                             [=](const struct_::Field& f) { return include_internal || ! f.isInternal(); });
         return fields;
     }
 

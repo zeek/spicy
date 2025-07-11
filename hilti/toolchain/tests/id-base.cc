@@ -10,7 +10,7 @@
 using namespace hilti;
 
 static std::optional<std::string> normalizeID(std::string_view id) {
-    if ( id.substr(0, 1) == "%" )
+    if ( id.starts_with("%") )
         return std::string("XXX_") + std::string(id.substr(1));
 
     return std::nullopt;

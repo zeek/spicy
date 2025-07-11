@@ -37,7 +37,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(Util)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -116,13 +116,22 @@ if (USE_WERROR)
         # of a strings it can analyze which we exceed in e.g., in some
         # benchmarks in some libstd++ use of `__builtin_memcpy`. Disable the
         # warning since it appears noise.
-        string(APPEND werror_flags " -Wno-error=stringop-overflow")
+        string(APPEND werror_flags " -Wno-stringop-overflow")
 
         # With versions >=13.0 GCC gained `-Warray-bounds` which reports false
         # positives, see e.g., https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111273.
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
-            string(APPEND werror_flags " -Wno-error=array-bounds")
+            string(APPEND werror_flags " -Wno-array-bounds")
         endif ()
+
+        # GCC regularly diagnoses out of bounds access in its own use of
+        # `__builtin_memcpy` in e.g., its `bits/char_traits.h`.
+        string(APPEND werror_flags " -Wno-restrict")
+
+        # When optimizing GCC often reports false positives around maybe
+        # uninitialized values, e.g., in its string implementation. These are
+        # extremely tedious to silence, so just disable the warning altogether.
+        string(APPEND werror_flags " -Wno-maybe-uninitialized")
     endif ()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")

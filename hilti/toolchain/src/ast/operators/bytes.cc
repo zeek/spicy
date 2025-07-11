@@ -20,8 +20,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Deref,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeUnsignedInteger(8)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(8)},
             .ns = "bytes::iterator",
             .doc = "Returns the character the iterator is pointing to.",
         };
@@ -35,8 +35,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
-            .result = {Constness::Mutable, builder->typeBytesIterator()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Mutable, .type = builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Advances the iterator by one byte, returning the previous position.",
         };
@@ -50,8 +50,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
-            .result = {Constness::Mutable, builder->typeBytesIterator()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Mutable, .type = builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Advances the iterator by one byte, returning the new position.",
         };
@@ -65,9 +65,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -84,9 +84,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -102,9 +102,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Lower,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -120,9 +120,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::LowerEqual,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -138,9 +138,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Greater,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -156,9 +156,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::GreaterEqual,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes::iterator",
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
@@ -174,9 +174,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Difference,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .result = {Constness::Const, builder->typeSignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeSignedInteger(64)},
             .ns = "bytes::iterator",
             .doc =
                 "Returns the number of bytes between the two iterators. The result will be negative if the second "
@@ -195,9 +195,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Constness::Const, builder->typeBytesIterator()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Returns an iterator which is pointing the given number of bytes beyond the one passed in.",
         };
@@ -211,9 +211,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeBytesIterator()},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
-            .result = {Constness::Mutable, builder->typeBytesIterator()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeBytesIterator()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Mutable, .type = builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Advances the iterator by the given number of bytes.",
         };
@@ -229,8 +229,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc = "Returns the number of bytes the value contains.",
         };
@@ -244,9 +244,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -260,9 +260,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -276,9 +276,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Greater,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -292,9 +292,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::GreaterEqual,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -308,9 +308,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::In,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Returns true if the right-hand-side value contains the left-hand-side value as a subsequence.",
         };
@@ -324,9 +324,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Lower,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -340,9 +340,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::LowerEqual,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
         };
@@ -356,9 +356,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = "Returns the concatenation of two bytes values.",
         };
@@ -372,9 +372,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeBytes()},
-            .result = {Constness::Const, builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = "Appends one bytes value to another.",
         };
@@ -388,9 +388,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeStreamView()},
-            .result = {Constness::Const, builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = "Appends a view of stream data to a bytes instance.",
         };
@@ -404,9 +404,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::In, builder->typeBytes()},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(8)},
-            .result = {Constness::Const, builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(8)},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = "Appends a single byte to the data.",
         };
@@ -419,15 +419,15 @@ class Find : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
         return Signature{.kind = Kind::MemberCall,
-                         .self = {parameter::Kind::In, builder->typeBytes()},
+                         .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                          .member = "find",
                          .param0 =
                              {
                                  .name = "needle",
-                                 .type = {parameter::Kind::In, builder->typeBytes()},
+                                 .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                              },
-                         .result = {Constness::Const,
-                                    builder->typeTuple(
+                         .result = {.constness = Constness::Const,
+                                    .type = builder->typeTuple(
                                         QualifiedTypes{builder->qualifiedType(builder->typeBool(), Constness::Const),
                                                        builder->qualifiedType(builder->typeBytesIterator(),
                                                                               Constness::Const)})},
@@ -452,21 +452,21 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "lower",
             .param0 =
                 {
                     .name = "charset",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::Charset")},
                     .default_ = builder->expressionName("hilti::Charset::UTF8"),
                 },
             .param1 =
                 {
                     .name = "errors",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::DecodeErrorStrategy")},
                     .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE"),
                 },
-            .result = {Constness::Const, builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns a lower-case version of the bytes value, assuming it is
@@ -486,21 +486,21 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "upper",
             .param0 =
                 {
                     .name = "charset",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::Charset")},
                     .default_ = builder->expressionName("hilti::Charset::UTF8"),
                 },
             .param1 =
                 {
                     .name = "errors",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::DecodeErrorStrategy")},
                     .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE"),
                 },
-            .result = {Constness::Const, builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns an upper-case version of the bytes value, assuming it is
@@ -520,14 +520,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "at",
             .param0 =
                 {
                     .name = "i",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeBytesIterator()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytesIterator()},
             .ns = "bytes",
             .doc = R"(
 Returns an iterator representing the offset *i* inside the bytes value.
@@ -544,16 +544,16 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "split",
             .param0 =
                 {
                     .name = "sep",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                     .optional = true,
                 },
-            .result = {Constness::Const,
-                       builder->typeVector(builder->qualifiedType(builder->typeBytes(), Constness::Mutable))},
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeVector(builder->qualifiedType(builder->typeBytes(), Constness::Mutable))},
             .ns = "bytes",
             .doc = R"(
 Splits the bytes value at each occurrence of *sep* and returns a vector
@@ -574,16 +574,16 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "split1",
             .param0 =
                 {
                     .name = "sep",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                     .optional = true,
                 },
-            .result = {Constness::Const,
-                       builder->typeTuple(
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeTuple(
                            QualifiedTypes{builder->qualifiedType(builder->typeBytes(), Constness::Const),
                                           builder->qualifiedType(builder->typeBytes(), Constness::Const)})},
             .ns = "bytes",
@@ -608,14 +608,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "starts_with",
             .param0 =
                 {
                     .name = "prefix",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = R"(
 Returns true if the bytes value starts with *prefix*.
@@ -632,14 +632,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "ends_with",
             .param0 =
                 {
                     .name = "suffix",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                 },
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = R"(
 Returns true if the bytes value ends with *suffix*.
@@ -657,21 +657,21 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "strip",
             .param0 =
                 {
                     .name = "side",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::Side")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::Side")},
                     .optional = true,
                 },
             .param1 =
                 {
                     .name = "set",
-                    .type = {parameter::Kind::In, builder->typeBytes()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
                     .optional = true,
                 },
-            .result = {Constness::Const, builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Removes leading and/or trailing sequences of all characters in *set* from the bytes
@@ -691,19 +691,19 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "sub",
             .param0 =
                 {
                     .name = "begin",
-                    .type = {parameter::Kind::In, builder->typeBytesIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
                 },
             .param1 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeBytesIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
                 },
-            .result = {Constness::Const, builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns the subsequence from *begin* to (but not including) *end*.
@@ -720,14 +720,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "sub",
             .param0 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeBytesIterator()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeBytesIterator()},
                 },
-            .result = {Constness::Const, builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns the subsequence from the value's beginning to (but not including) *end*.
@@ -744,19 +744,19 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "sub",
             .param0 =
                 {
                     .name = "begin",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
             .param1 =
                 {
                     .name = "end",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                 },
-            .result = {Constness::Const, builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = R"(
 Returns the subsequence from offset *begin* to (but not including) offset *end*.
@@ -773,14 +773,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "join",
             .param0 =
                 {
                     .name = "parts",
-                    .type = {parameter::Kind::In, builder->typeVector(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
                 },
-            .result = {Constness::Const, builder->typeBytes()},
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -800,15 +800,15 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "to_int",
             .param0 =
                 {
                     .name = "base",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Constness::Const, builder->typeSignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeSignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -829,15 +829,15 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "to_uint",
             .param0 =
                 {
                     .name = "base",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -858,14 +858,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "to_int",
             .param0 =
                 {
                     .name = "byte_order",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::ByteOrder")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::ByteOrder")},
                 },
-            .result = {Constness::Const, builder->typeSignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeSignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -886,14 +886,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "to_uint",
             .param0 =
                 {
                     .name = "byte_order",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::ByteOrder")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::ByteOrder")},
                 },
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc =
                 R"(
@@ -914,9 +914,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "to_real",
-            .result = {Constness::Const, builder->typeReal()},
+            .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -938,15 +938,15 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "to_time",
             .param0 =
                 {
                     .name = "base",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Constness::Const, builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -966,14 +966,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "to_time",
             .param0 =
                 {
                     .name = "byte_order",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::ByteOrder")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::ByteOrder")},
                 },
-            .result = {Constness::Const, builder->typeTime()},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -993,21 +993,21 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "decode",
             .param0 =
                 {
                     .name = "charset",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::Charset")},
                     .default_ = builder->expressionName("hilti::Charset::UTF8"),
                 },
             .param1 =
                 {
                     .name = "errors",
-                    .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::DecodeErrorStrategy")},
                     .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE"),
                 },
-            .result = {Constness::Const, builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "bytes",
             .doc =
                 R"(
@@ -1028,21 +1028,21 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeBytes()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .member = "match",
             .param0 =
                 {
                     .name = "regex",
-                    .type = {parameter::Kind::In, builder->typeRegExp()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeRegExp()},
                 },
             .param1 =
                 {
                     .name = "group",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(64)},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
                     .optional = true,
                 },
-            .result = {Constness::Const,
-                       builder->typeResult(builder->qualifiedType(builder->typeBytes(), Constness::Const))},
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeResult(builder->qualifiedType(builder->typeBytes(), Constness::Const))},
             .ns = "bytes",
             .doc =
                 R"(

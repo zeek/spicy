@@ -22,23 +22,27 @@
 
 using spicy::rt::fmt;
 
-static struct option long_options[] = {{"abort-on-exceptions", required_argument, nullptr, 'A'},
-                                       {"compiler-debug", required_argument, nullptr, 'D'},
-                                       {"debug", no_argument, nullptr, 'd'},
-                                       {"debug-addl", required_argument, nullptr, 'X'},
-                                       {"enable-print", no_argument, nullptr, 'P'},
-                                       {"enable-profiling", no_argument, nullptr, 'Z'},
-                                       {"file", required_argument, nullptr, 'f'},
-                                       {"help", no_argument, nullptr, 'h'},
-                                       {"json", no_argument, nullptr, 'J'},
-                                       {"library-path", required_argument, nullptr, 'L'},
-                                       {"list-parsers", no_argument, nullptr, 'l'},
-                                       {"parser", required_argument, nullptr, 'p'},
-                                       {"report-times", required_argument, nullptr, 'R'},
-                                       {"show-backtraces", required_argument, nullptr, 'B'},
-                                       {"skip-dependencies", no_argument, nullptr, 'S'},
-                                       {"version", no_argument, nullptr, 'v'},
-                                       {nullptr, 0, nullptr, 0}};
+static struct option long_options[] = {
+
+    {.name = "abort-on-exceptions", .has_arg = required_argument, .flag = nullptr, .val = 'A'},
+    {.name = "compiler-debug", .has_arg = required_argument, .flag = nullptr, .val = 'D'},
+    {.name = "debug", .has_arg = no_argument, .flag = nullptr, .val = 'd'},
+    {.name = "debug-addl", .has_arg = required_argument, .flag = nullptr, .val = 'X'},
+    {.name = "enable-print", .has_arg = no_argument, .flag = nullptr, .val = 'P'},
+    {.name = "enable-profiling", .has_arg = no_argument, .flag = nullptr, .val = 'Z'},
+    {.name = "file", .has_arg = required_argument, .flag = nullptr, .val = 'f'},
+    {.name = "help", .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+    {.name = "json", .has_arg = no_argument, .flag = nullptr, .val = 'J'},
+    {.name = "library-path", .has_arg = required_argument, .flag = nullptr, .val = 'L'},
+    {.name = "list-parsers", .has_arg = no_argument, .flag = nullptr, .val = 'l'},
+    {.name = "parser", .has_arg = required_argument, .flag = nullptr, .val = 'p'},
+    {.name = "report-times", .has_arg = required_argument, .flag = nullptr, .val = 'R'},
+    {.name = "show-backtraces", .has_arg = required_argument, .flag = nullptr, .val = 'B'},
+    {.name = "skip-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'S'},
+    {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
+    {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0},
+
+};
 
 static void fatalError(const std::string& msg) {
     hilti::logger().error(fmt("spicy-dump: %s", msg));

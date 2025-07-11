@@ -48,7 +48,7 @@ std::shared_ptr<Manager> Manager::singleton() {
 }
 
 void Manager::register_(Ledger* ledger) {
-    if ( _all_ledgers.find(ledger->name()) != _all_ledgers.end() )
+    if ( _all_ledgers.contains(ledger->name()) )
         hilti::logger().internalError(fmt("ledger %s already exists", ledger->name()));
 
     _all_ledgers[ledger->name()] = ledger;

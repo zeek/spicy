@@ -75,7 +75,7 @@ std::unique_ptr<Logger> hilti::setLogger(std::unique_ptr<Logger> logger) {
 }
 
 void Logger::debugEnable(const logging::DebugStream& dbg) {
-    if ( _debug_streams.find(dbg) == _debug_streams.end() )
+    if ( ! _debug_streams.contains(dbg) )
         _debug_streams[dbg] = 0;
 }
 

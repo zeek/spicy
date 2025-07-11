@@ -11,6 +11,7 @@
 #include <hilti/compiler/detail/ast-dumper.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
+#include <hilti/compiler/printer.h>
 #include <hilti/compiler/unit.h>
 
 using namespace hilti;
@@ -1140,7 +1141,9 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
             auto forward = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", {}, "extern");
             unit()->add(forward);
 
-            return CxxTypeInfo{false, fmt("&%s", std::string(ID("type_info", tid.local()))), forward};
+            return CxxTypeInfo{.predefined = false,
+                               .reference = fmt("&%s", std::string(ID("type_info", tid.local()))),
+                               .forward = forward};
         },
         [&](auto& ti) {
             if ( ti.predefined )
