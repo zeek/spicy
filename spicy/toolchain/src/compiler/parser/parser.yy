@@ -1215,12 +1215,14 @@ attribute     : ATTRIBUTE                       { try {
                                                        $$ = builder->attribute(hilti::attribute::kind::from_string($1), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                       $$ = nullptr;
                                                    }
                                                 }
               | ATTRIBUTE '=' expr              { try {
                                                        $$ = builder->attribute(hilti::attribute::kind::from_string($1), std::move($3), __loc__);
                                                    } catch ( std::out_of_range& e ) {
                                                        error(@$, hilti::util::fmt("unknown attribute '%s'", $1));
+                                                       $$ = nullptr;
                                                    }
                                                 }
 
