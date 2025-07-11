@@ -466,7 +466,7 @@ std::string cxx::type::Struct::str() const {
                                                                    return fmt("std::optional<%s> %s", l.type, l.id);
                                                                }),
                                                ", ");
-            auto locals_ctor = fmt("%s(%s);", type_name, locals_ctor_args);
+            auto locals_ctor = fmt("explicit %s(%s);", type_name, locals_ctor_args);
             struct_fields.emplace_back(std::move(locals_ctor));
         }
 
