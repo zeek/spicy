@@ -210,14 +210,14 @@ struct Parser {
     std::string_view name;
 
     /** Whether this parser is public. */
-    bool is_public;
+    bool is_public = false;
 
     /**
      * Linker scope of the unit registering the parser. This can be used for
      * disambiguation between linked units. Will be set/overidden by
      * `registerParser()`.
      */
-    uint64_t linker_scope;
+    uint64_t linker_scope = 0;
 
     /**
      * Function performing parsing of given input into a temporary instance.
@@ -247,7 +247,7 @@ struct Parser {
     ContextNewFunction context_new = nullptr;
 
     /** Type-information for puarser's unit. */
-    const hilti::rt::TypeInfo* type_info;
+    const hilti::rt::TypeInfo* type_info = nullptr;
 
     /** Pre-computed profiler tags used by the runtime driver. */
     struct {
