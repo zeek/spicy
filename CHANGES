@@ -1,3 +1,7 @@
+1.14.0-dev.154 | 2025-07-15 14:18:28 +0200
+
+  * Clean up temporary JIT output files. (Robin Sommer, Corelight)
+
 1.14.0-dev.152 | 2025-07-15 13:07:33 +0200
 
   * Make parser constructor choice easier for C++20. (Evan Typanski, Corelight)
