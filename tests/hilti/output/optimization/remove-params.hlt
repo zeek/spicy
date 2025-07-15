@@ -1,0 +1,119 @@
+# @TEST-DOC: Tests removing unused function parameters optimizations
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+# @TEST-EXEC: hiltic %INPUT -dj
+#
+# Since the ordering is inconsistent, this is split over multiple files.
+
+module Test {
+
+import hilti;
+
+# CHECK: function void sanity_check(uint<64> x)
+function void sanity_check(uint<64> x) {
+    hilti::print(x);
+}
+
+# CHECK: function void one()
+# CHECK-NOT: function void one(uint<64> x)
+function void one(uint<64> x) {}
+
+# CHECK: sanity_check(1)
+sanity_check(1);
+
+# CHECK: one()
+one(1);
+
+}
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+# CHECK: hook void hook1()
+# CHECK-NOT: hook void hook1(uint<64> x)
+hook void hook1(uint<64> x) {
+    # CHECK: print("Hook number one"
+    hilti::print("Hook number one");
+}
+
+# CHECK: hook void hook1()
+hook void hook1(uint<64> x) {
+    # CHECK: print("Hook number two"
+    hilti::print("Hook number two");
+}
+
+# CHECK: hook1()
+hook1(1);
+
+}
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+# Make sure overloads don't remove functions that would otherwise conflict
+# CHECK: function void overload(uint<64> x)
+function void overload(uint<64> x) { hilti::print(x); }
+# CHECK: function void overload(uint<64> x, uint<64> y)
+function void overload(uint<64> x, uint<64> y) { hilti::print(x); }
+
+# CHECK: overload(1)
+overload(1);
+# CHECK: overload(1, 2)
+overload(1, 2);
+
+}
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+# CHECK: function void last_used(uint<64> a, uint<64> c) {
+# CHECK-NOT: function void last_used(uint<64> a, uint<64> b, uint<64> c) {
+function void last_used(uint<64> a, uint<64> b, uint<64> c) {
+    hilti::print(a);
+    hilti::print(c);
+}
+
+# CHECK: last_used(1, 3);
+# CHECK-NOT: last_used(1, 2, 3);
+last_used(1, 2, 3);
+
+}
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+function uint<64> side_effect() {
+    hilti::print("side effect!");
+    return 1;
+}
+
+# The only caller of this has side effects
+# CHECK: function void called_with_side_effects(uint<64> x)
+function void called_with_side_effects(uint<64> x) { }
+
+# One of multiple callers of this has a side effect in params
+# CHECK: function void called_with_one_side_effect(uint<64> x, uint<64> y)
+function void called_with_one_side_effect(uint<64> x, uint<64> y) { }
+
+# CHECK: called_with_side_effects(side_effect())
+called_with_side_effects(side_effect());
+
+# CHECK: called_with_one_side_effect(1, 2)
+called_with_one_side_effect(1, 2);
+# CHECK: called_with_one_side_effect(side_effect(), 3)
+called_with_one_side_effect(side_effect(), 3);
+
+}

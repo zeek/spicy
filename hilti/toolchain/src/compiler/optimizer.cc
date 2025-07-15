@@ -2,6 +2,7 @@
 
 #include "hilti/compiler/detail/optimizer.h"
 
+#include <algorithm>
 #include <numeric>
 #include <optional>
 #include <string>
@@ -73,6 +74,19 @@ static auto idFeatureFromConstant(const ID& featureConstant) -> std::optional<st
     return {{type_id, feature}};
 };
 
+using OperatorUses = std::map<const Operator*, std::vector<expression::ResolvedOperator*>>;
+
+// Collects uses of resolved operators
+struct CollectUsesPass : public hilti::visitor::PreOrder {
+    OperatorUses result;
+
+    OperatorUses collect(Node* node) {
+        visitor::visit(*this, node);
+        return result;
+    }
+
+    void operator()(expression::ResolvedOperator* node) override { result[&node->operator_()].push_back(node); }
+};
 
 class OptimizerVisitor : public visitor::MutatingPreOrder {
 public:
@@ -84,12 +98,25 @@ public:
 
     void removeNode(Node* old, const std::string& msg = "") { replaceNode(old, nullptr, msg); }
 
+    OptimizerVisitor(Builder* builder, const logging::DebugStream& dbg, const OperatorUses* op_uses)
+        : visitor::MutatingPreOrder(builder, dbg), _op_uses(op_uses) {}
+
     ~OptimizerVisitor() override = default;
     virtual void collect(Node*) {}
     virtual bool prune_uses(Node*) { return false; }
     virtual bool prune_decls(Node*) { return false; }
 
     void operator()(declaration::Module* n) final { _current_module = n; }
+
+    const OperatorUses::mapped_type* uses(const Operator* x) const {
+        if ( ! _op_uses->contains(x) )
+            return nullptr;
+
+        return &_op_uses->at(x);
+    }
+
+private:
+    const OperatorUses* _op_uses;
 };
 
 struct FunctionVisitor : OptimizerVisitor {
@@ -257,11 +284,7 @@ struct FunctionVisitor : OptimizerVisitor {
     }
 
     void operator()(declaration::Function* n) final {
-        ID function_id;
-        if ( auto* prototype = context()->lookup(n->linkedPrototypeIndex()) )
-            function_id = prototype->fullyQualifiedID();
-        else
-            function_id = n->fullyQualifiedID();
+        auto function_id = n->functionID(context());
 
         switch ( _stage ) {
             case Stage::COLLECT: {
@@ -1559,6 +1582,282 @@ struct MemberVisitor : OptimizerVisitor {
     }
 };
 
+/** Removes unused function parameters. */
+struct FunctionParamVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
+
+    struct UnusedParams {
+        // Vector of positions for unused parameters
+        std::vector<std::size_t> unused_params;
+        // Whether or not we removed arguments from uses yet
+        bool removed_uses = false;
+    };
+
+    // The unused parameters for a given function ID
+    std::map<ID, UnusedParams> fn_unused_params;
+
+    void collect(Node* node) override {
+        fn_unused_params.clear();
+        _stage = Stage::COLLECT;
+
+        visitor::visit(*this, node);
+    }
+
+    bool prune_uses(Node* node) override {
+        _stage = Stage::PRUNE_USES;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return isModified();
+    }
+
+    bool prune_decls(Node* node) override {
+        _stage = Stage::PRUNE_DECLS;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return isModified();
+    }
+
+    void removeArgs(expression::ResolvedOperator* call, const std::vector<std::size_t>& positions) {
+        if ( ! call->isA<operator_::function::Call>() && ! call->isA<operator_::struct_::MemberCall>() )
+            logger().fatalError(util::fmt("expected Call or MemberCall node, but got %s", call->typename_()));
+
+        if ( positions.empty() )
+            return;
+
+        bool is_method = call->isA<operator_::struct_::MemberCall>();
+
+        // Get the params as a tuple
+        auto* ctor = is_method ? call->op2()->as<expression::Ctor>() : call->op1()->as<expression::Ctor>();
+        auto* tup = ctor->ctor()->as<ctor::Tuple>();
+
+        // Make new parameters
+        Expressions params;
+        for ( std::size_t i = 0; i < tup->value().size(); i++ ) {
+            if ( std::ranges::find(positions, i) == positions.end() )
+                params.push_back(tup->value()[i]);
+        }
+
+        auto* ntuple = builder()->expressionCtor(builder()->ctorTuple(params));
+        if ( is_method )
+            replaceNode(call->op2(), ntuple, "removing unused arguments from method call");
+        else
+            replaceNode(call->op1(), ntuple, "removing unused arguments from call");
+    }
+
+    void pruneFromUses(const ID& function_id, const Operator* op) {
+        auto unused = fn_unused_params.at(function_id);
+        if ( unused.removed_uses || unused.unused_params.empty() || ! op )
+            return;
+
+        const auto* uses_of_op = uses(op);
+
+        if ( ! uses_of_op )
+            return;
+
+        for ( auto* use : *uses_of_op ) {
+            if ( ! use )
+                continue;
+            removeArgs(use, unused.unused_params);
+        }
+
+        unused.removed_uses = true;
+    }
+
+    void pruneFromDecl(const ID& function_id, type::Function* ftype) {
+        auto unused = fn_unused_params.at(function_id);
+        if ( unused.unused_params.empty() )
+            return;
+
+        auto params = ftype->parameters();
+
+        // Ensure they're sorted in descending order so we remove from the back.
+        std::ranges::sort(unused.unused_params, std::greater<>());
+        for ( std::size_t index : unused.unused_params ) {
+            assert(index < params.size());
+            params.erase(params.begin() + static_cast<std::ptrdiff_t>(index));
+        }
+
+        recordChange(ftype, "removing unused function parameters");
+        ftype->setParameters(builder()->context(), params);
+    }
+
+    /**
+     * Determines if the uses of this operator contain any side effects.
+     * Currently, this means a function call that contains another function
+     * call as an argument.
+     */
+    bool usesContainSideEffects(const Operator* op) {
+        const auto* uses_of_op = uses(op);
+        if ( ! uses_of_op )
+            return false;
+
+        for ( auto* use : *uses_of_op ) {
+            if ( ! use->isA<operator_::function::Call>() && ! use->isA<operator_::struct_::MemberCall>() )
+                continue;
+
+            bool is_method = use->isA<operator_::struct_::MemberCall>();
+
+            // Get the params as a tuple
+            auto* ctor = is_method ? use->op2()->tryAs<expression::Ctor>() : use->op1()->tryAs<expression::Ctor>();
+            if ( ! ctor )
+                continue;
+
+            auto* tup = ctor->ctor()->tryAs<ctor::Tuple>();
+            if ( ! tup )
+                continue;
+
+            for ( auto* arg : tup->value() ) {
+                if ( arg->isA<operator_::function::Call>() )
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    void operator()(declaration::Function* n) final {
+        auto function_id = n->functionID(context());
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params.contains(function_id) )
+                    return;
+
+                // Create the unused params
+                auto& unused = fn_unused_params[function_id];
+
+                if ( n->linkage() == declaration::Linkage::Public )
+                    return;
+
+                auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
+                // Don't set if there's no body or multiple implementations
+                if ( ! n->function()->body() ||
+                     (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) )
+                    return;
+
+                // Don't set if a use may have side effects
+                if ( usesContainSideEffects(n->operator_()) )
+                    return;
+
+                for ( std::size_t i = 0; i < n->function()->ftype()->parameters().size(); i++ )
+                    unused.unused_params.push_back(i);
+
+                break;
+            }
+
+            case Stage::PRUNE_USES: {
+                pruneFromUses(function_id, n->operator_());
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                pruneFromDecl(function_id, n->function()->ftype());
+                break;
+            }
+        }
+    }
+
+    void operator()(declaration::Field* n) final {
+        auto* ftype = n->type()->type()->tryAs<type::Function>();
+        if ( ! ftype || ! n->parent()->isA<type::Struct>() )
+            return;
+
+        const auto& function_id = n->fullyQualifiedID();
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( fn_unused_params.contains(function_id) )
+                    return;
+
+                // Create the unused params
+                auto& unused = fn_unused_params[function_id];
+
+                if ( n->attributes()->has(hilti::attribute::kind::Cxxname) ||
+                     n->attributes()->has(hilti::attribute::kind::AlwaysEmit) ||
+                     n->attributes()->has(hilti::attribute::kind::Public) )
+                    return;
+
+                if ( n->linkage() == declaration::Linkage::Public )
+                    return;
+
+                // If the type is public, we cannot change its fields.
+                auto* type_ = n->parent<declaration::Type>();
+                if ( type_ && type_->linkage() == declaration::Linkage::Public )
+                    return;
+
+                // Don't set if a use may have side effects
+                if ( usesContainSideEffects(n->operator_()) )
+                    return;
+
+                for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
+                    unused.unused_params.push_back(i);
+
+                break;
+            }
+
+            case Stage::PRUNE_USES: {
+                pruneFromUses(function_id, n->operator_());
+                break;
+            }
+            case Stage::PRUNE_DECLS: {
+                pruneFromDecl(function_id, ftype);
+                break;
+            }
+        }
+    }
+
+    std::optional<std::tuple<type::Function*, ID>> enclosingFunction(Node* n) {
+        for ( auto* current = n->parent(); current; current = current->parent() ) {
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                return std::tuple(fn_decl->function()->ftype(), fn_decl->functionID(context()));
+            }
+            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
+                return std::tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
+            }
+        }
+
+        return {};
+    }
+
+    /** Removes the param_id as used within the function. */
+    void removeUsed(type::Function* ftype, const ID& function_id, const ID& param_id) {
+        auto& unused = fn_unused_params.at(function_id);
+
+        for ( auto it = unused.unused_params.begin(); it != unused.unused_params.end(); ++it ) {
+            auto param_num = *it;
+            assert(ftype->parameters().size() >= param_num);
+            if ( ftype->parameters()[param_num]->id() == param_id ) {
+                unused.unused_params.erase(it, std::next(it));
+                return;
+            }
+        }
+    }
+
+    void operator()(expression::Name* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+
+        auto [ftype, function_id] = *opt_enclosing_fn;
+
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto& unused = fn_unused_params.at(function_id);
+                if ( unused.unused_params.size() == 0 )
+                    return;
+
+                removeUsed(ftype, function_id, n->id());
+            }
+            case Stage::PRUNE_USES: return;
+            case Stage::PRUNE_DECLS: return;
+        }
+    }
+};
+
 void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
@@ -1577,22 +1876,32 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         v.transform(root);
     }
 
-    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder)> creators =
-        {{"constant_folding",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"functions",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"members",
-          [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer);
-          }},
-         {"types", [](Builder* builder) -> std::unique_ptr<OptimizerVisitor> {
-              return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer);
-          }}};
+    CollectUsesPass collect_uses{};
+    const auto& op_uses = collect_uses.collect(root);
+
+    const std::map<std::string, std::unique_ptr<OptimizerVisitor> (*)(Builder* builder, const OperatorUses* op_uses)>
+        creators = {
+            {"constant_folding",
+             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                 return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+             }},
+            {"functions",
+             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                 return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+             }},
+            {"members",
+             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                 return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+             }},
+            {"types",
+             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                 return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+             }},
+            {"remove_unused_params",
+             [](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                 return std::make_unique<FunctionParamVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+             }},
+        };
 
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {
@@ -1610,7 +1919,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         vs.reserve(passes->size());
         for ( const auto& pass : *passes )
             if ( creators.contains(pass) )
-                vs.push_back(creators.at(pass)(builder));
+                vs.push_back(creators.at(pass)(builder, &op_uses));
 
         for ( auto& v : vs ) {
             HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("processing AST, round=%d", round));

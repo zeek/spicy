@@ -1,3 +1,47 @@
+1.14.0-dev.160 | 2025-07-15 14:23:49 -0400
+
+  * Avoid changing `parseX` function signatures. (Evan Typanski, Corelight)
+
+    These may get removed, but should not be changed because the runtime
+    library relies on their signatures. Therefore, a new attribute was
+    added.
+
+  * Refactor getting a function's ID to the decl. (Evan Typanski, Corelight)
+
+    The ID associated with the function includes the module that the decl is
+    in, so in order to get the proper ID it needs the prototype's module.
+    This was used in a few places, so it seems like a good helper in the
+    decl or the context.
+
+  * Don't remove params with side effects. (Evan Typanski, Corelight)
+
+  * GH-2030: Remove unused function parameters. (Evan Typanski, Corelight)
+
+    Closes #2030
+
+    This uses the new operator uses in order to remove function parameters.
+    Technically this can be done within the visitor, but it sets up to not
+    require visiting all expressions when pruning decls and uses. It's also
+    conceptually simpler (to me).
+
+    This will be particularly useful after a couple more optimizations,
+    where parse functions won't need nearly as many arguments if they're
+    only used in returns (and simply passed through without ever using
+    them). This is a relatively common pattern, enough so that this should
+    decrease the overhead of large numbers of small units substantially when
+    combined with future optimizations.
+
+  * GH-2029: Track HILTI operator uses. (Evan Typanski, Corelight)
+
+    Closes #2029
+
+    This does not provide much rewriting infrastructure yet, but the rest
+    can be handled with helpers as needed. One use would be provide a
+    function which writes something before or after a given call (which may
+    be in a block). This would be necessary if we remove parameters that may
+    have side effects in the future. It's also necessary later when changing
+    return types and values of functions. But, for now, it is not.
+
 1.14.0-dev.154 | 2025-07-15 14:18:28 +0200
 
   * Clean up temporary JIT output files. (Robin Sommer, Corelight)
