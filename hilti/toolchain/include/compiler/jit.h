@@ -191,9 +191,11 @@ private:
     std::vector<hilti::rt::filesystem::path> _objects;
 
     struct Job {
+        ~Job();
+
         std::string cmdline;
         std::unique_ptr<reproc::process> process;
-        hilti::rt::filesystem::path output; // path to file capturing process output
+        hilti::rt::filesystem::path output; // path to file capturing process output; file will be deleted by destructor
     };
 
     struct JobRunner {

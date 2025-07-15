@@ -249,6 +249,8 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
     return Nothing();
 }
 
+JIT::Job::~Job() { hilti::rt::filesystem::remove(output); }
+
 void JIT::JobRunner::finish() {
     for ( auto&& [id, job] : jobs ) {
         auto [status, ec] = job.process->stop(reproc::stop_actions{
