@@ -16,4 +16,7 @@ function void Foo::test() {
     __error = (*self).__error;
 }
 
+global Foo foo = [$__error=0];
+foo.test();
+
 }

@@ -35,6 +35,7 @@
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statement.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/while.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/bool.h>
@@ -1043,14 +1044,15 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
     }
 
     void operator()(statement::Expression* n) final {
-        if ( ! has_cfg ) {
-            // Remove expression statements of the form `default<void>`.
-            if ( auto* ctor = n->expression()->tryAs<expression::Ctor>();
-                 ctor && ctor->ctor()->isA<ctor::Default>() && ctor->type()->type()->isA<type::Void>() ) {
-                recordChange(n, "removing default<void> statement");
-                n->parent()->removeChild(n);
-                return;
-            }
+        if ( has_cfg )
+            return;
+
+        // Remove expression statements of the form `default<void>`.
+        if ( auto* ctor = n->expression()->tryAs<expression::Ctor>();
+             ctor && ctor->ctor()->isA<ctor::Default>() && ctor->type()->type()->isA<type::Void>() ) {
+            recordChange(n, "removing default<void> statement");
+            n->parent()->removeChild(n);
+            return;
         }
 
         // Remove statement pairs of the form:
@@ -1906,6 +1908,71 @@ struct FunctionBodyVisitor : OptimizerVisitor {
 
     std::vector<Node*> unreachableStatements(const detail::cfg::CFG& cfg) const;
 
+    // Identify redundant value push/pop constructs.
+    //
+    // These show up in generated code in the form
+    //
+    //     (*self).__error = __error;  # push
+    //     __error = (*self).__error;  # pop
+    //
+    // which we cannot remove locally to a node since we assume that any write
+    // to a struct could be visible due to exceptions. In this particular case
+    // this should not be the case since nothing throws here, at least on the
+    // Spicy/HILTI side.
+    std::unordered_set<Node*> valuePushPop(const detail::cfg::CFG& cfg) const {
+        std::unordered_set<Node*> result;
+
+        for ( const auto& [id, push] : cfg.graph().nodes() ) {
+            // The push node is an assignment.
+            const auto* expr1 = push->tryAs<statement::Expression>();
+            if ( ! expr1 )
+                continue;
+
+            const auto* assign1 = expr1->expression()->tryAs<expression::Assign>();
+            if ( ! assign1 )
+                continue;
+
+            // The push node has exactly one outgoing edge to the pop node.
+            const auto& downstream = cfg.graph().neighborsDownstream(id);
+            if ( downstream.size() != 1 )
+                continue;
+
+            // The pop node has exactly one incoming edge, the push node.
+            auto pop_id = downstream.front();
+            if ( cfg.graph().neighborsUpstream(pop_id).size() != 1 )
+                continue;
+
+            const auto* pop = cfg.graph().getNode(pop_id);
+            if ( ! pop )
+                continue;
+
+            // The pop node is an assignment.
+            const auto* expr2 = (*pop)->tryAs<statement::Expression>();
+            if ( ! expr2 )
+                continue;
+
+            const auto* assign2 = expr2->expression()->tryAs<expression::Assign>();
+            if ( ! assign2 )
+                continue;
+
+            auto* source1 = assign1->source();
+            auto* target1 = assign1->target();
+            auto* source2 = assign2->source();
+            auto* target2 = assign2->target();
+            if ( ! (source1 && target1 && source2 && target2) )
+                continue;
+
+            // Push and pop node are identical, but with the LHS and RHS swapped.
+            // We compare nodes in their source code form (somewhat normalized).
+            if ( source1->print() == target2->print() && target1->print() == source2->print() ) {
+                result.insert(push.value());
+                result.insert(pop->value());
+            }
+        }
+
+        return result;
+    }
+
     bool prune_uses(Node* node) override {
         visitor::visit(*this, node);
         return isModified();
@@ -1952,7 +2019,16 @@ struct FunctionBodyVisitor : OptimizerVisitor {
             // edits not correctly changing the flow.
             auto cfg = detail::cfg::CFG(n);
 
-            for ( auto&& x : unreachableStatements(cfg) )
+            // Since value push/pop pattern depend on an exact order of
+            // statements treat them first. Not doing this could cause either
+            // of them to be removed below if e.g., a write was never used.
+            for ( auto* x : valuePushPop(cfg) )
+                modified |= remove_node(cfg, x, "removing unneeded error push/pop statements");
+
+            if ( modified )
+                break;
+
+            for ( auto* x : unreachableStatements(cfg) )
                 modified |= remove_node(cfg, x, "statement result unused");
 
             if ( modified )
