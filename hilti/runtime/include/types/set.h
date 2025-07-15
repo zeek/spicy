@@ -35,14 +35,14 @@ class Iterator {
 
     using Control = typename S::Control::Ref;
     Control _control;
-    typename S::V::iterator _iterator;
+    typename S::S::iterator _iterator;
 
 public:
-    using iterator_category = typename S::V::iterator::iterator_category;
-    using value_type = typename S::V::value_type;
-    using difference_type = typename S::V::difference_type;
-    using pointer = typename S::V::pointer;
-    using reference = typename S::V::reference;
+    using iterator_category = typename S::S::iterator::iterator_category;
+    using value_type = typename S::S::value_type;
+    using difference_type = typename S::S::difference_type;
+    using pointer = typename S::S::pointer;
+    using reference = typename S::S::reference;
 
     Iterator() = default;
 
@@ -80,7 +80,7 @@ public:
 protected:
     friend class Set<T>;
 
-    Iterator(typename S::V::iterator iterator, Control control)
+    Iterator(typename S::S::iterator iterator, Control control)
         : _control(std::move(control)), _iterator(std::move(iterator)) {}
 };
 
@@ -110,7 +110,7 @@ protected:
 template<typename T>
 class Set : protected std::set<T> {
 public:
-    using V = std::set<T>;
+    using S = std::set<T>;
 
     using Control = control::Block<Set<T>, InvalidIterator>;
     Control _control{this};
@@ -144,14 +144,14 @@ public:
     bool contains(const T& t) const { return this->count(t); }
 
     auto begin() const {
-        return iterator(static_cast<const V&>(*this).begin(), empty() ? typename Control::Ref() : _control);
+        return iterator(static_cast<const S&>(*this).begin(), empty() ? typename Control::Ref() : _control);
     }
 
     auto end() const {
-        return iterator(static_cast<const V&>(*this).end(), empty() ? typename Control::Ref() : _control);
+        return iterator(static_cast<const S&>(*this).end(), empty() ? typename Control::Ref() : _control);
     }
 
-    size_type size() const { return V::size(); }
+    size_type size() const { return S::size(); }
 
     /** Removes an element from the set.
      *
@@ -164,7 +164,7 @@ public:
         // Update control block to invalidate all iterators previously created from it.
         _control.Reset();
 
-        return static_cast<V&>(*this).erase(key);
+        return static_cast<S&>(*this).erase(key);
     }
 
     /** Erases all elements from the set.
@@ -175,7 +175,7 @@ public:
         // Update control block to invalidate all iterators previously created from it.
         _control.Reset();
 
-        return static_cast<V&>(*this).clear();
+        return static_cast<S&>(*this).clear();
     }
 
     /** Inserts value in the position as close as possible to hint.
@@ -185,19 +185,19 @@ public:
      * @return iterator pointing to the inserted element
      * */
     iterator insert(iterator hint, const T& value) {
-        auto it = V::insert(hint._iterator, value);
+        auto it = S::insert(hint._iterator, value);
         return iterator(it, _control);
     }
 
     std::pair<iterator, bool> insert(const T& value) {
-        auto [it, inserted] = V::insert(value);
+        auto [it, inserted] = S::insert(value);
         return {iterator(it, _control), inserted};
     }
 
     // Methods of `std::set`. These methods *must not* cause any iterator invalidation.
-    using V::empty;
+    using S::empty;
 
-    friend bool operator==(const Set& a, const Set& b) { return static_cast<const V&>(a) == static_cast<const V&>(b); }
+    friend bool operator==(const Set& a, const Set& b) { return static_cast<const S&>(a) == static_cast<const S&>(b); }
     friend bool operator!=(const Set& a, const Set& b) { return ! (a == b); }
 
     friend set::Iterator<T>;

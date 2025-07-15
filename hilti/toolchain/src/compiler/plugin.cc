@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
+
 #include <hilti/autogen/config.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/coercer.h>
@@ -18,7 +20,7 @@ PluginRegistry::PluginRegistry() = default; // Needed here to allow PluginRegist
 
 Result<std::reference_wrapper<const Plugin>> PluginRegistry::pluginForExtension(
     const hilti::rt::filesystem::path& ext) const {
-    auto p = std::find_if(_plugins.begin(), _plugins.end(), [&](auto& p) { return p.extension == ext; });
+    auto p = std::ranges::find_if(_plugins, [&](auto& p) { return p.extension == ext; });
     if ( p != _plugins.end() )
         return {*p};
 
@@ -29,7 +31,7 @@ const Plugin& PluginRegistry::hiltiPlugin() const {
     static const Plugin* hilti_plugin = nullptr;
 
     if ( ! hilti_plugin ) {
-        auto p = std::find_if(_plugins.begin(), _plugins.end(), [&](auto& p) { return p.component == "HILTI"; });
+        auto p = std::ranges::find_if(_plugins, [&](auto& p) { return p.component == "HILTI"; });
         if ( p == _plugins.end() )
             logger().fatalError("cannot retrieve HILTI plugin");
 
@@ -46,7 +48,7 @@ PluginRegistry& plugin::registry() {
 
 void PluginRegistry::register_(const Plugin& p) {
     _plugins.push_back(p);
-    std::sort(_plugins.begin(), _plugins.end(), [](const auto& x, const auto& y) { return x.order < y.order; });
+    std::ranges::sort(_plugins, [](const auto& x, const auto& y) { return x.order < y.order; });
 }
 
 // Always-on default plugin with HILTI functionality.

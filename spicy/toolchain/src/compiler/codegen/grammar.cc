@@ -97,7 +97,7 @@ void Grammar::_addProduction(Production* p) {
     if ( p->isA<production::Deferred>() )
         return;
 
-    if ( _prods.find(p->symbol()) != _prods.end() )
+    if ( _prods.contains(p->symbol()) )
         return;
 
     _prods.insert(std::make_pair(p->symbol(), p->follow()));
@@ -126,6 +126,7 @@ void Grammar::_simplify() {
 
         for ( const auto& p : hilti::util::setDifference(values, closure) ) {
             _prods.erase(p->symbol());
+            // NOLINTNEXTLINE(modernize-use-ranges)
             _nterms.erase(std::remove(_nterms.begin(), _nterms.end(), p->symbol()), _nterms.end());
             changed = true;
         }
@@ -139,7 +140,7 @@ void Grammar::_closureRecurse(production::Set* c, Production* p) {
         return;
     }
 
-    if ( p->symbol().empty() || c->find(p) != c->end() )
+    if ( p->symbol().empty() || c->contains(p) )
         return;
 
     c->insert(p);

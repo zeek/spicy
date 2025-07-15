@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <ostream>
+#include <ranges>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -243,9 +244,9 @@ public:
     /** Returns the node tag associated with the instance's class. */
     node::Tag nodeTag() const {
         // Get the last non-zero tag. The last element(s) may be unset
-        for ( auto it = _node_tags.rbegin(); it != _node_tags.rend(); it++ ) {
-            if ( *it != 0 )
-                return *it;
+        for ( auto _node_tag : std::ranges::reverse_view(_node_tags) ) {
+            if ( _node_tag != 0 )
+                return _node_tag;
         }
 
         return 0;
@@ -474,7 +475,7 @@ public:
         if ( ! n )
             return false;
 
-        if ( std::find(_children.begin(), _children.end(), n) != _children.end() )
+        if ( std::ranges::find(_children, n) != _children.end() )
             return true;
 
         if ( ! recurse )
@@ -496,7 +497,7 @@ public:
      * @return sibling of *n*, or null if *n* is the last child or not child at all
      **/
     Node* sibling(Node* n) const {
-        auto i = std::find(_children.begin(), _children.end(), n);
+        auto i = std::ranges::find(_children, n);
         if ( i == _children.end() )
             return nullptr;
 
@@ -556,7 +557,7 @@ public:
         if ( ! n )
             return;
 
-        if ( auto i = std::find(_children.begin(), _children.end(), n); i != _children.end() ) {
+        if ( auto i = std::ranges::find(_children, n); i != _children.end() ) {
             (*i)->_parent = nullptr;
             (*i)->release();
             _children.erase(i);
@@ -998,16 +999,7 @@ private:
         if ( end > begin )
             return end;
         else {
-            // Some versions of GCC diagnose a maybe uninitialized variable
-            // here. Since we just return an unset optional, this should not be
-            // possible. (pragmas copied from intrusive-ptr.h, where there's a
-            // similar issue.)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             return {};
-#pragma GCC diagnostic pop
         }
     }
 
@@ -1127,7 +1119,7 @@ private:
 class CycleDetector {
 public:
     void recordSeen(const Node* n) { _seen.insert(n); }
-    bool haveSeen(const Node* n) const { return _seen.find(n) != _seen.end(); }
+    bool haveSeen(const Node* n) const { return _seen.contains(n); }
     void clear() { _seen.clear(); }
 
 private:
@@ -1187,8 +1179,10 @@ inline Nodes flatten() { return Nodes(); }
  * Creates `Node` instances for objects all implementing the `Node`
  * interface.
  */
-template<typename T, typename... Ts, std::enable_if_t<(0 != sizeof...(Ts))>* = nullptr>
-Nodes flatten(T t, Ts... ts) {
+template<typename T, typename... Ts>
+Nodes flatten(T t, Ts... ts)
+    requires(0 != sizeof...(Ts))
+{
     return util::concat(std::move(flatten(std::move(t))), flatten(std::move(ts)...));
 }
 

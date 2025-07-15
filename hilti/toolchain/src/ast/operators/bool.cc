@@ -15,9 +15,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeBool()},
-            .op1 = {parameter::Kind::In, builder->typeBool()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Compares two boolean values.",
         };
@@ -32,9 +32,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeBool()},
-            .op1 = {parameter::Kind::In, builder->typeBool()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Compares two boolean values.",
         };
@@ -49,9 +49,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::BitAnd,
-            .op0 = {parameter::Kind::In, builder->typeBool()},
-            .op1 = {parameter::Kind::In, builder->typeBool()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Computes the bit-wise 'and' of the two boolean values.",
         };
@@ -66,9 +66,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::BitOr,
-            .op0 = {parameter::Kind::In, builder->typeBool()},
-            .op1 = {parameter::Kind::In, builder->typeBool()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Computes the bit-wise 'or' of the two boolean values.",
         };
@@ -83,9 +83,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::BitXor,
-            .op0 = {parameter::Kind::In, builder->typeBool()},
-            .op1 = {parameter::Kind::In, builder->typeBool()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Computes the bit-wise 'xor' of the two boolean values.",
         };

@@ -19,9 +19,9 @@ TEST_SUITE_BEGIN("util");
 
 enum class Foo { AAA, BBB, CCC };
 constexpr hilti::util::enum_::Value<Foo> values[] = {
-    {Foo::AAA, "aaa"},
-    {Foo::BBB, "bbb"},
-    {Foo::CCC, "ccc"},
+    {.value = Foo::AAA, .name = "aaa"},
+    {.value = Foo::BBB, .name = "bbb"},
+    {.value = Foo::CCC, .name = "ccc"},
 };
 
 constexpr static auto from_string(std::string_view s) { return hilti::util::enum_::from_string<Foo>(s, values); }

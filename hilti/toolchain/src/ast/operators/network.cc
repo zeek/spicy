@@ -15,9 +15,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeNetwork()},
-            .op1 = {parameter::Kind::In, builder->typeNetwork()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "network",
             .doc = "Compares two network values.",
         };
@@ -32,9 +32,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeNetwork()},
-            .op1 = {parameter::Kind::In, builder->typeNetwork()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "network",
             .doc = "Compares two network values.",
         };
@@ -49,9 +49,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::In,
-            .op0 = {parameter::Kind::In, builder->typeAddress()},
-            .op1 = {parameter::Kind::In, builder->typeNetwork()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeAddress()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "network",
             .doc = "Returns true if the address is part of the network range.",
         };
@@ -66,9 +66,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeNetwork()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
             .member = "family",
-            .result = {Constness::Const, builder->typeName("hilti::AddressFamily")},
+            .result = {.constness = Constness::Const, .type = builder->typeName("hilti::AddressFamily")},
             .ns = "network",
             .doc = R"(
 Returns the protocol family of the network, which can be IPv4 or IPv6.
@@ -85,9 +85,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeNetwork()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
             .member = "prefix",
-            .result = {Constness::Const, builder->typeAddress()},
+            .result = {.constness = Constness::Const, .type = builder->typeAddress()},
             .ns = "network",
             .doc = R"(
 Returns the network's prefix as a masked IP address.
@@ -104,9 +104,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeNetwork()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeNetwork()},
             .member = "length",
-            .result = {Constness::Const, builder->typeSignedInteger(64)},
+            .result = {.constness = Constness::Const, .type = builder->typeSignedInteger(64)},
             .ns = "network",
             .doc = R"(
 Returns the length of the network's prefix.

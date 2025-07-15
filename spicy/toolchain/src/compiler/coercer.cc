@@ -44,16 +44,9 @@ struct VisitorCtor : visitor::PreOrder {
             // We force the types to match for now, and let the HILTI struct
             // validator decide later if they are actually compatible.
 
-// Suppress GCC false positive around maybe uninitialized `Location::_file`.
-#if __GNUC__ >= 13
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
+            // Suppress GCC false positive around maybe uninitialized `Location::_file`.
             nc->setType(builder->context(),
                         builder->qualifiedType(builder->typeName(x->typeID()), hilti::Constness::Const));
-#if __GNUC__ >= 13
-#pragma GCC diagnostic pop
-#endif
 
             result = nc;
         }

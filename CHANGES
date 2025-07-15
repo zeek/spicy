@@ -1,3 +1,78 @@
+1.14.0-dev.152 | 2025-07-15 13:07:33 +0200
+
+  * Make parser constructor choice easier for C++20. (Evan Typanski, Corelight)
+
+    GCC 15 with C++20 was confused about its constructor when selecting for
+    templates, making it think that recursive types were not copy/move
+    constructible (thanks to the non-explicit constructor). Mark it as
+    explicit so that it's easier for the compiler to see the true way
+    forward.
+
+  * Fix uninitialized pointers causing segfault. (Evan Typanski, Corelight)
+
+    This was the cause of a segfault on opensuse15_6 (+more).
+
+  * Initialize all `Parser` members. (Benjamin Bannier, Corelight)
+
+  * Disable GCC warnings instead just making them non-fatal. (Benjamin Bannier, Corelight)
+
+    The previous approach was to make some noisy GCC warning non-fatal which
+    often triggered FPs. This meant that users could build with `-Werror`,
+    but they would still see the warnings.
+
+    With this patch we just completely disable these warning categories
+    since they are not actionable anyway.
+
+  * Bump to gcc-14 in opensuse-15.6 CI setup. (Benjamin Bannier, Corelight)
+
+  * Work around PathFind relying on presence of `BSD` preproc define. (Benjamin Bannier, Corelight)
+
+    It looks like with our switch to C++20 that macro is not present
+    anymore, but it seems that we can use `__FreeBSD__` to detect whether we
+    should set it.
+
+  * Silence GCC's `-Wmaybe-uninitialized` since it serves too many FPs. (Benjamin Bannier, Corelight)
+
+  * Add missing include. (Benjamin Bannier, Corelight)
+
+  * Silence FP from GCC. (Benjamin Bannier, Corelight)
+
+  * Remove EOL debian-11. (Benjamin Bannier, Corelight)
+
+  * Include cleanup. (Benjamin Bannier, Corelight)
+
+  * Switch from `linb::any` to `std::any`. (Benjamin Bannier, Corelight)
+
+    We introduced `linb::any` to work around the broken implementation of
+    `std::any` with the version of GCC shipping with debian-10. We have in
+    the meantime dropped support for debian-10, and also require a compiler
+    with support for C++20, so `std::any` should be well-supported.
+
+  * Switch from `ghc::filesystem` to `std::filesystem`. (Benjamin Bannier, Corelight)
+
+    Filesystem was added in C++17. Since we now require C++20 we can assume
+    that compilers support `std::filesystem` reasonably well.
+
+  * Fix modernize-loop-convert. (Benjamin Bannier, Corelight)
+
+  * Fix modernize-use-starts-ends-with. (Benjamin Bannier, Corelight)
+
+  * Fix readability-container-contains. (Benjamin Bannier, Corelight)
+
+  * Fix modernize-use-ranges. (Benjamin Bannier, Corelight)
+
+  * Fix modernize-use-integer-sign-comparison. (Benjamin Bannier, Corelight)
+
+  * Fix modernize-use-designated-initializers. (Benjamin Bannier, Corelight)
+
+  * Fix modernize-concat-nested-namespaces. (Benjamin Bannier, Corelight)
+
+  * Fix modernize-use-constraints. (Benjamin Bannier, Corelight)
+
+  * Rename `Set` member type alias. (Benjamin Bannier, Corelight)
+
+  * Switch compilation to C++20. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.128 | 2025-07-15 09:30:08 +0200
 
   * Bump hendrikmuhs/ccache-action (dependabot[bot])

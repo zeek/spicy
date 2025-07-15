@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <utf8proc/utf8proc.h>
 
+#ifdef __linux__
+#include <endian.h>
+#endif
+
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -381,7 +385,7 @@ std::string hilti::rt::replace(std::string s, std::string_view o, std::string_vi
     return s;
 }
 
-bool hilti::rt::startsWith(std::string_view s, std::string_view prefix) { return s.substr(0, prefix.size()) == prefix; }
+bool hilti::rt::startsWith(std::string_view s, std::string_view prefix) { return s.starts_with(prefix); }
 
 bool hilti::rt::endsWith(std::string_view s, std::string_view suffix) {
     if ( s.size() < suffix.size() )

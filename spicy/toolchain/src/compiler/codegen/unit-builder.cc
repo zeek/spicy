@@ -108,7 +108,7 @@ struct FieldBuilder : public visitor::PreOrder {
         for ( const auto&& [n, c] : hilti::util::enumerate(f->cases()) ) {
             for ( const auto& i : c->block()->items() ) {
                 if ( auto* f = i->tryAs<spicy::type::unit::item::Field>() ) {
-                    if ( seen.find(f->id()) != seen.end() )
+                    if ( seen.contains(f->id()) )
                         // Validator ensures two fields with the same name are equivalent.
                         continue;
 
@@ -429,7 +429,7 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
 
     // Only create `parse1` and `parse3` if the unit can be default constructed.
     const auto& parameters = unit->parameters();
-    if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p->default_(); }) ) {
+    if ( std::ranges::all_of(parameters, [](const auto& p) { return p->default_(); }) ) {
         parse1 = _pb.parseMethodExternalOverload1(*unit);
         parse3 = _pb.parseMethodExternalOverload3(*unit);
     }

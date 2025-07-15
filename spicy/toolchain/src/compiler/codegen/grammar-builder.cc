@@ -348,7 +348,7 @@ std::unique_ptr<Production> ProductionFactory::createProduction(Node* node) {
 hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
     assert(unit->canonicalID());
     auto id = unit->canonicalID();
-    if ( _grammars.find(id) != _grammars.end() )
+    if ( _grammars.contains(id) )
         return hilti::Nothing();
 
     Grammar g(id.str(), unit->location());
@@ -377,7 +377,7 @@ hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
 const Grammar* GrammarBuilder::grammar(const type::Unit& unit) {
     assert(unit.canonicalID());
     auto id = unit.canonicalID();
-    if ( _grammars.find(id) != _grammars.end() )
+    if ( _grammars.contains(id) )
         return &_grammars[id];
     else
         return nullptr;

@@ -439,7 +439,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                         // Not looking at operators of this priority right now.
                         continue;
 
-                    if ( priority == operator_::Priority::Low && kinds_resolved->count(c->kind()) )
+                    if ( priority == operator_::Priority::Low && kinds_resolved->contains(c->kind()) )
                         // Already have a higher priority match for this operator kind.
                         continue;
 

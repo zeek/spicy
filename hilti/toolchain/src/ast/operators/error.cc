@@ -18,9 +18,9 @@ public:
             .param0 =
                 {
                     .name = "msg",
-                    .type = {parameter::Kind::In, builder->typeString()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeString()},
                 },
-            .result = {Constness::Const, builder->typeError()},
+            .result = {.constness = Constness::Const, .type = builder->typeError()},
             .ns = "error",
             .doc = "Creates an error with the given message.",
             .skip_doc = true, // not available in Spicy source code
@@ -36,9 +36,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeError()},
-            .op1 = {parameter::Kind::In, builder->typeError()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeError()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeError()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "error",
             .doc = "Compares two error descriptions lexicographically.",
         };
@@ -53,9 +53,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeError()},
-            .op1 = {parameter::Kind::In, builder->typeError()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeError()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeError()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "error",
             .doc = "Compares two error descriptions lexicographically.",
         };
@@ -70,9 +70,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeError()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeError()},
             .member = "description",
-            .result = {Constness::Const, builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "error",
             .doc = "Retrieves the textual description associated with the error.",
         };

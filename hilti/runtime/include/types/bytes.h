@@ -646,11 +646,9 @@ inline std::ostream& operator<<(std::ostream& out, const Bytes& x) {
     return out;
 }
 
-namespace bytes {
-inline namespace literals {
+namespace bytes::inline literals {
 inline Bytes operator""_b(const char* str, size_t size) { return Bytes(Bytes::Base(str, size)); }
-} // namespace literals
-} // namespace bytes
+} // namespace bytes::inline literals
 
 template<>
 inline std::string detail::to_string_for_print<Bytes>(const Bytes& x) {

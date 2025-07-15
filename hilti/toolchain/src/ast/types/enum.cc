@@ -13,8 +13,8 @@ using namespace hilti;
 type::enum_::Label::~Label() {}
 
 void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
-    auto max = std::max_element(labels.begin(), labels.end(),
-                                [](const auto& l1, const auto& l2) { return l1->value() < l2->value(); });
+    auto max =
+        std::ranges::max_element(labels, [](const auto& l1, const auto& l2) { return l1->value() < l2->value(); });
     auto next_value = (max != labels.end() ? (*max)->value() + 1 : 0);
 
     auto* enum_type = QualifiedType::createExternal(ctx, as<type::Enum>(), Constness::Mutable);
@@ -59,8 +59,9 @@ type::enum_::Labels type::Enum::uniqueLabels() const {
 
     auto in = labels();
     enum_::Labels out;
-    std::copy(in.begin(), in.end(), std::back_inserter(out));
-    std::sort(out.begin(), out.end(), pred_gt);
+    std::ranges::copy(in, std::back_inserter(out));
+    std::ranges::sort(out, pred_gt);
+    // NOLINTNEXTLINE(modernize-use-ranges)
     out.erase(std::unique(out.begin(), out.end(), pred_eq), out.end());
     return out;
 }

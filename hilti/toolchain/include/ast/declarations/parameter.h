@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -12,7 +13,6 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/auto.h>
 #include <hilti/ast/types/unknown.h>
-
 
 namespace hilti::parameter {
 
@@ -26,10 +26,10 @@ enum class Kind {
 
 namespace detail {
 constexpr util::enum_::Value<Kind> Kinds[] = {
-    {Kind::Unknown, "unknown"},
-    {Kind::Copy, "copy"},
-    {Kind::In, "in"},
-    {Kind::InOut, "inout"},
+    {.value = Kind::Unknown, .name = "unknown"},
+    {.value = Kind::Copy, .name = "copy"},
+    {.value = Kind::In, .name = "in"},
+    {.value = Kind::InOut, .name = "inout"},
 };
 } // namespace detail
 
@@ -135,8 +135,7 @@ inline bool areEquivalent(Parameter* p1, Parameter* p2) {
 
 /** Returns true if two sets of parameters are equivalent, regardless of their ID. */
 inline bool areEquivalent(const node::Set<Parameter>& params1, const node::Set<Parameter>& params2) {
-    return std::equal(params1.begin(), params1.end(), params2.begin(), params2.end(),
-                      [](const auto& p1, const auto& p2) { return areEquivalent(p1, p2); });
+    return std::ranges::equal(params1, params2, [](const auto& p1, const auto& p2) { return areEquivalent(p1, p2); });
 }
 
 } // namespace hilti::declaration

@@ -55,7 +55,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DecrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Decrements the value, returning the old value.",
@@ -76,7 +76,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DecrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Increments the value, returning the new value.",
@@ -97,7 +97,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPostfix,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Increments the value, returning the old value.",
@@ -118,7 +118,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::IncrPrefix,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Increments the value, returning the new value.",
@@ -139,7 +139,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SignNeg,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Inverts the sign of the integer.",
@@ -162,8 +162,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Difference,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the difference between the two integers.",
@@ -190,8 +190,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DifferenceAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Decrements the first value by the second, assigning the new value.",
@@ -218,8 +218,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Division,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Divides the first integer by the second.",
@@ -246,8 +246,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DivisionAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Divides the first value by the second, assigning the new value.",
@@ -274,9 +274,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -298,9 +298,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Greater,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -322,9 +322,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::GreaterEqual,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -346,9 +346,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Lower,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -370,9 +370,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::LowerEqual,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -394,8 +394,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Modulo,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the modulus of the first integer divided by the second.",
@@ -422,8 +422,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Multiple,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Multiplies the first integer by the second.",
@@ -450,8 +450,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MultipleAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Multiplies the first value by the second, assigning the new value.",
@@ -478,8 +478,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Power,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the first integer raised to the power of the second.",
@@ -506,8 +506,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the sum of the integers.",
@@ -534,8 +534,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::InOut, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Increments the first integer by the second.",
@@ -562,9 +562,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
         };
@@ -585,7 +585,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Negate,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise negation of the integer.",
@@ -605,8 +605,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::BitAnd,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'and' of the two integers.",
@@ -632,8 +632,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::BitOr,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'or' of the two integers.",
@@ -659,8 +659,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::BitXor,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'xor' of the two integers.",
@@ -687,8 +687,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::ShiftLeft,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Shifts the integer to the left by the given number of bits.",
@@ -711,8 +711,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::ShiftRight,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Shifts the integer to the right by the given number of bits.",
@@ -734,9 +734,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(
                         builder->qualifiedType(builder->typeUnsignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
@@ -758,9 +758,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(
                         builder->qualifiedType(builder->typeSignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "int<*>",
             .ns = "unsigned_integer",
@@ -782,10 +782,10 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeReal(), Constness::Const))},
-            .result = {Constness::Const, builder->typeReal()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(builder->qualifiedType(builder->typeReal(), Constness::Const))},
+            .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "unsigned_integer",
             .doc = "Converts the value into a real, accepting any loss of information.",
         };
@@ -801,9 +801,10 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeEnum(type::Wildcard()), Constness::Const))},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(
+                        builder->qualifiedType(builder->typeEnum(type::Wildcard()), Constness::Const))},
             .result_doc = "enum<*>",
             .ns = "unsigned_integer",
             .doc =
@@ -826,10 +827,10 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeInterval(), Constness::Const))},
-            .result = {Constness::Const, builder->typeInterval()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(builder->qualifiedType(builder->typeInterval(), Constness::Const))},
+            .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
         };
@@ -844,10 +845,10 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeTime(), Constness::Const))},
-            .result = {Constness::Const, builder->typeTime()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(builder->qualifiedType(builder->typeTime(), Constness::Const))},
+            .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
         };
@@ -862,10 +863,10 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(builder->qualifiedType(builder->typeBool(), Constness::Const))},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(builder->qualifiedType(builder->typeBool(), Constness::Const))},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Converts the value to a boolean by comparing against zero",
         };
@@ -881,8 +882,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint8",
-            .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(8)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(8)},
             .ns = "unsigned_integer",
             .doc = "Creates a 8-bit unsigned integer value.",
         };
@@ -897,8 +898,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint16",
-            .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(16)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(16)},
             .ns = "unsigned_integer",
             .doc = "Creates a 16-bit unsigned integer value.",
         };
@@ -913,8 +914,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint32",
-            .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(32)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(32)},
             .ns = "unsigned_integer",
             .doc = "Creates a 32-bit unsigned integer value.",
         };
@@ -929,8 +930,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint64",
-            .param0 = {.type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "unsigned_integer",
             .doc = "Creates a 64-bit unsigned integer value.",
         };
@@ -945,8 +946,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint8",
-            .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(8)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(8)},
             .ns = "unsigned_integer",
             .doc = "Creates a 8-bit unsigned integer value.",
         };
@@ -961,8 +962,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint16",
-            .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(16)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(16)},
             .ns = "unsigned_integer",
             .doc = "Creates a 16-bit unsigned integer value.",
         };
@@ -977,8 +978,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint32",
-            .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(32)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(32)},
             .ns = "unsigned_integer",
             .doc = "Creates a 32-bit unsigned integer value.",
         };
@@ -993,8 +994,8 @@ public:
         return Signature{
             .kind = Kind::Call,
             .member = "uint64",
-            .param0 = {.type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())}},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .param0 = {.type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())}},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "unsigned_integer",
             .doc = "Creates a 64-bit unsigned integer value.",
         };

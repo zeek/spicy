@@ -53,12 +53,12 @@ enum class Level { Debug, Info, Warning, Error, FatalError, InternalError };
 
 namespace detail {
 constexpr util::enum_::Value<Level> Levels[] = {
-    {Level::Debug, "debug"},
-    {Level::Info, "info"},
-    {Level::Warning, "warning"},
-    {Level::Error, "error"},
-    {Level::FatalError, "fatal-error"},
-    {Level::InternalError, "internal-error"},
+    {.value = Level::Debug, .name = "debug"},
+    {.value = Level::Info, .name = "info"},
+    {.value = Level::Warning, .name = "warning"},
+    {.value = Level::Error, .name = "error"},
+    {.value = Level::FatalError, .name = "fatal-error"},
+    {.value = Level::InternalError, .name = "internal-error"},
 };
 } // namespace detail
 
@@ -189,7 +189,7 @@ public:
     void debugDisable(const logging::DebugStream& dbg) { _debug_streams.erase(dbg); }
     bool debugDisable(const std::string& dbg);
 
-    bool isEnabled(const logging::DebugStream& dbg) { return _debug_streams.find(dbg) != _debug_streams.end(); }
+    bool isEnabled(const logging::DebugStream& dbg) { return _debug_streams.contains(dbg); }
 
     void debugPushIndent(const logging::DebugStream& dbg) {
         if ( isEnabled(dbg) )

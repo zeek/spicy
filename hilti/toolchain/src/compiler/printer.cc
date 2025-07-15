@@ -1132,6 +1132,7 @@ void printer::print(std::ostream& out, Node* root, bool compact, bool user_visib
         auto data = buffer.str();
         data = util::trim(data);
         data = util::replace(data, "\n", " ");
+        // NOLINTNEXTLINE(modernize-use-ranges)
         data.erase(std::unique(data.begin(), data.end(), [](char a, char b) { return a == ' ' && b == ' '; }),
                    data.end());
         out << data;

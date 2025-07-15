@@ -49,7 +49,7 @@ public:
     // the known attributes created so far. Otherwise throws an `out_of_range`
     // exception.
     static Kind fromString(const std::string_view& s) {
-        if ( _known_attributes && _known_attributes->count(std::string(s)) > 0 )
+        if ( _known_attributes && _known_attributes->contains(std::string(s)) )
             return Kind(std::string(s));
         else
             throw std::out_of_range("unknown attribute kind: " + std::string(s));
@@ -64,7 +64,7 @@ private:
 
 /** Returns whether `kind` is in `kinds` */
 inline bool isOneOf(const Kind& kind, std::initializer_list<Kind> kinds) {
-    return std::find(kinds.begin(), kinds.end(), kind) != kinds.end();
+    return std::ranges::find(kinds, kind) != kinds.end();
 }
 
 inline auto to_string(const Kind& kind) { return std::string(kind); }

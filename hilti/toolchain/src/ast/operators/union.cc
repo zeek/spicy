@@ -33,9 +33,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnion(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnion(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "union_",
             .doc = "Compares two unions element-wise.",
         };
@@ -55,9 +55,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeUnion(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnion(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnion(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "union_",
             .doc = "Compares two unions element-wise.",
         };
@@ -78,8 +78,8 @@ public:
         return Signature{
             .kind = Kind::Member,
             .priority = Priority::Low, // prefer the non-const version
-            .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard()), "<union>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnion(type::Wildcard()), .doc = "<union>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "union_",
             .doc =
@@ -105,8 +105,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Member,
-            .op0 = {parameter::Kind::InOut, builder->typeUnion(type::Wildcard()), "<union>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeUnion(type::Wildcard()), .doc = "<union>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "union_",
             .doc = R"(
@@ -131,9 +131,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::HasMember,
-            .op0 = {parameter::Kind::In, builder->typeUnion(type::Wildcard()), "<union>"},
-            .op1 = {parameter::Kind::In, builder->typeMember(type::Wildcard()), "<field>"},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeUnion(type::Wildcard()), .doc = "<union>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<field>"},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "union_",
             .doc = "Returns true if the union's field is set.",
         };

@@ -24,10 +24,11 @@ enum class Linkage {
 };
 
 namespace detail {
-constexpr util::enum_::Value<Linkage> Linkages[] = {
-    {Linkage::Struct, "struct"}, {Linkage::Public, "public"},   {Linkage::Private, "private"},
-    {Linkage::Init, "init"},     {Linkage::PreInit, "preinit"},
-};
+constexpr util::enum_::Value<Linkage> Linkages[] = {{.value = Linkage::Struct, .name = "struct"},
+                                                    {.value = Linkage::Public, .name = "public"},
+                                                    {.value = Linkage::Private, .name = "private"},
+                                                    {.value = Linkage::Init, .name = "init"},
+                                                    {.value = Linkage::PreInit, .name = "preinit"}};
 } // namespace detail
 
 /** Returns the HILTI string representation corresponding to a linkage. */

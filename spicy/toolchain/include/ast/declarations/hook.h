@@ -47,9 +47,9 @@ enum class Type {
 
 namespace detail {
 constexpr hilti::util::enum_::Value<Type> Types[] = {
-    {Type::Standard, "standard"},
-    {Type::ForEach, "foreach"},
-    {Type::Error, "error"},
+    {.value = Type::Standard, .name = "standard"},
+    {.value = Type::ForEach, .name = "foreach"},
+    {.value = Type::Error, .name = "error"},
 };
 
 } // namespace detail

@@ -1056,8 +1056,8 @@ struct ProductionVisitor : public production::Visitor {
         // Collect all expected terminals.
         auto regexps = std::vector<Production*>();
         auto other = std::vector<Production*>();
-        std::partition_copy(tokens.begin(), tokens.end(), std::back_inserter(regexps), std::back_inserter(other),
-                            [](auto& p) { return p->type()->type()->template isA<hilti::type::RegExp>(); });
+        std::ranges::partition_copy(tokens, std::back_inserter(regexps), std::back_inserter(other),
+                                    [](auto& p) { return p->type()->type()->template isA<hilti::type::RegExp>(); });
 
         auto parse = [&]() {
             bool first_token = true;
@@ -2271,7 +2271,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
         const auto& parameters = t->parameters();
         // Only create `parse1` and `parse3` body if the unit can be default constructed.
-        if ( std::all_of(parameters.begin(), parameters.end(), [](const auto& p) { return p->default_(); }) ) {
+        if ( std::ranges::all_of(parameters, [](const auto& p) { return p->default_(); }) ) {
             // Create parse1() body.
             pushBuilder();
             builder()->setLocation(grammar->root()->location());
@@ -2708,7 +2708,7 @@ hilti::Attributes ParserBuilder::removeGenericParseAttributes(hilti::AttributeSe
 
     hilti::Attributes filtered;
     for ( auto* a : attrs->attributes() ) {
-        if ( ! generic_attributes.count(a->kind()) )
+        if ( ! generic_attributes.contains(a->kind()) )
             filtered.emplace_back(a);
     }
 

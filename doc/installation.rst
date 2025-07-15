@@ -81,11 +81,6 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-rpm:`RPM <docker_centos_stream_9>`
       - :repo:`Dockerfile <docker/Dockerfile.centos-stream-9>`
 
-    * - Debian 11
-      - :package-release-deb:`DEB <linux_debian11>`
-      - :package-dev-deb:`DEB <docker_debian11>`
-      - :repo:`Dockerfile <docker/Dockerfile.debian-11>`
-
     * - Debian 12
       - :package-release-deb:`DEB <linux_debian12>`
       - :package-dev-deb:`DEB <docker_debian12>`
@@ -202,7 +197,7 @@ To build Spicy from source, you will need:
 
     - For compiling the toolchain:
 
-        * A C++ compiler that supports C++17 (known to work are Clang >= 9 and GCC >= 9)
+        * A C++ compiler that supports C++20 (known to work are Clang >= 9 and GCC >= 9)
         * `CMake <https://cmake.org>`_  >= 3.15
         * `Bison <https://www.gnu.org/software/bison>`_  >= 3.0
         * `Flex <https://www.gnu.org/software/flex>`_  >= 2.6

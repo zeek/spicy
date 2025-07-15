@@ -37,8 +37,10 @@ constexpr auto has_hook_to_string_helper(int) -> decltype(std::declval<T>().__ho
 template<typename T>
 using has_hook_to_string = decltype(has_hook_to_string_helper<T>(0));
 
-template<typename T, typename std::enable_if_t<std::is_base_of_v<trait::isStruct, T>>* = nullptr>
-inline std::string to_string(const T& x, adl::tag /*unused*/) {
+template<typename T>
+inline std::string to_string(const T& x, adl::tag /*unused*/)
+    requires(std::is_base_of_v<trait::isStruct, T>)
+{
     if constexpr ( has_hook_to_string<T>() ) {
         if ( auto s = T(x).__hook_to_string() ) // copy because we need a non-const T
             return *s;

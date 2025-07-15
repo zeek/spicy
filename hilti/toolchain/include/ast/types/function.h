@@ -31,9 +31,9 @@ enum class Flavor {
 
 namespace detail {
 constexpr util::enum_::Value<Flavor> Flavors[] = {
-    {Flavor::Hook, "hook"},
-    {Flavor::Method, "method"},
-    {Flavor::Function, "function"},
+    {.value = Flavor::Hook, .name = "hook"},
+    {.value = Flavor::Method, .name = "method"},
+    {.value = Flavor::Function, .name = "function"},
 };
 } // namespace detail
 
@@ -52,11 +52,11 @@ enum class CallingConvention {
 
 namespace detail {
 constexpr util::enum_::Value<CallingConvention> Conventions[] = {
-    {CallingConvention::Extern, "extern"},
-    {CallingConvention::ExternNoSuspend, "extern-no-suspend"},
-    {CallingConvention::Standard, "<standard>"},
+    {.value = CallingConvention::Extern, .name = "extern"},
+    {.value = CallingConvention::ExternNoSuspend, .name = "extern-no-suspend"},
+    {.value = CallingConvention::Standard, .name = "<standard>"},
 };
-} // namespace detail
+}
 
 constexpr auto to_string(CallingConvention cc) { return util::enum_::to_string(cc, detail::Conventions); }
 

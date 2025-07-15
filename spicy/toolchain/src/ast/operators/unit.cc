@@ -53,9 +53,13 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::Unset,
-            .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "unit"},
-            .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
-            .result = {hilti::Constness::Const, builder.typeVoid()},
+            .op0 = {.kind = hilti::parameter::Kind::InOut,
+                    .type = builder.typeUnit(hilti::type::Wildcard()),
+                    .doc = "unit"},
+            .op1 = {.kind = hilti::parameter::Kind::In,
+                    .type = builder.typeMember(hilti::type::Wildcard()),
+                    .doc = "<field>"},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "unit",
             .doc = "Clears an optional field.",
         };
@@ -73,8 +77,12 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::Member,
-            .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
-            .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
+            .op0 = {.kind = hilti::parameter::Kind::InOut,
+                    .type = builder.typeUnit(hilti::type::Wildcard()),
+                    .doc = "<unit>"},
+            .op1 = {.kind = hilti::parameter::Kind::In,
+                    .type = builder.typeMember(hilti::type::Wildcard()),
+                    .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "unit",
             .doc = R"(
@@ -102,8 +110,12 @@ public:
         return Signature{
             .kind = Kind::Member,
             .priority = Priority::Low, // prefer the non-const version
-            .op0 = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
-            .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
+            .op0 = {.kind = hilti::parameter::Kind::In,
+                    .type = builder.typeUnit(hilti::type::Wildcard()),
+                    .doc = "<unit>"},
+            .op1 = {.kind = hilti::parameter::Kind::In,
+                    .type = builder.typeMember(hilti::type::Wildcard()),
+                    .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "unit",
             .doc = R"(
@@ -130,8 +142,12 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::TryMember,
-            .op0 = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
-            .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
+            .op0 = {.kind = hilti::parameter::Kind::InOut,
+                    .type = builder.typeUnit(hilti::type::Wildcard()),
+                    .doc = "<unit>"},
+            .op1 = {.kind = hilti::parameter::Kind::In,
+                    .type = builder.typeMember(hilti::type::Wildcard()),
+                    .doc = "<field>"},
             .result_doc = "<field type>",
             .ns = "unit",
             .doc = R"(
@@ -161,9 +177,13 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::HasMember,
-            .op0 = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
-            .op1 = {hilti::parameter::Kind::In, builder.typeMember(hilti::type::Wildcard()), "<field>"},
-            .result = {hilti::Constness::Const, builder.typeBool()},
+            .op0 = {.kind = hilti::parameter::Kind::In,
+                    .type = builder.typeUnit(hilti::type::Wildcard()),
+                    .doc = "<unit>"},
+            .op1 = {.kind = hilti::parameter::Kind::In,
+                    .type = builder.typeMember(hilti::type::Wildcard()),
+                    .doc = "<field>"},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeBool()},
             .result_doc = "<field type>",
             .ns = "unit",
             .doc = R"(
@@ -184,9 +204,11 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::In,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "offset",
-            .result = {hilti::Constness::Const, builder.typeUnsignedInteger(64)},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeUnsignedInteger(64)},
             .ns = "unit",
             .doc = R"(
 Returns the offset of the current location in the input stream relative to the
@@ -206,9 +228,11 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::In,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "position",
-            .result = {hilti::Constness::Const, builder.typeStreamIterator()},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeStreamIterator()},
             .ns = "unit",
             .doc = R"(
 Returns an iterator to the current position in the unit's input stream. If
@@ -228,9 +252,11 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::In,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "input",
-            .result = {hilti::Constness::Const, builder.typeStreamIterator()},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeStreamIterator()},
             .ns = "unit",
             .doc = R"(
 Returns an iterator referring to the input location where the current unit has
@@ -251,10 +277,12 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::InOut,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "set_input",
-            .param0 = {.name = "i", .type = {hilti::parameter::Kind::In, builder.typeStreamIterator()}},
-            .result = {hilti::Constness::Const, builder.typeVoid()},
+            .param0 = {.name = "i", .type = {.kind = hilti::parameter::Kind::In, .type = builder.typeStreamIterator()}},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 Moves the current parsing position to *i*. The iterator *i* must be into the
@@ -273,23 +301,26 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::In,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "find",
-            .param0 = {.name = "needle", .type = {hilti::parameter::Kind::In, builder.typeBytes()}},
+            .param0 = {.name = "needle", .type = {.kind = hilti::parameter::Kind::In, .type = builder.typeBytes()}},
             .param1 =
                 {
                     .name = "dir",
-                    .type = {hilti::parameter::Kind::In, builder.typeName("spicy::Direction")},
+                    .type = {.kind = hilti::parameter::Kind::In, .type = builder.typeName("spicy::Direction")},
                     .optional = true,
                 },
             .param2 =
                 {
                     .name = "start",
-                    .type = {hilti::parameter::Kind::In, builder.typeStreamIterator()},
+                    .type = {.kind = hilti::parameter::Kind::In, .type = builder.typeStreamIterator()},
                     .optional = true,
                 },
-            .result = {hilti::Constness::Const, builder.typeOptional(builder.qualifiedType(builder.typeStreamIterator(),
-                                                                                           hilti::Constness::Const))},
+            .result = {.constness = hilti::Constness::Const,
+                       .type = builder.typeOptional(
+                           builder.qualifiedType(builder.typeStreamIterator(), hilti::Constness::Const))},
             .ns = "unit",
             .doc = R"(
 Searches a *needle* pattern inside the input region defined by where the unit
@@ -314,17 +345,19 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::InOut,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "connect_filter",
             .param0 =
                 {
                     .name = "filter",
-                    .type = {hilti::parameter::Kind::In,
-                             builder.typeStrongReference(
+                    .type = {.kind = hilti::parameter::Kind::In,
+                             .type = builder.typeStrongReference(
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
                                                        hilti::Constness::Mutable, hilti::Side::LHS))},
                 },
-            .result = {hilti::Constness::Const, builder.typeVoid()},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 Connects a separate filter unit to transform the unit's input transparently
@@ -347,14 +380,16 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::InOut,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "forward",
             .param0 =
                 {
                     .name = "data",
-                    .type = {hilti::parameter::Kind::In, builder.typeBytes()},
+                    .type = {.kind = hilti::parameter::Kind::In, .type = builder.typeBytes()},
                 },
-            .result = {hilti::Constness::Const, builder.typeVoid()},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 If the unit is connected as a filter to another one, this method forwards
@@ -374,9 +409,11 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::InOut,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "forward_eod",
-            .result = {hilti::Constness::Const, builder.typeVoid()},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 If the unit is connected as a filter to another one, this method signals that
@@ -396,9 +433,11 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::In,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "backtrack",
-            .result = {hilti::Constness::Const, builder.typeVoid()},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "unit",
             .doc = R"(
 Aborts parsing at the current position and returns back to the most recent
@@ -418,7 +457,9 @@ public:
         return Signature{
             .kind = Kind::MemberCall,
             .priority = Priority::Low, // prefer the non-const version
-            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::In,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "context",
             .result_doc = "<context type>&",
             .ns = "unit",
@@ -442,7 +483,9 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::InOut, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::InOut,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "context",
             .result_doc = "<context type>&",
             .ns = "unit",
@@ -466,9 +509,11 @@ public:
         auto builder = Builder(builder_);
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {hilti::parameter::Kind::In, builder.typeUnit(hilti::type::Wildcard()), "<unit>"},
+            .self = {.kind = hilti::parameter::Kind::In,
+                     .type = builder.typeUnit(hilti::type::Wildcard()),
+                     .doc = "<unit>"},
             .member = "stream",
-            .result = {hilti::Constness::Const, builder.typeStream()},
+            .result = {.constness = hilti::Constness::Const, .type = builder.typeStream()},
             .ns = "unit",
             .doc = R"(
 Returns the current input stream. This will return a valid value only while

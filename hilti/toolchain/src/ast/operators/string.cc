@@ -13,9 +13,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeString()},
-            .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "string",
             .doc = "Compares two strings lexicographically.",
         };
@@ -30,9 +30,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeString()},
-            .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "string",
             .doc = "Compares two strings lexicographically.",
         };
@@ -47,8 +47,8 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Size,
-            .op0 = {parameter::Kind::In, builder->typeString()},
-            .result = {Constness::Const, builder->typeUnsignedInteger(64)},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "string",
             .doc = "Returns the number of characters the string contains.",
         };
@@ -63,9 +63,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Sum,
-            .op0 = {parameter::Kind::In, builder->typeString()},
-            .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Constness::Const, builder->typeString()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "string",
             .doc = "Returns the concatenation of two strings.",
         };
@@ -80,9 +80,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {parameter::Kind::In, builder->typeString()},
-            .op1 = {parameter::Kind::In, builder->typeString()},
-            .result = {Constness::Const, builder->typeString()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "string",
             .doc = "Appends the second string to the first.",
         };
@@ -96,9 +96,9 @@ class Modulo : public Operator {
 public:
     Signature signature(Builder* builder) const final {
         return Signature{.kind = Kind::Modulo,
-                         .op0 = {parameter::Kind::In, builder->typeString()},
-                         .op1 = {parameter::Kind::In, builder->typeAny()},
-                         .result = {Constness::Const, builder->typeString()},
+                         .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+                         .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
+                         .result = {.constness = Constness::Const, .type = builder->typeString()},
                          .ns = "string",
                          .doc = "Renders a printf-style format string."};
     }
@@ -111,15 +111,16 @@ class Encode : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {
         return Signature{.kind = Kind::MemberCall,
-                         .self = {parameter::Kind::In, builder->typeString()},
+                         .self = {.kind = parameter::Kind::In, .type = builder->typeString()},
                          .member = "encode",
                          .param0 = {.name = "charset",
-                                    .type = {parameter::Kind::In, builder->typeName("hilti::Charset")},
+                                    .type = {.kind = parameter::Kind::In, .type = builder->typeName("hilti::Charset")},
                                     .default_ = builder->expressionName("hilti::Charset::UTF8")},
                          .param1 = {.name = "errors",
-                                    .type = {parameter::Kind::In, builder->typeName("hilti::DecodeErrorStrategy")},
+                                    .type = {.kind = parameter::Kind::In,
+                                             .type = builder->typeName("hilti::DecodeErrorStrategy")},
                                     .default_ = builder->expressionName("hilti::DecodeErrorStrategy::REPLACE")},
-                         .result = {Constness::Const, builder->typeBytes()},
+                         .result = {.constness = Constness::Const, .type = builder->typeBytes()},
                          .ns = "string",
                          .doc =
                              "Converts the string into a binary representation encoded with the given character set."};
@@ -134,16 +135,16 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeString()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeString()},
             .member = "split",
             .param0 =
                 {
                     .name = "sep",
-                    .type = {parameter::Kind::In, builder->typeString()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeString()},
                     .optional = true,
                 },
-            .result = {Constness::Const,
-                       builder->typeVector(builder->qualifiedType(builder->typeString(), Constness::Mutable))},
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeVector(builder->qualifiedType(builder->typeString(), Constness::Mutable))},
             .ns = "string",
             .doc = R"(
 Splits the string value at each occurrence of *sep* and returns a vector
@@ -164,16 +165,16 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeString()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeString()},
             .member = "split1",
             .param0 =
                 {
                     .name = "sep",
-                    .type = {parameter::Kind::In, builder->typeString()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeString()},
                     .optional = true,
                 },
-            .result = {Constness::Const,
-                       builder->typeTuple(
+            .result = {.constness = Constness::Const,
+                       .type = builder->typeTuple(
                            QualifiedTypes{builder->qualifiedType(builder->typeString(), Constness::Const),
                                           builder->qualifiedType(builder->typeString(), Constness::Const)})},
             .ns = "string",
@@ -198,14 +199,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeString()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeString()},
             .member = "starts_with",
             .param0 =
                 {
                     .name = "prefix",
-                    .type = {parameter::Kind::In, builder->typeString()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeString()},
                 },
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "string",
             .doc = "Returns true if the string value starts with *prefix*.",
         };
@@ -220,14 +221,14 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeString()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeString()},
             .member = "ends_with",
             .param0 =
                 {
                     .name = "suffix",
-                    .type = {parameter::Kind::In, builder->typeString()},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeString()},
                 },
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "string",
             .doc = "Returns true if the string value ends with *suffix*.",
         };
@@ -242,9 +243,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeString()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeString()},
             .member = "lower",
-            .result = {Constness::Const, builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "string",
             .doc = "Returns a lower-case version of the string value.",
         };
@@ -259,9 +260,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeString()},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeString()},
             .member = "upper",
-            .result = {Constness::Const, builder->typeString()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "string",
             .doc = "Returns an upper-case version of the string value.",
         };

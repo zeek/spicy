@@ -16,9 +16,9 @@ operator_::Signature hilti::function::Call::signature(Builder* builder) const {
 
     return Signature{
         .kind = Kind::Call,
-        .op0 = {parameter::Kind::In, ftype}, // will be found through scope lookup, not by name matching
-        .op1 = {parameter::Kind::In, params},
-        .result = {result->isConstant() ? Constness::Const : Constness::Mutable, result->type()},
+        .op0 = {.kind = parameter::Kind::In, .type = ftype}, // will be found through scope lookup, not by name matching
+        .op1 = {.kind = parameter::Kind::In, .type = params},
+        .result = {.constness = result->isConstant() ? Constness::Const : Constness::Mutable, .type = result->type()},
         .skip_doc = true,
     };
 }

@@ -18,9 +18,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Equal,
-            .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeEnum(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeEnum(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
         };
@@ -40,9 +40,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Unequal,
-            .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .op1 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .result = {Constness::Const, builder->typeBool()},
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeEnum(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeEnum(type::Wildcard())},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
         };
@@ -62,9 +62,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeEnum(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(
                         builder->qualifiedType(builder->typeSignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "int",
             .ns = "enum_",
@@ -86,9 +86,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Cast,
-            .op0 = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
-            .op1 = {parameter::Kind::In,
-                    builder->typeType(
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeEnum(type::Wildcard())},
+            .op1 = {.kind = parameter::Kind::In,
+                    .type = builder->typeType(
                         builder->qualifiedType(builder->typeUnsignedInteger(type::Wildcard()), Constness::Const))},
             .result_doc = "uint",
             .ns = "enum_",
@@ -111,11 +111,11 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Call,
-            .self = {parameter::Kind::In, builder->ctorType(builder->typeEnum(type::Wildcard()))},
+            .self = {.kind = parameter::Kind::In, .type = builder->ctorType(builder->typeEnum(type::Wildcard()))},
             .param0 =
                 {
                     .name = "value",
-                    .type = {parameter::Kind::In, builder->typeSignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeSignedInteger(type::Wildcard())},
                 },
             .result_doc = "enum value",
             .ns = "enum_",
@@ -139,11 +139,11 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::Call,
-            .self = {parameter::Kind::In, builder->ctorType(builder->typeEnum(type::Wildcard()))},
+            .self = {.kind = parameter::Kind::In, .type = builder->ctorType(builder->typeEnum(type::Wildcard()))},
             .param0 =
                 {
                     .name = "value",
-                    .type = {parameter::Kind::In, builder->typeUnsignedInteger(type::Wildcard())},
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(type::Wildcard())},
                 },
             .result_doc = "enum value",
             .ns = "enum_",
@@ -169,9 +169,9 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {parameter::Kind::In, builder->typeEnum(type::Wildcard())},
+            .self = {.kind = parameter::Kind::In, .type = builder->typeEnum(type::Wildcard())},
             .member = "has_label",
-            .result = {Constness::Const, builder->typeBool()},
+            .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "enum_",
             .doc = R"(
 Returns *true* if the value of *op1* corresponds to a known enum label (other
