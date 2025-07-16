@@ -1,3 +1,21 @@
+1.13.2 | 2025-07-16 14:08:45 +0200
+
+  * Fix missing inline functions in enum prototypes. (Robin Sommer, Corelight)
+
+    Our prototype generation could miss function bodies for `inline`
+    functions.
+
+    (cherry picked from commit 7e3206444fb6f9594bfef3041df4ceae52f3efa1)
+
+  * Fix fiber abortion. (Robin Sommer, Corelight)
+
+    When aborting a fiber, we need to activate it once more, to then leave
+    it for good by raising an `AbortException. Problem was that that
+    exception ended up being caught by user code because it was derived
+    from `std::exception`. This change removes the base class so that the
+    exception is guaranteed to go back to the managing fiber code, where
+    we just ignore it.
+
 1.13.1 | 2025-05-14 14:22:16 +0200
 
   * GH-2057: Fix `bytes` iterator dereference operation. (Robin Sommer, Corelight)
