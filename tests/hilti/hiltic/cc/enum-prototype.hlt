@@ -1,0 +1,10 @@
+# @TEST-EXEC: spicyc -P "" %INPUT | grep 'to_string(__hlt::Test::E'  >output.h
+# @TEST-EXEC: btest-diff output.h
+#
+# @TEST-DOC: Check that C++ prototupes for an enum type include both declaration and implementation of the to_string() function (regression test)
+
+module Test {
+
+public type E = enum { AA, BB, CCC };
+
+}
