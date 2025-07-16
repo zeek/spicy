@@ -192,6 +192,9 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
                 if ( ! d.body )
                     return;
 
+                if ( prototypes_only && d.linkage != "inline" )
+                    return;
+
                 if ( include_all_implementations || d.id.sub(0, 2) == unit->cxxInternalNamespace() ||
                      d.id.sub(0, 2) == unit->cxxExternalNamespace() || d.linkage == "inline" )
                     f << separator() << d;
@@ -231,14 +234,13 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_im
 
     f.leaveNamespace();
 
-    if ( prototypes_only )
-        return;
+    if ( ! prototypes_only ) {
+        for ( const auto& s : _statements )
+            f.printString(s + "\n");
 
-    for ( const auto& s : _statements )
-        f.printString(s + "\n");
-
-    if ( _statements.size() )
-        f << separator();
+        if ( _statements.size() )
+            f << separator();
+    }
 
     for ( const auto& [id_, decl] : _declarations_by_id ) // iterate by ID to sort them alphabetically
         _emitDeclarations(decl, f, Phase::Implementations, prototypes_only, include_all_implementations);
