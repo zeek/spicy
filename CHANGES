@@ -1,3 +1,27 @@
+1.11.6 | 2025-07-16 13:21:33 +0200
+
+  * Fix fiber abortion. (Robin Sommer, Corelight)
+
+    When aborting a fiber, we need to activate it once more, to then leave
+    it for good by raising an `AbortException. Problem was that that
+    exception ended up being caught by user code because it was derived
+    from `std::exception`. This change removes the base class so that the
+    exception is guaranteed to go back to the managing fiber code, where
+    we just ignore it.
+
+    (cherry picked from commit 193c33577344780f4fb25dc860848c9e42e31e15)
+
+  * Prevent throwing naked exception when yielding from aborted fiber. (Benjamin Bannier, Corelight)
+
+    It is not clear to me why we did not throw a `RuntimeError` in the first
+    place, but in any case we did not provide a proper stringification which
+    would lead to a very cryptic error for this already obscure error
+    scenario.
+
+    With this patch we instead throw a Runtime error with some context.
+
+    (cherry picked from commit 647a3d94bf506ba5ca9f982722013c895bdfd617)
+
 1.11.5 | 2025-05-14 14:17:07 +0200
 
   * GH-2057: Fix `bytes` iterator dereference operation. (Robin Sommer, Corelight)
