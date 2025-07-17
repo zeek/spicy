@@ -129,8 +129,15 @@ std::string util::toupper(const std::string& s) {
 
 std::string util::rtrim(const std::string& s) {
     auto t = s;
-    t.erase(std::ranges::find_if(std::ranges::reverse_view(t), [](char c) { return ! std::isspace(c); }).base(),
-            t.end());
+
+    // We require `std::reverse_iterator::base` here which in e.g., gcc-10.2.1
+    // is not implemented for the range equivalent of the code
+    // (`borrowed_iterator_t` over a `reverse_view`). Stick to the non-ranges
+    // version for now.
+    // NOLINTNEXTLINE(modernize-use-ranges)
+    auto it = std::find_if(t.rbegin(), t.rend(), [](char c) { return ! std::isspace(c); });
+    t.erase(it.base(), t.end());
+
     return t;
 }
 
