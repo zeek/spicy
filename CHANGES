@@ -1,3 +1,15 @@
+1.14.0-dev.165 | 2025-07-18 11:04:51 +0200
+
+  * Bring back debian-11 CI. (Benjamin Bannier, Corelight)
+
+    I incorrectly removed this in 6a2d959d57a1ee503d53fe4c10d1ce50c6e5414a,
+    but it looks like it is actually not EOL live yet and we need to keep
+    supporting it.
+
+  * GH-2120: Add non-range workaround for gcc-10.2.1. (Benjamin Bannier, Corelight)
+
+    Closes #2120.
+
 1.14.0-dev.162 | 2025-07-16 14:03:49 +0200
 
   * Fix missing inline functions in enum prototypes. (Robin Sommer, Corelight)
