@@ -91,6 +91,10 @@ control the compilation process:
     ``HILTI_PRINT_SETTINGS``
         Set to see summary of compilation options.
 
+    ``HILTI_OPTIMIZER_ENABLE_CFG``
+        Set to `1` to enable experimental control-flow based optimizations.
+        This might break valid code.
+
 .. _spicy-driver:
 
 ``spicy-driver``

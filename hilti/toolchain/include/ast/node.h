@@ -358,7 +358,7 @@ public:
     std::string typename_() const { return _typename(); }
 
     /** Returns a globally unique numeric identifier for the node. */
-    uintptr_t identity() const { return reinterpret_cast<uintptr_t>(this); }
+    uint64_t identity() const { return _identity; }
 
     /** Returns the set of all children. */
     const auto& children() const { return _children; }
@@ -1051,6 +1051,9 @@ private:
 
     std::unique_ptr<Scope> _scope = nullptr; // scope associated with the node, or null if non (i.e., scope is empty)
     std::unique_ptr<std::vector<node::Error>> _errors; // errors associated with the node, or null if none
+
+    static uint64_t _instances;
+    uint64_t _identity = _instances++;
 };
 
 namespace node {
