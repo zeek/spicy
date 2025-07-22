@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/forward.h>
@@ -23,6 +22,7 @@ public:
     QualifiedType* valueType() const { return dereferencedType()->type()->as<type::Tuple>()->elements()[1]->type(); }
     QualifiedType* dereferencedType() const final { return child<QualifiedType>(0); }
 
+    bool isAliasingType() const final { return true; }
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
 

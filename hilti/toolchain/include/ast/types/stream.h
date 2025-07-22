@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/forward.h>
@@ -19,6 +18,7 @@ public:
     std::string_view typeClass() const final { return "iterator<stream>"; }
     QualifiedType* dereferencedType() const final { return child<QualifiedType>(0); }
 
+    bool isAliasingType() const final { return true; }
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
 
@@ -41,6 +41,7 @@ public:
 
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
+    bool isAliasingType() const final { return true; }
 
     QualifiedType* elementType() const final { return iteratorType()->type()->dereferencedType(); }
     QualifiedType* iteratorType() const final { return child<QualifiedType>(0); }
