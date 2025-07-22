@@ -1,5 +1,6 @@
-# @TEST-EXEC: hiltic -V -p %INPUT >opt.hlt
-# @TEST-EXEC: btest-diff opt.hlt
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic -V -p %INPUT -o output.hlt
+# @TEST-EXEC: FileCheck %INPUT < output.hlt
 #
 # @TEST-DOC: Test removal of redundant __error assignments.
 
@@ -10,10 +11,20 @@ type Foo = struct {
     int<64> __error; # name is internal, hence compiling with -V; type does not matter
 };
 
+# We expect the full body of this function to be removed:
+#
+# - error push/pop removed
+#
+# CHECK: function void Foo::test() {
+# CHECK: local int<64> __error;
+# CHECK-NEXT: }
 function void Foo::test() {
     local int<64> __error;
     (*self).__error = __error;
     __error = (*self).__error;
 }
+
+global Foo foo = [$__error=0];
+foo.test();
 
 }

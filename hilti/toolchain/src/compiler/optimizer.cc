@@ -18,6 +18,7 @@
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/grouping.h>
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
@@ -25,6 +26,7 @@
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/node.h>
+#include <hilti/ast/operators/reference.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statements/block.h>
 #include <hilti/ast/statements/while.h>
@@ -955,15 +957,27 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
         if ( ! lhs )
             return false;
 
-        auto* op0 = lhs->op0()->tryAs<operator_::value_reference::Deref>();
-        if ( ! op0 )
+        auto* op0 = lhs->op0();
+        operator_::value_reference::Deref* deref0 = nullptr;
+        while ( true ) {
+            if ( auto* x = op0->tryAs<operator_::value_reference::Deref>() ) {
+                deref0 = x;
+                break;
+            }
+            else if ( auto* x = op0->tryAs<expression::Grouping>() ) {
+                op0 = x->expression();
+                continue;
+            }
+
             return false;
+        }
+        assert(deref0);
 
         auto* op1 = lhs->op1()->tryAs<expression::Member>();
         if ( ! (op1 && op1->id() == "__error") )
             return false;
 
-        auto* self = op0->op0()->tryAs<expression::Name>();
+        auto* self = deref0->op0()->tryAs<expression::Name>();
         if ( ! (self && self->id() == "self") )
             return false;
 
@@ -988,15 +1002,27 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
         if ( ! rhs )
             return false;
 
-        auto* op0 = rhs->op0()->tryAs<operator_::value_reference::Deref>();
-        if ( ! op0 )
+        auto* op0 = rhs->op0();
+        operator_::value_reference::Deref* deref0 = nullptr;
+        while ( true ) {
+            if ( auto* x = op0->tryAs<operator_::value_reference::Deref>() ) {
+                deref0 = x;
+                break;
+            }
+            else if ( auto* x = op0->tryAs<expression::Grouping>() ) {
+                op0 = x->expression();
+                continue;
+            }
+
             return false;
+        }
+        assert(deref0);
 
         auto* op1 = rhs->op1()->tryAs<expression::Member>();
         if ( ! (op1 && op1->id() == "__error") )
             return false;
 
-        auto* self = op0->op0()->tryAs<expression::Name>();
+        auto* self = deref0->op0()->tryAs<expression::Name>();
         if ( ! (self && self->id() == "self") )
             return false;
 
