@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
@@ -24,6 +23,7 @@ public:
 
     std::string_view typeClass() const final { return "iterator<bytes>"; }
 
+    bool isAliasingType() const final { return true; }
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
 

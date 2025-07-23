@@ -1,3 +1,68 @@
+1.14.0-dev.182 | 2025-07-23 15:48:45 +0200
+
+  * Fix typo in NEWS. (Benjamin Bannier, Corelight)
+
+  * Drop unused swig dependency in CI setups. (Benjamin Bannier, Corelight)
+
+  * Add missing base class specifier. (Benjamin Bannier, Corelight)
+
+  * Fix stringification of `pack`. (Benjamin Bannier, Corelight)
+
+  * Fix HILTI printing of LogicalAnd. (Benjamin Bannier, Corelight)
+
+  * Reformat code for compiler and linker flags. (Benjamin Bannier, Corelight)
+
+  * Fix misformatted BTest test doc. (Benjamin Bannier, Corelight)
+
+  * Remove some dead statements. (Benjamin Bannier, Corelight)
+
+    This patch adds a component to compute control and data flow for
+    statements. We then use this component to detect "dead statements",
+    i.e., statements which are not seen by any other needed computations.
+
+    This control flow analysis is sensitive to other passes cleaning up code
+    and introduce an ordering dependency, e.g., the pass removing unused
+    statements might interfere with a pass recognizing certain code patterns
+    like `PeepholeOptimizer`'s removal of error push/pop constructs. For
+    that reason we need to run passes in some order which is implemented by
+    assigning phases to passes and running them in order; after each pass we
+    use the `PeepholeOptimizer` to clean up the simplified code.
+
+    Currently we handle two classes of dead statements:
+
+    - assignments which are override before being used
+    - unreachable code, e.g., due to preceding `return` or `throw`
+
+    While the latter is pretty straightforward, the former becomes tricky
+    due to exceptions. In Spicy pretty much any expression could throw, and
+    without fully modelling this control flow becomes practically
+    unmanageable. We work around this by ignore possibly throwing
+    expressions when constructing the control flow graph, but instead taking
+    into account whether the effect of a statement is actually visible. In
+    that framework to decide whether a write to a block-local declaration is
+    visible we can use regular data flow; for "globally visible data" on the
+    other hand we always need to consider each write potentially visible. We
+    need to treat globals, `inout` parameters and struct members as globally
+    visible.
+
+  * Add `UnqualifiedType::isAliasingType`. (Benjamin Bannier, Corelight)
+
+  * Fix Peephole optimizer to gracefully handle groupings. (Benjamin Bannier, Corelight)
+
+    This isn't really needed for code we generate, but without it it is
+    impossible to directly test this pass.
+
+  * Mark `hilti::util::detail::internalError` noreturn. (Benjamin Bannier, Corelight)
+
+  * Make `Node::identity` deterministic. (Benjamin Bannier, Corelight)
+
+  * Add class for working with directed graphs. (Benjamin Bannier, Corelight)
+
+  * Add side effects to some tests. (Benjamin Bannier, Corelight)
+
+    The statements we were using previously would get removed by dead code
+    removal.
+
 1.14.0-dev.167 | 2025-07-22 15:11:08 +0200
 
   * Bump 3rdparty/utf8proc from `571a3ca` to `20d192a` (dependabot[bot])

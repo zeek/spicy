@@ -274,6 +274,12 @@ public:
      */
     virtual QualifiedType* viewType() const { return {}; }
 
+    /**
+     * Returns true if the data behind a value of this type could be aliased by
+     * another value.
+     */
+    virtual bool isAliasingType() const { return false; }
+
     /** Returns true for types that can be used to instantiate variables. */
     virtual bool isAllocable() const { return false; }
 

@@ -1,7 +1,7 @@
 # @TEST-EXEC: ${HILTIC} -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 #
-# @TEST0-DOC: Test using `::` to access a global variable.
+# @TEST-DOC: Test using `::` to access a global variable.
 
 module X {
 

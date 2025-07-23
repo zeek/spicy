@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <utility>
 
 #include <hilti/ast/type.h>
@@ -19,6 +18,7 @@ public:
 
     QualifiedType* dereferencedType() const final { return child<QualifiedType>(0); }
 
+    bool isAliasingType() const final { return true; }
     bool isAllocable() const final { return true; }
     bool isMutable() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }

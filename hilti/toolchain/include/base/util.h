@@ -31,7 +31,7 @@
 
 namespace hilti::util::detail {
 /** Helper that forwards to `Logger`. */
-void internalError(const std::string& s);
+[[noreturn]] void internalError(const std::string& s);
 } // namespace hilti::util::detail
 
 #undef TINYFORMAT_ERROR

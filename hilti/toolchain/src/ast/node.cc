@@ -20,6 +20,8 @@
 using namespace hilti;
 using namespace hilti::detail;
 
+uint64_t hilti::Node::_instances = 0;
+
 std::string node::to_string(const Tags& ti) {
     return util::join(util::transform(ti, [](auto i) { return std::to_string(i); }), ",");
 }

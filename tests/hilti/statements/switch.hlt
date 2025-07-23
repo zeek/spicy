@@ -34,7 +34,10 @@ function void f3() {
 }
 
 function void f4() {
-    switch ( 1 ) {} # will throw
+    # Will throw due to unhandled case.
+    switch ( 1 ) {
+        case 4711: hilti::print("unreachable case to prevent optimizing out the whole switch");
+    }
 }
 
 f1(1);

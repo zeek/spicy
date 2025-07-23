@@ -91,6 +91,21 @@ control the compilation process:
     ``HILTI_PRINT_SETTINGS``
         Set to see summary of compilation options.
 
+    ``HILTI_OPTIMIZER_ENABLE_CFG``
+        Set to `1` to enable experimental control-flow based optimizations.
+        These optimizations remove dead code both in user as well as in
+        Spicy-generated code, so enabling these optimizations can improve
+        runtime parser throughput as well as lead to faster faster C++
+        compilation.
+
+        Since this optimization does not have complete coverage of all possible
+        Spicy statements yet it might incorrectly classify statements as having
+        not visible side effects and remove them, thus breaking valid code. If
+        some source code behaves as expected with these passes enable on under
+        test it should however also work in general.
+
+        .. todo:: Always enable these passes once we have full coverage.
+
 .. _spicy-driver:
 
 ``spicy-driver``
