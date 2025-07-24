@@ -1,6 +1,6 @@
 # @TEST-EXEC: printf 'a' | spicy-driver -d %INPUT
 #
-# @TEST-DOC:
+# @TEST-DOC: Validate offset computation with input redirection.
 
 module Test;
 
