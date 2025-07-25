@@ -137,7 +137,7 @@ struct Transfer {
     std::unordered_map<Declaration*, std::unordered_set<GraphNode>> out;
 
     /** The previous nodes killed by this node. */
-    std::unordered_set<GraphNode> kill;
+    std::unordered_map<Declaration*, std::unordered_set<GraphNode>> kill;
 
     /** Set of declarations this node may alias. */
     std::unordered_set<Declaration*> maybe_alias;

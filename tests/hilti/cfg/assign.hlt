@@ -6,7 +6,22 @@ module foo {
 function uint<64> fn() {
     local auto x = 1;
     x = x + 1;
-    return x;
+}
+
+function uint<64> fn2() {
+    local auto x = 1;
+    local auto y = 1;
+
+    x = (x = 1);
+    x = (y = 1);
+    x = (x = (y = 1));
+
+    (x = 1) = x;
+    (y = 1) = x;
+    (x = (y = 1)) = x;
+
+    (x = 1) = (y = 1);
+    (y = 1) = (x = (y = 1));
 }
 
 }

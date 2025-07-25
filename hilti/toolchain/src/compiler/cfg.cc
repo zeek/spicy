@@ -8,6 +8,7 @@
 #include <iterator>
 #include <map>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -439,29 +440,26 @@ std::string CFG::dot() const {
                     return std::string();
             }();
 
-            auto kill = [&]() {
-                auto xs = util::transformToVector(transfer.kill, [&](const auto& stmt) {
-                    return util::fmt("%s", escape(stmt->print()));
-                });
-                std::ranges::sort(xs);
-                if ( ! xs.empty() )
-                    return util::fmt("kill: [%s]", util::join(xs, " "));
-                else
-                    return std::string();
+            auto to_str = [&](const auto& xs) {
+                std::vector<std::string> ys;
+                for ( const auto& [decl, stmts] : xs ) {
+                    std::vector<std::string> xs;
+                    for ( const auto& stmt : stmts )
+                        xs.push_back(escape(stmt->print()));
+                    ys.push_back(util::fmt("%s: %s", decl->id(), util::join(xs, ", ")));
+                }
+
+                std::ranges::sort(ys);
+                return util::join(ys, ", ");
+            };
+
+            auto kill = [&]() -> std::string {
+                if ( transfer.kill.empty() )
+                    return "";
+                return util::fmt("kill: [%s]", to_str(transfer.kill));
             }();
 
             auto in_out = [&]() -> std::string {
-                auto to_str = [&](const auto& xs) {
-                    std::vector<std::string> ys;
-                    for ( const auto& [_, stmts] : xs ) {
-                        for ( const auto& stmt : stmts )
-                            ys.push_back(escape(stmt->print()));
-                    }
-
-                    std::ranges::sort(ys);
-                    return util::join(ys, ", ");
-                };
-
                 return util::fmt("in: [%s] out: [%s]", to_str(transfer.in), to_str(transfer.out));
             }();
 
@@ -589,25 +587,34 @@ struct DataflowVisitor : visitor::PreOrder {
         if ( auto* assign = stmt->tryAs<expression::Assign>() ) {
             // Figure out which side of the assignment this name is on.
             std::set<Side> uses;
-            Node* x = name;
+
+            Node* node = name;
             do {
-                if ( x == assign->target() ) {
-                    uses.insert(Side::LHS);
-                    break;
-                }
+                if ( auto* assign_ = node->tryAs<expression::Assign>() ) {
+                    if ( _contains(*assign_->target(), *name) )
+                        uses.insert(Side::LHS);
 
-                if ( x == assign->source() ) {
-                    uses.insert(Side::RHS);
-                    break;
+                    if ( _contains(*assign_->source(), *name) )
+                        uses.insert(Side::RHS);
                 }
+                node = node->parent();
 
-                x = x->parent();
-            } while ( x && x != root.value() );
-            assert(! uses.empty());
+                // We either climb up to the original statement, or stop when
+                // we have found a use. A particular name can only appear on a
+                // single side of an assignment (if the same identifier appears
+                // elsewhere it would be a different name instance), so
+                // stopping once we have the first use extracts the desired
+                // information, e.g., `x = (x = 1)` only ever writes to `x`,
+                // but does not read it, even though `x` also appears on the
+                // RHS.
+            } while ( node && node != root.value() && uses.empty() );
 
             for ( auto side : uses )
                 switch ( side ) {
-                    case Side::RHS: transfer.read.insert(decl); break;
+                    case Side::RHS: {
+                        transfer.read.insert(decl);
+                        break;
+                    }
                     case Side::LHS: {
                         transfer.write.insert(decl);
 
@@ -844,8 +851,11 @@ void CFG::_populateDataflow() {
                 if ( auto it = transfer.in.find(decl); it != transfer.in.end() ) {
                     const auto& [_, prev] = *it;
 
+                    changed |= ! transfer.kill.contains(decl);
+                    auto& kill = transfer.kill[decl];
+
                     for ( const auto& p : prev ) {
-                        auto [_, inserted] = transfer.kill.insert(p);
+                        auto [_, inserted] = kill.insert(p);
                         changed |= inserted;
                     }
                 }
@@ -855,8 +865,11 @@ void CFG::_populateDataflow() {
             if ( const auto* scope_end = n->tryAs<End>() ) {
                 for ( auto& [decl, stmts] : transfer.in ) {
                     if ( _contains(*scope_end->scope, *decl) ) {
+                        changed |= ! transfer.kill.contains(decl);
+                        auto& kill = transfer.kill[decl];
+
                         for ( const auto& stmt : stmts ) {
-                            auto [_, inserted] = transfer.kill.insert(stmt);
+                            auto [_, inserted] = kill.insert(stmt);
                             changed |= inserted;
                         }
                     }
@@ -872,7 +885,7 @@ void CFG::_populateDataflow() {
             for ( const auto& [decl, stmt] : transfer.in ) {
                 // Add the incoming statements to the out set.
                 for ( const auto& in : stmt ) {
-                    if ( transfer.kill.contains(in) )
+                    if ( transfer.kill.contains(decl) && transfer.kill.at(decl).contains(in) )
                         continue;
 
                     // Make sure the entry exists.
