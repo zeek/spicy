@@ -589,25 +589,34 @@ struct DataflowVisitor : visitor::PreOrder {
         if ( auto* assign = stmt->tryAs<expression::Assign>() ) {
             // Figure out which side of the assignment this name is on.
             std::set<Side> uses;
-            Node* x = name;
+
+            Node* node = name;
             do {
-                if ( x == assign->target() ) {
-                    uses.insert(Side::LHS);
-                    break;
-                }
+                if ( auto* assign_ = node->tryAs<expression::Assign>() ) {
+                    if ( _contains(*assign_->target(), *name) )
+                        uses.insert(Side::LHS);
 
-                if ( x == assign->source() ) {
-                    uses.insert(Side::RHS);
-                    break;
+                    if ( _contains(*assign_->source(), *name) )
+                        uses.insert(Side::RHS);
                 }
+                node = node->parent();
 
-                x = x->parent();
-            } while ( x && x != root.value() );
-            assert(! uses.empty());
+                // We either climb up to the original statement, or stop when
+                // we have found a use. A particular name can only appear on a
+                // single side of an assignment (if the same identifier appears
+                // elsewhere it would be a different name instance), so
+                // stopping once we have the first use extracts the desired
+                // information, e.g., `x = (x = 1)` only ever writes to `x`,
+                // but does not read it, even though `x` also appears on the
+                // RHS.
+            } while ( node && node != root.value() && uses.empty() );
 
             for ( auto side : uses )
                 switch ( side ) {
-                    case Side::RHS: transfer.read.insert(decl); break;
+                    case Side::RHS: {
+                        transfer.read.insert(decl);
+                        break;
+                    }
                     case Side::LHS: {
                         transfer.write.insert(decl);
 
