@@ -8,6 +8,7 @@
 #include <iterator>
 #include <map>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -439,31 +440,26 @@ std::string CFG::dot() const {
                     return std::string();
             }();
 
-            auto kill = [&]() {
-                auto xs = util::transformToVector(transfer.kill, [&](const auto& stmt) {
-                    return util::fmt("%s", escape(stmt->print()));
-                });
-                std::ranges::sort(xs);
-                if ( ! xs.empty() )
-                    return util::fmt("kill: [%s]", util::join(xs, " "));
-                else
-                    return std::string();
+            auto to_str = [&](const auto& xs) {
+                std::vector<std::string> ys;
+                for ( const auto& [decl, stmts] : xs ) {
+                    std::vector<std::string> xs;
+                    for ( const auto& stmt : stmts )
+                        xs.push_back(escape(stmt->print()));
+                    ys.push_back(util::fmt("%s: %s", decl->id(), util::join(xs, ", ")));
+                }
+
+                std::ranges::sort(ys);
+                return util::join(ys, ", ");
+            };
+
+            auto kill = [&]() -> std::string {
+                if ( transfer.kill.empty() )
+                    return "";
+                return util::fmt("kill: [%s]", to_str(transfer.kill));
             }();
 
             auto in_out = [&]() -> std::string {
-                auto to_str = [&](const auto& xs) {
-                    std::vector<std::string> ys;
-                    for ( const auto& [decl, stmts] : xs ) {
-                        std::vector<std::string> xs;
-                        for ( const auto& stmt : stmts )
-                            xs.push_back(escape(stmt->print()));
-                        ys.push_back(util::fmt("%s: %s", decl->id(), util::join(xs, ", ")));
-                    }
-
-                    std::ranges::sort(ys);
-                    return util::join(ys, ", ");
-                };
-
                 return util::fmt("in: [%s] out: [%s]", to_str(transfer.in), to_str(transfer.out));
             }();
 
@@ -841,8 +837,11 @@ void CFG::_populateDataflow() {
                 if ( auto it = transfer.in.find(decl); it != transfer.in.end() ) {
                     const auto& [_, prev] = *it;
 
+                    changed |= ! transfer.kill.contains(decl);
+                    auto& kill = transfer.kill[decl];
+
                     for ( const auto& p : prev ) {
-                        auto [_, inserted] = transfer.kill.insert(p);
+                        auto [_, inserted] = kill.insert(p);
                         changed |= inserted;
                     }
                 }
@@ -852,8 +851,11 @@ void CFG::_populateDataflow() {
             if ( const auto* scope_end = n->tryAs<End>() ) {
                 for ( auto& [decl, stmts] : transfer.in ) {
                     if ( _contains(*scope_end->scope, *decl) ) {
+                        changed |= ! transfer.kill.contains(decl);
+                        auto& kill = transfer.kill[decl];
+
                         for ( const auto& stmt : stmts ) {
-                            auto [_, inserted] = transfer.kill.insert(stmt);
+                            auto [_, inserted] = kill.insert(stmt);
                             changed |= inserted;
                         }
                     }
@@ -869,7 +871,7 @@ void CFG::_populateDataflow() {
             for ( const auto& [decl, stmt] : transfer.in ) {
                 // Add the incoming statements to the out set.
                 for ( const auto& in : stmt ) {
-                    if ( transfer.kill.contains(in) )
+                    if ( transfer.kill.contains(decl) && transfer.kill.at(decl).contains(in) )
                         continue;
 
                     // Make sure the entry exists.

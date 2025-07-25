@@ -31,7 +31,7 @@ digraph {
     2 [label="1;" xlabel="in: [i: local uint<64> i = 0] out: [i: local uint<64> i = 0]"];
     3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     4 [label="end <...>/while.hlt:10:21-12:1" shape=triangle xlabel="in: [] out: []"];
-    5 [label="end <...>/while.hlt:10:21-12:1" shape=triangle xlabel="kill: [local uint<64> i = 0] in: [i: local uint<64> i = 0] out: []"];
+    5 [label="end <...>/while.hlt:10:21-12:1" shape=triangle xlabel="kill: [i: local uint<64> i = 0] in: [i: local uint<64> i = 0] out: []"];
     6 [label="end <...>/while.hlt:11:38-11:43" shape=triangle xlabel="in: [i: local uint<64> i = 0] out: [i: local uint<64> i = 0]"];
     7 [shape=point xlabel="in: [i: local uint<64> i = 0] out: [i: local uint<64> i = 0]"];
     3 -> 0 [label="0"];
