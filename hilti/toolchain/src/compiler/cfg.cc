@@ -453,9 +453,11 @@ std::string CFG::dot() const {
             auto in_out = [&]() -> std::string {
                 auto to_str = [&](const auto& xs) {
                     std::vector<std::string> ys;
-                    for ( const auto& [_, stmts] : xs ) {
+                    for ( const auto& [decl, stmts] : xs ) {
+                        std::vector<std::string> xs;
                         for ( const auto& stmt : stmts )
-                            ys.push_back(escape(stmt->print()));
+                            xs.push_back(escape(stmt->print()));
+                        ys.push_back(util::fmt("%s: %s", decl->id(), util::join(xs, ", ")));
                     }
 
                     std::ranges::sort(ys);

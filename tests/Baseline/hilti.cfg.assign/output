@@ -9,11 +9,11 @@ digraph {
 }
 [debug/cfg-initial] Function 'fn'
 digraph {
-    0 [label="local uint<64> x = 1;" xlabel="gen: [x: local uint<64> x = 1;] in: [] out: [local uint<64> x = 1;]"];
-    1 [label="x = x + 1;" xlabel="read: [x] write: [x] gen: [x: x = x + 1;] kill: [local uint<64> x = 1;] in: [local uint<64> x = 1;] out: [x = x + 1;]"];
-    2 [label="return x;" xlabel="read: [x] in: [x = x + 1;] out: [x = x + 1;] keep"];
+    0 [label="local uint<64> x = 1;" xlabel="gen: [x: local uint<64> x = 1;] in: [] out: [x: local uint<64> x = 1;]"];
+    1 [label="x = x + 1;" xlabel="read: [x] write: [x] gen: [x: x = x + 1;] kill: [local uint<64> x = 1;] in: [x: local uint<64> x = 1;] out: [x: x = x + 1;]"];
+    2 [label="return x;" xlabel="read: [x] in: [x: x = x + 1;] out: [x: x = x + 1;] keep"];
     3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    4 [label="end <...>/assign.hlt:6:24-10:1" shape=triangle xlabel="kill: [x = x + 1;] in: [x = x + 1;] out: []"];
+    4 [label="end <...>/assign.hlt:6:24-10:1" shape=triangle xlabel="kill: [x = x + 1;] in: [x: x = x + 1;] out: []"];
     3 -> 0 [label="0"];
     0 -> 1 [label="1"];
     1 -> 2 [label="2"];
@@ -21,19 +21,19 @@ digraph {
 }
 [debug/cfg-initial] Function 'fn2'
 digraph {
-    0 [label="local uint<64> x = 1;" xlabel="gen: [x: local uint<64> x = 1;] in: [] out: [local uint<64> x = 1;]"];
-    1 [label="local uint<64> y = 1;" xlabel="gen: [y: local uint<64> y = 1;] in: [local uint<64> x = 1;] out: [local uint<64> x = 1;, local uint<64> y = 1;]"];
-    2 [label="x = (x = 1);" xlabel="read: [x] write: [x] gen: [x: x = (x = 1);] kill: [local uint<64> x = 1;] in: [local uint<64> x = 1;, local uint<64> y = 1;] out: [local uint<64> y = 1;, x = (x = 1);]"];
-    3 [label="x = (y = 1);" xlabel="read: [y] write: [x, y] gen: [x: x = (y = 1);, y: x = (y = 1);] kill: [local uint<64> y = 1; x = (x = 1);] in: [local uint<64> y = 1;, x = (x = 1);] out: [x = (y = 1);, x = (y = 1);]"];
-    4 [label="x = (x = (y = 1));" xlabel="read: [x, y] write: [x, y] gen: [x: x = (x = (y = 1));, y: x = (x = (y = 1));] kill: [x = (y = 1);] in: [x = (y = 1);, x = (y = 1);] out: [x = (x = (y = 1));, x = (x = (y = 1));]"];
-    5 [label="(x = 1) = x;" xlabel="read: [x] write: [x] gen: [x: (x = 1) = x;] kill: [x = (x = (y = 1));] in: [x = (x = (y = 1));, x = (x = (y = 1));] out: [(x = 1) = x;]"];
-    6 [label="(y = 1) = x;" xlabel="read: [x] write: [y] gen: [y: (y = 1) = x;] in: [(x = 1) = x;] out: [(x = 1) = x;, (y = 1) = x;]"];
-    7 [label="(x = (y = 1)) = x;" xlabel="read: [x, y] write: [x, y] gen: [x: (x = (y = 1)) = x;, y: (x = (y = 1)) = x;] kill: [(x = 1) = x; (y = 1) = x;] in: [(x = 1) = x;, (y = 1) = x;] out: [(x = (y = 1)) = x;, (x = (y = 1)) = x;]"];
-    8 [label="(x = 1) = (y = 1);" xlabel="read: [y] write: [x, y] gen: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);] kill: [(x = (y = 1)) = x;] in: [(x = (y = 1)) = x;, (x = (y = 1)) = x;] out: [(x = 1) = (y = 1);, (x = 1) = (y = 1);]"];
-    9 [label="(y = 1) = (x = (y = 1));" xlabel="read: [x, y] write: [x, y] gen: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] kill: [(x = 1) = (y = 1);] in: [(x = 1) = (y = 1);, (x = 1) = (y = 1);] out: [(y = 1) = (x = (y = 1));, (y = 1) = (x = (y = 1));]"];
+    0 [label="local uint<64> x = 1;" xlabel="gen: [x: local uint<64> x = 1;] in: [] out: [x: local uint<64> x = 1;]"];
+    1 [label="local uint<64> y = 1;" xlabel="gen: [y: local uint<64> y = 1;] in: [x: local uint<64> x = 1;] out: [x: local uint<64> x = 1;, y: local uint<64> y = 1;]"];
+    2 [label="x = (x = 1);" xlabel="read: [x] write: [x] gen: [x: x = (x = 1);] kill: [local uint<64> x = 1;] in: [x: local uint<64> x = 1;, y: local uint<64> y = 1;] out: [x: x = (x = 1);, y: local uint<64> y = 1;]"];
+    3 [label="x = (y = 1);" xlabel="read: [y] write: [x, y] gen: [x: x = (y = 1);, y: x = (y = 1);] kill: [local uint<64> y = 1; x = (x = 1);] in: [x: x = (x = 1);, y: local uint<64> y = 1;] out: [x: x = (y = 1);, y: x = (y = 1);]"];
+    4 [label="x = (x = (y = 1));" xlabel="read: [x, y] write: [x, y] gen: [x: x = (x = (y = 1));, y: x = (x = (y = 1));] kill: [x = (y = 1);] in: [x: x = (y = 1);, y: x = (y = 1);] out: [x: x = (x = (y = 1));, y: x = (x = (y = 1));]"];
+    5 [label="(x = 1) = x;" xlabel="read: [x] write: [x] gen: [x: (x = 1) = x;] kill: [x = (x = (y = 1));] in: [x: x = (x = (y = 1));, y: x = (x = (y = 1));] out: [x: (x = 1) = x;]"];
+    6 [label="(y = 1) = x;" xlabel="read: [x] write: [y] gen: [y: (y = 1) = x;] in: [x: (x = 1) = x;] out: [x: (x = 1) = x;, y: (y = 1) = x;]"];
+    7 [label="(x = (y = 1)) = x;" xlabel="read: [x, y] write: [x, y] gen: [x: (x = (y = 1)) = x;, y: (x = (y = 1)) = x;] kill: [(x = 1) = x; (y = 1) = x;] in: [x: (x = 1) = x;, y: (y = 1) = x;] out: [x: (x = (y = 1)) = x;, y: (x = (y = 1)) = x;]"];
+    8 [label="(x = 1) = (y = 1);" xlabel="read: [y] write: [x, y] gen: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);] kill: [(x = (y = 1)) = x;] in: [x: (x = (y = 1)) = x;, y: (x = (y = 1)) = x;] out: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);]"];
+    9 [label="(y = 1) = (x = (y = 1));" xlabel="read: [x, y] write: [x, y] gen: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] kill: [(x = 1) = (y = 1);] in: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);] out: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));]"];
     10 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     11 [label="end <...>/assign.hlt:12:25-26:1" shape=triangle xlabel="in: [] out: []"];
-    12 [label="end <...>/assign.hlt:12:25-26:1" shape=triangle xlabel="kill: [(y = 1) = (x = (y = 1));] in: [(y = 1) = (x = (y = 1));, (y = 1) = (x = (y = 1));] out: []"];
+    12 [label="end <...>/assign.hlt:12:25-26:1" shape=triangle xlabel="kill: [(y = 1) = (x = (y = 1));] in: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] out: []"];
     10 -> 0 [label="0"];
     0 -> 1 [label="1"];
     1 -> 2 [label="2"];
@@ -49,11 +49,11 @@ digraph {
 }
 [debug/cfg-initial] Function 'fn3'
 digraph {
-    0 [label="local string x = \"bad\";" xlabel="gen: [x: local string x = \"bad\";] in: [] out: [local string x = \"bad\";]"];
-    1 [label="local string x2 = x = \"good\";" xlabel="write: [x] gen: [x2: local string x2 = x = \"good\";, x: local string x2 = x = \"good\";] kill: [local string x = \"bad\";] in: [local string x = \"bad\";] out: [local string x2 = x = \"good\";, local string x2 = x = \"good\";]"];
+    0 [label="local string x = \"bad\";" xlabel="gen: [x: local string x = \"bad\";] in: [] out: [x: local string x = \"bad\";]"];
+    1 [label="local string x2 = x = \"good\";" xlabel="write: [x] gen: [x2: local string x2 = x = \"good\";, x: local string x2 = x = \"good\";] kill: [local string x = \"bad\";] in: [x: local string x = \"bad\";] out: [x2: local string x2 = x = \"good\";, x: local string x2 = x = \"good\";]"];
     2 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     3 [label="end <...>/assign.hlt:29:21-32:1" shape=triangle xlabel="in: [] out: []"];
-    4 [label="end <...>/assign.hlt:29:21-32:1" shape=triangle xlabel="kill: [local string x2 = x = \"good\";] in: [local string x2 = x = \"good\";, local string x2 = x = \"good\";] out: []"];
+    4 [label="end <...>/assign.hlt:29:21-32:1" shape=triangle xlabel="kill: [local string x2 = x = \"good\";] in: [x2: local string x2 = x = \"good\";, x: local string x2 = x = \"good\";] out: []"];
     2 -> 0 [label="0"];
     0 -> 1 [label="1"];
     1 -> 4 [label="2"];
