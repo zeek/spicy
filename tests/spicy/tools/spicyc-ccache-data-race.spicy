@@ -4,11 +4,11 @@
 #
 # We expect exactly three files for this compilation (modules `a` and `foo` and linker script).
 # @TEST-EXEC: HILTI_CXX_COMPILER_LAUNCHER=$PWD/wrapper.sh spicyc -dj a.spicy
-# @TEST-EXEC test $(wc -l output) -eq 3
+# @TEST-EXEC: test $(cat output | wc -l) -eq 3
 #
 # We expect exactly three additional files for this compilation (modules `b` and `foo` and linker script).
 # @TEST-EXEC: HILTI_CXX_COMPILER_LAUNCHER=$PWD/wrapper.sh spicyc -dj b.spicy
-# @TEST-EXEC test $(wc -l output) -eq 6
+# @TEST-EXEC: test $(cat output | wc -l) -eq 6
 #
 # Each compiler invocation (and consequentially each compiled and created file should be unique).
 # @TEST-EXEC: test $(sort -u output | wc -l) -eq 6

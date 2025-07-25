@@ -1,7 +1,7 @@
 # @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03\x04\0x05' | spicy-driver %INPUT >output
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-EXED: Check that changing the input with `&parse-at` isn't visible to other attributes on same field; regression test for #1842.
+# @TEST-DOC: Check that changing the input with `&parse-at` isn't visible to other attributes on same field; regression test for #1842.
 
 module Test;
 

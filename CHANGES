@@ -1,3 +1,7 @@
+1.14.0-dev.186 | 2025-07-25 17:55:15 +0200
+
+  * Fix broken BTest meta in tests. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.182 | 2025-07-23 15:48:45 +0200
 
   * Fix typo in NEWS. (Benjamin Bannier, Corelight)
