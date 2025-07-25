@@ -586,45 +586,40 @@ struct DataflowVisitor : visitor::PreOrder {
         if ( auto* expr = stmt->tryAs<statement::Expression>() )
             stmt = expr->expression();
 
-        if ( auto* assign = stmt->tryAs<expression::Assign>() ) {
+        // Check whether the name was used in an assignment.
+        bool in_assignment = false;
+        {
             // Figure out which side of the assignment this name is on.
-            std::set<Side> uses;
-            Node* x = name;
+            Node* node = name;
             do {
-                if ( x == assign->target() ) {
-                    uses.insert(Side::LHS);
-                    break;
-                }
-
-                if ( x == assign->source() ) {
-                    uses.insert(Side::RHS);
-                    break;
-                }
-
-                x = x->parent();
-            } while ( x && x != root.value() );
-            assert(! uses.empty());
-
-            for ( auto side : uses )
-                switch ( side ) {
-                    case Side::RHS: transfer.read.insert(decl); break;
-                    case Side::LHS: {
+                if ( auto* assign_ = node->tryAs<expression::Assign>() ) {
+                    if ( _contains(*assign_->target(), *name) ) {
                         transfer.write.insert(decl);
+
+                        // A LHS use generates a new value.
+                        transfer.gen[decl] = root;
 
                         // If the assignment is to a member, mark the whole
                         // struct as read to encode that we still depend on the
                         // previous state of all the other member fields.
-                        if ( assign->target()->isA<operator_::struct_::MemberNonConst>() )
+                        if ( assign_->target()->isA<operator_::struct_::MemberNonConst>() )
                             transfer.read.insert(decl);
 
-                        break;
+                        in_assignment = true;
+                    }
+
+                    if ( _contains(*assign_->source(), *name) ) {
+                        transfer.read.insert(decl);
+
+                        in_assignment = true;
                     }
                 }
-
-            // A LHS use generates a new value.
-            if ( uses.contains(Side::LHS) )
-                transfer.gen[decl] = root;
+                node = node->parent();
+            } while ( node && node != root.value() );
         }
+
+        if ( in_assignment )
+            ; // Nothing, handled above.
 
         else if ( stmt->isA<statement::Declaration>() )
             // Names in declaration statements appear on the RHS.
