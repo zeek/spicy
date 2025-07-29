@@ -9,4 +9,26 @@ function uint<64> fn() {
     return x;
 }
 
+function uint<64> fn2() {
+    local auto x = 1;
+    local auto y = 1;
+
+    x = (x = 1);
+    x = (y = 1);
+    x = (x = (y = 1));
+
+    (x = 1) = x;
+    (y = 1) = x;
+    (x = (y = 1)) = x;
+
+    (x = 1) = (y = 1);
+    (y = 1) = (x = (y = 1));
+}
+
+
+function void fn3() {
+    local x = "bad";
+    local x2 = x = "good";
+}
+
 }

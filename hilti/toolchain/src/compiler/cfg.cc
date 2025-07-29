@@ -8,6 +8,7 @@
 #include <iterator>
 #include <map>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -439,29 +440,26 @@ std::string CFG::dot() const {
                     return std::string();
             }();
 
-            auto kill = [&]() {
-                auto xs = util::transformToVector(transfer.kill, [&](const auto& stmt) {
-                    return util::fmt("%s", escape(stmt->print()));
-                });
-                std::ranges::sort(xs);
-                if ( ! xs.empty() )
-                    return util::fmt("kill: [%s]", util::join(xs, " "));
-                else
-                    return std::string();
+            auto to_str = [&](const auto& xs) {
+                std::vector<std::string> ys;
+                for ( const auto& [decl, stmts] : xs ) {
+                    std::vector<std::string> xs;
+                    for ( const auto& stmt : stmts )
+                        xs.push_back(escape(stmt->print()));
+                    ys.push_back(util::fmt("%s: %s", decl->id(), util::join(xs, ", ")));
+                }
+
+                std::ranges::sort(ys);
+                return util::join(ys, ", ");
+            };
+
+            auto kill = [&]() -> std::string {
+                if ( transfer.kill.empty() )
+                    return "";
+                return util::fmt("kill: [%s]", to_str(transfer.kill));
             }();
 
             auto in_out = [&]() -> std::string {
-                auto to_str = [&](const auto& xs) {
-                    std::vector<std::string> ys;
-                    for ( const auto& [_, stmts] : xs ) {
-                        for ( const auto& stmt : stmts )
-                            ys.push_back(escape(stmt->print()));
-                    }
-
-                    std::ranges::sort(ys);
-                    return util::join(ys, ", ");
-                };
-
                 return util::fmt("in: [%s] out: [%s]", to_str(transfer.in), to_str(transfer.out));
             }();
 
@@ -586,45 +584,40 @@ struct DataflowVisitor : visitor::PreOrder {
         if ( auto* expr = stmt->tryAs<statement::Expression>() )
             stmt = expr->expression();
 
-        if ( auto* assign = stmt->tryAs<expression::Assign>() ) {
+        // Check whether the name was used in an assignment.
+        bool in_assignment = false;
+        {
             // Figure out which side of the assignment this name is on.
-            std::set<Side> uses;
-            Node* x = name;
+            Node* node = name;
             do {
-                if ( x == assign->target() ) {
-                    uses.insert(Side::LHS);
-                    break;
-                }
-
-                if ( x == assign->source() ) {
-                    uses.insert(Side::RHS);
-                    break;
-                }
-
-                x = x->parent();
-            } while ( x && x != root.value() );
-            assert(! uses.empty());
-
-            for ( auto side : uses )
-                switch ( side ) {
-                    case Side::RHS: transfer.read.insert(decl); break;
-                    case Side::LHS: {
+                if ( auto* assign_ = node->tryAs<expression::Assign>() ) {
+                    if ( _contains(*assign_->target(), *name) ) {
                         transfer.write.insert(decl);
+
+                        // A LHS use generates a new value.
+                        transfer.gen[decl] = root;
 
                         // If the assignment is to a member, mark the whole
                         // struct as read to encode that we still depend on the
                         // previous state of all the other member fields.
-                        if ( assign->target()->isA<operator_::struct_::MemberNonConst>() )
+                        if ( assign_->target()->isA<operator_::struct_::MemberNonConst>() )
                             transfer.read.insert(decl);
 
-                        break;
+                        in_assignment = true;
+                    }
+
+                    if ( _contains(*assign_->source(), *name) ) {
+                        transfer.read.insert(decl);
+
+                        in_assignment = true;
                     }
                 }
-
-            // A LHS use generates a new value.
-            if ( uses.contains(Side::LHS) )
-                transfer.gen[decl] = root;
+                node = node->parent();
+            } while ( node && node != root.value() );
         }
+
+        if ( in_assignment )
+            ; // Nothing, handled above.
 
         else if ( stmt->isA<statement::Declaration>() )
             // Names in declaration statements appear on the RHS.
@@ -844,8 +837,11 @@ void CFG::_populateDataflow() {
                 if ( auto it = transfer.in.find(decl); it != transfer.in.end() ) {
                     const auto& [_, prev] = *it;
 
+                    changed |= ! transfer.kill.contains(decl);
+                    auto& kill = transfer.kill[decl];
+
                     for ( const auto& p : prev ) {
-                        auto [_, inserted] = transfer.kill.insert(p);
+                        auto [_, inserted] = kill.insert(p);
                         changed |= inserted;
                     }
                 }
@@ -855,8 +851,11 @@ void CFG::_populateDataflow() {
             if ( const auto* scope_end = n->tryAs<End>() ) {
                 for ( auto& [decl, stmts] : transfer.in ) {
                     if ( _contains(*scope_end->scope, *decl) ) {
+                        changed |= ! transfer.kill.contains(decl);
+                        auto& kill = transfer.kill[decl];
+
                         for ( const auto& stmt : stmts ) {
-                            auto [_, inserted] = transfer.kill.insert(stmt);
+                            auto [_, inserted] = kill.insert(stmt);
                             changed |= inserted;
                         }
                     }
@@ -872,7 +871,7 @@ void CFG::_populateDataflow() {
             for ( const auto& [decl, stmt] : transfer.in ) {
                 // Add the incoming statements to the out set.
                 for ( const auto& in : stmt ) {
-                    if ( transfer.kill.contains(in) )
+                    if ( transfer.kill.contains(decl) && transfer.kill.at(decl).contains(in) )
                         continue;
 
                     // Make sure the entry exists.

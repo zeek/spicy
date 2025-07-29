@@ -9,14 +9,14 @@ digraph {
 }
 [debug/cfg-initial] Function 'fn'
 digraph {
-    0 [label="[1, 2, 3]" xlabel="in: [local uint<64> i] out: [local uint<64> i] keep"];
-    1 [label="i++;" xlabel="read: [i] write: [i] in: [local uint<64> i] out: [local uint<64> i] keep"];
-    2 [label="local uint<64> i" xlabel="gen: [i: local uint<64> i] kill: [local uint<64> i] in: [local uint<64> i] out: [local uint<64> i]"];
+    0 [label="[1, 2, 3]" xlabel="in: [i: local uint<64> i] out: [i: local uint<64> i] keep"];
+    1 [label="i++;" xlabel="read: [i] write: [i] in: [i: local uint<64> i] out: [i: local uint<64> i] keep"];
+    2 [label="local uint<64> i" xlabel="gen: [i: local uint<64> i] kill: [i: local uint<64> i] in: [i: local uint<64> i] out: [i: local uint<64> i]"];
     3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     4 [label="end <...>/for.hlt:6:20-9:1" shape=triangle xlabel="in: [] out: []"];
     5 [label="end <...>/for.hlt:6:20-9:1" shape=triangle xlabel="in: [] out: []"];
-    6 [label="end <...>/for.hlt:8:9-8:12" shape=triangle xlabel="in: [local uint<64> i] out: [local uint<64> i]"];
-    7 [label="end <...>/for.hlt:7:5-8:12" shape=triangle xlabel="kill: [local uint<64> i] in: [local uint<64> i] out: []"];
+    6 [label="end <...>/for.hlt:8:9-8:12" shape=triangle xlabel="in: [i: local uint<64> i] out: [i: local uint<64> i]"];
+    7 [label="end <...>/for.hlt:7:5-8:12" shape=triangle xlabel="kill: [i: local uint<64> i] in: [i: local uint<64> i] out: []"];
     3 -> 0 [label="0"];
     0 -> 2 [label="1"];
     2 -> 1 [label="2"];

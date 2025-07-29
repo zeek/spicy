@@ -1,3 +1,11 @@
+1.14.0-dev.190 | 2025-07-29 17:56:01 +0200
+
+  * Track kill set for each declaration. (Benjamin Bannier, Corelight)
+
+  * Include declaration for `in` and `out` set when rendering CFG. (Benjamin Bannier, Corelight)
+
+  * GH-2123: Fix dataflow extraction of reads and writes in assignments. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.186 | 2025-07-25 17:55:15 +0200
 
   * Fix broken BTest meta in tests. (Benjamin Bannier, Corelight)
