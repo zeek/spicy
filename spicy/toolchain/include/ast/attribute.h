@@ -20,6 +20,7 @@ const Kind Chunked("&chunked");
 const Kind Convert("&convert");
 const Kind Count("&count");
 const Kind Cxxname("&cxxname");
+const Kind CxxAnyAsPtr("&cxx-any-as-ptr");
 const Kind Default("&default");
 const Kind Eod("&eod");
 const Kind IPv4("&ipv4");

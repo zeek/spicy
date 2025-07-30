@@ -84,6 +84,7 @@ const Kind Anchor("&anchor");
 const Kind Anonymous("&anonymous");
 const Kind Convert("&convert");
 const Kind Cxxname("&cxxname");
+const Kind CxxAnyAsPtr("&cxx-any-as-ptr");
 const Kind Debug("&debug");
 const Kind Default("&default");
 const Kind HavePrototype("&have_prototype");

@@ -69,7 +69,7 @@ static std::unordered_map<node::Tag, std::unordered_set<attribute::Kind>> allowe
     {node::tag::Function,
      {attribute::kind::Cxxname, attribute::kind::HavePrototype, attribute::kind::Priority, attribute::kind::Static,
       attribute::kind::NeededByFeature, attribute::kind::Debug, attribute::kind::Public}},
-    {node::tag::declaration::Parameter, {attribute::kind::RequiresTypeFeature}},
+    {node::tag::declaration::Parameter, {attribute::kind::CxxAnyAsPtr, attribute::kind::RequiresTypeFeature}},
 };
 
 void hilti::validator::VisitorMixIn::deprecated(const std::string& msg, const Location& l) const {
@@ -259,6 +259,16 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
             if ( ! n->body() && ! is_hook && ! attrs->has(hilti::attribute::kind::Cxxname) )
                 error(fmt("function '%s' must have a body or be declared with &cxxname", n->id()), n);
+        }
+
+        for ( const auto& p : n->ftype()->parameters() ) {
+            if ( p->attributes()->find(hilti::attribute::kind::CxxAnyAsPtr) ) {
+                if ( ! n->attributes()->find(hilti::attribute::kind::Cxxname) )
+                    error(fmt("parameter '%s' cannot have &cxx-any-as-ptr without &cxxname for function", p->id()), n);
+
+                if ( ! p->type()->type()->isA<type::Any>() )
+                    error(fmt("parameter '%s' must be of type 'any' to use &cxx-any-as-ptr", p->id()), n);
+            }
         }
     }
 

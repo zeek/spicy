@@ -36,6 +36,7 @@ namespace {
 std::unordered_map<node::Tag, std::unordered_set<hilti::attribute::Kind>> allowed_attributes{
     {hilti::node::tag::declaration::Hook,
      {attribute::kind::Foreach, attribute::kind::Error, attribute::kind::Debug, attribute::kind::Priority}},
+    {hilti::node::tag::declaration::Parameter, {attribute::kind::CxxAnyAsPtr}},
     {hilti::node::tag::declaration::Type, {attribute::kind::Cxxname, attribute::kind::BitOrder}},
     {hilti::node::tag::Function, {attribute::kind::Cxxname, attribute::kind::Priority, attribute::kind::Debug}},
     {hilti::node::tag::type::Enum, {attribute::kind::Cxxname}},
