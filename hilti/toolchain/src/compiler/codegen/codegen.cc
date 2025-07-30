@@ -647,11 +647,6 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
         }
     };
 
-    auto param_ = [&](const auto& p) {
-        auto t = compile(p->type(), parameterKindToTypeUsage(p->kind()));
-        return cxx::declaration::Argument(cxx::ID(p->id()), std::move(t));
-    };
-
     auto linkage_ = [&]() {
         if ( ft->callingConvention() == type::function::CallingConvention::Extern ||
              ft->callingConvention() == type::function::CallingConvention::ExternNoSuspend )
@@ -684,8 +679,23 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
     else
         ns += _hilti_module->uid().str();
 
+    std::vector<cxx::declaration::Argument> parameters;
+
+    for ( auto* p : ft->parameters() ) {
+        auto t = compile(p->type(), parameterKindToTypeUsage(p->kind()));
+
+        if ( p->type()->type()->isA<type::Any>() && fattrs->has(hilti::attribute::kind::Cxxname) &&
+             fattrs->find(hilti::attribute::kind::CxxAnyAsPtr) )
+            parameters.emplace_back(cxx::ID(fmt("const void* %s", p->id())));
+        else
+            parameters.emplace_back(cxx::ID(p->id()), std::move(t));
+
+        if ( p->type()->type()->isA<type::Any>() )
+            parameters.emplace_back(cxx::ID(fmt("__type_%s", p->id())), cxx::Type("const hilti::rt::TypeInfo*"));
+    }
+
     auto cxx_decl = cxx::declaration::Function(cxx::declaration::Function::Free, result_(), {ns, cxx_id},
-                                               node::transform(ft->parameters(), param_), linkage_());
+                                               std::move(parameters), linkage_());
 
     if ( linkage == declaration::Linkage::Struct )
         cxx_decl.ftype = cxx::declaration::Function::Method;
@@ -694,7 +704,8 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
 }
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
-                                                           const node::Set<declaration::Parameter>& params) {
+                                                           const node::Set<declaration::Parameter>& params,
+                                                           const hilti::Function* function) {
     auto kinds = node::transform(params, [](const auto& x) { return x->kind(); });
 
     std::vector<cxx::Expression> x;
@@ -703,7 +714,13 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     unsigned int i = 0;
     for ( const auto& p : params ) {
         Expression* arg = (i < args.size() ? args[i] : p->default_());
-        x.emplace_back(compile(arg, p->kind() == parameter::Kind::InOut));
+
+        if ( p->type()->type()->isA<type::Any>() && function &&
+             function->attributes()->has(hilti::attribute::kind::Cxxname) &&
+             function->attributes()->find(hilti::attribute::kind::CxxAnyAsPtr) )
+            x.emplace_back(fmt("&%s", compile(arg, true)));
+        else
+            x.emplace_back(compile(arg, p->kind() == parameter::Kind::InOut));
 
         if ( p->type()->type()->isA<type::Any>() )
             x.emplace_back(typeInfo(arg->type()));

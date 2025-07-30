@@ -362,7 +362,8 @@ struct Visitor : hilti::visitor::PreOrder {
 
         const auto& values = n->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         result = fmt("%s(%s)", cxx::ID(name),
-                     util::join(cg->compileCallArguments(values, f->function()->ftype()->parameters()), ", "));
+                     util::join(cg->compileCallArguments(values, f->function()->ftype()->parameters(), f->function()),
+                                ", "));
     }
 
     // Interval
