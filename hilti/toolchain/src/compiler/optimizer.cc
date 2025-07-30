@@ -1919,6 +1919,23 @@ struct FunctionParamVisitor : OptimizerVisitor {
             case Stage::PRUNE_DECLS: return;
         }
     }
+
+    void operator()(expression::Keyword* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+
+        auto [ftype, function_id] = *opt_enclosing_fn;
+        switch ( _stage ) {
+            case Stage::COLLECT:
+                // Only apply to captures, everything else seems handled by Name.
+                if ( n->kind() == expression::keyword::Kind::Captures )
+                    removeUsed(ftype, function_id, "__captures");
+                return;
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: return;
+        }
+    }
 };
 
 struct FunctionBodyVisitor : OptimizerVisitor {

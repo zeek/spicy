@@ -1,3 +1,9 @@
+1.14.0-dev.192 | 2025-07-30 08:44:58 -0400
+
+  * Avoid removing `__captures` from non-public units. (Evan Typanski, Corelight)
+
+    This caused a regression/C++ compiler error in spicy-nats.
+
 1.14.0-dev.190 | 2025-07-29 17:56:01 +0200
 
   * Track kill set for each declaration. (Benjamin Bannier, Corelight)
