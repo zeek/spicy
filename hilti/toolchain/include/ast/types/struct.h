@@ -63,6 +63,9 @@ public:
     bool isMutable() const final { return true; }
     bool isNameType() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final;
+    bool isTrivialSelf() const { return _trivial_self; }
+
+    void setTrivialSelf(bool b) { _trivial_self = b; }
 
     static auto create(ASTContext* ctx, const declaration::Parameters& params, const Declarations& fields,
                        Meta meta = {}) {
@@ -102,6 +105,9 @@ protected:
 
 private:
     void _setSelf(ASTContext* ctx);
+
+    bool _trivial_self = true; // If all uses of this struct's self() are replaceable
+                               // with a trivial form.
 };
 
 } // namespace hilti::type

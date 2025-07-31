@@ -65,7 +65,10 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                 cxx::Block ctor;
 
                 cxx::Block self_body;
-                self_body.addStatement(util::fmt("return ::hilti::rt::ValueReference<%s>::self(this)", id));
+                if ( n->isTrivialSelf() )
+                    self_body.addStatement("return this");
+                else
+                    self_body.addStatement(util::fmt("return ::hilti::rt::ValueReference<%s>::self(this)", id));
 
                 auto self = cxx::declaration::Function(cxx::declaration::Function::Free, "auto", "__self", {}, "",
                                                        cxx::declaration::Function::Inline(), std::move(self_body));
