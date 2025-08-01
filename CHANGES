@@ -1,3 +1,9 @@
+1.14.0-dev.195 | 2025-08-01 15:24:19 +0200
+
+  * Move data instead of copying. (Benjamin Bannier, Corelight)
+
+  * Always initialize pointer member. (Benjamin Bannier, Corelight)
+
 1.14.0-dev.192 | 2025-07-30 08:44:58 -0400
 
   * Avoid removing `__captures` from non-public units. (Evan Typanski, Corelight)
