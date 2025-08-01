@@ -977,6 +977,270 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
     }
 };
 
+struct ConstantPropagationVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
+
+    struct ConstantValue {
+        Expression* expr = nullptr;
+        // NAC
+        bool not_a_constant = false;
+
+        bool operator==(const ConstantValue& other) const {
+            return expr == other.expr && not_a_constant == other.not_a_constant;
+        }
+    };
+
+    using ConstantMap = std::map<Declaration*, ConstantValue>;
+    struct AnalysisResult {
+        detail::cfg::CFG cfg;
+        std::map<detail::cfg::GraphNode, ConstantMap> in;
+        std::map<detail::cfg::GraphNode, ConstantMap> out;
+    };
+
+    std::map<Node*, AnalysisResult> analysis_results;
+
+    void collect(Node* node) override {
+        _stage = Stage::COLLECT;
+        visitor::visit(*this, node);
+    }
+
+    bool prune_uses(Node* node) override {
+        _stage = Stage::PRUNE_USES;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return isModified();
+    }
+
+    void transfer(const detail::cfg::GraphNode& n, ConstantMap& new_out) {
+        // Marks all children that are names as not a constant in the given map.
+        // This is used by function calls, since they have deeply nested names
+        // that should all be marked NAC.
+        struct NameNACer : hilti::visitor::PreOrder {
+            ConstantMap& constants;
+            NameNACer(ConstantMap& constants) : constants(constants) {}
+            void operator()(expression::Name* name) override {
+                if ( auto* decl = name->resolvedDeclaration() ) {
+                    constants[decl].not_a_constant = true;
+                }
+            }
+        };
+
+        struct TransferVisitor : hilti::visitor::PreOrder {
+            ConstantMap& constants;
+            NameNACer name_nac;
+
+            TransferVisitor(ConstantMap& constants) : constants(constants), name_nac(constants) {}
+
+            // Tries to evaluate an expression to a constant value given a map of known constants.
+            Expression* evaluate(Expression* expr) {
+                if ( expr->isConstant() && expr->isA<expression::Ctor>() )
+                    return expr;
+
+                if ( auto* name = expr->tryAs<expression::Name>() ) {
+                    if ( auto* decl = name->resolvedDeclaration(); decl && constants.contains(decl) ) {
+                        const auto& val = constants.at(decl);
+                        if ( val.not_a_constant )
+                            return nullptr;
+
+                        return val.expr;
+                    }
+                }
+
+                // TODO: This would be nice for folding operators
+                return nullptr;
+            }
+
+            void operator()(expression::Assign* assign) override {
+                if ( auto* name = assign->target()->tryAs<expression::Name>() ) {
+                    if ( auto* decl = name->resolvedDeclaration() ) {
+                        auto* const_val = evaluate(assign->source());
+                        constants[decl] = {.expr = const_val, .not_a_constant = const_val == nullptr};
+                    }
+                }
+            }
+
+            void operator()(declaration::LocalVariable* decl) override {
+                if ( auto* init = decl->init() ) {
+                    auto* const_val = evaluate(init);
+                    constants[decl] = {.expr = const_val, .not_a_constant = const_val == nullptr};
+                }
+            }
+
+            void operator()(operator_::struct_::MemberCall* op) override {
+                // NAC anything used in a call; unfortunately they may silently
+                // coerce to a reference.
+                visitor::visit(name_nac, op);
+            }
+
+            void operator()(operator_::function::Call* op) override {
+                // NAC anything used in a call; unfortunately they may silently
+                // coerce to a reference.
+                visitor::visit(name_nac, op);
+            }
+
+            void operator()(expression::ResolvedOperator* op) override {
+                auto sig = op->operator_().signature();
+                std::size_t i = 0;
+                for ( const auto* operand : sig.operands->operands() ) {
+                    if ( operand->kind() == parameter::Kind::InOut )
+                        // NAC any names within
+                        visitor::visit(name_nac, op->operands()[i]);
+                    i++;
+                }
+            }
+        };
+
+        TransferVisitor tv(new_out);
+        visitor::visit(tv, n.value());
+    }
+
+    void populate_dataflow(AnalysisResult& result, const ConstantMap& init) {
+        std::vector<detail::cfg::GraphNode> worklist;
+
+        // Add all nodes
+        for ( const auto& [id, node] : result.cfg.graph().nodes() )
+            worklist.push_back(node);
+
+        while ( ! worklist.empty() ) {
+            auto n = worklist.back();
+            worklist.pop_back();
+
+            // Meet
+            // Setting init before would immediately get overwritten. Doing it here
+            // technically misses some optimizations.
+            ConstantMap new_in = init;
+            auto preds = result.cfg.graph().neighborsUpstream(n->identity());
+            for ( const uint64_t& pred : preds ) {
+                const auto& pred_out = result.out[*result.cfg.graph().getNode(pred)];
+
+                for ( const auto& [decl, const_val] : pred_out ) {
+                    // Add if we can, otherwise NAC if they're not the same const.
+                    auto [found, inserted] = new_in.try_emplace(decl, const_val);
+                    if ( ! inserted && found->second != const_val )
+                        found->second.not_a_constant = true;
+                }
+            }
+
+            result.in[n] = std::move(new_in);
+
+            // Transfer
+            ConstantMap new_out = result.in[n];
+            transfer(n, new_out);
+
+            // If it changed, add successors to worklist
+            ConstantMap old_out = result.out[n];
+            if ( old_out != new_out ) {
+                result.out[n] = new_out;
+                for ( auto succ_id : result.cfg.graph().neighborsDownstream(n->identity()) ) {
+                    const auto* succ_node = result.cfg.graph().getNode(succ_id);
+                    if ( std::ranges::find(worklist, *succ_node) == worklist.end() )
+                        worklist.push_back(*succ_node);
+                }
+            }
+        }
+    }
+
+    void apply_propagation(Statement* body, const AnalysisResult& result) {
+        struct Replacer : visitor::MutatingPreOrder {
+            using visitor::MutatingPreOrder::MutatingPreOrder;
+
+            const AnalysisResult& _result;
+            Replacer(Builder* builder, const AnalysisResult& result)
+                : visitor::MutatingPreOrder(builder, logging::debug::Optimizer), _result(result) {}
+
+            // Helper to find the CFG node for an AST node.
+            const detail::cfg::GraphNode* findCFGNode(Node* n) {
+                for ( auto* p = n; p; p = p->parent() ) {
+                    if ( const auto* graph_node = _result.cfg.graph().getNode(p->identity()) )
+                        return graph_node;
+                }
+                return nullptr;
+            }
+
+            bool isLHSOfAssign(Expression* expr) {
+                for ( auto* parent = expr->parent(); parent; parent = parent->parent() ) {
+                    // Don't propagate to the LHS of an assignment
+                    if ( auto* assign = parent->tryAs<operator_::tuple::CustomAssign>() ) {
+                        if ( assign->op0() == expr )
+                            return true;
+                    }
+                    if ( auto* assign = parent->tryAs<expression::Assign>() ) {
+                        if ( assign->target() == expr )
+                            return true;
+                    }
+                }
+
+                return false;
+            }
+
+            void operator()(expression::Name* n) override {
+                if ( isLHSOfAssign(n) )
+                    return;
+
+                const auto* cfg_node = findCFGNode(n);
+                if ( ! cfg_node )
+                    return;
+
+                auto in_it = _result.in.find(*cfg_node);
+                auto out_it = _result.out.find(*cfg_node);
+                if ( in_it == _result.in.end() || out_it == _result.out.end() )
+                    return;
+
+                auto* decl = n->resolvedDeclaration();
+                if ( ! decl )
+                    return;
+
+                const auto& constants = in_it->second;
+                const auto& out_constants = out_it->second;
+                auto const_it = constants.find(decl);
+                auto out_const_it = out_constants.find(decl);
+                if ( const_it == constants.end() || out_const_it == out_constants.end() )
+                    return;
+
+                // If they aren't the same, something changed within the statement.
+                // Since we're not sure which comes first, just abort.
+                if ( const_it->second != out_const_it->second )
+                    return;
+
+                auto const_val = const_it->second;
+
+                if ( ! const_val.not_a_constant ) {
+                    recordChange(n, util::fmt("propagating constant value in %s", n->id()));
+                    replaceNode(n, node::detail::deepcopy(context(), const_val.expr, true));
+                }
+            }
+        };
+
+        Replacer replacer(builder(), result);
+        visitor::visit(replacer, body);
+        if ( replacer.isModified() )
+            recordChange(body, "constant propagation");
+    }
+
+    void operator()(declaration::Function* n) override {
+        switch ( _stage ) {
+            case Stage::COLLECT:
+                if ( auto* body = n->function()->body() ) {
+                    AnalysisResult result((detail::cfg::CFG(body)));
+                    ConstantMap init;
+                    for ( auto* param : n->function()->ftype()->parameters() )
+                        init[param].not_a_constant = true;
+                    populate_dataflow(result, init);
+                    analysis_results.insert({body, std::move(result)});
+                }
+                break;
+            case Stage::PRUNE_USES:
+                if ( auto* body = n->function()->body(); body && analysis_results.contains(body) )
+                    apply_propagation(body, analysis_results.at(body));
+                break;
+            case Stage::PRUNE_DECLS: break;
+        }
+    }
+};
+
 /**
  * Visitor running on the final, optimized AST to perform additional peephole
  * optimizations. Will run repeatedly until it performs no further changes.
@@ -2188,21 +2452,29 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
               return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer);
           },
           2}},
+        {"constant_propagation",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<ConstantPropagationVisitor>(builder, hilti::logging::debug::Optimizer);
+          },
+          2}},
     };
 
     // TODO(bbannier): Control-flow based optimizations are not ready for
     // prime-time yet and behind a feature guard.
     bool has_cfg = rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG") == "1";
+    auto uses_cfg = std::unordered_set<std::string>{"cfg", "constant_propagation"};
 
     // If no user-specified passes are given enable all of them.
     if ( ! passes ) {
         passes = std::set<std::string>();
         for ( const auto& [pass, _] : creators )
-            if ( pass != "cfg" )
+            if ( ! uses_cfg.contains(pass) )
                 passes->insert(pass);
 
-        if ( has_cfg )
-            passes->insert("cfg");
+        if ( has_cfg ) {
+            for ( const auto& pass : uses_cfg )
+                passes->insert(pass);
+        }
     }
 
     Phase max_phase{};

@@ -61,9 +61,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-        local strong_ref<stream> filtered = Null;
 
-        if ( ! filtered ) 
+        if ( ! Null ) 
             __result = (*self).__parse_foo__P1_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
@@ -73,10 +72,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P1::__parse_foo__P1_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:14:18-14:24"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe, __error);
-    return __result;
+    return (__cur, __lah, __lahe, __error);
 }
 
 method view<stream> foo::P1::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
@@ -153,9 +150,8 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-        local strong_ref<stream> filtered = Null;
 
-        if ( ! filtered ) 
+        if ( ! Null ) 
             __result = (*self).__parse_foo__P2_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
@@ -169,7 +165,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P2::__parse_foo__P2_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/default-parser-functions.spicy:16:18-21:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     {
         # "<...>/default-parser-functions.spicy:17:8-17:12"
 
@@ -201,8 +196,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     }
 
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe, __error);
-    return __result;
+    return (__cur, __lah, __lahe, __error);
 }
 
 method view<stream> foo::P2::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
