@@ -474,10 +474,18 @@ std::string CFG::dot() const {
 
             auto keep = [&]() -> std::string { return transfer.keep ? "keep" : ""; }();
 
-            xlabel = util::fmt("xlabel=\"%s\"",
-                               util::join(util::filter(std::vector{read, write, gen, kill, in_out, aliases, keep},
-                                                       [](const auto& x) { return ! x.empty(); }),
-                                          " "));
+            xlabel = util::fmt("xlabel=\"%s\"", util::join(util::filter(
+                                                               std::vector{
+                                                                   std::move(read),
+                                                                   std::move(write),
+                                                                   std::move(gen),
+                                                                   std::move(kill),
+                                                                   std::move(in_out),
+                                                                   std::move(aliases),
+                                                                   std::move(keep),
+                                                               },
+                                                               [](const auto& x) { return ! x.empty(); }),
+                                                           " "));
         }
 
         if ( const auto* meta = n->tryAs<MetaNode>() ) {
