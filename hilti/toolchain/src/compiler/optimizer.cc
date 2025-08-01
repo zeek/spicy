@@ -155,7 +155,7 @@ public:
     }
 
 private:
-    const OperatorUses* _op_uses;
+    const OperatorUses* _op_uses = nullptr;
 };
 
 struct FunctionVisitor : OptimizerVisitor {
