@@ -51,7 +51,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DifferenceAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeReal()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
@@ -85,7 +85,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::DivisionAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeReal()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
@@ -223,7 +223,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MultipleAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeReal()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
@@ -275,7 +275,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeReal()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeReal()},
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",

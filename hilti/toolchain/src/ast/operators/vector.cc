@@ -282,7 +282,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {.kind = parameter::Kind::In, .type = builder->typeVector(type::Wildcard())},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeVector(type::Wildcard())},
             .member = "assign",
             .param0 =
                 {
