@@ -1,7 +1,7 @@
 # @TEST-DOC: Checks that a reserve call gets generated for vectors of known size
 #
 # @TEST-REQUIRES: which FileCheck
-# @TEST-EXEC: spicyc -p %INPUT | FileCheck %INPUT
+# @TEST-EXEC: spicyc -g -p %INPUT | FileCheck %INPUT
 
 module Test;
 

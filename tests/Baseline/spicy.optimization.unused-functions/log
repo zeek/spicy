@@ -278,7 +278,31 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@F%uses_stream" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__B_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__C_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:25:17-27:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); local value_ref<C> __transient__anon; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C_2 -> __transient__anon = default<foo::C>(); (__cur, __lah, __lahe, __error) = (*__transient__anon).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error); # End parsing production: Unit: foo__C_2 -> hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:25:17-27:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__D_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
 [debug/optimizer] [<no location>] statement::Declaration "local iterator<stream> __begin = begin(__cur);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
@@ -291,6 +315,9 @@
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
