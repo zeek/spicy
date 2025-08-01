@@ -1645,6 +1645,82 @@ struct MemberVisitor : OptimizerVisitor {
     }
 };
 
+/**
+ * Marks structs as "trivial" if their self parameter can be neatly expressed
+ * with simple C++ 'this' expressions. This would (theoretically) help avoid
+ * shared_ptr usage with value references.
+ */
+struct ChangeSelfVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
+
+    void collect(Node* node) override {
+        _stage = Stage::COLLECT;
+
+        visitor::visit(*this, node);
+    }
+
+    void operator()(declaration::Type* n) final {
+        auto* struct_ty = n->type()->type()->tryAs<type::Struct>();
+        if ( ! struct_ty )
+            return;
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                if ( n->linkage() == declaration::Linkage::Public ) {
+                    struct_ty->setTrivialSelf(false);
+                    break;
+                }
+
+                for ( auto* field : struct_ty->fields() ) {
+                    if ( auto* fn = field->type()->type()->tryAs<type::Function>();
+                         fn && fn->flavor() == type::function::Flavor::Hook )
+                        struct_ty->setTrivialSelf(false);
+                }
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
+        }
+    }
+
+    type::Struct* enclosingStructType(Node* n) {
+        for ( auto* current = n->parent(); current; current = current->parent() ) {
+            // Some types like bitfields appear as a QualifiedType
+            if ( current->isA<QualifiedType>() )
+                continue;
+
+            // Look up a function decl's prototype to find its parent struct
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                if ( auto* prototype = context()->lookup(fn_decl->linkedPrototypeIndex()) )
+                    current = prototype->parent();
+            }
+
+            if ( auto* struct_ty = current->tryAs<type::Struct>() )
+                return struct_ty;
+        }
+
+        return nullptr;
+    }
+
+    void operator()(expression::Name* n) final {
+        auto* enclosing = enclosingStructType(n);
+        if ( ! enclosing || n->id() != "self" )
+            return;
+        switch ( _stage ) {
+            case Stage::COLLECT: {
+                auto* parent = n->parent();
+                // If we don't automatically deref self, then it should probably
+                // be a value reference.
+                if ( ! parent->isA<hilti::operator_::value_reference::Deref>() )
+                    enclosing->setTrivialSelf(false);
+                break;
+            }
+            case Stage::PRUNE_USES:
+            case Stage::PRUNE_DECLS: break;
+        }
+    }
+};
+
 /** Removes unused function parameters. */
 struct FunctionParamVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
@@ -2174,6 +2250,11 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         {"types",
          {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+          },
+          1}},
+        {"remove_self",
+         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<ChangeSelfVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
           },
           1}},
 
