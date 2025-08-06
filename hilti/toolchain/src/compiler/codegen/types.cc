@@ -809,10 +809,10 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
         auto i = 0;
         for ( const auto&& b : n->bits() )
-            elems.push_back(
-                fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %s, ::hilti::rt::bitfield::elementOffset<%s, "
-                    "%d>() }",
-                    b->id(), cg->typeInfo(b->itemTypeWithOptional()), ttype, i++));
+            elems.push_back(fmt(
+                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %u, %u, %s, ::hilti::rt::bitfield::elementOffset<%s, "
+                "%d>() }",
+                b->id(), b->lower(), b->upper(), cg->typeInfo(b->itemTypeWithOptional()), ttype, i++));
 
         result = fmt("::hilti::rt::type_info::Bitfield(std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
                      util::join(elems, ", "));
