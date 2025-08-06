@@ -409,13 +409,18 @@ public:
      * Constructor.
      *
      * @param name ID of the field
+     * @param lower lower bit of the field
+     * @param upper upper bit of the field
      * @param type type of the field
      * @param offset offset of the field inside the bitfield's storage tuple.
      */
-    Bits(const char* name, const TypeInfo* type, std::ptrdiff_t offset) : name(name), type(type), offset(offset) {}
+    Bits(const char* name, unsigned int lower, unsigned int upper, const TypeInfo* type, std::ptrdiff_t offset)
+        : name(name), lower(lower), upper(upper), type(type), offset(offset) {}
 
-    const std::string name; /**< ID of the field, with an empty string indicating no name */
-    const TypeInfo* type;   /**< type of the field */
+    const std::string name;   /**< ID of the field, with an empty string indicating no name */
+    const unsigned int lower; /**< lower bit of the field */
+    const unsigned int upper; /**< upper bit of the field */
+    const TypeInfo* type;     /**< type of the field */
 
 private:
     friend class type_info::Bitfield;
