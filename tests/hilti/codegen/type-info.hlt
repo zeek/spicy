@@ -267,7 +267,7 @@ struct VisitorTypesInit {
             }
             case TypeInfo::Bitfield: {
                 SEEN();
-                const auto* x = type.tuple;
+                const auto* x = type.bitfield;
                 auto s = x->iterate(v);
                 auto i = s.begin();
 
@@ -287,7 +287,7 @@ struct VisitorTypesInit {
                 ++i;
 
                 CHECK(i == s.end());
-                CHECK_EQ(x->elements().size(), 3);
+                CHECK_EQ(x->bits().size(), 3);
                 break;
             }
             case TypeInfo::Bool: {
