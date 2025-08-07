@@ -937,9 +937,15 @@ struct Field {
      * @param offset offset of the field in number bytes inside the struct
      * @param accessor function returning a pointer to a fields value
      */
-    Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, bool internal, bool anonymous,
+    Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, bool internal, bool anonymous, bool emitted,
           Accessor accessor = accessor_default)
-        : name(name), type(type), offset(offset), accessor(accessor), internal(internal), anonymous(anonymous) {}
+        : name(name),
+          type(type),
+          offset(offset),
+          accessor(accessor),
+          internal(internal),
+          anonymous(anonymous),
+          emitted(emitted) {}
 
     /** Default accessor function suitable for non-optional fields. */
     static const void* accessor_default(const Value& v) { return v.pointer(); }
@@ -960,6 +966,7 @@ struct Field {
 
     bool isAnonymous() const { return anonymous; }
     bool isInternal() const { return internal; }
+    bool isEmitted() const { return emitted; }
 
     const std::string name; /**< ID of the field */
     const TypeInfo* type /**< type of the field */;
@@ -974,6 +981,7 @@ private:
     const Accessor accessor;
     const bool internal;
     const bool anonymous;
+    const bool emitted;
 };
 
 }; // namespace struct_
@@ -989,7 +997,9 @@ public:
     Struct(std::vector<struct_::Field> fields) : _fields(std::move(fields)) {}
 
     /**
-     * Returns the struct's field.
+     * Returns the struct's fields. This includes any fields of the original
+     * HILTI-side struct, even if they have not been emitted into the compiled
+     * C++ struct.
      *
      * @param include_internal include internal fields
      * */
@@ -1002,7 +1012,9 @@ public:
     }
 
     /**
-     * Returns a vector that can be iterated over to visit all the fields.
+     * Returns a vector that can be iterated over to visit all the fields. This
+     * will skip any fields that are part of the original HILTI-side struct,
+     * but have not been emitted into the compiled C++ struct.
      *
      * @param v the value referring to the struct to iterate over
      * @param include_internal include internal fields
@@ -1014,6 +1026,9 @@ public:
         std::vector<std::pair<const struct_::Field&, Value>> values;
 
         for ( const auto& f : fields(include_internal) ) {
+            if ( ! f.get().emitted )
+                continue;
+
             auto x = Value(static_cast<const char*>(v.pointer()) + f.get().offset, f.get().type, v);
             values.emplace_back(f.get(), f.get().value(x));
         }
