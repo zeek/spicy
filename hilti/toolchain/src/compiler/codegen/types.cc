@@ -910,12 +910,12 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
             if ( f->type()->type()->isA<type::Function>() )
                 continue;
 
-            if ( f->isStatic() || f->isNoEmit() )
+            if ( f->isStatic() )
                 continue;
 
             std::string accessor;
 
-            if ( f->isOptional() )
+            if ( f->isOptional() && ! f->isNoEmit() )
                 accessor = fmt(", ::hilti::rt::type_info::struct_::Field::accessor_optional<%s>()",
                                cg->compile(f->type(), codegen::TypeUsage::Storage));
 
@@ -923,11 +923,16 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
             if ( auto x = n->cxxID() )
                 cxx_type_id = x;
 
-            fields.push_back(
-                fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, static_cast<std::ptrdiff_t>(offsetof(%s, "
-                    "%s)), %s, %s%s }",
-                    cxx::ID(f->id()), cg->typeInfo(f->type()), cxx_type_id, cxx::ID(f->id()), f->isInternal(),
-                    f->isAnonymous(), accessor));
+            std::string offset;
+
+            if ( ! f->isNoEmit() )
+                offset = fmt("static_cast<std::ptrdiff_t>(offsetof(%s, %s))", cxx_type_id, cxx::ID(f->id()));
+            else
+                offset = "std::ptrdiff_t{-1}";
+
+            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, %s, %s, %s, %s%s }",
+                                 cxx::ID(f->id()), cg->typeInfo(f->type()), offset, f->isInternal(), f->isAnonymous(),
+                                 ! f->isNoEmit(), accessor));
         }
 
         result = fmt("::hilti::rt::type_info::Struct(std::vector<::hilti::rt::type_info::struct_::Field>({%s}))",
