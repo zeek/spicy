@@ -1030,7 +1030,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         if ( auto* x = n->type()->type()->tryAs<type::Library>();
-             x && ! n->attributes()->has(hilti::attribute::kind::Cxxname) )
+             x && ! n->attributes()->find(hilti::attribute::kind::Cxxname) )
             // Transfer the C++ name into an attribute.
             n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Cxxname,
                                                                  builder()->stringLiteral(x->cxxName())));

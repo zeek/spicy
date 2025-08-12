@@ -257,7 +257,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                     error(x.error(), n);
             }
 
-            if ( ! n->body() && ! is_hook && ! attrs->has(hilti::attribute::kind::Cxxname) )
+            if ( ! n->body() && ! is_hook && ! attrs->find(hilti::attribute::kind::Cxxname) )
                 error(fmt("function '%s' must have a body or be declared with &cxxname", n->id()), n);
         }
 
@@ -373,7 +373,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( n->type()->isWildcard() ) {
             if ( auto* d = n->parent(4)->tryAs<declaration::Function>() ) {
-                if ( ! d->function()->attributes()->has(hilti::attribute::kind::Cxxname) )
+                if ( ! d->function()->attributes()->find(hilti::attribute::kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
                               "functions declared with &cxxname",
                               n->id()),
@@ -381,7 +381,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
 
             if ( auto* d = n->parent(4)->tryAs<declaration::Type>() ) {
-                if ( ! d->attributes()->has(hilti::attribute::kind::Cxxname) )
+                if ( ! d->attributes()->find(hilti::attribute::kind::Cxxname) )
                     error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
                               "library structs declared with &cxxname",
                               n->id()),
@@ -460,7 +460,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(ctor::Null* n) final {}
 
     void operator()(ctor::RegExp* n) final {
-        if ( n->attributes()->has(hilti::attribute::kind::Anchor) )
+        if ( n->attributes()->find(hilti::attribute::kind::Anchor) )
             // This can end up reporting the same location multiple times,
             // which seems fine. Otherwise we'd need to explicitly track what's
             // reported already.

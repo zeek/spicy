@@ -684,7 +684,7 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
     for ( auto* p : ft->parameters() ) {
         auto t = compile(p->type(), parameterKindToTypeUsage(p->kind()));
 
-        if ( p->type()->type()->isA<type::Any>() && p->attributes()->has(hilti::attribute::kind::CxxAnyAsPtr) )
+        if ( p->type()->type()->isA<type::Any>() && p->attributes()->find(hilti::attribute::kind::CxxAnyAsPtr) )
             parameters.emplace_back(cxx::ID(fmt("const void* %s", p->id())));
         else
             parameters.emplace_back(cxx::ID(p->id()), std::move(t));

@@ -1533,7 +1533,7 @@ struct ProductionVisitor : public production::Visitor {
             builder()->addAssign(state().cur, ncur);
         }
 
-        if ( attributes->has(attribute::kind::ParseFrom) || attributes->has(attribute::kind::ParseAt) )
+        if ( attributes->find(attribute::kind::ParseFrom) || attributes->find(attribute::kind::ParseAt) )
             popState();
 
         builder()->addCall("hilti::debugDedent", {builder()->stringLiteral("spicy")});

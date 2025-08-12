@@ -41,9 +41,9 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     Expression* result = nullptr;
 
     void operator()(hilti::type::Address* n) final {
-        if ( field.attributes()->has(attribute::kind::IPv4) )
+        if ( field.attributes()->find(attribute::kind::IPv4) )
             result = builder->integer(4U);
-        else if ( field.attributes()->has(attribute::kind::IPv6) )
+        else if ( field.attributes()->find(attribute::kind::IPv6) )
             result = builder->integer(16U);
         else
             hilti::rt::cannot_be_reached();

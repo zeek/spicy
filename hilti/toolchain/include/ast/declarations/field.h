@@ -75,7 +75,7 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        if ( attrs->has(hilti::attribute::kind::Static) )
+        if ( attrs->find(hilti::attribute::kind::Static) )
             // make it assignable
             type = type->recreateAsLhs(ctx);
 

@@ -622,7 +622,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // subitem so that we have our recursive machinery available
                 // (which we don't have for pure types).
                 if ( auto* unit_type = t->type()->type()->tryAs<type::Unit>();
-                     unit_type && unit_type->attributes()->has(attribute::kind::Convert) ) {
+                     unit_type && unit_type->attributes()->find(attribute::kind::Convert) ) {
                     auto* inner_field =
                         builder()->typeUnitItemField({}, tt, false, n->arguments(), {}, {}, {}, {}, {}, n->meta());
                     inner_field->setIndex(*n->index());
