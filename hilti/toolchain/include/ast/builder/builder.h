@@ -244,6 +244,10 @@ public:
 
     auto stream(std::string s, const Meta& m = Meta()) { return expressionCtor(ctorStream(std::move(s), m), m); }
 
+    auto string(std::string s, bool is_literal, const Meta& m = Meta()) {
+        return expressionCtor(ctorString(std::move(s), is_literal, m), m);
+    }
+
     auto struct_(const ctor::struct_::Fields& f, const Meta& m = Meta()) { return expressionCtor(ctorStruct(f, m), m); }
 
     auto struct_(const ctor::struct_::Fields& f, QualifiedType* t, const Meta& m = Meta()) {

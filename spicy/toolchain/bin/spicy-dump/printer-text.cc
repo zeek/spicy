@@ -130,9 +130,11 @@ void TextPrinter::print(const type_info::Value& v) {
             break;
         }
         case TypeInfo::Struct: {
-            out() << v.type().display << " {";
-
             const auto* x = type.struct_;
+
+            out() << v.type().display;
+            printOffsets(*x, v, "self");
+            out() << " {";
 
             bool empty = true;
             uint64_t index = 0;
@@ -147,7 +149,7 @@ void TextPrinter::print(const type_info::Value& v) {
 
                                 out() << b.name << ": ";
                                 print(val);
-                                printOffsets(*x, v, index);
+                                printOffsets(*x, v, f.name);
                             }
                         }
                         else {
@@ -159,7 +161,7 @@ void TextPrinter::print(const type_info::Value& v) {
 
                             out() << ": ";
                             print(y);
-                            printOffsets(*x, v, index);
+                            printOffsets(*x, v, f.name);
                         }
 
                         empty = false;
@@ -250,20 +252,22 @@ void TextPrinter::print(const type_info::Value& v) {
     }
 }
 
-void TextPrinter::printOffsets(const type_info::Struct& ti, const type_info::Value& v, uint64_t index) {
-    const auto& offsets = spicy::rt::get_offsets_for_unit(ti, v);
-    const auto& offset = offsets && offsets->size() > index ? offsets->at(index) : std::nullopt;
+void TextPrinter::printOffsets(const type_info::Struct& ti, const type_info::Value& v, const std::string& field_name) {
+    if ( ! _options.include_offsets || field_name.empty() )
+        return;
 
-    if ( _options.include_offsets && offset ) {
-        const auto& start = std::get<0>(*offset);
-        const auto& end = std::get<1>(*offset);
+    const auto* field_offsets = spicy::rt::get_offsets_for_unit(ti, v);
+    if ( ! field_offsets )
+        return;
 
-        out() << " [" << start << ", ";
+    if ( const auto& offsets = field_offsets->get_optional(field_name) ) {
+        out() << " [" << std::get<0>(*offsets) << ", ";
 
-        if ( end )
+        if ( const auto& end = std::get<1>(*offsets) )
             out() << *end;
         else
             out() << "-";
+
         out() << "]";
     }
 }
