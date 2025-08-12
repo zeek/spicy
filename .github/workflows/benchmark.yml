@@ -17,7 +17,7 @@ jobs:
     name: Run benchmarks
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
           persist-credentials: false
@@ -38,7 +38,7 @@ jobs:
               zlib1g-dev
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@9b88f2531867ab50e2c253da5f63bbf0674ad719
+        uses: hendrikmuhs/ccache-action@4f314b2aaa5118b9e49eb811277df5b0906bce93
         with:
           create-symlink: true
           key: ${{ github.job }}
@@ -50,7 +50,7 @@ jobs:
           cmake -G Ninja -DCODSPEED_MODE=instrumentation -DCMAKE_BUILD_TYPE=RelWithDebInfo -Bbuild /spicy
           ninja -C build spicy-rt-parsing-benchmark hilti-rt-benchmark
 
-      - uses: CodSpeedHQ/action@c28fe9fbe7d57a3da1b7834ae3761c1d8217612d
+      - uses: CodSpeedHQ/action@0b6e7a3d96c9d2a6057e7bcea6b45aaf2f7ce60b
         with:
           run: |
             ./build/bin/hilti-rt-benchmark
