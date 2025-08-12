@@ -814,8 +814,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
                 "%d>() }",
                 b->id(), b->lower(), b->upper(), cg->typeInfo(b->itemTypeWithOptional()), ttype, i++));
 
-        result = fmt("::hilti::rt::type_info::Bitfield(std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
-                     util::join(elems, ", "));
+        result = fmt("::hilti::rt::type_info::Bitfield(%u, std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
+                     n->width(), util::join(elems, ", "));
     }
 
     void operator()(type::Enum* n) final {

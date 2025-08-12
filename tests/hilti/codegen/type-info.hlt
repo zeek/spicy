@@ -267,6 +267,9 @@ struct VisitorTypesInit {
             }
             case TypeInfo::Bitfield: {
                 SEEN();
+
+                CHECK_EQ(type.bitfield->width(), 32);
+
                 const auto* x = type.bitfield;
                 auto s = x->iterate(v);
                 auto i = s.begin();

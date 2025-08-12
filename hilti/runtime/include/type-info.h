@@ -438,7 +438,14 @@ public:
      *
      * @param labels the bitfield's fields
      */
-    Bitfield(std::vector<bitfield::Bits> bits) : _bits(std::move(bits)) {}
+    Bitfield(uint32_t width, std::vector<bitfield::Bits> bits) : _width(width), _bits(std::move(bits)) {}
+
+    /**
+     * Returns the bitfield's integer width in bits.
+     *
+     * @return the bitfield's width
+     */
+    auto width() const { return _width; }
 
     /** Returns the bitfield's fields. */
     const auto& bits() const { return _bits; }
@@ -462,6 +469,7 @@ public:
     }
 
 private:
+    unsigned int _width = 0;
     const std::vector<bitfield::Bits> _bits;
 };
 
