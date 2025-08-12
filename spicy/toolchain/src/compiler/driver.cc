@@ -38,5 +38,5 @@ bool Driver::hookProcessCommandLineOption(int opt, const char* optarg) {
 }
 
 std::string Driver::hookAugmentUsage() {
-    return "  -Q | --include-offsets          Include stream offsets of parsed data in output.\n";
+    return "  -Q | --include-offsets            Include stream offsets of parsed data in output.\n";
 }
