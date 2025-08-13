@@ -4099,7 +4099,7 @@
     input.
 
     While this just pushed work downstream when synchronizing on literals,
-    it could cause us loosing input if synchronizing on regular expressions
+    it could cause us losing input if synchronizing on regular expressions
     if we happened to fail parsing due to a gap which is now at the front of
     the input (parse errors from gaps are the most likely resynchronization
     scenario when parsing genuine traffic); in this case the regular
@@ -6009,7 +6009,7 @@
     internally, it's confusing to the user. This commits changes that
     to support arbitrary expressions as arguments.
 
-    To make this change without loosing a way to create actual constants
+    To make this change without losing a way to create actual constants
     (which we need at some places), we implement this in two stages: the
     parser initially turns such `interval(...)` expressions into call
     operators[1] that the types now define for each desired constructor. We
