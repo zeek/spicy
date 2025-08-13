@@ -1,6 +1,6 @@
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-FROM debian:bullseye-slim
+FROM debian:trixie-slim
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV CCACHE_DIR "/var/spool/ccache"
@@ -35,6 +35,5 @@ RUN apt-get -q update && \
       python3-pip \
       python3-setuptools \
       python3-wheel \
-      swig \
       zlib1g-dev && \
-    pip3 install --no-cache-dir "btest>=0.66" pre-commit
+    pip3 install --break-system-packages --no-cache-dir "btest>=0.66" pre-commit
