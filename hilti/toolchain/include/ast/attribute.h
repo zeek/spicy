@@ -84,6 +84,7 @@ const Kind Anchor("&anchor");
 const Kind Anonymous("&anonymous");
 const Kind Convert("&convert");
 const Kind Cxxname("&cxxname");
+const Kind CxxAnyAsPtr("&cxx-any-as-ptr");
 const Kind Debug("&debug");
 const Kind Default("&default");
 const Kind HavePrototype("&have_prototype");
@@ -205,7 +206,7 @@ public:
      * Retrieves an attribute with a given kind from the set. If multiple
      * attributes with that kind exist, it's undefined which one is returned.
      *
-     * @return attribute if found
+     * @return attribute if found, or null otherwise.
      */
     Attribute* find(const attribute::Kind& kind) const;
 
@@ -215,13 +216,6 @@ public:
      * @return all attributes with matching kind
      */
     hilti::node::Set<Attribute> findAll(const attribute::Kind& kind) const;
-
-    /**
-     * Returns true if there's an attribute with a given kind in the set.
-     *
-     * @param true if found
-     */
-    bool has(const attribute::Kind& kind) const { return find(kind) != nullptr; }
 
     /** Adds an attribute to the set. */
     void add(ASTContext* ctx, Attribute* a) {

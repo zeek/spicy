@@ -1,0 +1,24 @@
+# @TEST-EXEC: hiltic -j %INPUT test.cc >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test &cxx-any-as-ptr.
+
+module Test {
+
+declare public void test(any x &cxx-any-as-ptr) &cxxname="test";
+
+test(42);
+test("string");
+
+}
+
+@TEST-START-FILE test.cc
+
+#include <iostream>
+#include <hilti/rt/type-info.h>
+
+void test(const void* ptr, const hilti::rt::TypeInfo* type) {
+    std::cout << type->display << std::endl;
+}
+
+@TEST-END-FILE

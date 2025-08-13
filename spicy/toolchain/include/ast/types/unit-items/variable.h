@@ -24,7 +24,7 @@ public:
     auto default_() const { return child<Expression>(1); }
     auto attributes() const { return child<AttributeSet>(2); }
 
-    bool isOptional() const { return attributes()->has(attribute::kind::Optional); }
+    bool isOptional() const { return attributes()->find(attribute::kind::Optional); }
 
     QualifiedType* itemType() const final { return child<QualifiedType>(0); }
 

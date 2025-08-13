@@ -78,7 +78,7 @@ struct VisitorASTInfo : public visitor::PreOrder {
 
             for ( const auto& [id, p] : unit->grammar().productions() ) {
                 auto* field = p->meta().field();
-                if ( ! field || ! field->attributes()->has(attribute::kind::Synchronize) )
+                if ( ! field || ! field->attributes()->find(attribute::kind::Synchronize) )
                     continue;
 
                 auto lahs = unit->grammar().lookAheadsForProduction(p);

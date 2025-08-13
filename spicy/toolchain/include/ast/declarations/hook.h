@@ -81,15 +81,15 @@ public:
     }
 
     hook::Type hookType() const {
-        if ( attributes()->has(attribute::kind::Foreach) )
+        if ( attributes()->find(attribute::kind::Foreach) )
             return hook::Type::ForEach;
-        else if ( attributes()->has(attribute::kind::Error) )
+        else if ( attributes()->find(attribute::kind::Error) )
             return hook::Type::Error;
         else
             return hook::Type::Standard;
     }
 
-    auto isDebug() const { return attributes()->has(attribute::kind::Debug); }
+    auto isDebug() const { return attributes()->find(attribute::kind::Debug); }
 
     void setUnitTypeIndex(hilti::ast::TypeIndex index) {
         assert(index);

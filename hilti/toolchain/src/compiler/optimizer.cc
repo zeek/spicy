@@ -258,7 +258,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 assert(fn.size() <= 1);
 
                 // If the member declaration is marked `&always-emit` mark it as implemented.
-                if ( n->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
+                if ( n->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
                     function.defined = true;
 
                 // If the member declaration includes a body mark it as implemented.
@@ -269,7 +269,7 @@ struct FunctionVisitor : OptimizerVisitor {
                 // attribute its members are defined in C++ as well.
                 auto* type_ = n->parent<declaration::Type>();
 
-                if ( type_ && type_->attributes()->has(hilti::attribute::kind::Cxxname) )
+                if ( type_ && type_->attributes()->find(hilti::attribute::kind::Cxxname) )
                     function.defined = true;
 
                 if ( n->type()->type()->as<type::Function>()->flavor() == type::function::Flavor::Hook )
@@ -337,11 +337,11 @@ struct FunctionVisitor : OptimizerVisitor {
                     function.defined = true;
 
                 // If the declaration has a `&cxxname` it is defined in C++.
-                else if ( fn->attributes()->has(hilti::attribute::kind::Cxxname) )
+                else if ( fn->attributes()->find(hilti::attribute::kind::Cxxname) )
                     function.defined = true;
 
                 // If the member declaration is marked `&always-emit` mark it as referenced.
-                if ( fn->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
+                if ( fn->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
                     function.referenced = true;
 
                 // If the function is public mark is as referenced.
@@ -1525,7 +1525,7 @@ struct MemberVisitor : OptimizerVisitor {
             return;
 
         // We never remove member marked `&always-emit`.
-        if ( n->attributes()->has(hilti::attribute::kind::AlwaysEmit) )
+        if ( n->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
             return;
 
         // We only remove member marked `&internal`.
@@ -1839,9 +1839,9 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 // Create the unused params
                 auto& unused = fn_unused_params[function_id];
 
-                if ( n->attributes()->has(hilti::attribute::kind::Cxxname) ||
-                     n->attributes()->has(hilti::attribute::kind::AlwaysEmit) ||
-                     n->attributes()->has(hilti::attribute::kind::Public) )
+                if ( n->attributes()->find(hilti::attribute::kind::Cxxname) ||
+                     n->attributes()->find(hilti::attribute::kind::AlwaysEmit) ||
+                     n->attributes()->find(hilti::attribute::kind::Public) )
                     return;
 
                 if ( n->linkage() == declaration::Linkage::Public )

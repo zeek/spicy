@@ -36,6 +36,7 @@ namespace {
 std::unordered_map<node::Tag, std::unordered_set<hilti::attribute::Kind>> allowed_attributes{
     {hilti::node::tag::declaration::Hook,
      {attribute::kind::Foreach, attribute::kind::Error, attribute::kind::Debug, attribute::kind::Priority}},
+    {hilti::node::tag::declaration::Parameter, {attribute::kind::CxxAnyAsPtr}},
     {hilti::node::tag::declaration::Type, {attribute::kind::Cxxname, attribute::kind::BitOrder}},
     {hilti::node::tag::Function, {attribute::kind::Cxxname, attribute::kind::Priority, attribute::kind::Debug}},
     {hilti::node::tag::type::Enum, {attribute::kind::Cxxname}},
@@ -92,8 +93,8 @@ bool supportsLiterals(QualifiedType* t) {
 // Helper to make sure a field's attributes are consistent. This is type-independent.
 hilti::Result<hilti::Nothing> checkFieldAttributes(type::unit::item::Field* f) {
     // Can't combine ipv4 and ipv6
-    auto v4 = f->attributes()->has(attribute::kind::IPv4);
-    auto v6 = f->attributes()->has(attribute::kind::IPv6);
+    auto* v4 = f->attributes()->find(attribute::kind::IPv4);
+    auto* v6 = f->attributes()->find(attribute::kind::IPv6);
 
     if ( v4 && v6 )
         return hilti::result::Error("field cannot have both &ipv4 and &ipv6 attributes");
@@ -167,8 +168,8 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
     }
 
     if ( pt->type()->isA<hilti::type::Address>() ) {
-        auto v4 = f->attributes()->has(attribute::kind::IPv4);
-        auto v6 = f->attributes()->has(attribute::kind::IPv6);
+        auto* v4 = f->attributes()->find(attribute::kind::IPv4);
+        auto* v6 = f->attributes()->find(attribute::kind::IPv6);
 
         if ( ! (v4 || v6) )
             return hilti::result::Error("address field must come with either &ipv4 or &ipv6 attribute");
@@ -587,10 +588,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         checkNodeAttributes(n, n->attributes(), "hook declaration");
 
         if ( auto* field = n->parent<spicy::type::unit::item::Field>();
-             field && n->attributes()->has(attribute::kind::Foreach) && ! field->isContainer() )
+             field && n->attributes()->find(attribute::kind::Foreach) && ! field->isContainer() )
             error("'foreach' can only be used with containers", n);
 
-        if ( n->attributes()->has(attribute::kind::Foreach) && n->attributes()->has(attribute::kind::Error) )
+        if ( n->attributes()->find(attribute::kind::Foreach) && n->attributes()->find(attribute::kind::Error) )
             error("hook cannot have both 'foreach' and '%error'", n);
 
         // Ensure we only have one foreach or one %error
@@ -684,10 +685,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     error("&chunked is only valid for bytes fields", n);
                 else if ( n->hasValue() )
                     error("&chunked cannot have an expression", n);
-                else if ( ! (f->attributes()->has(attribute::kind::Eod) ||
-                             f->attributes()->has(attribute::kind::Size) ||
-                             f->attributes()->has(attribute::kind::Until) ||
-                             f->attributes()->has(attribute::kind::UntilIncluding)) )
+                else if ( ! (f->attributes()->find(attribute::kind::Eod) ||
+                             f->attributes()->find(attribute::kind::Size) ||
+                             f->attributes()->find(attribute::kind::Until) ||
+                             f->attributes()->find(attribute::kind::UntilIncluding)) )
                     error("&chunked must be used with &eod, &until, &until-including or &size", n);
             }
         }
@@ -764,7 +765,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         if ( auto* attrs = n->attributes() ) {
-            if ( attrs->has(attribute::kind::Size) && attrs->has(attribute::kind::MaxSize) )
+            if ( attrs->find(attribute::kind::Size) && attrs->find(attribute::kind::MaxSize) )
                 error(("attributes cannot be combined: &size, &max-size"), n);
 
             for ( const auto& a : attrs->attributes() ) {
@@ -895,7 +896,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( count_attr )
             deprecated("&count=N is deprecated, prefer '[N]' syntax", count_attr->meta().location());
 
-        if ( n->attributes()->has(attribute::kind::Convert) && n->attributes()->has(attribute::kind::Chunked) )
+        if ( n->attributes()->find(attribute::kind::Convert) && n->attributes()->find(attribute::kind::Chunked) )
             deprecated(
                 "usage of &convert on &chunked field is ill-defined and deprecated; support will be "
                 "removed in future versions",
@@ -955,7 +956,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         if ( auto* t = n->itemType()->type()->tryAs<hilti::type::Bitfield>() ) {
             for ( const auto& b : t->bits() ) {
-                if ( b->attributes()->has(attribute::kind::BitOrder) )
+                if ( b->attributes()->find(attribute::kind::BitOrder) )
                     deprecated(fmt("&bit-order on bitfield item '%s' has no effect and is deprecated", b->id()),
                                b->meta().location());
             }
@@ -1039,7 +1040,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                         }
                     }
 
-                    if ( f->attributes()->has(attribute::kind::Synchronize) )
+                    if ( f->attributes()->find(attribute::kind::Synchronize) )
                         error(fmt("unit switch branches cannot be &synchronize"), n);
 
                     seen_fields.emplace_back(f);

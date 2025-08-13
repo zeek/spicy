@@ -521,8 +521,8 @@ opt_func_params
 func_params   : func_params ',' func_param       { $$ = std::move($1); $$.push_back($3); }
               | func_param                       { $$ = hilti::type::function::Parameters{$1}; }
 
-func_param    : opt_func_param_kind local_id ':' type opt_init_expression
-                                                 { $$ = builder->declarationParameter($2, $4, $1, $5, {}, __loc__); }
+func_param    : opt_func_param_kind local_id ':' type opt_init_expression opt_attributes
+                                                 { $$ = builder->declarationParameter($2, $4, $1, $5, $6, __loc__); }
 
 func_result   : ':' qtype                        { $$ = std::move($2); }
 
