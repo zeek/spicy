@@ -795,17 +795,9 @@ struct ProductionVisitor : public production::Visitor {
             auto* __offsets = builder()->member(state().self, "__offsets");
             auto* cur_offset = builder()->memberCall(state().cur, "offset");
 
-            // Since the offset list is created empty resize the
-            // vector so that we can access the current field's index.
-            assert(field->index());
-            auto* index = builder()->addTmp("index", builder()->integer(*field->index()));
-            builder()->addMemberCall(__offsets, "resize", {builder()->sum(index, builder()->integer(1))});
-
-            builder()->addAssign(builder()->index(__offsets, builder()->integer(*field->index())),
-                                 builder()->tuple(
-                                     {cur_offset,
-                                      builder()->optional(builder()->qualifiedType(builder()->typeUnsignedInteger(64),
-                                                                                   hilti::Constness::Const))}));
+            // _offsets[field] = (self.offset(), null);
+            builder()->addAssign(builder()->index(__offsets, builder()->string(field->id(), false)),
+                                 builder()->tuple({cur_offset, builder()->null()}));
         }
 
         return pre_container_offset;
@@ -921,12 +913,14 @@ struct ProductionVisitor : public production::Visitor {
 
         if ( pb->options().getAuxOption<bool>("spicy.track_offsets", false) ) {
             assert(field->index());
+
+            // _offsets[field] = (offsets[field].begin(), self.offset());
             auto* __offsets = builder()->member(state().self, "__offsets");
-            auto* cur_offset = builder()->memberCall(state().cur, "offset");
-            auto* offsets = builder()->index(__offsets, builder()->integer(*field->index()));
-            builder()->addAssign(offsets,
-                                 builder()->tuple({builder()->index(builder()->deref(offsets), builder()->integer(0U)),
-                                                   cur_offset}));
+            auto* begin = builder()->index(builder()->index(__offsets, builder()->string(field->id(), false)),
+                                           builder()->integer(0U));
+            auto* end = builder()->memberCall(state().cur, "offset");
+            builder()->addAssign(builder()->index(__offsets, builder()->string(field->id(), false)),
+                                 builder()->tuple({begin, end}));
         }
 
         auto* val = destination();
@@ -2634,6 +2628,14 @@ void ParserBuilder::initializeUnit(const Location& l) {
 
     saveParsePosition();
 
+    if ( options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+        // _offsets["self"] = (self.offset(), null);
+        auto* __offsets = builder()->member(state().self, "__offsets");
+        auto* begin = builder()->memberCall(state().cur, "offset");
+        builder()->addAssign(builder()->index(__offsets, builder()->string("self", false)),
+                             builder()->tuple({begin, builder()->null()}));
+    }
+
     beforeHook();
     builder()->addMemberCall(state().self, "__on_0x25_init", {}, l);
     afterHook();
@@ -2643,6 +2645,16 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
     const auto& unit = state().unit;
 
     saveParsePosition();
+
+    if ( options().getAuxOption<bool>("spicy.track_offsets", false) ) {
+        // _offsets["self"] = (offsets["self"].begin(), self.offset());
+        auto* __offsets = builder()->member(state().self, "__offsets");
+        auto* begin =
+            builder()->index(builder()->index(__offsets, builder()->string("self", false)), builder()->integer(0U));
+        auto* end = builder()->memberCall(state().cur, "offset");
+        builder()->addAssign(builder()->index(__offsets, builder()->string("self", false)),
+                             builder()->tuple({begin, end}));
+    }
 
     if ( success ) {
         // We evaluate any "&requires" before running the final "%done" hook

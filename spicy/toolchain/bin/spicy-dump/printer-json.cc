@@ -89,6 +89,16 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
             return y ? convert(y) : json();
         }
         case TypeInfo::Struct: {
+            static auto make_json_offsets_object = [](const auto& tuple) {
+                auto o = json::object();
+                o["start"] = tuple::get<0>(tuple).Ref();
+
+                if ( const auto& end = tuple::get<1>(tuple) )
+                    o["end"] = end->Ref();
+
+                return o;
+            };
+
             auto j = json::object();
 
             const auto* struct_ = type.struct_;
@@ -109,31 +119,30 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                 j[f.name] = convert(y);
             }
 
-            auto offsets = json::object();
-            const auto& offsets_ = spicy::rt::get_offsets_for_unit(*struct_, v);
-            if ( _options.include_offsets && offsets_ ) {
-                auto fields = struct_->fields();
+            if ( const auto* field_offsets = spicy::rt::get_offsets_for_unit(*struct_, v);
+                 field_offsets && _options.include_offsets ) {
+                auto json_map = json::object();
 
-                for ( const auto&& [index, offset] : enumerate(*offsets_) ) {
-                    auto o = json::object();
+                for ( const auto& field : struct_->fields() ) {
+                    auto offsets = field_offsets->get_optional(field.get().name);
+                    if ( ! offsets )
+                        continue;
 
-                    if ( offset ) {
-                        o["start"] = tuple::get<0>(*offset).Ref();
-                        if ( const auto& end = tuple::get<1>(*offset) )
-                            o["end"] = end->Ref();
-                    }
+                    auto json_offsets = make_json_offsets_object(*offsets);
 
-                    const auto& field = fields[index].get();
-                    if ( field.type->tag == TypeInfo::Bitfield && field.isAnonymous() ) {
-                        // Special case anonymous bitfield: add offsets for all its items
-                        for ( const auto& b : field.type->bitfield->bits() )
-                            offsets[b.name] = o;
+                    if ( field.get().type->tag == TypeInfo::Bitfield && field.get().isAnonymous() ) {
+                        // Special case anonymous bitfield: add same offsets for all its items.
+                        for ( const auto& b : field.get().type->bitfield->bits() )
+                            json_map[b.name] = json_offsets;
                     }
                     else
-                        offsets[field.name] = std::move(o);
+                        json_map[field.get().name] = std::move(json_offsets);
                 }
 
-                j["__offsets"] = std::move(offsets);
+                if ( const auto& self = field_offsets->get_optional("self") )
+                    json_map["self"] = make_json_offsets_object(*self);
+
+                j["__offsets"] = std::move(json_map);
             }
 
             return j;

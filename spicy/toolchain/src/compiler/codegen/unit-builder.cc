@@ -179,12 +179,12 @@ UnqualifiedType* CodeGen::compileUnit(type::Unit* unit, bool declare_only) {
     if ( options().getAuxOption<bool>("spicy.track_offsets", false) ) {
         auto* u64 = builder()->qualifiedType(builder()->typeUnsignedInteger(64), hilti::Constness::Const);
         auto* opt_u64 = builder()->qualifiedType(builder()->typeOptional(u64), hilti::Constness::Const);
-        auto* v_elem =
+        auto* tuple_ =
             builder()->qualifiedType(builder()->typeTuple(QualifiedTypes{u64, opt_u64}), hilti::Constness::Const);
-        auto* opt_v_elem = builder()->qualifiedType(builder()->typeOptional(v_elem), hilti::Constness::Const);
-        auto* vec = builder()->qualifiedType(builder()->typeVector(opt_v_elem), hilti::Constness::Const);
+        auto* string = builder()->qualifiedType(builder()->typeString(), hilti::Constness::Const);
+        auto* map = builder()->qualifiedType(builder()->typeMap(string, tuple_), hilti::Constness::Const);
 
-        v.addField(builder()->declarationField(ID("__offsets"), vec,
+        v.addField(builder()->declarationField(ID("__offsets"), map,
                                                builder()->attributeSet(
                                                    {builder()->attribute(hilti::attribute::kind::Internal),
                                                     builder()->attribute(hilti::attribute::kind::AlwaysEmit)})));
