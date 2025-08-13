@@ -357,9 +357,9 @@ docker_centos_stream_9_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_debian11_task:
+docker_debian12_task:
   container:
-    dockerfile: docker/Dockerfile.debian-11
+    dockerfile: docker/Dockerfile.debian-12
     cpu: 4
     memory: 12G
 
@@ -391,9 +391,9 @@ docker_debian11_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_debian12_task:
+docker_debian13_task:
   container:
-    dockerfile: docker/Dockerfile.debian-12
+    dockerfile: docker/Dockerfile.debian-13
     cpu: 4
     memory: 12G
 
