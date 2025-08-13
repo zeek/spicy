@@ -267,27 +267,40 @@ struct VisitorTypesInit {
             }
             case TypeInfo::Bitfield: {
                 SEEN();
-                const auto* x = type.tuple;
+
+                CHECK_EQ(type.bitfield->width(), 32);
+
+                const auto* x = type.bitfield;
                 auto s = x->iterate(v);
                 auto i = s.begin();
+                auto b = x->bits().begin();
 
                 auto opt1 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
                 CHECK_EQ(type_info::value::auxType<type_info::String>(opt1)->get(opt1), "string");
                 CHECK_EQ(i->first.name, "a");
+                CHECK_EQ(i->first.lower, 0);
+                CHECK_EQ(i->first.upper, 4);
                 ++i;
+                ++b;
 
                 auto opt2 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
                 CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(opt2)->get(opt2), 6);
                 CHECK_EQ(i->first.name, "b");
+                CHECK_EQ(i->first.lower, 1);
+                CHECK_EQ(i->first.upper, 2);
                 ++i;
+                ++b;
 
                 auto opt3 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
                 CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(opt3)->get(opt3), 31);
                 CHECK_EQ(i->first.name, "c");
+                CHECK_EQ(i->first.lower, 3);
+                CHECK_EQ(i->first.upper, 7);
                 ++i;
+                ++b;
 
                 CHECK(i == s.end());
-                CHECK_EQ(x->elements().size(), 3);
+                CHECK_EQ(x->bits().size(), 3);
                 break;
             }
             case TypeInfo::Bool: {
