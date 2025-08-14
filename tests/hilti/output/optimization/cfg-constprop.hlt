@@ -63,10 +63,25 @@ function void branching(bool b) {
     hilti::print(c);
 }
 
+# CHECK: function uint<64> switch_controlflow
+function uint<64> switch_controlflow(uint<64> in_num) {
+    local uint<64> num = 0;
+    switch (in_num) {
+        case 0: num = 1;
+        case 1: num = 2;
+        case 2: num = 3;
+        default: num = 0;
+    }
+
+    # CHECK: return num
+    return num;
+}
+
 
 simple();
 global uint<64> x = 10;
 param(x);
 branching(True);
+switch_controlflow(2);
 
 }

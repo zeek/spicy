@@ -214,6 +214,7 @@ private:
     GraphNode _addFor(GraphNode predecessor, const statement::For& for_);
     GraphNode _addWhile(GraphNode predecessor, const statement::While& while_, GraphNode scope_end);
     GraphNode _addIf(GraphNode predecessor, const statement::If& if_);
+    GraphNode _addSwitch(GraphNode predecessor, const statement::Switch& switch_);
     GraphNode _addTryCatch(GraphNode predecessor, const statement::Try& try_);
     GraphNode _addReturn(GraphNode predecessor, const statement::Return& return_);
     GraphNode _addThrow(GraphNode predecessor, statement::Throw& throw_, GraphNode scope_end);
