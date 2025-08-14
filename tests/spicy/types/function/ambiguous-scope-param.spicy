@@ -1,0 +1,13 @@
+# @TEST-EXEC-FAIL: ${SPICYC} -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Regression test for #2144.
+
+module Test;
+
+function f(x: uint64) : uint64 {
+    local x: uint64 = 0;
+    return x;
+}
+
+f(1);

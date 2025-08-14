@@ -38,11 +38,14 @@ struct Visitor : visitor::PostOrder {
         auto* module = n->parent<declaration::Module>();
         assert(module);
 
+        // Grab the body's scope if available
+        auto* scope = n->function()->body() ? n->function()->body()->getOrCreateScope() : n->getOrCreateScope();
+
         if ( ! n->id().namespace_() || n->id().namespace_() == module->id().namespace_() )
             x->getOrCreateScope()->insert(n->id().local(), n);
 
         for ( auto* x : n->function()->ftype()->parameters() )
-            n->getOrCreateScope()->insert(x);
+            scope->insert(x);
 
         if ( n->linkage() == declaration::Linkage::Struct ) {
             if ( ! n->id().namespace_() ) {
@@ -54,10 +57,10 @@ struct Visitor : visitor::PostOrder {
         if ( n->linkedDeclarationIndex() ) {
             if ( auto* decl = builder->context()->lookup(n->linkedDeclarationIndex())->as<declaration::Type>() ) {
                 auto* const t = decl->type()->type()->as<type::Struct>();
-                n->getOrCreateScope()->insert(t->self());
+                scope->insert(t->self());
 
                 for ( auto* x : t->parameters() )
-                    n->getOrCreateScope()->insert(x);
+                    scope->insert(x);
             }
         }
     }
