@@ -1,0 +1,32 @@
+# @TEST-EXEC: hiltic -p -o /dev/null -D cfg-initial %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo {
+
+function void simple() {
+    local uint<64> x = 0;
+    switch(1) {
+        case 1: x = 1;
+        case 2: x = 2;
+        case 3: x = 3;
+        default: x = 0;
+    }
+}
+
+function void multiple_expressions() {
+    local uint<64> x = 0;
+    switch(1) {
+        case 1: x = 1;
+        case 2, 3: x = 2;
+        default: x = 3;
+    }
+}
+
+function void no_default() {
+    local uint<64> x = 0;
+    switch(1) {
+        case 1: x = 1;
+    }
+}
+
+}
