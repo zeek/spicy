@@ -44,7 +44,8 @@ public type Datas = unit {
 # CHECK: End parsing production: Unit: foo__Data -> ty
 # CHECK-NOT: (*self).__error = __error;
 # CHECK-NOT: __error = __error;
-# CHECK: return __result;
+# Go until next method
+# CHECK: method
 type Data = unit {
     ty: uint8;
 };

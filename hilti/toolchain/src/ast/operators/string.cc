@@ -80,7 +80,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeString()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeString()},
             .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "string",
