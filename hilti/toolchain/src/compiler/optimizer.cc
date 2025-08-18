@@ -1101,12 +1101,14 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
         visitor::visit(tv, n.value());
     }
 
-    void populate_dataflow(AnalysisResult& result, const ConstantMap& init) {
+    void populate_dataflow(AnalysisResult& result, const ConstantMap& init, const ID& function_name) {
         std::vector<detail::cfg::GraphNode> worklist;
 
         // Add all nodes
         for ( const auto& [id, node] : result.cfg.graph().nodes() )
             worklist.push_back(node);
+
+        auto num_processed = 0;
 
         while ( ! worklist.empty() ) {
             auto n = worklist.back();
@@ -1144,7 +1146,12 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                         worklist.push_back(*succ_node);
                 }
             }
+            num_processed++;
         }
+
+        HILTI_DEBUG(logging::debug::OptimizerCollect,
+                    util::fmt("function %s took %d iterations before constant propagation convergence", function_name,
+                              num_processed));
     }
 
     void apply_propagation(Statement* body, const AnalysisResult& result) {
@@ -1232,7 +1239,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                     ConstantMap init;
                     for ( auto* param : n->function()->ftype()->parameters() )
                         init[param].not_a_constant = true;
-                    populate_dataflow(result, init);
+                    populate_dataflow(result, init, n->id());
                     analysis_results.insert({body, std::move(result)});
                 }
                 break;
