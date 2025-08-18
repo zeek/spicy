@@ -1,3 +1,9 @@
+1.15.0-dev.2 | 2025-08-18 15:49:52 -0400
+
+  * GH-2144: Fix function parameter/local name clash. (Evan Typanski, Corelight)
+
+    Fixes #2144
+
 1.15.0-dev | 2025-08-14 16:38:55 +0200
 
   * Start of 1.15.0 development. (Benjamin Bannier, Corelight)
