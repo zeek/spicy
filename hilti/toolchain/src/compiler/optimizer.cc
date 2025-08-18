@@ -987,6 +987,10 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
         bool not_a_constant = false;
 
         bool operator==(const ConstantValue& other) const {
+            // If both are NAC, what's in expr doesn't matter
+            if ( not_a_constant && other.not_a_constant )
+                return true;
+
             return expr == other.expr && not_a_constant == other.not_a_constant;
         }
     };
