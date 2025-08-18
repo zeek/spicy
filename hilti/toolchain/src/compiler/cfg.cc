@@ -606,7 +606,7 @@ struct DataflowVisitor : visitor::PreOrder {
                     transfer.gen[decl] = root;
                     break;
                 };
-            };
+            }
         }
 
         // Since we do not know whether the called function is pure always keep it.

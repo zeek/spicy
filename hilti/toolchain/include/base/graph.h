@@ -126,7 +126,7 @@ public:
     std::vector<NodeId> neighborsDownstream(NodeId id) const { return neighbors(id, Direction::Out); }
 
     /**
-     * Get downstream neighbors of a node, i.e., nodes connected to the node by
+     * Get upstream neighbors of a node, i.e., nodes connected to the node by
      * an edge where the node is a target.
      *
      * @param id the node ID of the node to query
