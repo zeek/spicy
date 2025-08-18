@@ -1102,22 +1102,24 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
     }
 
     void populate_dataflow(AnalysisResult& result, const ConstantMap& init, const ID& function_name) {
-        std::vector<detail::cfg::GraphNode> worklist;
+        auto worklist = result.cfg.postorder();
+        // We always expect the worklist to contain begin/end nodes
+        assert(worklist.size() >= 1);
+        // Reverse postorder is best for forward analyses
+        std::ranges::reverse(worklist);
 
-        // Add all nodes
-        for ( const auto& [id, node] : result.cfg.graph().nodes() )
-            worklist.push_back(node);
+        // Set the initial state from parameters
+        result.out[worklist.front()] = init;
+        worklist.pop_front();
 
         auto num_processed = 0;
 
         while ( ! worklist.empty() ) {
-            auto n = worklist.back();
-            worklist.pop_back();
+            auto n = worklist.front();
+            worklist.pop_front();
 
             // Meet
-            // Setting init before would immediately get overwritten. Doing it here
-            // technically misses some optimizations.
-            ConstantMap new_in = init;
+            ConstantMap new_in;
             auto preds = result.cfg.graph().neighborsUpstream(n->identity());
             for ( const uint64_t& pred : preds ) {
                 const auto& pred_out = result.out[*result.cfg.graph().getNode(pred)];
