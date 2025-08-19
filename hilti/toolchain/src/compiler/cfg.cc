@@ -171,6 +171,9 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
         else if ( auto* if_ = c->tryAs<statement::If>() )
             predecessor = _addIf(predecessor, *if_);
 
+        else if ( auto* switch_ = c->tryAs<statement::Switch>() )
+            predecessor = _addSwitch(predecessor, *switch_);
+
         else if ( auto* try_catch = c->tryAs<statement::Try>() )
             predecessor = _addTryCatch(predecessor, *try_catch);
 
@@ -319,6 +322,40 @@ GraphNode CFG::_addTryCatch(GraphNode predecessor, const statement::Try& try_cat
     return mix_after;
 }
 
+GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch_) {
+    const auto& condition = _getOrAddNode(switch_.condition());
+    _addEdge(predecessor, condition);
+
+    auto mix = _getOrAddNode(_createMetaNode<Flow>());
+
+    if ( ! switch_.default_() )
+        _addEdge(condition, mix);
+
+    for ( auto* case_ : switch_.cases() ) {
+        GraphNode case_block;
+        if ( ! case_->expressions().empty() ) {
+            // Add edges first in order, though this may not be necessary
+            auto it = case_->expressions().begin();
+            auto current = _getOrAddNode(*it);
+            _addEdge(condition, current);
+            it++;
+            for ( ; it != case_->expressions().end(); it++ ) {
+                auto next = _getOrAddNode(*it);
+                _addEdge(current, next);
+                current = next;
+            }
+            case_block = _addBlock(current, case_->body()->children(), case_->body());
+        }
+
+        else
+            case_block = _addBlock(condition, case_->body()->children(), case_->body());
+
+        _addEdge(case_block, mix);
+    }
+
+    return mix;
+}
+
 GraphNode CFG::_addReturn(GraphNode predecessor, const statement::Return& return_) {
     auto r = _getOrAddNode(const_cast<statement::Return*>(&return_));
     _addEdge(predecessor, r);
@@ -446,6 +483,7 @@ std::string CFG::dot() const {
                     std::vector<std::string> xs;
                     for ( const auto& stmt : stmts )
                         xs.push_back(escape(stmt->print()));
+                    std::ranges::sort(xs);
                     ys.push_back(util::fmt("%s: %s", decl->id(), util::join(xs, ", ")));
                 }
 

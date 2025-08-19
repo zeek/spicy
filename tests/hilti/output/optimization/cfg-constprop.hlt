@@ -1,0 +1,87 @@
+# @TEST-DOC: Tests optimizations performing CFG-based constant propagation.
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+
+module Test {
+import hilti;
+
+# CHECK: function void simple
+function void simple() {
+    # We remove the dead store in i after constant propagation
+    # CHECK-NOT: local uint<64> i = 0
+    local uint<64> i = 0;
+    # CHECK: local uint<64> j = 0
+    local uint<64> j = i;
+
+    # We don't propagate into function calls, this may change. Other tests will
+    # use print as a side effect to keep variables alive and not propagate.
+    # CHECK: print(j
+    hilti::print(j);
+}
+
+# CHECK: function void param
+function void param(inout uint<64> x) {
+    local bool b = True;
+    while ( b ) {
+        if ( x == 10 )
+            x = 5;
+
+        # Ensure this doesn't get the x = 5 above to propagate
+        # CHECK: local uint<64> y = x
+        local uint<64> y = x;
+        hilti::print(y, True);
+        b = False;
+    }
+}
+
+# CHECK: function void branching
+function void branching(bool b) {
+    # This gets removed since all uses of x get constant-propagated
+    # CHECK-NOT: local uint<64> x
+    local uint<64> x = 5;
+    if (b) {
+        x = 42;
+        # Indirection through y since function calls don't get propagation
+        # CHECK: local uint<64> y = 42;
+        local uint<64> y = x;
+        hilti::print(y);
+        return;
+    }
+
+    # CHECK: local uint<64> y = 5;
+    local uint<64> y = x;
+    hilti::print(y);
+
+    # This should not propagate
+    local a = 50;
+    if (b) {
+        a = 10;
+    }
+    # CHECK: local uint<64> c = a
+    local uint<64> c = a;
+    hilti::print(c);
+}
+
+# CHECK: function uint<64> switch_controlflow
+function uint<64> switch_controlflow(uint<64> in_num) {
+    local uint<64> num = 0;
+    switch (in_num) {
+        case 0: num = 1;
+        case 1: num = 2;
+        case 2: num = 3;
+        default: num = 0;
+    }
+
+    # CHECK: return num
+    return num;
+}
+
+
+simple();
+global uint<64> x = 10;
+param(x);
+branching(True);
+switch_controlflow(2);
+
+}

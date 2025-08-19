@@ -372,7 +372,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeBytes()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
             .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
@@ -388,7 +388,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeBytes()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
             .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
@@ -404,7 +404,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::SumAssign,
-            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .op0 = {.kind = parameter::Kind::InOut, .type = builder->typeBytes()},
             .op1 = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(8)},
             .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",

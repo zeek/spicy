@@ -6,7 +6,7 @@
 module Test;
 
 public type Data = unit {
-    # CHECK: [[REPEAT:[a-z_]+]] = 100
-    # CHECK: {{[a-z_]+}}.reserve(128 <= [[REPEAT]] ? 128 : [[REPEAT]])
+    # The repeat variable gets constant-propagated
+    # CHECK: {{[a-z_]+}}.reserve(128 <= 100 ? 128 : 100)
     vec: uint64[100];
 };

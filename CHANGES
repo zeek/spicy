@@ -1,3 +1,15 @@
+1.15.0-dev.9 | 2025-08-19 11:20:59 -0400
+
+  * GH-2146: Handle `switch` statements in CFG. (Evan Typanski, Corelight)
+
+    Closes #2146
+
+  * GH-2137: Add constant propagation pass. (Evan Typanski, Corelight)
+
+    Closes #2137
+
+  * Mark operators `InOut` if they change operand. (Evan Typanski, Corelight)
+
 1.15.0-dev.5 | 2025-08-19 08:00:23 +0200
 
   * Bump 3rdparty/utf8proc from `20d192a` to `72918b9` (dependabot[bot])

@@ -518,8 +518,48 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@Pub3%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@Pub3%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@Pub3%uses_stream" -> expression::Ctor "False" (inlining constant)
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:16:20-16:26" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:16:20-16:26" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__Pub2_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:27:14-27:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:27:14-27:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__Priv5_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:28:14-28:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:28:14-28:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__Priv6_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:29:20-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); local value_ref<Priv5> __transient__anon_2; # "<...>/unused-types.spicy:27:14-27:20" # Begin parsing production: Unit: foo__Priv5_2 -> __transient__anon_2 = default<foo::Priv5>(); (__cur, __lah, __lahe, __error) = (*__transient__anon_2).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error); # End parsing production: Unit: foo__Priv5_2 -> { # "<...>/unused-types.spicy:28:14-28:20" # Begin parsing production: Unit: foo__Priv6_2 -> (*self).x = default<foo::Priv6>(); (__cur, __lah, __lahe, __error) = (*(*self).x).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error); # End parsing production: Unit: foo__Priv6_2 -> } hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:29:20-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__Pub3_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:43:22-46:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
+[debug/optimizer] [<no location>] statement::Block "{ # "<...>/unused-types.spicy:43:22-46:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__Priv10_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
 [debug/optimizer] [<no location>] statement::Declaration "local iterator<stream> __begin = begin(__cur);" -> null (statement result unused)
 [debug/optimizer] [<no location>] statement::Declaration "local iterator<stream> __begin = begin(__cur);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();" -> null (statement result unused)
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
@@ -541,6 +581,11 @@
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
 [debug/optimizer] [<no location>] statement::Expression "(*self).__error = __error;" -> removing unneeded error push/pop statements
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
+[debug/optimizer] [<no location>] statement::Expression "__result = (__cur, __lah, __lahe, __error);" -> null (statement result unused)
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { (*__unit).__begin = begin(__ncur); }" -> null
