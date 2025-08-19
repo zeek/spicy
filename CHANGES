@@ -1,3 +1,9 @@
+1.15.0-dev.5 | 2025-08-19 08:00:23 +0200
+
+  * Bump 3rdparty/utf8proc from `20d192a` to `72918b9` (dependabot[bot])
+
+  * Bump hendrikmuhs/ccache-action (dependabot[bot])
+
 1.15.0-dev.2 | 2025-08-18 15:49:52 -0400
 
   * GH-2144: Fix function parameter/local name clash. (Evan Typanski, Corelight)
