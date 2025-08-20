@@ -1,0 +1,41 @@
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -c | FileCheck %INPUT
+# @TEST-EXEC: hiltic %INPUT -dj
+#
+# @TEST-DOC: Tests changing __self to return just 'this'
+
+module Test {
+
+import hilti;
+
+# CHECK: struct NeedsSelfValRef
+type NeedsSelfValRef = struct {
+    # CHECK: __self() { return {{.*}}ValueReference{{.*}}this
+    bool b;
+
+    # Since it has a hook, it needs self as a value reference (to pass to the hook)
+    hook void hook_one(uint<64> x);
+};
+
+# CHECK: struct Trivial
+type Trivial = struct {
+    # CHECK: __self() { return this; }
+    bool b;
+
+    # This has a method, but it doesn't need self as a value reference
+    method void my_method(uint<64> x) {
+        hilti::print(x);
+    }
+};
+
+global Trivial x1 = [$b = True];
+global NeedsSelfValRef x2 = [$b = True];
+
+hook void NeedsSelfValRef::hook_one(uint<64> x) {
+    hilti::print(x);
+}
+
+x1.my_method(1);
+x2.hook_one(1);
+
+}
