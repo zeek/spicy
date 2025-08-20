@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <memory>
 #include <string>
@@ -204,6 +205,12 @@ public:
 
     /** Get control flow. */
     const Graph& graph() const { return g; }
+
+    /**
+     * Sorts the graph in postorder, from the beginning node. Any nodes that are
+     * unreachable downstream from the beginning node are excluded.
+     */
+    std::deque<GraphNode> postorder() const;
 
 private:
     GraphNode _getOrAddNode(GraphNode n);

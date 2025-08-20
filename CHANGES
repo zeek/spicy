@@ -1,3 +1,13 @@
+1.15.0-dev.14 | 2025-08-20 09:45:21 -0400
+
+  * Sort the CFG for constant propagation. (Evan Typanski, Corelight)
+
+  * Log dataflow iterations for constant propagation. (Evan Typanski, Corelight)
+
+  * Fix potential infinite loop in constant propagation. (Evan Typanski, Corelight)
+
+  * Cleanup CFG code slightly. (Evan Typanski, Corelight)
+
 1.15.0-dev.9 | 2025-08-19 11:20:59 -0400
 
   * GH-2146: Handle `switch` statements in CFG. (Evan Typanski, Corelight)

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <functional>
 #include <iterator>
 #include <map>
 #include <optional>
@@ -68,6 +69,31 @@
 #include <hilti/hilti/ast/types/vector.h>
 
 namespace hilti::detail::cfg {
+
+std::deque<GraphNode> CFG::postorder() const {
+    std::deque<GraphNode> sorted;
+
+    std::unordered_set<NodeId> visited;
+
+    std::function<void(NodeId)> dfs_visit = [&](NodeId node_id) {
+        if ( visited.contains(node_id) )
+            return;
+
+        visited.insert(node_id);
+
+        for ( const auto& neighbor_id : g.neighborsDownstream(node_id) )
+            dfs_visit(neighbor_id);
+
+        const auto* node = g.getNode(node_id);
+        assert(node);
+        sorted.push_back(*node);
+    };
+
+    // This will sort all reachable nodes.
+    dfs_visit(_begin->identity());
+
+    return sorted;
+}
 
 // Helper function to check whether some `inner` node is a child of an `outer` node.
 static bool _contains(const Node& outer, const Node& inner) {
@@ -606,7 +632,7 @@ struct DataflowVisitor : visitor::PreOrder {
                     transfer.gen[decl] = root;
                     break;
                 };
-            };
+            }
         }
 
         // Since we do not know whether the called function is pure always keep it.

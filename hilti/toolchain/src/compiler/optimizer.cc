@@ -987,6 +987,10 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
         bool not_a_constant = false;
 
         bool operator==(const ConstantValue& other) const {
+            // If both are NAC, what's in expr doesn't matter
+            if ( not_a_constant && other.not_a_constant )
+                return true;
+
             return expr == other.expr && not_a_constant == other.not_a_constant;
         }
     };
@@ -1097,21 +1101,25 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
         visitor::visit(tv, n.value());
     }
 
-    void populate_dataflow(AnalysisResult& result, const ConstantMap& init) {
-        std::vector<detail::cfg::GraphNode> worklist;
+    void populate_dataflow(AnalysisResult& result, const ConstantMap& init, const ID& function_name) {
+        auto worklist = result.cfg.postorder();
+        // We always expect the worklist to contain begin/end nodes
+        assert(worklist.size() >= 1);
+        // Reverse postorder is best for forward analyses
+        std::ranges::reverse(worklist);
 
-        // Add all nodes
-        for ( const auto& [id, node] : result.cfg.graph().nodes() )
-            worklist.push_back(node);
+        // Set the initial state from parameters
+        result.out[worklist.front()] = init;
+        worklist.pop_front();
+
+        auto num_processed = 0;
 
         while ( ! worklist.empty() ) {
-            auto n = worklist.back();
-            worklist.pop_back();
+            auto n = worklist.front();
+            worklist.pop_front();
 
             // Meet
-            // Setting init before would immediately get overwritten. Doing it here
-            // technically misses some optimizations.
-            ConstantMap new_in = init;
+            ConstantMap new_in;
             auto preds = result.cfg.graph().neighborsUpstream(n->identity());
             for ( const uint64_t& pred : preds ) {
                 const auto& pred_out = result.out[*result.cfg.graph().getNode(pred)];
@@ -1140,7 +1148,12 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                         worklist.push_back(*succ_node);
                 }
             }
+            num_processed++;
         }
+
+        HILTI_DEBUG(logging::debug::OptimizerCollect,
+                    util::fmt("function %s took %d iterations before constant propagation convergence", function_name,
+                              num_processed));
     }
 
     void apply_propagation(Statement* body, const AnalysisResult& result) {
@@ -1228,7 +1241,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                     ConstantMap init;
                     for ( auto* param : n->function()->ftype()->parameters() )
                         init[param].not_a_constant = true;
-                    populate_dataflow(result, init);
+                    populate_dataflow(result, init, n->id());
                     analysis_results.insert({body, std::move(result)});
                 }
                 break;
