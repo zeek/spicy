@@ -2506,7 +2506,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         for ( Phase phase = 0; phase <= max_phase; ++phase ) {
             // Run all passes in a phase until we reach a fixpoint for the phase.
             while ( true ) {
-                modified = false;
+                auto inner_modified = false;
 
                 // Filter out passes to run in this phase.
                 // NOTE: We do not use `util::transform` here to guarantee a consistent order of the visitors.
@@ -2527,11 +2527,12 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
                     HILTI_DEBUG(logging::debug::OptimizerCollect,
                                 util::fmt("processing AST, round=%d, phase = %d", round, phase));
                     v->collect(root);
-                    modified = v->pruneUses(root) || modified;
-                    modified = v->pruneDecls(root) || modified;
+                    inner_modified = v->pruneUses(root) || inner_modified;
+                    inner_modified = v->pruneDecls(root) || inner_modified;
                 };
 
-                if ( ! modified )
+                modified = modified || inner_modified;
+                if ( ! inner_modified )
                     break;
 
                 ++round;
