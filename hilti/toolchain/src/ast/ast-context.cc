@@ -782,12 +782,20 @@ Result<Nothing> ASTContext::_transform(Builder* builder, const Plugin& plugin) {
 Result<Nothing> ASTContext::_optimize(Builder* builder) {
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
-    optimizer::optimize(builder, _root);
+    bool first = true;
+    while ( true ) {
+        // If the optimizer does not change anything, we are done.
+        if ( ! optimizer::optimize(builder, _root, first) )
+            break;
 
-    // Optimization may have left some computed node state unset, such as a
-    // canonical IDs. Do a final resolver run to get that in shape.
-    if ( auto rc = _resolve(builder, plugin::registry().hiltiPlugin()); ! rc )
-        return rc;
+        first = false;
+
+        // Optimization may have left some computed node state unset, such as a
+        // canonical IDs. Some passes also require extra coercions, such as the
+        // constant propagation pass. Do another resolver run to get that in shape.
+        if ( auto rc = _resolve(builder, plugin::registry().hiltiPlugin()); ! rc )
+            return rc;
+    }
 
     // Make sure we didn't leave anything odd during optimization.
     _checkAST(true);

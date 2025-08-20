@@ -2404,10 +2404,10 @@ std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cf
     return result;
 }
 
-void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
+bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
-    if ( logger().isEnabled(logging::debug::CfgInitial) ) {
+    if ( first && logger().isEnabled(logging::debug::CfgInitial) ) {
         auto v = PrintCfgVisitor(logging::debug::CfgInitial);
         visitor::visit(v, root);
     }
@@ -2418,7 +2418,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
                             std::optional<std::set<std::string>>();
 
-    if ( ! passes || passes->contains("feature_requirements") ) {
+    if ( (! passes || passes->contains("feature_requirements")) && first ) {
         // The `FeatureRequirementsVisitor` enables or disables code
         // paths and needs to be run before all other passes since
         // it needs to see the code before any optimization edits.
@@ -2498,6 +2498,8 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
 
     size_t round = 0;
 
+    bool ever_modified = false;
+
     // Run the phases in order in a loop until we reach a fixpoint.
     while ( true ) {
         bool modified = false;
@@ -2547,11 +2549,12 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
             }
         }
 
+        ever_modified |= modified;
         if ( ! modified )
             break;
     }
 
-    if ( logger().isEnabled(logging::debug::CfgFinal) ) {
+    if ( first && logger().isEnabled(logging::debug::CfgFinal) ) {
         auto v = PrintCfgVisitor(logging::debug::CfgFinal);
         visitor::visit(v, root);
     }
@@ -2560,6 +2563,8 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     auto v = hilti::visitor::PreOrder();
     for ( auto* n : hilti::visitor::range(v, root, {}) )
         n->clearScope();
+
+    return ever_modified;
 }
 
 } // namespace hilti
