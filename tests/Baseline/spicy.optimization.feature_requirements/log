@@ -70,6 +70,16 @@
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<spicy_rt::Forward> __forward &internal &needed-by-feature="is_filter";" -> null (removing unused member)
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> propagating constant value in filtered
 [debug/optimizer] [<no location>] expression::Ctor "(__data, __begin, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer] [<no location>] expression::Ctor "(__data, __begin, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer] [<no location>] expression::Ctor "(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error)" -> expression::Ctor "(__ncur, __lahead, __lahead_end, __error)" (removing unused arguments from method call)
@@ -449,16 +459,6 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@X7%uses_stream" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
-[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
-[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
-[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
-[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
-[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
-[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
-[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
-[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
-[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
 [debug/optimizer] [<no location>] statement::Block "{ # "<...>/feature_requirements.spicy:32:11-34:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); spicy_rt::filter_forward_eod(self); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
 [debug/optimizer] [<no location>] statement::Block "{ # "<...>/feature_requirements.spicy:32:11-34:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__X4_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { spicy_rt::filter_forward_eod(self); throw; } return __result; }" -> constant propagation
 [debug/optimizer] [<no location>] statement::Block "{ # "<...>/feature_requirements.spicy:36:18-40:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); spicy_rt::filter_disconnect(self); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
@@ -693,6 +693,8 @@
 [debug/optimizer] [<no location>] statement::If "if ( True ) { (*self).__position_update = Null; }" -> statement::Block "{ (*self).__position_update = Null; }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { (*self).__position_update = Null; }" -> statement::Block "{ (*self).__position_update = Null; }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { (*self).__position_update = Null; }" -> statement::Block "{ (*self).__position_update = Null; }"
+[debug/optimizer] [<no location>] statement::If "if ( True ) { __result = (*self).__parse_foo__X4_stage2(__cur, __lah, __lahe, __error); }" -> statement::Block "{ __result = (*self).__parse_foo__X4_stage2(__cur, __lah, __lahe, __error); }"
+[debug/optimizer] [<no location>] statement::If "if ( True ) { __result = (*self).__parse_foo__X6_stage2(__cur, __lah, __lahe, __error); }" -> statement::Block "{ __result = (*self).__parse_foo__X6_stage2(__cur, __lah, __lahe, __error); }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { __trim = False; }" -> statement::Block "{ __trim = False; }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_=foo::X4, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::X4::__parser, $scope, Null); }" -> statement::Block "{ foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_=foo::X4, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::X4::__parser, $scope, Null); }"
 [debug/optimizer] [<no location>] statement::If "if ( True ) { foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_=foo::X6, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::X6::__parser, $scope, Null); }" -> statement::Block "{ foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_=foo::X6, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::X6::__parser, $scope, Null); }"

@@ -136,8 +136,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-
-        if ( ! Null ) 
+        
             __result = (*self).__parse_foo__Pub2_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
@@ -228,8 +227,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-
-        if ( ! Null ) 
+        
             __result = (*self).__parse_foo__Priv5_stage2(__cur, __lah, __lahe, __error);
 
     }
@@ -252,8 +250,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-
-        if ( ! Null ) 
+        
             __result = (*self).__parse_foo__Priv6_stage2(__cur, __lah, __lahe, __error);
 
     }
@@ -276,8 +273,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-
-        if ( ! Null ) 
+        
             __result = (*self).__parse_foo__Pub3_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }
@@ -376,8 +372,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-
-        if ( ! Null ) 
+        
             __result = (*self).__parse_foo__Priv10_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 
     }

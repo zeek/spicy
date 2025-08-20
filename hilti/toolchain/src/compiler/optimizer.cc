@@ -838,9 +838,15 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
     }
 
     std::optional<bool> tryAsBoolLiteral(Expression* x) {
-        if ( auto* expression = x->tryAs<expression::Ctor>() )
-            if ( auto* bool_ = expression->ctor()->tryAs<ctor::Bool>() )
+        if ( auto* expression = x->tryAs<expression::Ctor>() ) {
+            auto* ctor = expression->ctor();
+
+            if ( auto* x = ctor->tryAs<ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            if ( auto* bool_ = ctor->tryAs<ctor::Bool>() )
                 return {bool_->value()};
+        }
 
         return {};
     }
@@ -1223,8 +1229,13 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                 auto const_val = const_it->second;
 
                 if ( ! const_val.not_a_constant ) {
-                    recordChange(n, util::fmt("propagating constant value in %s", n->id()));
-                    replaceNode(n, node::deepcopy(context(), const_val.expr));
+                    Node* to_replace = n;
+                    // Replace the coercion, too, so that the coercer reruns.
+                    if ( auto* coerced = n->parent()->tryAs<expression::Coerced>() )
+                        to_replace = coerced;
+
+                    recordChange(to_replace, util::fmt("propagating constant value in %s", n->id()));
+                    replaceNode(to_replace, node::deepcopy(context(), const_val.expr));
                 }
             }
         };
