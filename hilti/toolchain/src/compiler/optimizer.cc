@@ -1224,7 +1224,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
 
                 if ( ! const_val.not_a_constant ) {
                     recordChange(n, util::fmt("propagating constant value in %s", n->id()));
-                    replaceNode(n, node::detail::deepcopy(context(), const_val.expr, true));
+                    replaceNode(n, node::deepcopy(context(), const_val.expr));
                 }
             }
         };
