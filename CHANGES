@@ -1,3 +1,7 @@
+1.15.0-dev.18 | 2025-08-26 13:12:38 +0200
+
+  * Bump CodSpeedHQ/action from 3.8.0 to 3.8.1 (dependabot[bot])
+
 1.15.0-dev.16 | 2025-08-26 12:29:35 +0200
 
   * Bump 3rdparty/utfcpp from `da71cf9` to `e66f648` (dependabot[bot])
