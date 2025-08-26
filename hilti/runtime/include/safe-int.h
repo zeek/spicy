@@ -11,8 +11,8 @@ namespace hilti::rt::integer {
 namespace detail {
 class SafeIntException {
 public:
+    // SafeInt API methods.
     static void SafeIntOnOverflow() __attribute__((noreturn)) { throw Overflow("integer overflow"); }
-
     static void SafeIntOnDivZero() __attribute__((noreturn)) { throw DivisionByZero("integer division by zero"); }
 };
 } // namespace detail

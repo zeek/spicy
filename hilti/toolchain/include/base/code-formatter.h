@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <optional>
 #include <string>
 #include <utility>
 
@@ -103,6 +102,7 @@ class isManipulator {};
     };
 
 namespace code_formatter {
+// NOLINTBEGIN(readability-identifier-naming)
 __DEFINE_MANIPULATOR0(dedent)
 __DEFINE_MANIPULATOR0(eol)
 __DEFINE_MANIPULATOR0(eos)
@@ -110,6 +110,7 @@ __DEFINE_MANIPULATOR0(indent)
 __DEFINE_MANIPULATOR0(separator)
 __DEFINE_MANIPULATOR1(quoted, std::string)
 __DEFINE_MANIPULATOR1(comment, std::string)
+// NOLINTEND(readability-identifier-naming)
 } // namespace code_formatter
 
 } // namespace hilti

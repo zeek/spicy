@@ -61,7 +61,6 @@ public:
     // dependencies.
     const ASTContext::DeclarationSet& dependentDeclarations(Declaration* n);
 
-private:
     ASTContext* context;
 
     // State maintained while computing a single declaration's dependencies.
@@ -533,8 +532,8 @@ declaration::module::UID ASTContext::_addModuleToAST(declaration::Module* module
 }
 
 template<typename PluginMember, typename... Args>
-static Result<Nothing> _runHook(const Plugin& plugin, PluginMember hook, const std::string& description,
-                                const Args&... args) {
+static Result<Nothing> runHook(const Plugin& plugin, PluginMember hook, const std::string& description,
+                               const Args&... args) {
     if ( ! (plugin.*hook) )
         return Nothing();
 
@@ -550,8 +549,8 @@ static Result<Nothing> _runHook(const Plugin& plugin, PluginMember hook, const s
 }
 
 template<typename PluginMember, typename... Args>
-static Result<Nothing> _runHook(bool* modified, const Plugin& plugin, PluginMember hook, const std::string& description,
-                                const Args&... args) {
+static Result<Nothing> runHook(bool* modified, const Plugin& plugin, PluginMember hook, const std::string& description,
+                               const Args&... args) {
     if ( ! (plugin.*hook) )
         return Nothing();
 
@@ -677,7 +676,7 @@ void ASTContext::_checkAST(bool finished) const {
 Result<Nothing> ASTContext::_init(Builder* builder, const Plugin& plugin) {
     _dumpAST(logging::debug::AstOrig, plugin, "Original AST", 0);
     _dependency_tracker.reset(); // flush state
-    return _runHook(plugin, &Plugin::ast_init, "initializing", builder, _root);
+    return runHook(plugin, &Plugin::ast_init, "initializing", builder, _root);
 }
 
 Result<Nothing> ASTContext::_clearState(Builder* builder, const Plugin& plugin) {
@@ -699,14 +698,14 @@ Result<Nothing> ASTContext::_buildScopes(Builder* builder, const Plugin& plugin)
     }
 
     bool modified;
-    if ( auto rc = _runHook(&modified, plugin, &Plugin::ast_build_scopes, "building scopes", builder, _root); ! rc )
+    if ( auto rc = runHook(&modified, plugin, &Plugin::ast_build_scopes, "building scopes", builder, _root); ! rc )
         return rc.error();
 
     return Nothing();
 }
 
 Result<Nothing> ASTContext::_resolveRoot(bool* modified, Builder* builder, const Plugin& plugin) {
-    return _runHook(modified, plugin, &Plugin::ast_resolve, "resolving AST", builder, _root);
+    return runHook(modified, plugin, &Plugin::ast_resolve, "resolving AST", builder, _root);
 }
 
 Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
@@ -770,7 +769,7 @@ Result<Nothing> ASTContext::_transform(Builder* builder, const Plugin& plugin) {
     HILTI_DEBUG(logging::debug::Compiler, "transforming AST");
 
     bool modified = false;
-    if ( auto rc = _runHook(&modified, plugin, &Plugin::ast_transform, "transforming", builder, _root); ! rc )
+    if ( auto rc = runHook(&modified, plugin, &Plugin::ast_transform, "transforming", builder, _root); ! rc )
         return rc;
 
     _dumpAST(logging::debug::AstTransformed, plugin, "AST after transforming", 0);
@@ -803,9 +802,9 @@ Result<Nothing> ASTContext::_validate(Builder* builder, const Plugin& plugin, bo
     bool modified = false; // not used
 
     if ( pre_resolve )
-        _runHook(&modified, plugin, &Plugin::ast_validate_pre, "validating (pre)", builder, _root);
+        runHook(&modified, plugin, &Plugin::ast_validate_pre, "validating (pre)", builder, _root);
     else
-        _runHook(&modified, plugin, &Plugin::ast_validate_post, "validating (post)", builder, _root);
+        runHook(&modified, plugin, &Plugin::ast_validate_post, "validating (post)", builder, _root);
 
     return _collectErrors();
 }
@@ -971,15 +970,15 @@ const ASTContext::DeclarationSet& ASTContext::dependentDeclarations(Declaration*
         logger().internalError("dependencies not computed yet");
 }
 
-static node::ErrorPriority _recursiveValidateAST(Node* n, Location closest_location, node::ErrorPriority prio,
-                                                 int level, std::vector<node::Error>* errors) {
+static node::ErrorPriority recursiveValidateAST(Node* n, Location closest_location, node::ErrorPriority prio, int level,
+                                                std::vector<node::Error>* errors) {
     if ( n->location() )
         closest_location = n->location();
 
     auto oprio = prio;
     for ( const auto& c : n->children() ) {
         if ( c )
-            prio = std::max(prio, _recursiveValidateAST(c, closest_location, oprio, level + 1, errors));
+            prio = std::max(prio, recursiveValidateAST(c, closest_location, oprio, level + 1, errors));
     }
 
     auto errs = n->errors();
@@ -997,7 +996,7 @@ static node::ErrorPriority _recursiveValidateAST(Node* n, Location closest_locat
     return nprio;
 }
 
-static void _reportErrors(const std::vector<node::Error>& errors) {
+static void reportErrors(const std::vector<node::Error>& errors) {
     // We only report the highest priority error category.
     std::set<node::Error> reported;
 
@@ -1021,10 +1020,10 @@ static void _reportErrors(const std::vector<node::Error>& errors) {
 
 Result<Nothing> ASTContext::_collectErrors() {
     std::vector<node::Error> errors;
-    _recursiveValidateAST(_root, Location(), node::ErrorPriority::NoError, 0, &errors);
+    recursiveValidateAST(_root, Location(), node::ErrorPriority::NoError, 0, &errors);
 
     if ( errors.size() ) {
-        _reportErrors(errors);
+        reportErrors(errors);
         return result::Error("validation failed");
     }
 

@@ -67,14 +67,14 @@ public:
         _nodes.erase(id);
 
         std::set<EdgeId> edges_to_remove;
-        for ( auto&& [edgeId, nodes] : _edges ) {
+        for ( auto&& [edge_id, nodes] : _edges ) {
             auto&& [from, to] = nodes;
 
             if ( from == id || to == id )
-                edges_to_remove.insert(edgeId);
+                edges_to_remove.insert(edge_id);
         }
-        for ( auto&& edgeId : edges_to_remove )
-            _edges.erase(edgeId);
+        for ( auto&& edge_id : edges_to_remove )
+            _edges.erase(edge_id);
     }
 
     /**
@@ -123,7 +123,7 @@ public:
      * @param id the node ID of the node to query
      * @return a vector of node IDs of downstream neighbor nodes
      */
-    std::vector<NodeId> neighborsDownstream(NodeId id) const { return neighbors(id, Direction::Out); }
+    std::vector<NodeId> neighborsDownstream(NodeId id) const { return _neighbors(id, Direction::Out); }
 
     /**
      * Get upstream neighbors of a node, i.e., nodes connected to the node by
@@ -132,7 +132,7 @@ public:
      * @param id the node ID of the node to query
      * @return a vector of node IDs of upstream neighbor nodes
      */
-    std::vector<NodeId> neighborsUpstream(NodeId id) const { return neighbors(id, Direction::In); }
+    std::vector<NodeId> neighborsUpstream(NodeId id) const { return _neighbors(id, Direction::In); }
 
 private:
     std::unordered_map<NodeId, T> _nodes;                         //< nodes in the graph.
@@ -153,7 +153,7 @@ private:
      * @param dir edge selection
      * @return a vector of node IDs of neighbor nodes
      */
-    std::vector<NodeId> neighbors(NodeId id, Direction dir) const {
+    std::vector<NodeId> _neighbors(NodeId id, Direction dir) const {
         std::vector<NodeId> xs;
 
         for ( auto&& [edge_id, nodes] : _edges ) {

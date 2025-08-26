@@ -167,7 +167,7 @@ Node* node::detail::deepcopy(ASTContext* ctx, Node* n, bool force) {
 }
 
 // Helper looking up an ID inside a node's direct scope, applying visibility rules.
-static std::pair<bool, Result<std::pair<Declaration*, ID>>> _lookupID(const ID& id, const Node* n) {
+static std::pair<bool, Result<std::pair<Declaration*, ID>>> lookupIDBackend(const ID& id, const Node* n) {
     assert(n->scope());
     auto resolved = n->scope()->lookupAll(id);
 
@@ -219,7 +219,7 @@ Result<std::pair<Declaration*, ID>> Node::lookupID(const ID& id, const std::stri
         if ( ! n->scope() )
             continue;
 
-        auto [stop, resolved] = _lookupID(id, n);
+        auto [stop, resolved] = lookupIDBackend(id, n);
         if ( resolved )
             // Found it.
             return resolved;

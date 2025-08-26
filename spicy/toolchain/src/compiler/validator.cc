@@ -274,12 +274,12 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     // the provided attributes. This is necessary since most attributes will apply
     // to the field but not its type, so this gives a bit more context-sensitive
     // validation for a common case.
-    void validateFieldTypeAttributes(node::Tag typeTag, AttributeSet* attributes, const std::string_view& clazz) {
+    void validateFieldTypeAttributes(node::Tag type_tag, AttributeSet* attributes, const std::string_view& clazz) {
         if ( ! attributes )
             return;
 
         std::unordered_set<hilti::attribute::Kind> type_specific_attrs = {};
-        auto it = allowed_attributes.find(typeTag);
+        auto it = allowed_attributes.find(type_tag);
         if ( it != allowed_attributes.end() )
             type_specific_attrs = it->second;
 
@@ -297,8 +297,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     template<typename GlobalOrLocalVariable>
     void checkVariable(const GlobalOrLocalVariable& n) {
         // A variable initialized from a struct initializer always needs an explicit type.
-        const bool isTyped = ! n->type()->type()->typeID().empty();
-        if ( isTyped )
+        const bool is_typed = ! n->type()->type()->typeID().empty();
+        if ( is_typed )
             return;
 
         if ( auto init = n->init() ) {

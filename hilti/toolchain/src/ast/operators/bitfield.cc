@@ -16,7 +16,7 @@ using namespace hilti::operator_;
 namespace {
 namespace bitfield {
 
-QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
+QualifiedType* itemType(Builder* builder, const Expressions& operands) {
     if ( auto* range =
              operands[0]->type()->type()->as<type::Bitfield>()->bits(operands[1]->as<expression::Member>()->id()) )
         return range->itemType();
@@ -24,7 +24,7 @@ QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
         return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 }
 
-void _checkName(expression::ResolvedOperator* op) {
+void checkName(expression::ResolvedOperator* op) {
     const auto& id = op->op1()->as<expression::Member>()->id();
     if ( ! op->op0()->type()->type()->as<type::Bitfield>()->bits(id) )
         op->addError(util::fmt("bitfield type does not have attribute '%s'", id));
@@ -50,10 +50,10 @@ right.
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return _itemType(builder, operands);
+        return itemType(builder, operands);
     }
 
-    void validate(expression::ResolvedOperator* n) const final { _checkName(n); }
+    void validate(expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(hilti, bitfield::Member)
 };
@@ -72,7 +72,7 @@ public:
         };
     }
 
-    void validate(expression::ResolvedOperator* n) const final { _checkName(n); }
+    void validate(expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(hilti, bitfield::HasMember)
 };

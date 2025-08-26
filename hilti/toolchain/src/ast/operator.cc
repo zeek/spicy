@@ -11,7 +11,7 @@ using namespace hilti::util;
 using namespace hilti::operator_;
 
 namespace {
-std::string _printOperator(operator_::Kind kind, const std::vector<std::string>& ops, const Meta& meta) {
+std::string printOperator(operator_::Kind kind, const std::vector<std::string>& ops, const Meta& meta) {
     auto render = [&]() {
         switch ( kind ) {
             case operator_::Kind::Add: return fmt("add %s[%s]", ops[0], ops[1]);
@@ -74,9 +74,9 @@ std::string _printOperator(operator_::Kind kind, const std::vector<std::string>&
         return render();
 }
 
-std::string _printOperator(operator_::Kind kind, const Expressions& operands, bool print_signature, const Meta& meta) {
+std::string printOperator(operator_::Kind kind, const Expressions& operands, bool print_signature, const Meta& meta) {
     if ( ! print_signature )
-        return _printOperator(kind, util::transform(operands, [](const auto& x) { return x->print(); }), meta);
+        return printOperator(kind, util::transform(operands, [](const auto& x) { return x->print(); }), meta);
 
     auto render_one = [](QualifiedType* t) {
         if ( t->type()->template isA<type::Member>() )
@@ -96,9 +96,8 @@ std::string _printOperator(operator_::Kind kind, const Expressions& operands, bo
             else
                 args = render_one(operands[2]->type());
 
-            return _printOperator(kind,
-                                  {render_one(operands[0]->type()), operands[1]->print(), util::fmt("(%s)", args)},
-                                  meta);
+            return printOperator(kind, {render_one(operands[0]->type()), operands[1]->print(), util::fmt("(%s)", args)},
+                                 meta);
         }
 
         case operator_::Kind::Call: {
@@ -111,19 +110,19 @@ std::string _printOperator(operator_::Kind kind, const Expressions& operands, bo
             else
                 args = render_one(operands[1]->type());
 
-            return _printOperator(kind, {operands[0]->print(), util::fmt("(%s)", args)}, meta);
+            return printOperator(kind, {operands[0]->print(), util::fmt("(%s)", args)}, meta);
         }
 
 
         default:
-            return _printOperator(kind,
-                                  util::transform(operands,
-                                                  [&render_one](const auto& op) { return render_one(op->type()); }),
-                                  meta);
+            return printOperator(kind,
+                                 util::transform(operands,
+                                                 [&render_one](const auto& op) { return render_one(op->type()); }),
+                                 meta);
     }
 }
 
-std::string _printOperator(operator_::Kind kind, const Operands& operands, const Meta& meta) {
+std::string printOperator(operator_::Kind kind, const Operands& operands, const Meta& meta) {
     auto render_one = [](Operand* t) {
         if ( t->type()->type()->template isA<type::Member>() )
             return t->print();
@@ -142,8 +141,8 @@ std::string _printOperator(operator_::Kind kind, const Operands& operands, const
             else
                 args = render_one(operands[2]);
 
-            return _printOperator(kind, {render_one(operands[0]), render_one(operands[1]), util::fmt("(%s)", args)},
-                                  meta);
+            return printOperator(kind, {render_one(operands[0]), render_one(operands[1]), util::fmt("(%s)", args)},
+                                 meta);
         }
 
         case operator_::Kind::Call: {
@@ -154,22 +153,22 @@ std::string _printOperator(operator_::Kind kind, const Operands& operands, const
             else
                 args = render_one(operands[1]);
 
-            return _printOperator(kind, {render_one(operands[0]), util::fmt("(%s)", args)}, meta);
+            return printOperator(kind, {render_one(operands[0]), util::fmt("(%s)", args)}, meta);
         }
 
 
-        default: return _printOperator(kind, util::transform(operands, render_one), meta);
+        default: return printOperator(kind, util::transform(operands, render_one), meta);
     }
 }
 
 } // namespace
 
 std::string operator_::detail::print(Kind kind, const Expressions& operands) {
-    return _printOperator(kind, operands, false, {});
+    return printOperator(kind, operands, false, {});
 }
 
 std::string operator_::detail::printSignature(Kind kind, const Expressions& operands, const Meta& meta) {
-    return _printOperator(kind, operands, true, meta);
+    return printOperator(kind, operands, true, meta);
 }
 
 class OperandResolver : public visitor::PreOrder {
@@ -320,7 +319,7 @@ std::string Operator::print() const {
     if ( ! hasOperands() )
         return "<dynamic>";
 
-    return _printOperator(kind(), operands(), meta());
+    return printOperator(kind(), operands(), meta());
 }
 
 std::string Operator::dump() const {
@@ -340,4 +339,4 @@ Operand* Operator::operandForType(Builder* builder, parameter::Kind kind, Unqual
         return type::operand_list::Operand::create(builder->context(), kind, t, false, std::move(doc), t->meta());
 }
 
-std::string BuiltInMemberCall::print() const { return _printOperator(kind(), operands(), meta()); }
+std::string BuiltInMemberCall::print() const { return printOperator(kind(), operands(), meta()); }

@@ -12,11 +12,11 @@
 
 using namespace hilti;
 
-const auto flatten = util::flattenParts;
-const auto prefix = util::prefixParts;
+const auto flatten = util::flattenParts; // NOLINT(readability-identifier-naming)
+const auto prefix = util::prefixParts; // NOLINT(readability-identifier-naming)
 
 namespace {
-std::optional<hilti::rt::filesystem::path> precompiled_libhilti(const Configuration& configuration, bool debug) {
+std::optional<hilti::rt::filesystem::path> precompiledLibhilti(const Configuration& configuration, bool debug) {
     // We disable use of precompiled headers for sanitizers builds since the
     // sanitizer flags are not exposed on the config level.
     //
@@ -162,10 +162,10 @@ void Configuration::init(bool use_build_directory) {
         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag),
     });
 
-    if ( auto libhilti_pch = precompiled_libhilti(*this, true) )
+    if ( auto libhilti_pch = precompiledLibhilti(*this, true) )
         runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
 
-    if ( auto libhilti_pch = precompiled_libhilti(*this, false) )
+    if ( auto libhilti_pch = precompiledLibhilti(*this, false) )
         runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
 
     runtime_ld_flags_debug = flatten({

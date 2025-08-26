@@ -11,11 +11,11 @@
 
 using namespace spicy;
 
-const auto flatten = hilti::util::flattenParts;
-const auto prefix = hilti::util::prefixParts;
+const auto flatten = hilti::util::flattenParts; // NOLINT(readability-identifier-naming)
+const auto prefix = hilti::util::prefixParts; // NOLINT(readability-identifier-naming)
 
 namespace {
-std::optional<hilti::rt::filesystem::path> precompiled_libspicy(const hilti::Configuration& config, bool debug) {
+std::optional<hilti::rt::filesystem::path> precompiledLibspicy(const hilti::Configuration& config, bool debug) {
     // We disable use of precompiled headers for sanitizers builds since the
     // sanitizer flags are not exposed on the config level.
     //
@@ -37,8 +37,8 @@ std::optional<hilti::rt::filesystem::path> precompiled_libspicy(const hilti::Con
 }
 
 // Helper function to ensure exactly one precompile header is used.
-void set_precompiled_header(const hilti::Configuration& config, bool debug, std::vector<std::string>& cxxflags) {
-    auto header = precompiled_libspicy(config, debug);
+void setPrecompiledHeader(const hilti::Configuration& config, bool debug, std::vector<std::string>& cxxflags) {
+    auto header = precompiledLibspicy(config, debug);
     if ( ! header )
         return;
 
@@ -73,8 +73,8 @@ void Configuration::extendHiltiConfiguration() {
 
     hlt.runtime_cxx_flags_debug = join(spcy.runtime_cxx_flags_debug, hlt.runtime_cxx_flags_debug);
     hlt.runtime_cxx_flags_release = join(spcy.runtime_cxx_flags_release, hlt.runtime_cxx_flags_release);
-    set_precompiled_header(hlt, true, hlt.runtime_cxx_flags_debug);
-    set_precompiled_header(hlt, false, hlt.runtime_cxx_flags_release);
+    setPrecompiledHeader(hlt, true, hlt.runtime_cxx_flags_debug);
+    setPrecompiledHeader(hlt, false, hlt.runtime_cxx_flags_release);
 
     hlt.runtime_cxx_include_paths = join(spcy.runtime_cxx_include_paths, hlt.runtime_cxx_include_paths);
     hlt.runtime_cxx_library_paths = join(spcy.runtime_cxx_library_paths, hlt.runtime_cxx_library_paths);

@@ -47,7 +47,7 @@ void Unit::_addHeader(Formatter& f) {
 }
 
 void Unit::_addModuleInitFunction() {
-    auto addInitFunction = [&](Context* ctx, auto f, const std::string& id_) {
+    auto add_init_function = [&](Context* ctx, auto f, const std::string& id_) {
         auto id = cxx::ID{cxxInternalNamespace(), id_};
 
         cxx::Block body;
@@ -60,13 +60,13 @@ void Unit::_addModuleInitFunction() {
     };
 
     if ( _init_globals )
-        addInitFunction(context().get(), _init_globals, "__init_globals");
+        add_init_function(context().get(), _init_globals, "__init_globals");
 
     if ( _init_module )
-        addInitFunction(context().get(), _init_module, "__init_module");
+        add_init_function(context().get(), _init_module, "__init_module");
 
     if ( _preinit_module )
-        addInitFunction(context().get(), _preinit_module, "__preinit_module");
+        add_init_function(context().get(), _preinit_module, "__preinit_module");
 
     if ( cxxModuleID() != cxx::ID("__linker__") ) {
         auto scope = fmt("%s_hlto_scope", context()->options().cxx_namespace_intern);
@@ -84,7 +84,7 @@ void Unit::_addModuleInitFunction() {
         if ( _preinit_module )
             register_.addStatement(fmt("__preinit_module()"));
 
-        auto id = addInitFunction(context().get(), std::move(register_), "__register_module");
+        auto id = add_init_function(context().get(), std::move(register_), "__register_module");
         add(fmt("HILTI_PRE_INIT(%s)", id));
     }
 }

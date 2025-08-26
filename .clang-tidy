@@ -54,6 +54,7 @@ Checks: '
   -performance-enum-size,
 
   portability-*,
+  -portability-avoid-pragma-once,
 
   readability-*,
   -readability-braces-around-statements,
@@ -70,6 +71,7 @@ Checks: '
   -readability-use-anyofallof,
   -readability-identifier-length,
   -readability-implicit-bool-conversion,
+  -readability-use-concise-preprocessor-directives,
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z-]+/include/([a-zA-Z-]+/)*[a-zA-Z-]+\.h'

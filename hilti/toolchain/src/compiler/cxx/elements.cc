@@ -21,7 +21,7 @@ static const unsigned int AddSeparatorAfter = (1U << 2U);  // Force adding a sep
 static const unsigned int AddSeparatorBefore = (1U << 4U); // Force adding a separator before block.
 } // namespace flags
 
-static const std::set<std::string_view> reserved_keywords = {
+static const std::set<std::string_view> ReservedKeywords = {
     "NULL",
     "_Alignas",
     "_Alignof",
@@ -140,7 +140,7 @@ std::optional<std::string> cxx::normalizeID(std::string_view id) {
     if ( id.empty() )
         return std::nullopt;
 
-    if ( reserved_keywords.contains(id) )
+    if ( ReservedKeywords.contains(id) )
         return std::string(id) + "_";
 
     if ( std::ranges::all_of(id, [](auto c) { return std::isalnum(c) || c == '_'; }) )

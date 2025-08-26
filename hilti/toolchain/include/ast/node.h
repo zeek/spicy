@@ -176,22 +176,22 @@ template<typename T>
 class RetainedPtr {
 public:
     RetainedPtr() = default;
-    RetainedPtr(T* n) : _node(n) { retain(); }
-    RetainedPtr(const RetainedPtr& other) : _node(other._node) { retain(); }
+    RetainedPtr(T* n) : _node(n) { _retain(); }
+    RetainedPtr(const RetainedPtr& other) : _node(other._node) { _retain(); }
     RetainedPtr(RetainedPtr&& other) noexcept : _node(other._node) {
         other._node = nullptr;
         // reuse the other's retain
     }
 
-    ~RetainedPtr() { release(); }
+    ~RetainedPtr() { _release(); }
 
     RetainedPtr& operator=(const RetainedPtr& other) {
         if ( this == &other )
             return *this;
 
-        release();
+        _release();
         _node = other._node;
-        retain();
+        _retain();
         return *this;
     }
 
@@ -199,7 +199,7 @@ public:
         if ( this == &other )
             return *this;
 
-        release();
+        _release();
         _node = other._node;
         other._node = nullptr;
         // reuse the other's retain
@@ -207,7 +207,7 @@ public:
     }
 
     void reset() {
-        release();
+        _release();
         _node = nullptr;
     }
 
@@ -219,12 +219,12 @@ public:
     T* get() const { return _node; }
 
 private:
-    void retain() {
+    void _retain() {
         if ( _node )
             _node->retain();
     }
 
-    void release() {
+    void _release() {
         if ( _node ) {
             _node->release();
             _node = nullptr;

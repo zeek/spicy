@@ -444,11 +444,11 @@ void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_i
     // Register the parser if the `is_filter` or `supports_sinks` features are
     // active; `public` units we always register (by passing an empty list of
     // features to the feature guard).
-    const auto& dependentFeatureFlags = unit->isPublic() ?
-                                            std::vector<std::string_view>{} :
-                                            std::vector<std::string_view>({"is_filter", "supports_sinks"});
+    const auto& dependent_feature_flags = unit->isPublic() ?
+                                              std::vector<std::string_view>{} :
+                                              std::vector<std::string_view>({"is_filter", "supports_sinks"});
 
-    _pb.guardFeatureCode(unit, dependentFeatureFlags, [&]() {
+    _pb.guardFeatureCode(unit, dependent_feature_flags, [&]() {
         auto* ty_mime_types = builder()->typeVector(
             builder()->qualifiedType(builder()->typeName("spicy_rt::MIMEType"), hilti::Constness::Const));
         auto* ty_ports = builder()->typeVector(
