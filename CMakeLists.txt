@@ -362,6 +362,11 @@ set(SPICY_C_COMPILER "${CMAKE_C_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_
 set(SPICY_CXX_COMPILER
     "${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
 
+set(SPICY_SANITIZERS "no")
+if (USE_SANITIZERS)
+    set(SPICY_SANITIZERS "yes (${USE_SANITIZERS})")
+endif ()
+
 message(
     "\n====================|  Spicy Build Summary  |===================="
     "\n"
@@ -380,7 +385,7 @@ message(
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
     "\nUse gold linker:       ${GOLD_FOUND}"
-    "\nUse sanitizers:        ${USE_SANITIZERS}"
+    "\nUse sanitizers:        ${SPICY_SANITIZERS}"
     "\nUse backtrace:         ${HILTI_HAVE_BACKTRACE}"
     "\n"
     "\nWarnings are errors:   ${USE_WERROR}"
