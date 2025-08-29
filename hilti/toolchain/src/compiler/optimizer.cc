@@ -2370,13 +2370,9 @@ std::vector<Node*> FunctionBodyVisitor::unusedStatements(const detail::cfg::CFG&
                     continue;
 
                 // If an update is read and in the `in` set of a node it is used.
-
-                // Need to introduce an extra binding since captured structured
-                // bindings are only available with C++20.
-                const auto& stmt_ = stmt;
                 auto it = std::ranges::find_if(t.in, [&](const auto& in) {
                     const auto& [decl, stmts] = in;
-                    return stmts.count(stmt_);
+                    return stmts.contains(stmt);
                 });
                 if ( it != t.in.end() )
                     ++uses[n];
