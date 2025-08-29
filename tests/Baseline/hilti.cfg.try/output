@@ -60,7 +60,7 @@ digraph {
     1 [label="11;" xlabel="in: [] out: []"];
     2 [label="2;" xlabel="in: [] out: []"];
     3 [label="3;" xlabel="in: [] out: []"];
-    4 [label="E(\"\")" xlabel="read: [E] write: [E] in: [] out: [] keep"];
+    4 [label="E(\"\")" xlabel="in: [] out: [] keep"];
     5 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     6 [label="end <...>/try.hlt:26:21-37:1" shape=triangle xlabel="in: [] out: []"];
     7 [label="end <...>/try.hlt:26:21-37:1" shape=triangle xlabel="in: [] out: []"];

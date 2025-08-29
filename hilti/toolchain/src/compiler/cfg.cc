@@ -21,12 +21,15 @@
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/declaration.h>
+#include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/expression.h>
+#include <hilti/ast/declarations/field.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/module.h>
 #include <hilti/ast/declarations/parameter.h>
+#include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
@@ -663,13 +666,17 @@ struct DataflowVisitor : visitor::PreOrder {
         if ( ! decl )
             return;
 
+        // Ignore a few name kinds we are not interested in tracking.
+        if ( decl->isA<declaration::Constant>() || decl->isA<declaration::Function>() ||
+             decl->isA<declaration::Type>() )
+            return;
+
         auto* stmt = root.value();
         // If the statement was a simple `Expression` unwrap it to get the more specific node.
         if ( auto* expr = stmt->tryAs<statement::Expression>() )
             stmt = expr->expression();
 
         // Check whether the name was used in an assignment.
-        bool in_assignment = false;
         {
             // Figure out which side of the assignment this name is on.
             Node* node = name;
@@ -687,21 +694,22 @@ struct DataflowVisitor : visitor::PreOrder {
                         if ( assign_->target()->isA<operator_::struct_::MemberNonConst>() )
                             transfer.read.insert(decl);
 
-                        in_assignment = true;
+                        // If we assign to a field (which should be `static`)
+                        // we have a non-local side effect.
+                        if ( decl->isA<declaration::Field>() )
+                            transfer.keep = true;
                     }
 
-                    if ( _contains(*assign_->source(), *name) ) {
+                    if ( _contains(*assign_->source(), *name) )
                         transfer.read.insert(decl);
-
-                        in_assignment = true;
-                    }
                 }
                 node = node->parent();
             } while ( node && node != root.value() );
         }
 
-        if ( in_assignment )
-            ; // Nothing, handled above.
+        if ( stmt->isA<expression::Assign>() ) {
+            // Nothing, handled above.
+        }
 
         else if ( auto* d = stmt->tryAs<statement::Declaration>() ) {
             // Names in declaration statements appear on the RHS.
