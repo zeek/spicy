@@ -229,6 +229,9 @@ private:
     // Add flow for globals if `root` corresponds to a global module block.
     GraphNode _addGlobals(GraphNode predecessor, const Node& root);
 
+    // Add flow for function parameters if `root` corresponds to a function body.
+    GraphNode _addParameters(GraphNode predecessor, const Node& root);
+
     /**
      * Add a new `MetaNode` to the graph.
      *

@@ -37,6 +37,7 @@
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
+#include <hilti/ast/function.h>
 #include <hilti/ast/location.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/operator.h>
@@ -117,6 +118,8 @@ CFG::CFG(const Node* root)
     assert(root && root->isA<statement::Block>() && "only building from blocks currently supported");
 
     _begin = _addGlobals(_begin, *root);
+    _begin = _addParameters(_begin, *root);
+
     auto last = _addBlock(_begin, root->children(), root);
     if ( last != _end )
         _addEdge(last, _end);
@@ -161,6 +164,56 @@ GraphNode CFG::_addGlobals(GraphNode predecessor, const Node& root) {
         auto stmt = _getOrAddNode(global);
         _addEdge(predecessor, stmt);
         predecessor = stmt;
+    }
+
+    return predecessor;
+}
+
+GraphNode CFG::_addParameters(GraphNode predecessor, const Node& root) {
+    auto* p = root.parent();
+    if ( ! p )
+        return predecessor;
+
+    auto* fn = p->tryAs<Function>();
+    if ( ! fn )
+        return predecessor;
+
+    // Add parameters.
+    for ( auto* param : fn->ftype()->parameters() ) {
+        if ( ! param )
+            continue;
+
+        auto d = _getOrAddNode(param);
+        _addEdge(predecessor, d);
+        predecessor = d;
+    }
+
+    // Add implicit `self` parameter for methods.
+    switch ( fn->ftype()->flavor() ) {
+        case type::function::Flavor::Method: {
+            auto type_name = fn->id().namespace_();
+            assert(! type_name.empty());
+
+            auto lookup = scope::lookupID<declaration::Type>(type_name, p, "type");
+            if ( ! lookup )
+                util::detail::internalError(
+                    util::fmt("could not find type '%s' for method/hook '%s'", type_name, fn->id()));
+
+            const auto& [decl, id] = *lookup;
+
+            if ( auto* struct_ = decl->type()->type()->tryAs<type::Struct>() ) {
+                auto d = _getOrAddNode(struct_->self());
+                _addEdge(predecessor, d);
+                predecessor = d;
+            }
+
+            break;
+        }
+
+        case type::function::Flavor::Hook: [[fallthrough]];
+        case type::function::Flavor::Function: {
+            break; // Nothing.
+        }
     }
 
     return predecessor;
@@ -711,25 +764,24 @@ struct DataflowVisitor : visitor::PreOrder {
             // Nothing, handled above.
         }
 
-        else if ( auto* d = stmt->tryAs<statement::Declaration>() ) {
+        else if ( stmt->isA<statement::Declaration>() )
+            // Names in declaration statements appear on the RHS.
+            transfer.read.insert(decl);
+
+        else if ( auto* d = stmt->tryAs<Declaration>() ) {
             // Names in declaration statements appear on the RHS.
             transfer.read.insert(decl);
 
             // If we declare a local variable record possible aliasing.
-            if ( auto* local = d->declaration()->tryAs<declaration::LocalVariable>() ) {
-                if ( auto* type = local->type()->type(); type && type->isAliasingType() )
-                    transfer.maybe_alias.insert(decl);
-            }
-        }
+            UnqualifiedType* type = nullptr;
 
-        else if ( auto* global = stmt->tryAs<declaration::GlobalVariable>() ) {
-            // Names in the global declaration appear on the RHS.
-            transfer.read.insert(decl);
+            if ( auto* local = d->tryAs<declaration::LocalVariable>() )
+                type = local->type()->type();
+            else if ( auto* global = d->tryAs<declaration::GlobalVariable>() )
+                type = global->type()->type();
 
-            if ( auto* type = global->type()->type() ) {
-                if ( type->isAliasingType() )
-                    transfer.maybe_alias.insert(decl);
-            }
+            if ( type && type->isAliasingType() )
+                transfer.maybe_alias.insert(decl);
         }
 
         else if ( stmt->isA<statement::Return>() )
