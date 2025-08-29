@@ -164,6 +164,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
     {
         hilti::debugIndent("spicy");
+        local iterator<stream> __begin = begin(__cur);
 
         if ( ! Null ) 
             __result = (*self).__parse_foo__C_stage2(__cur, __lah, __lahe, __error);

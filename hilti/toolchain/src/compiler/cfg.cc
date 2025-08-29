@@ -227,7 +227,15 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
         }
 
         else if ( auto* stmt = c->tryAs_<Statement>() ) {
-            auto cc = _getOrAddNode(stmt);
+            GraphNode cc;
+
+            if ( auto* decl = stmt->tryAs<statement::Declaration>() )
+                // Store the declaration instead of the full statement so we
+                // can refer to it from parts working with declarations.
+                cc = _getOrAddNode(decl->declaration());
+
+            else
+                cc = _getOrAddNode(stmt);
 
             _addEdge(predecessor, cc);
 
@@ -695,9 +703,16 @@ struct DataflowVisitor : visitor::PreOrder {
         if ( in_assignment )
             ; // Nothing, handled above.
 
-        else if ( stmt->isA<statement::Declaration>() )
+        else if ( auto* d = stmt->tryAs<statement::Declaration>() ) {
             // Names in declaration statements appear on the RHS.
             transfer.read.insert(decl);
+
+            // If we declare a local variable record possible aliasing.
+            if ( auto* local = d->declaration()->tryAs<declaration::LocalVariable>() ) {
+                if ( auto* type = local->type()->type(); type && type->isAliasingType() )
+                    transfer.maybe_alias.insert(decl);
+            }
+        }
 
         else if ( auto* global = stmt->tryAs<declaration::GlobalVariable>() ) {
             // Names in the global declaration appear on the RHS.

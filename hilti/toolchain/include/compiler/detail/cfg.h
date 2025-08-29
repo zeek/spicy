@@ -87,8 +87,7 @@ public:
     GraphNode(statement::Return* x) : node(x) {}
     GraphNode(Statement* x) : node(x) {}
     GraphNode(MetaNode* x) : node(x) {}
-    GraphNode(declaration::LocalVariable* x) : node(x) {}
-    GraphNode(declaration::GlobalVariable* x) : node(x) {}
+    GraphNode(Declaration* x) : node(x) {}
 
     GraphNode() = default;
     GraphNode(const GraphNode&) = default;
