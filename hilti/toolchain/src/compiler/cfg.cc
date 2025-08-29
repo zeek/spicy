@@ -52,6 +52,7 @@
 #include <hilti/ast/statements/if.h>
 #include <hilti/ast/statements/return.h>
 #include <hilti/ast/statements/set_location.h>
+#include <hilti/ast/statements/switch.h>
 #include <hilti/ast/statements/throw.h>
 #include <hilti/ast/statements/try.h>
 #include <hilti/ast/statements/while.h>
@@ -359,13 +360,18 @@ GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch
 
     for ( auto* case_ : switch_.cases() ) {
         GraphNode case_block;
-        if ( ! case_->expressions().empty() ) {
+
+        // We work on the preprocessed expressions so we can properly
+        // access e.g., reads of the switch condition.
+        const auto expressions = case_->preprocessedExpressions();
+
+        if ( ! expressions.empty() ) {
             // Add edges first in order, though this may not be necessary
-            auto it = case_->expressions().begin();
+            auto it = expressions.begin();
             auto current = _getOrAddNode(*it);
             _addEdge(condition, current);
             it++;
-            for ( ; it != case_->expressions().end(); it++ ) {
+            for ( ; it != expressions.end(); it++ ) {
                 auto next = _getOrAddNode(*it);
                 _addEdge(current, next);
                 current = next;
