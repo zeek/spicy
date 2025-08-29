@@ -366,17 +366,15 @@ GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch
         const auto expressions = case_->preprocessedExpressions();
 
         if ( ! expressions.empty() ) {
-            // Add edges first in order, though this may not be necessary
-            auto it = expressions.begin();
-            auto current = _getOrAddNode(*it);
-            _addEdge(condition, current);
-            it++;
-            for ( ; it != expressions.end(); it++ ) {
-                auto next = _getOrAddNode(*it);
-                _addEdge(current, next);
-                current = next;
+            auto mix_expr = _getOrAddNode(_createMetaNode<Flow>());
+
+            for ( auto* x : expressions ) {
+                auto g = _getOrAddNode(x);
+                _addEdge(condition, g);
+                _addEdge(g, mix_expr);
             }
-            case_block = _addBlock(current, case_->body()->children(), case_->body());
+
+            case_block = _addBlock(mix_expr, case_->body()->children(), case_->body());
         }
 
         else
