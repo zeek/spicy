@@ -804,6 +804,17 @@ struct DataflowVisitor : visitor::PreOrder {
         // the finalizer has no side effects.
         if ( auto* s = x->type()->type()->tryAs<type::Struct>(); s && s->field("~finally") )
             transfer.keep = true;
+
+        // Switch statements are reflected in the CFG as local variables and
+        // different branches.
+        //
+        // TODO(bbannier): We currently model different switch cases as
+        // separate branches, but removing a case would remove the whole switch
+        // statement. Prevent that by explicitly requesting the variable
+        // (which means also its switch statement) to be kept if we have any
+        // cases.
+        if ( auto* switch_ = x->parent()->tryAs<statement::Switch>(); switch_ && ! switch_->cases().empty() )
+            transfer.keep = true;
     }
 };
 
