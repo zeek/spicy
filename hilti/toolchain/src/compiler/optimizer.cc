@@ -55,9 +55,6 @@
 namespace hilti {
 
 namespace logging::debug {
-inline const DebugStream CfgInitial("cfg-initial");
-inline const DebugStream CfgFinal("cfg-final");
-
 inline const DebugStream Optimizer("optimizer");
 inline const DebugStream OptimizerCollect("optimizer-collect");
 } // namespace logging::debug
@@ -103,30 +100,6 @@ struct CollectUsesPass : public hilti::visitor::PreOrder {
     }
 
     void operator()(expression::ResolvedOperator* node) override { result[&node->operator_()].push_back(node); }
-};
-
-// Helper function to output control flow graphs for statements.
-static std::string dataflowDot(const hilti::Statement& stmt) {
-    auto cfg = detail::cfg::CFG(&stmt);
-    return cfg.dot();
-}
-
-// Helper class to print CFGs to a debug stream.
-class PrintCfgVisitor : public visitor::PreOrder {
-    logging::DebugStream _stream;
-
-public:
-    PrintCfgVisitor(logging::DebugStream stream) : _stream(std::move(stream)) {}
-
-    void operator()(declaration::Function* f) override {
-        if ( auto* body = f->function()->body() )
-            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(*body)));
-    }
-
-    void operator()(declaration::Module* m) override {
-        if ( auto* body = m->statements() )
-            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(*body)));
-    }
 };
 
 class OptimizerVisitor : public visitor::MutatingPreOrder {
@@ -2418,11 +2391,6 @@ std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cf
 bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
     util::timing::Collector _("hilti/compiler/optimizer");
 
-    if ( first && logger().isEnabled(logging::debug::CfgInitial) ) {
-        auto v = PrintCfgVisitor(logging::debug::CfgInitial);
-        visitor::visit(v, root);
-    }
-
     const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");
     const auto& passes_ =
         passes__ ? std::optional(util::split(*passes__, ":")) : std::optional<std::vector<std::string>>();
@@ -2563,11 +2531,6 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
         ever_modified |= modified;
         if ( ! modified )
             break;
-    }
-
-    if ( first && logger().isEnabled(logging::debug::CfgFinal) ) {
-        auto v = PrintCfgVisitor(logging::debug::CfgFinal);
-        visitor::visit(v, root);
     }
 
     // Clear cached information which might become outdated due to edits.

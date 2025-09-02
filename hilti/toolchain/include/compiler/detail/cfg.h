@@ -114,6 +114,9 @@ private:
     Node* _node = nullptr;
 };
 
+/** Prints out the dot representation of the CFG to a debug stream. */
+void dump(logging::DebugStream stream, ASTRoot* root);
+
 } // namespace detail::cfg
 } // namespace hilti
 
