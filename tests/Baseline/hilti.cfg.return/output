@@ -27,11 +27,11 @@ digraph {
 }
 [debug/cfg-initial] Function 'fn2'
 digraph {
-    0 [label="local bool x = True;" xlabel="gen: [x: local bool x = True;] in: [] out: [x: local bool x = True;]"];
-    1 [label="return x;" xlabel="read: [x] in: [x: local bool x = True;] out: [x: local bool x = True;] keep"];
+    0 [label="local bool x = True" xlabel="gen: [x: local bool x = True] in: [] out: [x: local bool x = True]"];
+    1 [label="return x;" xlabel="read: [x] in: [x: local bool x = True] out: [x: local bool x = True] keep"];
     2 [label="2;" xlabel="in: [] out: []"];
     3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    4 [label="end <...>/return.hlt:12:21-16:1" shape=triangle xlabel="kill: [x: local bool x = True;] in: [x: local bool x = True;] out: []"];
+    4 [label="end <...>/return.hlt:12:21-16:1" shape=triangle xlabel="kill: [x: local bool x = True] in: [x: local bool x = True] out: []"];
     5 [label="end <...>/return.hlt:12:21-16:1" shape=triangle xlabel="in: [] out: []"];
     6 [label="end <...>/return.hlt:12:21-16:1" shape=triangle xlabel="in: [] out: []"];
     7 [shape=point xlabel="in: [] out: []"];
@@ -60,10 +60,10 @@ digraph {
 }
 [debug/cfg-initial] Function 'fn4'
 digraph {
-    0 [label="local uint<64> x = 1;" xlabel="gen: [x: local uint<64> x = 1;] in: [] out: [x: local uint<64> x = 1;]"];
-    1 [label="return x;" xlabel="read: [x] in: [x: local uint<64> x = 1;] out: [x: local uint<64> x = 1;] keep"];
+    0 [label="local uint<64> x = 1" xlabel="gen: [x: local uint<64> x = 1] in: [] out: [x: local uint<64> x = 1]"];
+    1 [label="return x;" xlabel="read: [x] in: [x: local uint<64> x = 1] out: [x: local uint<64> x = 1] keep"];
     2 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    3 [label="end <...>/return.hlt:24:25-27:1" shape=triangle xlabel="kill: [x: local uint<64> x = 1;] in: [x: local uint<64> x = 1;] out: []"];
+    3 [label="end <...>/return.hlt:24:25-27:1" shape=triangle xlabel="kill: [x: local uint<64> x = 1] in: [x: local uint<64> x = 1] out: []"];
     2 -> 0 [label="0"];
     0 -> 1 [label="1"];
     1 -> 3 [label="2"];

@@ -1,0 +1,32 @@
+# @TEST-EXEC: hiltic -dj %INPUT -D optimizer -D cfg-initial >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Checks that we correctly recognize dataflow around local values of struct type, regression test for #2124.
+
+module Test {
+
+import hilti;
+
+type S = struct {
+    uint<64> i;
+
+    method void print() {
+        hilti::print(self.i);
+    }
+
+    method void f();
+} &on-heap;
+
+method void S::f() {
+    self.print();
+    local strong_ref<S> ref = self;
+    ref.i = 1;
+    self.print();
+    ref.i = 2;
+    self.print();
+}
+
+global S s = [$i = 0];
+s.f();
+
+}

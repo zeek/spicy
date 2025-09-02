@@ -25,10 +25,15 @@ function uint<64> fn2() {
     (y = 1) = (x = (y = 1));
 }
 
-
 function void fn3() {
     local x = "bad";
     local x2 = x = "good";
+}
+
+function void fn4() {
+    local x = new uint<8>;
+    local y = x;
+    *y = 1;
 }
 
 }

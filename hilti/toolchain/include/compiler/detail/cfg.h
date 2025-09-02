@@ -87,8 +87,7 @@ public:
     GraphNode(statement::Return* x) : node(x) {}
     GraphNode(Statement* x) : node(x) {}
     GraphNode(MetaNode* x) : node(x) {}
-    GraphNode(declaration::LocalVariable* x) : node(x) {}
-    GraphNode(declaration::GlobalVariable* x) : node(x) {}
+    GraphNode(Declaration* x) : node(x) {}
 
     GraphNode() = default;
     GraphNode(const GraphNode&) = default;
@@ -229,6 +228,9 @@ private:
 
     // Add flow for globals if `root` corresponds to a global module block.
     GraphNode _addGlobals(GraphNode predecessor, const Node& root);
+
+    // Add flow for function parameters if `root` corresponds to a function body.
+    GraphNode _addParameters(GraphNode predecessor, const Node& root);
 
     /**
      * Add a new `MetaNode` to the graph.

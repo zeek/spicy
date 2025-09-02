@@ -20,6 +20,7 @@
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/imported-module.h>
+#include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/module.h>
 #include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/expressions/assign.h>
@@ -37,6 +38,7 @@
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statement.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/while.h>
 #include <hilti/ast/type.h>
@@ -2220,7 +2222,7 @@ struct FunctionBodyVisitor : OptimizerVisitor {
 
     std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG& cfg) const;
 
-    std::vector<Node*> unreachableStatements(const detail::cfg::CFG& cfg) const;
+    std::vector<Node*> unusedStatements(const detail::cfg::CFG& cfg) const;
 
     bool prune_uses(Node* node) override {
         visitor::visit(*this, node);
@@ -2246,6 +2248,11 @@ struct FunctionBodyVisitor : OptimizerVisitor {
                 node = p;
         }
 
+        else if ( data->isA<Declaration>() ) {
+            if ( auto* stmt = data->parent(); stmt && stmt->isA<statement::Declaration>() )
+                node = stmt;
+        }
+
         if ( node ) {
             // Edit AST.
             removeNode(node, msg);
@@ -2268,7 +2275,7 @@ struct FunctionBodyVisitor : OptimizerVisitor {
             // edits not correctly changing the flow.
             auto cfg = detail::cfg::CFG(n);
 
-            for ( auto* x : unreachableStatements(cfg) )
+            for ( auto* x : unusedStatements(cfg) )
                 modified |= remove(cfg, x, "statement result unused");
 
             if ( modified )
@@ -2299,7 +2306,7 @@ struct FunctionBodyVisitor : OptimizerVisitor {
     }
 };
 
-std::vector<Node*> FunctionBodyVisitor::unreachableStatements(const detail::cfg::CFG& cfg) const {
+std::vector<Node*> FunctionBodyVisitor::unusedStatements(const detail::cfg::CFG& cfg) const {
     // This can only be called after dataflow information has been populated.
     const auto& dataflow = cfg.dataflow();
     assert(! dataflow.empty());
@@ -2351,11 +2358,10 @@ std::vector<Node*> FunctionBodyVisitor::unreachableStatements(const detail::cfg:
                 if ( n_ == n )
                     continue;
 
-                // If the original node was a declaration and we wrote an update mark the declaration as used.
+                // If the original node was a declaration and we wrote an
+                // update mark the declaration as used.
                 if ( t.write.contains(decl) ) {
-                    auto* decl_stmt = decl->parent();
-                    assert(decl_stmt);
-                    if ( const auto* node = cfg.graph().getNode(decl_stmt->identity()) )
+                    if ( const auto* node = cfg.graph().getNode(decl->identity()) )
                         ++uses[*node];
                 }
 
@@ -2364,13 +2370,9 @@ std::vector<Node*> FunctionBodyVisitor::unreachableStatements(const detail::cfg:
                     continue;
 
                 // If an update is read and in the `in` set of a node it is used.
-
-                // Need to introduce an extra binding since captured structured
-                // bindings are only available with C++20.
-                const auto& stmt_ = stmt;
                 auto it = std::ranges::find_if(t.in, [&](const auto& in) {
                     const auto& [decl, stmts] = in;
-                    return stmts.count(stmt_);
+                    return stmts.contains(stmt);
                 });
                 if ( it != t.in.end() )
                     ++uses[n];

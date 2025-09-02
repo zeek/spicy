@@ -3,7 +3,7 @@
 [debug/optimizer] [dead-write-shadowed.hlt:14:9-14:30] statement::Declaration "local uint<64> x = 10;" -> null (statement result unused)
 [debug/cfg-final] Module 'Test'
 digraph {
-    0 [label="f();" xlabel="read: [f] write: [f] in: [] out: [] keep"];
+    0 [label="f();" xlabel="in: [] out: [] keep"];
     1 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     2 [label="end <...>/dead-write-shadowed.hlt:6:1-22:1" shape=triangle xlabel="in: [] out: []"];
     3 [label="end <...>/dead-write-shadowed.hlt:6:1-22:1" shape=triangle xlabel="in: [] out: []"];
@@ -13,9 +13,9 @@ digraph {
 }
 [debug/cfg-final] Function 'f'
 digraph {
-    0 [label="local uint<64> x = 1;" xlabel="gen: [x: local uint<64> x = 1;] in: [] out: [x: local uint<64> x = 1;]"];
-    1 [label="x = 5;" xlabel="write: [x] gen: [x: x = 5;] kill: [x: local uint<64> x = 1;] in: [x: local uint<64> x = 1;] out: [x: x = 5;]"];
-    2 [label="hilti::print(x, True);" xlabel="read: [print, x] write: [print, x] in: [x: x = 5;] out: [x: x = 5;] keep"];
+    0 [label="local uint<64> x = 1" xlabel="gen: [x: local uint<64> x = 1] in: [] out: [x: local uint<64> x = 1]"];
+    1 [label="x = 5;" xlabel="write: [x] gen: [x: x = 5;] kill: [x: local uint<64> x = 1] in: [x: local uint<64> x = 1] out: [x: x = 5;]"];
+    2 [label="hilti::print(x, True);" xlabel="read: [x] write: [x] in: [x: x = 5;] out: [x: x = 5;] keep"];
     3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     4 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="in: [] out: []"];
     5 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="kill: [x: x = 5;] in: [x: x = 5;] out: []"];

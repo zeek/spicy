@@ -3,7 +3,7 @@
 [debug/optimizer] [unreachable-return.hlt:17:5-17:11] statement::Return "return;" -> null (unreachable code)
 [debug/cfg-final] Module 'Test'
 digraph {
-    0 [label="f();" xlabel="read: [f] write: [f] in: [] out: [] keep"];
+    0 [label="f();" xlabel="in: [] out: [] keep"];
     1 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     2 [label="end <...>/unreachable-return.hlt:6:1-22:1" shape=triangle xlabel="in: [] out: []"];
     3 [label="end <...>/unreachable-return.hlt:6:1-22:1" shape=triangle xlabel="in: [] out: []"];
@@ -13,7 +13,7 @@ digraph {
 }
 [debug/cfg-final] Function 'f'
 digraph {
-    0 [label="hilti::print(\"hey\", True);" xlabel="read: [print] write: [print] in: [] out: [] keep"];
+    0 [label="hilti::print(\"hey\", True);" xlabel="in: [] out: [] keep"];
     1 [label="return;" xlabel="in: [] out: [] keep"];
     2 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     3 [label="end <...>/unreachable-return.hlt:11:19-18:1" shape=triangle xlabel="in: [] out: []"];

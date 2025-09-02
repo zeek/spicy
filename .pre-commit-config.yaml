@@ -37,7 +37,7 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'v20.1.8'
+  rev: 'v21.1.0'
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
@@ -86,16 +86,16 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.35.4
+  rev: v1.35.5
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*|.clang-tidy'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.12.8
+  rev: v0.12.11
   hooks:
-  - id: ruff
+  - id: ruff-check
     args: [ --fix ]
   - id: ruff-format
 

@@ -1,6 +1,28 @@
+1.15.0-dev.29 | 2025-09-02 19:31:52 +0200
+
+  * Rename variable for clarity. (Benjamin Bannier, Corelight)
+
+  * Use non-legacy ruff-check version for pre-commit. (Benjamin Bannier, Corelight)
+
+  * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
+
+  * Remove workaround for C++17. (Benjamin Bannier, Corelight)
+
+  * GH-2124: Fix computation of aliasing and variable access in CFG. (Benjamin Bannier, Corelight)
+
+  * Fix cfg handling of RHS assignments in variable declarations. (Benjamin Bannier, Corelight)
+
+  * Properly store declarations. (Benjamin Bannier, Corelight)
+
+  * Prevent removing switch statements which only have a default case. (Benjamin Bannier, Corelight)
+
+  * Fix CFG modelling of switch cases with multiple labels. (Benjamin Bannier, Corelight)
+
+  * Properly model switch case condition reads. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.18 | 2025-08-26 13:12:38 +0200
 
-  * Bump CodSpeedHQ/action from 3.8.0 to 3.8.1 (dependabot[bot])
+  * Bump CodSpeedHQ/action from 3.8.0 to 3.8.1 (dependabot)[bot]
 
 1.15.0-dev.16 | 2025-08-26 12:29:35 +0200
 
