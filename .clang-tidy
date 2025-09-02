@@ -62,7 +62,6 @@ Checks: '
   -readability-else-after-return,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
-  -readability-identifier-naming,
   -readability-implicit-bool-conversion,
   -readability-magic-numbers,
   -readability-make-member-function-const,
