@@ -724,10 +724,10 @@ struct DataflowVisitor : visitor::PreOrder {
              decl->isA<declaration::Type>() )
             return;
 
-        auto* stmt = root.value();
+        auto* node = root.value();
         // If the statement was a simple `Expression` unwrap it to get the more specific node.
-        if ( auto* expr = stmt->tryAs<statement::Expression>() )
-            stmt = expr->expression();
+        if ( auto* expr = node->tryAs<statement::Expression>() )
+            node = expr->expression();
 
         // Check whether the name was used in an assignment.
         {
@@ -760,15 +760,15 @@ struct DataflowVisitor : visitor::PreOrder {
             } while ( node && node != root.value() );
         }
 
-        if ( stmt->isA<expression::Assign>() ) {
+        if ( node->isA<expression::Assign>() ) {
             // Nothing, handled above.
         }
 
-        else if ( stmt->isA<statement::Declaration>() )
+        else if ( node->isA<statement::Declaration>() )
             // Names in declaration statements appear on the RHS.
             transfer.read.insert(decl);
 
-        else if ( auto* d = stmt->tryAs<Declaration>() ) {
+        else if ( auto* d = node->tryAs<Declaration>() ) {
             // Names in declaration statements appear on the RHS.
             transfer.read.insert(decl);
 
@@ -784,7 +784,7 @@ struct DataflowVisitor : visitor::PreOrder {
                 transfer.maybe_alias.insert(decl);
         }
 
-        else if ( stmt->isA<statement::Return>() )
+        else if ( node->isA<statement::Return>() )
             // Simply flows a value but does not generate or kill any.
             transfer.read.insert(decl);
 
