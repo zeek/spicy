@@ -101,6 +101,11 @@ the ``Dockerfile`` for the respective platform for what's needed.
       - :package-dev-deb:`DEB <docker_ubuntu22>`
       - :repo:`Dockerfile <docker/Dockerfile.ubuntu-22>`
 
+    * - Ubuntu 24
+      - :package-release-deb:`DEB <linux_ubuntu24>`
+      - :package-dev-deb:`DEB <docker_ubuntu24>`
+      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-24>`
+
 macOS
 ~~~~~
 
