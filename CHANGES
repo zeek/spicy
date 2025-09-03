@@ -1,3 +1,23 @@
+1.15.0-dev.34 | 2025-09-03 15:56:51 +0200
+
+  * Enforce naming conventions across toolchain using clang-tidy. (Robin Sommer, Corelight)
+
+    This comes with one style clarification: for static, file-local
+    functions we had an inconsistent mix of prefixing their names with an
+    underscores vs not. The original intent was to have that prefix, but I
+    don't see a way to enforce it through clang-tidy, and it's hard to
+    find all those instances not having the prefix otherwise. So switching
+    over to not using an underscore prefix.
+
+  * Enable clang-tidy's naming check. (Robin Sommer, Corelight)
+
+    Not sure why this was excluded: we want it for the toolchain, and it
+    doesn't seem to hurt for the rest.
+
+  * Add `--use-clang-tidy` flag to `configure`. (Robin Sommer, Corelight)
+
+  * Prettify configure output for sanitizers. (Robin Sommer, Corelight)
+
 1.15.0-dev.29 | 2025-09-02 19:31:52 +0200
 
   * Rename variable for clarity. (Benjamin Bannier, Corelight)

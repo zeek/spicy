@@ -69,8 +69,8 @@ struct ProductionVisitor : public production::Visitor {
     const Grammar& grammar;
     hilti::util::Cache<std::string, ID> parse_functions;
     std::vector<hilti::declaration::Field*> new_fields;
-    Expressions _destinations;
-    std::vector<ID> _path; // paths of IDs followed to get to current unit/field
+    Expressions destinations;
+    std::vector<ID> path; // paths of IDs followed to get to current unit/field
 
     auto cg() { return pb->cg(); }
     auto context() { return cg()->context(); }
@@ -88,18 +88,18 @@ struct ProductionVisitor : public production::Visitor {
     auto pushBuilder(std::shared_ptr<Builder> b) { return pb->pushBuilder(std::move(b)); }
     auto popBuilder() { return pb->popBuilder(); }
 
-    auto destination() { return _destinations.back(); }
+    auto destination() { return destinations.back(); }
 
     auto pushDestination(Expression* e) {
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- push destination: %s", *e));
-        _destinations.emplace_back(e);
+        destinations.emplace_back(e);
     }
 
     auto popDestination() {
-        auto* back = _destinations.back();
-        _destinations.pop_back();
+        auto* back = destinations.back();
+        destinations.pop_back();
 
-        if ( _destinations.size() ) {
+        if ( destinations.size() ) {
             HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("- pop destination, now: %s", *destination()));
         }
         else
@@ -299,10 +299,10 @@ struct ProductionVisitor : public production::Visitor {
                     Expression* profiler = nullptr;
 
                     if ( unit->typeID() ) {
-                        path_tracker = PathTracker(&_path, unit->typeID());
+                        path_tracker = PathTracker(&path, unit->typeID());
                         auto* offset = builder()->memberCall(pstate.cur, "offset");
                         profiler =
-                            builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")), offset);
+                            builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(path, "::")), offset);
                     }
 
                     QualifiedTypes x =
@@ -454,7 +454,7 @@ struct ProductionVisitor : public production::Visitor {
                         pstate.unit = unit;
 
                         if ( unit->typeID() )
-                            path_tracker = PathTracker(&_path, unit->typeID());
+                            path_tracker = PathTracker(&path, unit->typeID());
                     }
 
                     pushState(std::move(pstate));
@@ -584,9 +584,9 @@ struct ProductionVisitor : public production::Visitor {
         std::optional<std::pair<std::shared_ptr<Builder>, Builder::TryProxy>> try_;
 
         if ( is_field_owner ) {
-            path_tracker = PathTracker(&_path, field->id());
+            path_tracker = PathTracker(&path, field->id());
             auto* offset = builder()->memberCall(state().cur, "offset");
-            profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(_path, "::")), offset);
+            profiler = builder()->startProfiler(fmt("spicy/unit/%s", hilti::util::join(path, "::")), offset);
 
             bool add_try = (! field->isAnonymous());
             for ( const auto* h : field->hooks() ) {
@@ -1063,7 +1063,7 @@ struct ProductionVisitor : public production::Visitor {
             // encountered and recovered from.
             //
             // Returns a pointer to the constructed builder if any was constructed.
-            auto guardSearch = [&](auto&& cb) {
+            auto guard_search = [&](auto&& cb) {
                 if ( mode != LiteralMode::Search )
                     return std::shared_ptr<Builder>();
 
@@ -1115,7 +1115,7 @@ struct ProductionVisitor : public production::Visitor {
                     builder()->addLocal(ID("rc"), builder()->qualifiedType(builder()->typeSignedInteger(32),
                                                                            hilti::Constness::Const));
 
-                    auto guardedSearch = guardSearch([&]() {
+                    auto guarded_search = guard_search([&]() {
                         // We operate on `ncur` while `advanceToNextData`
                         // updates `cur`; copy its result over.
                         builder()->addAssign(ID("ncur"), state().cur);
@@ -1126,7 +1126,7 @@ struct ProductionVisitor : public production::Visitor {
                                          builder()->memberCall(builder()->id("ms"), "advance", {builder()->id("ncur")}),
                                          location);
 
-                    if ( guardedSearch )
+                    if ( guarded_search )
                         popBuilder();
 
                     auto switch_ = builder()->addSwitch(builder()->id("rc"), location);
@@ -1167,7 +1167,7 @@ struct ProductionVisitor : public production::Visitor {
                 pstate.literal_mode = mode;
                 pushState(std::move(pstate));
 
-                auto guardedSearch = guardSearch([]() {});
+                auto guarded_search = guard_search([]() {});
 
                 auto* match = builder()->addTmp("literal", pb->parseLiteral(*p, {}));
 
@@ -1202,7 +1202,7 @@ struct ProductionVisitor : public production::Visitor {
                     true_->addAssign(state().lahead_end, builder()->id("i"));
                 }
 
-                if ( guardedSearch )
+                if ( guarded_search )
                     popBuilder();
 
                 pb->state().printDebug(builder());
@@ -1252,7 +1252,7 @@ struct ProductionVisitor : public production::Visitor {
         Expression* profiler = nullptr;
 
         // Helper to validate the parser state after search for a lookahead.
-        auto validateSearchResult = [&]() {
+        auto validate_search_result = [&]() {
             if ( profiler ) {
                 auto* offset = builder()->memberCall(state().cur, "offset");
                 builder()->stopProfiler(profiler, offset);
@@ -1312,7 +1312,7 @@ struct ProductionVisitor : public production::Visitor {
                 pushState(std::move(pstate));
 
                 getLookAhead({ctor.get()}, id, ctor->location(), LiteralMode::Search);
-                validateSearchResult();
+                validate_search_result();
 
                 if ( synchronize_after )
                     pb->consumeLookAhead();
@@ -1341,7 +1341,7 @@ struct ProductionVisitor : public production::Visitor {
         state().printDebug(builder());
 
         getLookAhead(*tokens, p->symbol(), p->location(), LiteralMode::Search);
-        validateSearchResult();
+        validate_search_result();
     }
 
     // Generate code to synchronize on the given production always advancing input.
@@ -1718,8 +1718,8 @@ struct ProductionVisitor : public production::Visitor {
             pushState(std::move(pstate));
         }
 
-        if ( const auto& skipPre = p->unitType()->propertyItem("%skip-pre") )
-            skipRegExp(skipPre->expression());
+        if ( const auto& skip_pre = p->unitType()->propertyItem("%skip-pre") )
+            skipRegExp(skip_pre->expression());
 
         if ( const auto& skip = p->unitType()->propertyItem("%skip") )
             skipRegExp(skip->expression());
@@ -1756,8 +1756,8 @@ struct ProductionVisitor : public production::Visitor {
                 groups.push_back({{i}, sync_point});
         }
 
-        auto parseField = [&](const auto& fieldProduction) {
-            parseProduction(*fieldProduction);
+        auto parse_field = [&](const auto& field_production) {
+            parseProduction(*field_production);
 
             if ( const auto& skip = p->unitType()->propertyItem("%skip") )
                 skipRegExp(skip->expression());
@@ -1776,14 +1776,14 @@ struct ProductionVisitor : public production::Visitor {
 
             if ( ! sync_point )
                 for ( auto field : fields )
-                    parseField(p->fields()[field]);
+                    parse_field(p->fields()[field]);
 
             else {
                 auto try_ = builder()->addTry();
 
                 pushBuilder(try_.first, [&]() {
                     for ( auto field : fields )
-                        parseField(p->fields()[field]);
+                        parse_field(p->fields()[field]);
                 });
 
                 pushBuilder(try_.second.addCatch(
@@ -1804,8 +1804,8 @@ struct ProductionVisitor : public production::Visitor {
             }
         }
 
-        if ( const auto& skipPost = p->unitType()->propertyItem("%skip-post") )
-            skipRegExp(skipPost->expression());
+        if ( const auto& skip_post = p->unitType()->propertyItem("%skip-post") )
+            skipRegExp(skip_post->expression());
 
         pb->finalizeUnit(true, p->location());
 
@@ -2697,8 +2697,8 @@ Expression* ParserBuilder::currentFilters(const ParserState& state) {
     // filter support.
     auto* member = builder()->member(state.self, ID("__filters"));
 
-    const auto& typeID = state.unit->typeID();
-    if ( ! typeID )
+    const auto& type_id = state.unit->typeID();
+    if ( ! type_id )
         return member;
 
     return builder()->ternary(featureConstant(state.unit, "supports_filters"), member,

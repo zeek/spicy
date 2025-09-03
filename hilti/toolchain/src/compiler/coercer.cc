@@ -703,8 +703,8 @@ Result<Ctor*> hilti::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst, b
     return result::Error("could not coerce type for constructor");
 }
 
-static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_, QualifiedType* dst_,
-                                          bitmask<CoercionStyle> style) {
+static Result<QualifiedType*> coerceTypeBackend(Builder* builder, QualifiedType* src_, QualifiedType* dst_,
+                                                bitmask<CoercionStyle> style) {
     // TODO(robin): Not sure if this should/must replicate all the type coercion
     // login in coerceExpression(). If so, we should factor that out.
     // Update: I believe the answer is yes ... Added a few more cases, but this will
@@ -742,7 +742,7 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
                 return dst;
 
             // All types converts into a corresponding optional.
-            if ( auto x = coerceType(builder, src, opt->dereferencedType(), style | CoercionStyle::Assignment) )
+            if ( auto x = coerceTypeBackend(builder, src, opt->dereferencedType(), style | CoercionStyle::Assignment) )
                 return builder->qualifiedType(builder->typeOptional(*x, src->meta()), Constness::Mutable);
         }
 
@@ -751,13 +751,13 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
                 return dst;
 
             // All types converts into a corresponding result.
-            if ( auto x = coerceType(builder, src, opt->dereferencedType(), style) )
+            if ( auto x = coerceTypeBackend(builder, src, opt->dereferencedType(), style) )
                 return builder->qualifiedType(builder->typeResult(*x, src->meta()), Constness::Mutable);
         }
 
         if ( auto* x = dst->type()->tryAs<type::ValueReference>(); x && ! src->type()->isReferenceType() ) {
             // All types converts into a corresponding value_ref.
-            if ( auto y = coerceType(builder, src, x->dereferencedType(), style) )
+            if ( auto y = coerceTypeBackend(builder, src, x->dereferencedType(), style) )
                 return builder->qualifiedType(builder->typeValueReference(dst, src->meta()), Constness::Mutable);
         }
     }
@@ -776,7 +776,7 @@ static Result<QualifiedType*> _coerceType(Builder* builder, QualifiedType* src_,
 // Public version going through all plugins.
 Result<QualifiedType*> hilti::coerceType(Builder* builder, QualifiedType* src, QualifiedType* dst,
                                          bitmask<CoercionStyle> style) {
-    return _coerceType(builder, src, dst, style);
+    return coerceTypeBackend(builder, src, dst, style);
 }
 
 std::string hilti::to_string(bitmask<CoercionStyle> style) {
@@ -955,8 +955,8 @@ static Expression* skipReferenceValue(Builder* builder, Expression* op) {
     return deref;
 }
 
-static CoercedExpression _coerceExpression(Builder* builder, Expression* e, QualifiedType* src_, QualifiedType* dst_,
-                                           bitmask<CoercionStyle> style, bool lhs) {
+static CoercedExpression coerceExpressionBackend(Builder* builder, Expression* e, QualifiedType* src_,
+                                                 QualifiedType* dst_, bitmask<CoercionStyle> style, bool lhs) {
     const auto& no_change = e;
     CoercedExpression _result;
     int _line = 0;
@@ -1141,13 +1141,13 @@ exit:
 // Public version going through all plugins.
 CoercedExpression hilti::coerceExpression(Builder* builder, Expression* e, QualifiedType* src, QualifiedType* dst,
                                           bitmask<CoercionStyle> style, bool lhs) {
-    return _coerceExpression(builder, e, src, dst, style, lhs);
+    return coerceExpressionBackend(builder, e, src, dst, style, lhs);
 }
 
 // Public version going through all plugins.
 CoercedExpression hilti::coerceExpression(Builder* builder, Expression* e, QualifiedType* dst,
                                           bitmask<CoercionStyle> style, bool lhs) {
-    return coerceExpression(builder, e, e->type(), dst, style, lhs);
+    return coerceExpressionBackend(builder, e, e->type(), dst, style, lhs);
 }
 
 // Plugin-specific version just kicking off the local visitor.

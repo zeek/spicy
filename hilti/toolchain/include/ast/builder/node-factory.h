@@ -362,9 +362,10 @@ public:
     auto statementAssert(Expression* expr, Expression* msg = nullptr, Meta meta = {}) {
         return hilti::statement::Assert::create(context(), expr, msg, std::move(meta));
     }
-    auto statementAssert(statement::assert::Exception _unused, Expression* expr, UnqualifiedType* excpt,
+    auto statementAssert(statement::assert::Exception /* excpt */, Expression* expr, UnqualifiedType* excpt,
                          Expression* msg = nullptr, Meta meta = {}) {
-        return hilti::statement::Assert::create(context(), _unused, expr, excpt, msg, std::move(meta));
+        return hilti::statement::Assert::create(context(), statement::assert::Exception{}, expr, excpt, msg,
+                                                std::move(meta));
     }
     auto statementBlock(const Meta& meta = {}) { return hilti::statement::Block::create(context(), meta); }
     auto statementBlock(const Statements& stmts, Meta meta = {}) {
@@ -411,8 +412,8 @@ public:
     auto statementSwitchCase(const Expressions& exprs, Statement* body, Meta meta = {}) {
         return hilti::statement::switch_::Case::create(context(), exprs, body, std::move(meta));
     }
-    auto statementSwitchCase(statement::switch_::Default _unused, Statement* body, Meta meta = {}) {
-        return hilti::statement::switch_::Case::create(context(), _unused, body, std::move(meta));
+    auto statementSwitchCase(statement::switch_::Default /* default */, Statement* body, Meta meta = {}) {
+        return hilti::statement::switch_::Case::create(context(), statement::switch_::Default{}, body, std::move(meta));
     }
     auto statementThrow(Meta meta = {}) { return hilti::statement::Throw::create(context(), std::move(meta)); }
     auto statementThrow(Expression* expr, Meta meta = {}) {

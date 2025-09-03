@@ -57,6 +57,7 @@ protected:
 
     SPICY_NODE_2(type::unit::item::Block, type::unit::Item, Declaration, final);
 
+private:
     int _else_start;
 };
 

@@ -86,10 +86,10 @@ std::deque<GraphNode> CFG::postorder() const {
 
         visited.insert(node_id);
 
-        for ( const auto& neighbor_id : g.neighborsDownstream(node_id) )
+        for ( const auto& neighbor_id : _graph.neighborsDownstream(node_id) )
             dfs_visit(neighbor_id);
 
-        const auto* node = g.getNode(node_id);
+        const auto* node = _graph.getNode(node_id);
         assert(node);
         sorted.push_back(*node);
     };
@@ -101,7 +101,7 @@ std::deque<GraphNode> CFG::postorder() const {
 }
 
 // Helper function to check whether some `inner` node is a child of an `outer` node.
-static bool _contains(const Node& outer, const Node& inner) {
+static bool contains(const Node& outer, const Node& inner) {
     const auto* n = &inner;
 
     do {
@@ -131,13 +131,13 @@ CFG::CFG(const Node* root)
     while ( true ) {
         std::set<uintptr_t> dead_ends;
 
-        for ( const auto& [id, n] : g.nodes() ) {
-            if ( n->isA<End>() && g.neighborsUpstream(id).empty() )
+        for ( const auto& [id, n] : _graph.nodes() ) {
+            if ( n->isA<End>() && _graph.neighborsUpstream(id).empty() )
                 dead_ends.insert(id);
         }
 
         for ( const auto& id : dead_ends )
-            g.removeNode(id);
+            _graph.removeNode(id);
 
         if ( dead_ends.empty() )
             break;
@@ -300,7 +300,7 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
             // We might have added a dead edge to a `ScopeEnd` with
             // `add_block`, clean it up again.
             if ( x.value() && x->isA<End>() )
-                g.removeNode(x->identity());
+                _graph.removeNode(x->identity());
 
             predecessor = cc;
         }
@@ -478,10 +478,10 @@ GraphNode CFG::_addCall(GraphNode predecessor, operator_::function::Call& call) 
 }
 
 GraphNode CFG::_getOrAddNode(GraphNode n) {
-    if ( const auto* x = g.getNode(n->identity()) )
+    if ( const auto* x = _graph.getNode(n->identity()) )
         return *x;
 
-    g.addNode(n, n->identity());
+    _graph.addNode(n, n->identity());
     return n;
 }
 
@@ -493,11 +493,11 @@ void CFG::_addEdge(const GraphNode& from, const GraphNode& to) {
     if ( from == _end )
         return;
 
-    if ( const auto& xs = g.neighborsDownstream(from->identity());
+    if ( const auto& xs = _graph.neighborsDownstream(from->identity());
          xs.end() != std::ranges::find_if(xs, [&](const auto& t) { return t == to->identity(); }) )
         return;
     else {
-        g.addEdge(from->identity(), to->identity());
+        _graph.addEdge(from->identity(), to->identity());
         return;
     }
 }
@@ -505,16 +505,16 @@ void CFG::_addEdge(const GraphNode& from, const GraphNode& to) {
 void detail::cfg::CFG::removeNode(Node* node) {
     auto id = node->identity();
 
-    const auto& out = g.neighborsDownstream(id);
-    const auto& in = g.neighborsUpstream(id);
+    const auto& out = _graph.neighborsDownstream(id);
+    const auto& in = _graph.neighborsUpstream(id);
 
     // Create new edges between incoming and outgoing nodes.
     for ( const auto& i : in ) {
         for ( const auto& o : out )
-            g.addEdge(i, o);
+            _graph.addEdge(i, o);
     }
 
-    g.removeNode(id);
+    _graph.removeNode(id);
 }
 
 std::string CFG::dot() const {
@@ -525,7 +525,7 @@ std::string CFG::dot() const {
     std::unordered_map<uintptr_t, size_t> node_ids; // Deterministic node ids.
 
     std::vector<GraphNode> sorted_nodes;
-    std::transform(g.nodes().begin(), g.nodes().end(), std::back_inserter(sorted_nodes),
+    std::transform(_graph.nodes().begin(), _graph.nodes().end(), std::back_inserter(sorted_nodes),
                    [](const auto& p) { return p.second; });
     std::ranges::sort(sorted_nodes, [](const GraphNode& a, const GraphNode& b) {
         return a.value() && b.value() && a->identity() < b->identity();
@@ -641,10 +641,10 @@ std::string CFG::dot() const {
     }
 
     // Convert edge set into an ordinary map for deterministic sorting.
-    for ( const auto& [id, e] : std::map(g.edges().begin(), g.edges().end()) ) {
+    for ( const auto& [id, e] : std::map(_graph.edges().begin(), _graph.edges().end()) ) {
         const auto& [from_, to_] = e;
-        const auto* from = g.getNode(from_);
-        const auto* to = g.getNode(to_);
+        const auto* from = _graph.getNode(from_);
+        const auto* to = _graph.getNode(to_);
         assert(from);
         assert(to);
         ss << util::fmt("    %s -> %s [label=\"%s\"];\n", node_ids.at((*from)->identity()),
@@ -735,7 +735,7 @@ struct DataflowVisitor : visitor::PreOrder {
             Node* node = name;
             do {
                 if ( auto* assign_ = node->tryAs<expression::Assign>() ) {
-                    if ( _contains(*assign_->target(), *name) ) {
+                    if ( contains(*assign_->target(), *name) ) {
                         transfer.write.insert(decl);
 
                         // A LHS use generates a new value.
@@ -753,7 +753,7 @@ struct DataflowVisitor : visitor::PreOrder {
                             transfer.keep = true;
                     }
 
-                    if ( _contains(*assign_->source(), *name) )
+                    if ( contains(*assign_->source(), *name) )
                         transfer.read.insert(decl);
                 }
                 node = node->parent();
@@ -905,7 +905,7 @@ void CFG::_populateDataflow() {
     };
 
     // Populate uses and the gen sets.
-    for ( const auto& [id, n] : g.nodes() ) {
+    for ( const auto& [id, n] : _graph.nodes() ) {
         if ( n.value() )
             _dataflow[n] = visit_node(n);
     }
@@ -917,7 +917,7 @@ void CFG::_populateDataflow() {
         // `b`, `b` will also alias `a`.
         for ( const auto& [n, transfer] : _dataflow ) {
             for ( const auto& alias : transfer.maybe_alias ) {
-                const auto* stmt = g.getNode(alias->identity());
+                const auto* stmt = _graph.getNode(alias->identity());
                 if ( ! stmt || ! stmt->value() || ! _dataflow.contains(*stmt) )
                     util::detail::internalError(
                         util::fmt("could not find CFG node for '%s' aliased in '%s'", alias->print(), n->print()));
@@ -939,7 +939,7 @@ void CFG::_populateDataflow() {
         // Now copy the usage pattern to the aliased node.
         for ( auto& [n, transfer] : _dataflow ) {
             for ( const auto* r : transfer.read ) {
-                const auto* stmt = g.getNode(r->identity());
+                const auto* stmt = _graph.getNode(r->identity());
                 if ( ! stmt || ! stmt->value() || ! _dataflow.contains(*stmt) )
                     continue;
 
@@ -948,7 +948,7 @@ void CFG::_populateDataflow() {
             }
 
             for ( const auto* w : transfer.write ) {
-                const auto* stmt = g.getNode(w->identity());
+                const auto* stmt = _graph.getNode(w->identity());
                 if ( ! stmt || ! stmt->value() || ! _dataflow.contains(*stmt) )
                     continue;
 
@@ -963,14 +963,14 @@ void CFG::_populateDataflow() {
         changed = false;
 
         for ( auto& [n, transfer] : _dataflow ) {
-            auto id = g.getNodeId(n);
+            auto id = _graph.getNodeId(n);
             if ( ! id )
                 util::detail::internalError(util::fmt(R"(could not determine ID of CFG node "%s")", n->print()));
 
             // Populate the in set.
             std::unordered_map<Declaration*, std::unordered_set<GraphNode>> new_in;
-            for ( auto& pid : g.neighborsUpstream(*id) ) {
-                const auto* p = g.getNode(pid);
+            for ( auto& pid : _graph.neighborsUpstream(*id) ) {
+                const auto* p = _graph.getNode(pid);
                 if ( ! p )
                     util::detail::internalError(util::fmt(R"(CFG node "%s" is unknown)", pid));
 
@@ -1012,7 +1012,7 @@ void CFG::_populateDataflow() {
             // If the current node ends a scope, do not propagate declarations local to it.
             if ( const auto* scope_end = n->tryAs<End>() ) {
                 for ( auto& [decl, stmts] : transfer.in ) {
-                    if ( _contains(*scope_end->scope, *decl) ) {
+                    if ( contains(*scope_end->scope, *decl) ) {
                         changed |= ! transfer.kill.contains(decl);
                         auto& kill = transfer.kill[decl];
 

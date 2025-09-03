@@ -46,7 +46,7 @@ Result<expression::ResolvedOperator*> hilti::struct_::MemberCall::instantiate(Bu
 namespace {
 namespace struct_ {
 
-QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
+QualifiedType* itemType(Builder* builder, const Expressions& operands) {
     auto* stype = operands[0]->type()->type()->tryAs<type::Struct>();
     if ( ! stype )
         return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
@@ -57,7 +57,7 @@ QualifiedType* _itemType(Builder* builder, const Expressions& operands) {
         return builder->qualifiedType(builder->typeUnknown(), Constness::Const);
 }
 
-void _checkName(expression::ResolvedOperator* op, bool check_optional = false) {
+void checkName(expression::ResolvedOperator* op, bool check_optional = false) {
     const auto& id = op->op1()->as<expression::Member>()->id();
     auto* t = op->op0()->type()->type();
 
@@ -98,7 +98,7 @@ Clears an optional field.
         };
     }
 
-    void validate(expression::ResolvedOperator* n) const final { _checkName(n, true); }
+    void validate(expression::ResolvedOperator* n) const final { checkName(n, true); }
 
     HILTI_OPERATOR(hilti, struct_::Unset)
 };
@@ -122,10 +122,10 @@ triggers an exception.
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return _itemType(builder, operands)->recreateAsLhs(builder->context());
+        return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
-    void validate(expression::ResolvedOperator* n) const final { _checkName(n); }
+    void validate(expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(hilti, struct_::MemberNonConst)
 };
@@ -150,10 +150,10 @@ triggers an exception.
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return _itemType(builder, operands)->recreateAsConst(builder->context());
+        return itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
-    void validate(expression::ResolvedOperator* n) const final { _checkName(n); }
+    void validate(expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(hilti, struct_::MemberConst)
 };
@@ -180,10 +180,10 @@ exception differently).
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
-        return _itemType(builder, operands);
+        return itemType(builder, operands);
     }
 
-    void validate(expression::ResolvedOperator* n) const final { _checkName(n); }
+    void validate(expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(hilti, struct_::TryMember)
 };
@@ -202,7 +202,7 @@ public:
         };
     }
 
-    void validate(expression::ResolvedOperator* n) const final { _checkName(n); }
+    void validate(expression::ResolvedOperator* n) const final { checkName(n); }
 
     HILTI_OPERATOR(hilti, struct_::HasMember)
 };

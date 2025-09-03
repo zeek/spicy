@@ -82,12 +82,12 @@ struct End : MetaNode {
  */
 class GraphNode {
 public:
-    GraphNode(operator_::function::Call* x) : node(x) {}
-    GraphNode(Expression* x) : node(x) {}
-    GraphNode(statement::Return* x) : node(x) {}
-    GraphNode(Statement* x) : node(x) {}
-    GraphNode(MetaNode* x) : node(x) {}
-    GraphNode(Declaration* x) : node(x) {}
+    GraphNode(operator_::function::Call* x) : _node(x) {}
+    GraphNode(Expression* x) : _node(x) {}
+    GraphNode(statement::Return* x) : _node(x) {}
+    GraphNode(Statement* x) : _node(x) {}
+    GraphNode(MetaNode* x) : _node(x) {}
+    GraphNode(Declaration* x) : _node(x) {}
 
     GraphNode() = default;
     GraphNode(const GraphNode&) = default;
@@ -96,22 +96,22 @@ public:
         if ( &x == this )
             return *this;
 
-        node = x.node;
+        _node = x._node;
         return *this;
     }
 
-    Node* operator->() { return node; }
-    const Node* operator->() const { return node; }
+    Node* operator->() { return _node; }
+    const Node* operator->() const { return _node; }
 
-    Node* value() const { return node; }
+    Node* value() const { return _node; }
 
-    friend bool operator==(const GraphNode& a, const GraphNode& b) { return a.node == b.node; }
-    friend bool operator!=(const GraphNode& a, const GraphNode& b) { return ! (a.node == b.node); }
+    friend bool operator==(const GraphNode& a, const GraphNode& b) { return a._node == b._node; }
+    friend bool operator!=(const GraphNode& a, const GraphNode& b) { return ! (a._node == b._node); }
 
-    friend bool operator<(const GraphNode& a, const GraphNode& b) { return a.node < b.node; }
+    friend bool operator<(const GraphNode& a, const GraphNode& b) { return a._node < b._node; }
 
 private:
-    Node* node = nullptr;
+    Node* _node = nullptr;
 };
 
 } // namespace detail::cfg
@@ -203,7 +203,7 @@ public:
     const auto& dataflow() const { return _dataflow; }
 
     /** Get control flow. */
-    const Graph& graph() const { return g; }
+    const Graph& graph() const { return _graph; }
 
     /**
      * Sorts the graph in postorder, from the beginning node. Any nodes that are
@@ -251,7 +251,7 @@ private:
         return r;
     }
 
-    Graph g;
+    Graph _graph;
 
     std::unordered_set<std::unique_ptr<MetaNode>> _meta_nodes;
     std::unordered_map<GraphNode, Transfer> _dataflow;

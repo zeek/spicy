@@ -71,7 +71,7 @@ protected:
     HILTI_NODE_0(type::operand_list::Operand, final);
 
 private:
-    static QualifiedType* _makeOperandType(ASTContext* ctx, parameter::Kind _kind, UnqualifiedType* type,
+    static QualifiedType* _makeOperandType(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type,
                                            bool make_external_type);
 
     ID _id;

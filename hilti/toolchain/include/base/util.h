@@ -144,7 +144,7 @@ extern std::pair<std::string, std::string> rsplit1(std::string s, const std::str
  *
  * Returns a vector of substrings, or an error.
  */
-Result<std::vector<std::string>> split_shell_unsafe(const std::string& s);
+Result<std::vector<std::string>> splitShellUnsafe(const std::string& s);
 
 /**
  * Returns a subrange of a vector, specified through zero-based indices. If

@@ -18,7 +18,7 @@
 #include <hilti/compiler/detail/cxx/unit.h>
 
 namespace reproc {
-class process;
+class process; // NOLINT(readability-identifier-naming)
 }
 
 namespace hilti {

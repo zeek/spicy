@@ -136,7 +136,7 @@ struct VisitorPre : visitor::PreOrder, public validator::VisitorMixIn {
 struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     using hilti::validator::VisitorMixIn::VisitorMixIn;
 
-    std::unordered_set<ast::DeclarationIndex> _method_declarations; // tracks methods already seen
+    std::unordered_set<ast::DeclarationIndex> method_declarations; // tracks methods already seen
 
     // Ensures that the node represented by tag is allowed to have all of the
     // provided attributes. This does not use any context, if more information
@@ -312,10 +312,10 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 auto* prototype = context()->lookup(index);
                 if ( auto* field = prototype->tryAs<declaration::Field>(); field && field->inlineFunction() )
                     error(fmt("method '%s' is already defined inline", n->id()), n);
-                else if ( _method_declarations.contains(index) )
+                else if ( method_declarations.contains(index) )
                     error(fmt("method '%s' is already defined elsewhere", n->id()), n);
                 else
-                    _method_declarations.insert(index);
+                    method_declarations.insert(index);
             }
         }
     }

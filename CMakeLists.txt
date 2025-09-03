@@ -362,6 +362,16 @@ set(SPICY_C_COMPILER "${CMAKE_C_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_
 set(SPICY_CXX_COMPILER
     "${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
 
+set(SPICY_CLANG_TIDY "no")
+if (CMAKE_CXX_CLANG_TIDY)
+    set(SPICY_CLANG_TIDY "yes (${CMAKE_CXX_CLANG_TIDY})")
+endif ()
+
+set(SPICY_SANITIZERS "no")
+if (USE_SANITIZERS)
+    set(SPICY_SANITIZERS "yes (${USE_SANITIZERS})")
+endif ()
+
 message(
     "\n====================|  Spicy Build Summary  |===================="
     "\n"
@@ -379,8 +389,9 @@ message(
     "\nBuilding toolchain:    ${HAVE_TOOLCHAIN}"
     "\n"
     "\nUse ccache:            ${USE_CCACHE}"
+    "\nUse clang-tidy:        ${SPICY_CLANG_TIDY}"
     "\nUse gold linker:       ${GOLD_FOUND}"
-    "\nUse sanitizers:        ${USE_SANITIZERS}"
+    "\nUse sanitizers:        ${SPICY_SANITIZERS}"
     "\nUse backtrace:         ${HILTI_HAVE_BACKTRACE}"
     "\n"
     "\nWarnings are errors:   ${USE_WERROR}"

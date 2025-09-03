@@ -18,6 +18,7 @@ cmake_build_toolchain="yes"
 cmake_build_type="Release"
 cmake_c_compiler=""
 cmake_cxx_compiler=""
+cmake_clang_tidy=""
 cmake_flex_root=""
 cmake_generator=""
 cmake_install_prefix="/usr/local"
@@ -64,12 +65,14 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --disable-tests                       Disable building of tests and benchmarks
     --enable-ccache                       Build using the compiler cache cache if in PATH [default: ${cmake_use_ccache}]
     --enable-debug                        Compile debug version (same as --build-type=Debug) [default: off]
+    --enable-clang-tidy                   Run clang-tidy from PATH during compilation [default: off]
     --enable-sanitizer[=<names>]          Enable sanitizer(s), default if not further specified is \"address\"
     --enable-werror                       Treat compiler warnings as errors [default: ${cmake_use_werror}]
     --generator=<generator>               CMake generator to use (see cmake --help)
     --prefix=PATH                         Installation prefix [default: ${cmake_install_prefix}]
     --with-bison=<prefix>                 Set prefix of Bison installation
     --with-c-compiler=<path>              Set C compiler to use
+    --with-clang-tidy=<path>              Set clang-tidy binary and enable use during compilation
     --with-cxx-compiler=<path>            Set C++ compiler to use
     --with-hilti-compiler-launcher=<cmd>  Set compiler launcher to use during JIT, e.g., ccache.
     --with-flex=<prefix>                  Set prefix of Flex installation
@@ -119,6 +122,15 @@ while [ $# -ne 0 ]; do
         --disable-tests)                   cmake_spicy_enable_tests="no";;
         --enable-ccache)                   cmake_use_ccache="yes";;
         --enable-debug)                    cmake_build_type="Debug";;
+        --enable-clang-tidy)
+            if ! which clang-tidy >/dev/null 2>&1; then
+                echo "Error: clang-tidy not found in PATH" >&2
+                exit 1
+            fi
+
+            cmake_clang_tidy="$(which clang-tidy)"
+        ;;
+
         --enable-sanitizer)                cmake_use_sanitizers="address";;
         --enable-sanitizer=*)              cmake_use_sanitizers="${optarg}";;
         --enable-werror)                   cmake_use_werror="yes";;
@@ -136,6 +148,7 @@ while [ $# -ne 0 ]; do
 
         --with-hilti-compiler-launcher=*)  hilti_compiler_launcher="${optarg}";;
 
+        --with-clang-tidy=*)               cmake_clang_tidy="${optarg}";;
         --with-flex=*)                     cmake_flex_root="${optarg}";;
         --with-bison=*)                    cmake_bison_root="${optarg}";;
         --without-bison=*)                 cmake_bison_root="";;
@@ -157,6 +170,8 @@ append_cache_entry BUILD_TOOLCHAIN              BOOL   "${cmake_build_toolchain}
 append_cache_entry CMAKE_BUILD_TYPE             STRING "${cmake_build_type}"
 append_cache_entry CMAKE_C_COMPILER             PATH   "${cmake_c_compiler}"
 append_cache_entry CMAKE_CXX_COMPILER           PATH   "${cmake_cxx_compiler}"
+append_cache_entry CMAKE_C_CLANG_TIDY           PATH   "${cmake_clang_tidy}"
+append_cache_entry CMAKE_CXX_CLANG_TIDY         PATH   "${cmake_clang_tidy}"
 append_cache_entry CMAKE_INSTALL_PREFIX         PATH   "${cmake_install_prefix}"
 append_cache_entry HILTI_COMPILER_LAUNCHER      STRING "${hilti_compiler_launcher}"
 append_cache_entry FLEX_ROOT                    PATH   "${cmake_flex_root}"

@@ -350,7 +350,7 @@ hilti::Result<Nothing> JIT::_compile() {
         }
 
         if ( auto flags_ = hilti::rt::getenv("HILTI_CXX_FLAGS") ) {
-            if ( auto flags = util::split_shell_unsafe(*flags_) )
+            if ( auto flags = util::splitShellUnsafe(*flags_) )
                 args.insert(args.end(), std::make_move_iterator(flags->begin()), std::make_move_iterator(flags->end()));
             else
                 return {util::fmt("invalid HILTI_CXX_FLAGS '%s': %s", *flags_, flags.error().description())};
@@ -678,15 +678,15 @@ JIT::JobRunner::JobRunner() {
         logger().internalError(
             util::fmt("cannot get limit for number of open files ('ulimit -n'): %s", ::strerror(errno)));
 
-    constexpr auto REPROC_MAX_FD_LIMIT = 1024 * 1024;
+    constexpr auto reproc_max_fd_limit = 1024 * 1024;
 
-    if ( limit.rlim_cur >= REPROC_MAX_FD_LIMIT ) {
-        limit.rlim_cur = REPROC_MAX_FD_LIMIT;
+    if ( limit.rlim_cur >= reproc_max_fd_limit ) {
+        limit.rlim_cur = reproc_max_fd_limit;
         if ( ::setrlimit(RLIMIT_NOFILE, &limit) != 0 ) {
             logger().internalError(
                 util::fmt("cannot set limit for number of open files ('ulimit -n %d'), please set it in your "
                           "environment: %s",
-                          REPROC_MAX_FD_LIMIT, ::strerror(errno)));
+                          reproc_max_fd_limit, ::strerror(errno)));
         }
     }
 }

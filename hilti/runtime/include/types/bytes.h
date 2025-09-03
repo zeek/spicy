@@ -265,7 +265,7 @@ public:
         if ( &b == this )
             return *this;
 
-        invalidateIterators();
+        _invalidateIterators();
         this->Base::operator=(b);
         return *this;
     }
@@ -278,7 +278,7 @@ public:
      * @return a reference to the changed `Bytes`
      */
     Bytes& operator=(Bytes&& b) noexcept {
-        invalidateIterators();
+        _invalidateIterators();
         this->Base::operator=(std::move(b));
         return *this;
     }
@@ -636,7 +636,7 @@ public:
 private:
     friend bytes::SafeIterator;
 
-    void invalidateIterators() { _control.Reset(); }
+    void _invalidateIterators() { _control.Reset(); }
 
     control::Block<Base, InvalidIterator> _control{this};
 };

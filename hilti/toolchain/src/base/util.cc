@@ -83,7 +83,7 @@ std::pair<std::string, std::string> util::rsplit1(std::string s, const std::stri
     return std::make_pair("", std::move(s));
 }
 
-Result<std::vector<std::string>> util::split_shell_unsafe(const std::string& s) {
+Result<std::vector<std::string>> util::splitShellUnsafe(const std::string& s) {
     // On FreeBSD running `wordexp` on an empty string errors with
     // `WRDE_SYNTAX`; construct the result by hand.
     if ( s.empty() )

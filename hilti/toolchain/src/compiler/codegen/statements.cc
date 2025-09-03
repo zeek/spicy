@@ -274,7 +274,7 @@ struct Visitor : hilti::visitor::PreOrder {
         else
             default_.addStatement(
                 fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")",
-                    (first ? std::move(cxx_init) : std::move(cxx_id)), n->meta().location()));
+                    (first ? cxx_init : cxx_id), n->meta().location()));
 
         if ( first )
             block->addBlock(std::move(default_));
