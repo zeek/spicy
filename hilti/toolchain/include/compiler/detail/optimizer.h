@@ -10,6 +10,6 @@ namespace hilti::detail::optimizer {
  * Applies optimizations to an AST. The AST must have been fully processed
  * before running optimization.
  */
-void optimize(Builder* builder, ASTRoot* root);
+bool optimize(Builder* builder, ASTRoot* root, bool first);
 
 } // namespace hilti::detail::optimizer

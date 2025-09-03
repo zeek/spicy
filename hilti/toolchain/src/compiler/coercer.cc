@@ -84,6 +84,25 @@ struct VisitorCtor : visitor::PreOrder {
             result = builder->ctorWeakReference(t->dereferencedType());
             return;
         }
+
+        if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) ) {
+            result = builder->ctorBool(false);
+            return;
+        }
+    }
+
+    void operator()(ctor::StrongReference* n) final {
+        if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) ) {
+            result = builder->ctorBool(false);
+            return;
+        }
+    }
+
+    void operator()(ctor::WeakReference* n) final {
+        if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) ) {
+            result = builder->ctorBool(false);
+            return;
+        }
     }
 
     void operator()(ctor::List* n) final {

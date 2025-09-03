@@ -23,7 +23,6 @@
 [hilti-trace] debug-trace.spicy:8:20-13:1: : (*self).__on_0x25_init();
 [hilti-trace] debug-trace.spicy:9:18-9:28: : hilti::print(self, True);
 [hilti-trace] : __error = (*self).__error;
-[hilti-trace] : if ( ! Null ) { __result = (*self).__parse_Mini__Test_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }
 [hilti-trace] : __result = (*self).__parse_Mini__Test_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:1"
 [hilti-trace] : # "<...>/debug-trace.spicy:10:9-10:14"

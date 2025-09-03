@@ -22,6 +22,14 @@
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
 [debug/optimizer] [<no location>] declaration::Field "weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";" -> null (removing unused member)
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Coerced "__result" -> propagating constant value in __result
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null"
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> propagating constant value in filtered
+[debug/optimizer] [<no location>] expression::Coerced "filtered" -> propagating constant value in filtered
 [debug/optimizer] [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
 [debug/optimizer] [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
 [debug/optimizer] [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
@@ -172,14 +180,6 @@
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@P2%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@P2%uses_random_access" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer] [<no location>] expression::Name "__feat%foo@@P2%uses_stream" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
-[debug/optimizer] [<no location>] expression::Name "__result" -> expression::Ctor "(__cur, __lah, __lahe, __error)"
-[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
-[debug/optimizer] [<no location>] expression::Name "__result" -> propagating constant value in __result
-[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
-[debug/optimizer] [<no location>] expression::Name "filtered" -> expression::Ctor "Null"
-[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
-[debug/optimizer] [<no location>] expression::Name "filtered" -> propagating constant value in filtered
 [debug/optimizer] [<no location>] expression::Ternary "False ? (*self).__filters : Null" -> expression::Ctor "Null"
 [debug/optimizer] [<no location>] expression::Ternary "False ? (*self).__filters : Null" -> expression::Ctor "Null"
 [debug/optimizer] [<no location>] statement::Block "{ # "<...>/default-parser-functions.spicy:14:18-14:24" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
@@ -291,6 +291,8 @@
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
 [debug/optimizer] [<no location>] statement::If "if ( False ) { }" -> null
+[debug/optimizer] [<no location>] statement::If "if ( True ) { __result = (*self).__parse_foo__P1_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }" -> statement::Block "{ __result = (*self).__parse_foo__P1_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }"
+[debug/optimizer] [<no location>] statement::If "if ( True ) { __result = (*self).__parse_foo__P2_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }" -> statement::Block "{ __result = (*self).__parse_foo__P2_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); }"
 [debug/optimizer] [<no location>] statement::Try "try { # "<...>/default-parser-functions.spicy:17:8-17:12" # Begin parsing production: Variable: x -> uint<8> spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null); ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network))); if ( __trim ) (*__data).trim(begin(__cur)); # End parsing production: Variable: x -> uint<8> (*self).__error = __error; __error = (*self).__error; } catch ( hilti::SystemException __except ) { throw; }" -> replacing rethrowing try/catch with just the block
 [debug/optimizer] [<no location>] statement::Try "try { # "<...>/default-parser-functions.spicy:17:8-17:12" # Begin parsing production: Variable: x -> uint<8> spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null); ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network))); if ( __trim ) (*__data).trim(begin(__cur)); # End parsing production: Variable: x -> uint<8> (*self).__error = __error; __error = (*self).__error; } catch ( hilti::SystemException __except ) { throw; }" -> statement::Block "{ # "<...>/default-parser-functions.spicy:17:8-17:12" # Begin parsing production: Variable: x -> uint<8> spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null); ((*self).x, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network))); if ( __trim ) (*__data).trim(begin(__cur)); # End parsing production: Variable: x -> uint<8> (*self).__error = __error; __error = (*self).__error; }"
 [debug/optimizer] [<no location>] statement::Try "try { # "<...>/default-parser-functions.spicy:18:8-18:12" # Begin parsing production: Variable: y -> uint<8> spicy_rt::waitForInput(__data, __cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", Null); ((*self).y, __cur) = (*unpack<uint<8>>((__cur, hilti::ByteOrder::Network))); if ( __trim ) (*__data).trim(begin(__cur)); # End parsing production: Variable: y -> uint<8> (*self).__error = __error; (*self).__on_y((*self).y); __error = (*self).__error; } catch ( hilti::SystemException __except ) { throw; }" -> replacing rethrowing try/catch with just the block

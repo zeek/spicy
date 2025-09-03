@@ -55,9 +55,6 @@
 namespace hilti {
 
 namespace logging::debug {
-inline const DebugStream CfgInitial("cfg-initial");
-inline const DebugStream CfgFinal("cfg-final");
-
 inline const DebugStream Optimizer("optimizer");
 inline const DebugStream OptimizerCollect("optimizer-collect");
 } // namespace logging::debug
@@ -103,30 +100,6 @@ struct CollectUsesPass : public hilti::visitor::PreOrder {
     }
 
     void operator()(expression::ResolvedOperator* node) override { result[&node->operator_()].push_back(node); }
-};
-
-// Helper function to output control flow graphs for statements.
-static std::string dataflowDot(const hilti::Statement& stmt) {
-    auto cfg = detail::cfg::CFG(&stmt);
-    return cfg.dot();
-}
-
-// Helper class to print CFGs to a debug stream.
-class PrintCfgVisitor : public visitor::PreOrder {
-    logging::DebugStream _stream;
-
-public:
-    PrintCfgVisitor(logging::DebugStream stream) : _stream(std::move(stream)) {}
-
-    void operator()(declaration::Function* f) override {
-        if ( auto* body = f->function()->body() )
-            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(*body)));
-    }
-
-    void operator()(declaration::Module* m) override {
-        if ( auto* body = m->statements() )
-            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(*body)));
-    }
 };
 
 class OptimizerVisitor : public visitor::MutatingPreOrder {
@@ -838,9 +811,15 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
     }
 
     std::optional<bool> tryAsBoolLiteral(Expression* x) {
-        if ( auto* expression = x->tryAs<expression::Ctor>() )
-            if ( auto* bool_ = expression->ctor()->tryAs<ctor::Bool>() )
+        if ( auto* expression = x->tryAs<expression::Ctor>() ) {
+            auto* ctor = expression->ctor();
+
+            if ( auto* x = ctor->tryAs<ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            if ( auto* bool_ = ctor->tryAs<ctor::Bool>() )
                 return {bool_->value()};
+        }
 
         return {};
     }
@@ -1223,8 +1202,13 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                 auto const_val = const_it->second;
 
                 if ( ! const_val.not_a_constant ) {
-                    recordChange(n, util::fmt("propagating constant value in %s", n->id()));
-                    replaceNode(n, node::detail::deepcopy(context(), const_val.expr, true));
+                    Node* to_replace = n;
+                    // Replace the coercion, too, so that the coercer reruns.
+                    if ( auto* coerced = n->parent()->tryAs<expression::Coerced>() )
+                        to_replace = coerced;
+
+                    recordChange(to_replace, util::fmt("propagating constant value in %s", n->id()));
+                    replaceNode(to_replace, node::deepcopy(context(), const_val.expr));
                 }
             }
         };
@@ -2404,13 +2388,8 @@ std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cf
     return result;
 }
 
-void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
+bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
     util::timing::Collector _("hilti/compiler/optimizer");
-
-    if ( logger().isEnabled(logging::debug::CfgInitial) ) {
-        auto v = PrintCfgVisitor(logging::debug::CfgInitial);
-        visitor::visit(v, root);
-    }
 
     const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");
     const auto& passes_ =
@@ -2418,7 +2397,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
     auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
                             std::optional<std::set<std::string>>();
 
-    if ( ! passes || passes->contains("feature_requirements") ) {
+    if ( (! passes || passes->contains("feature_requirements")) && first ) {
         // The `FeatureRequirementsVisitor` enables or disables code
         // paths and needs to be run before all other passes since
         // it needs to see the code before any optimization edits.
@@ -2498,6 +2477,8 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
 
     size_t round = 0;
 
+    bool ever_modified = false;
+
     // Run the phases in order in a loop until we reach a fixpoint.
     while ( true ) {
         bool modified = false;
@@ -2506,7 +2487,7 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
         for ( Phase phase = 0; phase <= max_phase; ++phase ) {
             // Run all passes in a phase until we reach a fixpoint for the phase.
             while ( true ) {
-                modified = false;
+                auto inner_modified = false;
 
                 // Filter out passes to run in this phase.
                 // NOTE: We do not use `util::transform` here to guarantee a consistent order of the visitors.
@@ -2527,11 +2508,12 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
                     HILTI_DEBUG(logging::debug::OptimizerCollect,
                                 util::fmt("processing AST, round=%d, phase = %d", round, phase));
                     v->collect(root);
-                    modified = v->pruneUses(root) || modified;
-                    modified = v->pruneDecls(root) || modified;
+                    inner_modified = v->pruneUses(root) || inner_modified;
+                    inner_modified = v->pruneDecls(root) || inner_modified;
                 };
 
-                if ( ! modified )
+                modified = modified || inner_modified;
+                if ( ! inner_modified )
                     break;
 
                 ++round;
@@ -2546,19 +2528,17 @@ void detail::optimizer::optimize(Builder* builder, ASTRoot* root) {
             }
         }
 
+        ever_modified |= modified;
         if ( ! modified )
             break;
-    }
-
-    if ( logger().isEnabled(logging::debug::CfgFinal) ) {
-        auto v = PrintCfgVisitor(logging::debug::CfgFinal);
-        visitor::visit(v, root);
     }
 
     // Clear cached information which might become outdated due to edits.
     auto v = hilti::visitor::PreOrder();
     for ( auto* n : hilti::visitor::range(v, root, {}) )
         n->clearScope();
+
+    return ever_modified;
 }
 
 } // namespace hilti

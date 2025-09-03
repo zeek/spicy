@@ -1,3 +1,36 @@
+1.15.0-dev.42 | 2025-09-03 10:56:22 -0400
+
+  * Move CFG printing from optimizer to `ASTContext`. (Evan Typanski, Corelight)
+
+  * GH-2150: Coerce `Null` to false and optimize it. (Evan Typanski, Corelight)
+
+    Fixes #2150
+
+    This does 2 things:
+
+    1) Makes Null (and null-like-things, like a strong ref ctor) coerce to
+       False when coercing to a boolean.
+    2) Allows the optimizer to work with boolean coercions.
+
+    In turn, this lets the optimizer get rid of `if (!Null)` checks that got
+    constant propagated from a previous optimizer run.
+
+  * Run all optimizations until convergence. (Evan Typanski, Corelight)
+
+    This is the first step to get the optimizer to play nicely with
+    coercion. We run resolution/coercion after optimization, but if we want
+    tho optimizer to play nice with newly-coerced results, we have to run
+    the optimizer after the coercion as well. This way, changes in coercion
+    from constant propagation can make other optimizations run.
+
+  * Use the correct form of `deepcopy`. (Evan Typanski, Corelight)
+
+  * Fix optimizer phases not returning to previous. (Evan Typanski, Corelight)
+
+    Since the outer modified was continuously set to `false` this would
+    cause incorrect results. The outer `modified` would always be false when
+    it broke out of phases.
+
 1.15.0-dev.36 | 2025-09-03 15:57:28 +0200
 
   * Add Ubuntu 24 to installation instructions. (Robin Sommer, Corelight)

@@ -1051,4 +1051,33 @@ void CFG::_populateDataflow() {
     } while ( changed );
 }
 
+// Helper function to output control flow graphs for statements.
+static std::string dataflowDot(const hilti::Statement& stmt) {
+    auto cfg = hilti::detail::cfg::CFG(&stmt);
+    return cfg.dot();
+}
+
+// Helper class to print CFGs to a debug stream.
+class PrintCfgVisitor : public visitor::PreOrder {
+    logging::DebugStream _stream;
+
+public:
+    PrintCfgVisitor(logging::DebugStream stream) : _stream(std::move(stream)) {}
+
+    void operator()(declaration::Function* f) override {
+        if ( auto* body = f->function()->body() )
+            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(*body)));
+    }
+
+    void operator()(declaration::Module* m) override {
+        if ( auto* body = m->statements() )
+            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(*body)));
+    }
+};
+
+void dump(logging::DebugStream stream, ASTRoot* root) {
+    auto v = PrintCfgVisitor(std::move(stream));
+    visitor::visit(v, root);
+}
+
 } // namespace hilti::detail::cfg
