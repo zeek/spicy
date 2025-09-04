@@ -1,3 +1,7 @@
+1.15.0-dev.44 | 2025-09-04 16:49:53 +0200
+
+  * Enable control-flow based optimizations by default. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.42 | 2025-09-03 10:56:22 -0400
 
   * Move CFG printing from optimizer to `ASTContext`. (Evan Typanski, Corelight)
