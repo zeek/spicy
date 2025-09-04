@@ -1,5 +1,5 @@
 # @TEST-EXEC: ${HILTIC} -j %INPUT >output
-# @TEST-EXEC: ${HILTIC} -c %INPUT | grep -q 'std::optional<::hilti::rt::ValueReference<::hilti::rt::integer::safe<int64_t>>> x'
+# @TEST-EXEC: ${HILTIC} -c %INPUT | grep -q 'Optional<::hilti::rt::ValueReference<::hilti::rt::integer::safe<int64_t>>> x'
 # @TEST-EXEC: btest-diff output
 #
 # Note: From inside HILTI, it's not easily visible if an integer

@@ -460,12 +460,13 @@ std::string cxx::type::Struct::str() const {
         });
 
         if ( locals_user.size() ) {
-            auto locals_ctor_args = util::join(util::transform(locals_user,
-                                                               [&](const auto& x) {
-                                                                   auto& l = std::get<declaration::Local>(x);
-                                                                   return fmt("std::optional<%s> %s", l.type, l.id);
-                                                               }),
-                                               ", ");
+            auto locals_ctor_args =
+                util::join(util::transform(locals_user,
+                                           [&](const auto& x) {
+                                               auto& l = std::get<declaration::Local>(x);
+                                               return fmt("hilti::rt::Optional<%s> %s", l.type, l.id);
+                                           }),
+                           ", ");
             auto locals_ctor = fmt("explicit %s(%s);", type_name, locals_ctor_args);
             struct_fields.emplace_back(std::move(locals_ctor));
         }
@@ -579,7 +580,7 @@ std::string cxx::type::Struct::code() const {
         auto ctor_args = util::join(util::transform(locals_user,
                                                     [&](const auto& x) {
                                                         auto& l = std::get<declaration::Local>(x);
-                                                        return fmt("std::optional<%s> %s", l.type, l.id);
+                                                        return fmt("hilti::rt::Optional<%s> %s", l.type, l.id);
                                                     }),
                                     ", ");
 

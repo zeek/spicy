@@ -68,9 +68,9 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
     return stats;
 }
 
-std::optional<std::string> hilti::rt::getenv(const std::string& name) {
+hilti::rt::Optional<std::string> hilti::rt::getenv(const std::string& name) {
     if ( auto* x = ::getenv(name.c_str()) )
-        return {x};
+        return std::string(x);
     else
         return {};
 }

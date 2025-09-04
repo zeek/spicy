@@ -20,7 +20,7 @@ extern void __hlt::Foo::__init_module() {
       __location__("<...>/spicyc-hello-world.spicy:8:1-8:22");
     ::hilti::rt::print("Hello, world!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       __location__("<...>/spicyc-hello-world.spicy:9:1-9:24");
-    ::hilti::rt::tuple::print(hilti::rt::tuple::make_from_optionals(std::make_optional("Hello"s), std::make_optional("world!"s)), ::hilti::rt::Bool(true));
+    ::hilti::rt::tuple::print(hilti::rt::tuple::make_from_optionals(hilti::rt::optional::make("Hello"s), hilti::rt::optional::make("world!"s)), ::hilti::rt::Bool(true));
 }
 
 extern void __hlt::Foo::__register_module() {

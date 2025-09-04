@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/types/optional.h>
 
 using namespace hilti::rt;

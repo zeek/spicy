@@ -29,7 +29,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
     ::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index);
-    __globals()->X = "Hello, world!"s;
+    __globals()->X = {"Hello, world!"s};
 }
 
 extern void __hlt::Foo::__init_module() {

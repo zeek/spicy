@@ -66,7 +66,7 @@ hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const std::
 }
 
 hilti::rt::Result<const spicy::rt::Parser*> spicy::rt::lookupParser(const std::string& name,
-                                                                    const std::optional<uint64_t>& linker_scope) {
+                                                                    const hilti::rt::Optional<uint64_t>& linker_scope) {
     const auto& parsers = spicy::rt::parsers();
 
     if ( parsers.empty() )
@@ -97,10 +97,10 @@ hilti::rt::Result<const spicy::rt::Parser*> spicy::rt::lookupParser(const std::s
 }
 
 void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                              const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
+                              const hilti::rt::Optional<hilti::rt::stream::SafeConstIterator>& begin,
                               const hilti::rt::stream::View& cur, int64_t lahead,
                               const hilti::rt::stream::SafeConstIterator& lahead_end, std::string_view literal_mode,
-                              bool trim, const std::optional<hilti::rt::RecoverableFailure>& error) {
+                              bool trim, const hilti::rt::Optional<hilti::rt::RecoverableFailure>& error) {
     auto msg = [&]() {
         auto str = [&](const hilti::rt::stream::SafeConstIterator& begin,
                        const hilti::rt::stream::SafeConstIterator& end) {
@@ -245,9 +245,9 @@ bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hil
     return ! waitForInputOrEod(data, cur, filters);
 }
 
-std::optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
+hilti::rt::Optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
     const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
-    const std::optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
+    const hilti::rt::Optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
     hilti::rt::stream::Direction d) {
     hilti::rt::Tuple<bool, hilti::rt::stream::SafeConstIterator> v;
     if ( i )

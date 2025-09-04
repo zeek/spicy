@@ -139,7 +139,7 @@ public:
      * unset optionals leaving the corresponding tuple element unset
      */
     template<typename... Us>
-    explicit Tuple(tuple::OptionalTag, std::optional<Us>&&... us) : Tuple() {
+    explicit Tuple(tuple::OptionalTag, Optional<Us>&&... us) : Tuple() {
         [&]<size_t... Is>(std::index_sequence<Is...>) {
             ((us.hasValue() ? std::get<Is>(*this) = std::forward<Us>(*us), TupleBase::set(Is) : void()), ...);
         }(std::index_sequence_for<Ts...>{});
@@ -253,7 +253,7 @@ constexpr auto make(Ts&&... ts) {
  * leaving the corresponding tuple element unset
  */
 template<typename... Ts>
-constexpr auto make_from_optionals(std::optional<Ts>&&... ts) {
+constexpr auto make_from_optionals(Optional<Ts>&&... ts) {
     return Tuple<std::decay_t<std::remove_reference_t<Ts>>...>(tuple::OptionalTag{}, std::move(ts)...);
 }
 
@@ -331,9 +331,9 @@ template<typename Func>
 auto wrap_expression(Func&& f) {
     using element_t = std::invoke_result_t<Func>;
     try {
-        return std::optional<element_t>(f());
+        return Optional<element_t>(f());
     } catch ( const hilti::rt::AttributeNotSet& e ) {
-        return std::optional<element_t>();
+        return Optional<element_t>();
     }
 }
 

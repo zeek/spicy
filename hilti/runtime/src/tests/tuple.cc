@@ -41,7 +41,7 @@ TEST_CASE("make") {
 }
 
 TEST_CASE("make-from-optionals") {
-    auto t = tuple::make_from_optionals(std::make_optional(1), std::optional<bool>(), std::make_optional(3.14));
+    auto t = tuple::make_from_optionals(optional::make(1), Optional<bool>(), optional::make(3.14));
 
     CHECK(t.hasValue(0));
     CHECK(! t.hasValue(1));
@@ -84,8 +84,8 @@ TEST_CASE("elementOffset") {
 }
 
 TEST_CASE("wrap_expression") {
-    CHECK_EQ(tuple::wrap_expression([&]() { return 42; }), std::make_optional(42));
-    CHECK_EQ(tuple::wrap_expression([&]() -> int { throw AttributeNotSet(); }), std::optional<int>());
+    CHECK_EQ(tuple::wrap_expression([&]() { return 42; }), optional::make(42));
+    CHECK_EQ(tuple::wrap_expression([&]() -> int { throw AttributeNotSet(); }), Optional<int>());
 }
 
 TEST_CASE("print") {

@@ -93,7 +93,7 @@ inline std::string render(const Bitfield<Ts...>& x, const hilti::rt::TypeInfo* t
 
 // Helper for the HILTI codegen to render an optional bitfield value into a string.
 template<typename... Ts>
-inline std::string render(const std::optional<Bitfield<Ts...>>& x, const hilti::rt::TypeInfo* type_info,
+inline std::string render(const hilti::rt::Optional<Bitfield<Ts...>>& x, const hilti::rt::TypeInfo* type_info,
                           bool is_anonymous = false) {
     if ( ! type_info )
         return "<uninitialized bitfield>";

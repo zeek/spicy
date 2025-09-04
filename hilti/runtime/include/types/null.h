@@ -4,11 +4,11 @@
 
 #include <arpa/inet.h>
 
-#include <optional>
 #include <ostream>
 #include <string>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/types/optional.h>
 
 namespace hilti::rt {
 
@@ -17,8 +17,8 @@ namespace hilti::rt {
  */
 struct Null {
     template<typename T>
-    operator std::optional<T>() {
-        return std::nullopt;
+    operator hilti::rt::Optional<T>() {
+        return {};
     }
 };
 

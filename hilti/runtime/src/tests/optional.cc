@@ -15,16 +15,16 @@ TEST_SUITE_BEGIN("optional");
 TEST_CASE("value") {
     SUBCASE("rvalue") {
         debug::setLocation("foo.spicy");
-        CHECK_THROWS_WITH_AS(optional::value(std::optional<int>()), "unset optional value (foo.spicy)",
+        CHECK_THROWS_WITH_AS(optional::value(Optional<int>()), "unset optional value (foo.spicy)",
                              const UnsetOptional&);
 
-        CHECK_EQ(optional::value(std::optional<int>(0)), 0);
+        CHECK_EQ(optional::value(Optional<int>(0)), 0);
         debug::setLocation(nullptr);
     }
 
     SUBCASE("lvalue") {
         debug::setLocation("foo.spicy");
-        auto o = std::optional<int>();
+        auto o = Optional<int>();
 
         CHECK_THROWS_WITH_AS(optional::value(o), "unset optional value (foo.spicy)", const UnsetOptional&);
 
@@ -40,27 +40,27 @@ TEST_CASE("value") {
 
 TEST_CASE("valueOrInit") {
     SUBCASE("explicit default") {
-        auto o = std::optional<int8_t>();
+        auto o = Optional<int8_t>();
         CHECK_EQ(optional::valueOrInit(o, int8_t(47)), 47);
         CHECK_EQ(*o, 47);
     }
 
     SUBCASE("implicit default") {
-        auto o = std::optional<int8_t>();
+        auto o = Optional<int8_t>();
         CHECK_EQ(optional::valueOrInit(o), 0);
         CHECK_EQ(*o, 0);
     }
 }
 
 TEST_CASE("tryValue") {
-    CHECK_THROWS_WITH_AS(optional::tryValue(std::optional<int8_t>()), "std::exception", const optional::Unset&);
-    CHECK_EQ(optional::tryValue(std::optional<int8_t>(42)), 42);
+    CHECK_THROWS_WITH_AS(optional::tryValue(Optional<int8_t>()), "std::exception", const optional::Unset&);
+    CHECK_EQ(optional::tryValue(Optional<int8_t>(42)), 42);
 }
 
-std::optional<std::string> foo(std::optional<std::string> s) { return s; }
+Optional<std::string> foo(Optional<std::string> s) { return s; }
 
 TEST_CASE("null") {
-    std::optional<int8_t> x;
+    Optional<int8_t> x;
     x = hilti::rt::Null();
     CHECK(! x.has_value());
     CHECK(! foo(hilti::rt::Null()).has_value());

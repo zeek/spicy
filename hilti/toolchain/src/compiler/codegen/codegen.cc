@@ -61,7 +61,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         // the values, in particular wrt destruction when the runtime shuts
         // down.
         for ( auto g : globals ) {
-            g.type = fmt("std::optional<%s>", g.type);
+            g.type = fmt("hilti::rt::Optional<%s>", g.type);
 
             if ( g.id.namespace_() == ns )
                 g.init = "{}";
@@ -114,7 +114,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                     continue;
 
                 if ( g.init )
-                    body.addStatement(fmt("__globals()->%s = %s", g.id.local(), *g.init));
+                    body.addStatement(fmt("__globals()->%s = {%s}", g.id.local(), *g.init));
                 else if ( g.args.size() )
                     body.addStatement(fmt("__globals()->%s = {%s}", g.id.local(), util::join(g.args, ", ")));
             }
@@ -126,11 +126,12 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
                 if ( g.init )
                     // Initialize to actual value
-                    body.addStatement(fmt("::%s::%s = %s", ns, g.id.local(), *g.init));
+                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make(%s)", ns, g.id.local(), *g.init));
                 else if ( g.args.size() )
-                    body.addStatement(fmt("::%s::%s = {%s}", ns, g.id.local(), util::join(g.args, ", ")));
+                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make<%s>(%s)", ns, g.id.local(), g.type,
+                                          util::join(g.args, ", ")));
                 else
-                    body.addStatement(fmt("::%s::%s = %s{}", ns, g.id.local(), g.type));
+                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make(%s{})", ns, g.id.local(), g.type));
             }
         }
 
@@ -852,7 +853,7 @@ cxx::Expression CodeGen::startProfiler(const std::string& name, cxx::Block* bloc
 
     assert(block);
     pushCxxBlock(block);
-    auto id = addTmp("profiler", cxx::Type("std::optional<::hilti::rt::Profiler>"));
+    auto id = addTmp("profiler", cxx::Type("hilti::rt::Optional<::hilti::rt::Profiler>"));
     auto stmt = cxx::Expression(fmt("%s = ::hilti::rt::profiler::start(\"%s\")", id, name));
 
     if ( insert_at_front )

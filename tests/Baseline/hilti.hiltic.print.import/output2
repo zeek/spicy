@@ -9,11 +9,11 @@
 extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Bar {
-    std::optional<std::string> bar = {};
+    hilti::rt::Optional<std::string> bar = {};
 }
 
 namespace __hlt::Foo {
-    extern std::optional<std::string> foo;
+    extern hilti::rt::Optional<std::string> foo;
 }
 
 namespace __hlt::Bar {
@@ -27,7 +27,7 @@ HILTI_PRE_INIT(__hlt::Bar::__register_module)
 
 extern void __hlt::Bar::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar.reset();; }
 
-extern void __hlt::Bar::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar = "Bar!"s; }
+extern void __hlt::Bar::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Bar::bar = hilti::rt::optional::make("Bar!"s); }
 
 extern void __hlt::Bar::__init_module() {
       __location__("bar.hlt:10:1-10:38");
@@ -53,11 +53,11 @@ extern void __hlt::Bar::__register_module() {
 extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Bar {
-    extern std::optional<std::string> bar;
+    extern hilti::rt::Optional<std::string> bar;
 }
 
 namespace __hlt::Foo {
-    std::optional<std::string> foo = {};
+    hilti::rt::Optional<std::string> foo = {};
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_module();
@@ -68,7 +68,7 @@ HILTI_PRE_INIT(__hlt::Foo::__register_module)
 
 extern void __hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo.reset();; }
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo = "Foo!"s; }
+extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::__hlt::Foo::foo = hilti::rt::optional::make("Foo!"s); }
 
 extern void __hlt::Foo::__init_module() {
       __location__("foo.hlt:10:1-10:38");

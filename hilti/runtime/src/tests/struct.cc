@@ -7,6 +7,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/null.h>
 #include <hilti/rt/types/struct.h>
 
 using namespace hilti::rt;
@@ -16,9 +17,9 @@ TEST_SUITE_BEGIN("struct");
 
 TEST_CASE("value_or_exception") {
     debug::setLocation("location:123");
-    CHECK_EQ(struct_::value_or_exception(std::optional<int>(42)), 42);
+    CHECK_EQ(struct_::value_or_exception(hilti::rt::Optional<int>(42)), 42);
 
-    CHECK_THROWS_WITH_AS(struct_::value_or_exception(std::optional<int>(std::nullopt)),
+    CHECK_THROWS_WITH_AS(struct_::value_or_exception(hilti::rt::Optional<int>(hilti::rt::Null())),
                          "struct attribute not set (location:123)", const AttributeNotSet&);
     debug::setLocation(nullptr);
 }

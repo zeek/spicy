@@ -207,7 +207,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     auto t = cg->compile(f->type(), codegen::TypeUsage::Storage);
 
                     if ( f->isOptional() )
-                        t = fmt("std::optional<%s>", t);
+                        t = fmt("hilti::rt::Optional<%s>", t);
 
                     std::optional<cxx::Expression> default_;
 
@@ -628,7 +628,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         std::string t;
 
         if ( const auto& ct = n->dereferencedType(); ! ct->isWildcard() )
-            t = fmt("std::optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
+            t = fmt("hilti::rt::Optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
         else
             t = "*";
 
@@ -713,13 +713,20 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             util::join(util::transform(n->elements(),
                                        [this](auto e) {
                                            if ( auto d = cg->typeDefaultValue(e->type()) )
+                                               // Engage the optional with the element's explicit default value.
                                                return fmt("{%s}", *d);
-                                           else
-                                               // Would prefer to just to return "{{}}" here, but that doesn't work
-                                               // on some compilers; seen for example on CentOS Stream 9 and Ubuntu 24.
-                                               // Not sure if that's expected or not.
-                                               return fmt("std::make_optional<%s>({})",
-                                                          cg->compile(e->type(), codegen::TypeUsage::Storage));
+                                           else {
+                                               // No explicit default (e.g., Bool, integers, etc.).
+                                               // If the element type itself is an Optional<T>, leave it unset.
+                                               if ( e->type()->type()->template isA<type::Optional>() )
+                                                   return fmt("hilti::rt::optional::make<%s>({})",
+                                                              cg->compile(e->type(), codegen::TypeUsage::Storage));
+
+                                               // Otherwise engage the optional with a value-initialized T{} so
+                                               // required (non-optional) tuple elements start as set.
+                                               auto t = cg->compile(e->type(), codegen::TypeUsage::Storage);
+                                               return fmt("hilti::rt::Optional<%s>(%s{})", t, t);
+                                           }
                                        }),
                        ", ");
 

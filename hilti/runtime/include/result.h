@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <variant>
 
 #include <hilti/rt/exception.h>
+#include <hilti/rt/types/optional.h>
 
 namespace hilti::rt {
 
@@ -168,7 +168,7 @@ public:
     explicit operator bool() const { return hasValue(); }
 
     /** Converts the result to an optional that's set if it represents a successful return value. */
-    operator std::optional<T>() const { return hasValue() ? std::make_optional(value()) : std::nullopt; }
+    // operator Optional<T>() const { return hasValue() ? hilti::rt::optional::make(value()) : std::nullopt; } // TODO
 
     Result& operator=(const Result& other) = default;
     Result& operator=(Result&& other) = default; // NOLINT (hicpp-noexcept-move)
