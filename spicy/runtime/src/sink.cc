@@ -23,7 +23,7 @@ void Sink::_init() {
     _chunks.clear();
 }
 
-Sink::ChunkList::iterator Sink::_addAndCheck(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper,
+Sink::ChunkList::iterator Sink::_addAndCheck(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper,
                                              ChunkList::iterator c) {
     assert(! _chunks.empty());
 
@@ -97,7 +97,7 @@ Sink::ChunkList::iterator Sink::_addAndCheck(std::optional<hilti::rt::Bytes> dat
     return new_c;
 }
 
-bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper) {
+bool Sink::_deliver(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper) {
     if ( ! data ) {
         // A gap.
         SPICY_RT_DEBUG_VERBOSE(fmt("hit gap with sink %p at rseq %" PRIu64, this, rseq));
@@ -175,7 +175,7 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
     return true;
 }
 
-void Sink::_newData(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t len) {
+void Sink::_newData(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t len) {
     if ( len == 0 )
         // Nothing to do.
         return;
@@ -342,7 +342,7 @@ void Sink::_reportUndeliveredUpTo(uint64_t rupper) const {
     }
 }
 
-void Sink::_debugReassembler(std::string_view msg, const std::optional<hilti::rt::Bytes>& data, uint64_t rseq,
+void Sink::_debugReassembler(std::string_view msg, const hilti::rt::Optional<hilti::rt::Bytes>& data, uint64_t rseq,
                              uint64_t len) const {
     if ( ! debug::wantVerbose() )
         return;
@@ -409,7 +409,7 @@ void Sink::connect_mime_type(const MIMEType& mt, uint64_t scope) {
 
 void Sink::_close(bool orderly) {
     spicy::rt::filter::disconnect(_filter, nullptr);
-    _filter_data = {};
+    _filter_data = hilti::rt::Null();
 
     if ( _states.size() ) {
         SPICY_RT_DEBUG_VERBOSE(
@@ -456,7 +456,7 @@ void Sink::trim(uint64_t seq) {
     _debugReassemblerBuffer("buffer after trim");
 }
 
-void Sink::write(hilti::rt::Bytes data, std::optional<uint64_t> seq, std::optional<uint64_t> len) {
+void Sink::write(hilti::rt::Bytes data, hilti::rt::Optional<uint64_t> seq, hilti::rt::Optional<uint64_t> len) {
     if ( ! data.size() )
         return;
 

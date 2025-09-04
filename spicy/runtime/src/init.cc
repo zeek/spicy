@@ -28,14 +28,14 @@ void spicy::rt::init() {
 
     auto& parsers = globalState()->parsers;
 
-    std::optional<const Parser*> default_parser;
+    hilti::rt::Optional<const Parser*> default_parser;
 
     for ( const auto& p : parsers ) {
         if ( p->is_public ) {
             if ( ! default_parser.has_value() )
                 default_parser = p;
             else
-                default_parser = std::nullopt;
+                default_parser = hilti::rt::Null();
         }
 
         globalState()->parsers_by_name[{p->name.data(), p->name.size()}].emplace_back(p);

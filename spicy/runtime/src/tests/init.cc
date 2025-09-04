@@ -31,7 +31,7 @@ TEST_CASE("init") {
         const auto* gs = detail::__global_state;
         REQUIRE_NE(gs, nullptr);
         CHECK(gs->runtime_is_initialized);
-        CHECK_EQ(gs->default_parser, std::nullopt);
+        CHECK_EQ(gs->default_parser, static_cast<hilti::rt::Optional<const Parser*>>(hilti::rt::Null()));
         CHECK(gs->parsers_by_name.empty());
         CHECK(gs->parsers_by_mime_type.empty());
 
@@ -51,7 +51,7 @@ TEST_CASE("init") {
 
         const auto* gs = detail::__global_state;
         REQUIRE_NE(gs, nullptr);
-        CHECK_EQ(gs->default_parser, &parser);
+        CHECK_EQ(*gs->default_parser, &parser);
 
         CHECK_EQ(gs->parsers_by_name, std::map<std::string, std::vector<const Parser*>>(
                                           {{{parser.name.data(), parser.name.size()}, {&parser}},
@@ -81,7 +81,7 @@ TEST_CASE("init") {
         REQUIRE_NE(gs, nullptr);
 
         // No default parser possible since all parsers `public`.
-        CHECK_EQ(gs->default_parser, std::nullopt);
+        CHECK_EQ(gs->default_parser, hilti::rt::Optional<const Parser*>(hilti::rt::Null()));
 
         CAPTURE(gs->parsers.size());
         CAPTURE(gs->parsers_by_name.size());
@@ -114,7 +114,7 @@ TEST_CASE("init") {
         REQUIRE_NE(gs, nullptr);
 
         // `parser1` is the only `public` parser so it is the default.
-        CHECK_EQ(gs->default_parser, &parser1);
+        CHECK_EQ(*gs->default_parser, &parser1);
 
         CAPTURE(gs->parsers.size());
         CAPTURE(gs->parsers_by_name.size());

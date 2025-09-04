@@ -91,7 +91,7 @@ inline UnitContext createContext(Context ctx, const hilti::rt::TypeInfo* ti) {
  */
 template<typename Context>
 inline void setContext(hilti::rt::StrongReference<Context>& context, const hilti::rt::TypeInfo* context_type,
-                       const std::optional<UnitContext>& new_ctx, const hilti::rt::TypeInfo* ti) {
+                       const hilti::rt::Optional<UnitContext>& new_ctx, const hilti::rt::TypeInfo* ti) {
     if ( new_ctx )
         context = new_ctx->as<Context>(ti);
     else

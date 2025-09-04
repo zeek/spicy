@@ -30,7 +30,7 @@ inline static uint64_t _getClock() {
 
 void Profiler::_register() const { ++detail::globalState()->profilers[_name].instances; }
 
-profiler::Measurement Profiler::snapshot(std::optional<uint64_t> volume) {
+profiler::Measurement Profiler::snapshot(hilti::rt::Optional<uint64_t> volume) {
     if ( ! detail::globalState()->profiling_enabled )
         return Measurement();
 
@@ -80,7 +80,7 @@ void profiler::detail::done() {
     report();
 }
 
-std::optional<Measurement> profiler::get(const std::string& name) {
+hilti::rt::Optional<Measurement> profiler::get(const std::string& name) {
     const auto& profilers = rt::detail::globalState()->profilers;
     if ( auto i = profilers.find(name); i != profilers.end() )
         return i->second.m;

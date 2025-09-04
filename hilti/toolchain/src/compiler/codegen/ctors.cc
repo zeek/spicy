@@ -67,9 +67,9 @@ struct Visitor : hilti::visitor::PreOrder {
             types.emplace_back(itype);
 
             if ( auto* x = n->bits(b->id()) )
-                values.emplace_back(fmt("std::make_optional(%s)", cg->compile(x->expression())));
+                values.emplace_back(fmt("hilti::rt::optional::make(%s)", cg->compile(x->expression())));
             else
-                values.emplace_back(fmt("std::optional<%s>{}", itype));
+                values.emplace_back(fmt("hilti::rt::Optional<%s>{}", itype));
         }
 
         result = fmt("::hilti::rt::Bitfield<%s>(hilti::rt::tuple::make_from_optionals(%s), %s)",
@@ -179,9 +179,9 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(ctor::Optional* n) final {
         if ( auto* e = n->value() )
-            result = fmt("std::make_optional(%s)", cg->compile(e));
+            result = fmt("hilti::rt::optional::make(%s)", cg->compile(e));
         else
-            result = fmt("std::optional<%s>()", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
+            result = fmt("hilti::rt::Optional<%s>()", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
     void operator()(ctor::Port* n) final { result = fmt("::hilti::rt::Port(\"%s\")", n->value()); }
@@ -292,7 +292,7 @@ struct Visitor : hilti::visitor::PreOrder {
                                                    return fmt("hilti::rt::tuple::wrap_expression([&]() { return %s; })",
                                                               cg->compile(e));
                                                else
-                                                   return fmt("std::make_optional(%s)", cg->compile(e));
+                                                   return fmt("hilti::rt::optional::make(%s)", cg->compile(e));
                                            }),
                            ", "));
     }
