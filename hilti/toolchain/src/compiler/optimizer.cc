@@ -2453,9 +2453,10 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
           2}},
     };
 
-    // TODO(bbannier): Control-flow based optimizations are not ready for
-    // prime-time yet and behind a feature guard.
-    bool has_cfg = rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG") == "1";
+    // Control-flow based optimizations are behind
+    // a feature guard which defaults to ON.
+    auto flag = rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG");
+    bool has_cfg = (! flag || flag == "1");
     auto uses_cfg = std::unordered_set<std::string>{"cfg", "constant_propagation"};
 
     // If no user-specified passes are given enable all of them.
