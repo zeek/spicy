@@ -1,3 +1,9 @@
+1.15.0-dev.47 | 2025-09-05 17:21:04 +0200
+
+  * Use default implementation for `GraphNode` assignment operator. (Benjamin Bannier, Corelight)
+
+  * Add unit parameters to function body flows. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.44 | 2025-09-04 16:49:53 +0200
 
   * Enable control-flow based optimizations by default. (Benjamin Bannier, Corelight)

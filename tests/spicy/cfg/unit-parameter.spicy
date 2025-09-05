@@ -1,0 +1,14 @@
+# @TEST-DOC: Validate that unit parameters are modelled in the CFG.
+#
+# @TEST-EXEC: printf 'foo' | spicy-dump %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    y : Y(self);
+};
+
+type Y = unit(x: X) {
+    data : bytes &eod &parse-at=(x.input());
+};

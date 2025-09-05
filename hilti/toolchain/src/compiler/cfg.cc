@@ -188,7 +188,6 @@ GraphNode CFG::_addParameters(GraphNode predecessor, const Node& root) {
         predecessor = d;
     }
 
-    // Add implicit `self` parameter for methods.
     switch ( fn->ftype()->flavor() ) {
         case type::function::Flavor::Method: {
             auto type_name = fn->id().namespace_();
@@ -202,9 +201,17 @@ GraphNode CFG::_addParameters(GraphNode predecessor, const Node& root) {
             const auto& [decl, id] = *lookup;
 
             if ( auto* struct_ = decl->type()->type()->tryAs<type::Struct>() ) {
+                // Add implicit `self` parameter for methods.
                 auto d = _getOrAddNode(struct_->self());
                 _addEdge(predecessor, d);
                 predecessor = d;
+
+                // Add unit parameters which are implicitly in scope.
+                for ( auto* p : struct_->parameters() ) {
+                    auto n = _getOrAddNode(p);
+                    _addEdge(predecessor, n);
+                    predecessor = n;
+                }
             }
 
             break;
