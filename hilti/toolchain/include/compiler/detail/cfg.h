@@ -92,13 +92,8 @@ public:
     GraphNode() = default;
     GraphNode(const GraphNode&) = default;
 
-    GraphNode& operator=(const GraphNode& x) {
-        if ( &x == this )
-            return *this;
-
-        _node = x._node;
-        return *this;
-    }
+    GraphNode& operator=(const GraphNode& x) = default;
+    GraphNode& operator=(GraphNode&& x) = default;
 
     Node* operator->() { return _node; }
     const Node* operator->() const { return _node; }
