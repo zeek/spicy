@@ -14,6 +14,7 @@
 #include <hilti/rt/util.h>
 
 #ifdef HILTI_HAVE_ASAN
+#include <sanitizer/asan_interface.h>
 #include <sanitizer/common_interface_defs.h>
 #endif
 
@@ -438,6 +439,10 @@ void detail::Fiber::_activate(const char* tag) {
 
         // Reinitialize fiber with same stack.
         auto* fiber = stack_switcher->_fiber.get();
+#ifdef HILTI_HAVE_ASAN
+        // Memory may still have guard regions from previous usage.
+        __asan_unpoison_memory_region(fiber->alloc_stack, ::fiber_stack_size(fiber));
+#endif
         auto* saved_alloc_stack = fiber->alloc_stack; // fiber_init() resets this
         ::fiber_init(fiber, ::fiber_stack(fiber), ::fiber_stack_size(fiber), fiber_bottom_abort, this);
         ::fiber_push_return(fiber, __fiber_switch_trampoline, &args, sizeof(args));
@@ -474,6 +479,10 @@ void detail::Fiber::_yield(const char* tag) {
 
         // Reinitialize fiber with same stack.
         auto* fiber = stack_switcher->_fiber.get();
+#ifdef HILTI_HAVE_ASAN
+        // Memory may still have guard regions from previous usage.
+        __asan_unpoison_memory_region(fiber->alloc_stack, ::fiber_stack_size(fiber));
+#endif
         auto* saved_alloc_stack = fiber->alloc_stack; // fiber_init() resets this
         ::fiber_init(fiber, ::fiber_stack(fiber), ::fiber_stack_size(fiber), fiber_bottom_abort, this);
         ::fiber_push_return(fiber, __fiber_switch_trampoline, &args, sizeof(args));
