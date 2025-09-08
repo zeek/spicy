@@ -91,8 +91,12 @@ Result<std::vector<std::string>> util::splitShellUnsafe(const std::string& s) {
 
     wordexp_t we;
 
-    if ( wordexp(s.c_str(), &we, WRDE_UNDEF) != 0 )
-        return result::Error("could not split string");
+    switch ( wordexp(s.c_str(), &we, WRDE_UNDEF) ) {
+        case 0: break;
+        // WRDE_NOSPACE may allocate part of the result.
+        case WRDE_NOSPACE: wordfree(&we); [[fallthrough]];
+        default: return result::Error("could not split string");
+    }
 
     std::vector<std::string> result{we.we_wordv, we.we_wordv + we.we_wordc};
     wordfree(&we);
