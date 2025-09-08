@@ -1067,7 +1067,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             }
 
             void operator()(expression::ResolvedOperator* op) override {
-                auto sig = op->operator_().signature();
+                const auto& sig = op->operator_().signature();
                 std::size_t i = 0;
                 for ( const auto* operand : sig.operands->operands() ) {
                     if ( operand->kind() == parameter::Kind::InOut )
@@ -1103,7 +1103,10 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             ConstantMap new_in;
             auto preds = result.cfg.graph().neighborsUpstream(n->identity());
             for ( const uint64_t& pred : preds ) {
-                const auto& pred_out = result.out[*result.cfg.graph().getNode(pred)];
+                const auto* cfg_node = result.cfg.graph().getNode(pred);
+                // cfg_node was retrieved from the graph itself so should be present.
+                assert(cfg_node);
+                const auto& pred_out = result.out[*cfg_node];
 
                 for ( const auto& [decl, const_val] : pred_out ) {
                     // Add if we can, otherwise NAC if they're not the same const.
@@ -1122,7 +1125,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             // If it changed, add successors to worklist
             ConstantMap old_out = result.out[n];
             if ( old_out != new_out ) {
-                result.out[n] = new_out;
+                result.out[n] = std::move(new_out);
                 for ( auto succ_id : result.cfg.graph().neighborsDownstream(n->identity()) ) {
                     const auto* succ_node = result.cfg.graph().getNode(succ_id);
                     if ( std::ranges::find(worklist, *succ_node) == worklist.end() )

@@ -1,3 +1,16 @@
+1.15.0-dev.52 | 2025-09-08 11:23:42 -0400
+
+  * Fix resource leak if OOM. (Evan Typanski, Corelight)
+
+  * Fix variable copied when should move. (Evan Typanski, Corelight)
+
+  * Fix auto causes copy. (Evan Typanski, Corelight)
+
+  * Fix dereference null return values. (Evan Typanski, Corelight)
+
+    These seem perfectly valid since they're guaranteed elsewhere.
+    So just add assertions.
+
 1.15.0-dev.47 | 2025-09-05 17:21:04 +0200
 
   * Use default implementation for `GraphNode` assignment operator. (Benjamin Bannier, Corelight)
