@@ -1125,7 +1125,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             // If it changed, add successors to worklist
             ConstantMap old_out = result.out[n];
             if ( old_out != new_out ) {
-                result.out[n] = new_out;
+                result.out[n] = std::move(new_out);
                 for ( auto succ_id : result.cfg.graph().neighborsDownstream(n->identity()) ) {
                     const auto* succ_node = result.cfg.graph().getNode(succ_id);
                     if ( std::ranges::find(worklist, *succ_node) == worklist.end() )
