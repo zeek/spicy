@@ -1067,7 +1067,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             }
 
             void operator()(expression::ResolvedOperator* op) override {
-                auto sig = op->operator_().signature();
+                const auto& sig = op->operator_().signature();
                 std::size_t i = 0;
                 for ( const auto* operand : sig.operands->operands() ) {
                     if ( operand->kind() == parameter::Kind::InOut )
