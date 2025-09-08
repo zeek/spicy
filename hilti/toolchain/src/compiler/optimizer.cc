@@ -1103,7 +1103,10 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             ConstantMap new_in;
             auto preds = result.cfg.graph().neighborsUpstream(n->identity());
             for ( const uint64_t& pred : preds ) {
-                const auto& pred_out = result.out[*result.cfg.graph().getNode(pred)];
+                const auto* cfg_node = result.cfg.graph().getNode(pred);
+                // cfg_node was retrieved from the graph itself so should be present.
+                assert(cfg_node);
+                const auto& pred_out = result.out[*cfg_node];
 
                 for ( const auto& [decl, const_val] : pred_out ) {
                     // Add if we can, otherwise NAC if they're not the same const.

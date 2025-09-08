@@ -126,6 +126,7 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         auto* decl = n->resolvedDeclaration();
+        assert(decl);
         const auto& fqid = decl->fullyQualifiedID();
         assert(fqid);
 
