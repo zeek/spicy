@@ -112,7 +112,7 @@ public:
 
     void removeNode(Node* old, const std::string& msg = "") { replaceNode(old, nullptr, msg); }
 
-    OptimizerVisitor(Builder* builder, const logging::DebugStream& dbg, const OperatorUses* op_uses)
+    OptimizerVisitor(Builder* builder, const logging::DebugStream& dbg, OperatorUses* op_uses)
         : visitor::MutatingPreOrder(builder, dbg), _op_uses(op_uses) {}
 
     ~OptimizerVisitor() override = default;
@@ -129,8 +129,16 @@ public:
         return &_op_uses->at(x);
     }
 
+    void replaceUse(const Operator* x, expression::ResolvedOperator* old, expression::ResolvedOperator* new_) {
+        if ( ! _op_uses->contains(x) )
+            return;
+
+        auto& vec = _op_uses->at(x);
+        std::ranges::replace(vec, old, new_);
+    }
+
 private:
-    const OperatorUses* _op_uses = nullptr;
+    OperatorUses* _op_uses = nullptr;
 };
 
 struct FunctionVisitor : OptimizerVisitor {
@@ -2206,6 +2214,378 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 };
 
+/** Removes return values that go from parameter->return without modification. */
+struct FunctionReturnVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+    using OptimizerVisitor::operator();
+
+    using Placements = std::vector<std::optional<ID>>;
+    std::map<ID, Placements> removeable_params;
+
+    void collect(Node* node) override {
+        stage = Stage::Collect;
+
+        visitor::visit(*this, node);
+    }
+
+    bool pruneUses(Node* node) override {
+        stage = Stage::PruneUses;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return isModified();
+    }
+
+    bool pruneDecls(Node* node) override {
+        stage = Stage::PruneDecls;
+
+        clearModified();
+        visitor::visit(*this, node);
+
+        return isModified();
+    }
+
+    /**
+     * Crafts a new return value for func based on which return placements get
+     * removed. The caller must ensure placements and tup_ty contain the same
+     * number of elements.
+     *
+     * @param tup_ty the tuple returned by the function
+     * @param placements which element IDs are getting removed
+     * @return the new return type, possibly unchanged
+     */
+    QualifiedType* newRet(type::Tuple* tup_ty, const std::vector<std::optional<ID>>& placements) {
+        QualifiedTypes types;
+        // The caller must check the sizes match
+        assert(tup_ty->elements().size() == placements.size());
+
+        for ( std::size_t i = 0; i < placements.size(); ++i ) {
+            if ( ! placements[i] )
+                types.push_back(tup_ty->elements()[i]->type());
+        }
+
+        switch ( types.size() ) {
+            case 0: return builder()->qualifiedType(builder()->typeVoid(), Constness::Const);
+            case 1: return types[0];
+            default: return builder()->qualifiedType(builder()->typeTuple(types), Constness::Const);
+        }
+    }
+
+    /** Makes a map from a given use's parameters to the function params. */
+    std::map<ID, ID> makeParamMap(const ctor::Tuple* tup, const declaration::Parameters& params) {
+        auto params_iter = params.begin();
+        std::map<ID, ID> param_names;
+        for ( auto* val : tup->value() ) {
+            if ( auto* name = val->tryAs<expression::Name>() )
+                param_names[name->id()] = (*params_iter)->id();
+
+            params_iter++;
+        }
+
+        return param_names;
+    }
+
+    void operator()(declaration::Function* n) final {
+        auto function_id = n->functionID(context());
+
+        switch ( stage ) {
+            case Stage::Collect: {
+                // Create the removeable placements, or return if it exists
+                if ( ! removeable_params.try_emplace(function_id).second )
+                    return;
+
+                if ( n->linkage() == declaration::Linkage::Public )
+                    return;
+
+                auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
+                // Don't change signature if there's no body or multiple implementations
+                if ( ! n->function()->body() ||
+                     (all_lookups.size() > 1 && n->function()->ftype()->flavor() != type::function::Flavor::Hook) )
+                    return;
+
+                // Make sure this only happens on tuple returns
+                if ( ! n->function()->ftype()->result()->type()->isA<type::Tuple>() )
+                    return;
+
+                const auto* uses_of_op = uses(n->operator_());
+                if ( ! uses_of_op )
+                    return;
+
+                auto& placements = removeable_params.at(function_id);
+                for ( auto* use : *uses_of_op ) {
+                    auto* tup_assign = use->parent()->tryAs<operator_::tuple::CustomAssign>();
+                    // All uses must be tuple assignments
+                    if ( ! tup_assign ) {
+                        placements.clear();
+                        return;
+                    }
+
+                    auto* lhs_ctor_expr = tup_assign->op0()->as<expression::Ctor>();
+                    auto* lhs_tup_ctor = lhs_ctor_expr->ctor()->as<ctor::Tuple>();
+                    // TODO: These returns need to change
+                    // TODO: try Methods?
+                    auto* call = use->tryAs<operator_::function::Call>();
+                    if ( ! call )
+                        return;
+                    auto* ctor_expr = call->op1()->tryAs<expression::Ctor>();
+                    if ( ! ctor_expr )
+                        return;
+                    auto* tuple_ctor = ctor_expr->ctor()->tryAs<ctor::Tuple>();
+                    if ( ! tuple_ctor )
+                        return;
+
+                    std::map<ID, ID> param_names = makeParamMap(tuple_ctor, n->function()->ftype()->parameters());
+                    for ( std::size_t i = 0; i < lhs_tup_ctor->value().size(); i++ ) {
+                        auto* val = lhs_tup_ctor->value()[i];
+                        auto* name = val->tryAs<expression::Name>();
+
+                        // Add the name if one isn't in this position
+                        if ( placements.size() <= i ) {
+                            if ( name )
+                                placements.emplace_back(param_names[name->id()]);
+                            else
+                                placements.emplace_back();
+                        }
+                        else if ( ! name || (placements[i] && param_names[name->id()] != *placements[i]) ) {
+                            // Invalidate this entry if this isn't a name or this
+                            // one's param doesn't match what was there before
+                            placements[i] = {};
+                        }
+                    }
+                }
+
+                break;
+            }
+            case Stage::PruneDecls: {
+                if ( ! removeable_params.contains(function_id) )
+                    return;
+
+                auto& placements = removeable_params.at(function_id);
+                // Make sure at least one placement is getting removed
+                if ( ! std::ranges::any_of(placements, [](const std::optional<ID>& opt) { return opt.has_value(); }) )
+                    return;
+
+                auto* tup_ty = n->function()->ftype()->result()->type()->tryAs<type::Tuple>();
+                if ( ! tup_ty || tup_ty->elements().size() != placements.size() )
+                    return;
+
+                replaceNode(n->function()->ftype()->result(), newRet(tup_ty, placements));
+            }
+            case Stage::PruneUses: {
+                if ( ! removeable_params.contains(function_id) )
+                    return;
+
+                auto& placements = removeable_params.at(function_id);
+                // Make sure at least one placement is getting removed
+                if ( ! std::ranges::any_of(placements, [](const std::optional<ID>& opt) { return opt.has_value(); }) )
+                    return;
+
+                auto* tup_ty = n->function()->ftype()->result()->type()->tryAs<type::Tuple>();
+                if ( ! tup_ty || tup_ty->elements().size() != placements.size() )
+                    return;
+                auto* new_ret = newRet(tup_ty, placements);
+                assert(new_ret);
+
+                const auto* uses_of_op = uses(n->operator_());
+                if ( ! uses_of_op )
+                    return;
+                for ( auto* use : *uses_of_op ) {
+                    replaceNode(use->type(), node::deepcopy(context(), new_ret));
+
+                    // Build map of call args->params
+                    auto* call = use->as<operator_::function::Call>();
+                    auto* call_ctor_expr = call->op1()->as<expression::Ctor>();
+                    auto* call_tuple_ctor = call_ctor_expr->ctor()->as<ctor::Tuple>();
+                    auto param_names = makeParamMap(call_tuple_ctor, n->function()->ftype()->parameters());
+                    // This is guaranteed
+                    // TODO: Do this better
+                    auto* tup_assign = use->parent()->as<operator_::tuple::CustomAssign>();
+                    auto* ctor_expr = tup_assign->op0()->as<expression::Ctor>();
+                    auto* tup_ctor = ctor_expr->ctor()->as<ctor::Tuple>();
+                    Expressions new_tup_assign_exprs;
+                    if ( tup_ctor->value().size() != placements.size() )
+                        return;
+                    for ( std::size_t i = 0; i < tup_ctor->value().size(); i++ ) {
+                        auto* name = tup_ctor->value()[i]->tryAs<expression::Name>();
+                        if ( ! name )
+                            continue;
+                        if ( std::ranges::find(placements, param_names[name->id()]) == placements.end() )
+                            new_tup_assign_exprs.push_back(tup_ctor->value()[i]);
+                    }
+
+                    expression::ResolvedOperator* new_use;
+                    switch ( new_tup_assign_exprs.size() ) {
+                        case 0:
+                            new_use = node::deepcopy(context(), use);
+                            replaceNode(tup_assign, new_use);
+                            break;
+                        case 1: {
+                            // Replace the *parent* since that has the ctor
+                            auto* assign = builder()->assign(new_tup_assign_exprs[0], use);
+                            replaceNode(tup_assign, assign);
+                            new_use = assign->source()->as<expression::ResolvedOperator>();
+                            break;
+                        }
+                        default:
+                            auto* assign = builder()->assign(builder()->tuple(new_tup_assign_exprs), use);
+                            replaceNode(tup_assign, assign);
+                            new_use = assign->source()->as<expression::ResolvedOperator>();
+                            break;
+                    }
+
+                    // Since the use was replaced, we have to invalidate it in
+                    // favor of the new use.
+                    replaceUse(n->operator_(), use, new_use);
+                }
+
+                break;
+            }
+        }
+    }
+
+
+    // TODO: This is just copy-pasted from param visitor, fix that.
+    std::optional<std::tuple<type::Function*, ID>> enclosingFunction(Node* n) {
+        for ( auto* current = n->parent(); current; current = current->parent() ) {
+            if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
+                return std::tuple(fn_decl->function()->ftype(), fn_decl->functionID(context()));
+            }
+            else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
+                return std::tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
+            }
+        }
+
+        return {};
+    }
+
+    void removeFromTupleCtor(ctor::Tuple* ctor, std::vector<std::optional<ID>> placements) {
+        Expressions values;
+        int i = 0;
+        for ( auto* in_ctor : ctor->value() ) {
+            if ( auto* name = in_ctor->tryAs<expression::Name>() ) {
+                if ( *placements[i] == name->id() ) {
+                    i++;
+                    continue;
+                }
+            }
+            values.push_back(in_ctor);
+            i++;
+        }
+
+        // Nothing is removed, do nothing.
+        if ( values.size() == ctor->value().size() )
+            return;
+
+        switch ( values.size() ) {
+            case 0: removeNode(ctor->parent()); break;
+            case 1:
+                // Replace the *parent* since that has the ctor
+                replaceNode(ctor->parent(), values[0]);
+                break;
+            default: replaceNode(ctor, builder()->ctorTuple(values)); break;
+        }
+
+        ctor->setType(context(), newRet(ctor->type()->type()->as<type::Tuple>(), placements));
+    }
+
+    void operator()(expression::Name* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+
+        auto [ftype, function_id] = *opt_enclosing_fn;
+
+        switch ( stage ) {
+            case Stage::Collect: {
+                if ( ! removeable_params.contains(function_id) )
+                    return;
+
+                // There is a very specific hierarchy:
+                //
+                // Return
+                //   -> Ctor expression
+                //     -> tuple ctor
+                //       -> this name
+                if ( n->parent()->isA<ctor::Tuple>() && n->parent(2)->isA<expression::Ctor>() &&
+                     n->parent(3)->isA<statement::Return>() )
+                    return;
+
+                // Invalidate any placements for this ID since it's not within
+                // the hierarchy we are looking for
+                auto& placements = removeable_params.at(function_id);
+                for ( auto& placement : placements ) {
+                    if ( placement && *placement == n->id() )
+                        placement = {};
+                }
+                return;
+            }
+            case Stage::PruneUses:
+            case Stage::PruneDecls: return;
+        }
+    }
+
+    void operator()(statement::Return* n) final {
+        auto opt_enclosing_fn = enclosingFunction(n);
+        if ( ! opt_enclosing_fn )
+            return;
+
+        auto [ftype, function_id] = *opt_enclosing_fn;
+        if ( ! n->expression() )
+            return;
+        auto* ctor_expr = n->expression()->tryAs<expression::Ctor>();
+        ctor::Tuple* tuple_ctor = nullptr;
+
+        if ( ctor_expr )
+            tuple_ctor = ctor_expr->ctor()->tryAs<ctor::Tuple>();
+
+        if ( ! removeable_params.contains(function_id) )
+            return;
+
+        switch ( stage ) {
+            case Stage::Collect: {
+                auto& placements = removeable_params.at(function_id);
+                if ( ! tuple_ctor ) {
+                    placements.clear();
+                    return;
+                }
+
+                // In the return, we check to see if the placements line up.
+                // If not, we cannot remove the parameter.
+                // This should never happen
+                if ( placements.size() != tuple_ctor->value().size() ) {
+                    placements.clear();
+                    return;
+                }
+
+                for ( std::size_t i = 0; i < placements.size(); i++ ) {
+                    auto* expr = tuple_ctor->value()[i];
+                    auto placement = placements[i];
+                    if ( auto* name = expr->tryAs<expression::Name>();
+                         ! name || (placement && name->id() != *placement) ) {
+                        placements[i] = {};
+                    }
+                }
+
+                break;
+            }
+            case Stage::PruneUses: {
+                // Only prune tuples
+                auto& placements = removeable_params.at(function_id);
+                if ( ! tuple_ctor )
+                    return;
+
+                if ( ! placements.empty() )
+                    removeFromTupleCtor(tuple_ctor, placements);
+
+                break;
+            }
+
+            case Stage::PruneDecls: break;
+        }
+    }
+};
+
 struct FunctionBodyVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
 
@@ -2412,47 +2792,52 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
     }
 
     CollectUsesPass collect_uses{};
-    const auto& op_uses = collect_uses.collect(root);
+    auto op_uses = collect_uses.collect(root);
 
-    using PassCreator = std::unique_ptr<OptimizerVisitor> (*)(Builder* builder, const OperatorUses* op_uses);
+    using PassCreator = std::unique_ptr<OptimizerVisitor> (*)(Builder* builder, OperatorUses* op_uses);
     using Phase = size_t;
 
     const std::map<std::string, std::pair<PassCreator, Phase>> creators = {
         // Passes which mainly edit out code generation artifacts run in the first phase.
         {"constant_folding",
-         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
           },
           1}},
         {"functions",
-         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<FunctionVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
           },
           1}},
         {"members",
-         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<MemberVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
           },
           1}},
         {"types",
-         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<TypeVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
           },
           1}},
 
         // Passes which more closely inspect the generated code or which are more general run in the second phase.
         {"remove_unused_params",
-         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<FunctionParamVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
           },
           2}},
+        {"function_propagate_return",
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+              return std::make_unique<FunctionReturnVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+          },
+          2}},
         {"cfg",
-         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer);
           },
           2}},
         {"constant_propagation",
-         {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+         {[](Builder* builder, OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
               return std::make_unique<ConstantPropagationVisitor>(builder, hilti::logging::debug::Optimizer);
           },
           2}},
