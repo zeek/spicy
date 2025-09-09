@@ -1,3 +1,23 @@
+1.15.0-dev.54 | 2025-09-09 09:19:06 +0200
+
+  * Fix ASAN false positive on ARM. (Robin Sommer, Corelight)
+
+    Our fiber code could trigger ASAN to report a false positive: If a
+    block of memory had already been used before as stack memory for a
+    previously existing fiber, that usage may have left ASAN guard regions
+    in place reflecting the state when that old fiber finished. If we were
+    now reusing the same memory for a new fiber's stack, ASAN would
+    continue to check any accesses against that old state. So when this
+    memory now got reinitialized with a new stack structure (i.e.,
+    essentially writing to arbitrary locations inside the block), those
+    writes could trigger ASAN to report an out-of-bounds access.
+
+    The solution is to explicitly clear that memory with ASAN before
+    reusing.
+
+    This triggered on ARM, but could have just as well triggered in x86 as
+    well. I think it was just by chance that x86 ended up working.
+
 1.15.0-dev.52 | 2025-09-08 11:23:42 -0400
 
   * Fix resource leak if OOM. (Evan Typanski, Corelight)
