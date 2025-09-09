@@ -38,7 +38,7 @@ jobs:
               zlib1g-dev
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@9eb8b7a50af98b743c606d4520e9a098c5733bef
+        uses: hendrikmuhs/ccache-action@a3627aeda749b0e5bc16a451bd522bb49e226b60
         with:
           create-symlink: true
           key: ${{ github.job }}
@@ -50,9 +50,10 @@ jobs:
           cmake -G Ninja -DCODSPEED_MODE=instrumentation -DCMAKE_BUILD_TYPE=RelWithDebInfo -Bbuild /spicy
           ninja -C build spicy-rt-parsing-benchmark hilti-rt-benchmark
 
-      - uses: CodSpeedHQ/action@76578c2a7ddd928664caa737f0e962e3085d4e7c
+      - uses: CodSpeedHQ/action@6eeb021fd0f305388292348b775d96d95253adf4
         with:
           run: |
             ./build/bin/hilti-rt-benchmark
             ./build/bin/spicy-rt-parsing-benchmark
           token: ${{ secrets.CODSPEED_TOKEN }}
+          mode: instrumentation
