@@ -34,6 +34,9 @@
 #include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/keyword.h>
+#include <hilti/ast/expressions/logical-and.h>
+#include <hilti/ast/expressions/logical-not.h>
+#include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
@@ -793,7 +796,8 @@ struct DataflowVisitor : visitor::PreOrder {
                 transfer.maybe_alias.insert(decl);
         }
 
-        else if ( node->isA<statement::Return>() )
+        else if ( node->isA<statement::Return>() || node->isA<expression::LogicalOr>() ||
+                  node->isA<expression::LogicalAnd>() || node->isA<expression::LogicalNot>() )
             // Simply flows a value but does not generate or kill any.
             transfer.read.insert(decl);
 
