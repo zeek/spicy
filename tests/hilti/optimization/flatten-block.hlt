@@ -1,0 +1,38 @@
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p -D optimizer >>output 2>&1
+# @TEST-EXEC: FileCheck %INPUT < output
+
+module foo {
+
+import hilti;
+
+# CHECK: function bool fn
+function bool fn() {
+    local bool my_stop = False;
+    # CHECK: local uint<8> x = 0;
+    local uint<8> x = 0;
+    x = x + 1;
+
+    {
+        # CHECK: local uint<8> x_ = 1;
+        local uint<8> x = 1;
+        x = x + 1;
+
+        # CHECK: local uint<8> y = x_ + 1;
+        local uint<8> y = x + 1;
+
+        {
+            # CHECK: local uint<8> y_ = x_ + 2;
+            local uint<8> y = x + 2;
+            hilti::print(y, True);
+        }
+
+        my_stop = my_stop || cast<bool>(x) || cast<bool>(y);
+    }
+
+    return my_stop || cast<bool>(x);
+}
+
+fn();
+
+}
