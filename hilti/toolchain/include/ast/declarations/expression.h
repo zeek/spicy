@@ -20,16 +20,8 @@ public:
 
     std::string_view displayName() const final { return "expression"; }
 
-    static auto create(ASTContext* ctx, ID id, hilti::Expression* expr, AttributeSet* attrs,
-                       declaration::Linkage linkage, Meta meta = {}) {
-        if ( ! attrs )
-            attrs = AttributeSet::create(ctx);
-
-        return ctx->make<Expression>(ctx, {expr, attrs}, std::move(id), linkage, std::move(meta));
-    }
-
     static auto create(ASTContext* ctx, ID id, hilti::Expression* expr, declaration::Linkage linkage, Meta meta = {}) {
-        return create(ctx, std::move(id), expr, nullptr, linkage, std::move(meta));
+        return ctx->make<Expression>(ctx, {expr, AttributeSet::create(ctx)}, std::move(id), linkage, std::move(meta));
     }
 
 
