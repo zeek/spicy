@@ -150,14 +150,10 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> __begin = begin(__cur);
-        
-            __result = (*self).__parse_foo__X4_stage2(__cur, __lah, __lahe, __error);
-
+        __result = (*self).__parse_foo__X4_stage2(__cur, __lah, __lahe, __error);
     }
     catch ( hilti::SystemException __except ) {
-        
-            spicy_rt::filter_forward_eod(self);
-
+        spicy_rt::filter_forward_eod(self);
         throw;
     }
 
@@ -166,9 +162,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X4::__parse_foo__X4_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:32:11-34:1"
-    
-        spicy_rt::filter_forward_eod(self);
-
+    spicy_rt::filter_forward_eod(self);
     hilti::debugDedent("spicy");
     return (__cur, __lah, __lahe, __error);
 }
@@ -231,11 +225,8 @@ method view<stream> foo::X4::parse2(inout value_ref<X4> __unit, inout value_ref<
 }
 
 init function void __register_foo_X4() {
-    {
-        foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_=X4, $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X4::__parser, $scope, Null);
-    }
-
+    foo::X4::__parser = [$name="foo::X4", $is_public=False, $parse1=foo::X4::parse1, $parse2=foo::X4::parse2, $parse3=foo::X4::parse3, $context_new=Null, $type_=X4, $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::X4::__parser, $scope, Null);
 }
 
 hook void foo::X5::__on_0x25_init() {
@@ -252,21 +243,18 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         (*self).__on_0x25_init();
         __error = (*self).__error;
         local strong_ref<stream> filtered = Null;
-        {
-            local uint<64> __offset1 = begin((*__data)).offset();
+        local uint<64> __offset1 = begin((*__data)).offset();
 
-            if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> __filtered_data = filtered;
-                self.__parse_foo__X5_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
-                local uint<64> __offset2 = begin((*__data)).offset();
-                __cur = __cur.advance(__offset2 - __offset1);
+        if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
+            local value_ref<stream> __filtered_data = filtered;
+            self.__parse_foo__X5_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
+            local uint<64> __offset2 = begin((*__data)).offset();
+            __cur = __cur.advance(__offset2 - __offset1);
 
-                if ( __trim ) 
-                    (*__data).trim(begin(__cur));
+            if ( __trim ) 
+                (*__data).trim(begin(__cur));
 
-                __result = (__cur, __lah, __lahe, __error);
-            }
-
+            __result = (__cur, __lah, __lahe, __error);
         }
 
 
@@ -275,9 +263,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     }
     catch ( hilti::SystemException __except ) {
-        
-            spicy_rt::filter_disconnect(self);
-
+        spicy_rt::filter_disconnect(self);
         throw;
     }
 
@@ -286,9 +272,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X5::__parse_foo__X5_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:36:18-40:1"
-    
-        spicy_rt::filter_disconnect(self);
-
+    spicy_rt::filter_disconnect(self);
     hilti::debugDedent("spicy");
     return (__cur, __lah, __lahe, __error);
 }
@@ -368,14 +352,10 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
         (*self).__error = __error;
         (*self).__on_0x25_init();
         __error = (*self).__error;
-        
-            __result = (*self).__parse_foo__X6_stage2(__cur, __lah, __lahe, __error);
-
+        __result = (*self).__parse_foo__X6_stage2(__cur, __lah, __lahe, __error);
     }
     catch ( hilti::SystemException __except ) {
-        
-            (*(*self).data).close();
-
+        (*(*self).data).close();
         throw;
     }
 
@@ -384,9 +364,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::X6::__parse_foo__X6_stage2(copy view<stream> __cur, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
     # "<...>/feature_requirements.spicy:43:11-46:1"
-    
-        (*(*self).data).close();
-
+    (*(*self).data).close();
     hilti::debugDedent("spicy");
     return (__cur, __lah, __lahe, __error);
 }
@@ -449,11 +427,8 @@ method view<stream> foo::X6::parse2(inout value_ref<X6> __unit, inout value_ref<
 }
 
 init function void __register_foo_X6() {
-    {
-        foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_=X6, $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::X6::__parser, $scope, Null);
-    }
-
+    foo::X6::__parser = [$name="foo::X6", $is_public=False, $parse1=foo::X6::parse1, $parse2=foo::X6::parse2, $parse3=foo::X6::parse3, $context_new=Null, $type_=X6, $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::X6::__parser, $scope, Null);
 }
 
 init function void __register_foo_X7() {

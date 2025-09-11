@@ -375,6 +375,42 @@
 [debug/compiler]   processing ASTs, round 1
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
+[debug/compiler] resolving units with plugin HILTI
+[debug/compiler]   processing ASTs, round 1
+[debug/compiler]     [HILTI] building scopes
+[debug/compiler]     [HILTI] resolving AST
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] finalized AST
 [debug/compiler] computing AST dependencies
