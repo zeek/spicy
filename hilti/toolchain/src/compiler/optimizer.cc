@@ -1102,7 +1102,7 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             // Meet
             ConstantMap new_in;
             auto preds = result.cfg.graph().neighborsUpstream(n->identity());
-            for ( const uint64_t& pred : preds ) {
+            for ( auto pred : preds ) {
                 const auto* cfg_node = result.cfg.graph().getNode(pred);
                 // cfg_node was retrieved from the graph itself so should be present.
                 assert(cfg_node);
@@ -1128,10 +1128,12 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                 result.out[n] = std::move(new_out);
                 for ( auto succ_id : result.cfg.graph().neighborsDownstream(n->identity()) ) {
                     const auto* succ_node = result.cfg.graph().getNode(succ_id);
+                    assert(succ_node);
                     if ( std::ranges::find(worklist, *succ_node) == worklist.end() )
                         worklist.push_back(*succ_node);
                 }
             }
+
             num_processed++;
         }
 
