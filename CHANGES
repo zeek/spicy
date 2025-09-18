@@ -1,3 +1,15 @@
+1.15.0-dev.62 | 2025-09-18 08:16:27 +0200
+
+  * Bump hendrikmuhs/ccache-action (dependabot[bot])
+
+  * Bump CodSpeedHQ/action from 3.8.1 to 4.0.1 (dependabot[bot])
+
+  * Bump 3rdparty/utf8proc from `72918b9` to `d7bf128` (dependabot[bot])
+
+  * Bump 3rdparty/utfcpp from `e66f648` to `cfea16a` (dependabot[bot])
+
+  * Bump hendrikmuhs/ccache-action (dependabot[bot])
+
 1.15.0-dev.54 | 2025-09-09 09:19:06 +0200
 
   * Fix ASAN false positive on ARM. (Robin Sommer, Corelight)
