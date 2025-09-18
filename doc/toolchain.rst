@@ -98,6 +98,10 @@ control the compilation process:
         runtime parser throughput as well as lead to faster faster C++
         compilation.
 
+    ``HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW``
+        Set to `1` to omit dataflow facts from the control-flow graph debug
+        streams.
+
 .. _spicy-driver:
 
 ``spicy-driver``

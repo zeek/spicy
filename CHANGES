@@ -1,3 +1,17 @@
+1.15.0-dev.65 | 2025-09-18 08:18:45 +0200
+
+  * Cleanup some optimizer code. (Evan Typanski, Corelight)
+
+    This includes a fix for a Coverity issue that shouldn't flag since
+    `succ_node` is directly from the graph.
+
+  * GH-2158: Add environment variable to omit CFG dataflow. (Evan Typanski, Corelight)
+
+    Closes #2158
+
+    It gets really annoying to have dataflow facts when they're not getting
+    used, so this adds an environment variable to disable them.
+
 1.15.0-dev.62 | 2025-09-18 08:16:27 +0200
 
   * Bump hendrikmuhs/ccache-action (dependabot[bot])

@@ -193,9 +193,10 @@ public:
     /**
      * Compute a dot representation of the CFG.
      *
+     * @param omit_dataflow if the dot representation should omit dataflow facts
      * @return a string with the dot representation
      */
-    std::string dot() const;
+    std::string dot(bool omit_dataflow) const;
 
     /** Get dataflow facts. */
     const auto& dataflow() const { return _dataflow; }

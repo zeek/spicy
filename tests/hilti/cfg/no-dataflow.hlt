@@ -1,0 +1,16 @@
+# @TEST-EXEC: HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW=1 hiltic -p -o /dev/null -D cfg-initial %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure the environment variable to remove dataflow facts works
+
+module foo {
+
+function uint<64> fn() {
+    local auto x = 1;
+    x = x + 1;
+    local auto y = 2;
+    x = y + 3;
+    return x;
+}
+
+}
