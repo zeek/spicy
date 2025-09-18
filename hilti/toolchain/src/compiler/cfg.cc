@@ -545,7 +545,7 @@ std::string CFG::dot(bool omit_dataflow) const {
         node_ids.insert({n->identity(), id});
 
         std::optional<std::string> xlabel;
-        if ( auto it = _dataflow.find(n); omit_dataflow && it != _dataflow.end() ) {
+        if ( auto it = _dataflow.find(n); ! omit_dataflow && it != _dataflow.end() ) {
             const auto& transfer = it->second;
 
             auto read = [&]() {
@@ -1062,7 +1062,7 @@ void CFG::_populateDataflow() {
 static std::string dataflowDot(const hilti::Statement& stmt) {
     auto cfg = hilti::detail::cfg::CFG(&stmt);
     auto omit_dataflow = rt::getenv("HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW") == "1";
-    return cfg.dot(! omit_dataflow);
+    return cfg.dot(omit_dataflow);
 }
 
 // Helper class to print CFGs to a debug stream.

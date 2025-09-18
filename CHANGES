@@ -1,3 +1,7 @@
+1.15.0-dev.67 | 2025-09-18 08:32:35 -0400
+
+  * GH-2171: Fix misnamed variable [skip CI]. (Evan Typanski, Corelight)
+
 1.15.0-dev.65 | 2025-09-18 08:18:45 +0200
 
   * Cleanup some optimizer code. (Evan Typanski, Corelight)
