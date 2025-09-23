@@ -250,6 +250,21 @@ void ASTContext::clear() {
     // retained pointers around still.
 }
 
+Result<Nothing> ASTContext::resolve(Builder* builder, const Plugin& plugin) {
+    while ( true ) {
+        if ( auto rc = _resolve(builder, plugin); ! rc )
+            return rc;
+
+        if ( _driver->hookNewASTPostCompilation(plugin, _root) ) {
+            HILTI_DEBUG(logging::debug::Compiler, "  -> modified by driver plugin");
+        }
+        else
+            break;
+    }
+
+    return Nothing();
+}
+
 Result<declaration::module::UID> ASTContext::parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
                                                          std::optional<hilti::rt::filesystem::path> process_extension) {
     return _parseSource(builder, path, {}, std::move(process_extension));
@@ -594,16 +609,8 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
 
         _driver->hookNewASTPreCompilation(plugin, _root);
 
-        while ( true ) {
-            if ( auto rc = _resolve(builder, plugin); ! rc )
-                return rc;
-
-            if ( _driver->hookNewASTPostCompilation(plugin, _root) ) {
-                HILTI_DEBUG(logging::debug::Compiler, "  -> modified by driver plugin");
-            }
-            else
-                break;
-        }
+        if ( auto rc = resolve(builder, plugin); ! rc )
+            return rc;
 
         if ( auto rc = _validate(builder, plugin, false); ! rc )
             return rc;
@@ -719,6 +726,7 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
 
     int round = 1;
 
+    // FIXME(bbannier): persist round.
     _saveIterationAST(plugin, "AST before first iteration", 0);
 
     while ( true ) {

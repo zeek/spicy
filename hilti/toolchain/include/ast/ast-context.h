@@ -414,6 +414,9 @@ public:
     /** Release all state. */
     void clear();
 
+    // FIXME(bbannier): document.
+    Result<Nothing> resolve(Builder* builder, const Plugin& plugin);
+
 private:
     // The following methods implement the corresponding phases of AST processing.
 
