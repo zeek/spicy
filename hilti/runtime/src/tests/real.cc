@@ -55,14 +55,14 @@ TEST_CASE("unpack") {
                      Result(result::Error("insufficient data to unpack single precision real")));
 
             CHECK_EQ(real::unpack("\x3f\x00\x00\x00"_b, real::Type::IEEE754_Single, ByteOrder::Big),
-                     Result(std::make_tuple(0.5, ""_b)));
+                     Result(tuple::make(0.5, ""_b)));
             CHECK_EQ(real::unpack("\x3f\x40\x00\x00\x01\x02\x03\x04"_b, real::Type::IEEE754_Single, ByteOrder::Big),
-                     Result(std::make_tuple(0.75, "\x01\x02\x03\x04"_b)));
+                     Result(tuple::make(0.75, "\x01\x02\x03\x04"_b)));
 
             CHECK_EQ(real::unpack("\x00\x00\x00\x3f"_b, real::Type::IEEE754_Single, ByteOrder::Little),
-                     Result(std::make_tuple(0.5, ""_b)));
+                     Result(tuple::make(0.5, ""_b)));
             CHECK_EQ(real::unpack("\x00\x00\x40\x3f\x01\x02\x03\x04"_b, real::Type::IEEE754_Single, ByteOrder::Little),
-                     Result(std::make_tuple(0.75, "\x01\x02\x03\x04"_b)));
+                     Result(tuple::make(0.75, "\x01\x02\x03\x04"_b)));
 
             CHECK_EQ(real::unpack("\x00\x00\x00\x3f"_b, real::Type::IEEE754_Single, ByteOrder::Big),
                      real::unpack("\x00\x00\x00\x3f"_b, real::Type::IEEE754_Single, ByteOrder::Network));
@@ -73,16 +73,16 @@ TEST_CASE("unpack") {
                      Result(result::Error("insufficient data to unpack double precision real")));
 
             CHECK_EQ(real::unpack("\x3f\xe0\x00\x00\x00\x00\x00\x00"_b, real::Type::IEEE754_Double, ByteOrder::Big),
-                     Result(std::make_tuple(0.5, ""_b)));
+                     Result(tuple::make(0.5, ""_b)));
             CHECK_EQ(real::unpack("\x3f\xe8\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04"_b, real::Type::IEEE754_Double,
                                   ByteOrder::Big),
-                     Result(std::make_tuple(0.75, "\x01\x02\x03\x04"_b)));
+                     Result(tuple::make(0.75, "\x01\x02\x03\x04"_b)));
 
             CHECK_EQ(real::unpack("\x00\x00\x00\x00\x00\x00\xe0\x3f"_b, real::Type::IEEE754_Double, ByteOrder::Little),
-                     Result(std::make_tuple(0.5, ""_b)));
+                     Result(tuple::make(0.5, ""_b)));
             CHECK_EQ(real::unpack("\x00\x00\x00\x00\x00\x00\xe8\x3f\x01\x02\x03\x04"_b, real::Type::IEEE754_Double,
                                   ByteOrder::Little),
-                     Result(std::make_tuple(0.75, "\x01\x02\x03\x04"_b)));
+                     Result(tuple::make(0.75, "\x01\x02\x03\x04"_b)));
 
             CHECK_EQ(real::unpack("\x00\x00\x00\x00\x00\x00\x00\x3f"_b, real::Type::IEEE754_Double, ByteOrder::Big),
                      real::unpack("\x00\x00\x00\x00\x00\x00\x00\x3f"_b, real::Type::IEEE754_Double,
@@ -116,7 +116,7 @@ TEST_CASE("unpack") {
         const auto s2 = Stream(R"(?@)");
 
         const auto r1 = real::unpack(s1.view(expanding), real::Type::IEEE754_Single, ByteOrder::Big);
-        CHECK_EQ(r1, Result(std::make_tuple(0.75, Stream("\x01\x02\x03\x04").view(! expanding))));
+        CHECK_EQ(r1, Result(tuple::make(0.75, Stream("\x01\x02\x03\x04").view(! expanding))));
 
         REQUIRE(r1);
         CHECK_EQ(tuple::get<1>(*r1).isOpenEnded(), expanding);

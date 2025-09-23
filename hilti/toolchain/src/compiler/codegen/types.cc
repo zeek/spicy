@@ -724,7 +724,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                        ", ");
 
         auto base_type = fmt("::hilti::rt::Tuple<%s>", types);
-        auto default_ = fmt("::hilti::rt::Tuple<%s>{%s}", types, defaults);
+        auto default_ = fmt("::hilti::rt::tuple::make_from_optionals<%s>(%s)", types, defaults);
         result = CxxTypes{.base_type = base_type, .default_ = default_};
     }
 

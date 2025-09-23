@@ -42,7 +42,7 @@ __attribute__((noreturn)) void throw_unset_tuple_element();
  */
 template<typename... Ts>
 constexpr auto make(Ts&&... ts) {
-    return std::make_tuple(std::optional<std::remove_reference_t<Ts>>(ts)...);
+    return std::make_tuple(std::optional<std::remove_reference_t<Ts>>(std::move(ts))...);
 }
 
 /**
@@ -54,7 +54,7 @@ constexpr auto make(Ts&&... ts) {
  */
 template<typename... Ts>
 constexpr auto make_from_optionals(std::optional<Ts>&&... ts) {
-    return std::make_tuple(ts...);
+    return std::make_tuple(std::move(ts)...);
 }
 
 /**

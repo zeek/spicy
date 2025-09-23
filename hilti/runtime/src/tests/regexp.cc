@@ -77,86 +77,84 @@ TEST_CASE("match") {
 }
 
 TEST_CASE("find") {
-    SUBCASE("empty needle") {
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find(""_b), std::make_tuple(-1, ""_b));
-    }
+    SUBCASE("empty needle") { CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find(""_b), tuple::make(-1, ""_b)); }
 
     SUBCASE("min-matcher") {
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find("abc"_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find(" abc"_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find("abc "_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find(" abc "_b), std::make_tuple(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find("abc"_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find(" abc"_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find("abc "_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.no_sub = 1}).find(" abc "_b), tuple::make(1, "abc"_b));
 
-        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.no_sub = 1}).find("abc"_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc$"_p, regexp::Flags{.no_sub = 1}).find("123"_b), std::make_tuple(-1, ""_b));
+        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.no_sub = 1}).find("abc"_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc$"_p, regexp::Flags{.no_sub = 1}).find("123"_b), tuple::make(-1, ""_b));
         // TODO(bbannier): This should never match and return `0`.
-        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.no_sub = 1}).find("123"_b), std::make_tuple(-1, ""_b));
+        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.no_sub = 1}).find("123"_b), tuple::make(-1, ""_b));
 
-        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.no_sub = 1}).find(" abc "_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.no_sub = 1}).find(" 123 "_b), std::make_tuple(2, "123"_b));
+        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.no_sub = 1}).find(" abc "_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.no_sub = 1}).find(" 123 "_b), tuple::make(2, "123"_b));
 
-        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.no_sub = 1}).find(""_b), std::make_tuple(-1, ""_b));
+        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.no_sub = 1}).find(""_b), tuple::make(-1, ""_b));
 
         // Ambiguous case, captured here to ensure consistency.
-        CHECK_EQ(RegExp({"abc"_p, "abc"_p}, regexp::Flags{.no_sub = 1}).find(" abc "_b), std::make_tuple(1, "abc"_b));
+        CHECK_EQ(RegExp({"abc"_p, "abc"_p}, regexp::Flags{.no_sub = 1}).find(" abc "_b), tuple::make(1, "abc"_b));
 
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("xyz"_b), std::make_tuple(-1, ""_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("abbbcdef"_b), std::make_tuple(1, "abbbc"_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("012abbbc345"_b), std::make_tuple(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("xyz"_b), tuple::make(-1, ""_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("abbbcdef"_b), tuple::make(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("012abbbc345"_b), tuple::make(1, "abbbc"_b));
 
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("xyz"_b), std::make_tuple(-1, ""_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("abbbcdef"_b), std::make_tuple(1, "abbbc"_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("012abbbc345"_b), std::make_tuple(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("xyz"_b), tuple::make(-1, ""_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("abbbcdef"_b), tuple::make(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("012abbbc345"_b), tuple::make(1, "abbbc"_b));
 
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("xyz"_b), std::make_tuple(-1, ""_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("abbbcdef"_b), std::make_tuple(1, "abbbc"_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("012abbbc345"_b), std::make_tuple(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("xyz"_b), tuple::make(-1, ""_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("abbbcdef"_b), tuple::make(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.no_sub = 1}).find("012abbbc345"_b), tuple::make(1, "abbbc"_b));
 
         CHECK_EQ(RegExp("23.*09"_p, regexp::Flags{.no_sub = 1}).find("xxA1234X5678Y0912Bxx"_b),
-                 std::make_tuple(1, "234X5678Y09"_b));
+                 tuple::make(1, "234X5678Y09"_b));
         CHECK_EQ(RegExp("23.*09"_p, regexp::Flags{.no_sub = 1}).find("xxA123X0912Bxx23YY09xx"_b),
-                 std::make_tuple(1, "23X0912Bxx23YY09"_b));
+                 tuple::make(1, "23X0912Bxx23YY09"_b));
         CHECK_EQ(RegExp("23.*09"_p, regexp::Flags{.no_sub = 1}).find("xxA123X2309YY09xx"_b),
-                 std::make_tuple(1, "23X2309YY09"_b));
+                 tuple::make(1, "23X2309YY09"_b));
     }
 
     SUBCASE("std-matcher") {
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find("abc"_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find(" abc"_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find("abc "_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find(" abc "_b), std::make_tuple(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find("abc"_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find(" abc"_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find("abc "_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc"_p, regexp::Flags{.use_std = 1}).find(" abc "_b), tuple::make(1, "abc"_b));
 
-        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.use_std = 1}).find("abc"_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp("abc$"_p, regexp::Flags{.use_std = 1}).find("123"_b), std::make_tuple(-1, ""_b));
+        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.use_std = 1}).find("abc"_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp("abc$"_p, regexp::Flags{.use_std = 1}).find("123"_b), tuple::make(-1, ""_b));
         // TODO(bbannier): This should never match and return `0`.
-        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.use_std = 1}).find("123"_b), std::make_tuple(-1, ""_b));
+        CHECK_EQ(RegExp("^abc$"_p, regexp::Flags{.use_std = 1}).find("123"_b), tuple::make(-1, ""_b));
 
-        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.use_std = 1}).find(" abc "_b), std::make_tuple(1, "abc"_b));
-        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.use_std = 1}).find(" 123 "_b), std::make_tuple(2, "123"_b));
+        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.use_std = 1}).find(" abc "_b), tuple::make(1, "abc"_b));
+        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.use_std = 1}).find(" 123 "_b), tuple::make(2, "123"_b));
 
-        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.use_std = 1}).find(""_b), std::make_tuple(-1, ""_b));
+        CHECK_EQ(RegExp({"abc"_p, "123"_p}, regexp::Flags{.use_std = 1}).find(""_b), tuple::make(-1, ""_b));
 
         // Ambiguous case, captured here to ensure consistency.
-        CHECK_EQ(RegExp({"abc"_p, "abc"_p}, regexp::Flags{.use_std = 1}).find(" abc "_b), std::make_tuple(1, "abc"_b));
+        CHECK_EQ(RegExp({"abc"_p, "abc"_p}, regexp::Flags{.use_std = 1}).find(" abc "_b), tuple::make(1, "abc"_b));
 
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("xyz"_b), std::make_tuple(-1, ""_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("abbbcdef"_b), std::make_tuple(1, "abbbc"_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("012abbbc345"_b), std::make_tuple(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("xyz"_b), tuple::make(-1, ""_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("abbbcdef"_b), tuple::make(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("012abbbc345"_b), tuple::make(1, "abbbc"_b));
 
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("xyz"_b), std::make_tuple(-1, ""_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("abbbcdef"_b), std::make_tuple(1, "abbbc"_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("012abbbc345"_b), std::make_tuple(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("xyz"_b), tuple::make(-1, ""_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("abbbcdef"_b), tuple::make(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("012abbbc345"_b), tuple::make(1, "abbbc"_b));
 
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("xyz"_b), std::make_tuple(-1, ""_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("abbbcdef"_b), std::make_tuple(1, "abbbc"_b));
-        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("012abbbc345"_b), std::make_tuple(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("xyz"_b), tuple::make(-1, ""_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("abbbcdef"_b), tuple::make(1, "abbbc"_b));
+        CHECK_EQ(RegExp("ab+c"_p, regexp::Flags{.use_std = 1}).find("012abbbc345"_b), tuple::make(1, "abbbc"_b));
 
         CHECK_EQ(RegExp("23.*09"_p, regexp::Flags{.use_std = 1}).find("xxA1234X5678Y0912Bxx"_b),
-                 std::make_tuple(1, "234X5678Y09"_b));
+                 tuple::make(1, "234X5678Y09"_b));
         CHECK_EQ(RegExp("23.*09"_p, regexp::Flags{.use_std = 1}).find("xxA123X0912Bxx23YY09xx"_b),
-                 std::make_tuple(1, "23X0912Bxx23YY09"_b));
+                 tuple::make(1, "23X0912Bxx23YY09"_b));
         CHECK_EQ(RegExp("23.*09"_p, regexp::Flags{.use_std = 1}).find("xxA123X2309YY09xx"_b),
-                 std::make_tuple(1, "23X2309YY09"_b));
+                 tuple::make(1, "23X2309YY09"_b));
     }
 }
 
@@ -210,15 +208,15 @@ TEST_CASE("construct") {
 
 TEST_CASE("advance") {
     SUBCASE("matching semantics") {
-        CHECK_EQ(RegExp("123"_p).tokenMatcher().advance("123"_b, false), std::make_tuple(1, 3));
-        CHECK_EQ(RegExp("123"_p).tokenMatcher().advance("123"_b, true), std::make_tuple(1, 3));
+        CHECK_EQ(RegExp("123"_p).tokenMatcher().advance("123"_b, false), tuple::make(1, 3));
+        CHECK_EQ(RegExp("123"_p).tokenMatcher().advance("123"_b, true), tuple::make(1, 3));
 
-        CHECK_EQ(RegExp({"abc"_p, "123"_p}).tokenMatcher().advance("123"_b, true), std::make_tuple(2, 3));
+        CHECK_EQ(RegExp({"abc"_p, "123"_p}).tokenMatcher().advance("123"_b, true), tuple::make(2, 3));
 
-        CHECK_EQ(RegExp(""_p).tokenMatcher().advance("123"_b, false), std::make_tuple(1, 0));
+        CHECK_EQ(RegExp(""_p).tokenMatcher().advance("123"_b, false), tuple::make(1, 0));
 
         auto re = RegExp("123"_p).tokenMatcher();
-        REQUIRE_EQ(re.advance(""_b, true), std::make_tuple(0, 0));
+        REQUIRE_EQ(re.advance(""_b, true), tuple::make(0, 0));
         CHECK_THROWS_WITH_AS(re.advance("123"_b, true), "matching already complete", const MatchStateReuse&);
 
         CHECK_THROWS_WITH_AS(regexp::MatchState().advance("123"_b, true),
@@ -231,44 +229,44 @@ TEST_CASE("advance") {
 
         {
             auto ms_std_1 = re_std.tokenMatcher();
-            CHECK_EQ(ms_std_1.advance("Xa"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_std_1.advance("Xa"_b, false), tuple::make(0, 0));
             CHECK_EQ(ms_std_1.captures(Stream("XabbbcdefgX"_b).view()), Vector<Bytes>());
         }
 
         {
             auto ms_std_2 = re_std.tokenMatcher();
-            CHECK_EQ(ms_std_2.advance("a"_b, false), std::make_tuple(-1, 1));
-            CHECK_EQ(ms_std_2.advance("bb"_b, false), std::make_tuple(-1, 2));
-            CHECK_EQ(ms_std_2.advance("bc"_b, false), std::make_tuple(-1, 2));
-            CHECK_EQ(ms_std_2.advance("de"_b, false), std::make_tuple(-1, 2));
-            CHECK_EQ(ms_std_2.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_std_2.advance("a"_b, false), tuple::make(-1, 1));
+            CHECK_EQ(ms_std_2.advance("bb"_b, false), tuple::make(-1, 2));
+            CHECK_EQ(ms_std_2.advance("bc"_b, false), tuple::make(-1, 2));
+            CHECK_EQ(ms_std_2.advance("de"_b, false), tuple::make(-1, 2));
+            CHECK_EQ(ms_std_2.advance("fgX"_b, true), tuple::make(1, 2));
             CHECK_EQ(ms_std_2.captures(Stream("abbbcdefg"_b).view()), Vector<Bytes>({"abbbcdefg"_b, "bbb"_b, "def"_b}));
         }
 
         {
             auto ms_no_sub_1 = re_no_sub.tokenMatcher();
-            CHECK_EQ(ms_no_sub_1.advance("Xa"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_no_sub_1.advance("Xa"_b, false), tuple::make(0, 0));
             CHECK_EQ(ms_no_sub_1.captures(Stream("XabbbcdefgX"_b).view()), Vector<Bytes>());
         }
 
         {
             auto ms_no_sub_2 = re_no_sub.tokenMatcher();
-            CHECK_EQ(ms_no_sub_2.advance("a"_b, false), std::make_tuple(-1, 1));
-            CHECK_EQ(ms_no_sub_2.advance("bb"_b, false), std::make_tuple(-1, 2));
-            CHECK_EQ(ms_no_sub_2.advance("bc"_b, false), std::make_tuple(-1, 2));
-            CHECK_EQ(ms_no_sub_2.advance("de"_b, false), std::make_tuple(-1, 2));
-            CHECK_EQ(ms_no_sub_2.advance("fgX"_b, true), std::make_tuple(1, 2));
+            CHECK_EQ(ms_no_sub_2.advance("a"_b, false), tuple::make(-1, 1));
+            CHECK_EQ(ms_no_sub_2.advance("bb"_b, false), tuple::make(-1, 2));
+            CHECK_EQ(ms_no_sub_2.advance("bc"_b, false), tuple::make(-1, 2));
+            CHECK_EQ(ms_no_sub_2.advance("de"_b, false), tuple::make(-1, 2));
+            CHECK_EQ(ms_no_sub_2.advance("fgX"_b, true), tuple::make(1, 2));
             CHECK_EQ(ms_no_sub_2.captures(Stream("XabbbcdefgX"_b).view()), Vector<Bytes>());
         }
 
         // Check that patterns stop when current match cannot be possible expanded anymore.
         auto http_re_std = RegExp("[ \\t]+"_p, regexp::Flags{.use_std = true});
         auto http_ms_std = http_re_std.tokenMatcher();
-        CHECK_EQ(http_ms_std.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
+        CHECK_EQ(http_ms_std.advance(" /post HTTP/1.1"_b, false), tuple::make(1, 1));
 
         auto http_re_std_sub = RegExp("[ \\t]+"_p, regexp::Flags{.no_sub = true});
         auto http_ms_std_sub = http_re_std_sub.tokenMatcher();
-        CHECK_EQ(http_ms_std_sub.advance(" /post HTTP/1.1"_b, false), std::make_tuple(1, 1));
+        CHECK_EQ(http_ms_std_sub.advance(" /post HTTP/1.1"_b, false), tuple::make(1, 1));
     }
 
     SUBCASE("on set") {
@@ -278,27 +276,27 @@ TEST_CASE("advance") {
 
         {
             auto ms_std_1 = re_std.tokenMatcher();
-            CHECK_EQ(ms_std_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_std_1.advance("Xabbc"_b, false), tuple::make(0, 0));
             CHECK_EQ(ms_std_1.captures(Stream("XabbcyX"_b).view()), Vector<Bytes>({}));
         }
 
         {
             auto ms_std_2 = re_std.tokenMatcher();
-            CHECK_EQ(ms_std_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
-            CHECK_EQ(ms_std_2.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_std_2.advance("abbc"_b, false), tuple::make(-1, 4));
+            CHECK_EQ(ms_std_2.advance("yX"_b, true), tuple::make(20, 1));
             CHECK_EQ(ms_std_2.captures(Stream("abbcyX"_b).view()), Vector<Bytes>({"abbcy"_b, "bbcy"_b}));
         }
 
         {
             auto ms_no_sub_1 = re_no_sub.tokenMatcher();
-            CHECK_EQ(ms_no_sub_1.advance("Xabbc"_b, false), std::make_tuple(0, 0));
+            CHECK_EQ(ms_no_sub_1.advance("Xabbc"_b, false), tuple::make(0, 0));
             CHECK_EQ(ms_no_sub_1.captures(Stream("XabbcyX"_b).view()), Vector<Bytes>({}));
         }
 
         {
             auto ms_no_sub_2 = re_no_sub.tokenMatcher();
-            CHECK_EQ(ms_no_sub_2.advance("abbc"_b, false), std::make_tuple(-1, 4));
-            CHECK_EQ(ms_no_sub_2.advance("yX"_b, true), std::make_tuple(20, 1));
+            CHECK_EQ(ms_no_sub_2.advance("abbc"_b, false), tuple::make(-1, 4));
+            CHECK_EQ(ms_no_sub_2.advance("yX"_b, true), tuple::make(20, 1));
             CHECK_EQ(ms_no_sub_2.captures(Stream("abbcyX"_b).view()), Vector<Bytes>({}));
         }
     }
@@ -344,18 +342,18 @@ TEST_CASE("advance") {
         s.freeze();
         REQUIRE_EQ(s.numberOfChunks(), 2);
 
-        CHECK_EQ(RegExp("[ \\n]*"_p, {}).tokenMatcher().advance(s.view()), std::make_tuple(1, stream::View()));
+        CHECK_EQ(RegExp("[ \\n]*"_p, {}).tokenMatcher().advance(s.view()), tuple::make(1, stream::View()));
     }
 
     SUBCASE("advance with backtracking across chunks of input") {
         const auto re_std = RegExp("abc(123)?"_p, regexp::Flags{.use_std = true});
         auto ms_std_1 = re_std.tokenMatcher();
-        CHECK_EQ(ms_std_1.advance("a"_b, false), std::make_tuple(-1, 1));
-        CHECK_EQ(ms_std_1.advance("b"_b, false), std::make_tuple(-1, 1));
-        CHECK_EQ(ms_std_1.advance("c"_b, false), std::make_tuple(-1, 1));
-        CHECK_EQ(ms_std_1.advance("1"_b, false), std::make_tuple(-1, 1));
-        CHECK_EQ(ms_std_1.advance("2"_b, false), std::make_tuple(-1, 1));
-        CHECK_EQ(ms_std_1.advance("X"_b, false), std::make_tuple(1, -2)); // go back two bytes
+        CHECK_EQ(ms_std_1.advance("a"_b, false), tuple::make(-1, 1));
+        CHECK_EQ(ms_std_1.advance("b"_b, false), tuple::make(-1, 1));
+        CHECK_EQ(ms_std_1.advance("c"_b, false), tuple::make(-1, 1));
+        CHECK_EQ(ms_std_1.advance("1"_b, false), tuple::make(-1, 1));
+        CHECK_EQ(ms_std_1.advance("2"_b, false), tuple::make(-1, 1));
+        CHECK_EQ(ms_std_1.advance("X"_b, false), tuple::make(1, -2)); // go back two bytes
     }
 
     SUBCASE("advance into gap") {
@@ -402,12 +400,12 @@ TEST_CASE("reassign") {
 
         // Create and complete a matcher.
         auto ms1 = re.tokenMatcher();
-        REQUIRE_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
+        REQUIRE_EQ(ms1.advance("123"_b, true), tuple::make(1, 3));
         REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const MatchStateReuse&);
 
         // After assigning from a fresh value the matcher can match again.
         ms1 = re.tokenMatcher();
-        CHECK_EQ(ms1.advance("123"_b, true), std::make_tuple(1, 3));
+        CHECK_EQ(ms1.advance("123"_b, true), tuple::make(1, 3));
 
         // A matcher copy-constructed from an completed matcher is also completed.
         REQUIRE_THROWS_WITH_AS(ms1.advance("123"_b, true), "matching already complete", const MatchStateReuse&);

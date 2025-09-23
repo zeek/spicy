@@ -47,13 +47,13 @@ TEST_CASE("Direction") {
 }
 
 TEST_CASE("ParserPort") {
-    CHECK_EQ(to_string(ParserPort(std::make_tuple(Port(80, Protocol::TCP), Direction::Originator))),
+    CHECK_EQ(to_string(ParserPort(hilti::rt::tuple::make(Port(80, Protocol::TCP), Direction::Originator))),
              "80/tcp (originator direction)");
-    CHECK_EQ(to_string(ParserPort(std::make_tuple(Port(80, Protocol::TCP), Direction::Both))), "80/tcp");
+    CHECK_EQ(to_string(ParserPort(hilti::rt::tuple::make(Port(80, Protocol::TCP), Direction::Both))), "80/tcp");
 
-    CHECK_EQ(fmt("%s", ParserPort(std::make_tuple(Port(80, Protocol::TCP), Direction::Originator))),
+    CHECK_EQ(fmt("%s", ParserPort(hilti::rt::tuple::make(Port(80, Protocol::TCP), Direction::Originator))),
              "80/tcp (originator direction)");
-    CHECK_EQ(fmt("%s", ParserPort(std::make_tuple(Port(80, Protocol::TCP), Direction::Both))), "80/tcp");
+    CHECK_EQ(fmt("%s", ParserPort(hilti::rt::tuple::make(Port(80, Protocol::TCP), Direction::Both))), "80/tcp");
 }
 
 TEST_CASE("atEod") {
