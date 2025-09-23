@@ -77,14 +77,14 @@ Tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const const_
     auto b = begin();
 
     if ( needle.isEmpty() )
-        return {true, start ? start : b};
+        return tuple::make(true, start ? start : b);
 
     auto bv = needle.unsafeBegin();
     auto first = *bv;
 
     for ( auto i = const_iterator(start ? start : b); true; ++i ) {
         if ( i == end() )
-            return {false, i};
+            return tuple::make(false, i);
 
         if ( *i != first )
             continue;
@@ -94,13 +94,13 @@ Tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const const_
 
         for ( ;; ) {
             if ( x == end() )
-                return {false, i};
+                return tuple::make(false, i);
 
             if ( *x++ != *y++ )
                 break;
 
             if ( y == needle.unsafeEnd() )
-                return {true, i};
+                return tuple::make(true, i);
         }
     }
 }

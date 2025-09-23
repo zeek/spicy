@@ -35,7 +35,7 @@ static Result<Tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrde
 
             if ( auto x = integer::unpack<uint32_t>(data, fmt) ) {
                 auto* d = reinterpret_cast<float*>(&tuple::get<0>(*x));
-                return {{static_cast<double>(*d), tuple::get<1>(*x)}};
+                return {tuple::make(static_cast<double>(*d), tuple::get<1>(*x))};
             }
             else
                 return x.error();
@@ -47,7 +47,7 @@ static Result<Tuple<double, T>> _unpack(const T& data, real::Type type, ByteOrde
 
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
                 auto* d = reinterpret_cast<double*>(&tuple::get<0>(*x));
-                return {{*d, tuple::get<1>(*x)}};
+                return {tuple::make(*d, tuple::get<1>(*x))};
             }
             else
                 return x.error();

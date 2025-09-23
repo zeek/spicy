@@ -88,7 +88,7 @@ inline Result<Tuple<integer::safe<T>, D>> unpack(D b, const uint8_t* dst, std::i
         x |= (static_cast<T>(dst[i]));
     }
 
-    return {{static_cast<integer::safe<T>>(x), std::move(b)}};
+    return {tuple::make(static_cast<integer::safe<T>>(x), std::move(b))};
 }
 
 } // namespace detail
@@ -164,11 +164,11 @@ inline Result<Tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
         case ByteOrder::Big:
         case ByteOrder::Network:
             if constexpr ( std::is_same_v<T, uint8_t> )
-                return {{static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b)}};
+                return {tuple::make(static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b))};
 
             if constexpr ( std::is_same_v<T, int8_t> ) {
                 auto x = static_cast<int8_t>(raw[0]); // Forced cast to skip safe<T> range check.
-                return {{static_cast<integer::safe<int8_t>>(x), std::move(b)}};
+                return {tuple::make(static_cast<integer::safe<int8_t>>(x), std::move(b))};
             }
 
             if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )
@@ -184,11 +184,11 @@ inline Result<Tuple<integer::safe<T>, D>> unpack(D b, ByteOrder fmt) {
 
         case ByteOrder::Little:
             if constexpr ( std::is_same_v<T, uint8_t> )
-                return {{static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b)}};
+                return {tuple::make(static_cast<integer::safe<uint8_t>>(raw[0]), std::move(b))};
 
             if constexpr ( std::is_same_v<T, int8_t> ) {
                 auto x = static_cast<int8_t>(raw[0]); // Forced cast to skip safe<T> range check.
-                return {{static_cast<integer::safe<int8_t>>(x), std::move(b)}};
+                return {tuple::make(static_cast<integer::safe<int8_t>>(x), std::move(b))};
             }
 
             if constexpr ( std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t> )

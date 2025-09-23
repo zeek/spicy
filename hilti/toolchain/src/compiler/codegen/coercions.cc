@@ -232,7 +232,8 @@ struct Visitor : public hilti::visitor::PreOrder {
                                            x->elements()[i]->type()));
             }
 
-            result = fmt("[&](const auto& __t) { return std::make_tuple(%s); }(%s)", util::join(exprs, ", "), expr);
+            result =
+                fmt("[&](const auto& __t) { return hilti::rt::tuple::make(%s); }(%s)", util::join(exprs, ", "), expr);
         }
 
         else
