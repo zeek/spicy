@@ -415,17 +415,19 @@ public:
      * @param offset offset of the field inside the bitfield's storage tuple.
      */
     Bits(const char* name, unsigned int lower, unsigned int upper, const TypeInfo* type, std::ptrdiff_t offset)
-        : name(name), lower(lower), upper(upper), type(type), offset(offset) {}
+        : name(name), lower(lower), upper(upper), type(type), _offset(offset) {}
 
     const std::string name;   /**< ID of the field, with an empty string indicating no name */
     const unsigned int lower; /**< lower bit of the field */
     const unsigned int upper; /**< upper bit of the field */
     const TypeInfo* type;     /**< type of the field */
 
+    auto offset() const { return _offset; } // TODO: Remove
+
 private:
     friend class type_info::Bitfield;
 
-    const std::ptrdiff_t offset;
+    const std::ptrdiff_t _offset;
 };
 
 }; // namespace bitfield
@@ -438,7 +440,8 @@ public:
      *
      * @param labels the bitfield's fields
      */
-    Bitfield(uint32_t width, std::vector<bitfield::Bits> bits) : _width(width), _bits(std::move(bits)) {}
+    Bitfield(uint32_t width, std::vector<bitfield::Bits> bits, const TypeInfo* tuple_ti)
+        : _width(width), _bits(std::move(bits)), _tuple_ti(tuple_ti) {}
 
     /**
      * Returns the bitfield's integer width in bits.
@@ -458,19 +461,12 @@ public:
      * @return a vector of pairs ``(field, value)`` where *field* is the
      * current ``bitfield::Bit` and *value* is the field's value.
      */
-    auto iterate(const Value& v) const {
-        std::vector<std::pair<const bitfield::Bits&, Value>> values;
-
-        values.reserve(_bits.size());
-        for ( const auto& f : _bits )
-            values.emplace_back(f, Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v));
-
-        return values;
-    }
+    std::vector<std::pair<const bitfield::Bits&, Value>> iterate(const Value& v) const;
 
 private:
     unsigned int _width = 0;
     const std::vector<bitfield::Bits> _bits;
+    const TypeInfo* _tuple_ti = nullptr;
 };
 
 /** Type information for type ``bool`. */
@@ -1107,9 +1103,16 @@ public:
     auto iterate(const Value& v) const {
         std::vector<std::pair<const tuple::Element&, Value>> values;
 
+        const auto* tb = static_cast<const ::hilti::rt::TupleBase*>(v.pointer());
+
+        size_t index = 0;
         values.reserve(_elements.size());
-        for ( const auto& f : _elements )
-            values.emplace_back(f, Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v));
+        for ( const auto& f : _elements ) {
+            if ( tb->hasValue(index++) )
+                values.emplace_back(f, Value(static_cast<const char*>(v.pointer()) + f.offset, f.type, v));
+            else
+                values.emplace_back(f, Value()); // unset value
+        }
 
         return values;
     }
