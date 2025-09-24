@@ -2259,7 +2259,15 @@ struct FunctionReturnVisitor : OptimizerVisitor {
     using OptimizerVisitor::OptimizerVisitor;
     using OptimizerVisitor::operator();
 
-    using Placements = std::vector<std::optional<ID>>;
+    struct Placements {
+        std::vector<std::optional<ID>> placements;
+        // TODO: Explain that the passthrough function is the one that *calls* this one
+        Function* passthrough = nullptr;      // The function this will passthrough, if any
+        Function* passthrough_from = nullptr; // If this is a passthrough, what function is
+                                              // it calling
+    };
+
+    // using Placements = std::vector<std::optional<ID>>;
     std::map<ID, Placements> removeable_params;
 
     void collect(Node* node) override {
@@ -2326,13 +2334,24 @@ struct FunctionReturnVisitor : OptimizerVisitor {
         return param_names;
     }
 
+    // If one is a passthrough of the other, consolidates the passthroughs.
+    void mergePlacements(Placements& self, Placements& other) {
+        if ( self.passthrough ) {
+            self.placements = other.placements;
+        }
+        else {
+            other.placements = self.placements;
+        }
+    }
+
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
 
         switch ( stage ) {
             case Stage::Collect: {
-                // Create the removeable placements, or return if it exists
-                if ( ! removeable_params.try_emplace(function_id).second )
+                // TODO: Remember to rename placements and removable_params! :)
+                // Create the removeable placements
+                if ( removeable_params[function_id].placements.size() > 0 )
                     return;
 
                 if ( n->linkage() == declaration::Linkage::Public )
@@ -2354,10 +2373,51 @@ struct FunctionReturnVisitor : OptimizerVisitor {
 
                 auto& placements = removeable_params.at(function_id);
                 for ( auto* use : *uses_of_op ) {
+                    // If this isn't a passthrough, then the use can be a passthrough
+                    if ( auto* ret = use->parent()->tryAs<statement::Return>();
+                         ret && placements.passthrough_from == nullptr ) {
+                        auto opt_enclosing_fn = enclosingFunction(use);
+                        if ( ! opt_enclosing_fn )
+                            return;
+
+                        auto [func, function_id] = *opt_enclosing_fn;
+                        auto& passthrough_placements = removeable_params[function_id];
+                        // If it's already a passthrough from something that's not this, clear it and this.
+                        if ( passthrough_placements.passthrough_from &&
+                             passthrough_placements.passthrough_from != n->function() ) {
+                            passthrough_placements.placements.clear();
+                            placements.placements.clear();
+                            return;
+                        }
+
+                        // Passthrough must be the same type
+                        if ( ! type::same(n->function()->ftype()->result(), func->ftype()->result()) ) {
+                            passthrough_placements.placements.clear();
+                            placements.placements.clear();
+                            return;
+                        }
+
+                        placements.passthrough = func;
+                        passthrough_placements.passthrough_from = n->function();
+                        mergePlacements(placements, passthrough_placements);
+
+
+                        // TODO: OR the placements then set both? or something?
+                        continue;
+                    }
+
+                    // If this passthroughs another function and gets here we clear
+                    if ( placements.passthrough ) {
+                        placements.placements.clear();
+                        return;
+                    }
+
+                    // TODO: Look up enclosing function if it's a call, then register
+                    // passthrough
                     auto* tup_assign = use->parent()->tryAs<operator_::tuple::CustomAssign>();
                     // All uses must be tuple assignments
                     if ( ! tup_assign ) {
-                        placements.clear();
+                        placements.placements.clear();
                         return;
                     }
 
@@ -2381,20 +2441,34 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                         auto* name = val->tryAs<expression::Name>();
 
                         // Add the name if one isn't in this position
-                        if ( placements.size() <= i ) {
+                        if ( placements.placements.size() <= i ) {
                             if ( name )
-                                placements.emplace_back(param_names[name->id()]);
+                                placements.placements.emplace_back(param_names[name->id()]);
                             else
-                                placements.emplace_back();
+                                placements.placements.emplace_back();
                         }
-                        else if ( ! name || (placements[i] && param_names[name->id()] != *placements[i]) ) {
+                        else if ( ! name ||
+                                  (placements.placements[i] && param_names[name->id()] != *placements.placements[i]) ) {
                             // Invalidate this entry if this isn't a name or this
                             // one's param doesn't match what was there before
-                            placements[i] = {};
+                            placements.placements[i] = {};
                         }
                     }
                 }
 
+                // Now put placements into its passthrough, if any.
+                if ( placements.passthrough_from ) {
+                    // TODO: Should not use this to get parents since it doesn't work
+                    // for methods
+                    auto* parent = placements.passthrough_from->parent();
+                    if ( ! parent )
+                        return;
+                    auto* fn_decl = parent->tryAs<declaration::Function>();
+                    if ( ! fn_decl )
+                        return;
+                    auto& from_placements = removeable_params[fn_decl->functionID(context())];
+                    mergePlacements(placements, from_placements);
+                }
                 break;
             }
             case Stage::PruneDecls: {
@@ -2402,36 +2476,69 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                     return;
 
                 auto& placements = removeable_params.at(function_id);
+                auto placement_ids = placements.placements;
+                // If it's a passthrough, we get placements from the passthrough'd
+                if ( placements.passthrough_from ) {
+                    // Get the operator
+                    // TODO I think this is bad :) It doesn't apply to methods.
+                    auto* parent = placements.passthrough_from->parent();
+                    if ( ! parent )
+                        return;
+                    auto* fn_decl = parent->tryAs<declaration::Function>();
+                    if ( ! fn_decl )
+                        return;
+                    placement_ids = removeable_params[fn_decl->functionID(context())].placements;
+                }
                 // Make sure at least one placement is getting removed
-                if ( ! std::ranges::any_of(placements, [](const std::optional<ID>& opt) { return opt.has_value(); }) )
+                if ( ! std::ranges::any_of(placement_ids,
+                                           [](const std::optional<ID>& opt) { return opt.has_value(); }) )
                     return;
 
                 auto* tup_ty = n->function()->ftype()->result()->type()->tryAs<type::Tuple>();
-                if ( ! tup_ty || tup_ty->elements().size() != placements.size() )
+                if ( ! tup_ty || tup_ty->elements().size() != placement_ids.size() )
                     return;
 
-                replaceNode(n->function()->ftype()->result(), newRet(tup_ty, placements));
+                replaceNode(n->function()->ftype()->result(), newRet(tup_ty, placement_ids));
             }
             case Stage::PruneUses: {
                 if ( ! removeable_params.contains(function_id) )
                     return;
 
                 auto& placements = removeable_params.at(function_id);
+                auto placement_ids = placements.placements;
+                // If it's a passthrough, we get placements from the passthrough'd
+                if ( placements.passthrough_from ) {
+                    // Get the operator
+                    // TODO I think this is bad :) It doesn't apply to methods.
+                    auto* parent = placements.passthrough_from->parent();
+                    if ( ! parent )
+                        return;
+                    auto* fn_decl = parent->tryAs<declaration::Function>();
+                    if ( ! fn_decl )
+                        return;
+                    placement_ids = removeable_params[fn_decl->functionID(context())].placements;
+                }
                 // Make sure at least one placement is getting removed
-                if ( ! std::ranges::any_of(placements, [](const std::optional<ID>& opt) { return opt.has_value(); }) )
+                if ( ! std::ranges::any_of(placement_ids,
+                                           [](const std::optional<ID>& opt) { return opt.has_value(); }) )
                     return;
 
                 auto* tup_ty = n->function()->ftype()->result()->type()->tryAs<type::Tuple>();
-                if ( ! tup_ty || tup_ty->elements().size() != placements.size() )
+                if ( ! tup_ty || tup_ty->elements().size() != placement_ids.size() )
                     return;
-                auto* new_ret = newRet(tup_ty, placements);
+                auto* new_ret = newRet(tup_ty, placement_ids);
                 assert(new_ret);
 
                 const auto* uses_of_op = uses(n->operator_());
                 if ( ! uses_of_op )
                     return;
+
                 for ( auto* use : *uses_of_op ) {
                     replaceNode(use->type(), node::deepcopy(context(), new_ret));
+
+                    // Passthroughs only change the use's type
+                    if ( placements.passthrough )
+                        continue;
 
                     // Build map of call args->params
                     auto* call = use->as<operator_::function::Call>();
@@ -2444,13 +2551,13 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                     auto* ctor_expr = tup_assign->op0()->as<expression::Ctor>();
                     auto* tup_ctor = ctor_expr->ctor()->as<ctor::Tuple>();
                     Expressions new_tup_assign_exprs;
-                    if ( tup_ctor->value().size() != placements.size() )
+                    if ( tup_ctor->value().size() != placement_ids.size() )
                         return;
                     for ( std::size_t i = 0; i < tup_ctor->value().size(); i++ ) {
                         auto* name = tup_ctor->value()[i]->tryAs<expression::Name>();
                         if ( ! name )
                             continue;
-                        if ( std::ranges::find(placements, param_names[name->id()]) == placements.end() )
+                        if ( std::ranges::find(placement_ids, param_names[name->id()]) == placement_ids.end() )
                             new_tup_assign_exprs.push_back(tup_ctor->value()[i]);
                     }
 
@@ -2486,13 +2593,13 @@ struct FunctionReturnVisitor : OptimizerVisitor {
 
 
     // TODO: This is just copy-pasted from param visitor, fix that.
-    std::optional<std::tuple<type::Function*, ID>> enclosingFunction(Node* n) {
+    std::optional<std::tuple<Function*, ID>> enclosingFunction(Node* n) {
         for ( auto* current = n->parent(); current; current = current->parent() ) {
             if ( auto* fn_decl = current->tryAs<declaration::Function>() ) {
-                return std::tuple(fn_decl->function()->ftype(), fn_decl->functionID(context()));
+                return std::tuple(fn_decl->function(), fn_decl->functionID(context()));
             }
             else if ( auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() ) {
-                return std::tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
+                return std::tuple(field->inlineFunction(), field->fullyQualifiedID());
             }
         }
 
@@ -2530,11 +2637,12 @@ struct FunctionReturnVisitor : OptimizerVisitor {
     }
 
     void operator()(expression::Name* n) final {
+        // TODO: Using name in returned function call in passthrough is ok
         auto opt_enclosing_fn = enclosingFunction(n);
         if ( ! opt_enclosing_fn )
             return;
 
-        auto [ftype, function_id] = *opt_enclosing_fn;
+        auto [_, function_id] = *opt_enclosing_fn;
 
         switch ( stage ) {
             case Stage::Collect: {
@@ -2554,7 +2662,7 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                 // Invalidate any placements for this ID since it's not within
                 // the hierarchy we are looking for
                 auto& placements = removeable_params.at(function_id);
-                for ( auto& placement : placements ) {
+                for ( auto& placement : placements.placements ) {
                     if ( placement && *placement == n->id() )
                         placement = {};
                 }
@@ -2566,11 +2674,13 @@ struct FunctionReturnVisitor : OptimizerVisitor {
     }
 
     void operator()(statement::Return* n) final {
+        // TODO: It's ok to return a call if this is a passthrough, jut return if so?
+        // Actually maybe we can just do nothing
         auto opt_enclosing_fn = enclosingFunction(n);
         if ( ! opt_enclosing_fn )
             return;
 
-        auto [ftype, function_id] = *opt_enclosing_fn;
+        auto [_, function_id] = *opt_enclosing_fn;
         if ( ! n->expression() )
             return;
         auto* ctor_expr = n->expression()->tryAs<expression::Ctor>();
@@ -2586,24 +2696,24 @@ struct FunctionReturnVisitor : OptimizerVisitor {
             case Stage::Collect: {
                 auto& placements = removeable_params.at(function_id);
                 if ( ! tuple_ctor ) {
-                    placements.clear();
+                    placements.placements.clear();
                     return;
                 }
 
                 // In the return, we check to see if the placements line up.
                 // If not, we cannot remove the parameter.
                 // This should never happen
-                if ( placements.size() != tuple_ctor->value().size() ) {
-                    placements.clear();
+                if ( placements.placements.size() != tuple_ctor->value().size() ) {
+                    placements.placements.clear();
                     return;
                 }
 
-                for ( std::size_t i = 0; i < placements.size(); i++ ) {
+                for ( std::size_t i = 0; i < placements.placements.size(); i++ ) {
                     auto* expr = tuple_ctor->value()[i];
-                    auto placement = placements[i];
+                    auto placement = placements.placements[i];
                     if ( auto* name = expr->tryAs<expression::Name>();
                          ! name || (placement && name->id() != *placement) ) {
-                        placements[i] = {};
+                        placements.placements[i] = {};
                     }
                 }
 
@@ -2615,8 +2725,8 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                 if ( ! tuple_ctor )
                     return;
 
-                if ( ! placements.empty() )
-                    removeFromTupleCtor(tuple_ctor, placements);
+                if ( ! placements.placements.empty() )
+                    removeFromTupleCtor(tuple_ctor, placements.placements);
 
                 break;
             }
