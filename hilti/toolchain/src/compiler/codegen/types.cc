@@ -804,18 +804,26 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
     std::optional<cxx::Expression> result;
 
     void operator()(type::Bitfield* n) final {
+        // TODO: Add tupleType() to type::Bietfield()?
+        std::vector<QualifiedType*> types;
+        for ( const auto& b : n->bits(true) ) {
+            auto* itype = b->itemType();
+            types.emplace_back(itype);
+        }
+
+        auto tuple_ti = cg->typeInfo(cg->builder()->qualifiedType(cg->builder()->typeTuple(types), Constness::Const));
+
         std::vector<std::string> elems;
         auto ttype = cg->compile(type, codegen::TypeUsage::Storage);
 
         auto i = 0;
         for ( const auto&& b : n->bits() )
-            elems.push_back(fmt(
-                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %u, %u, %s, ::hilti::rt::bitfield::elementOffset<%s, "
-                "%d>() }",
-                b->id(), b->lower(), b->upper(), cg->typeInfo(b->itemTypeWithOptional()), ttype, i++));
+            elems.push_back(fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %u, %u, %s, %s::elementOffset<%d>() }",
+                                b->id(), b->lower(), b->upper(), cg->typeInfo(b->itemType()), ttype, i++));
 
-        result = fmt("::hilti::rt::type_info::Bitfield(%u, std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
-                     n->width(), util::join(elems, ", "));
+        result =
+            fmt("::hilti::rt::type_info::Bitfield(%u, std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}), %s)",
+                n->width(), util::join(elems, ", "), tuple_ti);
     }
 
     void operator()(type::Enum* n) final {
@@ -945,9 +953,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
         int i = 0;
         for ( const auto& e : n->elements() ) {
-            elems.push_back(
-                fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, ::hilti::rt::tuple::elementOffset<%s, %d>() }",
-                    e->id() ? e->id() : ID(), cg->typeInfo(e->typeWithOptional()), ttype, i));
+            elems.push_back(fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, %s::elementOffset<%d>() }",
+                                e->id() ? e->id() : ID(), cg->typeInfo(e->type()), ttype, i));
             ++i;
         }
 

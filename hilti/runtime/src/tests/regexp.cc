@@ -373,7 +373,7 @@ TEST_CASE("advance") {
             auto [rc, ncur] = re.tokenMatcher().advance(cur);
             CHECK_EQ(rc, 1);
             CHECK_EQ(ncur, stream::View(cur.begin() + 1, cur.end()));
-            cur = *ncur;
+            cur = ncur;
         }
 
         // Match attempt on gap fails, but leaves `cur` alone.
@@ -389,7 +389,7 @@ TEST_CASE("advance") {
         {
             auto [rc, ncur] = re.tokenMatcher().advance(cur);
             CHECK_EQ(rc, 1);
-            CHECK_EQ(ncur->offset(), 1 + 1024 + 1);
+            CHECK_EQ(ncur.offset(), 1 + 1024 + 1);
         }
     }
 }

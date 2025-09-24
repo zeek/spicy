@@ -120,7 +120,7 @@ struct Visitor : hilti::visitor::PreOrder {
         const auto& id = n->op1()->as<expression::Member>()->id();
         auto elem = n->op0()->type()->type()->as<type::Bitfield>()->bitsIndex(id);
         assert(elem);
-        result = {fmt("::hilti::rt::tuple::has_value<%u>(%s.value)", *elem, op0(n)), Side::RHS};
+        result = {fmt("%s.value.hasValue(%s)", op0(n), *elem), Side::RHS};
     }
 
     /// bytes::Iterator
