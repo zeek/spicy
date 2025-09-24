@@ -1371,6 +1371,46 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(statement::Return* n) final {
+        if ( ! n->expression() || ! n->parent() )
+            return;
+
+        auto* block = n->parent()->tryAs<statement::Block>();
+        if ( ! block )
+            return;
+
+        auto* name = n->expression()->tryAs_<expression::Name>();
+        if ( ! name )
+            return;
+
+        // Find the statement before this one
+        const auto& statements = block->statements();
+        auto it = std::ranges::find(statements, n);
+        if ( it == statements.end() || it == statements.begin() )
+            return;
+
+        // Loop until first not-null predecessor
+        do {
+            if ( --it == statements.begin() )
+                return;
+        } while ( ! *it );
+
+        auto* sibling = *it;
+
+        auto* stmt_expr = sibling->tryAs<statement::Expression>();
+        if ( ! stmt_expr )
+            return;
+        auto* assign = stmt_expr->expression()->tryAs<expression::Assign>();
+        if ( ! assign )
+            return;
+        auto* assign_to = assign->target()->tryAs<expression::Name>();
+        if ( ! assign_to )
+            return;
+
+        if ( assign_to->id() == name->id() )
+            replaceNode(n->expression(), assign->source());
+    }
+
     void operator()(statement::Try* n) final {
         // If a there's only a single catch block that just rethrows, replace
         // the whole try/catch with the block inside.
