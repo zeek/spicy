@@ -52,6 +52,8 @@
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/cfg.h>
 
+#include "ast/types/function.h"
+
 namespace hilti {
 
 namespace logging::debug {
@@ -2347,6 +2349,25 @@ struct FunctionReturnVisitor : OptimizerVisitor {
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
 
+        const auto* op = n->operator_();
+        declaration::Field* field = nullptr;
+        if ( ! op ) {
+            auto* decl = context()->lookup(n->linkedDeclarationIndex());
+            if ( ! decl )
+                return;
+            auto* type_decl = decl->tryAs<declaration::Type>();
+            if ( ! type_decl )
+                return;
+            auto* struct_ = type_decl->type()->type()->tryAs<type::Struct>();
+            if ( ! struct_ )
+                return;
+            // TODO: This is silly man. Why use local?
+            field = struct_->field(function_id.local());
+            if ( ! field )
+                return;
+            op = field->operator_();
+        }
+
         switch ( stage ) {
             case Stage::Collect: {
                 // TODO: Remember to rename placements and removable_params! :)
@@ -2367,7 +2388,7 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                 if ( ! n->function()->ftype()->result()->type()->isA<type::Tuple>() )
                     return;
 
-                const auto* uses_of_op = uses(n->operator_());
+                const auto* uses_of_op = uses(op);
                 if ( ! uses_of_op )
                     return;
 
@@ -2425,10 +2446,14 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                     auto* lhs_tup_ctor = lhs_ctor_expr->ctor()->as<ctor::Tuple>();
                     // TODO: These returns need to change
                     // TODO: try Methods?
-                    auto* call = use->tryAs<operator_::function::Call>();
-                    if ( ! call )
+                    expression::Ctor* ctor_expr;
+                    if ( auto* call = use->tryAs<operator_::function::Call>() )
+                        ctor_expr = call->op1()->tryAs<expression::Ctor>();
+                    else if ( auto* call = use->tryAs<operator_::struct_::MemberCall>() )
+                        ctor_expr = call->op2()->tryAs<expression::Ctor>();
+                    else
                         return;
-                    auto* ctor_expr = call->op1()->tryAs<expression::Ctor>();
+
                     if ( ! ctor_expr )
                         return;
                     auto* tuple_ctor = ctor_expr->ctor()->tryAs<ctor::Tuple>();
@@ -2499,6 +2524,14 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                     return;
 
                 replaceNode(n->function()->ftype()->result(), newRet(tup_ty, placement_ids));
+                // Also need to change field's type
+                if ( field ) {
+                    auto* ftype = field->type()->type()->tryAs<type::Function>();
+                    if ( ! ftype )
+                        return;
+                    // TODO: Don't double-call newRet
+                    replaceNode(ftype->result(), newRet(tup_ty, placement_ids));
+                }
             }
             case Stage::PruneUses: {
                 if ( ! removeable_params.contains(function_id) )
@@ -2529,7 +2562,7 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                 auto* new_ret = newRet(tup_ty, placement_ids);
                 assert(new_ret);
 
-                const auto* uses_of_op = uses(n->operator_());
+                const auto* uses_of_op = uses(op);
                 if ( ! uses_of_op )
                     return;
 
@@ -2541,8 +2574,13 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                         continue;
 
                     // Build map of call args->params
-                    auto* call = use->as<operator_::function::Call>();
-                    auto* call_ctor_expr = call->op1()->as<expression::Ctor>();
+                    expression::Ctor* call_ctor_expr;
+                    if ( auto* call = use->tryAs<operator_::function::Call>() )
+                        call_ctor_expr = call->op1()->tryAs<expression::Ctor>();
+                    else if ( auto* call = use->tryAs<operator_::struct_::MemberCall>() )
+                        call_ctor_expr = call->op2()->tryAs<expression::Ctor>();
+                    else
+                        return;
                     auto* call_tuple_ctor = call_ctor_expr->ctor()->as<ctor::Tuple>();
                     auto param_names = makeParamMap(call_tuple_ctor, n->function()->ftype()->parameters());
                     // This is guaranteed
@@ -2583,14 +2621,13 @@ struct FunctionReturnVisitor : OptimizerVisitor {
 
                     // Since the use was replaced, we have to invalidate it in
                     // favor of the new use.
-                    replaceUse(n->operator_(), use, new_use);
+                    replaceUse(op, use, new_use);
                 }
 
                 break;
             }
         }
     }
-
 
     // TODO: This is just copy-pasted from param visitor, fix that.
     std::optional<std::tuple<Function*, ID>> enclosingFunction(Node* n) {
