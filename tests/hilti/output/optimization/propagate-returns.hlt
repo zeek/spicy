@@ -43,6 +43,44 @@ function tuple<uint<64>, uint<64>> flip(uint<64> p1, uint<64> p2) {
     return (p2, p1);
 }
 
+type S = struct {
+    bool b;
+
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_none(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_one(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_two(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> passthrough(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> passthrough1(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> passthrough2(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+
+};
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::use_none(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return (p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::passthrough(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return self.use_none(p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::use_one(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3;
+    return (p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::passthrough1(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return self.use_one(p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::use_two(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3 + p1;
+    return (p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::passthrough2(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return self.use_two(p1, p2, p3, p4);
+}
+
 function uint<64> test() {
     local uint<64> x = 1;
     local uint<64> y = 1;
@@ -75,6 +113,12 @@ function uint<64> test() {
     # Flips the order of them so it shouldn't get optimized
     # CHECK: (x, y) = flip(x, y)
     (x, y) = flip(x, y);
+
+    # Methods
+    local S s = [$b = True];
+    (x, y, z, a) = s.passthrough(x, y, z, a);
+    (x, y, z, a) = s.passthrough1(x, y, z, a);
+    (x, y, z, a) = s.passthrough2(x, y, z, a);
 
     # Use the variables again so nothing funky happens
     hilti::print(x);

@@ -2346,6 +2346,61 @@ struct FunctionReturnVisitor : OptimizerVisitor {
         }
     }
 
+    std::vector<std::optional<ID>> calculatePlacements(const OperatorUses::mapped_type* uses_of_op,
+                                                       const declaration::Parameters& params) {
+        std::vector<std::optional<ID>> result;
+        for ( auto* use : *uses_of_op ) {
+            // TODO: Look up enclosing function if it's a call, then register
+            // passthrough
+            auto* tup_assign = use->parent()->tryAs<operator_::tuple::CustomAssign>();
+            // All uses must be tuple assignments
+            if ( ! tup_assign ) {
+                result.clear();
+                return result;
+            }
+
+            auto* lhs_ctor_expr = tup_assign->op0()->as<expression::Ctor>();
+            auto* lhs_tup_ctor = lhs_ctor_expr->ctor()->as<ctor::Tuple>();
+            // TODO: These returns need to change
+            // TODO: try Methods?
+            expression::Ctor* ctor_expr;
+            if ( auto* call = use->tryAs<operator_::function::Call>() )
+                ctor_expr = call->op1()->tryAs<expression::Ctor>();
+            else if ( auto* call = use->tryAs<operator_::struct_::MemberCall>() )
+                ctor_expr = call->op2()->tryAs<expression::Ctor>();
+            else
+                return result;
+            // TODO: Clear results if returning early?
+
+            if ( ! ctor_expr )
+                return result;
+            auto* tuple_ctor = ctor_expr->ctor()->tryAs<ctor::Tuple>();
+            if ( ! tuple_ctor )
+                return result;
+
+            std::map<ID, ID> param_names = makeParamMap(tuple_ctor, params);
+            for ( std::size_t i = 0; i < lhs_tup_ctor->value().size(); i++ ) {
+                auto* val = lhs_tup_ctor->value()[i];
+                auto* name = val->tryAs<expression::Name>();
+
+                // Add the name if one isn't in this position
+                if ( result.size() <= i ) {
+                    if ( name )
+                        result.emplace_back(param_names[name->id()]);
+                    else
+                        result.emplace_back();
+                }
+                else if ( ! name || (result[i] && param_names[name->id()] != *result[i]) ) {
+                    // Invalidate this entry if this isn't a name or this
+                    // one's param doesn't match what was there before
+                    result[i] = {};
+                }
+            }
+        }
+
+        return result;
+    }
+
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
 
@@ -2420,10 +2475,49 @@ struct FunctionReturnVisitor : OptimizerVisitor {
 
                         placements.passthrough = func;
                         passthrough_placements.passthrough_from = n->function();
+                        if ( passthrough_placements.placements.size() == 0 ) {
+                            // TODO: This is silly, it's just copy-pasted from above.
+                            // and kind of below. We need the field's operator if
+                            // it's a field, but even without that we don't have the
+                            // decl....
+                            //
+                            // We can maybe change enclosingFunction here. But it
+                            // needs to *still* account for the operator being null.
+                            // ugh.
+                            auto* parent = func->parent();
+                            if ( ! parent )
+                                return;
+                            auto* fn_decl = parent->tryAs<declaration::Function>();
+                            if ( ! fn_decl )
+                                return;
+                            const auto* op = n->operator_();
+                            declaration::Field* field = nullptr;
+                            if ( ! op ) {
+                                auto* decl = context()->lookup(fn_decl->linkedDeclarationIndex());
+                                if ( ! decl )
+                                    return;
+                                auto* type_decl = decl->tryAs<declaration::Type>();
+                                if ( ! type_decl )
+                                    return;
+                                auto* struct_ = type_decl->type()->type()->tryAs<type::Struct>();
+                                if ( ! struct_ )
+                                    return;
+                                // TODO: This is silly man. Why use local?
+                                field = struct_->field(function_id.local());
+                                if ( ! field )
+                                    return;
+                                op = field->operator_();
+                            }
+                            const auto* uses_of_passthrough = uses(op);
+                            if ( ! uses_of_passthrough )
+                                return;
+                            passthrough_placements.placements =
+                                calculatePlacements(uses_of_passthrough, func->ftype()->parameters());
+                        }
+                        // Calculate the passthrough's placements here so we get
+                        // an accurate one for the future.
                         mergePlacements(placements, passthrough_placements);
 
-
-                        // TODO: OR the placements then set both? or something?
                         continue;
                     }
 
@@ -2432,59 +2526,15 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                         placements.placements.clear();
                         return;
                     }
-
-                    // TODO: Look up enclosing function if it's a call, then register
-                    // passthrough
-                    auto* tup_assign = use->parent()->tryAs<operator_::tuple::CustomAssign>();
-                    // All uses must be tuple assignments
-                    if ( ! tup_assign ) {
-                        placements.placements.clear();
-                        return;
-                    }
-
-                    auto* lhs_ctor_expr = tup_assign->op0()->as<expression::Ctor>();
-                    auto* lhs_tup_ctor = lhs_ctor_expr->ctor()->as<ctor::Tuple>();
-                    // TODO: These returns need to change
-                    // TODO: try Methods?
-                    expression::Ctor* ctor_expr;
-                    if ( auto* call = use->tryAs<operator_::function::Call>() )
-                        ctor_expr = call->op1()->tryAs<expression::Ctor>();
-                    else if ( auto* call = use->tryAs<operator_::struct_::MemberCall>() )
-                        ctor_expr = call->op2()->tryAs<expression::Ctor>();
-                    else
-                        return;
-
-                    if ( ! ctor_expr )
-                        return;
-                    auto* tuple_ctor = ctor_expr->ctor()->tryAs<ctor::Tuple>();
-                    if ( ! tuple_ctor )
-                        return;
-
-                    std::map<ID, ID> param_names = makeParamMap(tuple_ctor, n->function()->ftype()->parameters());
-                    for ( std::size_t i = 0; i < lhs_tup_ctor->value().size(); i++ ) {
-                        auto* val = lhs_tup_ctor->value()[i];
-                        auto* name = val->tryAs<expression::Name>();
-
-                        // Add the name if one isn't in this position
-                        if ( placements.placements.size() <= i ) {
-                            if ( name )
-                                placements.placements.emplace_back(param_names[name->id()]);
-                            else
-                                placements.placements.emplace_back();
-                        }
-                        else if ( ! name ||
-                                  (placements.placements[i] && param_names[name->id()] != *placements.placements[i]) ) {
-                            // Invalidate this entry if this isn't a name or this
-                            // one's param doesn't match what was there before
-                            placements.placements[i] = {};
-                        }
-                    }
                 }
+
+                if ( ! placements.passthrough && placements.placements.size() == 0 )
+                    placements.placements = calculatePlacements(uses_of_op, n->function()->ftype()->parameters());
 
                 // Now put placements into its passthrough, if any.
                 if ( placements.passthrough_from ) {
-                    // TODO: Should not use this to get parents since it doesn't work
-                    // for methods
+                    // TODO: This needs to map the passthrough's params to the
+                    // passthrough'd
                     auto* parent = placements.passthrough_from->parent();
                     if ( ! parent )
                         return;
@@ -2523,14 +2573,14 @@ struct FunctionReturnVisitor : OptimizerVisitor {
                 if ( ! tup_ty || tup_ty->elements().size() != placement_ids.size() )
                     return;
 
-                replaceNode(n->function()->ftype()->result(), newRet(tup_ty, placement_ids));
+                replaceNode(n->function()->ftype()->result(), newRet(node::deepcopy(context(), tup_ty), placement_ids));
                 // Also need to change field's type
                 if ( field ) {
                     auto* ftype = field->type()->type()->tryAs<type::Function>();
                     if ( ! ftype )
                         return;
                     // TODO: Don't double-call newRet
-                    replaceNode(ftype->result(), newRet(tup_ty, placement_ids));
+                    replaceNode(ftype->result(), newRet(node::deepcopy(context(), tup_ty), placement_ids));
                 }
             }
             case Stage::PruneUses: {
