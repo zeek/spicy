@@ -1,3 +1,7 @@
+1.15.0-dev.71 | 2025-09-30 12:58:41 +0200
+
+  * Bump 3rdparty/utfcpp from `f931919` to `961e7a3` (dependabot[bot])
+
 1.15.0-dev.69 | 2025-09-23 09:56:26 +0200
 
   * Bump 3rdparty/utfcpp from `cfea16a` to `f931919` (dependabot[bot])
