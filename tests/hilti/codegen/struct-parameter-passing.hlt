@@ -1,0 +1,21 @@
+# @TEST-DOC: Validate generated C++ argument passing of struct parameters.
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic -c %INPUT -o output.cc
+# @TEST-EXEC: FileCheck %INPUT < output.cc
+
+module foo {
+
+# `in` parameters are passed as references.
+# CHECK: X1::X1(const ::hilti::rt::integer::safe<uint8_t>& __p_y) : __p_y(__p_y) {
+public type X1 = struct (uint<8> y) {};
+
+# `copy` parameters are passed as values and moved from.
+# CHECK: X2::X2(::hilti::rt::integer::safe<uint8_t> __p_y) : __p_y(std::move(__p_y)) {
+public type X2 = struct (copy uint<8> y) {};
+
+# `inout` parameters are passed as references.
+# CHECK: X3::X3(::hilti::rt::integer::safe<uint8_t>& __p_y) : __p_y(__p_y) {
+public type X3 = struct (inout uint<8> y) {};
+
+}

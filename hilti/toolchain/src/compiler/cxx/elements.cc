@@ -563,7 +563,11 @@ std::string cxx::type::Struct::code() const {
             util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
 
         auto ctor_inits =
-            util::join(util::transform(args, [&](const auto& x) { return fmt("%s(std::move(%s))", x.id, x.id); }),
+            util::join(util::transform(args,
+                                       [&](const auto& x) {
+                                           auto arg = x.isPassedByRef() ? fmt("%s", x.id) : fmt("std::move(%s)", x.id);
+                                           return fmt("%s(%s)", x.id, arg);
+                                       }),
                        ", ");
 
         code += fmt("%s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits, init_locals_user(),
