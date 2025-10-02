@@ -1,3 +1,14 @@
+1.15.0-dev.73 | 2025-10-02 07:55:18 +0200
+
+  * Fix C++ code generation for struct parameters passed as references. (Benjamin Bannier, Corelight)
+
+    Previously we could generate C++ moves for constructor arguments passed
+    as references. This is semantically incorrect, but seems to have had no
+    ill effects on code we generated. Since it could still confuse readers
+    and static analysis tools fix this to only generate moves if the
+    argument was passed as `copy`, but write out copies for all other
+    argument passing. This more clearly reflects what was already happening.
+
 1.15.0-dev.71 | 2025-09-30 12:58:41 +0200
 
   * Bump 3rdparty/utfcpp from `f931919` to `961e7a3` (dependabot[bot])
