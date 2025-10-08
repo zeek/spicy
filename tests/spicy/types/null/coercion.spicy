@@ -9,3 +9,5 @@ type X = struct {};
 
 print cast<bool>(Null);
 print cast<X&>(Null);
+print cast<optional<int32>>(Null);
+print cast<optional<X>>(Null);
