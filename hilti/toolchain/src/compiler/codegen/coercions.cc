@@ -298,6 +298,15 @@ struct Visitor : public hilti::visitor::PreOrder {
             logger().internalError(
                 fmt("codegen: unexpected type coercion from value reference to %s", dst->type()->typename_()));
     }
+
+    void operator()(type::Null* n) final {
+        if ( dst->type()->tryAs<type::StrongReference>() || dst->type()->tryAs<type::WeakReference>() )
+            result = expr;
+        else if ( dst->type()->isA<type::Bool>() )
+            result = "::hilti::rt::Bool(false)";
+        else
+            logger().internalError(fmt("codegen: unexpected type coercion from null to %s", dst->type()->typename_()));
+    }
 };
 
 } // anonymous namespace
