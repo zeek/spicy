@@ -1,3 +1,11 @@
+1.15.0-dev.76 | 2025-10-09 14:07:47 -0400
+
+  * Fix C++ compile error with Null->optional cast. (Evan Typanski, Corelight)
+
+  * GH-2154: Handle explicit `Null` casts. (Evan Typanski, Corelight)
+
+    Fixes #2154
+
 1.15.0-dev.73 | 2025-10-02 07:55:18 +0200
 
   * Fix C++ code generation for struct parameters passed as references. (Benjamin Bannier, Corelight)

@@ -298,6 +298,15 @@ struct Visitor : public hilti::visitor::PreOrder {
             logger().internalError(
                 fmt("codegen: unexpected type coercion from value reference to %s", dst->type()->typename_()));
     }
+
+    void operator()(type::Null* n) final {
+        if ( dst->type()->tryAs<type::StrongReference>() || dst->type()->tryAs<type::WeakReference>() )
+            result = expr;
+        else if ( dst->type()->isA<type::Bool>() )
+            result = "::hilti::rt::Bool(false)";
+        else
+            logger().internalError(fmt("codegen: unexpected type coercion from null to %s", dst->type()->typename_()));
+    }
 };
 
 } // anonymous namespace
@@ -307,8 +316,13 @@ cxx::Expression CodeGen::coerce(const cxx::Expression& e, QualifiedType* src, Qu
         // If only difference is constness, nothing to do.
         return e;
 
-    if ( auto* t = dst->type()->tryAs<type::Optional>(); t && ! src->type()->isA<type::Optional>() )
-        return fmt("%s(%s)", compile(dst, codegen::TypeUsage::Storage), e);
+    if ( auto* t = dst->type()->tryAs<type::Optional>(); t && ! src->type()->isA<type::Optional>() ) {
+        // Special case `Null`. Since standard conversions run before the
+        // user-defined conversion operation from `Null` to `std::optional` we
+        // might end up using a standard conversion which might be invalid.
+        auto maybe_expr = src->type()->isA<type::Null>() ? "" : e;
+        return fmt("%s(%s)", compile(dst, codegen::TypeUsage::Storage), maybe_expr);
+    }
 
     if ( dst->type()->isA<type::Result>() )
         return fmt("%s(%s)", compile(dst, codegen::TypeUsage::Storage), e);

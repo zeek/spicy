@@ -1,0 +1,13 @@
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensures explicit null casts compile; regression test for #2154
+
+module Foo;
+
+type X = struct {};
+
+print cast<bool>(Null);
+print cast<X&>(Null);
+print cast<optional<int32>>(Null);
+print cast<optional<X>>(Null);
