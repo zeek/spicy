@@ -614,7 +614,7 @@ freebsd13_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   freebsd_instance:
-    image_family: freebsd-13-4
+    image_family: freebsd-13-5
     cpu: 8
     memory: 8GB
 
