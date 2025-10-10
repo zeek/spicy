@@ -1,3 +1,14 @@
+1.15.0-dev.80 | 2025-10-10 10:37:08 +0200
+
+  * Prefer `cmake-core` over `cmake` in FreeBSD CI. (Benjamin Bannier, Corelight)
+
+    It looks like `cmake` has spotty availability across versions, just use
+    `cmake-core` instead which should already have what we need.
+
+  * Bump CI to freebsd-13.5. (Benjamin Bannier, Corelight)
+
+  * Bump CodSpeedHQ/action from 4.0.1 to 4.1.1 (dependabot[bot])
+
 1.15.0-dev.76 | 2025-10-09 14:07:47 -0400
 
   * Fix C++ compile error with Null->optional cast. (Evan Typanski, Corelight)
