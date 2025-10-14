@@ -34,6 +34,24 @@ to line 37, character 1 in the file ``foo.spicy``; ``foo.spicy:37:1-42:19`` is
 a source range in the file ``foo.spicy`` starting in line 37, character 1 and
 ending in line 42, character 19 in the same file.
 
+.. _faq_spicy_optimizations:
+
+.. rubric:: I expect some code to throw an exception, but this does not always
+  seem to happen. What is going on here?
+
+Spicy performs checks for correct usage, e.g., undefined integer operations
+like ``1/0`` or ``MAX_INT + 1``, or dereferencing an invalid iterator is
+rejected and exception is thrown. At the same time, some the Spicy compiler
+performs some rewrites which remove unneeded code, i.e., code without "useful"
+side effects, in the case of above examples a statement ``1/0;`` could be
+removed while a statement like ``print 1/0;`` would not since it has a side
+effect.
+
+The automatic rewrites should never cause a parser which does not raise any
+exceptions to change behavior; if on the other hand a parser does raise
+exceptions Spicy takes slightly more liberties and allows the final program to
+raising fewer exceptions. Explicit ``throw`` statements are always respected.
+
 Toolchain
 ---------
 
