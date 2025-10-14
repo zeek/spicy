@@ -2081,11 +2081,9 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 break;
             }
 
-            case Stage::PruneUses: {
-                pruneFromUses(function_id, n->operator_());
-                break;
-            }
+            case Stage::PruneUses:
             case Stage::PruneDecls: {
+                pruneFromUses(function_id, n->operator_());
                 pruneFromDecl(function_id, n->function()->ftype());
                 break;
             }
@@ -2130,11 +2128,9 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 break;
             }
 
-            case Stage::PruneUses: {
-                pruneFromUses(function_id, n->operator_());
-                break;
-            }
+            case Stage::PruneUses:
             case Stage::PruneDecls: {
+                pruneFromUses(function_id, n->operator_());
                 pruneFromDecl(function_id, ftype);
                 break;
             }
