@@ -93,14 +93,21 @@ using OperatorUses = std::map<const Operator*, std::vector<expression::ResolvedO
 
 // Collects uses of resolved operators
 struct CollectUsesPass : public hilti::visitor::PreOrder {
-    OperatorUses result;
+    OperatorUses* result = nullptr;
 
     OperatorUses collect(Node* node) {
-        visitor::visit(*this, node);
-        return result;
+        OperatorUses op_uses;
+        update(&op_uses, node);
+        return op_uses;
     }
 
-    void operator()(expression::ResolvedOperator* node) override { result[&node->operator_()].push_back(node); }
+    void update(OperatorUses* op_uses, Node* node) {
+        op_uses->clear();
+        result = op_uses;
+        visitor::visit(*this, node);
+    }
+
+    void operator()(expression::ResolvedOperator* node) override { (*result)[&node->operator_()].push_back(node); }
 };
 
 class OptimizerVisitor : public visitor::MutatingPreOrder {
@@ -2440,7 +2447,7 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
     }
 
     CollectUsesPass collect_uses{};
-    const auto& op_uses = collect_uses.collect(root);
+    auto op_uses = collect_uses.collect(root);
 
     using PassCreator = std::unique_ptr<OptimizerVisitor> (*)(Builder* builder, const OperatorUses* op_uses);
     using Phase = size_t;
@@ -2544,6 +2551,8 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
                     v->collect(root);
                     inner_modified = v->pruneUses(root) || inner_modified;
                     inner_modified = v->pruneDecls(root) || inner_modified;
+
+                    collect_uses.update(&op_uses, root);
                 };
 
                 modified = modified || inner_modified;
