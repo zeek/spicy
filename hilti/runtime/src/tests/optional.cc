@@ -15,10 +15,9 @@ TEST_SUITE_BEGIN("optional");
 TEST_CASE("value") {
     SUBCASE("rvalue") {
         debug::setLocation("foo.spicy");
-        CHECK_THROWS_WITH_AS(optional::value(Optional<int>()), "unset optional value (foo.spicy)",
-                             const UnsetOptional&);
+        CHECK_THROWS_WITH_AS(Optional<int>().value(), "unset optional value (foo.spicy)", const UnsetOptional&);
 
-        CHECK_EQ(optional::value(Optional<int>(0)), 0);
+        CHECK_EQ(Optional<int>(0).value(), 0);
         debug::setLocation(nullptr);
     }
 
@@ -26,10 +25,10 @@ TEST_CASE("value") {
         debug::setLocation("foo.spicy");
         auto o = Optional<int>();
 
-        CHECK_THROWS_WITH_AS(optional::value(o), "unset optional value (foo.spicy)", const UnsetOptional&);
+        CHECK_THROWS_WITH_AS(o.value(), "unset optional value (foo.spicy)", const UnsetOptional&);
 
         o = 0;
-        auto& v = optional::value(o);
+        auto& v = o.value();
         CHECK_EQ(v, 0);
 
         v += 42;
@@ -41,20 +40,20 @@ TEST_CASE("value") {
 TEST_CASE("valueOrInit") {
     SUBCASE("explicit default") {
         auto o = Optional<int8_t>();
-        CHECK_EQ(optional::valueOrInit(o, int8_t(47)), 47);
+        CHECK_EQ(o.valueOrInit(int8_t(47)), 47);
         CHECK_EQ(*o, 47);
     }
 
     SUBCASE("implicit default") {
         auto o = Optional<int8_t>();
-        CHECK_EQ(optional::valueOrInit(o), 0);
+        CHECK_EQ(o.valueOrInit(), 0);
         CHECK_EQ(*o, 0);
     }
 }
 
 TEST_CASE("tryValue") {
-    CHECK_THROWS_WITH_AS(optional::tryValue(Optional<int8_t>()), "std::exception", const optional::Unset&);
-    CHECK_EQ(optional::tryValue(Optional<int8_t>(42)), 42);
+    CHECK_THROWS_WITH_AS(Optional<int8_t>().tryValue(), "std::exception", const optional::Unset&);
+    CHECK_EQ(Optional<int8_t>(42).tryValue(), 42);
 }
 
 Optional<std::string> foo(Optional<std::string> s) { return s; }
@@ -62,8 +61,8 @@ Optional<std::string> foo(Optional<std::string> s) { return s; }
 TEST_CASE("null") {
     Optional<int8_t> x;
     x = hilti::rt::Null();
-    CHECK(! x.has_value());
-    CHECK(! foo(hilti::rt::Null()).has_value());
+    CHECK(! x.hasValue());
+    CHECK(! foo(hilti::rt::Null()).hasValue());
 }
 
 TEST_SUITE_END();

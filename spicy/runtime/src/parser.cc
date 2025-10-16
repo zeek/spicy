@@ -124,7 +124,7 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
         }
 
         std::string begin_ = "-";
-        if ( begin.has_value() )
+        if ( begin.hasValue() )
             begin_ = hilti::rt::fmt("%" PRId64, begin->offset());
 
         auto begin_offset = data->begin().offset();
@@ -136,7 +136,7 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
                               unit_id, input_data, input_dots, data.get(), begin_offset, begin_, cur.begin().offset(),
                               end_offset, cur.end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"),
                               literal_mode, (trim ? "yes" : "no"), lah_str, lah_data, lah_dots,
-                              (error.has_value() ? "yes" : "no"));
+                              (error.hasValue() ? "yes" : "no"));
     };
 
     SPICY_RT_DEBUG_VERBOSE(msg());

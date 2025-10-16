@@ -1,8 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <clocale>
-#include <optional>
-
 #include <hilti/rt/init.h>
 
 #include <spicy/rt/configuration.h>
@@ -32,7 +29,7 @@ void spicy::rt::init() {
 
     for ( const auto& p : parsers ) {
         if ( p->is_public ) {
-            if ( ! default_parser.has_value() )
+            if ( ! default_parser.hasValue() )
                 default_parser = p;
             else
                 default_parser = hilti::rt::Null();

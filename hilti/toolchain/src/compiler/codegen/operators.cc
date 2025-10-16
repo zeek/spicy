@@ -603,9 +603,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     // Optional
-    void operator()(operator_::optional::Deref* n) final {
-        result = {fmt("::hilti::rt::optional::value(%s)", op0(n)), Side::LHS};
-    }
+    void operator()(operator_::optional::Deref* n) final { result = {fmt("%s.value()", op0(n)), Side::LHS}; }
 
     /// Port
 
@@ -865,15 +863,15 @@ struct Visitor : hilti::visitor::PreOrder {
 
             if ( lhs ) {
                 if ( d )
-                    return {fmt("::hilti::rt::optional::valueOrInit(%s, %s)", attr, cg->compile(d)), Side::LHS};
+                    return {fmt("%s.valueOrInit(%s)", attr, cg->compile(d)), Side::LHS};
 
-                return {fmt("::hilti::rt::optional::valueOrInit(%s)", attr), Side::LHS};
+                return {fmt("%s.valueOrInit()", attr), Side::LHS};
             }
 
             if ( d )
-                return fmt("%s.value_or(%s)", attr, cg->compile(d));
+                return fmt("%s.valueOr(%s)", attr, cg->compile(d));
 
-            return fmt("::hilti::rt::optional::value(%s)", attr);
+            return fmt("%s.value()", attr);
         }
 
         return {std::move(attr), Side::LHS};
@@ -916,7 +914,7 @@ struct Visitor : hilti::visitor::PreOrder {
             type = type->dereferencedType()->type();
 
         if ( auto* f = type->as<type::Struct>()->field(id); f->isOptional() )
-            result = fmt("%s.has_value()", memberAccess(n, id));
+            result = fmt("%s.hasValue()", memberAccess(n, id));
         else
             result = "true";
     }

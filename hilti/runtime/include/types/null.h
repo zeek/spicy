@@ -8,9 +8,11 @@
 #include <string>
 
 #include <hilti/rt/extension-points.h>
-#include <hilti/rt/types/optional.h>
 
 namespace hilti::rt {
+
+template<typename T>
+class Optional;
 
 /**
  * Represents HILTI's "null" type.
