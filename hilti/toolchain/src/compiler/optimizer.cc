@@ -287,9 +287,7 @@ struct FunctionVisitor : OptimizerVisitor {
 
                 // Remove function methods without implementation.
                 if ( ! function.defined && ! function.referenced ) {
-                    HILTI_DEBUG(logging::debug::Optimizer,
-                                util::fmt("removing field for unused method %s", function_id));
-                    removeNode(n);
+                    removeNode(n, util::fmt("removing field for unused method %s", function_id));
                     return;
                 }
 
