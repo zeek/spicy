@@ -288,7 +288,9 @@ struct Visitor : hilti::visitor::PreOrder {
             fmt("hilti::rt::tuple::make_from_optionals(%s)",
                 util::join(node::transform(n->value(),
                                            [this](auto e) -> std::string {
-                                               if ( mayThrowAttributeNotSet(e) )
+                                               if ( e->type()->type()->template isA<type::Null>() )
+                                                   return "hilti::rt::optional::make<hilti::rt::Null>()";
+                                               else if ( mayThrowAttributeNotSet(e) )
                                                    return fmt("hilti::rt::tuple::wrap_expression([&]() { return %s; })",
                                                               cg->compile(e));
                                                else

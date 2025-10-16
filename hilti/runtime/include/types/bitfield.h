@@ -98,7 +98,7 @@ inline std::string render(const hilti::rt::Optional<Bitfield<Ts...>>& x, const h
     if ( ! type_info )
         return "<uninitialized bitfield>";
 
-    if ( x.has_value() )
+    if ( x.hasValue() )
         return render(*x, type_info, is_anonymous);
 
     if ( ! is_anonymous )

@@ -97,13 +97,13 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            result = {fmt("(%s = (%s), %s.has_value() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())", tmp, expr,
+            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())", tmp, expr,
                           tmp, tmp),
                       Side::LHS};
         }
 
         else if ( dst->type()->isA<type::Bool>() )
-            result = fmt("%s.has_value()", expr);
+            result = fmt("%s.hasValue()", expr);
 
         else
             logger().internalError(

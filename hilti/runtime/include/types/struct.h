@@ -20,7 +20,7 @@ namespace struct_ {
 
 template<class T>
 inline auto& value_or_exception(const hilti::rt::Optional<T>& t) {
-    if ( t.has_value() )
+    if ( t.hasValue() )
         return t.value();
 
     throw AttributeNotSet("struct attribute not set");
