@@ -26,6 +26,7 @@
 #include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/grouping.h>
+#include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/logical-and.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
@@ -2155,16 +2156,45 @@ struct FunctionParamVisitor : OptimizerVisitor {
     }
 
     /** Removes the param_id as used within the function. */
-    void removeUsed(type::Function* ftype, const ID& function_id, const ID& param_id) {
+    void removeUsed(type::Function* ftype, const ID& function_id, Expression* name) {
         auto& unused = fn_unused_params.at(function_id);
 
+        std::string_view id = {};
+        const Declaration* resolved_declaration = nullptr;
+
+        if ( auto* x = name->tryAs<expression::Name>() ) {
+            id = x->id().str();
+            assert(x->resolvedDeclaration());
+            resolved_declaration = x->resolvedDeclaration();
+        }
+        else if ( auto* x = name->tryAs<expression::Keyword>() ) {
+            switch ( x->kind() ) {
+                case expression::keyword::Kind::Captures: {
+                    id = "__captures";
+                    break;
+                }
+                case expression::keyword::Kind::Self:
+                case expression::keyword::Kind::DollarDollar:
+                case expression::keyword::Kind::Scope:
+                    util::detail::internalError(util::fmt("unexpected keyword '%s'", name->print()));
+            }
+        }
+        else
+            util::detail::internalError(util::fmt("unexpected expression '%s'", name));
+
+        const auto& params = ftype->parameters();
         for ( auto it = unused.unused_params.begin(); it != unused.unused_params.end(); ++it ) {
             auto param_num = *it;
-            assert(ftype->parameters().size() >= param_num);
-            if ( ftype->parameters()[param_num]->id() == param_id ) {
-                unused.unused_params.erase(it, std::next(it));
-                return;
-            }
+            assert(params.size() >= param_num);
+
+            if ( params[param_num]->id() != id )
+                continue;
+
+            if ( resolved_declaration && resolved_declaration != params[param_num] )
+                continue;
+
+            unused.unused_params.erase(it, std::next(it));
+            return;
         }
     }
 
@@ -2181,7 +2211,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
                 if ( unused.unused_params.size() == 0 )
                     return;
 
-                removeUsed(ftype, function_id, n->id());
+                removeUsed(ftype, function_id, n);
             }
             case Stage::PruneUses: return;
             case Stage::PruneDecls: return;
@@ -2198,7 +2228,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
             case Stage::Collect:
                 // Only apply to captures, everything else seems handled by Name.
                 if ( n->kind() == expression::keyword::Kind::Captures )
-                    removeUsed(ftype, function_id, "__captures");
+                    removeUsed(ftype, function_id, n);
                 return;
             case Stage::PruneUses:
             case Stage::PruneDecls: return;

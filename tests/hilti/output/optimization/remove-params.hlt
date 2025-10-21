@@ -117,3 +117,24 @@ called_with_one_side_effect(1, 2);
 called_with_one_side_effect(side_effect(), 3);
 
 }
+
+# @TEST-START-NEXT
+
+module Test {
+
+import hilti;
+
+# CHECK: function uint<64> param_shadowed(uint<64> i)
+function uint<64> param_shadowed(uint<64> i, uint<64> j) {
+    {
+        local uint<64> j = 10;
+        hilti::print(j, True);
+    }
+
+    return i * 10;
+}
+
+# CHECK: hilti::print(param_shadowed(1), True);
+hilti::print(param_shadowed(1, 2), True);
+
+}
