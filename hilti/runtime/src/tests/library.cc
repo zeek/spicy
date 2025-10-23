@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <dlfcn.h>
+#include <doctest/doctest.h>
 #include <unistd.h>
 
 #include <cstdlib>
@@ -12,7 +13,6 @@
 #include <utility>
 
 #include <hilti/rt/autogen/tests/config.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/test/utils.h>

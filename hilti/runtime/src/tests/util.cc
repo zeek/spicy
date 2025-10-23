@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
 #include <unistd.h>
 
 #include <cstdint>
@@ -10,7 +11,6 @@
 #include <vector>
 
 #include <hilti/rt/autogen/version.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/init.h>

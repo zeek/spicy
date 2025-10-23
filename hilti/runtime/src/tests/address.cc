@@ -1,12 +1,12 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <arpa/inet.h>
+#include <doctest/doctest.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 
 #include <string>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/types/address.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/tuple.h>

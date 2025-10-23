@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/doctest.h>
+#include <doctest/doctest.h>
+
 #include <hilti/rt/types/bool.h>
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/real.h>

@@ -1,8 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <tuple>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/safe-int.h>

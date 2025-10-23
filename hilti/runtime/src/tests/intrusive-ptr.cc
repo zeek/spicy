@@ -1,8 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <utility>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/intrusive-ptr.h>
 
 // The IntrusivePtr class is adapted from Zeek. We only test basic

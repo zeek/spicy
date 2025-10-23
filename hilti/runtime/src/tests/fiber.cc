@@ -1,12 +1,13 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <exception>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include <hilti/rt/configuration.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fiber-check-stack.h>
 #include <hilti/rt/fiber.h>

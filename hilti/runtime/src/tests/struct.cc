@@ -1,8 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <optional>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/types/integer.h>

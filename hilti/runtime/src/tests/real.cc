@@ -1,8 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <tuple>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>

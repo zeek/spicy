@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <exception>
 #include <memory>
 #include <sstream>
@@ -7,7 +9,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>

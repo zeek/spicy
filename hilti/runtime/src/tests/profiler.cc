@@ -1,11 +1,11 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
 #include <unistd.h>
 
 #include <string>
 
 #include <hilti/rt/configuration.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/profiler.h>
