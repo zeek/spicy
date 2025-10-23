@@ -1,3 +1,9 @@
+1.15.0-dev.83 | 2025-10-21 21:12:18 +0200
+
+  * Bump 3rdparty/utf8proc from `d7bf128` to `231da1a` (dependabot[bot])
+
+  * Bump CodSpeedHQ/action from 4.1.1 to 4.2.1 (dependabot[bot])
+
 1.15.0-dev.80 | 2025-10-10 10:37:08 +0200
 
   * Prefer `cmake-core` over `cmake` in FreeBSD CI. (Benjamin Bannier, Corelight)
