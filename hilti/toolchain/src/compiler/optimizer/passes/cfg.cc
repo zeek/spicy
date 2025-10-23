@@ -1,0 +1,202 @@
+// Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
+
+#include <hilti/ast/builder/builder.h>
+#include <hilti/base/logger.h>
+#include <hilti/compiler/detail/cfg.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
+
+using namespace hilti;
+using namespace hilti::detail::optimizer;
+
+struct FunctionBodyVisitor : OptimizerVisitor {
+    using OptimizerVisitor::OptimizerVisitor;
+
+    std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG& cfg) const;
+
+    std::vector<Node*> unusedStatements(const detail::cfg::CFG& cfg) const;
+
+    bool pruneUses(Node* node) override {
+        visitor::visit(*this, node);
+        return isModified();
+    }
+
+    // Remove a given AST node from both the AST and the CFG.
+    bool remove(detail::cfg::CFG& cfg, Node* data, const std::string& msg = {}) {
+        assert(data);
+
+        Node* node = nullptr;
+
+        if ( data->isA<Statement>() && data->hasParent() )
+            node = data;
+
+        else if ( data->isA<Expression>() ) {
+            auto* p = data->parent();
+
+            while ( p && ! p->isA<Statement>() )
+                p = p->parent();
+
+            if ( p && p->hasParent() )
+                node = p;
+        }
+
+        else if ( data->isA<Declaration>() ) {
+            if ( auto* stmt = data->parent(); stmt && stmt->isA<statement::Declaration>() )
+                node = stmt;
+        }
+
+        if ( node ) {
+            // Edit AST.
+            removeNode(node, msg);
+
+            // Make equivalent edit to control flow graph.
+            cfg.removeNode(node);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void visitNode(Node* n) {
+        while ( true ) {
+            bool modified = false;
+
+            // TODO(bbannier): In principal we should be able to reuse the
+            // flow through optimizations, but this currently fails due to
+            // edits not correctly changing the flow.
+            auto cfg = detail::cfg::CFG(n);
+
+            for ( auto* x : unusedStatements(cfg) )
+                modified |= remove(cfg, x, "statement result unused");
+
+            if ( modified )
+                break;
+
+            auto unreachable_nodes = unreachableNodes(cfg);
+
+            // Remove unreachable control flow branches.
+            // NOLINTNEXTLINE(bugprone-nondeterministic-pointer-iteration-order)
+            for ( auto* n : unreachable_nodes )
+                modified |= remove(cfg, n, "unreachable code");
+
+            if ( ! modified )
+                break;
+        }
+    }
+
+    void operator()(declaration::Function* f) override {
+        if ( auto* body = f->function()->body() )
+            visitNode(body);
+    }
+
+    void operator()(declaration::Module* m) override {
+        OptimizerVisitor::operator()(m);
+
+        if ( auto* body = m->statements() )
+            visitNode(body);
+    }
+};
+
+std::vector<Node*> FunctionBodyVisitor::unusedStatements(const detail::cfg::CFG& cfg) const {
+    // This can only be called after dataflow information has been populated.
+    const auto& dataflow = cfg.dataflow();
+    assert(! dataflow.empty());
+
+    std::map<detail::cfg::GraphNode, uint64_t> uses;
+
+    // Loop over all nodes.
+    for ( const auto& [n, transfer] : dataflow ) {
+        // Check whether we want to declare any of the statements used. We currently do this for
+        // - `inout` parameters since their result is can be seen after the function has ended,
+        // - globals since they could be used elsewhere without us being able to see it,
+        // - `self` expression since they live on beyond the current block.
+        if ( n->isA<detail::cfg::End>() ) {
+            assert(dataflow.contains(n));
+            // If we saw an operation an `inout` parameter at the end of the flow, mark the parameter as used.
+            // For each incoming statement ...
+            for ( const auto& [decl, stmts] : transfer.in ) {
+                // If the statement generated an update to the value ...
+                bool mark_used = false;
+
+                if ( decl->isA<declaration::GlobalVariable>() )
+                    mark_used = true;
+
+                else if ( auto* p = decl->tryAs<declaration::Parameter>();
+                          p && (p->kind() == parameter::Kind::InOut || p->type()->type()->isAliasingType()) )
+                    mark_used = true;
+
+                else if ( const auto* expr = decl->tryAs<declaration::Expression>() ) {
+                    if ( auto* keyword = expr->expression()->tryAs<expression::Keyword>();
+                         keyword && keyword->kind() == expression::keyword::Kind::Self )
+                        mark_used = true;
+                }
+
+                if ( mark_used ) {
+                    for ( const auto& stmt : stmts )
+                        ++uses[stmt];
+                }
+            }
+        }
+
+        if ( ! n->isA<detail::cfg::MetaNode>() )
+            (void)uses[n]; // Record statement if not already known.
+
+        // For each update to a declaration generated by a node ...
+        for ( const auto& [decl, stmt] : transfer.gen ) {
+            // Search for nodes using the statement.
+            for ( const auto& [n_, t] : dataflow ) {
+                // Skip the original node.
+                if ( n_ == n )
+                    continue;
+
+                // If the original node was a declaration and we wrote an
+                // update mark the declaration as used.
+                if ( t.write.contains(decl) ) {
+                    if ( const auto* node = cfg.graph().getNode(decl->identity()) )
+                        ++uses[*node];
+                }
+
+                // Else filter by nodes reading the decl.
+                if ( ! t.read.contains(decl) )
+                    continue;
+
+                // If an update is read and in the `in` set of a node it is used.
+                auto it = std::ranges::find_if(t.in, [&](const auto& in) {
+                    const auto& [decl, stmts] = in;
+                    return stmts.contains(stmt);
+                });
+                if ( it != t.in.end() )
+                    ++uses[n];
+            }
+        }
+    }
+
+    std::vector<Node*> result;
+    for ( const auto& [n, uses] : uses ) {
+        if ( uses > 0 )
+            continue;
+
+        if ( dataflow.at(n).keep )
+            continue;
+
+        result.push_back(n.value());
+    }
+
+    return result;
+}
+
+std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cfg::CFG& cfg) const {
+    std::unordered_set<Node*> result;
+    for ( const auto& [id, n] : cfg.graph().nodes() ) {
+        if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg.graph().neighborsUpstream(id).empty() )
+            result.insert(n.value());
+    }
+
+    return result;
+}
+
+static RegisterPass constant_folder(
+    "cfg", {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
+            },
+            2});
