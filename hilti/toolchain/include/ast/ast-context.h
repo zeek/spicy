@@ -458,6 +458,14 @@ public:
     /** Release all state. */
     void clear();
 
+    /**
+     * Maximum number of rounds to perform during AST processing before
+     * assuming we are in an infinite loop without further progress being made.
+     * Once exceeded, processing aborts with an internal error as such as loop
+     * would indicate a bug in the compiler.
+     */
+    static constexpr unsigned int MaxASTIterationRounds = 100;
+
 private:
     // The following methods implement the corresponding phases of AST processing.
 
@@ -479,17 +487,18 @@ private:
     declaration::module::UID _addModuleToAST(declaration::Module* module);
 
     // Dumps the AST to disk during AST processing, for debugging..
-    void _saveIterationAST(const Plugin& plugin, const std::string& prefix, int round = 0);
+    void _saveIterationAST(const Plugin& plugin, const std::string& prefix, unsigned int round = 0);
 
     // Dumps the AST to disk during AST processing, for debugging..
     void _saveIterationAST(const Plugin& plugin, const std::string& prefix, const std::string& tag);
 
     // Dumps the AST to a debugging stream.
     void _dumpAST(const hilti::logging::DebugStream& stream, const Plugin& plugin, const std::string& prefix,
-                  int round);
+                  std::optional<unsigned int> round);
 
     // Dumps the AST to a debugging stream.
-    void _dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix, int round);
+    void _dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix,
+                  std::optional<unsigned int> round);
 
     // Dumps the accumulated state tables of the context to a debugging stream.
     void _dumpState(const logging::DebugStream& stream) const;
@@ -512,7 +521,7 @@ private:
     util::Uniquer<ID> _canon_id_uniquer;        // Produces unique canonified IDs
     std::unique_ptr<ast::detail::DependencyTracker> _dependency_tracker; // records dependencies between declarations
 
-    uint64_t _total_rounds = 0; // total number of rounds of AST processing
+    unsigned int _total_rounds = 0; // total number of rounds of AST processing
 
     std::unordered_map<declaration::module::UID, node::RetainedPtr<declaration::Module>>
         _modules_by_uid; // all known modules indexed by UID

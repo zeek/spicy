@@ -646,7 +646,7 @@ public:
     /**
      * Removes the node from its parent. The node will remain valid and can be
      * re-inserted into the AST elsewhere later. Does nothing if the node has
-     * no parent. If the node has no parent, this is a no-op.
+     * no parent.
      */
     void removeFromParent();
 

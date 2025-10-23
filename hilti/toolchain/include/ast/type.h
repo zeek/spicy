@@ -400,6 +400,12 @@ public:
     type::Name* alias() const;
 
     /**
+     * Extracts the innermost type, removing any wrapping in reference or
+     * iterator types recursively.
+     */
+    QualifiedType* innermostType();
+
+    /**
      * Sets the constness of the type.
      *
      * @param const new constness of type

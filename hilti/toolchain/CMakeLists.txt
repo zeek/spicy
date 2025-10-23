@@ -94,6 +94,7 @@ set(SOURCES
     src/base/timing.cc
     src/base/util.cc
     src/compiler/ast-dumper.cc
+    src/compiler/cfg.cc
     src/compiler/codegen/codegen.cc
     src/compiler/codegen/coercions.cc
     src/compiler/codegen/ctors.cc
@@ -109,11 +110,17 @@ set(SOURCES
     src/compiler/cxx/formatter.cc
     src/compiler/cxx/linker.cc
     src/compiler/cxx/unit.cc
-    src/compiler/cfg.cc
     src/compiler/driver.cc
     src/compiler/init.cc
     src/compiler/jit.cc
-    src/compiler/optimizer.cc
+    src/compiler/optimizer/optimizer.cc
+    src/compiler/optimizer/pass.cc
+    src/compiler/optimizer/passes/constant-propagation.cc
+    src/compiler/optimizer/passes/dead-code-cfg.cc
+    src/compiler/optimizer/passes/dead-code-static.cc
+    src/compiler/optimizer/passes/feature-requirements.cc
+    src/compiler/optimizer/passes/peephole.cc
+    src/compiler/optimizer/passes/remove-unused-params.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
     src/compiler/printer.cc

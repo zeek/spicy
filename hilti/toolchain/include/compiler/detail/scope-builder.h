@@ -17,7 +17,7 @@ namespace hilti::detail::scope_builder {
  * case if no changes were made beyond such IDs.
  *
  * @param builder the builder to use
- * @param root root node to process.
+ * @param node root node to process.
  * @return true if any scopes were modified, false otherwise.
  */
 bool build(Builder* builder, Node* node);

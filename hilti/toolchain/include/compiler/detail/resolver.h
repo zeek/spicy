@@ -17,7 +17,7 @@ bool resolve(Builder* builder, Node* node);
  * over the AST as needed until all possible coercions have been applied.
  *
  * @param builder the builder to use
- * @param root root node to process.
+ * @param node root node to process.
  * @return true if any changes were made
  */
 bool coerce(Builder* builder, Node* node);

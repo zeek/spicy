@@ -20,7 +20,7 @@
 #include <hilti/base/timing.h>
 #include <hilti/compiler/detail/ast-dumper.h>
 #include <hilti/compiler/detail/cfg.h>
-#include <hilti/compiler/detail/optimizer.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/resolver.h>
 #include <hilti/compiler/detail/scope-builder.h>
 #include <hilti/compiler/driver.h>
@@ -324,11 +324,11 @@ void ASTContext::garbageCollect() {
     size_t retained = 0;
 
     bool changed;
-    uint64_t rounds = 0;
+    unsigned int rounds = 0;
     do {
         ++rounds;
         retained = 0;
-        new_nodes.reserve(_nodes.size()); // NOLINT(bugprone-use-after-move)
+        new_nodes.reserve(_nodes.size()); // NOLINT -- This can trigger various use-after-move warnings
         changed = false;
 
         for ( auto& n : _nodes ) {
@@ -348,9 +348,8 @@ void ASTContext::garbageCollect() {
         _nodes = std::move(new_nodes);
     } while ( changed );
 
-    HILTI_DEBUG(logging::debug::AstStats,
-                util::fmt("garbage collected %zu nodes in %" PRIu64 " round%s, %zu left retained", collected, rounds,
-                          (rounds != 1 ? "s" : ""), retained));
+    HILTI_DEBUG(logging::debug::AstStats, util::fmt("garbage collected %zu nodes in %u round%s, %zu left retained",
+                                                    collected, rounds, (rounds != 1 ? "s" : ""), retained));
 }
 
 Result<declaration::module::UID> ASTContext::_parseSource(
@@ -576,7 +575,7 @@ static Result<Nothing> runHook(bool* modified, const Plugin& plugin, PluginMembe
 Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
     auto _guard = scope_exit([&]() {
         const auto& hilti_plugin = plugin::registry().hiltiPlugin();
-        _dumpAST(logging::debug::AstFinal, hilti_plugin, "Final AST", -1);
+        _dumpAST(logging::debug::AstFinal, hilti_plugin, "Final AST", {});
         _dumpState(logging::debug::AstFinal);
         _dumpStats(logging::debug::AstStats, hilti_plugin.component);
     });
@@ -719,12 +718,12 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
 
     logging::DebugPushIndent _(logging::debug::Compiler);
 
-    int round = 1;
+    unsigned int round = 1;
 
     _saveIterationAST(plugin, "AST before first iteration", 0);
 
     while ( true ) {
-        HILTI_DEBUG(logging::debug::Compiler, fmt("processing ASTs, round %d", round));
+        HILTI_DEBUG(logging::debug::Compiler, fmt("processing ASTs, round %u", round));
         logging::DebugPushIndent _(logging::debug::Compiler);
 
         ++_total_rounds;
@@ -750,11 +749,11 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
         if ( ! modified )
             break;
 
-        if ( ++round >= 50 )
+        if ( ++round >= ASTContext::MaxASTIterationRounds )
             logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
     }
 
-    _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", static_cast<int>(_total_rounds));
+    _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", _total_rounds);
     _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
 
@@ -793,30 +792,15 @@ Result<Nothing> ASTContext::_transform(Builder* builder, const Plugin& plugin) {
 
 Result<Nothing> ASTContext::_optimize(Builder* builder) {
     if ( logger().isEnabled(logging::debug::CfgInitial) )
-        hilti::detail::cfg::dump(logging::debug::CfgInitial, _root);
+        cfg::dump(logging::debug::CfgInitial, _root);
 
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
-    bool first = true;
-    while ( true ) {
-        // If the optimizer does not change anything, we are done.
-        if ( ! optimizer::optimize(builder, _root, first) )
-            break;
-
-        first = false;
-
-        // Optimization may have left some computed node state unset, such as a
-        // canonical IDs. Some passes also require extra coercions, such as the
-        // constant propagation pass. Do another resolver run to get that in shape.
-        if ( auto rc = _resolve(builder, plugin::registry().hiltiPlugin()); ! rc )
-            return rc;
-    }
+    if ( auto rc = Optimizer(builder->context()).run(); ! rc )
+        return rc;
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )
-        hilti::detail::cfg::dump(logging::debug::CfgFinal, _root);
-
-    // Make sure we didn't leave anything odd during optimization.
-    checkAST(true);
+        cfg::dump(logging::debug::CfgFinal, _root);
 
     return Nothing();
 }
@@ -845,24 +829,25 @@ Result<Nothing> ASTContext::_computeDependencies() {
 }
 
 void ASTContext::_dumpAST(const logging::DebugStream& stream, const Plugin& plugin, const std::string& prefix,
-                          int round) {
+                          std::optional<unsigned int> round) {
     if ( ! logger().isEnabled(stream) )
         return;
 
     std::string r;
 
-    if ( round > 0 )
-        r = fmt(" (round %d)", round);
+    if ( round )
+        r = fmt(" (round %u)", *round);
 
     HILTI_DEBUG(stream, fmt("# [%s] %s%s", plugin.component, prefix, r));
     ast_dumper::dump(stream, root(), true);
 }
 
-void ASTContext::_dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix, int round) {
+void ASTContext::_dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix,
+                          std::optional<unsigned int> round) {
     std::string r;
 
-    if ( round > 0 )
-        r = fmt(" (round %d)", round);
+    if ( round )
+        r = fmt(" (round %u)", *round);
 
     stream << fmt("# [%s] %s%s\n", plugin.component, prefix, r);
     ast_dumper::dump(stream, root(), true);
@@ -962,7 +947,7 @@ void ASTContext::_dumpStats(const logging::DebugStream& stream, std::string_view
     logger().debugPushIndent(stream);
 
     if ( _total_rounds )
-        HILTI_DEBUG(stream, fmt("- # AST rounds %" PRIu64, _total_rounds));
+        HILTI_DEBUG(stream, fmt("- # AST rounds %u", _total_rounds));
 
     HILTI_DEBUG(stream, fmt("- max tree depth: %zu", depth));
     HILTI_DEBUG(stream, fmt("- # context declarations: %zu", _declarations_by_index.size()));
@@ -1002,11 +987,11 @@ void ASTContext::_dumpDeclarations(const logging::DebugStream& stream, const Plu
     logger().debugSetIndent(stream, 0);
 }
 
-void ASTContext::_saveIterationAST(const Plugin& plugin, const std::string& prefix, int round) {
+void ASTContext::_saveIterationAST(const Plugin& plugin, const std::string& prefix, unsigned int round) {
     if ( ! logger().isEnabled(logging::debug::AstDumpIterations) )
         return;
 
-    std::ofstream out(fmt("ast-%s-%d.tmp", plugin.component, round));
+    std::ofstream out(fmt("ast-%s-%u.tmp", plugin.component, round));
     _dumpAST(out, plugin, prefix, round);
 }
 

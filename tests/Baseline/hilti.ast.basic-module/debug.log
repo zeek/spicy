@@ -17,16 +17,16 @@
 [debug/compiler]     [HILTI] resolving AST
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] performing global transformations
-[debug/compiler] resolving units with plugin HILTI
-[debug/compiler]   processing ASTs, round 1
-[debug/compiler]     [HILTI] building scopes
-[debug/compiler]     [HILTI] resolving AST
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] finalized AST
 [debug/compiler] computing AST dependencies
 [debug/ast-final] # [HILTI] Final AST
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
+[debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]       | hilti -> declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]     - declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] (basic-module.hlt:6:1-12:1) [@d:XXX]
+[debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | X -> declaration::Type <canonical-id="Foo::X" declaration="D1" fqid="Foo::X" id="X" linkage="private"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (basic-module.hlt:6:1-12:1) [@s:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="Foo::X" declaration="D1" fqid="Foo::X" id="X" linkage="private"> [parent @d:XXX] (basic-module.hlt:8:1-8:14) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (basic-module.hlt:8:10-8:13) [@q:XXX]
@@ -34,11 +34,49 @@
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (basic-module.hlt:8:14-8:13) [@a:XXX]
 [debug/ast-final]       - <empty>
 [debug/ast-final]     - declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (hilti.hlt:3:1-68:1) [@d:XXX]
+[debug/ast-final]         | AddressFamily -> declaration::Type <canonical-id="hilti::AddressFamily" declaration="D6" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | BitOrder -> declaration::Type <canonical-id="hilti::BitOrder" declaration="D3" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | ByteOrder -> declaration::Type <canonical-id="hilti::ByteOrder" declaration="D4" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Captures -> declaration::Type <canonical-id="hilti::Captures" declaration="D11" fqid="hilti::Captures" id="Captures" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Charset -> declaration::Type <canonical-id="hilti::Charset" declaration="D9" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | DecodeErrorStrategy -> declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D10" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Exception -> declaration::Type <canonical-id="hilti::Exception" declaration="D15" fqid="hilti::Exception" id="Exception" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | MatchState -> declaration::Type <canonical-id="hilti::MatchState" declaration="D13" fqid="hilti::MatchState" id="MatchState" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | MissingData -> declaration::Type <canonical-id="hilti::MissingData" declaration="D19" fqid="hilti::MissingData" id="MissingData" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Profiler -> declaration::Type <canonical-id="hilti::Profiler" declaration="D12" fqid="hilti::Profiler" id="Profiler" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Protocol -> declaration::Type <canonical-id="hilti::Protocol" declaration="D8" fqid="hilti::Protocol" id="Protocol" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | RealType -> declaration::Type <canonical-id="hilti::RealType" declaration="D7" fqid="hilti::RealType" id="RealType" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | RecoverableFailure -> declaration::Type <canonical-id="hilti::RecoverableFailure" declaration="D18" fqid="hilti::RecoverableFailure" id="RecoverableFailure" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | RuntimeError -> declaration::Type <canonical-id="hilti::RuntimeError" declaration="D17" fqid="hilti::RuntimeError" id="RuntimeError" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | Side -> declaration::Type <canonical-id="hilti::Side" declaration="D5" fqid="hilti::Side" id="Side" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | StreamStatistics -> declaration::Type <canonical-id="hilti::StreamStatistics" declaration="D14" fqid="hilti::StreamStatistics" id="StreamStatistics" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | SystemException -> declaration::Type <canonical-id="hilti::SystemException" declaration="D16" fqid="hilti::SystemException" id="SystemException" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | abort -> declaration::Function <canonical-id="hilti::abort" declaration="-" fqid="hilti::abort" id="abort" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | current_time -> declaration::Function <canonical-id="hilti::current_time" declaration="-" fqid="hilti::current_time" id="current_time" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | debug -> declaration::Function <canonical-id="hilti::debug" declaration="-" fqid="hilti::debug" id="debug" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | debugDedent -> declaration::Function <canonical-id="hilti::debugDedent" declaration="-" fqid="hilti::debugDedent" id="debugDedent" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | debugIndent -> declaration::Function <canonical-id="hilti::debugIndent" declaration="-" fqid="hilti::debugIndent" id="debugIndent" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | exception_what -> declaration::Function <canonical-id="hilti::exception_what_2" declaration="-" fqid="hilti::exception_what" id="exception_what" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | exception_what -> declaration::Function <canonical-id="hilti::exception_what" declaration="-" fqid="hilti::exception_what" id="exception_what" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | exception_where -> declaration::Function <canonical-id="hilti::exception_where_2" declaration="-" fqid="hilti::exception_where" id="exception_where" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | exception_where -> declaration::Function <canonical-id="hilti::exception_where" declaration="-" fqid="hilti::exception_where" id="exception_where" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | hilti -> declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | mktime -> declaration::Function <canonical-id="hilti::mktime" declaration="-" fqid="hilti::mktime" id="mktime" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | print -> declaration::Function <canonical-id="hilti::print" declaration="-" fqid="hilti::print" id="print" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | printTuple -> declaration::Function <canonical-id="hilti::printTuple" declaration="-" fqid="hilti::printTuple" id="printTuple" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | profiler_start -> declaration::Function <canonical-id="hilti::profiler_start" declaration="-" fqid="hilti::profiler_start" id="profiler_start" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | profiler_stop -> declaration::Function <canonical-id="hilti::profiler_stop" declaration="-" fqid="hilti::profiler_stop" id="profiler_stop" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (hilti.hlt:3:1-68:1) [@s:XXX]
 [debug/ast-final]       - declaration::Property <canonical-id="hilti::%skip-implementation" declaration="-" fqid="hilti::%skip-implementation" id="%skip-implementation" linkage="private"> [parent @d:XXX] (hilti.hlt:6:1-6:21) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::BitOrder" declaration="D3" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:8:1-8:83) [@d:XXX]
+[debug/ast-final]           | LSB0 -> declaration::Constant <canonical-id="hilti::LSB0" declaration="-" fqid="hilti::BitOrder::LSB0" id="LSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | MSB0 -> declaration::Constant <canonical-id="hilti::MSB0" declaration="-" fqid="hilti::BitOrder::MSB0" id="MSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef" declaration="-" fqid="hilti::BitOrder::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:8:24-8:42) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D3" type="T1" unified="name(hilti::BitOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:8:24-8:42) (resolved) [@t:XXX]
+[debug/ast-final]               | LSB0 -> declaration::Constant <canonical-id="hilti::LSB0" declaration="-" fqid="hilti::BitOrder::LSB0" id="LSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | MSB0 -> declaration::Constant <canonical-id="hilti::MSB0" declaration="-" fqid="hilti::BitOrder::MSB0" id="MSB0" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef" declaration="-" fqid="hilti::BitOrder::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::LSB0" declaration="-" fqid="hilti::BitOrder::LSB0" id="LSB0" linkage="private"> [parent @t:XXX] (hilti.hlt:8:24-8:42) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -67,8 +105,18 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::ByteOrder" declaration="D4" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:9:1-9:92) [@d:XXX]
+[debug/ast-final]           | Big -> declaration::Constant <canonical-id="hilti::Big" declaration="-" fqid="hilti::ByteOrder::Big" id="Big" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Host -> declaration::Constant <canonical-id="hilti::Host" declaration="-" fqid="hilti::ByteOrder::Host" id="Host" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Little -> declaration::Constant <canonical-id="hilti::Little" declaration="-" fqid="hilti::ByteOrder::Little" id="Little" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Network -> declaration::Constant <canonical-id="hilti::Network" declaration="-" fqid="hilti::ByteOrder::Network" id="Network" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_2" declaration="-" fqid="hilti::ByteOrder::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:9:25-9:59) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D4" type="T2" unified="name(hilti::ByteOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:9:25-9:59) (resolved) [@t:XXX]
+[debug/ast-final]               | Big -> declaration::Constant <canonical-id="hilti::Big" declaration="-" fqid="hilti::ByteOrder::Big" id="Big" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Host -> declaration::Constant <canonical-id="hilti::Host" declaration="-" fqid="hilti::ByteOrder::Host" id="Host" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Little -> declaration::Constant <canonical-id="hilti::Little" declaration="-" fqid="hilti::ByteOrder::Little" id="Little" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Network -> declaration::Constant <canonical-id="hilti::Network" declaration="-" fqid="hilti::ByteOrder::Network" id="Network" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_2" declaration="-" fqid="hilti::ByteOrder::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::Little" declaration="-" fqid="hilti::ByteOrder::Little" id="Little" linkage="private"> [parent @t:XXX] (hilti.hlt:9:25-9:59) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -111,8 +159,16 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::Side" declaration="D5" fqid="hilti::Side" id="Side" linkage="public"> [parent @d:XXX] (hilti.hlt:10:1-10:80) [@d:XXX]
+[debug/ast-final]           | Both -> declaration::Constant <canonical-id="hilti::Both" declaration="-" fqid="hilti::Side::Both" id="Both" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Left -> declaration::Constant <canonical-id="hilti::Left" declaration="-" fqid="hilti::Side::Left" id="Left" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Right -> declaration::Constant <canonical-id="hilti::Right" declaration="-" fqid="hilti::Side::Right" id="Right" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_3" declaration="-" fqid="hilti::Side::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:10:20-10:45) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D5" type="T3" unified="name(hilti::Side)" wildcard="false"> [parent @q:XXX] (hilti.hlt:10:20-10:45) (resolved) [@t:XXX]
+[debug/ast-final]               | Both -> declaration::Constant <canonical-id="hilti::Both" declaration="-" fqid="hilti::Side::Both" id="Both" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Left -> declaration::Constant <canonical-id="hilti::Left" declaration="-" fqid="hilti::Side::Left" id="Left" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Right -> declaration::Constant <canonical-id="hilti::Right" declaration="-" fqid="hilti::Side::Right" id="Right" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_3" declaration="-" fqid="hilti::Side::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::Left" declaration="-" fqid="hilti::Side::Left" id="Left" linkage="private"> [parent @t:XXX] (hilti.hlt:10:20-10:45) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -148,8 +204,14 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::AddressFamily" declaration="D6" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] (hilti.hlt:11:1-11:84) [@d:XXX]
+[debug/ast-final]           | IPv4 -> declaration::Constant <canonical-id="hilti::IPv4" declaration="-" fqid="hilti::AddressFamily::IPv4" id="IPv4" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | IPv6 -> declaration::Constant <canonical-id="hilti::IPv6" declaration="-" fqid="hilti::AddressFamily::IPv6" id="IPv6" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_4" declaration="-" fqid="hilti::AddressFamily::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:11:29-11:47) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D6" type="T4" unified="name(hilti::AddressFamily)" wildcard="false"> [parent @q:XXX] (hilti.hlt:11:29-11:47) (resolved) [@t:XXX]
+[debug/ast-final]               | IPv4 -> declaration::Constant <canonical-id="hilti::IPv4" declaration="-" fqid="hilti::AddressFamily::IPv4" id="IPv4" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | IPv6 -> declaration::Constant <canonical-id="hilti::IPv6" declaration="-" fqid="hilti::AddressFamily::IPv6" id="IPv6" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_4" declaration="-" fqid="hilti::AddressFamily::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::IPv4" declaration="-" fqid="hilti::AddressFamily::IPv4" id="IPv4" linkage="private"> [parent @t:XXX] (hilti.hlt:11:29-11:47) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -178,8 +240,14 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::RealType" declaration="D7" fqid="hilti::RealType" id="RealType" linkage="public"> [parent @d:XXX] (hilti.hlt:12:1-12:96) [@d:XXX]
+[debug/ast-final]           | IEEE754_Double -> declaration::Constant <canonical-id="hilti::IEEE754_Double" declaration="-" fqid="hilti::RealType::IEEE754_Double" id="IEEE754_Double" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | IEEE754_Single -> declaration::Constant <canonical-id="hilti::IEEE754_Single" declaration="-" fqid="hilti::RealType::IEEE754_Single" id="IEEE754_Single" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_5" declaration="-" fqid="hilti::RealType::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:12:24-12:62) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D7" type="T5" unified="name(hilti::RealType)" wildcard="false"> [parent @q:XXX] (hilti.hlt:12:24-12:62) (resolved) [@t:XXX]
+[debug/ast-final]               | IEEE754_Double -> declaration::Constant <canonical-id="hilti::IEEE754_Double" declaration="-" fqid="hilti::RealType::IEEE754_Double" id="IEEE754_Double" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | IEEE754_Single -> declaration::Constant <canonical-id="hilti::IEEE754_Single" declaration="-" fqid="hilti::RealType::IEEE754_Single" id="IEEE754_Single" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_5" declaration="-" fqid="hilti::RealType::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::IEEE754_Single" declaration="-" fqid="hilti::RealType::IEEE754_Single" id="IEEE754_Single" linkage="private"> [parent @t:XXX] (hilti.hlt:12:24-12:62) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -208,8 +276,16 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::Protocol" declaration="D8" fqid="hilti::Protocol" id="Protocol" linkage="public"> [parent @d:XXX] (hilti.hlt:13:1-13:78) [@d:XXX]
+[debug/ast-final]           | ICMP -> declaration::Constant <canonical-id="hilti::ICMP" declaration="-" fqid="hilti::Protocol::ICMP" id="ICMP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | TCP -> declaration::Constant <canonical-id="hilti::TCP" declaration="-" fqid="hilti::Protocol::TCP" id="TCP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | UDP -> declaration::Constant <canonical-id="hilti::UDP" declaration="-" fqid="hilti::Protocol::UDP" id="UDP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_6" declaration="-" fqid="hilti::Protocol::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:13:24-13:46) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D8" type="T6" unified="name(hilti::Protocol)" wildcard="false"> [parent @q:XXX] (hilti.hlt:13:24-13:46) (resolved) [@t:XXX]
+[debug/ast-final]               | ICMP -> declaration::Constant <canonical-id="hilti::ICMP" declaration="-" fqid="hilti::Protocol::ICMP" id="ICMP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | TCP -> declaration::Constant <canonical-id="hilti::TCP" declaration="-" fqid="hilti::Protocol::TCP" id="TCP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | UDP -> declaration::Constant <canonical-id="hilti::UDP" declaration="-" fqid="hilti::Protocol::UDP" id="UDP" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_6" declaration="-" fqid="hilti::Protocol::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::TCP" declaration="-" fqid="hilti::Protocol::TCP" id="TCP" linkage="private"> [parent @t:XXX] (hilti.hlt:13:24-13:46) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -245,8 +321,18 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::Charset" declaration="D9" fqid="hilti::Charset" id="Charset" linkage="public"> [parent @d:XXX] (hilti.hlt:14:1-14:100) [@d:XXX]
+[debug/ast-final]           | ASCII -> declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | UTF16BE -> declaration::Constant <canonical-id="hilti::UTF16BE" declaration="-" fqid="hilti::Charset::UTF16BE" id="UTF16BE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | UTF16LE -> declaration::Constant <canonical-id="hilti::UTF16LE" declaration="-" fqid="hilti::Charset::UTF16LE" id="UTF16LE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D21" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:14:23-14:60) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D9" type="T7" unified="name(hilti::Charset)" wildcard="false"> [parent @q:XXX] (hilti.hlt:14:23-14:60) (resolved) [@t:XXX]
+[debug/ast-final]               | ASCII -> declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | UTF16BE -> declaration::Constant <canonical-id="hilti::UTF16BE" declaration="-" fqid="hilti::Charset::UTF16BE" id="UTF16BE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | UTF16LE -> declaration::Constant <canonical-id="hilti::UTF16LE" declaration="-" fqid="hilti::Charset::UTF16LE" id="UTF16LE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | UTF8 -> declaration::Constant <canonical-id="hilti::UTF8" declaration="D21" fqid="hilti::Charset::UTF8" id="UTF8" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_7" declaration="-" fqid="hilti::Charset::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::ASCII" declaration="-" fqid="hilti::Charset::ASCII" id="ASCII" linkage="private"> [parent @t:XXX] (hilti.hlt:14:23-14:60) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -289,8 +375,16 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::DecodeErrorStrategy" declaration="D10" fqid="hilti::DecodeErrorStrategy" id="DecodeErrorStrategy" linkage="public"> [parent @d:XXX] (hilti.hlt:15:1-15:118) [@d:XXX]
+[debug/ast-final]           | IGNORE -> declaration::Constant <canonical-id="hilti::IGNORE" declaration="-" fqid="hilti::DecodeErrorStrategy::IGNORE" id="IGNORE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | REPLACE -> declaration::Constant <canonical-id="hilti::REPLACE" declaration="D22" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | STRICT -> declaration::Constant <canonical-id="hilti::STRICT" declaration="-" fqid="hilti::DecodeErrorStrategy::STRICT" id="STRICT" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | Undef -> declaration::Constant <canonical-id="hilti::Undef_8" declaration="-" fqid="hilti::DecodeErrorStrategy::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:15:35-15:66) [@q:XXX]
 [debug/ast-final]           - type::Enum <declaration="D10" type="T8" unified="name(hilti::DecodeErrorStrategy)" wildcard="false"> [parent @q:XXX] (hilti.hlt:15:35-15:66) (resolved) [@t:XXX]
+[debug/ast-final]               | IGNORE -> declaration::Constant <canonical-id="hilti::IGNORE" declaration="-" fqid="hilti::DecodeErrorStrategy::IGNORE" id="IGNORE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | REPLACE -> declaration::Constant <canonical-id="hilti::REPLACE" declaration="D22" fqid="hilti::DecodeErrorStrategy::REPLACE" id="REPLACE" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | STRICT -> declaration::Constant <canonical-id="hilti::STRICT" declaration="-" fqid="hilti::DecodeErrorStrategy::STRICT" id="STRICT" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]               | Undef -> declaration::Constant <canonical-id="hilti::Undef_8" declaration="-" fqid="hilti::DecodeErrorStrategy::Undef" id="Undef" linkage="private"> [parent @t:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]             - declaration::Constant <canonical-id="hilti::IGNORE" declaration="-" fqid="hilti::DecodeErrorStrategy::IGNORE" id="IGNORE" linkage="private"> [parent @t:XXX] (hilti.hlt:15:35-15:66) [@d:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]               - expression::Ctor [parent @d:XXX]  (const)  (resolved) [@e:XXX]
@@ -349,6 +443,7 @@
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::MatchState" declaration="D13" fqid="hilti::MatchState" id="MatchState" linkage="public"> [parent @d:XXX] (hilti.hlt:19:1-21:43) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:19:26-21:1) [@q:XXX]
 [debug/ast-final]           - type::Struct <declaration="D13" type="T9" unified="name(hilti::MatchState)" wildcard="false"> [parent @q:XXX] (hilti.hlt:19:26-21:1) (resolved) [@t:XXX]
+[debug/ast-final]               | self -> declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] [@d:XXX] (type: [@e:XXX] [@t:XXX])
 [debug/ast-final]             - declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] (hilti.hlt:19:26-21:1) [@d:XXX]
 [debug/ast-final]               - expression::Keyword <kind="self"> [parent @d:XXX]  (non-const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - QualifiedType <const="false" extern="false" side="rhs"> [parent @e:XXX] [@q:XXX]
@@ -380,6 +475,7 @@
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::StreamStatistics" declaration="D14" fqid="hilti::StreamStatistics" id="StreamStatistics" linkage="public"> [parent @d:XXX] (hilti.hlt:23:1-28:45) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:23:32-28:1) [@q:XXX]
 [debug/ast-final]           - type::Struct <declaration="D14" type="T10" unified="name(hilti::StreamStatistics)" wildcard="false"> [parent @q:XXX] (hilti.hlt:23:32-28:1) (resolved) [@t:XXX]
+[debug/ast-final]               | self -> declaration::Expression <canonical-id="hilti::self_2" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] [@d:XXX] (type: [@e:XXX] [@t:XXX])
 [debug/ast-final]             - declaration::Expression <canonical-id="hilti::self_2" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] (hilti.hlt:23:32-28:1) [@d:XXX]
 [debug/ast-final]               - expression::Keyword <kind="self"> [parent @d:XXX]  (non-const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - QualifiedType <const="false" extern="false" side="rhs"> [parent @e:XXX] [@q:XXX]
@@ -413,6 +509,8 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::print" declaration="-" fqid="hilti::print" id="print" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:30:1-30:100) [@d:XXX]
+[debug/ast-final]           | newline -> declaration::Parameter <canonical-id="hilti::newline" declaration="-" fqid="newline" id="newline" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | obj -> declaration::Parameter <canonical-id="hilti::obj" declaration="-" fqid="obj" id="obj" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="print"> [parent @d:XXX] (hilti.hlt:30:16-30:99) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:30:16-30:99) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:void, <never-match>, bool)" wildcard="false"> [parent @q:XXX] (hilti.hlt:30:16-30:99) (resolved) [@t:XXX]
@@ -441,6 +539,8 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:30:85-30:99) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::printTuple" declaration="-" fqid="hilti::printTuple" id="printTuple" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:31:1-31:115) [@d:XXX]
+[debug/ast-final]           | newline -> declaration::Parameter <canonical-id="hilti::newline_2" declaration="-" fqid="newline" id="newline" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | t -> declaration::Parameter <canonical-id="hilti::t" declaration="-" fqid="t" id="t" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="printTuple"> [parent @d:XXX] (hilti.hlt:31:16-31:114) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:31:16-31:114) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:void, tuple(*), bool)" wildcard="false"> [parent @q:XXX] (hilti.hlt:31:16-31:114) (resolved) [@t:XXX]
@@ -469,6 +569,8 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:31:100-31:114) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::debug" declaration="-" fqid="hilti::debug" id="debug" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:33:1-33:105) [@d:XXX]
+[debug/ast-final]           | dbg_stream -> declaration::Parameter <canonical-id="hilti::dbg_stream" declaration="-" fqid="dbg_stream" id="dbg_stream" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | obj -> declaration::Parameter <canonical-id="hilti::obj_2" declaration="-" fqid="obj" id="obj" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="debug"> [parent @d:XXX] (hilti.hlt:33:16-33:104) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:33:16-33:104) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:void, string, <never-match>)" wildcard="false"> [parent @q:XXX] (hilti.hlt:33:16-33:104) (resolved) [@t:XXX]
@@ -494,6 +596,7 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:33:90-33:104) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::debugIndent" declaration="-" fqid="hilti::debugIndent" id="debugIndent" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:34:1-34:103) [@d:XXX]
+[debug/ast-final]           | dbg_stream -> declaration::Parameter <canonical-id="hilti::dbg_stream_2" declaration="-" fqid="dbg_stream" id="dbg_stream" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="debugIndent"> [parent @d:XXX] (hilti.hlt:34:16-34:102) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:34:16-34:102) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:void, string)" wildcard="false"> [parent @q:XXX] (hilti.hlt:34:16-34:102) (resolved) [@t:XXX]
@@ -514,6 +617,7 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:34:88-34:102) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::debugDedent" declaration="-" fqid="hilti::debugDedent" id="debugDedent" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:35:1-35:103) [@d:XXX]
+[debug/ast-final]           | dbg_stream -> declaration::Parameter <canonical-id="hilti::dbg_stream_3" declaration="-" fqid="dbg_stream" id="dbg_stream" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="debugDedent"> [parent @d:XXX] (hilti.hlt:35:16-35:102) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:35:16-35:102) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:void, string)" wildcard="false"> [parent @q:XXX] (hilti.hlt:35:16-35:102) (resolved) [@t:XXX]
@@ -549,6 +653,12 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:37:77-37:91) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::mktime" declaration="-" fqid="hilti::mktime" id="mktime" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:38:1-38:150) [@d:XXX]
+[debug/ast-final]           | H -> declaration::Parameter <canonical-id="hilti::H" declaration="-" fqid="H" id="H" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | M -> declaration::Parameter <canonical-id="hilti::M" declaration="-" fqid="M" id="M" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | S -> declaration::Parameter <canonical-id="hilti::S" declaration="-" fqid="S" id="S" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | d -> declaration::Parameter <canonical-id="hilti::d" declaration="-" fqid="d" id="d" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | m -> declaration::Parameter <canonical-id="hilti::m" declaration="-" fqid="m" id="m" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | y -> declaration::Parameter <canonical-id="hilti::y" declaration="-" fqid="y" id="y" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="mktime"> [parent @d:XXX] (hilti.hlt:38:16-38:149) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:38:16-38:149) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:time, uint64, uint64, uint64, uint64, uint64, uint64)" wildcard="false"> [parent @q:XXX] (hilti.hlt:38:16-38:149) (resolved) [@t:XXX]
@@ -609,6 +719,8 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:40:72-40:86) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::profiler_start" declaration="-" fqid="hilti::profiler_start" id="profiler_start" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:42:1-42:148) [@d:XXX]
+[debug/ast-final]           | name -> declaration::Parameter <canonical-id="hilti::name" declaration="-" fqid="name" id="name" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | size -> declaration::Parameter <canonical-id="hilti::size" declaration="-" fqid="size" id="size" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="profiler_start"> [parent @d:XXX] (hilti.hlt:42:16-42:147) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:42:16-42:147) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:optional(library(hilti::rt::Profiler)), string, optional(uint64))" wildcard="false"> [parent @q:XXX] (hilti.hlt:42:16-42:147) (resolved) [@t:XXX]
@@ -648,6 +760,8 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:42:133-42:147) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::profiler_stop" declaration="-" fqid="hilti::profiler_stop" id="profiler_stop" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:43:1-43:141) [@d:XXX]
+[debug/ast-final]           | p -> declaration::Parameter <canonical-id="hilti::p" declaration="-" fqid="p" id="p" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
+[debug/ast-final]           | size -> declaration::Parameter <canonical-id="hilti::size_2" declaration="-" fqid="size" id="size" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="profiler_stop"> [parent @d:XXX] (hilti.hlt:43:16-43:140) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:43:16-43:140) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:void, optional(library(hilti::rt::Profiler)), optional(uint64))" wildcard="false"> [parent @q:XXX] (hilti.hlt:43:16-43:140) (resolved) [@t:XXX]
@@ -737,6 +851,7 @@
 [debug/ast-final]                 - QualifiedType <const="true" extern="false" side="rhs"> [parent @c:XXX] [@q:XXX]
 [debug/ast-final]                   - type::String <declaration="-" type="-" unified="string" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::exception_what" declaration="-" fqid="hilti::exception_what" id="exception_what" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:62:1-62:115) [@d:XXX]
+[debug/ast-final]           | except -> declaration::Parameter <canonical-id="hilti::except" declaration="-" fqid="except" id="except" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="exception_what"> [parent @d:XXX] (hilti.hlt:62:16-62:114) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:62:16-62:114) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:string, name(hilti::SystemException))" wildcard="false"> [parent @q:XXX] (hilti.hlt:62:16-62:114) (resolved) [@t:XXX]
@@ -757,6 +872,7 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:62:100-62:114) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::exception_what_2" declaration="-" fqid="hilti::exception_what" id="exception_what" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:63:1-63:118) [@d:XXX]
+[debug/ast-final]           | except -> declaration::Parameter <canonical-id="hilti::except_2" declaration="-" fqid="except" id="except" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="exception_what"> [parent @d:XXX] (hilti.hlt:63:16-63:117) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:63:16-63:117) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:string, name(hilti::RecoverableFailure))" wildcard="false"> [parent @q:XXX] (hilti.hlt:63:16-63:117) (resolved) [@t:XXX]
@@ -777,6 +893,7 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:63:103-63:117) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::exception_where" declaration="-" fqid="hilti::exception_where" id="exception_where" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:66:1-66:117) [@d:XXX]
+[debug/ast-final]           | except -> declaration::Parameter <canonical-id="hilti::except_3" declaration="-" fqid="except" id="except" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="exception_where"> [parent @d:XXX] (hilti.hlt:66:16-66:116) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:66:16-66:116) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:string, name(hilti::SystemException))" wildcard="false"> [parent @q:XXX] (hilti.hlt:66:16-66:116) (resolved) [@t:XXX]
@@ -797,6 +914,7 @@
 [debug/ast-final]             - Attribute <tag="&have_prototype"> [parent @a:XXX] (hilti.hlt:66:102-66:116) [@a:XXX]
 [debug/ast-final]               - <empty>
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::exception_where_2" declaration="-" fqid="hilti::exception_where" id="exception_where" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:67:1-67:120) [@d:XXX]
+[debug/ast-final]           | except -> declaration::Parameter <canonical-id="hilti::except_4" declaration="-" fqid="except" id="except" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]         - Function <id="exception_where"> [parent @d:XXX] (hilti.hlt:67:16-67:119) [@f:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:67:16-67:119) [@q:XXX]
 [debug/ast-final]             - type::Function <cc="<standard>" declaration="-" flavor="function" type="-" unified="function(result:string, name(hilti::RecoverableFailure))" wildcard="false"> [parent @q:XXX] (hilti.hlt:67:16-67:119) (resolved) [@t:XXX]

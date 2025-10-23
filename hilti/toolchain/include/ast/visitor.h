@@ -239,6 +239,8 @@ public:
     /**
      * Remove a node from the AST.
      *
+     * When overriding, the parent's implementation should be called.
+     *
      * @param old the node to be removed
      * @param msg debug message describing the change
      */

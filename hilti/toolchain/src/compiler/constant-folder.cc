@@ -14,6 +14,7 @@
 #include <hilti/base/result.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/constant-folder.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
 
 using namespace hilti;
 using namespace hilti::detail::constant_folder;
@@ -131,12 +132,7 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         if ( ! n->resolvedDeclarationIndex() )
             return;
 
-        // We cannot fold the optimizer's feature constants currently because
-        // that would mess up its state tracking. We continue to let the
-        // optimizer handle expressions involving these.
-        //
-        // TODO(robin): Can we unify this?
-        if ( util::startsWith(n->id().local(), "__feat") && ! (style & Style::InlineFeatureConstants) )
+        if ( hilti::detail::Optimizer::isFeatureFlag(n->id()) && ! (style & Style::InlineFeatureConstants) )
             return;
 
         auto* decl = n->resolvedDeclaration();
@@ -405,7 +401,6 @@ bool detail::constant_folder::fold(Builder* builder, Node* node, bitmask<Style> 
     bool modified = false;
 
     while ( true ) {
-        // Pass 3 is in charge of coercion.
         auto v = VisitorConstantFolderAST(builder, node, style);
         hilti::visitor::visit(v, node);
 
