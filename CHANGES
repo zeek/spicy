@@ -1,3 +1,12 @@
+1.15.0-dev.86 | 2025-10-23 16:46:27 +0200
+
+  * Remove doctest minimum macOS version hack. (Robin Sommer, Corelight)
+
+    For doctest on macOS, we used to set __MAC_OS_X_VERSION_MIN_REQUIRED
+    to some dummy value if not defined otherwise. This broke for me with
+    current doctest versions (because we were using an invalid, and too
+    old, value of 1000), and it seems it's no longer necessary anyways.
+
 1.15.0-dev.83 | 2025-10-21 21:12:18 +0200
 
   * Bump 3rdparty/utf8proc from `d7bf128` to `231da1a` (dependabot[bot])

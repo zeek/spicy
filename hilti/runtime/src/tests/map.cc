@@ -1,8 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <string>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/fmt.h>
 #include <hilti/rt/types/integer.h>

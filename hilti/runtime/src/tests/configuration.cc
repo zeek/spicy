@@ -2,8 +2,9 @@
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
+#include <doctest/doctest.h>
+
 #include <hilti/rt/configuration.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/init.h>
 
 using namespace hilti::rt;

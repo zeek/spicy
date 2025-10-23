@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <hilti/rt/doctest.h>
+#include <doctest/doctest.h>
+
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/init.h>
 
