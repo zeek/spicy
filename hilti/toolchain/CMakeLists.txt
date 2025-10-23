@@ -113,7 +113,16 @@ set(SOURCES
     src/compiler/driver.cc
     src/compiler/init.cc
     src/compiler/jit.cc
-    src/compiler/optimizer.cc
+    src/compiler/optimizer/optimizer.cc
+    src/compiler/optimizer/passes/cfg.cc
+    src/compiler/optimizer/passes/constant-folding.cc
+    src/compiler/optimizer/passes/constant-propagation.cc
+    src/compiler/optimizer/passes/feature-requirements.cc
+    src/compiler/optimizer/passes/functions.cc
+    src/compiler/optimizer/passes/members.cc
+    src/compiler/optimizer/passes/peephole.cc
+    src/compiler/optimizer/passes/remove-unused-params.cc
+    src/compiler/optimizer/passes/types.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
     src/compiler/printer.cc

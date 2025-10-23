@@ -19,7 +19,7 @@
 #include <hilti/base/timing.h>
 #include <hilti/compiler/detail/ast-dumper.h>
 #include <hilti/compiler/detail/cfg.h>
-#include <hilti/compiler/detail/optimizer.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/resolver.h>
 #include <hilti/compiler/detail/scope-builder.h>
 #include <hilti/compiler/driver.h>
