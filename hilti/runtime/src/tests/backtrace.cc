@@ -1,8 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/backtrace.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;

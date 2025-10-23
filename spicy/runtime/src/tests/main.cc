@@ -5,7 +5,7 @@
 #include <spicy/rt/init.h>
 
 #define DOCTEST_CONFIG_IMPLEMENT
-#include <hilti/rt/doctest.h>
+#include <doctest/doctest.h>
 
 struct RuntimeWrapper {
     ~RuntimeWrapper() {

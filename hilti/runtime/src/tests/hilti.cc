@@ -1,10 +1,11 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <memory>
 #include <utility>
 
 #include <hilti/rt/configuration.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/hilti.h>
 #include <hilti/rt/types/bytes.h>

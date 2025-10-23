@@ -1,9 +1,10 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <cstddef>
 
 #include <hilti/rt/context.h>
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/test/utils.h>
 #include <hilti/rt/threading.h>

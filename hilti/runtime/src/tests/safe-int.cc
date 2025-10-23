@@ -1,8 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <limits>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/safe-int.h>
 
 using namespace hilti::rt;

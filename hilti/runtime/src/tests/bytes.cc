@@ -1,10 +1,11 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <doctest/doctest.h>
+
 #include <ostream>
 #include <tuple>
 #include <type_traits>
 
-#include <hilti/rt/doctest.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
