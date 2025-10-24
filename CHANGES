@@ -1,3 +1,17 @@
+1.15.0-dev.88 | 2025-10-24 07:36:37 +0200
+
+  * GH-2184: Fix FPs in `FunctionParamVisitor` when parameters are shadowed. (Benjamin Bannier, Corelight)
+
+    The tracking of parameter use in `FunctionParamVisitor` relied on IDs to
+    correlate seen `expression::Name`s and parameter declarations. This
+    broke down when parameters where shadowed, e.g., we often end up
+    shadowing the `__cur` parameter.
+
+    With this patch we additionally check that the resolved `Declaration`
+    for an `Name` matches the parameter to take this into account.
+
+    Closes #2184.
+
 1.15.0-dev.86 | 2025-10-23 16:46:27 +0200
 
   * Remove doctest minimum macOS version hack. (Robin Sommer, Corelight)
