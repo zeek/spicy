@@ -31,9 +31,9 @@ TEST_SUITE_BEGIN("Tuple");
 
 TEST_CASE("make") {
     auto t = tuple::make(1, true, 3.14);
-    CHECK(tuple::has_value<0>(t));
-    CHECK(tuple::has_value<1>(t));
-    CHECK(tuple::has_value<2>(t));
+    CHECK(t.hasValue(0));
+    CHECK(t.hasValue(1));
+    CHECK(t.hasValue(2));
 
     CHECK_EQ(tuple::get<0>(t), 1);
     CHECK_EQ(tuple::get<1>(t), true);
@@ -41,11 +41,11 @@ TEST_CASE("make") {
 }
 
 TEST_CASE("make-from-optionals") {
-    auto t = tuple::make_from_optionals(std::make_optional(1), std::optional<bool>(), std::make_optional(3.14));
+    auto t = tuple::make_from_optionals(optional::make(1), Optional<bool>(), optional::make(3.14));
 
-    CHECK(tuple::has_value<0>(t));
-    CHECK(! tuple::has_value<1>(t));
-    CHECK(tuple::has_value<2>(t));
+    CHECK(t.hasValue(0));
+    CHECK(! t.hasValue(1));
+    CHECK(t.hasValue(2));
 
     CHECK_EQ(tuple::get<0>(t), 1);
     CHECK_THROWS_AS(tuple::get<1>(t), hilti::rt::UnsetTupleElement);
@@ -59,7 +59,7 @@ TEST_CASE("assign") {
     bool b;
     double d;
     tuple::assign(std::tie(i, b, d), t1);
-    CHECK_EQ(std::make_tuple(i, b, d), std::make_tuple(1, true, 3.14));
+    CHECK_EQ(tuple::make(i, b, d), tuple::make(1, true, 3.14));
 
     auto t2 = tuple::make_from_optionals<int, bool, double>({1}, {true}, {});
     CHECK_THROWS_AS(tuple::assign(std::tie(i, b, d), t2), hilti::rt::UnsetTupleElement);
@@ -69,23 +69,23 @@ TEST_CASE("assign") {
 // Returns reference to element at given index using "tuple::elementOffset()".
 template<size_t Idx, typename Dst, typename Tuple>
 static const Dst& get_element_ref(const Tuple& t) {
-    auto ptr = reinterpret_cast<const char*>(&t) + tuple::elementOffset<Tuple, Idx>();
+    auto ptr = reinterpret_cast<const char*>(&t) + Tuple::template elementOffset<Idx>();
     return *reinterpret_cast<const Dst*>(ptr);
 }
 
 TEST_CASE("elementOffset") {
-    auto t1 = std::make_tuple(1);
-    CHECK(get_element_ref<0, int>(t1) == 1);
+    auto t1 = tuple::make(1);
+    CHECK_EQ(get_element_ref<0, int>(t1), 1);
 
-    auto t2 = std::make_tuple(true, std::string("abc"), 3.14);
-    CHECK(get_element_ref<0, bool>(t2) == true);
-    CHECK(get_element_ref<1, std::string>(t2) == std::string("abc"));
-    CHECK(get_element_ref<2, double>(t2) == 3.14);
+    auto t2 = tuple::make(true, std::string("abc"), 3.14);
+    CHECK_EQ(get_element_ref<0, bool>(t2), true);
+    CHECK_EQ(get_element_ref<1, std::string>(t2), std::string("abc"));
+    CHECK_EQ(get_element_ref<2, double>(t2), 3.14);
 }
 
 TEST_CASE("wrap_expression") {
-    CHECK_EQ(tuple::wrap_expression([&]() { return 42; }), std::make_optional(42));
-    CHECK_EQ(tuple::wrap_expression([&]() -> int { throw AttributeNotSet(); }), std::optional<int>());
+    CHECK_EQ(tuple::wrap_expression([&]() { return 42; }), optional::make(42));
+    CHECK_EQ(tuple::wrap_expression([&]() -> int { throw AttributeNotSet(); }), Optional<int>());
 }
 
 TEST_CASE("print") {

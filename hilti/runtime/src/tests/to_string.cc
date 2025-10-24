@@ -173,20 +173,20 @@ TEST_CASE("Vector") {
 }
 
 TEST_CASE("optional") {
-    CHECK_EQ(to_string(std::optional<int8_t>()), "(not set)");
-    CHECK_EQ(to_string(std::optional<int8_t>(2)), "2");
-    CHECK_EQ(to_string(std::optional<std::optional<int8_t>>()), "(not set)");
-    CHECK_EQ(to_string(std::optional<std::optional<int8_t>>(2)), "2");
-    CHECK_EQ(to_string(std::optional<std::string>("abc")), "\"abc\"");
+    CHECK_EQ(to_string(hilti::rt::Optional<int8_t>()), "(not set)");
+    CHECK_EQ(to_string(hilti::rt::Optional<int8_t>(2)), "2");
+    CHECK_EQ(to_string(hilti::rt::Optional<hilti::rt::Optional<int8_t>>()), "(not set)");
+    CHECK_EQ(to_string(hilti::rt::Optional<hilti::rt::Optional<int8_t>>(2)), "2");
+    CHECK_EQ(to_string(hilti::rt::Optional<std::string>("abc")), "\"abc\"");
 
-    CHECK_EQ(to_string_for_print(std::optional<int8_t>(2)), "2");
-    CHECK_EQ(to_string_for_print(std::optional<std::string>("abc")), "abc");
-    CHECK_EQ(to_string_for_print(std::optional<std::string>()), "(not set)");
-    CHECK_EQ(to_string_for_print(std::optional<std::string_view>("abc")), "abc");
-    CHECK_EQ(to_string_for_print(std::optional<std::string_view>()), "(not set)");
+    CHECK_EQ(to_string_for_print(hilti::rt::Optional<int8_t>(2)), "2");
+    CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string>()), "(not set)");
+    CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string_view>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string_view>()), "(not set)");
 
-    std::optional<Port> port1{"123/tcp"};
-    std::optional<Port> port2{};
+    hilti::rt::Optional<Port> port1{"123/tcp"};
+    hilti::rt::Optional<Port> port2{};
 
     CHECK_EQ(to_string(port1), "123/tcp");
     CHECK_EQ(to_string(port2), "(not set)");

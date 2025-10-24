@@ -24,6 +24,7 @@
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/iterator.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/optional.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -224,11 +225,11 @@ public:
      * @param k key to retrieve
      * @return the value, or an unset optional if the key is not set in the map
      */
-    std::optional<V> get_optional(const K& k) const& {
+    hilti::rt::Optional<V> get_optional(const K& k) const& {
         if ( auto it = this->find(k); it != M::end() )
             return it->second;
         else
-            return std::nullopt;
+            return {};
     }
 
     /** Access an element by key

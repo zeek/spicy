@@ -403,10 +403,10 @@ TEST_CASE("iteration") {
             s.trim(before_begin + 1);
             REQUIRE_EQ(s, "123"_b);
 
-            return std::make_tuple(std::move(s), before_begin);
+            return tuple::make(std::move(s), before_begin);
         }();
-        const auto& s = std::get<0>(x);
-        const auto& before_begin = std::get<1>(x);
+        const auto& s = tuple::get<0>(x);
+        const auto& before_begin = tuple::get<1>(x);
 
         REQUIRE_FALSE(before_begin.isExpired());
 
@@ -1258,58 +1258,58 @@ TEST_CASE("View") {
 
         SUBCASE("bytes") {
             auto x = v.find("1"_b);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(1));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(1));
 
             x = v.find("X"_b);
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(20));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(20));
 
             x = v.find("890X"_b);
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(18));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(18));
         }
 
         SUBCASE("bytes with start") {
             auto x = v.find("1"_b, s.at(5));
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(11));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(11));
 
             x = v.find("X"_b, s.at(5));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(20));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(20));
 
             x = v.find("890X"_b, s.at(5));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(18));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(18));
         }
 
         SUBCASE("view") {
             auto x = v.find(v2a);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(1));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(1));
 
             x = v.find(v2b);
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(20));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(20));
 
             x = v.find(v2c);
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(18));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(18));
         }
 
         SUBCASE("view with start") {
             auto x = v.find(v2a, s.at(5));
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(11));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(11));
 
             x = v.find(v2b, s.at(5));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(20));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(20));
 
             x = v.find(v2c, s.at(5));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), v.at(18));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), v.at(18));
         }
     }
 
@@ -1336,58 +1336,58 @@ TEST_CASE("View") {
 
         SUBCASE("bytes") {
             auto x = v.find("1"_b, hilti::rt::stream::detail::UnsafeConstIterator());
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(1)));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(1)));
 
             x = v.find("X"_b, hilti::rt::stream::detail::UnsafeConstIterator());
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
 
             x = v.find("890X"_b, hilti::rt::stream::detail::UnsafeConstIterator());
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
         }
 
         SUBCASE("bytes with start") {
             auto x = v.find("1"_b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(11)));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(11)));
 
             x = v.find("X"_b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
 
             x = v.find("890X"_b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
         }
 
         SUBCASE("view") {
             auto x = v.find(v2a, hilti::rt::stream::detail::UnsafeConstIterator());
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(1)));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(1)));
 
             x = v.find(v2b, hilti::rt::stream::detail::UnsafeConstIterator());
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
 
             x = v.find(v2c, hilti::rt::stream::detail::UnsafeConstIterator());
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
         }
 
         SUBCASE("view with start") {
             auto x = v.find(v2a, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(11)));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(11)));
 
             x = v.find(v2b, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(20)));
 
             x = v.find(v2c, hilti::rt::stream::detail::UnsafeConstIterator(s.at(5)));
-            CHECK_EQ(std::get<0>(x), false);
-            CHECK_EQ(std::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
+            CHECK_EQ(tuple::get<0>(x), false);
+            CHECK_EQ(tuple::get<1>(x), hilti::rt::stream::detail::UnsafeConstIterator(v.at(18)));
         }
     }
 
@@ -1415,52 +1415,52 @@ TEST_CASE("View") {
             hilti::rt::stream::View v = s.view().sub(s.at(1), s.at(s.size() - 1));
 
             auto x = v.find("5"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(15));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(15));
 
             x = v.find("6"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(6));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(6));
 
             x = v.find("X"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(tuple::get<0>(x), false);
 
             x = v.find("567"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(5));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(5));
 
             x = v.find("12"_b, v.at(8), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(1));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(1));
 
             x = v.find("345"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(13));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(13));
 
             x = v.find("ABC"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(8));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(8));
 
             x = v.find("XYZ"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(tuple::get<0>(x), false);
 
             x = v.find("012"_b, v.at(8), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(tuple::get<0>(x), false);
 
             x = v.find(""_b, v.at(1), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(1));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(1));
 
             x = v.find("1234"_b, v.at(5), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(1));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(1));
 
             x = v.find("12345"_b, v.at(5), hilti::rt::stream::Direction::Backward); // too long
-            CHECK_EQ(std::get<0>(x), false);
+            CHECK_EQ(tuple::get<0>(x), false);
 
             x = v.find("789"_b, hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(17));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(17));
 
             CHECK_THROWS_AS(v.find("789"_b, v.end() + 1, hilti::rt::stream::Direction::Backward), InvalidIterator);
             CHECK_THROWS_AS(v.find("789"_b, v.end() + 100, hilti::rt::stream::Direction::Backward), InvalidIterator);
@@ -1490,16 +1490,16 @@ TEST_CASE("View") {
             hilti::rt::stream::View v = s.view(true);
 
             auto x = v.find("6"_b, v.at(15), hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(6));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(6));
 
             auto i = v.end() + 5;
             CHECK_THROWS_AS(v.find("12345"_b, i, hilti::rt::stream::Direction::Backward), InvalidIterator);
 
             s.append("12345"_b);
             x = v.find("12345"_b, i, hilti::rt::stream::Direction::Backward);
-            CHECK_EQ(std::get<0>(x), true);
-            CHECK_EQ(std::get<1>(x), v.at(21));
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(21));
         }
     }
 }

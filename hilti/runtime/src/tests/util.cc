@@ -15,6 +15,7 @@
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/init.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/null.h>
 #include <hilti/rt/types/result.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/time.h>
@@ -308,13 +309,13 @@ TEST_CASE("expandUTF8Escapes") {
 }
 
 TEST_CASE("getenv") {
-    CHECK_EQ(hilti::rt::getenv(""), std::nullopt);
+    CHECK_EQ(hilti::rt::getenv(""), static_cast<Optional<std::string>>(hilti::rt::Null()));
 
     const auto home = hilti::rt::getenv("HOME");
     REQUIRE(home);
     CHECK_FALSE(home->empty());
 
-    CHECK_EQ(hilti::rt::getenv("SPICY_TEST_ENV_DOES_NOT_EXIST"), std::nullopt);
+    CHECK_EQ(hilti::rt::getenv("SPICY_TEST_ENV_DOES_NOT_EXIST"), static_cast<Optional<std::string>>(hilti::rt::Null()));
 }
 
 TEST_CASE("hashCombine") {

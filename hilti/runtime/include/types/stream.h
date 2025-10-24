@@ -1287,7 +1287,7 @@ public:
     Tuple<bool, SafeConstIterator> find(const View& v) const {
         _ensureValid();
         auto x = find(v, UnsafeConstIterator());
-        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
+        return tuple::make(tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x)));
     }
 
     /**
@@ -1304,7 +1304,7 @@ public:
         _ensureValid();
         _ensureSameChain(n);
         auto x = find(v, UnsafeConstIterator(n));
-        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
+        return tuple::make(tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x)));
     }
 
     /**
@@ -1333,7 +1333,7 @@ public:
         _ensureValid();
         auto i = (d == Direction::Forward ? unsafeBegin() : unsafeEnd());
         auto x = find(v, i, d);
-        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
+        return tuple::make(tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x)));
     }
 
     /**
@@ -1352,7 +1352,7 @@ public:
         _ensureValid();
         _ensureSameChain(n);
         auto x = find(v, UnsafeConstIterator(n), d);
-        return {tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x))};
+        return tuple::make(tuple::get<0>(x), SafeConstIterator(tuple::get<1>(x)));
     }
 
     /**

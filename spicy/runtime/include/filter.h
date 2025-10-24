@@ -24,7 +24,7 @@ struct is_filter<T, decltype((void)T::__forward, 0)> : std::true_type {};
 struct OneFilter {
     using Parse1Function = hilti::rt::Resumable (*)(const hilti::rt::StrongReferenceGeneric&,
                                                     hilti::rt::ValueReference<hilti::rt::Stream>&,
-                                                    const std::optional<hilti::rt::stream::View>&);
+                                                    const hilti::rt::Optional<hilti::rt::stream::View>&);
 
     OneFilter() = default;
     OneFilter(OneFilter&&) = default;
@@ -139,19 +139,20 @@ void connect(S& state, UnitRef<F> filter_unit) {
     if ( ! state.__filters )
         state.__filters = hilti::rt::reference::make_strong<::spicy::rt::filter::detail::Filters>();
 
-    auto filter = detail::OneFilter{[](const hilti::rt::StrongReferenceGeneric& filter_unit,
-                                       hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                                       const std::optional<hilti::rt::stream::View>& cur) -> hilti::rt::Resumable {
-                                        auto lhs_filter_unit = filter_unit.derefAsValue<F>();
-                                        auto parse2 = hilti::rt::any_cast<Parse2Function<F>>(F::__parser.parse2);
-                                        SPICY_RT_DEBUG_VERBOSE(
-                                            hilti::rt::fmt("  + parsing from stream %p, forwarding to stream %p",
-                                                           data.get(), lhs_filter_unit->__forward.get()));
-                                        return (*parse2)(lhs_filter_unit, data, cur, {});
-                                    },
-                                    filter_unit,
-                                    hilti::rt::Stream(),
-                                    {}};
+    auto filter =
+        detail::OneFilter{[](const hilti::rt::StrongReferenceGeneric& filter_unit,
+                             hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                             const hilti::rt::Optional<hilti::rt::stream::View>& cur) -> hilti::rt::Resumable {
+                              auto lhs_filter_unit = filter_unit.derefAsValue<F>();
+                              auto parse2 = hilti::rt::any_cast<Parse2Function<F>>(F::__parser.parse2);
+                              SPICY_RT_DEBUG_VERBOSE(
+                                  hilti::rt::fmt("  + parsing from stream %p, forwarding to stream %p", data.get(),
+                                                 lhs_filter_unit->__forward.get()));
+                              return (*parse2)(lhs_filter_unit, data, cur, {});
+                          },
+                          filter_unit,
+                          hilti::rt::Stream(),
+                          {}};
 
     (*state.__filters).push_back(std::move(filter));
     filter_unit->__forward = (*state.__filters).back().input;

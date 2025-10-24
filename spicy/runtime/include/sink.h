@@ -238,7 +238,7 @@ public:
      * @param seq absolute sequence number; defaults to end of current input
      * @param len length in sequence space; defaults to length of *data*
      */
-    void write(hilti::rt::Bytes data, std::optional<uint64_t> seq = {}, std::optional<uint64_t> len = {});
+    void write(hilti::rt::Bytes data, hilti::rt::Optional<uint64_t> seq = {}, hilti::rt::Optional<uint64_t> len = {});
 
     /**
      * Tracks connected filters. This is internal, but needs to be public
@@ -251,11 +251,11 @@ public:
 
 private:
     struct Chunk {
-        std::optional<hilti::rt::Bytes> data; // Data at +1; unset for gap
-        uint64_t rseq;                        // Sequence number of first byte.
-        uint64_t rupper;                      // Sequence number of last byte + 1.
+        hilti::rt::Optional<hilti::rt::Bytes> data; // Data at +1; unset for gap
+        uint64_t rseq;                              // Sequence number of first byte.
+        uint64_t rupper;                            // Sequence number of last byte + 1.
 
-        Chunk(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper)
+        Chunk(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper)
             : data(std::move(data)), rseq(rseq), rupper(rupper) {}
     };
 
@@ -284,14 +284,14 @@ private:
     void _init();
 
     // Add new data to buffer, beginning search for insert position at given start *c*.
-    ChunkList::iterator _addAndCheck(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper,
+    ChunkList::iterator _addAndCheck(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper,
                                      ChunkList::iterator c);
 
     // Deliver data to connected parsers. Returns false if the data is empty (i.e., a gap).
-    bool _deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper);
+    bool _deliver(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper);
 
     // Entry point for all new data. If not bytes instance is given, that signals a gap.
-    void _newData(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t len);
+    void _newData(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t len);
 
     // Skip up to sequence number.
     void _skip(uint64_t rseq);
@@ -310,7 +310,7 @@ private:
     void _reportUndeliveredUpTo(uint64_t rupper) const;
 
     // Output reassembler state for debugging.
-    void _debugReassembler(std::string_view msg, const std::optional<hilti::rt::Bytes>& data, uint64_t seq,
+    void _debugReassembler(std::string_view msg, const hilti::rt::Optional<hilti::rt::Bytes>& data, uint64_t seq,
                            uint64_t len) const;
     void _debugReassemblerBuffer(std::string_view msg) const;
     void _debugDeliver(const hilti::rt::Bytes& data) const;
@@ -328,7 +328,7 @@ private:
         hilti::rt::stream::View output_cur;
     };
 
-    std::optional<FilterData> _filter_data;
+    hilti::rt::Optional<FilterData> _filter_data;
 
     // Reassembly state.
     sink::ReassemblerPolicy _policy; // Current policy

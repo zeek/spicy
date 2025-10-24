@@ -147,26 +147,26 @@ TEST_CASE("split") {
 
 TEST_CASE("split1") {
     SUBCASE("separator") {
-        CHECK_EQ(string::split1("12 45", " "), std::make_tuple("12"s, "45"s));
-        CHECK_EQ(string::split1("12 45 678", " "), std::make_tuple("12"s, "45 678"s));
-        CHECK_EQ(string::split1("12345", "34"), std::make_tuple("12"s, "5"s));
-        CHECK_EQ(string::split1(" 2345", " "), std::make_tuple(""s, "2345"s));
-        CHECK_EQ(string::split1("12345", ""), std::make_tuple(""s, "12345"s));
-        CHECK_EQ(string::split1("12345", "6"), std::make_tuple("12345"s, ""s));
-        CHECK_EQ(string::split1("12 34 5", ""), std::make_tuple(""s, "12 34 5"s));
-        CHECK_EQ(string::split1("1", " "), std::make_tuple("1"s, ""s));
-        CHECK_EQ(string::split1("", "1"), std::make_tuple(""s, ""s));
-        CHECK_EQ(string::split1("", ""), std::make_tuple(""s, ""s));
+        CHECK_EQ(string::split1("12 45", " "), tuple::make("12"s, "45"s));
+        CHECK_EQ(string::split1("12 45 678", " "), tuple::make("12"s, "45 678"s));
+        CHECK_EQ(string::split1("12345", "34"), tuple::make("12"s, "5"s));
+        CHECK_EQ(string::split1(" 2345", " "), tuple::make(""s, "2345"s));
+        CHECK_EQ(string::split1("12345", ""), tuple::make(""s, "12345"s));
+        CHECK_EQ(string::split1("12345", "6"), tuple::make("12345"s, ""s));
+        CHECK_EQ(string::split1("12 34 5", ""), tuple::make(""s, "12 34 5"s));
+        CHECK_EQ(string::split1("1", " "), tuple::make("1"s, ""s));
+        CHECK_EQ(string::split1("", "1"), tuple::make(""s, ""s));
+        CHECK_EQ(string::split1("", ""), tuple::make(""s, ""s));
     }
 
     SUBCASE("whitespace") {
-        CHECK_EQ(string::split1("12 45"), std::make_tuple("12"s, "45"s));
-        CHECK_EQ(string::split1("12 45 678"), std::make_tuple("12"s, "45 678"s));
-        CHECK_EQ(string::split1(" 2345"), std::make_tuple(""s, "2345"s));
-        CHECK_EQ(string::split1("12345"), std::make_tuple("12345"s, ""s));
-        CHECK_EQ(string::split1(" "), std::make_tuple(""s, ""s));
-        CHECK_EQ(string::split1(""), std::make_tuple(""s, ""s));
-        CHECK_EQ(string::split1("1"), std::make_tuple("1"s, ""s));
+        CHECK_EQ(string::split1("12 45"), tuple::make("12"s, "45"s));
+        CHECK_EQ(string::split1("12 45 678"), tuple::make("12"s, "45 678"s));
+        CHECK_EQ(string::split1(" 2345"), tuple::make(""s, "2345"s));
+        CHECK_EQ(string::split1("12345"), tuple::make("12345"s, ""s));
+        CHECK_EQ(string::split1(" "), tuple::make(""s, ""s));
+        CHECK_EQ(string::split1(""), tuple::make(""s, ""s));
+        CHECK_EQ(string::split1("1"), tuple::make("1"s, ""s));
     }
 }
 

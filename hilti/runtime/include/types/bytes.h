@@ -487,7 +487,7 @@ public:
      */
     Tuple<Bytes, Bytes> split1() const {
         auto p = hilti::rt::split1(str());
-        return {p.first, p.second};
+        return tuple::make<Bytes, Bytes>(p.first, p.second);
     }
 
     /** Splits the data at occurrences of a separator, returning the parts. */
@@ -507,7 +507,7 @@ public:
      */
     Tuple<Bytes, Bytes> split1(const Bytes& sep) const {
         auto p = hilti::rt::split1(str(), sep);
-        return {p.first, p.second};
+        return tuple::make<Bytes, Bytes>(p.first, p.second);
     }
 
     /**

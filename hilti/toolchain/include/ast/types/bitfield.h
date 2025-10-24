@@ -37,6 +37,7 @@ public:
             return child<QualifiedType>(0);
     }
 
+    // TODO: Remove this and change the internal representation to not use an optional.
     auto itemTypeWithOptional() const { // return the integer type wrapped into an optional
         return child<QualifiedType>(0);
     }

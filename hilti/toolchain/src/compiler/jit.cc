@@ -555,7 +555,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
     auto hilti_jit_parallelism = hilti::rt::getenv("HILTI_JIT_PARALLELISM");
 
     uint64_t parallelism = 1;
-    if ( hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").has_value() )
+    if ( hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").hasValue() )
         parallelism = 1;
     else if ( auto e = hilti::rt::getenv("HILTI_JIT_PARALLELISM") )
         parallelism = util::charsToUInt64(e->c_str(), 10, [&]() {

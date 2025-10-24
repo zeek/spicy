@@ -4,7 +4,6 @@
 
 #include <arpa/inet.h>
 
-#include <optional>
 #include <ostream>
 #include <string>
 
@@ -12,13 +11,16 @@
 
 namespace hilti::rt {
 
+template<typename T>
+class Optional;
+
 /**
  * Represents HILTI's "null" type.
  */
 struct Null {
     template<typename T>
-    operator std::optional<T>() {
-        return std::nullopt;
+    operator hilti::rt::Optional<T>() {
+        return {};
     }
 };
 

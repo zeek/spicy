@@ -1,8 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <clocale>
-#include <optional>
-
 #include <hilti/rt/init.h>
 
 #include <spicy/rt/configuration.h>
@@ -28,14 +25,14 @@ void spicy::rt::init() {
 
     auto& parsers = globalState()->parsers;
 
-    std::optional<const Parser*> default_parser;
+    hilti::rt::Optional<const Parser*> default_parser;
 
     for ( const auto& p : parsers ) {
         if ( p->is_public ) {
-            if ( ! default_parser.has_value() )
+            if ( ! default_parser.hasValue() )
                 default_parser = p;
             else
-                default_parser = std::nullopt;
+                default_parser = hilti::rt::Null();
         }
 
         globalState()->parsers_by_name[{p->name.data(), p->name.size()}].emplace_back(p);

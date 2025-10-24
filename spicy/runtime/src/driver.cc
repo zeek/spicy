@@ -166,7 +166,7 @@ Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& pars
 
     char buffer[4096];
     hilti::rt::ValueReference<hilti::rt::Stream> data;
-    std::optional<hilti::rt::Resumable> r;
+    hilti::rt::Optional<hilti::rt::Resumable> r;
 
     DRIVER_DEBUG_STATS(data);
 
@@ -226,7 +226,7 @@ void driver::ParsingState::debug(const std::string& msg, size_t size, const char
     debug(hilti::rt::fmt("%s: |%s%s|", msg, escaped, size > 40 ? "..." : ""));
 }
 
-std::optional<hilti::rt::stream::Offset> driver::ParsingState::finish() {
+hilti::rt::Optional<hilti::rt::stream::Offset> driver::ParsingState::finish() {
     switch ( _type ) {
         case driver::ParsingType::Block: break;
         case driver::ParsingType::Stream: {
@@ -399,7 +399,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
     // Helper to add flows to the map.
     auto create_state = [&](driver::ParsingType type, const std::string& parser_name, const std::string& id,
-                            std::optional<std::string> cid, std::optional<UnitContext> context) {
+                            hilti::rt::Optional<std::string> cid, hilti::rt::Optional<UnitContext> context) {
         if ( auto parser = lookupParser(parser_name) ) {
             if ( ! context )
                 context = (*parser)->createContext();
@@ -413,7 +413,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
         }
         else {
             DRIVER_DEBUG(hilti::rt::fmt("no parser for ID %s, skipping", id));
-            return std::make_pair(flows.end(), std::optional<UnitContext>{});
+            return std::make_pair(flows.end(), hilti::rt::Optional<UnitContext>{});
         }
     };
 
@@ -475,7 +475,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             driver::ParsingStateForDriver* orig_state = nullptr;
             driver::ParsingStateForDriver* resp_state = nullptr;
 
-            std::optional<UnitContext> context;
+            hilti::rt::Optional<UnitContext> context;
 
             if ( auto [x, ctx] = create_state(type, orig_parser_name, orig_id, cid, context); x != flows.end() ) {
                 orig_state = &x->second;

@@ -97,12 +97,13 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            result = {fmt("(%s = (%s), %s.has_value() ? std::make_optional(*%s) : std::nullopt)", tmp, expr, tmp, tmp),
+            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())", tmp, expr,
+                          tmp, tmp),
                       Side::LHS};
         }
 
         else if ( dst->type()->isA<type::Bool>() )
-            result = fmt("%s.has_value()", expr);
+            result = fmt("%s.hasValue()", expr);
 
         else
             logger().internalError(
@@ -147,8 +148,13 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Bool>() )
             result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
 
-        else if ( dst->type()->isA<type::Optional>() )
-            result = fmt("static_cast<%s>(%s)", cg->compile(dst, codegen::TypeUsage::Storage), expr);
+        else if ( dst->type()->isA<type::Optional>() ) {
+            // Create tmp to avoid evaluation "expr" twice.
+            auto tmp = cg->addTmp("result", cg->compile(src, codegen::TypeUsage::Storage));
+            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())", tmp, expr,
+                          tmp, tmp),
+                      Side::LHS};
+        }
 
         else
             logger().internalError(
@@ -232,7 +238,8 @@ struct Visitor : public hilti::visitor::PreOrder {
                                            x->elements()[i]->type()));
             }
 
-            result = fmt("[&](const auto& __t) { return std::make_tuple(%s); }(%s)", util::join(exprs, ", "), expr);
+            result =
+                fmt("[&](const auto& __t) { return hilti::rt::tuple::make(%s); }(%s)", util::join(exprs, ", "), expr);
         }
 
         else
@@ -316,7 +323,10 @@ cxx::Expression CodeGen::coerce(const cxx::Expression& e, QualifiedType* src, Qu
         // If only difference is constness, nothing to do.
         return e;
 
-    if ( auto* t = dst->type()->tryAs<type::Optional>(); t && ! src->type()->isA<type::Optional>() ) {
+    if ( auto* t = dst->type()->tryAs<type::Optional>();
+         t && ! src->type()->isA<type::Optional>() &&
+         ! src->type()->isA<type::Result>() ) { // TODO: Should not need to white-list result here, but we need its
+                                                // dedicated coercion code.
         // Special case `Null`. Since standard conversions run before the
         // user-defined conversion operation from `Null` to `std::optional` we
         // might end up using a standard conversion which might be invalid.
