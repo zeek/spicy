@@ -81,22 +81,11 @@ control the compilation process:
         This overrides any value set for ``HILTI_JIT_PARALLELISM`` and
         effectively sets it to one.
 
-    ``HILTI_OPTIMIZER_PASSES``
-        Colon-separated list of optimizer passes to activate. If unset uses the
-        default-enabled set.
-
     ``HILTI_PATH``
         Replaces the built-in search path for `*.hlt` source files.
 
     ``HILTI_PRINT_SETTINGS``
         Set to see summary of compilation options.
-
-    ``HILTI_OPTIMIZER_ENABLE_CFG``
-        Set to anything but `1` to disable control-flow based optimizations.
-        These optimizations remove dead code both in user as well as in
-        Spicy-generated code, so enabling these optimizations can improve
-        runtime parser throughput as well as lead to faster faster C++
-        compilation.
 
     ``HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW``
         Set to `1` to omit dataflow facts from the control-flow graph debug
