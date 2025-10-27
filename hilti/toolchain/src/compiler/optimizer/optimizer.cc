@@ -100,16 +100,10 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
 
     const auto& creators = getPassRegistry()->creators();
 
-    const auto passes__ = rt::getenv("HILTI_OPTIMIZER_PASSES");
-    const auto& passes_ =
-        passes__ ? std::optional(util::split(*passes__, ":")) : std::optional<std::vector<std::string>>();
-    auto passes = passes_ ? std::optional(std::set<std::string>(passes_->begin(), passes_->end())) :
-                            std::optional<std::set<std::string>>();
-
-    if ( (! passes || passes->contains("feature_requirements")) && first ) {
-        // The `FeatureRequirementsVisitor` enables or disables code
-        // paths and needs to be run before all other passes since
-        // it needs to see the code before any optimization edits.
+    // The `FeatureRequirementsVisitor` enables or disables code
+    // paths and needs to be run before all other passes since
+    // it needs to see the code before any optimization edits.
+    if ( first ) {
         const auto& creator_feature_requirements_visitor = creators.at("feature-requirements");
         auto v = (creator_feature_requirements_visitor.first)(builder, nullptr);
         v->collect(root);
@@ -118,29 +112,6 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
 
     CollectUsesPass collect_uses{};
     auto op_uses = collect_uses.collect(root);
-
-    // Control-flow based optimizations are behind
-    // a feature guard which defaults to ON.
-    auto flag = rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG");
-    bool has_cfg = (! flag || flag == "1");
-    auto uses_cfg = std::unordered_set<std::string>{"cfg", "constant_propagation"};
-
-    // If no user-specified passes are given enable all of them.
-    if ( ! passes ) {
-        passes = std::set<std::string>();
-        for ( const auto& [pass, x] : creators ) {
-            if ( x.second == 0 ) // phase == 0 -> run at hardcoded places only
-                continue;
-
-            if ( ! uses_cfg.contains(pass) )
-                passes->insert(pass);
-        }
-
-        if ( has_cfg ) {
-            for ( const auto& pass : uses_cfg )
-                passes->insert(pass);
-        }
-    }
 
     Phase max_phase{};
     for ( const auto& [_, x] : creators )
@@ -163,21 +134,14 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
                 // Filter out passes to run in this phase.
                 // NOTE: We do not use `util::transform` here to guarantee a consistent order of the visitors.
                 std::vector<std::unique_ptr<OptimizerVisitor>> vs;
-                vs.reserve(passes->size());
-                for ( const auto& pass : *passes ) {
-                    if ( creators.contains(pass) ) {
-                        auto&& [create, phase_] = getPassRegistry()->creators().at(pass);
+                for ( const auto& [name, pass] : getPassRegistry()->creators() ) {
+                    const auto& [create, phase_] = pass;
+                    if ( phase_ != phase )
+                        continue;
 
-                        if ( phase_ != phase )
-                            continue;
-
-                        vs.push_back(create(builder, &op_uses));
-                    }
-                }
-
-                for ( auto& v : vs ) {
                     HILTI_DEBUG(logging::debug::OptimizerCollect,
                                 util::fmt("processing AST, round=%d, phase = %d", round, phase));
+                    auto v = create(builder, &op_uses);
                     v->collect(root);
                     inner_modified = v->pruneUses(root) || inner_modified;
                     inner_modified = v->pruneDecls(root) || inner_modified;
