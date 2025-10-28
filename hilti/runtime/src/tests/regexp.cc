@@ -2,8 +2,6 @@
 
 #include <doctest/doctest.h>
 
-#include <tuple>
-
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/safe-int.h>

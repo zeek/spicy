@@ -9,7 +9,7 @@
 extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    static hilti::rt::Optional<std::string> X = {};
+    static ::hilti::rt::Optional<std::string> X = {};
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_module();

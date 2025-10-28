@@ -19,7 +19,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <memory>
-#include <new>
 #include <optional>
 #include <ostream>
 #include <string>

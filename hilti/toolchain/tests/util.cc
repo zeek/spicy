@@ -61,7 +61,7 @@ TEST_CASE("cacheDirectory") {
         SUBCASE("env override") { ::setenv("SPICY_CACHE", "OVERRIDE", 1); }
         SUBCASE("no env override") { ::unsetenv("SPICY_CACHE"); }
 
-        CHECK_EQ(*hilti::util::cacheDirectory(configuration), hilti::rt::filesystem::path("BUILD") / "cache" / "spicy");
+        CHECK_EQ(hilti::util::cacheDirectory(configuration), hilti::rt::filesystem::path("BUILD") / "cache" / "spicy");
     }
 
     SUBCASE("use install") {
@@ -79,7 +79,7 @@ TEST_CASE("cacheDirectory") {
         }
         SUBCASE("no env override") { ::unsetenv("SPICY_CACHE"); }
 
-        CHECK_EQ(*hilti::util::cacheDirectory(configuration), cache);
+        CHECK_EQ(hilti::util::cacheDirectory(configuration), cache);
     }
 }
 

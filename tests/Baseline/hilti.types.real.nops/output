@@ -17,8 +17,8 @@ assert 0x1.999999999999ap-4 == 0x1.999999999999ap-4;
 extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Foo {
-    static hilti::rt::Optional<double> d = {};
-    static hilti::rt::Optional<double> r = {};
+    static ::hilti::rt::Optional<double> d = {};
+    static ::hilti::rt::Optional<double> r = {};
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_module();

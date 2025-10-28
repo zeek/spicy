@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <tuple>
 #include <utility>
 
 #include <hilti/rt/extension-points.h>
@@ -76,11 +75,7 @@ inline std::string render(const Bitfield<Ts...>& x, const hilti::rt::TypeInfo* t
         if ( ! out.empty() )
             out += ", ";
 
-        std::string s;
-        if ( v )
-            s = v.to_string();
-        else
-            s = "(not set)";
+        auto s = v ? v.to_string() : "(not set)";
 
         if ( is_anonymous )
             out += fmt("$%s=%s", b.name, s);
@@ -119,7 +114,6 @@ inline std::string render(const hilti::rt::Optional<Bitfield<Ts...>>& x, const h
 }
 
 } // namespace bitfield::detail
-
 
 namespace detail::adl {
 template<typename... Ts>

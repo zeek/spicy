@@ -17,12 +17,7 @@ class Optional;
 /**
  * Represents HILTI's "null" type.
  */
-struct Null {
-    template<typename T>
-    operator hilti::rt::Optional<T>() {
-        return {};
-    }
-};
+struct Null {};
 
 namespace detail::adl {
 inline std::string to_string(const Null& x, adl::tag /*unused*/) { return "Null"; }

@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <list>
 #include <memory>
-#include <optional>
+#include <new>
 #include <set>
 #include <string>
 #include <string_view>
@@ -114,7 +114,7 @@ struct ResourceUsage {
 ResourceUsage resource_usage();
 
 /** Returns the value of an environment variable, if set. */
-extern hilti::rt::Optional<std::string> getenv(const std::string& name);
+extern Optional<std::string> getenv(const std::string& name);
 
 /**
  * Creates a temporary file in the system temporary directory.

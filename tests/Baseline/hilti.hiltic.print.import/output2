@@ -9,11 +9,11 @@
 extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Bar {
-    hilti::rt::Optional<std::string> bar = {};
+    ::hilti::rt::Optional<std::string> bar = {};
 }
 
 namespace __hlt::Foo {
-    extern hilti::rt::Optional<std::string> foo;
+    extern ::hilti::rt::Optional<std::string> foo;
 }
 
 namespace __hlt::Bar {
@@ -53,11 +53,11 @@ extern void __hlt::Bar::__register_module() {
 extern uint64_t __hlt_hlto_scope;
 
 namespace __hlt::Bar {
-    extern hilti::rt::Optional<std::string> bar;
+    extern ::hilti::rt::Optional<std::string> bar;
 }
 
 namespace __hlt::Foo {
-    hilti::rt::Optional<std::string> foo = {};
+    ::hilti::rt::Optional<std::string> foo = {};
     extern void __init_globals(::hilti::rt::Context* ctx);
     extern void __destroy_globals(::hilti::rt::Context* ctx);
     extern void __init_module();

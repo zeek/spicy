@@ -2,8 +2,6 @@
 
 #include <doctest/doctest.h>
 
-#include <optional>
-
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/types/integer.h>

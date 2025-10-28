@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <initializer_list>
 #include <map>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>

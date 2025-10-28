@@ -464,7 +464,7 @@ std::string cxx::type::Struct::str() const {
                 util::join(util::transform(locals_user,
                                            [&](const auto& x) {
                                                auto& l = std::get<declaration::Local>(x);
-                                               return fmt("hilti::rt::Optional<%s> %s", l.type, l.id);
+                                               return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
                                            }),
                            ", ");
             auto locals_ctor = fmt("explicit %s(%s);", type_name, locals_ctor_args);
@@ -580,7 +580,7 @@ std::string cxx::type::Struct::code() const {
         auto ctor_args = util::join(util::transform(locals_user,
                                                     [&](const auto& x) {
                                                         auto& l = std::get<declaration::Local>(x);
-                                                        return fmt("hilti::rt::Optional<%s> %s", l.type, l.id);
+                                                        return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
                                                     }),
                                     ", ");
 

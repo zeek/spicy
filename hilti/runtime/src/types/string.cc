@@ -127,12 +127,12 @@ Vector<std::string> string::split(std::string_view s, std::string_view sep) {
 
 Tuple<std::string, std::string> string::split1(const std::string& s) {
     auto pair = hilti::rt::split1(s);
-    return tuple::make(pair.first, pair.second);
+    return tuple::make(std::move(pair.first), std::move(pair.second));
 }
 
 Tuple<std::string, std::string> string::split1(const std::string& s, const std::string& sep) {
     auto pair = hilti::rt::split1(s, sep);
-    return tuple::make(pair.first, pair.second);
+    return tuple::make(std::move(pair.first), std::move(pair.second));
 }
 
 Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStrategy errors) try {

@@ -2,7 +2,6 @@
 
 #include <doctest/doctest.h>
 
-#include <optional>
 #include <string>
 
 #include <hilti/rt/types/bytes.h>

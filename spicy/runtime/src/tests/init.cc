@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 
 #include <map>
-#include <optional>
 #include <vector>
 
 #include <hilti/rt/init.h>

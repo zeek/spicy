@@ -2,8 +2,6 @@
 
 #include <doctest/doctest.h>
 
-#include <tuple>
-
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>

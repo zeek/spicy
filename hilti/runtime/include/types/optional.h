@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <compare>
 #include <memory>
 #include <optional>
 #include <string>
@@ -61,8 +60,8 @@ public:
      */
     template<typename U>
     constexpr Optional(U&& v)
-        requires(std::is_constructible_v<T, U> && ! std::is_same_v<std::decay_t<U>, Optional> &&
-                 ! std::is_same_v<std::decay_t<U>, T>)
+        requires(std::is_constructible_v<T, std::decay_t<U>> && ! std::is_same_v<std::decay_t<U>, T> &&
+                 ! std::is_same_v<std::decay_t<U>, Optional>)
         : std::optional<T>(std::forward<U>(v)) {}
 
     /**
@@ -71,7 +70,7 @@ public:
      */
     template<typename U>
     Optional(Optional<U>&& v)
-        requires(! std::is_same_v<U, T> && std::is_constructible_v<T, U>)
+        requires(std::is_constructible_v<T, std::decay_t<U>> && ! std::is_same_v<std::decay_t<U>, T>)
     {
         if ( v )
             std::optional<T>::emplace(std::move(v).value());
@@ -250,7 +249,8 @@ public:
     /** Assigns from a value of different type U that's convertible to T. */
     template<typename U>
     Optional& operator=(U&& v) // NOLINT(misc-unconventional-assign-operator) false positive
-        requires(! std::is_same_v<std::decay_t<U>, Optional> && std::is_constructible_v<T, U>)
+        requires(std::is_constructible_v<T, std::decay_t<U>> && ! std::is_same_v<std::decay_t<U>, T> &&
+                 ! std::is_same_v<std::decay_t<U>, Optional>)
     {
         std::optional<T>::emplace(std::forward<U>(v));
         return *this;
@@ -262,7 +262,7 @@ public:
      */
     template<typename U>
     Optional& operator=(const Optional<U>& v)
-        requires(! std::is_same_v<U, T> && std::is_constructible_v<T, const U&>)
+        requires(std::is_constructible_v<T, std::decay_t<U>> && ! std::is_same_v<std::decay_t<U>, T>)
     {
         if ( v )
             std::optional<T>::emplace(v.value());
@@ -278,7 +278,7 @@ public:
      */
     template<typename U>
     Optional& operator=(Optional<U>&& v)
-        requires(! std::is_same_v<U, T> && std::is_constructible_v<T, U>)
+        requires(std::is_constructible_v<T, std::decay_t<U>> && ! std::is_same_v<std::decay_t<U>, T>)
     {
         if ( v )
             std::optional<T>::emplace(std::move(v).value());

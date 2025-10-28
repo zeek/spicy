@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 
 #include <ostream>
-#include <tuple>
 #include <type_traits>
 
 #include <hilti/rt/exception.h>

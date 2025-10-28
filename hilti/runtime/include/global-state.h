@@ -3,8 +3,8 @@
 #pragma once
 #include <sys/resource.h>
 
-#include <clocale>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>

@@ -70,7 +70,7 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
 
 hilti::rt::Optional<std::string> hilti::rt::getenv(const std::string& name) {
     if ( auto* x = ::getenv(name.c_str()) )
-        return std::string(x);
+        return {std::string(x)};
     else
         return {};
 }

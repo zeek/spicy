@@ -61,7 +61,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         // the values, in particular wrt destruction when the runtime shuts
         // down.
         for ( auto g : globals ) {
-            g.type = fmt("hilti::rt::Optional<%s>", g.type);
+            g.type = fmt("::hilti::rt::Optional<%s>", g.type);
 
             if ( g.id.namespace_() == ns )
                 g.init = "{}";
@@ -853,7 +853,7 @@ cxx::Expression CodeGen::startProfiler(const std::string& name, cxx::Block* bloc
 
     assert(block);
     pushCxxBlock(block);
-    auto id = addTmp("profiler", cxx::Type("hilti::rt::Optional<::hilti::rt::Profiler>"));
+    auto id = addTmp("profiler", cxx::Type("::hilti::rt::Optional<::hilti::rt::Profiler>"));
     auto stmt = cxx::Expression(fmt("%s = ::hilti::rt::profiler::start(\"%s\")", id, name));
 
     if ( insert_at_front )

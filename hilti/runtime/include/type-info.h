@@ -414,20 +414,13 @@ public:
      * @param type type of the field
      * @param offset offset of the field inside the bitfield's storage tuple.
      */
-    Bits(const char* name, unsigned int lower, unsigned int upper, const TypeInfo* type, std::ptrdiff_t offset)
-        : name(name), lower(lower), upper(upper), type(type), _offset(offset) {}
+    Bits(const char* name, unsigned int lower, unsigned int upper, const TypeInfo* type)
+        : name(name), lower(lower), upper(upper), type(type) {}
 
     const std::string name;   /**< ID of the field, with an empty string indicating no name */
     const unsigned int lower; /**< lower bit of the field */
     const unsigned int upper; /**< upper bit of the field */
     const TypeInfo* type;     /**< type of the field */
-
-    auto offset() const { return _offset; } // TODO: Remove
-
-private:
-    friend class type_info::Bitfield;
-
-    const std::ptrdiff_t _offset;
 };
 
 }; // namespace bitfield

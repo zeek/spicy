@@ -3,7 +3,6 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/optional.h>

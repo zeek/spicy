@@ -2,8 +2,6 @@
 
 #include <doctest/doctest.h>
 
-#include <optional>
-
 #include <hilti/rt/logging.h>
 #include <hilti/rt/types/null.h>
 #include <hilti/rt/types/optional.h>

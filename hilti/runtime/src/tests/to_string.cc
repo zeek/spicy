@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <string_view>
-#include <tuple>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/libhilti.h>

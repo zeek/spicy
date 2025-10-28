@@ -112,7 +112,7 @@ Tuple<integer::safe<int32_t>, stream::View> regexp::MatchState::advance(const st
 
     if ( rc >= 0 ) {
         _pimpl->_done = true;
-        return tuple::make<integer::safe<int32_t>, stream::View>(rc, std::move(ndata));
+        return tuple::make(integer::safe<int32_t>{rc}, std::move(ndata));
     }
 
     return tuple::make<integer::safe<int32_t>, stream::View>(rc, std::move(ndata));

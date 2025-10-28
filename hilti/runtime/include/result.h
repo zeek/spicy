@@ -167,9 +167,6 @@ public:
     /** Returns true if the result represents a successful return value. */
     explicit operator bool() const { return hasValue(); }
 
-    /** Converts the result to an optional that's set if it represents a successful return value. */
-    // operator Optional<T>() const { return hasValue() ? hilti::rt::optional::make(value()) : std::nullopt; } // TODO
-
     Result& operator=(const Result& other) = default;
     Result& operator=(Result&& other) = default; // NOLINT (hicpp-noexcept-move)
 

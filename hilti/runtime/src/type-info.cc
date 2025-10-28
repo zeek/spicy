@@ -58,6 +58,7 @@ std::vector<std::pair<const type_info::bitfield::Bits&, type_info::Value>> type_
     auto elements = _tuple_ti->tuple->iterate(v);
 
     std::vector<std::pair<const bitfield::Bits&, Value>> values;
+    values.reserve(std::min(bits().size(), elements.size()));
 
     auto b = bits().begin();
     auto e = elements.begin();

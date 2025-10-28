@@ -58,6 +58,26 @@ TEST_CASE("assign") {
 
         CHECK_EQ(ref1, ref2);
     }
+
+    SUBCASE("from null reference") {
+        ValueReference<int> ref1(42);
+        ValueReference<int> ref2((std::shared_ptr<int>()));
+
+        CHECK(ref1);
+        CHECK(ref2.isNull());
+
+        CHECK_THROWS_AS((void)(ref1 == ref2), const NullReference&);
+        CHECK_THROWS_AS((void)(ref1 != ref2), const NullReference&);
+
+        ref1 = ref2;
+        CHECK(ref1.isNull());
+        CHECK(ref2.isNull());
+        CHECK_THROWS_AS((void)(ref1 == 32), const NullReference&);
+
+        ref2 = 43;
+        CHECK_FALSE(ref2.isNull());
+        CHECK_EQ(ref2, 43);
+    }
 }
 
 TEST_CASE("asSharedPtr") {

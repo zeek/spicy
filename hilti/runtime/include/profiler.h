@@ -4,7 +4,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <string>
 
 #include <hilti/rt/configuration.h>

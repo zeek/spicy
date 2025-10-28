@@ -62,7 +62,9 @@ public:
      * Returns true if the element at index `idx` is set. If `idx` is
      * beyond the number of valid tuple elements the result is undefined.
      */
-    constexpr bool hasValue(size_t idx) const { return idx < MaxElements ? (_mask & (1ULL << idx)) != 0 : false; }
+    constexpr bool hasValue(size_t idx) const noexcept {
+        return idx < MaxElements ? (_mask & (1ULL << idx)) != 0 : false;
+    }
 
     friend auto operator<=>(const TupleBase& t1, const TupleBase& t2) = default;
 
@@ -71,7 +73,7 @@ protected:
     static constexpr size_t MaxElements = 64;
 
     /** Constructor marking all elements as initially unset. */
-    TupleBase() = default;
+    TupleBase() noexcept = default;
 
     /**
      * Constructor marking all elements as initially set.
@@ -81,8 +83,8 @@ protected:
      */
     TupleBase(tuple::detail::AllSetTag, uint64_t num_elements) : _mask((1ULL << num_elements) - 1) {}
 
-    TupleBase(const TupleBase& other) = default;
-    TupleBase(TupleBase&& other) = default;
+    TupleBase(const TupleBase& other) noexcept = default;
+    TupleBase(TupleBase&& other) noexcept = default;
     ~TupleBase() = default;
 
     /**

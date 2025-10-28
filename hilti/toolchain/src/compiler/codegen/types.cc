@@ -207,7 +207,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     auto t = cg->compile(f->type(), codegen::TypeUsage::Storage);
 
                     if ( f->isOptional() )
-                        t = fmt("hilti::rt::Optional<%s>", t);
+                        t = fmt("::hilti::rt::Optional<%s>", t);
 
                     std::optional<cxx::Expression> default_;
 
@@ -417,7 +417,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         body.addSwitch("x.value()", cases, std::move(default_));
 
         auto ts = cxx::declaration::Function(cxx::declaration::Function::Free, "std::string",
-                                             {"hilti::rt::detail::adl", "to_string"},
+                                             {"::hilti::rt::detail::adl", "to_string"},
                                              {cxx::declaration::Argument("x", cxx::Type(id)),
                                               cxx::declaration::Argument("", "adl::tag")},
                                              "inline", std::move(body));
@@ -628,7 +628,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         std::string t;
 
         if ( const auto& ct = n->dereferencedType(); ! ct->isWildcard() )
-            t = fmt("hilti::rt::Optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
+            t = fmt("::hilti::rt::Optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
         else
             t = "*";
 
@@ -719,13 +719,13 @@ struct VisitorStorage : hilti::visitor::PreOrder {
                                                // No explicit default (e.g., Bool, integers, etc.).
                                                // If the element type itself is an Optional<T>, leave it unset.
                                                if ( e->type()->type()->template isA<type::Optional>() )
-                                                   return fmt("hilti::rt::optional::make<%s>({})",
+                                                   return fmt("::hilti::rt::optional::make<%s>({})",
                                                               cg->compile(e->type(), codegen::TypeUsage::Storage));
 
                                                // Otherwise engage the optional with a value-initialized T{} so
                                                // required (non-optional) tuple elements start as set.
                                                auto t = cg->compile(e->type(), codegen::TypeUsage::Storage);
-                                               return fmt("hilti::rt::Optional<%s>(%s{})", t, t);
+                                               return fmt("::hilti::rt::Optional<%s>(%s{})", t, t);
                                            }
                                        }),
                        ", ");
@@ -811,7 +811,6 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
     std::optional<cxx::Expression> result;
 
     void operator()(type::Bitfield* n) final {
-        // TODO: Add tupleType() to type::Bietfield()?
         std::vector<QualifiedType*> types;
         for ( const auto& b : n->bits(true) ) {
             auto* itype = b->itemType();
@@ -823,10 +822,9 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
         std::vector<std::string> elems;
         auto ttype = cg->compile(type, codegen::TypeUsage::Storage);
 
-        auto i = 0;
         for ( const auto&& b : n->bits() )
-            elems.push_back(fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %u, %u, %s, %s::elementOffset<%d>() }",
-                                b->id(), b->lower(), b->upper(), cg->typeInfo(b->itemType()), ttype, i++));
+            elems.push_back(fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %u, %u, %s }", b->id(), b->lower(),
+                                b->upper(), cg->typeInfo(b->itemType())));
 
         result =
             fmt("::hilti::rt::type_info::Bitfield(%u, std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}), %s)",

@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <optional>
 #include <string>
-#include <tuple>
 
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/vector.h>

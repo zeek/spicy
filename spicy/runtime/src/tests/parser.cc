@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 
 #include <memory>
-#include <optional>
 #include <vector>
 
 #include <hilti/rt/extension-points.h>
