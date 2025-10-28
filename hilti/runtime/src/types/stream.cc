@@ -299,13 +299,13 @@ Tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstIterator n
         n = UnsafeConstIterator(_begin);
 
     if ( v.isEmpty() )
-        return {true, n};
+        return tuple::make(true, n);
 
     auto first = *v.unsafeBegin();
 
     for ( auto i = n; true; ++i ) {
         if ( i == unsafeEnd() )
-            return {false, i};
+            return tuple::make(false, i);
 
         if ( *i != first )
             continue;
@@ -315,13 +315,13 @@ Tuple<bool, UnsafeConstIterator> View::find(const View& v, UnsafeConstIterator n
 
         for ( ;; ) {
             if ( x == unsafeEnd() )
-                return {false, i};
+                return tuple::make(false, i);
 
             if ( *x++ != *y++ )
                 break;
 
             if ( y == v.unsafeEnd() )
-                return {true, i};
+                return tuple::make(true, i);
         }
     }
 }
@@ -331,13 +331,13 @@ Tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeConstI
         n = UnsafeConstIterator(_begin);
 
     if ( v.isEmpty() )
-        return {true, n};
+        return tuple::make(true, n);
 
     auto first = *v.unsafeBegin();
 
     for ( auto i = n; true; ++i ) {
         if ( i == unsafeEnd() )
-            return {false, i};
+            return tuple::make(false, i);
 
         if ( *i != first )
             continue;
@@ -347,13 +347,13 @@ Tuple<bool, UnsafeConstIterator> View::_findForward(const Bytes& v, UnsafeConstI
 
         for ( ;; ) {
             if ( x == unsafeEnd() )
-                return {false, i};
+                return tuple::make(false, i);
 
             if ( *x++ != *y++ )
                 break;
 
             if ( y == v.unsafeEnd() )
-                return {true, i};
+                return tuple::make(true, i);
         }
     }
 }
@@ -363,7 +363,7 @@ Tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, Unsafe
 
     // An empty pattern always matches at the current position.
     if ( needle.isEmpty() )
-        return {true, i};
+        return tuple::make(true, i);
 
     if ( ! i )
         i = unsafeEnd();
@@ -380,7 +380,7 @@ Tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, Unsafe
     // If we don't have enough bytes available to fit the pattern in, we
     // can stop right away.
     if ( needle.size() > (i.offset() - offset()) )
-        return {false, UnsafeConstIterator()};
+        return tuple::make(false, UnsafeConstIterator());
 
     i -= (needle.size() - 1).Ref(); // this is safe now, get us 1st position where initial character may match
 
@@ -398,12 +398,12 @@ Tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, Unsafe
                     break;
 
                 if ( y == needle.unsafeEnd() )
-                    return {true, j};
+                    return tuple::make(true, j);
             }
         }
 
         if ( j == unsafeBegin() )
-            return {false, j};
+            return tuple::make(false, j);
     }
 }
 

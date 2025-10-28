@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <optional>
 #include <string>
 #include <utility>
 
@@ -37,7 +36,7 @@ public:
      *
      * @param context context to make available to unit instance during parsing
      */
-    ParsingState(ParsingType type, const Parser* parser = nullptr, std::optional<UnitContext> context = {})
+    ParsingState(ParsingType type, const Parser* parser = nullptr, hilti::rt::Optional<UnitContext> context = {})
         : _type(type), _parser(parser), _context(std::move(context)) {}
 
     /**
@@ -57,7 +56,7 @@ public:
      *
      * @param context context to make available to unit instance during parsing
      */
-    void setParser(const Parser* parser, std::optional<UnitContext> context = {}) {
+    void setParser(const Parser* parser, hilti::rt::Optional<UnitContext> context = {}) {
         _parser = parser;
         _context = std::move(context);
     }
@@ -107,7 +106,7 @@ public:
      * @throws any exceptions (including in particular final parse errors)
      * are passed through to caller
      */
-    std::optional<hilti::rt::stream::Offset> finish();
+    hilti::rt::Optional<hilti::rt::stream::Offset> finish();
 
     /**
      * Resets parsing back to its original state as if no input had been sent
@@ -137,15 +136,15 @@ protected:
 private:
     State _process(size_t size, const char* data, bool eod = true);
 
-    ParsingType _type;                   /**< type of parsing */
-    const Parser* _parser;               /**< parser to use, or null if not specified */
-    bool _skip = false;                  /**< true if all further input is to be skipped */
-    std::optional<UnitContext> _context; /** context to make available to parsing unit */
+    ParsingType _type;                         /**< type of parsing */
+    const Parser* _parser;                     /**< parser to use, or null if not specified */
+    bool _skip = false;                        /**< true if all further input is to be skipped */
+    hilti::rt::Optional<UnitContext> _context; /** context to make available to parsing unit */
 
     // State for stream matching only
     bool _done = false; /**< flag to indicate that stream matching has completed (either regularly or irregularly) */
-    std::optional<hilti::rt::ValueReference<hilti::rt::Stream>> _input; /**< Current input data */
-    std::optional<hilti::rt::Resumable> _resumable; /**< State for resuming parsing on next data chunk */
+    hilti::rt::Optional<hilti::rt::ValueReference<hilti::rt::Stream>> _input; /**< Current input data */
+    hilti::rt::Optional<hilti::rt::Resumable> _resumable; /**< State for resuming parsing on next data chunk */
 };
 
 /** Specialized parsing state for use by *Driver*. */
@@ -167,8 +166,8 @@ public:
      *
      * @param driver driver owning this state
      */
-    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, std::optional<std::string> cid,
-                          std::optional<UnitContext> context, Driver* driver)
+    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, hilti::rt::Optional<std::string> cid,
+                          hilti::rt::Optional<UnitContext> context, Driver* driver)
         : ParsingState(type, parser, std::move(context)),
           _id(std::move(std::move(id))),
           _cid(std::move(std::move(cid))),
@@ -182,7 +181,7 @@ protected:
 
 private:
     std::string _id;
-    std::optional<std::string> _cid;
+    hilti::rt::Optional<std::string> _cid;
     Driver* _driver;
 };
 
@@ -236,7 +235,7 @@ public:
      * \note This just forwards to `spicy::rt::lookupParser()`.
      */
     hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "",
-                                                             const std::optional<uint64_t>& linker_scope = {}) {
+                                                             const hilti::rt::Optional<uint64_t>& linker_scope = {}) {
         return spicy::rt::lookupParser(name, linker_scope);
     }
 

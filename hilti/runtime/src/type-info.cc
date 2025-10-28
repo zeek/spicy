@@ -51,3 +51,19 @@ const TypeInfo type_info::uint32{std::nullopt, "uint32", TO_STRING(hilti::rt::in
 const TypeInfo type_info::uint64{std::nullopt, "uint64", TO_STRING(hilti::rt::integer::safe<uint64_t>),
                                  new type_info::UnsignedInteger<uint64_t>()};
 const TypeInfo type_info::void_{std::nullopt, "void", TO_STRING_CONST("void"), new type_info::Void()};
+
+
+std::vector<std::pair<const type_info::bitfield::Bits&, type_info::Value>> type_info::Bitfield::iterate(
+    const type_info::Value& v) const {
+    auto elements = _tuple_ti->tuple->iterate(v);
+
+    std::vector<std::pair<const bitfield::Bits&, Value>> values;
+    values.reserve(std::min(bits().size(), elements.size()));
+
+    auto b = bits().begin();
+    auto e = elements.begin();
+    for ( ; b != bits().end() && e != elements.end(); ++b, ++e )
+        values.emplace_back(*b, e->second);
+
+    return values;
+}

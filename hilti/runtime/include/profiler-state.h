@@ -3,9 +3,9 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/types/optional.h>
 
 namespace hilti::rt::profiler {
 
@@ -20,9 +20,9 @@ namespace hilti::rt::profiler {
  *  statistics.
  */
 struct Measurement {
-    uint64_t count = 0;             /**< Number of measurements taken. */
-    uint64_t time = 0;              /**< Measured time in system-specific high resolution clock. */
-    std::optional<uint64_t> volume; /**< Measured absolute volume in bytes, if applicable */
+    uint64_t count = 0;                   /**< Number of measurements taken. */
+    uint64_t time = 0;                    /**< Measured time in system-specific high resolution clock. */
+    hilti::rt::Optional<uint64_t> volume; /**< Measured absolute volume in bytes, if applicable */
 
     Measurement& operator+=(const Measurement& m) {
         time += m.time;

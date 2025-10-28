@@ -6,6 +6,7 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/result.h>
+#include <hilti/rt/types/optional.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -18,8 +19,8 @@ struct hasParameters {};
 namespace struct_ {
 
 template<class T>
-inline auto& value_or_exception(const std::optional<T>& t) {
-    if ( t.has_value() )
+inline auto& value_or_exception(const hilti::rt::Optional<T>& t) {
+    if ( t.hasValue() )
         return t.value();
 
     throw AttributeNotSet("struct attribute not set");

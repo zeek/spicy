@@ -3,7 +3,6 @@
 #include <arpa/inet.h>
 
 #include <algorithm>
-#include <tuple>
 
 #include <hilti/rt/types/integer.h>
 

@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 
 #include <ostream>
-#include <tuple>
 #include <type_traits>
 
 #include <hilti/rt/exception.h>
@@ -177,24 +176,24 @@ TEST_CASE("find") {
 
     SUBCASE("range of bytes") {
         SUBCASE("default start") {
-            CHECK_EQ(b.find("23"_b), std::make_tuple(true, b.at(1)));
-            CHECK_EQ(b.find("234"_b), std::make_tuple(false, b.at(1)));
-            CHECK_EQ(b.find("22"_b), std::make_tuple(false, b.end()));
-            CHECK_EQ(b.find("a"_b), std::make_tuple(false, b.end()));
-            CHECK_EQ(b.find(""_b), std::make_tuple(true, b.begin()));
-            CHECK_EQ(empty.find("a"_b), std::make_tuple(false, empty.end()));
-            CHECK_EQ(empty.find(""_b), std::make_tuple(true, empty.begin()));
+            CHECK_EQ(b.find("23"_b), tuple::make(true, b.at(1)));
+            CHECK_EQ(b.find("234"_b), tuple::make(false, b.at(1)));
+            CHECK_EQ(b.find("22"_b), tuple::make(false, b.end()));
+            CHECK_EQ(b.find("a"_b), tuple::make(false, b.end()));
+            CHECK_EQ(b.find(""_b), tuple::make(true, b.begin()));
+            CHECK_EQ(empty.find("a"_b), tuple::make(false, empty.end()));
+            CHECK_EQ(empty.find(""_b), tuple::make(true, empty.begin()));
         }
 
         SUBCASE("start at target") {
-            CHECK_EQ(b.find("23"_b, b.at(1)), std::make_tuple(true, b.at(1)));
-            CHECK_EQ(b.find("ab"_b, b.at(1)), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("23"_b, b.at(1)), tuple::make(true, b.at(1)));
+            CHECK_EQ(b.find("ab"_b, b.at(1)), tuple::make(false, b.end()));
         }
 
         SUBCASE("start beyond target") {
-            CHECK_EQ(b.find("23"_b, b.at(2)), std::make_tuple(false, b.end()));
-            CHECK_EQ(b.find("ab"_b, b.at(2)), std::make_tuple(false, b.end()));
-            CHECK_EQ(b.find("ab"_b, b.end()), std::make_tuple(false, b.end()));
+            CHECK_EQ(b.find("23"_b, b.at(2)), tuple::make(false, b.end()));
+            CHECK_EQ(b.find("ab"_b, b.at(2)), tuple::make(false, b.end()));
+            CHECK_EQ(b.find("ab"_b, b.end()), tuple::make(false, b.end()));
         }
     }
 }
@@ -288,28 +287,28 @@ TEST_CASE("split") {
 
 TEST_CASE("split1") {
     SUBCASE("separator") {
-        CHECK_EQ("12 45"_b.split1(" "), std::make_tuple("12"_b, "45"_b));
-        CHECK_EQ("12 45 678"_b.split1(" "), std::make_tuple("12"_b, "45 678"_b));
-        CHECK_EQ("12345"_b.split1("34"), std::make_tuple("12"_b, "5"_b));
-        CHECK_EQ(" 2345"_b.split1(" "), std::make_tuple(""_b, "2345"_b));
-        CHECK_EQ("12345"_b.split1(""), std::make_tuple(""_b, "12345"_b));
-        CHECK_EQ("12345"_b.split1("6"), std::make_tuple("12345"_b, ""_b));
-        CHECK_EQ("12 34 5"_b.split1(""), std::make_tuple(""_b, "12 34 5"_b));
-        CHECK_EQ("1"_b.split1(" "), std::make_tuple("1"_b, ""_b));
-        CHECK_EQ(""_b.split1("1"), std::make_tuple(""_b, ""_b));
-        CHECK_EQ(""_b.split1(""), std::make_tuple(""_b, ""_b));
+        CHECK_EQ("12 45"_b.split1(" "), tuple::make("12"_b, "45"_b));
+        CHECK_EQ("12 45 678"_b.split1(" "), tuple::make("12"_b, "45 678"_b));
+        CHECK_EQ("12345"_b.split1("34"), tuple::make("12"_b, "5"_b));
+        CHECK_EQ(" 2345"_b.split1(" "), tuple::make(""_b, "2345"_b));
+        CHECK_EQ("12345"_b.split1(""), tuple::make(""_b, "12345"_b));
+        CHECK_EQ("12345"_b.split1("6"), tuple::make("12345"_b, ""_b));
+        CHECK_EQ("12 34 5"_b.split1(""), tuple::make(""_b, "12 34 5"_b));
+        CHECK_EQ("1"_b.split1(" "), tuple::make("1"_b, ""_b));
+        CHECK_EQ(""_b.split1("1"), tuple::make(""_b, ""_b));
+        CHECK_EQ(""_b.split1(""), tuple::make(""_b, ""_b));
     }
 
     SUBCASE("whitespace") {
-        CHECK_EQ("12 45"_b.split1(), std::make_tuple("12"_b, "45"_b));
-        CHECK_EQ("12 45 678"_b.split1(), std::make_tuple("12"_b, "45 678"_b));
+        CHECK_EQ("12 45"_b.split1(), tuple::make("12"_b, "45"_b));
+        CHECK_EQ("12 45 678"_b.split1(), tuple::make("12"_b, "45 678"_b));
 
         // TODO(bbannier): This should be symmetric with `split(" ")`.
-        CHECK_EQ(" 2345"_b.split1(), std::make_tuple(""_b, "2345"_b));
+        CHECK_EQ(" 2345"_b.split1(), tuple::make(""_b, "2345"_b));
 
-        CHECK_EQ(" "_b.split1(), std::make_tuple(""_b, ""_b));
-        CHECK_EQ(""_b.split1(), std::make_tuple(""_b, ""_b));
-        CHECK_EQ("1"_b.split1(), std::make_tuple("1"_b, ""_b));
+        CHECK_EQ(" "_b.split1(), tuple::make(""_b, ""_b));
+        CHECK_EQ(""_b.split1(), tuple::make(""_b, ""_b));
+        CHECK_EQ("1"_b.split1(), tuple::make("1"_b, ""_b));
     }
 }
 

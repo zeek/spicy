@@ -155,7 +155,7 @@ static Result<Tuple<Address, T>> _unpack(const T& data, AddressFamily family, By
                 return result::Error("insufficient data to unpack IPv4 address");
 
             if ( auto x = integer::unpack<uint32_t>(data, fmt) )
-                return {std::make_tuple(Address(tuple::get<0>(*x)), tuple::get<1>(*x))};
+                return {tuple::make(Address(tuple::get<0>(*x)), tuple::get<1>(*x))};
             else
                 return x.error();
         }
@@ -170,9 +170,9 @@ static Result<Tuple<Address, T>> _unpack(const T& data, AddressFamily family, By
             if ( auto x = integer::unpack<uint64_t>(data, fmt) ) {
                 if ( auto y = integer::unpack<uint64_t>(tuple::get<1>(*x), fmt) ) {
                     if ( ! nbo )
-                        return {std::make_tuple(Address(tuple::get<0>(*y), tuple::get<0>(*x)), tuple::get<1>(*y))};
+                        return {tuple::make(Address(tuple::get<0>(*y), tuple::get<0>(*x)), tuple::get<1>(*y))};
                     else
-                        return {std::make_tuple(Address(tuple::get<0>(*x), tuple::get<0>(*y)), tuple::get<1>(*y))};
+                        return {tuple::make(Address(tuple::get<0>(*x), tuple::get<0>(*y)), tuple::get<1>(*y))};
                 }
                 else
                     return y.error();

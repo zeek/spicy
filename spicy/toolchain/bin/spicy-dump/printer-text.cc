@@ -261,9 +261,9 @@ void TextPrinter::printOffsets(const type_info::Struct& ti, const type_info::Val
         return;
 
     if ( const auto& offsets = field_offsets->get_optional(field_name) ) {
-        out() << " [" << std::get<0>(*offsets) << ", ";
+        out() << " [" << tuple::get<0>(*offsets) << ", ";
 
-        if ( const auto& end = std::get<1>(*offsets) )
+        if ( const auto& end = tuple::get<1>(*offsets) )
             out() << *end;
         else
             out() << "-";

@@ -207,7 +207,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     auto t = cg->compile(f->type(), codegen::TypeUsage::Storage);
 
                     if ( f->isOptional() )
-                        t = fmt("std::optional<%s>", t);
+                        t = fmt("::hilti::rt::Optional<%s>", t);
 
                     std::optional<cxx::Expression> default_;
 
@@ -417,7 +417,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         body.addSwitch("x.value()", cases, std::move(default_));
 
         auto ts = cxx::declaration::Function(cxx::declaration::Function::Free, "std::string",
-                                             {"hilti::rt::detail::adl", "to_string"},
+                                             {"::hilti::rt::detail::adl", "to_string"},
                                              {cxx::declaration::Argument("x", cxx::Type(id)),
                                               cxx::declaration::Argument("", "adl::tag")},
                                              "inline", std::move(body));
@@ -628,7 +628,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         std::string t;
 
         if ( const auto& ct = n->dereferencedType(); ! ct->isWildcard() )
-            t = fmt("std::optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
+            t = fmt("::hilti::rt::Optional<%s>", cg->compile(ct, codegen::TypeUsage::Storage));
         else
             t = "*";
 
@@ -713,18 +713,25 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             util::join(util::transform(n->elements(),
                                        [this](auto e) {
                                            if ( auto d = cg->typeDefaultValue(e->type()) )
+                                               // Engage the optional with the element's explicit default value.
                                                return fmt("{%s}", *d);
-                                           else
-                                               // Would prefer to just to return "{{}}" here, but that doesn't work
-                                               // on some compilers; seen for example on CentOS Stream 9 and Ubuntu 24.
-                                               // Not sure if that's expected or not.
-                                               return fmt("std::make_optional<%s>({})",
-                                                          cg->compile(e->type(), codegen::TypeUsage::Storage));
+                                           else {
+                                               // No explicit default (e.g., Bool, integers, etc.).
+                                               // If the element type itself is an Optional<T>, leave it unset.
+                                               if ( e->type()->type()->template isA<type::Optional>() )
+                                                   return fmt("::hilti::rt::optional::make<%s>({})",
+                                                              cg->compile(e->type(), codegen::TypeUsage::Storage));
+
+                                               // Otherwise engage the optional with a value-initialized T{} so
+                                               // required (non-optional) tuple elements start as set.
+                                               auto t = cg->compile(e->type(), codegen::TypeUsage::Storage);
+                                               return fmt("::hilti::rt::Optional<%s>(%s{})", t, t);
+                                           }
                                        }),
                        ", ");
 
         auto base_type = fmt("::hilti::rt::Tuple<%s>", types);
-        auto default_ = fmt("::hilti::rt::Tuple<%s>{%s}", types, defaults);
+        auto default_ = fmt("::hilti::rt::tuple::make_from_optionals<%s>(%s)", types, defaults);
         result = CxxTypes{.base_type = base_type, .default_ = default_};
     }
 
@@ -804,18 +811,24 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
     std::optional<cxx::Expression> result;
 
     void operator()(type::Bitfield* n) final {
+        std::vector<QualifiedType*> types;
+        for ( const auto& b : n->bits(true) ) {
+            auto* itype = b->itemType();
+            types.emplace_back(itype);
+        }
+
+        auto tuple_ti = cg->typeInfo(cg->builder()->qualifiedType(cg->builder()->typeTuple(types), Constness::Const));
+
         std::vector<std::string> elems;
         auto ttype = cg->compile(type, codegen::TypeUsage::Storage);
 
-        auto i = 0;
         for ( const auto&& b : n->bits() )
-            elems.push_back(fmt(
-                "::hilti::rt::type_info::bitfield::Bits{ \"%s\", %u, %u, %s, ::hilti::rt::bitfield::elementOffset<%s, "
-                "%d>() }",
-                b->id(), b->lower(), b->upper(), cg->typeInfo(b->itemTypeWithOptional()), ttype, i++));
+            elems.push_back(fmt("::hilti::rt::type_info::bitfield::Bits{ \"%s\", %u, %u, %s }", b->id(), b->lower(),
+                                b->upper(), cg->typeInfo(b->itemType())));
 
-        result = fmt("::hilti::rt::type_info::Bitfield(%u, std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}))",
-                     n->width(), util::join(elems, ", "));
+        result =
+            fmt("::hilti::rt::type_info::Bitfield(%u, std::vector<::hilti::rt::type_info::bitfield::Bits>({%s}), %s)",
+                n->width(), util::join(elems, ", "), tuple_ti);
     }
 
     void operator()(type::Enum* n) final {
@@ -945,9 +958,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
 
         int i = 0;
         for ( const auto& e : n->elements() ) {
-            elems.push_back(
-                fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, ::hilti::rt::tuple::elementOffset<%s, %d>() }",
-                    e->id() ? e->id() : ID(), cg->typeInfo(e->typeWithOptional()), ttype, i));
+            elems.push_back(fmt("::hilti::rt::type_info::tuple::Element{ \"%s\", %s, %s::elementOffset<%d>() }",
+                                e->id() ? e->id() : ID(), cg->typeInfo(e->type()), ttype, i));
             ++i;
         }
 

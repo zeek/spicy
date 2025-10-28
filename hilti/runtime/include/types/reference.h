@@ -234,25 +234,41 @@ public:
     /**
      * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
-     *
-     * @throws NullReference if the instance does not currently refer to a valid value
      */
     ValueReference& operator=(T other) {
-        *_safeGet() = std::move(other);
+        if ( auto* ptr = _get() )
+            *ptr = std::move(other);
+        else
+            _ptr = std::make_shared<T>(std::move(other));
+
         return *this;
     }
 
     /**
      * Assigns to the contained value. Assigning does not invalidate other
      * references associated with the same value; they'll see the change.
-     *
-     * @throws NullReference if the instance does not currently refer to a valid value
      */
-    ValueReference& operator=(const ValueReference& other) {
-        if ( &other != this )
-            *_safeGet() = *other._safeGet();
+    ValueReference& operator=(const ValueReference& other) noexcept {
+        if ( &other == this )
+            return *this;
 
-        return *this;
+        if ( ! other.get() ) {
+            _ptr = nullptr;
+            return *this;
+        }
+
+        // Not all types wrapped in a `ValueReference` might have a `noexcept`
+        // assignment operator.
+        try {
+            if ( auto* ptr = _get() )
+                *ptr = *other._get();
+            else
+                _ptr = std::make_shared<T>(*other._get());
+
+            return *this;
+        } catch ( ... ) {
+            cannot_be_reached();
+        }
     }
 
     /**
@@ -260,21 +276,30 @@ public:
      * references associated with the same value; they'll see the change.
      */
     ValueReference& operator=(ValueReference&& other) noexcept {
-        if ( &other != this ) {
-            // Not all types wrapped in a `ValueReference` might have a
-            // `noexcept` (move) assignment operator.
-            try {
-                // We can't move the actual value as other references may be
-                // referring to it.
-                *_get() = *other._get();
+        if ( &other == this )
+            return *this;
 
-                other._ptr = nullptr;
-            } catch ( ... ) {
-                cannot_be_reached();
-            }
+        if ( ! other.get() ) {
+            _ptr = nullptr;
+            return *this;
         }
 
-        return *this;
+        // Not all types wrapped in a `ValueReference` might have a
+        // `noexcept` (move) assignment operator.
+        try {
+            if ( auto* ptr = _get() ) {
+                // We can't move the actual value as other references may be
+                // referring to it.
+                *ptr = *other._get();
+                other._ptr = nullptr;
+            }
+            else
+                _ptr = std::make_shared<T>(*other._get());
+
+            return *this;
+        } catch ( ... ) {
+            cannot_be_reached();
+        }
     }
 
     /**
@@ -336,8 +361,7 @@ private:
     const T* _safeGet() const {
         assert(_ptr.index() != std::variant_npos);
 
-        // If the reference contains a raw pointer it is never null.
-        if ( auto ptr = std::get_if<T*>(&_ptr) )
+        if ( auto ptr = std::get_if<T*>(&_ptr); ptr && *ptr )
             return *ptr;
 
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
@@ -349,8 +373,7 @@ private:
     T* _safeGet() {
         assert(_ptr.index() != std::variant_npos);
 
-        // If the reference contains a raw pointer it is never null.
-        if ( auto ptr = std::get_if<T*>(&_ptr) )
+        if ( auto ptr = std::get_if<T*>(&_ptr); ptr && *ptr )
             return *ptr;
 
         if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )

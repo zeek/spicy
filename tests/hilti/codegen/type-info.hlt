@@ -275,24 +275,27 @@ struct VisitorTypesInit {
                 auto i = s.begin();
                 auto b = x->bits().begin();
 
-                auto opt1 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(opt1)->get(opt1), "string");
+                auto v1 = i->second;
+                CHECK(v1);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "string");
                 CHECK_EQ(i->first.name, "a");
                 CHECK_EQ(i->first.lower, 0);
                 CHECK_EQ(i->first.upper, 4);
                 ++i;
                 ++b;
 
-                auto opt2 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(opt2)->get(opt2), 6);
+                auto v2 = i->second;
+                CHECK(v2);
+                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(v2)->get(v2), 6);
                 CHECK_EQ(i->first.name, "b");
                 CHECK_EQ(i->first.lower, 1);
                 CHECK_EQ(i->first.upper, 2);
                 ++i;
                 ++b;
 
-                auto opt3 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(opt3)->get(opt3), 31);
+                auto v3 = i->second;
+                CHECK(v3);
+                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(v3)->get(v3), 31);
                 CHECK_EQ(i->first.name, "c");
                 CHECK_EQ(i->first.lower, 3);
                 CHECK_EQ(i->first.upper, 7);
@@ -497,18 +500,21 @@ struct VisitorTypesInit {
                 auto s = x->iterate(v);
                 auto i = s.begin();
 
-                auto opt1 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
-                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int32_t>>(opt1)->get(opt1), 123);
+                auto v1 = i->second;
+                CHECK(v1);
+                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int32_t>>(v1)->get(v1), 123);
                 CHECK_EQ(i->first.name, "a");
                 ++i;
 
-                auto opt2 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(opt2)->get(opt2), "string");
+                auto v2 = i->second;
+                CHECK(v2);
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "string");
                 CHECK_EQ(i->first.name, "");
                 ++i;
 
-                auto opt3 = type_info::value::auxType<type_info::Optional>(i->second)->value(i->second);
-                CHECK_EQ(type_info::value::auxType<type_info::Bool>(opt3)->get(opt3), true);
+                auto v3 = i->second;
+                CHECK(v3);
+                CHECK_EQ(type_info::value::auxType<type_info::Bool>(v3)->get(v3), true);
                 CHECK_EQ(i->first.name, "c");
 
                 ++i;
@@ -667,13 +673,13 @@ int main(int argc, char** argv) {
     auto [x_optionals, ti_optionals] = __hlt::Test::makeTestOptionals();
 
     // Test instance of TestTypes that has been initialized with known values.
-    CHECK((*ti_types)->id);
-    CHECK_EQ(std::string(*(*ti_types)->id), std::string("Test::TestTypes"));
-    CHECK_EQ(std::string((*ti_types)->display), std::string("Test::TestTypes"));
+    CHECK(ti_types->id);
+    CHECK_EQ(std::string(*ti_types->id), std::string("Test::TestTypes"));
+    CHECK_EQ(std::string(ti_types->display), std::string("Test::TestTypes"));
 
     VisitorTypesInit visitor_init;
-    type_info::value::Parent p_init(*x_init);
-    auto v_init = type_info::Value(x_init->get(), *ti_types, p_init);
+    type_info::value::Parent p_init(x_init);
+    auto v_init = type_info::Value(x_init.get(), ti_types, p_init);
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_init)->iterate(v_init) )
         visitor_init.visit(f.second);
 
@@ -681,8 +687,8 @@ int main(int argc, char** argv) {
 
     // Test instance of TestTypes that has been initialized with default values.
     VisitorTypesDefault visitor_default;
-    type_info::value::Parent p_default(*x_default);
-    auto v_default = type_info::Value(x_default->get(), *ti_types, p_default);
+    type_info::value::Parent p_default(x_default);
+    auto v_default = type_info::Value(x_default.get(), ti_types, p_default);
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_default)->iterate(v_default) )
         visitor_default.visit(f.second);
 
@@ -690,8 +696,8 @@ int main(int argc, char** argv) {
 
     // Test instances of TestOptions in which one optional has been set.
     VisitorOptionals visitor2;
-    type_info::value::Parent p_optionals(*x_default);
-    auto v_optionals = type_info::Value(x_optionals->get(), *ti_optionals, p_optionals);
+    type_info::value::Parent p_optionals(x_default);
+    auto v_optionals = type_info::Value(x_optionals.get(), ti_optionals, p_optionals);
     int idx = 0;
     for ( auto f : type_info::value::auxType<type_info::Struct>(v_optionals)->iterate(v_optionals) ) {
         if ( idx == 0 ) {

@@ -1061,7 +1061,11 @@ void CFG::_populateDataflow() {
 // Helper function to output control flow graphs for statements.
 static std::string dataflowDot(const hilti::Statement& stmt) {
     auto cfg = hilti::detail::cfg::CFG(&stmt);
-    auto omit_dataflow = rt::getenv("HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW") == "1";
+
+    auto omit_dataflow = false;
+    if ( const auto& env = rt::getenv("HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW") )
+        omit_dataflow = (*env == "1");
+
     return cfg.dot(omit_dataflow);
 }
 

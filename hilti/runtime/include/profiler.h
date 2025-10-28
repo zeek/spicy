@@ -4,12 +4,13 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <string>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/profiler-state.h>
+#include <hilti/rt/types/null.h>
+#include <hilti/rt/types/optional.h>
 
 namespace hilti::rt {
 
@@ -17,8 +18,8 @@ class Profiler;
 
 namespace profiler {
 
-std::optional<Profiler> start(std::string_view name, std::optional<uint64_t> volume = std::nullopt);
-void stop(std::optional<Profiler>& p, std::optional<uint64_t> volume = std::nullopt);
+hilti::rt::Optional<Profiler> start(std::string_view name, hilti::rt::Optional<uint64_t> volume = Null());
+void stop(hilti::rt::Optional<Profiler>& p, hilti::rt::Optional<uint64_t> volume = Null());
 
 namespace detail {
 
@@ -71,7 +72,7 @@ public:
      *
      * @param volume optional current absolute volume to record with the measurement
      */
-    static profiler::Measurement snapshot(std::optional<uint64_t> volume = std::nullopt);
+    static profiler::Measurement snapshot(hilti::rt::Optional<uint64_t> volume = Null());
 
 protected:
     /**
@@ -81,12 +82,12 @@ protected:
      * @param name descriptive, unique name of the block of code to profile
      * @param volume optional initial absolute volume to record with the measurement
      */
-    Profiler(std::string_view name, std::optional<uint64_t> volume) : _name(name), _start(snapshot(volume)) {
+    Profiler(std::string_view name, hilti::rt::Optional<uint64_t> volume) : _name(name), _start(snapshot(volume)) {
         _register();
     }
 
 private:
-    friend std::optional<Profiler> profiler::start(std::string_view name, std::optional<uint64_t> volume);
+    friend hilti::rt::Optional<Profiler> profiler::start(std::string_view name, hilti::rt::Optional<uint64_t> volume);
     friend void profiler::detail::done();
 
     void _register() const;
@@ -105,7 +106,7 @@ namespace profiler {
  * @param volume optional initial absolute volume to record with the measurement
  * @return profiler instance representing the active measurement
  */
-inline std::optional<Profiler> start(std::string_view name, std::optional<uint64_t> volume) {
+inline hilti::rt::Optional<Profiler> start(std::string_view name, hilti::rt::Optional<uint64_t> volume) {
     if ( ::hilti::rt::detail::unsafeGlobalState()->profiling_enabled )
         return Profiler(name, volume);
     else
@@ -119,7 +120,7 @@ inline std::optional<Profiler> start(std::string_view name, std::optional<uint64
  * @param p profiler instance to stop
  * @param volume optional absolute volume to record with the final measurement
  */
-inline void stop(std::optional<Profiler>& p, std::optional<uint64_t> volume) {
+inline void stop(hilti::rt::Optional<Profiler>& p, hilti::rt::Optional<uint64_t> volume) {
     if ( p )
         p->record(Profiler::snapshot(volume));
 }
@@ -131,7 +132,7 @@ inline void stop(std::optional<Profiler>& p, std::optional<uint64_t> volume) {
  * @param name of the block of code to return data for
  * @return measurement state, or unset if no data is available
  */
-std::optional<Measurement> get(const std::string& name);
+hilti::rt::Optional<Measurement> get(const std::string& name);
 
 /** Produce end-of-process summary profiling report. */
 extern void report();

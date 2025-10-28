@@ -25,18 +25,18 @@ TEST_CASE("get_optional") {
     {
         auto m = Map<int, int>{{1, 11}};
 
-        CHECK_EQ(m.get_optional(1), 11);
-        CHECK_EQ(m.get_optional(42), std::optional<int>{});
+        CHECK_EQ(*m.get_optional(1), 11);
+        CHECK_EQ(m.get_optional(42), hilti::rt::Optional<decltype(42)>{});
     }
 
     {
-        auto m = Map<int, std::optional<int>>{{1, 11}};
+        auto m = Map<int, hilti::rt::Optional<int>>{{1, 11}};
 
-        CHECK_EQ(m.get_optional(1), 11);
+        CHECK_EQ(**m.get_optional(1), 11);
 
         auto x = m.get_optional(42);
-        static_assert(std::is_same_v<decltype(x), std::optional<std::optional<int>>>);
-        CHECK_EQ(x, std::optional<std::optional<int>>{});
+        static_assert(std::is_same_v<decltype(x), hilti::rt::Optional<hilti::rt::Optional<int>>>);
+        CHECK_EQ(x, hilti::rt::Optional<hilti::rt::Optional<int>>{});
     }
 }
 

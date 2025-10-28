@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <tuple>
 #include <utility>
 
 #include <hilti/rt/extension-points.h>
@@ -38,6 +37,17 @@ struct Bitfield : public trait::isBitfield {
     template<typename... Us>
     Bitfield(Bitfield<Us...> other) : value(std::move(other.value)), ti(other.ti) {}
 
+    /**
+     * Returns the binary offset of a particular bit range inside the
+     * bitfield's storage. The offset refers is to the start of the bitfield.
+     *
+     * @tparam Idx index of the bit range to return
+     */
+    template<size_t Idx>
+    static ptrdiff_t elementOffset() {
+        return value_type::template elementOffset<Idx>();
+    }
+
     value_type value = value_type();
     const hilti::rt::TypeInfo* ti;
 };
@@ -50,14 +60,7 @@ Bitfield<Ts...> make_bitfield(const hilti::rt::TypeInfo* ti, Ts... args) {
     return {tuple::make(std::move(args)...), ti};
 }
 
-namespace bitfield {
-
-template<typename Bitfield, size_t Idx>
-ptrdiff_t elementOffset() {
-    return tuple::elementOffset<decltype(Bitfield::value), Idx>();
-}
-
-namespace detail {
+namespace bitfield::detail {
 
 // Helper for the HILTI codegen to render a bitfield's value into a string.
 template<typename... Ts>
@@ -72,10 +75,12 @@ inline std::string render(const Bitfield<Ts...>& x, const hilti::rt::TypeInfo* t
         if ( ! out.empty() )
             out += ", ";
 
+        auto s = v ? v.to_string() : "(not set)";
+
         if ( is_anonymous )
-            out += fmt("$%s=%s", b.name, v.to_string());
+            out += fmt("$%s=%s", b.name, s);
         else
-            out += fmt("%s: %s", b.name, v.to_string());
+            out += fmt("%s: %s", b.name, s);
     }
 
     return out;
@@ -83,12 +88,12 @@ inline std::string render(const Bitfield<Ts...>& x, const hilti::rt::TypeInfo* t
 
 // Helper for the HILTI codegen to render an optional bitfield value into a string.
 template<typename... Ts>
-inline std::string render(const std::optional<Bitfield<Ts...>>& x, const hilti::rt::TypeInfo* type_info,
+inline std::string render(const hilti::rt::Optional<Bitfield<Ts...>>& x, const hilti::rt::TypeInfo* type_info,
                           bool is_anonymous = false) {
     if ( ! type_info )
         return "<uninitialized bitfield>";
 
-    if ( x.has_value() )
+    if ( x.hasValue() )
         return render(*x, type_info, is_anonymous);
 
     if ( ! is_anonymous )
@@ -108,8 +113,7 @@ inline std::string render(const std::optional<Bitfield<Ts...>>& x, const hilti::
     return out;
 }
 
-} // namespace detail
-} // namespace bitfield
+} // namespace bitfield::detail
 
 namespace detail::adl {
 template<typename... Ts>

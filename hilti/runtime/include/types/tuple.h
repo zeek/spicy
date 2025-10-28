@@ -2,107 +2,287 @@
 
 #pragma once
 
-#include <optional>
+#include <compare>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/extension-points.h>
-#include <hilti/rt/types/optional.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
 
-/**
- * Runtime representation of HILTI's `tuple` type. As tuple element can be left
- * unset, we wrap them into optionals.
- *
- * @tparam Ts types of the tuple elements
- **/
-template<typename... Ts>
-using Tuple = std::tuple<std::optional<Ts>...>;
+template<typename T>
+class ValueReference;
 
 namespace tuple {
-
 namespace detail {
 // Helper to throw `UnsetTupleElement`. Outsourcing this helps the compiler
 // optimize better.
 __attribute__((noreturn)) void throw_unset_tuple_element();
+
+// Tag type to indicate to tuple base class constructor that all elements are set.
+struct AllSetTag {};
 } // namespace detail
 
+// Tag type to indicate to tuple constructor that elements may be unset.
+struct OptionalTag {};
+
+// Tag type to indicate to tuple constructor all elements are set.
+struct ValueTag {};
+
+namespace detail {
+// Helper to detect a ValueReference type.
+template<typename T>
+struct IsValueReference : std::false_type {};
+
+template<typename T>
+struct IsValueReference<ValueReference<T>> : std::true_type {
+    using element_type = T;
+};
+} // namespace detail
+} // namespace tuple
+
 /**
- * Factory function to create a HILTI tuple with all elements set. This works
- * like `std::make_tuple`, but wraps all arguments into `std::optional` for
- * storage (i.e., don't pass the arguments already wrapped into
- * `std::optional`).
+ * Common base class to all tuple types. The base class provides a public
+ * function to check if a particular element is set, meaning that one can test
+ * this generically without knowing the actual tuple element types.
+ *
+ * Internally, the base class performs the state management tracking which
+ * elements are set through a bitmask.
+ *
+ * For efficiency, we currently limit the maximum number of tuple elements to
+ * 64. This could be changed if deemed necessary.
+ */
+class TupleBase {
+public:
+    /**
+     * Returns true if the element at index `idx` is set. If `idx` is
+     * beyond the number of valid tuple elements the result is undefined.
+     */
+    constexpr bool hasValue(size_t idx) const noexcept {
+        return idx < MaxElements ? (_mask & (1ULL << idx)) != 0 : false;
+    }
+
+    friend auto operator<=>(const TupleBase& t1, const TupleBase& t2) = default;
+
+protected:
+    /** Maximum number of tuple elements supported. */
+    static constexpr size_t MaxElements = 64;
+
+    /** Constructor marking all elements as initially unset. */
+    TupleBase() noexcept = default;
+
+    /**
+     * Constructor marking all elements as initially set.
+     *
+     * @param tag tag to select this constructor
+     * @param num_elements number of elements in the tuple
+     */
+    TupleBase(tuple::detail::AllSetTag, uint64_t num_elements) : _mask((1ULL << num_elements) - 1) {}
+
+    TupleBase(const TupleBase& other) noexcept = default;
+    TupleBase(TupleBase&& other) noexcept = default;
+    ~TupleBase() = default;
+
+    /**
+     * Mark a specific element as set.
+     *
+     * @param idx index of the element to mark as set
+     */
+    void set(size_t idx) { _mask |= (1ULL << idx); }
+
+    TupleBase& operator=(const TupleBase& other) = default;
+    TupleBase& operator=(TupleBase&& other) = default;
+
+private:
+    uint64_t _mask = 0;
+};
+
+/**
+ * Runtime representation of HILTI's `tuple` type. Different from `std::tuple`,
+ * tuple elements can remain unset. If an unset element is accessed, an
+ * `UnsetTupleElement` exception is thrown.
+ *
+ * For efficiency, we currently limit the maximum number of tuple elements to
+ * 64. This could be changed if deemed necessary.
+
+ * @tparam Ts types of the tuple elements
+ **/
+template<typename... Ts>
+class Tuple : public TupleBase, protected std::tuple<Ts...> {
+public:
+    using Base = std::tuple<Ts...>;
+    static_assert(sizeof...(Ts) <= MaxElements, "tuples with more than 64 elements are not supported");
+
+    /** Default constructor creating an empty tuple with all elements unset. */
+    Tuple() : Base(_defaultStorage()) {}
+
+    /**
+     * Constructor creating a tuple from provided values, with all elements
+     * set.
+     *
+     * @param tag tag to select this constructor
+     * @param us values for the tuple elements
+     */
+    template<typename... Us>
+    explicit Tuple(tuple::ValueTag, Us&&... us)
+        : TupleBase(tuple::detail::AllSetTag{}, sizeof...(Ts)), Base(std::forward<Us>(us)...) {}
+
+    /**
+     * Constructor creating a tuple from provided values, with some elements
+     * potentially left unset.
+     *
+     * @param tag tag to select this constructor
+     *
+     * @param us values for the tuple elements wrapped into optionals, with
+     * unset optionals leaving the corresponding tuple element unset
+     */
+    template<typename... Us>
+    explicit Tuple(tuple::OptionalTag, Optional<Us>&&... us) : Tuple() {
+        [&]<size_t... Is>(std::index_sequence<Is...>) {
+            ((us.hasValue() ? std::get<Is>(*this) = std::forward<Us>(*us), TupleBase::set(Is) : void()), ...);
+        }(std::index_sequence_for<Ts...>{});
+    }
+
+    /** Copy constructor. */
+    Tuple(const Tuple& other) = default;
+
+    /** Move constructor. */
+    Tuple(Tuple&& other) = default;
+
+    /**
+     * Move constructor from another tuple type having elements of types that
+     * convert to ours.
+     */
+    template<typename... Us>
+    Tuple(Tuple<Us...>&& other) : TupleBase(other), Base(std::forward<typename std::tuple<Us...>>(other)) {}
+
+    /**
+     * Accessor to retrieve a particular element, assuming it's set.
+     *
+     * @tparam Idx index of the element to retrieve
+     * @return reference to the element at index `Idx`
+     * @throws `UnsetTupleElement` if the element at index `Idx` is not set
+     */
+    template<std::size_t Idx>
+    const auto& get() const {
+        if ( TupleBase::hasValue(Idx) )
+            return std::get<Idx>(*this);
+        else
+            tuple::detail::throw_unset_tuple_element();
+    }
+
+    /**
+     * Accessor to retrieve a particular element, assuming it's set.
+     *
+     * @tparam Idx index of the element to retrieve
+     * @return reference to the element at index `Idx`
+     * @throws `UnsetTupleElement` if the element at index `Idx` is not set
+     */
+    template<std::size_t Idx>
+    auto& get() {
+        if ( TupleBase::hasValue(Idx) )
+            return std::get<Idx>(*this);
+        else
+            tuple::detail::throw_unset_tuple_element();
+    }
+
+    /**
+     * Returns the binary offset of a particular element inside the tuple's
+     * storage. The offset refers is to the start of the tuple.
+     *
+     * @tparam Idx index of the element to return
+     */
+    template<std::size_t Idx>
+    static ptrdiff_t elementOffset() {
+        Tuple t;
+        // This is pretty certainly not well-defined, but seems to work for us ...
+        // NOLINTNEXTLINE(clang-analyzer-security.PointerSub)
+        return (reinterpret_cast<const char*>(&std::get<Idx>(t)) - reinterpret_cast<const char*>(&t));
+    }
+
+    Tuple& operator=(const Tuple& other) = default;
+    Tuple& operator=(Tuple&& other) = default;
+
+    template<typename... Us>
+    friend std::weak_ordering operator<=>(const Tuple<Ts...>& t1, const Tuple<Us...>& t2) {
+        return static_cast<const Base&>(t1) <=> static_cast<const Base&>(t2);
+    }
+
+private:
+    template<typename... Us>
+    friend class Tuple;
+
+    // This returns the value that we initialize the storage tuple with when no
+    // fields are set. That's mostly just the elements' defaults, except for
+    // ValueReference types, which we initialize with a nullptr. The latter
+    // lets us deal with self-recursive tuple types.
+    static auto _defaultStorage() {
+        return Base{[]() {
+            if constexpr ( tuple::detail::IsValueReference<Ts>::value ) {
+                using element_type = typename tuple::detail::IsValueReference<Ts>::element_type;
+                return Ts(std::shared_ptr<element_type>(nullptr));
+            }
+            else
+                return Ts{};
+        }()...};
+    }
+};
+
+namespace tuple {
+
+/**
+ * Factory function to create a HILTI tuple from provided values, with all
+ * elements of the resulting tuple set. This works like `std::make_tuple`.
  *
  * @tparam Ts types of the tuple elements
- * @param ts the values to wrap into optionals
+ * @param ts the tuple's elements
  */
 template<typename... Ts>
 constexpr auto make(Ts&&... ts) {
-    return std::make_tuple(std::optional<std::remove_reference_t<Ts>>(ts)...);
+    return Tuple<std::decay_t<Ts>...>(tuple::ValueTag{}, std::forward<Ts>(ts)...);
 }
 
 /**
- * Factory function to create a HILTI tuple with from a list of values wrapped
- * into optionals. This allows leaving elements unset.
+ * Factory function to create a HILTI tuple from provided values, with some
+ * elements of the resulting tuple potentially left unset.
  *
  * @tparam Ts types of the tuple elements
- * @param ts the values wrap already wrapped into optionals
+ * @param ts the tuple's elements wrapped into optionals, with unset optionals
+ * leaving the corresponding tuple element unset
  */
 template<typename... Ts>
-constexpr auto make_from_optionals(std::optional<Ts>&&... ts) {
-    return std::make_tuple(ts...);
+constexpr auto make_from_optionals(Optional<Ts>&&... ts) {
+    return Tuple<std::decay_t<std::remove_reference_t<Ts>>...>(tuple::OptionalTag{}, std::move(ts)...);
 }
 
 /**
- * Returns true if a particular element of a tuple is set.
+ * Returns a particular element of a tuple, assuming the element is set.
  *
  * @tparam Idx index of the element to check
  * @tparam Ts types of the tuple elements
  * @param t the tuple
- */
-template<size_t Idx, typename... Ts>
-constexpr auto has_value(const Tuple<Ts...>& t) {
-    return std::get<Idx>(t).has_value();
-}
-
-/**
- * Returns a particular element of a tuple. This assumes the element is set,
- * and returns a reference to the dereferenced optional wrapper. If the element
- * is not set, throws a `UnsetTupleElement` exception.
- *
- * @tparam Idx index of the element to check
- * @tparam Ts types of the tuple elements
- * @param t the tuple
+ * @throws `UnsetTupleElement` if the element at index `Idx` is not set
  */
 template<size_t Idx, typename... Ts>
 const auto& get(const Tuple<Ts...>& t) {
-    try {
-        return std::get<Idx>(t).value();
-    } catch ( ... ) {
-        detail::throw_unset_tuple_element();
-    }
+    return t.template get<Idx>();
 }
 
 /**
- * Returns a particular element of a tuple. This assumes the element is set,
- * and returns a reference to the dereferenced optional wrapper. If the element
- * is not set, throws a `UnsetTupleElement` exception.
+ * Returns a particular element of a tuple, assuming the element is set.
  *
  * @tparam Idx index of the element to check
  * @tparam Ts types of the tuple elements
  * @param t the tuple
+ * @throws `UnsetTupleElement` if the element at index `Idx` is not set
  */
 template<size_t Idx, typename... Ts>
 auto& get(Tuple<Ts...>& t) {
-    try {
-        return std::get<Idx>(t).value();
-    } catch ( ... ) {
-        detail::throw_unset_tuple_element();
-    }
+    return t.template get<Idx>();
 }
 
 // Helper overload to allow `tuple::get()` to operate on a `std::pair`. Inside
@@ -122,50 +302,22 @@ constexpr auto& get(std::pair<Ts...>& t) {
     return std::get<Idx>(t);
 }
 
-namespace detail {
-
-template<typename Src, typename Dst, size_t... Is>
-constexpr void assign(Dst&& dst, const Src& src, std::index_sequence<Is...> /*unused*/) {
-    // Short-circuit here seems to be cheaper than possible SIMD execution with `||`.
-    if ( auto some_unset = ! (std::get<Is>(src).has_value() && ...) )
-        detail::throw_unset_tuple_element();
-
-    ((std::get<Is>(std::forward<Dst>(dst)) = *std::get<Is>(src)), ...);
-}
-
-} // namespace detail
-
 /**
  * Assigns the values of a HILTI tuple to a standard tuple of references, with
- * the latter usually created through `std::tie()`. This works like
- * `std::tie(...) = (...)`, but assigns the RHS values unwrapped from their
- * `std::optional` wrappers. This assumes all elements are set. If not all
- * elements are set, throws an `UnsetTupleElement` exception.
+ * the latter usually created through `std::tie()`. This  lets us support
+ * `std::tie(...) = (...)`. It assumes all elements of the HILTI tuple are set.
+ * If not all elements are set, throws an `UnsetTupleElement` exception.
  *
- * @tparam Src source tuple of type `rt::Tuple`
+ * @tparam Ss source tuple of type `rt::Tuple`
  * @tparam Ts types of destination tuple elements
  * @param dst destination tuple of references
  * @param src source tuple
  */
-template<typename Src, typename... Ts>
-constexpr void assign(std::tuple<Ts&...>&& dst, const Src& src) {
-    detail::assign(std::move(dst), src, std::index_sequence_for<Ts...>());
-}
-
-/**
- * Returns the binary offset of a particular element inside a tuple's storage.
- * The offset refers to the wrapping `std::optional` and is relative to the
- * start of the tuple.
- *
- * @tparam Tuple index of the element to check
- * @tparam Idx index of the element to check
- */
-template<typename Tuple, size_t Idx>
-ptrdiff_t elementOffset() {
-    // This is pretty certainly not well-defined, but seems to work for us ...
-    Tuple t; // requires all elements to be default constructable, which should be the case for us
-    // NOLINTNEXTLINE(clang-analyzer-security.PointerSub)
-    return reinterpret_cast<const char*>(&std::get<Idx>(t)) - reinterpret_cast<const char*>(&t);
+template<typename Ss, typename... Ts>
+constexpr void assign(std::tuple<Ts&...>&& dst, const Ss& src) {
+    [&]<size_t... Is>(std::index_sequence<Is...> /*unused*/) {
+        ((std::get<Is>(dst) = src.template get<Is>()), ...);
+    }(std::index_sequence_for<Ts...>{});
 }
 
 /**
@@ -174,39 +326,18 @@ ptrdiff_t elementOffset() {
  *
  * @param f A function evaluating the desired expression, returning the result.
  * @return An optional containing the result of the expression, or remaining
- * unset if the expression threw `AttributeNotSet` (all other exception are
+ * unset if the expression threw `AttributeNotSet` (all other exceptions are
  * passed through)
  */
 template<typename Func>
 auto wrap_expression(Func&& f) {
     using element_t = std::invoke_result_t<Func>;
     try {
-        return std::optional<element_t>(f());
+        return Optional<element_t>(f());
     } catch ( const hilti::rt::AttributeNotSet& e ) {
-        return std::optional<element_t>();
+        return Optional<element_t>();
     }
 }
-
-namespace detail {
-
-// Helper joining a tuple into a string, using a `to_string_for_print()` on
-// each element and adding a separator between elements.
-template<typename T>
-std::string join_to_string(T&& x, const std::string& separator) {
-    std::stringstream out;
-
-    if constexpr ( std::tuple_size_v<T> != 0 )
-        std::apply(
-            [&](auto& arg, auto&... args) {
-                out << rt::to_string_for_print(arg);
-                ((out << separator << rt::to_string_for_print(args)), ...);
-            },
-            x);
-
-    return out.str();
-}
-
-} // namespace detail
 
 /** Corresponds to `hilti::printTuple`. */
 template<typename... Ts>
@@ -216,16 +347,12 @@ void print(const Tuple<Ts...>& x, bool newline = true) {
 
     auto& cout = configuration::get().cout->get();
 
-    auto y = map_tuple(x, [](const auto& elem) {
-        if ( elem )
-            // Skip rendering the optional wrapper.
-            return rt::to_string_for_print(*elem);
-        else
-            // Render the unset optional.
-            return rt::to_string_for_print(elem);
-    });
+    std::vector<std::string> elems;
+    [&]<std::size_t... Is>(std::index_sequence<Is...> /*unused*/) {
+        (..., elems.push_back(x.hasValue(Is) ? rt::to_string_for_print(tuple::get<Is>(x)) : std::string("(not set)")));
+    }(std::index_sequence_for<Ts...>{});
 
-    cout << detail::join_to_string(std::move(y), ", ");
+    cout << rt::join(elems, ", ");
 
     if ( newline )
         cout << '\n';
@@ -239,47 +366,31 @@ void print(const Tuple<Ts...>& x, bool newline = true) {
 namespace detail::adl {
 template<typename... Ts>
 inline std::string to_string(const Tuple<Ts...>& x, adl::tag /*unused*/) {
-    auto y = rt::map_tuple(x, [](const auto& elem) {
-        using elem_t = std::decay_t<decltype(elem)>;
-        static_assert(std::is_same_v<elem_t, std::optional<typename elem_t::value_type>>,
-                      "expected optional type for element");
+    std::vector<std::string> elems;
+    [&]<std::size_t... Is>(std::index_sequence<Is...> /*unused*/) {
+        (..., elems.push_back(x.hasValue(Is) ? rt::to_string(tuple::get<Is>(x)) : std::string("(not set)")));
+    }(std::index_sequence_for<Ts...>{});
 
-        if ( elem )
-            // Skip rendering the optional wrapper.
-            return rt::to_string(*elem);
-        else
-            // Render the unset optional.
-            return rt::to_string(elem);
-    });
-
-    return fmt("(%s)", tuple::detail::join_to_string(std::move(y), ", "));
-}
-
-// For convenience, we also provide string conversion for standard tuples. This
-// is in particular used during unit testing.
-template<typename... Ts>
-inline std::string to_string(const std::tuple<Ts...>& x, adl::tag /*unused*/) {
-    auto y = rt::map_tuple(x, [](const auto& e) { return hilti::rt::to_string(e); });
-    return fmt("(%s)", tuple::detail::join_to_string(std::move(y), ", "));
+    return fmt("(%s)", rt::join(elems, ", "));
 }
 
 } // namespace detail::adl
 } // namespace hilti::rt
 
 namespace std {
-
 template<typename... Ts>
 inline std::ostream& operator<<(std::ostream& out, const hilti::rt::Tuple<Ts...>& x) {
     out << hilti::rt::to_string_for_print(x);
     return out;
 }
 
-// For convenience, we also provide a `std::ostream` operator for standard
-// tuples. This is in particular used during unit testing.
-template<typename... Ts>
-inline std::ostream& operator<<(std::ostream& out, const std::tuple<Ts...>& x) {
-    return out << hilti::rt::to_string_for_print(x);
-    return out;
-}
-
 } // namespace std
+
+// Add support for structured binding for Tuple.
+template<typename... Ts>
+struct std::tuple_size<hilti::rt::Tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {};
+
+template<std::size_t I, typename... Ts>
+struct std::tuple_element<I, hilti::rt::Tuple<Ts...>> {
+    using type = std::tuple_element_t<I, std::tuple<Ts...>>;
+};

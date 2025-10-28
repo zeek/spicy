@@ -196,6 +196,11 @@ TEST_CASE("unpack") {
     using Result32 = Result<Tuple<integer::safe<uint32_t>, Bytes>>;
     using Result64 = Result<Tuple<integer::safe<uint64_t>, Bytes>>;
 
+    // TODO: Can we make this nicer, ideally without the lambdas?
+    static auto make_result16 = [](integer::safe<uint16_t> i, Bytes b) -> Result16 { return tuple::make(i, b); };
+    static auto make_result32 = [](integer::safe<uint32_t> i, Bytes b) -> Result32 { return tuple::make(i, b); };
+    static auto make_result64 = [](integer::safe<uint64_t> i, Bytes b) -> Result64 { return tuple::make(i, b); };
+
     CHECK_EQ(integer::unpack<uint16_t>(""_b, ByteOrder::Little),
              Result16(result::Error("insufficient data to unpack integer")));
     CHECK_EQ(integer::unpack<uint16_t>("\x01"_b, ByteOrder::Little),
@@ -203,19 +208,17 @@ TEST_CASE("unpack") {
     CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Undef),
              Result16(result::Error("undefined byte order")));
 
-    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Little), Result16(std::make_tuple(1, ""_b)));
-    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Big), Result16(std::make_tuple(256, ""_b)));
-    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Little), Result16(std::make_tuple(256, ""_b)));
-    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Big), Result16(std::make_tuple(1, ""_b)));
+    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Little), make_result16(1, ""_b));
+    CHECK_EQ(integer::unpack<uint16_t>("\x01\x00"_b, ByteOrder::Big), make_result16(256, ""_b));
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Little), make_result16(256, ""_b));
+    CHECK_EQ(integer::unpack<uint16_t>("\x00\x01"_b, ByteOrder::Big), make_result16(1, ""_b));
 
-    CHECK_EQ(integer::unpack<uint32_t>("\x01\x02\x03\x04"_b, ByteOrder::Big),
-             Result32(std::make_tuple(0x01020304, ""_b)));
-    CHECK_EQ(integer::unpack<uint32_t>("\x04\x03\x02\x01"_b, ByteOrder::Little),
-             Result32(std::make_tuple(0x01020304, ""_b)));
+    CHECK_EQ(integer::unpack<uint32_t>("\x01\x02\x03\x04"_b, ByteOrder::Big), make_result32(0x01020304, ""_b));
+    CHECK_EQ(integer::unpack<uint32_t>("\x04\x03\x02\x01"_b, ByteOrder::Little), make_result32(0x01020304, ""_b));
     CHECK_EQ(integer::unpack<uint64_t>("\x01\x02\x03\x04\x05\x06\x07\x08"_b, ByteOrder::Big),
-             Result64(std::make_tuple(0x0102030405060708, ""_b)));
+             make_result64(0x0102030405060708, ""_b));
     CHECK_EQ(integer::unpack<uint64_t>("\x08\x07\x06\x05\x04\x03\x02\x01"_b, ByteOrder::Little),
-             Result64(std::make_tuple(0x0102030405060708, ""_b)));
+             make_result64(0x0102030405060708, ""_b));
 }
 
 TEST_SUITE_END();

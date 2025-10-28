@@ -112,10 +112,10 @@ Tuple<integer::safe<int32_t>, stream::View> regexp::MatchState::advance(const st
 
     if ( rc >= 0 ) {
         _pimpl->_done = true;
-        return std::make_tuple<integer::safe<int32_t>, stream::View>(rc, std::move(ndata));
+        return tuple::make(integer::safe<int32_t>{rc}, std::move(ndata));
     }
 
-    return {rc, std::move(ndata)};
+    return tuple::make<integer::safe<int32_t>, stream::View>(rc, std::move(ndata));
 }
 
 Tuple<int32_t, int64_t> regexp::MatchState::advance(const Bytes& data, bool is_final) {
@@ -129,10 +129,10 @@ Tuple<int32_t, int64_t> regexp::MatchState::advance(const Bytes& data, bool is_f
 
     if ( rc >= 0 ) {
         _pimpl->_done = true;
-        return {rc, offset};
+        return tuple::make(rc, offset);
     }
 
-    return {rc, offset};
+    return tuple::make(rc, offset);
 }
 
 std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& data, bool is_final) {
@@ -370,12 +370,12 @@ Tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
     }
 
     if ( cur_rc > 0 )
-        return {cur_rc, _subslice(data, cur_so, cur_eo)};
+        return tuple::make(cur_rc, _subslice(data, cur_so, cur_eo));
 
     if ( cur_rc == 0 )
         cur_rc = -1; // for this method, adding more data may always help
 
-    return {cur_rc, ""_b};
+    return tuple::make(cur_rc, ""_b);
 }
 
 regexp::MatchState RegExp::tokenMatcher() const { return regexp::MatchState(*this); }

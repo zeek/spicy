@@ -2491,7 +2491,7 @@ bool detail::optimizer::optimize(Builder* builder, ASTRoot* root, bool first) {
     // Control-flow based optimizations are behind
     // a feature guard which defaults to ON.
     auto flag = rt::getenv("HILTI_OPTIMIZER_ENABLE_CFG");
-    bool has_cfg = (! flag || flag == "1");
+    bool has_cfg = (! flag || *flag == "1");
     auto uses_cfg = std::unordered_set<std::string>{"cfg", "constant_propagation"};
 
     // If no user-specified passes are given enable all of them.

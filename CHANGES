@@ -1,3 +1,75 @@
+1.15.0-dev.95 | 2025-10-28 16:01:42 +0100
+
+  * New `Optional` implementation. (Robin Sommer, Corelight)
+
+    So far the runtime used `std::optional` for representing optionals.
+    This commit replaces that with a custom `Optional` class that
+    encapsulates the implementation, and directly provides the semantics
+    we want. That means in particular that we can now remove most of the
+    former free functions,  and move their functionality directly into the
+    class. For example, the `value()` method now throws the expected HILTI
+    exception directly, without needing to remember to use a wrapper.  We
+    also rename some method to follow our coding conventions.
+
+    Behind the scenes, we continue to use `std::optional` for implementing
+    optionals, now through protected inheritance, similar like we do for
+    some other types as well.
+
+    This is all similar to how we already wrap other `std` types into
+    custom runtime types (e.g., vector).
+
+  * No longer use `std::*` for working with HILTI optionals. (Robin Sommer, Corelight)
+
+    Even though optionals remain instances of `std::optional` for now, we
+    now consistently use `hilti::rt::Optional<T>` and
+    `hilti::rt::optional::make()` to work with them. We also use
+    `rt::Null()` instead of `std::nullopt`, and we also no longer use
+    brace initialization when instantiating them, but likewise
+    `optional::make`. This makes it clear where exactly we work with HILTI
+    runtime optionals.
+
+  * New tuple implementation. (Robin Sommer, Corelight)
+
+    So far our runtime `rt::Tuple` type was just an alias to
+    `std::tuple<std::optional<Ts...>>`. This commit moves away from that
+    and instead provides our own, custom tuple type. Doing so encapsulates
+    the implementation and allows for HILTI-specific changes in semantics
+    and implementation. This is similar to how we already wrap other `std`
+    types into custom runtime types (e.g., vector).
+
+    One immediate benefit we get is cleaner semantics for unset elements.
+    With the prior alias, the `optional` wrappers remained visible to
+    tuple users, even though semantically the cases where they matter are
+    very rare. When retrieving a tuple element, it's much more natural to
+    get the element itself back, not an optional to it; and instead handle
+    the unset case through exceptions. The new class does that now.
+
+    Internally, behind the scenes, we still implement our custom tuple
+    class through a `std::tuple`, but now without the `optional` wrappers.
+    Instead we maintain a bitmask that records which elements are set.
+    This implementation should save a little bit of memory, and maybe also
+    some cycles (although we now instantiate some otherwise unneeded
+    default values for elements that aren't set; but, as said, unset
+    elements are rare).
+
+    The move away from `optional` elements requires a small tweak to the
+    type information API for tuples: when iterating over elements, there's
+    likewise no optional returned anymore. Instead we nullify the values
+    directly in case an element is not set. Because bitfields rely on
+    tuples internally, they get a corresponding change.
+
+  * No longer use `std::*` for working with HILTI tuples. (Robin Sommer, Corelight)
+
+    Even though tuples remain instances of `std::tuple` for now, we now
+    consistently use `hilti::rt::tuple::{make,get}` to work with them. We
+    also no longer use brace initialization when instantiating them, but
+    likewise `tuple::make`. This makes it clear where exactly we work with
+    HILTI runtime tuples.
+
+  * Fix value reference assignment operators. (Robin Sommer, Corelight)
+
+    They couldn't deal with null pointers.
+
 1.15.0-dev.88 | 2025-10-24 07:36:37 +0200
 
   * GH-2184: Fix FPs in `FunctionParamVisitor` when parameters are shadowed. (Benjamin Bannier, Corelight)

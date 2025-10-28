@@ -5,9 +5,10 @@
 #include <cassert>
 #include <map>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
+
+#include <hilti/rt/types/optional.h>
 
 namespace spicy::rt {
 struct Parser;
@@ -45,7 +46,7 @@ struct GlobalState {
     std::vector<const Parser*> parsers;
 
     /** Default parser to use, if it can be determined. */
-    std::optional<const Parser*> default_parser;
+    hilti::rt::Optional<const Parser*> default_parser;
 
     /**
      * Map of parsers by all their possible names. This includes port and

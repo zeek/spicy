@@ -199,7 +199,7 @@ struct Parser {
      * Create a new instance of the `%context` type defined for the parser. If
      * there's no context defined, returns an unset optional.
      */
-    std::optional<UnitContext> createContext() const {
+    hilti::rt::Optional<UnitContext> createContext() const {
         if ( context_new )
             return (*context_new)();
         else
@@ -337,7 +337,7 @@ hilti::rt::Result<hilti::rt::Nothing> registerParserAlias(const std::string& par
  * @return the parser, or an error if it could not be retrieved
  */
 hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "",
-                                                         const std::optional<uint64_t>& linker_scope = {});
+                                                         const hilti::rt::Optional<uint64_t>& linker_scope = {});
 
 /**
  * Exception thrown by generated parser code when an parsing failed.
@@ -445,10 +445,10 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
  * spicy-verbose debug stream.
  */
 void printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                      const std::optional<hilti::rt::stream::SafeConstIterator>& begin,
+                      const hilti::rt::Optional<hilti::rt::stream::SafeConstIterator>& begin,
                       const hilti::rt::stream::View& cur, int64_t lahead,
                       const hilti::rt::stream::SafeConstIterator& lahead_end, std::string_view literal_mode, bool trim,
-                      const std::optional<hilti::rt::RecoverableFailure>& error);
+                      const hilti::rt::Optional<hilti::rt::RecoverableFailure>& error);
 
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes
@@ -572,9 +572,9 @@ inline void backtrack() { throw Backtrack(); }
  * @param d direction to search from starting position
  * @returns position of first byte where needle was found, or unset optional if not found
  */
-std::optional<hilti::rt::stream::SafeConstIterator> unitFind(
+hilti::rt::Optional<hilti::rt::stream::SafeConstIterator> unitFind(
     const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
-    const std::optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
+    const hilti::rt::Optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
     hilti::rt::stream::Direction d);
 
 /**
