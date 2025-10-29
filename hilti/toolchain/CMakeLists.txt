@@ -109,11 +109,12 @@ set(SOURCES
     src/compiler/cxx/formatter.cc
     src/compiler/cxx/linker.cc
     src/compiler/cxx/unit.cc
-    src/compiler/cfg.cc
     src/compiler/driver.cc
     src/compiler/init.cc
     src/compiler/jit.cc
+    src/compiler/optimizer/cfg.cc
     src/compiler/optimizer/optimizer.cc
+    src/compiler/optimizer/pass.cc
     src/compiler/optimizer/passes/cfg.cc
     src/compiler/optimizer/passes/constant-folding.cc
     src/compiler/optimizer/passes/constant-propagation.cc

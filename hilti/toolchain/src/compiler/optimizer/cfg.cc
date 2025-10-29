@@ -1,6 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include "hilti/compiler/detail/cfg.h"
+#include "hilti/compiler/detail/optimizer/cfg.h"
 
 #include <algorithm>
 #include <cassert>

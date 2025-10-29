@@ -2,23 +2,20 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/logger.h>
-#include <hilti/compiler/detail/cfg.h>
-#include <hilti/compiler/detail/optimizer/optimizer.h>
+#include <hilti/compiler/detail/optimizer/cfg.h>
+#include <hilti/compiler/detail/optimizer/pass.h>
 
 using namespace hilti;
-using namespace hilti::detail::optimizer;
+using namespace hilti::detail;
 
-struct FunctionBodyVisitor : OptimizerVisitor {
-    using OptimizerVisitor::OptimizerVisitor;
+namespace {
+
+struct Mutator : public optimizer::visitor::Mutator {
+    using optimizer::visitor::Mutator::Mutator;
 
     std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG& cfg) const;
 
     std::vector<Node*> unusedStatements(const detail::cfg::CFG& cfg) const;
-
-    bool pruneUses(Node* node) override {
-        visitor::visit(*this, node);
-        return isModified();
-    }
 
     // Remove a given AST node from both the AST and the CFG.
     bool remove(detail::cfg::CFG& cfg, Node* data, const std::string& msg = {}) {
@@ -90,14 +87,14 @@ struct FunctionBodyVisitor : OptimizerVisitor {
     }
 
     void operator()(declaration::Module* m) override {
-        OptimizerVisitor::operator()(m);
+        optimizer::visitor::Mutator::operator()(m);
 
         if ( auto* body = m->statements() )
             visitNode(body);
     }
 };
 
-std::vector<Node*> FunctionBodyVisitor::unusedStatements(const detail::cfg::CFG& cfg) const {
+std::vector<Node*> Mutator::unusedStatements(const detail::cfg::CFG& cfg) const {
     // This can only be called after dataflow information has been populated.
     const auto& dataflow = cfg.dataflow();
     assert(! dataflow.empty());
@@ -185,7 +182,7 @@ std::vector<Node*> FunctionBodyVisitor::unusedStatements(const detail::cfg::CFG&
     return result;
 }
 
-std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cfg::CFG& cfg) const {
+std::unordered_set<Node*> Mutator::unreachableNodes(const detail::cfg::CFG& cfg) const {
     std::unordered_set<Node*> result;
     for ( const auto& [id, n] : cfg.graph().nodes() ) {
         if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg.graph().neighborsUpstream(id).empty() )
@@ -195,8 +192,8 @@ std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cf
     return result;
 }
 
-static RegisterPass constant_folder(
-    "cfg", {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-            },
-            2});
+optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
+
+optimizer::RegisterPass cfg({.name = "cfg", .phase = optimizer::Phase::Phase3, .run = run});
+
+} // namespace

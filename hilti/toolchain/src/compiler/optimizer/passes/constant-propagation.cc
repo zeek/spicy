@@ -2,15 +2,16 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/logger.h>
-#include <hilti/compiler/detail/cfg.h>
-#include <hilti/compiler/detail/optimizer/optimizer.h>
+#include <hilti/compiler/detail/optimizer/cfg.h>
+#include <hilti/compiler/detail/optimizer/pass.h>
 
 using namespace hilti;
-using namespace hilti::detail::optimizer;
+using namespace hilti::detail;
 
-struct ConstantPropagationVisitor : OptimizerVisitor {
-    using OptimizerVisitor::OptimizerVisitor;
-    using OptimizerVisitor::operator();
+namespace {
+
+struct Collector : public optimizer::visitor::Collector {
+    using optimizer::visitor::Collector::Collector;
 
     struct ConstantValue {
         Expression* expr = nullptr;
@@ -35,19 +36,6 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
 
     std::map<Node*, AnalysisResult> analysis_results;
 
-    void collect(Node* node) override {
-        stage = Stage::Collect;
-        visitor::visit(*this, node);
-    }
-
-    bool pruneUses(Node* node) override {
-        stage = Stage::PruneUses;
-
-        clearModified();
-        visitor::visit(*this, node);
-
-        return isModified();
-    }
 
     void transfer(const detail::cfg::GraphNode& n, ConstantMap& new_out) {
         // Marks all children that are names as not a constant in the given map.
@@ -107,13 +95,13 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             void operator()(operator_::struct_::MemberCall* op) override {
                 // NAC anything used in a call; unfortunately they may silently
                 // coerce to a reference.
-                visitor::visit(name_nac, op);
+                hilti::visitor::visit(name_nac, op);
             }
 
             void operator()(operator_::function::Call* op) override {
                 // NAC anything used in a call; unfortunately they may silently
                 // coerce to a reference.
-                visitor::visit(name_nac, op);
+                hilti::visitor::visit(name_nac, op);
             }
 
             void operator()(expression::ResolvedOperator* op) override {
@@ -122,14 +110,14 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
                 for ( const auto* operand : sig.operands->operands() ) {
                     if ( operand->kind() == parameter::Kind::InOut )
                         // NAC any names within
-                        visitor::visit(name_nac, op->operands()[i]);
+                        hilti::visitor::visit(name_nac, op->operands()[i]);
                     i++;
                 }
             }
         };
 
         TransferVisitor tv(new_out);
-        visitor::visit(tv, n.value());
+        hilti::visitor::visit(tv, n.value());
     }
 
     void populateDataflow(AnalysisResult& result, const ConstantMap& init, const ID& function_name) {
@@ -187,18 +175,37 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
             num_processed++;
         }
 
-        HILTI_DEBUG(logging::debug::OptimizerCollect,
+        HILTI_DEBUG(logging::debug::OptimizerDetail,
                     util::fmt("function %s took %d iterations before constant propagation convergence", function_name,
                               num_processed));
     }
 
-    void applyPropagation(Statement* body, const AnalysisResult& result) {
-        struct Replacer : visitor::MutatingPreOrder {
-            using visitor::MutatingPreOrder::MutatingPreOrder;
 
-            const AnalysisResult& result;
-            Replacer(Builder* builder, const AnalysisResult& result)
-                : visitor::MutatingPreOrder(builder, logging::debug::Optimizer), result(result) {}
+    void operator()(declaration::Function* n) override {
+        if ( auto* body = n->function()->body() ) {
+            AnalysisResult result((detail::cfg::CFG(body)));
+            ConstantMap init;
+            for ( auto* param : n->function()->ftype()->parameters() )
+                init[param].not_a_constant = true;
+            populateDataflow(result, init, n->id());
+            analysis_results.insert({body, std::move(result)});
+        }
+    }
+};
+
+struct Mutator : public optimizer::visitor::Mutator {
+    Mutator(Optimizer* optimizer, const Collector* collector)
+        : optimizer::visitor::Mutator(optimizer), collector(collector) {}
+
+    const Collector* collector = nullptr;
+
+    void applyPropagation(Statement* body, const Collector::AnalysisResult& result) {
+        struct Replacer : hilti::visitor::MutatingPreOrder {
+            using hilti::visitor::MutatingPreOrder::MutatingPreOrder;
+
+            const Collector::AnalysisResult& result;
+            Replacer(Builder* builder, const Collector::AnalysisResult& result)
+                : hilti::visitor::MutatingPreOrder(builder, logging::debug::Optimizer), result(result) {}
 
             // Helper to find the CFG node for an AST node.
             const detail::cfg::GraphNode* findCFGNode(Node* n) {
@@ -269,35 +276,26 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
         };
 
         Replacer replacer(builder(), result);
-        visitor::visit(replacer, body);
+        hilti::visitor::visit(replacer, body);
         if ( replacer.isModified() )
             recordChange(body, "constant propagation");
     }
 
     void operator()(declaration::Function* n) override {
-        switch ( stage ) {
-            case Stage::Collect:
-                if ( auto* body = n->function()->body() ) {
-                    AnalysisResult result((detail::cfg::CFG(body)));
-                    ConstantMap init;
-                    for ( auto* param : n->function()->ftype()->parameters() )
-                        init[param].not_a_constant = true;
-                    populateDataflow(result, init, n->id());
-                    analysis_results.insert({body, std::move(result)});
-                }
-                break;
-            case Stage::PruneUses:
-                if ( auto* body = n->function()->body(); body && analysis_results.contains(body) )
-                    applyPropagation(body, analysis_results.at(body));
-                break;
-            case Stage::PruneDecls: break;
-        }
+        if ( auto* body = n->function()->body(); body && collector->analysis_results.contains(body) )
+            applyPropagation(body, collector->analysis_results.at(body));
     }
 };
 
-static RegisterPass constant_folder(
-    "constant_propagation",
-    {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-         return std::make_unique<ConstantPropagationVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-     },
-     2});
+optimizer::Result run(Optimizer* optimizer) {
+    Collector collector(optimizer);
+    collector.run();
+
+    return Mutator(optimizer, &collector).run();
+}
+
+optimizer::RegisterPass constant_propagation({.name = "constant-propagation",
+                                              .phase = optimizer::Phase::Phase3,
+                                              .run = run});
+
+} // namespace

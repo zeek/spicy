@@ -354,7 +354,9 @@ public:
      * @param stream debug stream to write to
      * @param prefix prefix line to start output with
      */
-    void dump(const hilti::logging::DebugStream& stream, const std::string& prefix);
+    void dump(const hilti::logging::DebugStream& stream, const std::string& prefix) const;
+
+    void dump(std::ostream& out, bool include_state) const;
 
     /**
      * Factory function creating a new node of type T. This allocates the new
@@ -454,7 +456,10 @@ private:
     void _dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix, int round);
 
     // Dumps the accumulated state tables of the context to a debugging stream.
-    void _dumpState(const logging::DebugStream& stream);
+    void _dumpState(const logging::DebugStream& stream) const;
+
+    // Dumps the accumulated state tables of the context to an output stream.
+    void _dumpState(std::ostream& out) const;
 
     // Dump statistics about the AST to a debugging stream.
     void _dumpStats(const logging::DebugStream& stream, std::string_view tag);

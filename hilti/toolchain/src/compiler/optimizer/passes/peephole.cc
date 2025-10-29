@@ -2,18 +2,19 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/logger.h>
-#include <hilti/compiler/detail/optimizer/optimizer.h>
+#include <hilti/compiler/detail/optimizer/pass.h>
 
 using namespace hilti;
-using namespace hilti::detail::optimizer;
+using namespace hilti::detail;
+
+namespace {
 
 /**
  * Visitor running on the final, optimized AST to perform additional peephole
  * optimizations. Will run repeatedly until it performs no further changes.
  */
-struct PeepholeOptimizer : OptimizerVisitor {
-    using OptimizerVisitor::OptimizerVisitor;
-    using OptimizerVisitor::operator();
+struct Mutator : public optimizer::visitor::Mutator {
+    using optimizer::visitor::Mutator::Mutator;
 
     // Returns true if statement is `(*self).__error = __error`.
     bool isErrorPush(statement::Expression* n) {
@@ -143,8 +144,8 @@ struct PeepholeOptimizer : OptimizerVisitor {
     }
 };
 
-static RegisterPass constant_folder(
-    "peephole", {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                     return std::make_unique<PeepholeOptimizer>(builder, hilti::logging::debug::Optimizer, op_uses);
-                 },
-                 0});
+optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
+
+optimizer::RegisterPass peephole({.name = "peephole", .phase = optimizer::Phase::Phase2, .run = run});
+
+} // namespace

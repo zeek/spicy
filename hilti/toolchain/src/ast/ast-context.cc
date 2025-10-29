@@ -18,7 +18,7 @@
 #include <hilti/ast/visitor.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/detail/ast-dumper.h>
-#include <hilti/compiler/detail/cfg.h>
+#include <hilti/compiler/detail/optimizer/cfg.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/resolver.h>
 #include <hilti/compiler/detail/scope-builder.h>
@@ -789,17 +789,18 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
 
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
-    bool first = true;
+    Optimizer optimizer(builder->context());
+
     while ( true ) {
         // If the optimizer does not change anything, we are done.
-        if ( ! optimizer::optimize(builder, _root, first) )
+        if ( ! optimizer.run() )
             break;
-
-        first = false;
 
         // Optimization may have left some computed node state unset, such as a
         // canonical IDs. Some passes also require extra coercions, such as the
         // constant propagation pass. Do another resolver run to get that in shape.
+        //
+        // TODO: This should move into the optimizer itself somehow.
         if ( auto rc = _resolve(builder, plugin::registry().hiltiPlugin()); ! rc )
             return rc;
     }
@@ -860,7 +861,7 @@ void ASTContext::_dumpAST(std::ostream& stream, const Plugin& plugin, const std:
     ast_dumper::dump(stream, root(), true);
 }
 
-void ASTContext::dump(const logging::DebugStream& stream, const std::string& prefix) {
+void ASTContext::dump(const logging::DebugStream& stream, const std::string& prefix) const {
     if ( ! logger().isEnabled(stream) )
         return;
 
@@ -868,7 +869,14 @@ void ASTContext::dump(const logging::DebugStream& stream, const std::string& pre
     ast_dumper::dump(stream, root(), true);
 }
 
-void ASTContext::_dumpState(const logging::DebugStream& stream) {
+void ASTContext::dump(std::ostream& out, bool include_state) const {
+    ast_dumper::dump(out, root(), true);
+
+    if ( include_state )
+        _dumpState(out);
+}
+
+void ASTContext::_dumpState(const logging::DebugStream& stream) const {
     if ( ! logger().isEnabled(stream) )
         return;
 
@@ -895,6 +903,28 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
     }
 
     logger().debugPopIndent(stream);
+}
+
+void ASTContext::_dumpState(std::ostream& out) const {
+    // This mostly duplicates the code from above but for ostreams. Not clear
+    // how to nicely cover both cases with just one version of the code.
+    out << "\n# State tables:\n\n";
+
+    for ( auto idx = 1U; idx < _declarations_by_index.size(); idx++ ) {
+        auto n = _declarations_by_index[idx];
+        assert(n->isRetained());
+
+        auto id = n->canonicalID() ? n->canonicalID() : ID("<no-canon-id>");
+        out << fmt("  [%s] %s [%s] (%s)\n", ast::DeclarationIndex(idx), id, n->typename_(), n->location().dump(true));
+    }
+
+    for ( auto idx = 1U; idx < _types_by_index.size(); idx++ ) {
+        auto n = _types_by_index[idx];
+        assert(n->isRetained());
+
+        const auto& id = n->typeID() ? n->typeID() : ID("<no-type-id>");
+        out << fmt("  [%s] %s [%s] (%s)", ast::TypeIndex(idx), id, n->typename_(), n->location().dump(true));
+    }
 }
 
 void ASTContext::_dumpStats(const logging::DebugStream& stream, std::string_view tag) {

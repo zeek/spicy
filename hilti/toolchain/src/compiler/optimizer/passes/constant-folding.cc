@@ -6,49 +6,29 @@
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/base/logger.h>
-#include <hilti/compiler/detail/optimizer/optimizer.h>
+#include <hilti/compiler/detail/optimizer/pass.h>
 
 using namespace hilti;
-using namespace hilti::detail::optimizer;
+using namespace hilti::detail;
 
-struct ConstantFoldingVisitor : OptimizerVisitor {
-    using OptimizerVisitor::OptimizerVisitor;
-    using OptimizerVisitor::operator();
+namespace {
 
-    std::map<ID, bool> constants;
+// Collect the values of boolean constants declared anywhere in the AST. This
+// only considers boolean literals, not expressions that would be need to
+// computed/folded.
+struct Collector : public optimizer::visitor::Collector {
+    using optimizer::visitor::Collector::Collector;
 
-    void collect(Node* node) override {
-        stage = Stage::Collect;
+    std::map<ID, bool> constants; // indexed by fully qualified ID
 
-        visitor::visit(*this, node);
-
-        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
-            HILTI_DEBUG(logging::debug::OptimizerCollect, "constants:");
+    void done() final {
+        if ( logger().isEnabled(logging::debug::OptimizerDetail) ) {
+            HILTI_DEBUG(logging::debug::OptimizerDetail, "constants:");
             std::vector<std::string> xs;
             for ( const auto& [id, value] : constants )
-                HILTI_DEBUG(logging::debug::OptimizerCollect, util::fmt("    %s: value=%d", id, value));
+                HILTI_DEBUG(logging::debug::OptimizerDetail, util::fmt("    %s: value=%d", id, value));
         }
     }
-
-    bool pruneUses(Node* node) override {
-        stage = Stage::PruneUses;
-
-        bool any_modification = false;
-
-        while ( true ) {
-            clearModified();
-            visitor::visit(*this, node);
-
-            if ( ! isModified() )
-                break;
-
-            any_modification = true;
-        }
-
-        return any_modification;
-    }
-
-    // XXX
 
     void operator()(declaration::Constant* n) final {
         if ( ! n->type()->type()->isA<type::Bool>() )
@@ -57,41 +37,17 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
         const auto& id = n->fullyQualifiedID();
         assert(id);
 
-        switch ( stage ) {
-            case Stage::Collect: {
-                if ( auto* ctor = n->value()->tryAs<expression::Ctor>() )
-                    if ( auto* bool_ = ctor->ctor()->tryAs<ctor::Bool>() )
-                        constants[id] = bool_->value();
-
-                break;
-            }
-
-            case Stage::PruneUses:
-            case Stage::PruneDecls: break;
-        }
+        if ( auto* ctor = n->value()->tryAs<expression::Ctor>() )
+            if ( auto* bool_ = ctor->ctor()->tryAs<ctor::Bool>() )
+                constants[id] = bool_->value();
     }
+};
 
-    void operator()(expression::Name* n) final {
-        switch ( stage ) {
-            case Stage::Collect:
-            case Stage::PruneDecls: return;
-            case Stage::PruneUses: {
-                auto* decl = n->resolvedDeclaration();
-                if ( ! decl )
-                    return;
+struct Mutator : public optimizer::visitor::Mutator {
+    Mutator(Optimizer* optimizer, const Collector* collector)
+        : optimizer::visitor::Mutator(optimizer), collector(collector) {}
 
-                const auto& id = decl->fullyQualifiedID();
-                assert(id);
-
-                if ( const auto& constant = constants.find(id); constant != constants.end() ) {
-                    if ( n->type()->type()->isA<type::Bool>() ) {
-                        replaceNode(n, builder()->bool_((constant->second)), "inlining constant");
-                        return;
-                    }
-                }
-            }
-        }
-    }
+    const Collector* collector = nullptr;
 
     std::optional<bool> tryAsBoolLiteral(Expression* x) {
         if ( auto* expression = x->tryAs<expression::Ctor>() ) {
@@ -107,143 +63,108 @@ struct ConstantFoldingVisitor : OptimizerVisitor {
         return {};
     }
 
-    void operator()(statement::If* n) final {
-        switch ( stage ) {
-            case Stage::Collect:
-            case Stage::PruneDecls: return;
-            case Stage::PruneUses: {
-                if ( auto bool_ = tryAsBoolLiteral(n->condition()) ) {
-                    if ( auto* else_ = n->false_() ) {
-                        if ( ! bool_.value() ) {
-                            replaceNode(n, else_);
-                            return;
-                        }
-                        else {
-                            replaceNode(n, builder()->statementIf(n->init(), n->condition(), n->true_(), nullptr));
-                            return;
-                        }
-                    }
-                    else {
-                        if ( ! bool_.value() ) {
-                            removeNode(n);
-                            return;
-                        }
-                        else {
-                            replaceNode(n, n->true_());
-                            return;
-                        }
-                    }
+    void operator()(expression::Name* n) final {
+        auto* decl = n->resolvedDeclaration();
+        assert(decl);
 
-                    return;
-                };
-            }
+        const auto& id = decl->fullyQualifiedID();
+        assert(id);
+
+        if ( const auto& constant = collector->constants.find(id); constant != collector->constants.end() ) {
+            if ( n->type()->type()->isA<type::Bool>() )
+                replaceNode(n, builder()->bool_((constant->second)), "inlining constant");
+        }
+    }
+
+    void operator()(statement::If* n) final {
+        auto bool_ = tryAsBoolLiteral(n->condition());
+        if ( ! bool_ )
+            return;
+
+        if ( auto* else_ = n->false_() ) {
+            if ( ! bool_.value() )
+                replaceNode(n, else_);
+            else
+                replaceNode(n, builder()->statementIf(n->init(), n->condition(), n->true_(), nullptr));
+        }
+        else {
+            if ( ! bool_.value() )
+                removeNode(n);
+            else
+                replaceNode(n, n->true_());
         }
     }
 
     void operator()(expression::Ternary* n) final {
-        switch ( stage ) {
-            case OptimizerVisitor::Stage::Collect:
-            case OptimizerVisitor::Stage::PruneDecls: return;
-            case OptimizerVisitor::Stage::PruneUses: {
-                if ( auto bool_ = tryAsBoolLiteral(n->condition()) ) {
-                    if ( *bool_ )
-                        replaceNode(n, n->true_());
-                    else
-                        replaceNode(n, n->false_());
+        auto bool_ = tryAsBoolLiteral(n->condition());
+        if ( ! bool_ )
+            return;
 
-                    return;
-                }
-            }
-        }
+        if ( *bool_ )
+            replaceNode(n, n->true_());
+        else
+            replaceNode(n, n->false_());
     }
 
     void operator()(expression::LogicalOr* n) final {
-        switch ( stage ) {
-            case Stage::Collect:
-            case Stage::PruneDecls: break;
-            case Stage::PruneUses: {
-                auto lhs = tryAsBoolLiteral(n->op0());
-                auto rhs = tryAsBoolLiteral(n->op1());
+        auto lhs = tryAsBoolLiteral(n->op0());
+        auto rhs = tryAsBoolLiteral(n->op1());
 
-                if ( lhs && rhs ) {
-                    replaceNode(n, builder()->bool_(lhs.value() || rhs.value()));
-                    return;
-                }
-            }
-        };
+        if ( lhs && rhs )
+            replaceNode(n, builder()->bool_(lhs.value() || rhs.value()));
     }
 
     void operator()(expression::LogicalAnd* n) final {
-        switch ( stage ) {
-            case Stage::Collect:
-            case Stage::PruneDecls: break;
-            case Stage::PruneUses: {
-                auto lhs = tryAsBoolLiteral(n->op0());
-                auto rhs = tryAsBoolLiteral(n->op1());
+        auto lhs = tryAsBoolLiteral(n->op0());
+        auto rhs = tryAsBoolLiteral(n->op1());
 
-                if ( lhs && rhs ) {
-                    replaceNode(n, builder()->bool_(lhs.value() && rhs.value()));
-                    return;
-                }
-            }
-        };
+        if ( lhs && rhs )
+            replaceNode(n, builder()->bool_(lhs.value() && rhs.value()));
     }
 
     void operator()(expression::LogicalNot* n) final {
-        switch ( stage ) {
-            case Stage::Collect:
-            case Stage::PruneDecls: break;
-            case Stage::PruneUses: {
-                if ( auto op = tryAsBoolLiteral(n->expression()) ) {
-                    replaceNode(n, builder()->bool_(! op.value()));
-                    return;
-                }
-            }
-        };
+        auto bool_ = tryAsBoolLiteral(n->expression());
+        if ( ! bool_ )
+            return;
+
+        replaceNode(n, builder()->bool_(! *bool_));
     }
 
-    void operator()(statement::While* x) final {
-        switch ( stage ) {
-            case Stage::Collect:
-            case Stage::PruneDecls: return;
-            case Stage::PruneUses: {
-                const auto& cond = x->condition();
-                if ( ! cond )
-                    return;
+    void operator()(statement::While* n) final {
+        auto* condition = n->condition();
+        if ( ! condition )
+            return;
 
-                const auto val = tryAsBoolLiteral(cond);
-                if ( ! val )
-                    return;
+        auto bool_ = tryAsBoolLiteral(condition);
+        if ( ! bool_ )
+            return;
 
-                // If the `while` condition is true we never run the `else` block.
-                if ( *val && x->else_() ) {
-                    recordChange(x, "removing else block of while loop with true condition");
-                    x->removeElse(context());
-                    return;
-                }
+        // If the `while` condition is true we never run the `else` block.
+        if ( *bool_ && n->else_() ) {
+            recordChange(n, "removing else block of while loop with true condition");
+            n->removeElse(context());
+        }
 
-                // If the `while` condition is false we never enter the loop, and
-                // run either the `else` block if it is present or nothing.
-                else if ( ! *val ) {
-                    if ( x->else_() )
-                        replaceNode(x, x->else_(), "replacing while loop with its else block");
-                    else {
-                        recordChange(x, "removing while loop with false condition");
-                        x->parent()->removeChild(x->as<Node>());
-                    }
-
-                    return;
-                }
-
-                return;
+        // If the `while` condition is false we never enter the loop, and
+        // run either the `else` block if it is present or nothing.
+        else if ( ! *bool_ ) {
+            if ( n->else_() )
+                replaceNode(n, n->else_(), "replacing while loop with its else block");
+            else {
+                recordChange(n, "removing while loop with false condition");
+                n->parent()->removeChild(n->as<Node>());
             }
         }
     }
 };
 
-static RegisterPass constant_folder(
-    "constant_folding", {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                             return std::make_unique<ConstantFoldingVisitor>(builder, hilti::logging::debug::Optimizer,
-                                                                             op_uses);
-                         },
-                         1});
+optimizer::Result run(Optimizer* optimizer) {
+    Collector collector(optimizer);
+    collector.run();
+
+    return Mutator(optimizer, &collector).run();
+}
+
+optimizer::RegisterPass constant_folder({.name = "constant_folding", .phase = optimizer::Phase::Phase1, .run = run});
+
+} // namespace
