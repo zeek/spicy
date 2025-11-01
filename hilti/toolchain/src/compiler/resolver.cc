@@ -108,7 +108,8 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
     }
 };
 
-// Pass 2 is the main pass implementing most of the resolver's functionality.
+// Pass 2 is the main pass implementing most of the resolver's functionality:
+// Type inference, name/operator resolution, ID assignment (but not coercion yet).
 struct VisitorPass2 : visitor::MutatingPostOrder {
     explicit VisitorPass2(Builder* builder, Node* root)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), root(root) {}
@@ -213,119 +214,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
 
         util::cannotBeReached();
-    }
-
-    // Coerces an expression to a given type, returning the new value if it's
-    // changed from the old one. Records an error with the node if coercion is
-    // not possible, and returns null then. Will indicate no-change if
-    // expression or type hasn't been resolved.
-    Expression* coerceTo(Node* n, Expression* e, QualifiedType* t, bool contextual, bool assignment) {
-        if ( ! (e->isResolved() && t->isResolved()) )
-            return nullptr;
-
-        if ( type::same(e->type(), t) )
-            return nullptr;
-
-        bitmask<CoercionStyle> style =
-            (assignment ? CoercionStyle::TryAllForAssignment : CoercionStyle::TryAllForMatching);
-
-        if ( contextual )
-            style |= CoercionStyle::ContextualConversion;
-
-        if ( auto c = hilti::coerceExpression(builder(), e, t, style) )
-            return c.nexpr;
-
-        n->addError(util::fmt("cannot coerce expression '%s' of type '%s' to type '%s'", *e, *e->type(), *t));
-        return nullptr;
-    }
-
-    // Coerces a set if expressions to the types of a corresponding set of
-    // function parameters. Returns an empty result reset if coercion succeeded
-    // but didn't change any expressions. Will indicate no-change also if the
-    // expressions or the type aren't fully resolved yet. Returns an error if a
-    // coercion failed with a hard error.
-    template<typename Container1, typename Container2>
-    Result<std::optional<Expressions>> coerceCallArguments(Container1 exprs, const Container2& params) {
-        // Build a tuple to coerce expression according to an OperandList.
-        for ( const auto& e : exprs ) {
-            if ( ! e->isResolved() )
-                return {std::nullopt};
-        }
-
-        auto src = builder()->expressionCtor(builder()->ctorTuple(std::move(exprs)));
-        auto dst = type::OperandList::fromParameters(context(), std::move(params));
-
-        auto coerced = coerceExpression(builder(), src, builder()->qualifiedType(dst, Constness::Const),
-                                        CoercionStyle::TryAllForFunctionCall);
-        if ( ! coerced )
-            return result::Error("coercion failed");
-
-        if ( ! coerced.nexpr )
-            // No change.
-            return {std::nullopt};
-
-        return {coerced.nexpr->template as<expression::Ctor>()->ctor()->template as<ctor::Tuple>()->value()};
-    }
-
-    // Coerces a set of expressions all to the same destination. Returns an
-    // empty result reset if coercion succeeded but didn't change any
-    // expressions. Will indicate no-change also if the expressions or the type
-    // aren't fully resolved yet. Returns an error if a coercion failed with a
-    // hard error.
-    template<typename Container>
-    Result<std::optional<Expressions>> coerceExpressions(const Container& exprs, QualifiedType* dst) {
-        if ( ! (dst->isResolved() && expression::areResolved(exprs)) )
-            return {std::nullopt};
-
-        bool changed = false;
-        Expressions nexprs;
-
-        for ( const auto& e : exprs ) {
-            auto coerced = coerceExpression(builder(), e, dst, CoercionStyle::TryAllForAssignment);
-            if ( ! coerced )
-                return result::Error("coercion failed");
-
-            if ( coerced.nexpr )
-                changed = true;
-
-            nexprs.emplace_back(std::move(*coerced.coerced));
-        }
-
-        if ( changed )
-            return {std::move(nexprs)};
-        else
-            // No change.
-            return {std::nullopt};
-    }
-
-    // Coerces a specific call argument to a given type returning the coerced
-    // expression (only) if its type has changed.
-    Result<Expression*> coerceMethodArgument(const expression::ResolvedOperator* o, size_t i, QualifiedType* t) {
-        auto* ops = o->op2();
-
-        // If the argument list was the result of a coercion unpack its result.
-        if ( auto* coerced = ops->tryAs<expression::Coerced>() )
-            ops = coerced->expression();
-
-        auto* ctor_ = ops->as<expression::Ctor>()->ctor();
-
-        // If the argument was the result of a coercion unpack its result.
-        if ( auto* x = ctor_->tryAs<ctor::Coerced>() )
-            ctor_ = x->coercedCtor();
-
-        const auto& args = ctor_->as<ctor::Tuple>()->value();
-        if ( i >= args.size() )
-            return {nullptr};
-
-        if ( auto narg = hilti::coerceExpression(builder(), args[i], t); ! narg )
-            return result::Error(util::fmt("cannot coerce argument %d from %s to %s", i, *args[i]->type(), *t));
-        else if ( narg.nexpr ) {
-            Expressions nargs = args;
-            nargs[i] = narg.nexpr;
-            return {builder()->expressionCtor(builder()->ctorTuple(nargs))};
-        }
-
-        return {nullptr};
     }
 
     // Records the actual type of an `auto` parameter as inferred from a
@@ -503,19 +391,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(ctor::Default* n) final {
-        if ( auto* t = skipReferenceType(n->type()); t->isResolved() ) {
-            if ( ! t->type()->parameters().empty() ) {
-                if ( auto x = n->typeArguments(); x.size() ) {
-                    if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
-                        recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
-                        n->setTypeArguments(context(), **coerced);
-                    }
-                }
-            }
-        }
-    }
-
     void operator()(ctor::List* n) final {
         if ( ! expression::areResolved(n->value()) )
             return; // cannot do anything yet
@@ -547,11 +422,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     n->setType(context(), builder()->qualifiedType(builder()->typeList(etype), Constness::Const));
                 }
             }
-        }
-
-        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "elements");
-            n->setValue(context(), **coerced);
         }
     }
 
@@ -593,29 +463,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 n->setType(context(), ntype);
             }
         }
-
-        bool changed = false;
-        ctor::map::Elements nelems;
-        for ( const auto& e : n->value() ) {
-            auto k = coerceExpression(builder(), e->key(), n->keyType());
-            auto v = coerceExpression(builder(), e->value(), n->valueType());
-            if ( ! (k && v) ) {
-                changed = false;
-                break;
-            }
-
-            if ( k.nexpr || v.nexpr ) {
-                nelems.emplace_back(builder()->ctorMapElement(*k.coerced, *v.coerced));
-                changed = true;
-            }
-            else
-                nelems.push_back(e);
-        }
-
-        if ( changed ) {
-            recordChange(n, builder()->ctorMap(nelems), "value");
-            n->setValue(context(), nelems);
-        }
     }
 
     void operator()(ctor::Optional* n) final {
@@ -643,11 +490,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 recordChange(n, ntype, "type");
                 n->setType(context(), builder()->qualifiedType(builder()->typeSet(ntype), Constness::Mutable));
             }
-        }
-
-        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "elements");
-            n->setValue(context(), **coerced);
         }
     }
 
@@ -698,11 +540,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 n->setType(context(), builder()->qualifiedType(builder()->typeVector(ntype), Constness::Mutable));
             }
         }
-
-        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "elements");
-            n->setValue(context(), **coerced);
-        }
     }
 
     void operator()(Declaration* n) final {
@@ -726,11 +563,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 setFqID(n, n->id()); // local scope
             else if ( auto* m = n->parent<declaration::Module>() )
                 setFqID(n, m->scopeID() + n->id()); // global scope
-        }
-
-        if ( auto* x = coerceTo(n, n->value(), n->type()->recreateAsLhs(context()), false, true) ) {
-            recordChange(n, x, "value");
-            n->setValue(context(), x);
         }
     }
 
@@ -764,15 +596,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             auto index = context()->register_(t);
             n->setLinkedTypeIndex(index);
             recordChange(n, util::fmt("set linked type to %s", index));
-        }
-
-        if ( auto* a = n->attributes()->find(hilti::attribute::kind::Default) ) {
-            auto val = a->valueAsExpression();
-            if ( auto* x = coerceTo(n, *val, n->type(), false, true) ) {
-                recordChange(*val, x, "attribute");
-                n->attributes()->remove(hilti::attribute::kind::Default);
-                n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Default, x));
-            }
         }
 
         if ( n->type()->type()->isA<type::Function>() && ! n->operator_() && n->parent(3)->isA<declaration::Type>() &&
@@ -878,32 +701,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 setFqID(n, m->scopeID() + n->id()); // global scope
         }
 
-        Expression* init = nullptr;
-        std::optional<Expressions> args;
-
-        if ( auto* e = n->init(); e && ! type::sameExceptForConstness(n->type(), e->type()) ) {
-            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
-                init = x;
-        }
-
-        if ( n->type()->isResolved() && (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
-            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
-            if ( coerced && *coerced )
-                args = std::move(*coerced);
-        }
-
-        if ( init || args ) {
-            if ( init ) {
-                recordChange(n, init, "init expression");
-                n->setInit(context(), init);
-            }
-
-            if ( args ) {
-                recordChange(n, builder()->ctorTuple(*args), "type arguments");
-                n->setTypeArguments(context(), std::move(*args));
-            }
-        }
-
         if ( n->type()->isAuto() ) {
             if ( auto* init = n->init(); init && init->isResolved() ) {
                 recordChange(n, init->type(), "type");
@@ -943,32 +740,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! n->fullyQualifiedID() )
             setFqID(n, n->id()); // local scope
 
-        Expression* init = nullptr;
-        std::optional<Expressions> args;
-
-        if ( auto* e = n->init(); e && ! e->isA<expression::Void>() ) {
-            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
-                init = x;
-        }
-
-        if ( (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
-            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
-            if ( coerced && *coerced )
-                args = std::move(*coerced);
-        }
-
-        if ( init || args ) {
-            if ( init ) {
-                recordChange(n, init, "init expression");
-                n->setInit(context(), init);
-            }
-
-            if ( args ) {
-                recordChange(n, builder()->ctorTuple(*args), "type arguments");
-                n->setTypeArguments(context(), std::move(*args));
-            }
-        }
-
         if ( n->type()->isAuto() ) {
             if ( auto* init = n->init(); init && init->isResolved() ) {
                 recordChange(n, init->type(), "type");
@@ -998,13 +769,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     void operator()(declaration::Parameter* n) final {
         if ( ! n->fullyQualifiedID() )
             setFqID(n, n->id());
-
-        if ( auto* def = n->default_() ) {
-            if ( auto* x = coerceTo(n, def, n->type(), false, true) ) {
-                recordChange(n, x, "default value");
-                n->setDefault(context(), x);
-            }
-        }
     }
 
     void operator()(declaration::Property* n) final {
@@ -1051,57 +815,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(expression::Assign* n) final {
-        // Rewrite assignments to map elements to use the `index_assign` operator.
-        if ( auto* index_non_const = n->target()->tryAs<operator_::map::IndexNonConst>() ) {
-            const auto& map = index_non_const->op0();
-            const auto& map_type = map->type()->type()->as<type::Map>();
-            const auto& key_type = map_type->keyType();
-            const auto& value_type = map_type->valueType();
-
-            auto* key = index_non_const->op1();
-            if ( key->type() != key_type ) {
-                if ( auto* nexpr = hilti::coerceExpression(builder(), key, key_type).nexpr )
-                    key = nexpr;
-            }
-
-            auto* value = n->source();
-            if ( value->type() != value_type ) {
-                if ( auto* nexpr = hilti::coerceExpression(builder(), value, value_type).nexpr )
-                    value = nexpr;
-            }
-
-            auto* index_assign = builder()->expressionUnresolvedOperator(hilti::operator_::Kind::IndexAssign,
-                                                                         {map, key, value}, n->meta());
-
-            replaceNode(n, index_assign);
-        }
-
-        // Rewrite assignments involving tuple ctors on the LHS to use the
-        // tuple's custom by-element assign operator. We need this to get
-        // constness right.
-        auto* lhs_ctor = n->target()->tryAs<expression::Ctor>();
-        if ( lhs_ctor && lhs_ctor->ctor()->isA<ctor::Tuple>() ) {
-            if ( n->source()->isResolved() && n->target()->isResolved() ) {
-                const auto* op = operator_::registry().byName("tuple::CustomAssign");
-                assert(op);
-                auto* x = *op->instantiate(builder(), {n->target(), n->source()}, n->meta());
-                replaceNode(n, x);
-            }
-        }
-
-        if ( auto* x = coerceTo(n, n->source(), n->target()->type(), false, true) ) {
-            recordChange(n, x, "source");
-            n->setSource(context(), x);
-        }
-    }
-
-    void operator()(expression::BuiltInFunction* n) final {
-        if ( auto coerced = coerceCallArguments(n->arguments(), n->parameters()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
-            n->setArguments(context(), **coerced);
-        }
-    }
 
     void operator()(expression::Keyword* n) final {
         if ( n->kind() == expression::keyword::Kind::Scope && ! n->type()->isResolved() ) {
@@ -1131,36 +844,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(expression::LogicalAnd* n) final {
-        if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
-            recordChange(n, x, "op0");
-            n->setOp0(context(), x);
-        }
-
-        if ( auto* x = coerceTo(n, n->op1(), n->type(), true, false) ) {
-            recordChange(n, x, "op1");
-            n->setOp1(context(), x);
-        }
-    }
-
-    void operator()(expression::LogicalNot* n) final {
-        if ( auto* x = coerceTo(n, n->expression(), n->type(), true, false) ) {
-            recordChange(n, x, "expression");
-            n->setExpression(context(), x);
-        }
-    }
-
-    void operator()(expression::LogicalOr* n) final {
-        if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
-            recordChange(n, x, "op0");
-            n->setOp0(context(), x);
-        }
-
-        if ( auto* x = coerceTo(n, n->op1(), n->type(), true, false) ) {
-            recordChange(n, x, "op1");
-            n->setOp1(context(), x);
-        }
-    }
 
     void operator()(expression::Name* n) final {
         if ( ! n->resolvedDeclarationIndex() ) {
@@ -1199,47 +882,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(expression::ConditionTest* n) final {
-        if ( n->condition()->isResolved() && ! n->condition()->type()->type()->isA<type::Bool>() ) {
-            if ( auto* x = coerceTo(n, n->condition(),
-                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
-                recordChange(n, x, "condition");
-                n->setCondition(context(), x);
-            }
-        }
-
-        if ( n->error()->isResolved() && ! n->error()->type()->type()->isA<type::Error>() ) {
-            if ( auto* x = coerceTo(n, n->error(), builder()->qualifiedType(builder()->typeError(), Constness::Const),
-                                    true, false) ) {
-                recordChange(n, x, "error");
-                n->setError(context(), x);
-            }
-        }
-    }
-
-    void operator()(expression::PendingCoerced* n) final {
-        if ( auto ner = hilti::coerceExpression(builder(), n->expression(), n->type()); ner.coerced ) {
-            if ( ner.nexpr )
-                // A coercion expression was created, use it.
-                replaceNode(n, ner.nexpr);
-            else
-                replaceNode(n, n->expression());
-        }
-        else
-            n->addError(util::fmt("cannot coerce expression '%s' to type '%s'", *n->expression(), *n->type()));
-    }
-
-    void operator()(expression::Ternary* n) final {
-        if ( n->true_()->isResolved() && n->false_()->isResolved() ) {
-            // Coerce the second branch to the type of the first. This isn't quite
-            // ideal, but as good as we can do right now.
-            if ( auto coerced = coerceExpression(builder(), n->false_(), n->true_()->type());
-                 coerced && coerced.nexpr ) {
-                recordChange(n, coerced.nexpr, "ternary");
-                n->setFalse(context(), coerced.nexpr);
-            }
-        }
-    }
 
     void operator()(expression::UnresolvedOperator* n) final {
         if ( n->kind() == operator_::Kind::Cast && n->areOperandsUnified() ) {
@@ -1326,6 +968,299 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     n->ftype()->setResultType(context(), rt);
                     break;
                 }
+            }
+        }
+    }
+
+    void operator()(statement::If* n) final {
+        if ( n->init() && ! n->condition() ) {
+            auto* cond = builder()->expressionName(n->init()->id());
+            n->setCondition(context(), cond);
+            recordChange(n, cond);
+        }
+    }
+
+    void operator()(statement::For* n) final {
+        if ( ! n->local()->type()->isResolved() && n->sequence()->isResolved() ) {
+            const auto& t = n->sequence()->type();
+            if ( ! t->type()->iteratorType() ) {
+                n->addError("expression is not iterable");
+                return;
+            }
+
+            const auto& et = t->type()->iteratorType()->type()->dereferencedType();
+            recordChange(n, et);
+            n->local()->setType(context(), et);
+        }
+    }
+
+
+    void operator()(statement::Switch* n) final { n->preprocessCases(context()); }
+
+
+    void operator()(type::bitfield::BitRange* n) final {
+        if ( ! n->fullyQualifiedID() )
+            setFqID(n, n->id()); // local scope
+
+        if ( ! type::isResolved(n->itemType()) ) {
+            auto* t = n->ddType();
+
+            if ( auto* a = n->attributes()->find(hilti::attribute::kind::Convert) )
+                t = (*a->valueAsExpression())->type();
+
+            if ( t->isResolved() ) {
+                recordChange(n, t, "set item type");
+                n->setItemTypeWithOptional(context(),
+                                           builder()->qualifiedType(builder()->typeOptional(t), Constness::Const));
+            }
+        }
+    }
+};
+
+// Pass 3 performs all coercions for expressions, constructors, and statements.
+// It assumes that pass 2 has completed type inference and name/operator
+// resolution, and these uses the resolved types from the AST to apply
+// appropriate coercions.
+struct VisitorPass3 : visitor::MutatingPostOrder {
+    explicit VisitorPass3(Builder* builder, Node* root)
+        : visitor::MutatingPostOrder(builder, logging::debug::Resolver), root(root) {}
+
+    Node* root = nullptr;
+
+    // Coerces an expression to a given type, returning the new value if it's
+    // changed from the old one. Records an error with the node if coercion is
+    // not possible, and returns null then. Will indicate no-change if
+    // expression or type hasn't been resolved.
+    Expression* coerceTo(Node* n, Expression* e, QualifiedType* t, bool contextual, bool assignment) {
+        if ( ! (e->isResolved() && t->isResolved()) )
+            return nullptr;
+
+        if ( type::same(e->type(), t) )
+            return nullptr;
+
+        bitmask<CoercionStyle> style =
+            (assignment ? CoercionStyle::TryAllForAssignment : CoercionStyle::TryAllForMatching);
+
+        if ( contextual )
+            style |= CoercionStyle::ContextualConversion;
+
+        if ( auto c = hilti::coerceExpression(builder(), e, t, style) )
+            return c.nexpr;
+
+        n->addError(util::fmt("cannot coerce expression '%s' of type '%s' to type '%s'", *e, *e->type(), *t));
+        return nullptr;
+    }
+
+    // Coerces a set if expressions to the types of a corresponding set of
+    // function parameters. Returns an empty result reset if coercion succeeded
+    // but didn't change any expressions. Will indicate no-change also if the
+    // expressions or the type aren't fully resolved yet. Returns an error if a
+    // coercion failed with a hard error.
+    template<typename Container1, typename Container2>
+    Result<std::optional<Expressions>> coerceCallArguments(Container1 exprs, const Container2& params) {
+        // Build a tuple to coerce expression according to an OperandList.
+        for ( const auto& e : exprs ) {
+            if ( ! e->isResolved() )
+                return {std::nullopt};
+        }
+
+        auto src = builder()->expressionCtor(builder()->ctorTuple(std::move(exprs)));
+        auto dst = type::OperandList::fromParameters(context(), std::move(params));
+
+        auto coerced = coerceExpression(builder(), src, builder()->qualifiedType(dst, Constness::Const),
+                                        CoercionStyle::TryAllForFunctionCall);
+        if ( ! coerced )
+            return result::Error("coercion failed");
+
+        if ( ! coerced.nexpr )
+            // No change.
+            return {std::nullopt};
+
+        return {coerced.nexpr->template as<expression::Ctor>()->ctor()->template as<ctor::Tuple>()->value()};
+    }
+
+    // Coerces a set of expressions all to the same destination. Returns an
+    // empty result reset if coercion succeeded but didn't change any
+    // expressions. Will indicate no-change also if the expressions or the type
+    // aren't fully resolved yet. Returns an error if a coercion failed with a
+    // hard error.
+    template<typename Container>
+    Result<std::optional<Expressions>> coerceExpressions(const Container& exprs, QualifiedType* dst) {
+        if ( ! (dst->isResolved() && expression::areResolved(exprs)) )
+            return {std::nullopt};
+
+        bool changed = false;
+        Expressions nexprs;
+
+        for ( const auto& e : exprs ) {
+            auto coerced = coerceExpression(builder(), e, dst, CoercionStyle::TryAllForAssignment);
+            if ( ! coerced )
+                return result::Error("coercion failed");
+
+            if ( coerced.nexpr )
+                changed = true;
+
+            nexprs.emplace_back(std::move(*coerced.coerced));
+        }
+
+        if ( changed )
+            return {std::move(nexprs)};
+        else
+            // No change.
+            return {std::nullopt};
+    }
+
+    // Coerces a specific call argument to a given type returning the coerced
+    // expression (only) if its type has changed.
+    Result<Expression*> coerceMethodArgument(const expression::ResolvedOperator* o, size_t i, QualifiedType* t) {
+        auto* ops = o->op2();
+
+        // If the argument list was the result of a coercion unpack its result.
+        if ( auto* coerced = ops->tryAs<expression::Coerced>() )
+            ops = coerced->expression();
+
+        auto* ctor_ = ops->as<expression::Ctor>()->ctor();
+
+        // If the argument was the result of a coercion unpack its result.
+        if ( auto* x = ctor_->tryAs<ctor::Coerced>() )
+            ctor_ = x->coercedCtor();
+
+        const auto& args = ctor_->as<ctor::Tuple>()->value();
+        if ( i >= args.size() )
+            return {nullptr};
+
+        if ( auto narg = hilti::coerceExpression(builder(), args[i], t); ! narg )
+            return result::Error(util::fmt("cannot coerce argument %d from %s to %s", i, *args[i]->type(), *t));
+        else if ( narg.nexpr ) {
+            Expressions nargs = args;
+            nargs[i] = narg.nexpr;
+            return {builder()->expressionCtor(builder()->ctorTuple(nargs))};
+        }
+
+        return {nullptr};
+    }
+
+    void operator()(expression::Assign* n) final {
+        // Rewrite assignments to map elements to use the `index_assign` operator.
+        if ( auto* index_non_const = n->target()->tryAs<operator_::map::IndexNonConst>() ) {
+            const auto& map = index_non_const->op0();
+            const auto& map_type = map->type()->type()->as<type::Map>();
+            const auto& key_type = map_type->keyType();
+            const auto& value_type = map_type->valueType();
+
+            auto* key = index_non_const->op1();
+            if ( key->type() != key_type ) {
+                if ( auto* nexpr = hilti::coerceExpression(builder(), key, key_type).nexpr )
+                    key = nexpr;
+            }
+
+            auto* value = n->source();
+            if ( value->type() != value_type ) {
+                if ( auto* nexpr = hilti::coerceExpression(builder(), value, value_type).nexpr )
+                    value = nexpr;
+            }
+
+            auto* index_assign = builder()->expressionUnresolvedOperator(hilti::operator_::Kind::IndexAssign,
+                                                                         {map, key, value}, n->meta());
+
+            replaceNode(n, index_assign);
+        }
+
+        // Rewrite assignments involving tuple ctors on the LHS to use the
+        // tuple's custom by-element assign operator. We need this to get
+        // constness right.
+        auto* lhs_ctor = n->target()->tryAs<expression::Ctor>();
+        if ( lhs_ctor && lhs_ctor->ctor()->isA<ctor::Tuple>() ) {
+            if ( n->source()->isResolved() && n->target()->isResolved() ) {
+                const auto* op = operator_::registry().byName("tuple::CustomAssign");
+                assert(op);
+                auto* x = *op->instantiate(builder(), {n->target(), n->source()}, n->meta());
+                replaceNode(n, x);
+            }
+        }
+
+        if ( auto* x = coerceTo(n, n->source(), n->target()->type(), false, true) ) {
+            recordChange(n, x, "source");
+            n->setSource(context(), x);
+        }
+    }
+
+    void operator()(expression::BuiltInFunction* n) final {
+        if ( auto coerced = coerceCallArguments(n->arguments(), n->parameters()); coerced && *coerced ) {
+            recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
+            n->setArguments(context(), **coerced);
+        }
+    }
+
+    void operator()(expression::LogicalAnd* n) final {
+        if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
+            recordChange(n, x, "op0");
+            n->setOp0(context(), x);
+        }
+
+        if ( auto* x = coerceTo(n, n->op1(), n->type(), true, false) ) {
+            recordChange(n, x, "op1");
+            n->setOp1(context(), x);
+        }
+    }
+
+    void operator()(expression::LogicalNot* n) final {
+        if ( auto* x = coerceTo(n, n->expression(), n->type(), true, false) ) {
+            recordChange(n, x, "expression");
+            n->setExpression(context(), x);
+        }
+    }
+
+    void operator()(expression::LogicalOr* n) final {
+        if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
+            recordChange(n, x, "op0");
+            n->setOp0(context(), x);
+        }
+
+        if ( auto* x = coerceTo(n, n->op1(), n->type(), true, false) ) {
+            recordChange(n, x, "op1");
+            n->setOp1(context(), x);
+        }
+    }
+
+    void operator()(expression::ConditionTest* n) final {
+        if ( n->condition()->isResolved() && ! n->condition()->type()->type()->isA<type::Bool>() ) {
+            if ( auto* x = coerceTo(n, n->condition(),
+                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
+                recordChange(n, x, "condition");
+                n->setCondition(context(), x);
+            }
+        }
+
+        if ( n->error()->isResolved() && ! n->error()->type()->type()->isA<type::Error>() ) {
+            if ( auto* x = coerceTo(n, n->error(), builder()->qualifiedType(builder()->typeError(), Constness::Const),
+                                    true, false) ) {
+                recordChange(n, x, "error");
+                n->setError(context(), x);
+            }
+        }
+    }
+
+    void operator()(expression::PendingCoerced* n) final {
+        if ( auto ner = hilti::coerceExpression(builder(), n->expression(), n->type()); ner.coerced ) {
+            if ( ner.nexpr )
+                // A coercion expression was created, use it.
+                replaceNode(n, ner.nexpr);
+            else
+                replaceNode(n, n->expression());
+        }
+        else
+            n->addError(util::fmt("cannot coerce expression '%s' to type '%s'", *n->expression(), *n->type()));
+    }
+
+    void operator()(expression::Ternary* n) final {
+        if ( n->true_()->isResolved() && n->false_()->isResolved() ) {
+            // Coerce the second branch to the type of the first. This isn't quite
+            // ideal, but as good as we can do right now.
+            if ( auto coerced = coerceExpression(builder(), n->false_(), n->true_()->type());
+                 coerced && coerced.nexpr ) {
+                recordChange(n, coerced.nexpr, "ternary");
+                n->setFalse(context(), coerced.nexpr);
             }
         }
     }
@@ -1492,20 +1427,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(statement::For* n) final {
-        if ( ! n->local()->type()->isResolved() && n->sequence()->isResolved() ) {
-            const auto& t = n->sequence()->type();
-            if ( ! t->type()->iteratorType() ) {
-                n->addError("expression is not iterable");
-                return;
-            }
-
-            const auto& et = t->type()->iteratorType()->type()->dereferencedType();
-            recordChange(n, et);
-            n->local()->setType(context(), et);
-        }
-    }
-
     void operator()(statement::Return* n) final {
         auto* func = n->parent<Function>();
         if ( ! func ) {
@@ -1523,8 +1444,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(statement::Switch* n) final { n->preprocessCases(context()); }
-
     void operator()(statement::While* n) final {
         if ( auto* cond = n->condition() ) {
             if ( auto* x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
@@ -1535,23 +1454,157 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(type::bitfield::BitRange* n) final {
-        if ( ! n->fullyQualifiedID() )
-            setFqID(n, n->id()); // local scope
+    void operator()(ctor::Default* n) final {
+        // If a type is a reference type, dereference it; otherwise return the type itself.
+        auto skipRef = [](QualifiedType* t) -> QualifiedType* {
+            if ( t && t->type()->isReferenceType() )
+                return t->type()->dereferencedType();
+            else
+                return t;
+        };
 
-        if ( ! type::isResolved(n->itemType()) ) {
-            auto* t = n->ddType();
-
-            if ( auto* a = n->attributes()->find(hilti::attribute::kind::Convert) )
-                t = (*a->valueAsExpression())->type();
-
-            if ( t->isResolved() ) {
-                recordChange(n, t, "set item type");
-                n->setItemTypeWithOptional(context(),
-                                           builder()->qualifiedType(builder()->typeOptional(t), Constness::Const));
+        if ( auto* t = skipRef(n->type()); t->isResolved() ) {
+            if ( ! t->type()->parameters().empty() ) {
+                if ( auto x = n->typeArguments(); x.size() ) {
+                    if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
+                        recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
+                        n->setTypeArguments(context(), **coerced);
+                    }
+                }
             }
         }
+    }
 
+    void operator()(ctor::List* n) final {
+        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
+            recordChange(n, builder()->ctorTuple(**coerced), "elements");
+            n->setValue(context(), **coerced);
+        }
+    }
+
+    void operator()(ctor::Map* n) final {
+        bool changed = false;
+        ctor::map::Elements nelems;
+        for ( const auto& e : n->value() ) {
+            auto k = coerceExpression(builder(), e->key(), n->keyType());
+            auto v = coerceExpression(builder(), e->value(), n->valueType());
+            if ( ! (k && v) ) {
+                changed = false;
+                break;
+            }
+
+            if ( k.nexpr || v.nexpr ) {
+                nelems.emplace_back(builder()->ctorMapElement(*k.coerced, *v.coerced));
+                changed = true;
+            }
+            else
+                nelems.push_back(e);
+        }
+
+        if ( changed ) {
+            recordChange(n, builder()->ctorMap(nelems), "value");
+            n->setValue(context(), nelems);
+        }
+    }
+
+    void operator()(ctor::Set* n) final {
+        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
+            recordChange(n, builder()->ctorTuple(**coerced), "elements");
+            n->setValue(context(), **coerced);
+        }
+    }
+
+    void operator()(ctor::Vector* n) final {
+        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
+            recordChange(n, builder()->ctorTuple(**coerced), "elements");
+            n->setValue(context(), **coerced);
+        }
+    }
+
+    void operator()(declaration::Constant* n) final {
+        if ( auto* x = coerceTo(n, n->value(), n->type()->recreateAsLhs(context()), false, true) ) {
+            recordChange(n, x, "value");
+            n->setValue(context(), x);
+        }
+    }
+
+    void operator()(declaration::Field* n) final {
+        if ( auto* a = n->attributes()->find(hilti::attribute::kind::Default) ) {
+            auto val = a->valueAsExpression();
+            if ( auto* x = coerceTo(n, *val, n->type(), false, true) ) {
+                recordChange(*val, x, "attribute");
+                n->attributes()->remove(hilti::attribute::kind::Default);
+                n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Default, x));
+            }
+        }
+    }
+
+    void operator()(declaration::GlobalVariable* n) final {
+        Expression* init = nullptr;
+        std::optional<Expressions> args;
+
+        if ( auto* e = n->init(); e && ! type::sameExceptForConstness(n->type(), e->type()) ) {
+            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
+                init = x;
+        }
+
+        if ( n->type()->isResolved() && (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
+            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
+            if ( coerced && *coerced )
+                args = std::move(*coerced);
+        }
+
+        if ( init || args ) {
+            if ( init ) {
+                recordChange(n, init, "init expression");
+                n->setInit(context(), init);
+            }
+
+            if ( args ) {
+                recordChange(n, builder()->ctorTuple(*args), "type arguments");
+                n->setTypeArguments(context(), std::move(*args));
+            }
+        }
+    }
+
+    void operator()(declaration::LocalVariable* n) final {
+        Expression* init = nullptr;
+        std::optional<Expressions> args;
+
+        if ( auto* e = n->init(); e && ! e->isA<expression::Void>() ) {
+            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
+                init = x;
+        }
+
+        if ( (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
+            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
+            if ( coerced && *coerced )
+                args = std::move(*coerced);
+        }
+
+        if ( init || args ) {
+            if ( init ) {
+                recordChange(n, init, "init expression");
+                n->setInit(context(), init);
+            }
+
+            if ( args ) {
+                recordChange(n, builder()->ctorTuple(*args), "type arguments");
+                n->setTypeArguments(context(), std::move(*args));
+            }
+        }
+    }
+
+    void operator()(declaration::Parameter* n) final {
+        if ( auto* def = n->default_() ) {
+            if ( auto* x = coerceTo(n, def, n->type(), false, true) ) {
+                recordChange(n, x, "default value");
+                n->setDefault(context(), x);
+            }
+        }
+    }
+
+    void operator()(type::bitfield::BitRange* n) final {
         if ( n->ctorValue() ) {
             if ( auto* x = coerceTo(n, n->ctorValue(), n->itemType(), false, true) ) {
                 recordChange(n, x, "bits value");
@@ -1561,9 +1614,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 };
 
-// Pass 3 resolves any auto parameters that we inferred during the previous resolver pass.
-struct VisitorPass3 : visitor::MutatingPostOrder {
-    VisitorPass3(Builder* builder, const ::VisitorPass2& v)
+// Pass 4 resolves any auto parameters that we inferred during the previous resolver pass.
+struct VisitorPass4 : visitor::MutatingPostOrder {
+    VisitorPass4(Builder* builder, const ::VisitorPass2& v)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), resolver(v) {}
 
     const ::VisitorPass2& resolver;
@@ -1615,8 +1668,11 @@ bool detail::resolver::resolve(Builder* builder, Node* root) {
     auto v2 = VisitorPass2(builder, root);
     hilti::visitor::visit(v2, root);
 
-    auto v3 = VisitorPass3(builder, v2);
+    auto v3 = VisitorPass3(builder, root);
     hilti::visitor::visit(v3, root);
 
-    return v1.isModified() || v2.isModified() || v3.isModified();
+    auto v4 = VisitorPass4(builder, v2);
+    hilti::visitor::visit(v4, root);
+
+    return v1.isModified() || v2.isModified() || v3.isModified() || v4.isModified();
 }
