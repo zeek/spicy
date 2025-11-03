@@ -1,7 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <optional>
-
 #include <hilti/rt/safe-math.h>
 
 #include <hilti/ast/builder/builder.h>
@@ -18,6 +16,10 @@
 #include <hilti/compiler/detail/constant-folder.h>
 
 using namespace hilti;
+
+namespace hilti::logging::debug {
+inline const hilti::logging::DebugStream Resolver("resolver");
+} // namespace hilti::logging::debug
 
 namespace {
 
@@ -342,7 +344,7 @@ Result<Ctor*> foldConstant(Builder* builder, Expression* expr) {
 
 } // anonymous namespace
 
-Result<Ctor*> detail::constant_folder::fold(Builder* builder, Expression* expr) {
+Result<Ctor*> detail::constant_folder::foldExpression(Builder* builder, Expression* expr) {
     // Don't fold away direct, top-level references to constant IDs. It's
     // likely as least as efficient to leave them as is, and potentially more.
     if ( expr->isA<expression::Name>() )
@@ -356,5 +358,41 @@ Result<Ctor*> detail::constant_folder::fold(Builder* builder, Expression* expr) 
             return {nullptr};
     } catch ( const hilti::rt::RuntimeError& e ) {
         return result::Error(e.what());
+    }
+}
+
+struct VisitorConstantFolderAST : visitor::MutatingPostOrder {
+    explicit VisitorConstantFolderAST(Builder* builder, Node* root)
+        : visitor::MutatingPostOrder(builder, logging::debug::Resolver) {}
+
+    // TODO: his is extracted from the resolver's VisitorPass3. Can we unify?
+    void operator()(Expression* n) final {
+        if ( n->isResolved() && ! n->isA<expression::Ctor>() ) {
+            auto ctor = detail::constant_folder::foldExpression(builder(), n);
+            if ( ! ctor ) {
+                n->addError(ctor.error());
+                return;
+            }
+
+            if ( *ctor ) {
+                auto* nexpr = builder()->expressionCtor(*ctor, (*ctor)->meta());
+                replaceNode(n, nexpr);
+            }
+        }
+    }
+};
+
+bool detail::constant_folder::fold(Builder* builder, Node* node) {
+    bool modified = false;
+
+    while ( true ) {
+        // Pass 3 is in charge of coercion.
+        auto v = VisitorConstantFolderAST(builder, node);
+        hilti::visitor::visit(v, node);
+
+        if ( v.isModified() )
+            modified = true;
+        else
+            return modified;
     }
 }

@@ -303,7 +303,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             // Fold any constants right here in case downstream resolving depends
             // on finding a constant (like for coercion).
-            if ( auto ctor = detail::constant_folder::fold(builder(), resolved); ctor && *ctor ) {
+            if ( auto ctor = detail::constant_folder::foldExpression(builder(), resolved); ctor && *ctor ) {
                 HILTI_DEBUG(logging::debug::Operator,
                             util::fmt("folded %s -> constant %s (%s)", *resolved, **ctor, resolved->location()));
                 resolved = builder()->expressionCtor(*ctor, resolved->meta());
@@ -802,7 +802,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(Expression* n) final {
         if ( n->isResolved() && ! n->isA<expression::Ctor>() ) {
-            auto ctor = detail::constant_folder::fold(builder(), n);
+            auto ctor = detail::constant_folder::foldExpression(builder(), n);
             if ( ! ctor ) {
                 n->addError(ctor.error());
                 return;
@@ -814,7 +814,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
         }
     }
-
 
     void operator()(expression::Keyword* n) final {
         if ( n->kind() == expression::keyword::Kind::Scope && ! n->type()->isResolved() ) {
