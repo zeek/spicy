@@ -800,15 +800,16 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
         // canonical IDs. Some passes also require extra coercions, such as the
         // constant propagation pass. Do another resolver run to get that in shape.
         //
-        // TODO: This should move into the optimizer itself somehow.
-        if ( auto rc = _resolve(builder, plugin::registry().hiltiPlugin()); ! rc )
-            return rc;
+        // TODO: This should move into the optimizer itself.
+        if ( ! resolver::coerce(builder, _root) )
+            break;
     }
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )
         hilti::detail::cfg::dump(logging::debug::CfgFinal, _root);
 
     // Make sure we didn't leave anything odd during optimization.
+    // TODO: Move consistency checks into the optimizer itself.
     _checkAST(true);
 
     return Nothing();

@@ -118,13 +118,6 @@ bool Optimizer::run() {
     modified |= _runPhase(Phase::Phase3, true);
     modified |= _runPhase(Phase::Post, false);
 
-    // Clear cached information which might become outdated due to edits.
-    // TODO: Can we get rid of this? Ideally we'd leave this behind in a valid
-    // state.
-    auto v = hilti::visitor::PreOrder();
-    for ( auto* n : hilti::visitor::range(v, context()->root(), {}) )
-        n->clearScope();
-
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
         _dumpAST(context(), util::fmt("%d-x-x-x-final", _runs), "Final state after optimization");
 

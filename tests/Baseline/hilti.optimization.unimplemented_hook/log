@@ -38,14 +38,3 @@
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
-[debug/optimizer] processing AST, phase 1
-[debug/optimizer]   pass: constant_folding (round 1, phase index 0)
-[debug/optimizer]   pass: functions (round 1, phase index 1)
-[debug/optimizer]   pass: members (round 1, phase index 2)
-[debug/optimizer]   pass: types (round 1, phase index 3)
-[debug/optimizer] processing AST, phase 2
-[debug/optimizer]   pass: peephole (round 1, phase index 0)
-[debug/optimizer] processing AST, phase 3
-[debug/optimizer]   pass: cfg (round 1, phase index 0)
-[debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
-[debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)

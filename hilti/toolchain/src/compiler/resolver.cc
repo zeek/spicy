@@ -1676,3 +1676,20 @@ bool detail::resolver::resolve(Builder* builder, Node* root) {
 
     return v1.isModified() || v2.isModified() || v3.isModified() || v4.isModified();
 }
+
+bool detail::resolver::coerce(Builder* builder, Node* root) {
+    util::timing::Collector _("hilti/compiler/ast/resolver");
+
+    bool ever_modified = false;
+
+    while ( true ) {
+        // Pass 3 is in charge of coercion.
+        auto v3 = VisitorPass3(builder, root);
+        hilti::visitor::visit(v3, root);
+
+        if ( v3.isModified() )
+            ever_modified = true;
+        else
+            return ever_modified;
+    }
+}

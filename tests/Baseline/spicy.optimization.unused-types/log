@@ -23,6 +23,7 @@
 [debug/optimizer]     -> AST modified
 [debug/optimizer]     -> AST modified
 [debug/optimizer]     -> AST modified
+[debug/optimizer]     -> AST modified
 [debug/optimizer]     [<no location>] declaration::Field "iterator<stream> __begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]     [<no location>] declaration::Field "iterator<stream> __begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]     [<no location>] declaration::Field "iterator<stream> __begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
@@ -131,6 +132,11 @@
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __begin, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__data, __cur, __trim, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
+[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
+[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
+[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
+[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
+[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
 [debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
 [debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
 [debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
@@ -1336,11 +1342,9 @@
 [debug/optimizer]     removing field for unused method struct_9::parse3
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
-[debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: cfg (round 2, phase index 0)
 [debug/optimizer]   pass: cfg (round 3, phase index 0)
 [debug/optimizer]   pass: cfg (round 4, phase index 0)
-[debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: constant-propagation (round 2, phase index 1)
@@ -1348,9 +1352,9 @@
 [debug/optimizer]   pass: constant-propagation (round 4, phase index 1)
 [debug/optimizer]   pass: constant_folding (round 1, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 1, phase index 0)
-[debug/optimizer]   pass: constant_folding (round 1, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 2, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 2, phase index 0)
+[debug/optimizer]   pass: constant_folding (round 3, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 3, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 4, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 5, phase index 0)
@@ -1358,23 +1362,22 @@
 [debug/optimizer]   pass: feature-requirements (round 1, phase index 0)
 [debug/optimizer]   pass: functions (round 1, phase index 1)
 [debug/optimizer]   pass: functions (round 1, phase index 1)
-[debug/optimizer]   pass: functions (round 1, phase index 1)
 [debug/optimizer]   pass: functions (round 2, phase index 1)
 [debug/optimizer]   pass: functions (round 2, phase index 1)
+[debug/optimizer]   pass: functions (round 3, phase index 1)
 [debug/optimizer]   pass: functions (round 3, phase index 1)
 [debug/optimizer]   pass: functions (round 4, phase index 1)
 [debug/optimizer]   pass: functions (round 5, phase index 1)
 [debug/optimizer]   pass: functions (round 6, phase index 1)
 [debug/optimizer]   pass: members (round 1, phase index 2)
 [debug/optimizer]   pass: members (round 1, phase index 2)
-[debug/optimizer]   pass: members (round 1, phase index 2)
 [debug/optimizer]   pass: members (round 2, phase index 2)
 [debug/optimizer]   pass: members (round 2, phase index 2)
+[debug/optimizer]   pass: members (round 3, phase index 2)
 [debug/optimizer]   pass: members (round 3, phase index 2)
 [debug/optimizer]   pass: members (round 4, phase index 2)
 [debug/optimizer]   pass: members (round 5, phase index 2)
 [debug/optimizer]   pass: members (round 6, phase index 2)
-[debug/optimizer]   pass: peephole (round 1, phase index 0)
 [debug/optimizer]   pass: peephole (round 1, phase index 0)
 [debug/optimizer]   pass: peephole (round 1, phase index 0)
 [debug/optimizer]   pass: peephole (round 2, phase index 0)
@@ -1382,26 +1385,22 @@
 [debug/optimizer]   pass: peephole (round 4, phase index 0)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
-[debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 2, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 3, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 4, phase index 2)
 [debug/optimizer]   pass: types (round 1, phase index 3)
 [debug/optimizer]   pass: types (round 1, phase index 3)
-[debug/optimizer]   pass: types (round 1, phase index 3)
 [debug/optimizer]   pass: types (round 2, phase index 3)
 [debug/optimizer]   pass: types (round 2, phase index 3)
+[debug/optimizer]   pass: types (round 3, phase index 3)
 [debug/optimizer]   pass: types (round 3, phase index 3)
 [debug/optimizer]   pass: types (round 4, phase index 3)
 [debug/optimizer]   pass: types (round 5, phase index 3)
 [debug/optimizer]   pass: types (round 6, phase index 3)
 [debug/optimizer] processing AST, phase 1
 [debug/optimizer] processing AST, phase 1
-[debug/optimizer] processing AST, phase 1
 [debug/optimizer] processing AST, phase 2
 [debug/optimizer] processing AST, phase 2
-[debug/optimizer] processing AST, phase 2
-[debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, pre-processing phase
