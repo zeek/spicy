@@ -2,11 +2,19 @@
 [debug/optimizer]     -> AST modified
 [debug/optimizer]     -> AST modified
 [debug/optimizer] processing AST, phase 1
+[debug/optimizer] processing AST, phase 1
+[debug/optimizer] processing AST, phase 2
 [debug/optimizer] processing AST, phase 2
 [debug/optimizer] processing AST, phase 3
+[debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, pre-processing phase
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
+[debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
+[debug/optimizer]   pass: constant_folding (round 1, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 1, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 2, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 3, phase index 0)
@@ -14,13 +22,18 @@
 [debug/optimizer]     [unused_function.hlt:15:1-15:60] declaration::Function "function bool private_unused1() { return private_unused(); }" -> null (removing declaration for unused function)
 [debug/optimizer]   pass: feature-requirements (round 1, phase index 0)
 [debug/optimizer]   pass: functions (round 1, phase index 1)
+[debug/optimizer]   pass: functions (round 1, phase index 1)
 [debug/optimizer]   pass: functions (round 2, phase index 1)
 [debug/optimizer]   pass: functions (round 3, phase index 1)
+[debug/optimizer]   pass: members (round 1, phase index 2)
 [debug/optimizer]   pass: members (round 1, phase index 2)
 [debug/optimizer]   pass: members (round 2, phase index 2)
 [debug/optimizer]   pass: members (round 3, phase index 2)
 [debug/optimizer]   pass: peephole (round 1, phase index 0)
+[debug/optimizer]   pass: peephole (round 1, phase index 0)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
+[debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
+[debug/optimizer]   pass: types (round 1, phase index 3)
 [debug/optimizer]   pass: types (round 1, phase index 3)
 [debug/optimizer]   pass: types (round 2, phase index 3)
 [debug/optimizer]   pass: types (round 3, phase index 3)

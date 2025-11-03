@@ -80,52 +80,6 @@
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __begin, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __begin, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__data, __cur, __trim, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
-[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
-[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
-[debug/optimizer]     [<no location>] expression::LogicalNot "! Null" -> expression::Ctor "True"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
 [debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%is_filter" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_filters" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_filters" -> expression::Ctor "False" (inlining constant)
@@ -396,6 +350,12 @@
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__position_update = Null; }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { (*self).__stream = __data; }" -> null
@@ -409,6 +369,12 @@
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { foo::A::__parser = [$name="foo::A", $is_public=False, $parse1=foo::A::parse1, $parse2=foo::A::parse2, $parse3=foo::A::parse3, $context_new=Null, $type_=foo::A, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::A::__parser, $scope, Null); }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { foo::C::__parser = [$name="foo::C", $is_public=False, $parse1=foo::C::parse1, $parse2=foo::C::parse2, $parse3=foo::C::parse3, $context_new=Null, $type_=foo::C, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::C::__parser, $scope, Null); }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { foo::F::__parser = [$name="foo::F", $is_public=False, $parse1=foo::F::parse1, $parse2=foo::F::parse2, $parse3=foo::F::parse3, $context_new=Null, $type_=foo::F, $description="", $mime_types=vector(), $ports=vector()]; spicy_rt::registerParser(foo::F::__parser, $scope, Null); }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
+[debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
 [debug/optimizer]     [<no location>] statement::If "if ( False ) { if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } }" -> null
@@ -516,7 +482,7 @@
 [debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Field "method view<stream> parse2(inout value_ref<foo::A> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context);" -> null
 [debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context);" -> null
 [debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::__parse_foo__A_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) { # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); (*self).__error = __error; default<void>(); __error = (*self).__error; hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return __result; }" -> null (removing declaration for unused function)
-[debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) { # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); (*self).__error = __error; if ( False ) (*self).__position_update = Null; default<void>(); if ( False ) if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } __error = (*self).__error; local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__A_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { default<void>(); (*self).__error = __error; if ( False ) (*self).__position_update = Null; default<void>(); if ( False ) if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } __error = (*self).__error; throw; } (*self).__error = __error; if ( False ) (*self).__position_update = Null; default<void>(); if ( False ) if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } __error = (*self).__error; return __result; }" -> null (removing declaration for unused function)
+[debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) { # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); (*self).__error = __error; default<void>(); __error = (*self).__error; local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__A_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { default<void>(); (*self).__error = __error; default<void>(); __error = (*self).__error; throw; } (*self).__error = __error; default<void>(); __error = (*self).__error; return __result; }" -> null (removing declaration for unused function)
 [debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Function "method view<stream> foo::A::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local value_ref<foo::A> __unit = default<foo::A>(); local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data)); local int<64> __lahead = 0; local iterator<stream> __lahead_end; local optional<hilti::RecoverableFailure> __error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error); # End parsing production: Unit: foo__A -> if ( False ) (*__unit).__begin = begin(__ncur); if ( False ) (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); if ( __error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))); return __ncur; }" -> null (removing declaration for unused function)
 [debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Function "method view<stream> foo::A::parse2(inout value_ref<foo::A> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data)); local int<64> __lahead = 0; local iterator<stream> __lahead_end; local optional<hilti::RecoverableFailure> __error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error); # End parsing production: Unit: foo__A -> if ( False ) (*__unit).__begin = begin(__ncur); if ( False ) (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); if ( __error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))); return __ncur; }" -> null (removing declaration for unused function)
 [debug/optimizer]     [unused-functions.spicy:18:10-18:16] declaration::Function "method view<stream> foo::A::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local value_ref<foo::A> __unit = default<foo::A>(); spicy_rt::initializeParsedUnit((*__gunit), __unit); local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data)); local int<64> __lahead = 0; local iterator<stream> __lahead_end; local optional<hilti::RecoverableFailure> __error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error); # End parsing production: Unit: foo__A -> if ( False ) (*__unit).__begin = begin(__ncur); if ( False ) (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); if ( __error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))); return __ncur; }" -> null (removing declaration for unused function)
@@ -630,7 +596,7 @@
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Field "method view<stream> parse2(inout value_ref<foo::F> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context);" -> null
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context);" -> null
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::__parse_foo__F_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) { # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); (*self).__error = __error; default<void>(); __error = (*self).__error; hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return __result; }" -> null (removing declaration for unused function)
-[debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) { # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); (*self).__error = __error; if ( False ) (*self).__position_update = Null; default<void>(); if ( False ) if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } __error = (*self).__error; local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__F_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { default<void>(); (*self).__error = __error; if ( False ) (*self).__position_update = Null; default<void>(); if ( False ) if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } __error = (*self).__error; throw; } (*self).__error = __error; if ( False ) (*self).__position_update = Null; default<void>(); if ( False ) if ( (*self).__position_update ) { __cur = __cur.advance((*(*self).__position_update)); (*self).__position_update = Null; } __error = (*self).__error; return __result; }" -> null (removing declaration for unused function)
+[debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) { # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); try { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); (*self).__error = __error; default<void>(); __error = (*self).__error; local strong_ref<stream> filtered = Null; if ( ! filtered ) __result = (*self).__parse_foo__F_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } catch ( hilti::SystemException __except ) { default<void>(); (*self).__error = __error; default<void>(); __error = (*self).__error; throw; } (*self).__error = __error; default<void>(); __error = (*self).__error; return __result; }" -> null (removing declaration for unused function)
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Function "method view<stream> foo::F::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local value_ref<foo::F> __unit = default<foo::F>(); local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data)); local int<64> __lahead = 0; local iterator<stream> __lahead_end; local optional<hilti::RecoverableFailure> __error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error); # End parsing production: Unit: foo__F -> if ( False ) (*__unit).__begin = begin(__ncur); if ( False ) (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); if ( __error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))); return __ncur; }" -> null (removing declaration for unused function)
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Function "method view<stream> foo::F::parse2(inout value_ref<foo::F> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data)); local int<64> __lahead = 0; local iterator<stream> __lahead_end; local optional<hilti::RecoverableFailure> __error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error); # End parsing production: Unit: foo__F -> if ( False ) (*__unit).__begin = begin(__ncur); if ( False ) (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); if ( __error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))); return __ncur; }" -> null (removing declaration for unused function)
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] declaration::Function "method view<stream> foo::F::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local value_ref<foo::F> __unit = default<foo::F>(); spicy_rt::initializeParsedUnit((*__gunit), __unit); local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data)); local int<64> __lahead = 0; local iterator<stream> __lahead_end; local optional<hilti::RecoverableFailure> __error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error); # End parsing production: Unit: foo__F -> if ( False ) (*__unit).__begin = begin(__ncur); if ( False ) (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset()); if ( __error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error))); return __ncur; }" -> null (removing declaration for unused function)
@@ -639,6 +605,27 @@
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self).__on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]     [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self).__on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 1
+[debug/optimizer]     re-resolving AST, round 2
+[debug/optimizer]     re-resolving AST, round 2
+[debug/optimizer]     re-resolving AST, round 3
 [debug/optimizer]     removing field for unused method foo::A::__hook_to_string
 [debug/optimizer]     removing field for unused method foo::A::__on_0x25_confirmed
 [debug/optimizer]     removing field for unused method foo::A::__on_0x25_done
@@ -732,9 +719,11 @@
 [debug/optimizer]     removing field for unused method struct_6::parse3
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
+[debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: cfg (round 2, phase index 0)
 [debug/optimizer]   pass: cfg (round 3, phase index 0)
 [debug/optimizer]   pass: cfg (round 4, phase index 0)
+[debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: constant-propagation (round 2, phase index 1)
@@ -742,26 +731,27 @@
 [debug/optimizer]   pass: constant-propagation (round 4, phase index 1)
 [debug/optimizer]   pass: constant_folding (round 1, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 1, phase index 0)
+[debug/optimizer]   pass: constant_folding (round 1, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 2, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 2, phase index 0)
-[debug/optimizer]   pass: constant_folding (round 3, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 3, phase index 0)
 [debug/optimizer]   pass: constant_folding (round 4, phase index 0)
 [debug/optimizer]   pass: feature-requirements (round 1, phase index 0)
 [debug/optimizer]   pass: functions (round 1, phase index 1)
 [debug/optimizer]   pass: functions (round 1, phase index 1)
+[debug/optimizer]   pass: functions (round 1, phase index 1)
 [debug/optimizer]   pass: functions (round 2, phase index 1)
 [debug/optimizer]   pass: functions (round 2, phase index 1)
-[debug/optimizer]   pass: functions (round 3, phase index 1)
 [debug/optimizer]   pass: functions (round 3, phase index 1)
 [debug/optimizer]   pass: functions (round 4, phase index 1)
 [debug/optimizer]   pass: members (round 1, phase index 2)
 [debug/optimizer]   pass: members (round 1, phase index 2)
+[debug/optimizer]   pass: members (round 1, phase index 2)
 [debug/optimizer]   pass: members (round 2, phase index 2)
 [debug/optimizer]   pass: members (round 2, phase index 2)
-[debug/optimizer]   pass: members (round 3, phase index 2)
 [debug/optimizer]   pass: members (round 3, phase index 2)
 [debug/optimizer]   pass: members (round 4, phase index 2)
+[debug/optimizer]   pass: peephole (round 1, phase index 0)
 [debug/optimizer]   pass: peephole (round 1, phase index 0)
 [debug/optimizer]   pass: peephole (round 1, phase index 0)
 [debug/optimizer]   pass: peephole (round 2, phase index 0)
@@ -769,20 +759,24 @@
 [debug/optimizer]   pass: peephole (round 4, phase index 0)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
+[debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 2, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 3, phase index 2)
 [debug/optimizer]   pass: remove_unused_params (round 4, phase index 2)
 [debug/optimizer]   pass: types (round 1, phase index 3)
 [debug/optimizer]   pass: types (round 1, phase index 3)
+[debug/optimizer]   pass: types (round 1, phase index 3)
 [debug/optimizer]   pass: types (round 2, phase index 3)
 [debug/optimizer]   pass: types (round 2, phase index 3)
-[debug/optimizer]   pass: types (round 3, phase index 3)
 [debug/optimizer]   pass: types (round 3, phase index 3)
 [debug/optimizer]   pass: types (round 4, phase index 3)
 [debug/optimizer] processing AST, phase 1
 [debug/optimizer] processing AST, phase 1
+[debug/optimizer] processing AST, phase 1
 [debug/optimizer] processing AST, phase 2
 [debug/optimizer] processing AST, phase 2
+[debug/optimizer] processing AST, phase 2
+[debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, pre-processing phase

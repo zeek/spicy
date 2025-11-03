@@ -85,9 +85,12 @@ public:
     bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
 
 private:
-    bool _runPhase(size_t outer_round, optimizer::Phase phase, bool iterate);
     bool _runPass(const optimizer::PassInfo& pinfo, size_t outer_round, optimizer::Phase phase, size_t pindex,
                   size_t inner_round);
+    bool _runPhase(size_t outer_round, optimizer::Phase phase, bool iterate);
+    void _updateState(const optimizer::PassInfo& pinfo);
+    void _checkState(const optimizer::PassInfo& pinfo);
+
     void _dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header);
 
     ASTContext* _context;
