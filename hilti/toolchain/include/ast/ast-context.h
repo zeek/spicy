@@ -410,7 +410,30 @@ public:
         return t;
     }
 
-    /** Clears up an AST nodes that are not currently retained by anybody. */
+    /** Clears out any error state recorded in the AST. */
+    Result<Nothing> clearErrors(Builder* builder);
+
+    /** Clears out any scopes recorded in the AST. */
+    Result<Nothing> clearScopes(Builder* builder);
+
+    /**
+     * Reports any error recorded in the AST to the user.
+     *
+     * @return success if there are no errors (and hence nothing reported either)
+     */
+    Result<Nothing> collectErrors();
+
+    /**
+     * Performs internal consistency checks on the AST. Implemented only in
+     * debug builds as it may affect performance; no-op in release builds.
+     *
+     * @param finished if true, indicates that AST processing has finished; it
+     * then runs some checks that might not hold while the AST is still being
+     * processed.
+     */
+    void checkAST(bool finished = true) const;
+
+    /** Clears up any AST nodes that are not currently retained by anybody. */
     void garbageCollect();
 
     /** Release all state. */
@@ -424,23 +447,17 @@ private:
                                                   std::optional<hilti::rt::filesystem::path> process_extension = {});
     Result<Nothing> _init(Builder* builder, const Plugin& plugin);
     Result<Nothing> _buildScopes(Builder* builder, const Plugin& plugin);
-    Result<Nothing> _clearState(Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolve(Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolveUnresolvedNodes(bool* modified, Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolveRoot(bool* modified, Builder* builder, const Plugin& plugin);
     Result<Nothing> _validate(Builder* builder, const Plugin& plugin, bool pre_resolver);
     Result<Nothing> _transform(Builder* builder, const Plugin& plugin);
-    Result<Nothing> _collectErrors();
     Result<Nothing> _optimize(Builder* builder);
     Result<Nothing> _computeDependencies();
 
     // Adds a module to the AST. The module must not be part of any AST yet
     // (including the current one).
     declaration::module::UID _addModuleToAST(declaration::Module* module);
-
-    // Performs internal consistency checks on the AST. Meant to execute only
-    // in debug builds as it may affect performance.
-    void _checkAST(bool finished) const;
 
     // Dumps the AST to disk during AST processing, for debugging..
     void _saveIterationAST(const Plugin& plugin, const std::string& prefix, int round = 0);

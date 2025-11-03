@@ -7,9 +7,10 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/timing.h>
+#include <hilti/compiler/context.h>
+#include <hilti/compiler/detail/resolver.h>
+#include <hilti/compiler/validator.h>
 #include <hilti/hilti/hilti/compiler/detail/optimizer/pass.h>
-
-#include "compiler/detail/resolver.h"
 
 using namespace hilti;
 using namespace hilti::detail;
@@ -132,6 +133,13 @@ hilti::Result<Nothing> Optimizer::run() {
 
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
         _dumpAST(context(), util::fmt("%d-x-x-x-final", outer_round), "Final state after optimization");
+
+    if ( ! context()->compilerContext()->options().skip_validation ) {
+        validator::detail::validatePost(builder(), context()->root());
+
+        if ( auto rc = context()->collectErrors(); ! rc )
+            return rc;
+    }
 
     return Nothing();
 }

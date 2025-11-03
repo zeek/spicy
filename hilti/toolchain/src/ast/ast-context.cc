@@ -608,7 +608,7 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
         if ( auto rc = _validate(builder, plugin, false); ! rc )
             return rc;
 
-        _checkAST(true);
+        checkAST(true);
 
         if ( plugin.ast_transform ) {
             // Make dependencies available for transformations.
@@ -650,7 +650,7 @@ struct VisitorCheckIDs : hilti::visitor::PreOrder {
     }
 };
 
-void ASTContext::_checkAST(bool finished) const {
+void ASTContext::checkAST(bool finished) const {
 #ifndef NDEBUG
     util::timing::Collector _("hilti/compiler/ast/check-ast");
 
@@ -683,8 +683,8 @@ Result<Nothing> ASTContext::_init(Builder* builder, const Plugin& plugin) {
     return runHook(plugin, &Plugin::ast_init, "initializing", builder, _root);
 }
 
-Result<Nothing> ASTContext::_clearState(Builder* builder, const Plugin& plugin) {
-    util::timing::Collector _("hilti/compiler/ast/clear-state");
+Result<Nothing> ASTContext::clearErrors(Builder* builder) {
+    util::timing::Collector _("hilti/compiler/ast/clear-errors");
 
     for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) ) {
         assert(n); // walk() should not give us null pointer children.
@@ -694,13 +694,15 @@ Result<Nothing> ASTContext::_clearState(Builder* builder, const Plugin& plugin) 
     return Nothing();
 }
 
-Result<Nothing> ASTContext::_buildScopes(Builder* builder, const Plugin& plugin) {
-    {
-        util::timing::Collector _("hilti/compiler/ast/clear-scope");
-        for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) )
-            n->clearScope();
-    }
+Result<Nothing> ASTContext::clearScopes(Builder* builder) {
+    util::timing::Collector _("hilti/compiler/ast/clear-scope");
+    for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) )
+        n->clearScope();
 
+    return Nothing();
+}
+
+Result<Nothing> ASTContext::_buildScopes(Builder* builder, const Plugin& plugin) {
     bool modified;
     if ( auto rc = runHook(&modified, plugin, &Plugin::ast_build_scopes, "building scopes", builder, _root); ! rc )
         return rc.error();
@@ -727,8 +729,9 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
 
         ++_total_rounds;
 
-        _checkAST(false);
-        _clearState(builder, plugin);
+        checkAST(false);
+        clearErrors(builder);
+        clearScopes(builder);
         _buildScopes(builder, plugin);
         type_unifier::unify(builder, root());
         operator_::registry().initPending(builder);
@@ -752,7 +755,7 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
     _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
 
-    _checkAST(false);
+    checkAST(false);
 
 #ifndef NDEBUG
     // At this point, all built-in operators should be fully resolved. If not,
@@ -798,7 +801,7 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
 
     // Make sure we didn't leave anything odd during optimization.
     // TODO: Move consistency checks into the optimizer itself.
-    _checkAST(true);
+    checkAST(true);
 
     return Nothing();
 }
@@ -814,7 +817,7 @@ Result<Nothing> ASTContext::_validate(Builder* builder, const Plugin& plugin, bo
     else
         runHook(&modified, plugin, &Plugin::ast_validate_post, "validating (post)", builder, _root);
 
-    return _collectErrors();
+    return collectErrors();
 }
 
 Result<Nothing> ASTContext::_computeDependencies() {
@@ -1055,7 +1058,7 @@ static void reportErrors(const std::vector<node::Error>& errors) {
     }
 }
 
-Result<Nothing> ASTContext::_collectErrors() {
+Result<Nothing> ASTContext::collectErrors() {
     std::vector<node::Error> errors;
     recursiveValidateAST(_root, Location(), node::ErrorPriority::NoError, 0, &errors);
 
