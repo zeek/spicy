@@ -325,10 +325,6 @@ struct Mutator : public optimizer::visitor::Mutator {
 };
 
 optimizer::Result run(Optimizer* optimizer) {
-    if ( optimizer->state()->round > 1 )
-        // We need to run this pass only once at the beginning.
-        return optimizer::Unchanged;
-
     Collector collector(optimizer);
     collector.run();
 

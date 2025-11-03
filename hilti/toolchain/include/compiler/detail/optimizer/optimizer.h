@@ -49,7 +49,6 @@ struct ASTState {
 
     ASTContext* context = nullptr;
     const PassInfo* pass = nullptr;
-    unsigned int round = 0;
     OperatorUses op_uses;
 
     const OperatorUses::mapped_type* uses(const Operator* x) const {
@@ -86,7 +85,9 @@ public:
     bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
 
 private:
-    bool _runPhase(int outer_round, optimizer::Phase phase, bool iterate);
+    bool _runPhase(size_t outer_round, optimizer::Phase phase, bool iterate);
+    bool _runPass(const optimizer::PassInfo& pinfo, size_t outer_round, optimizer::Phase phase, size_t pindex,
+                  size_t inner_round);
     void _dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header);
 
     ASTContext* _context;

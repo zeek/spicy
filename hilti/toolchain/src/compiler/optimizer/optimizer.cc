@@ -45,7 +45,44 @@ void Optimizer::_dumpAST(ASTContext* ctx, std::string_view fname, std::string_vi
     ctx->root()->print(out_hlt, false, true);
 }
 
-bool Optimizer::_runPhase(int outer_round, Phase phase, bool iterate) {
+bool Optimizer::_runPass(const PassInfo& pinfo, size_t outer_round, Phase phase, size_t pindex, size_t inner_round) {
+    util::timing::Collector __(util::fmt("hilti/compiler/optimizer/%s", pinfo.name));
+
+    HILTI_DEBUG(logging::debug::Optimizer,
+                util::fmt("pass: %s (round %d, phase index %d)", pinfo.name, inner_round, pindex));
+
+    logging::DebugPushIndent _(logging::debug::Optimizer);
+
+    ASTState state(context());
+    state.pass = &pinfo;
+    _state = &state;
+
+    if ( (*pinfo.run)(this) == optimizer::Result::Unchanged )
+        return false;
+
+    HILTI_DEBUG(logging::debug::Optimizer, "-> AST modified");
+
+    if ( logger().isEnabled(logging::debug::OptimizerDump) ) {
+        const auto fname =
+            util::fmt("%zu-%zu-%zu-%zu-%s", outer_round, static_cast<size_t>(phase), inner_round, pindex, pinfo.name);
+        const auto header = util::fmt("State after modifications by pass %s, round %zu/%zu, phase index %zu\n",
+                                      pinfo.name, outer_round, inner_round, pindex);
+        _dumpAST(context(), fname, header);
+    }
+
+#ifndef NDEBUG
+    // In debug builds, we check the AST after each pass to enforce that it's
+    // been left in good shape.
+    context()->checkAST();
+    validator::detail::validatePost(builder(), context()->root());
+
+    // TODO: Make sure a full resolver pass doesn't change anything.
+#endif
+
+    return true;
+}
+
+bool Optimizer::_runPhase(size_t outer_round, Phase phase, bool iterate) {
     const auto& passes = getPassRegistry()->passes(phase);
     if ( passes.empty() )
         return false;
@@ -53,7 +90,7 @@ bool Optimizer::_runPhase(int outer_round, Phase phase, bool iterate) {
     HILTI_DEBUG(logging::debug::Optimizer, util::fmt("processing AST, %s", to_string(phase)));
     logging::DebugPushIndent _(logging::debug::Optimizer);
 
-    int inner_round = 0;
+    size_t inner_round = 0;
     bool modified = false;
     bool ever_modified = false;
 
@@ -62,39 +99,11 @@ bool Optimizer::_runPhase(int outer_round, Phase phase, bool iterate) {
             logger().internalError("optimizer::runPhase() didn't terminate, AST keeps changing");
 
         modified = false;
-        int phase_index = 0;
-        for ( const auto& pinfo : getPassRegistry()->passes(phase) ) {
-            HILTI_DEBUG(logging::debug::Optimizer,
-                        util::fmt("pass: %s (round %d, phase index %d)", pinfo.name, inner_round, phase_index));
-
-            ASTState state(context());
-            state.pass = &pinfo;
-            state.round = inner_round; // TODO: Do we need this, and if so is this the right value?
-
-            auto _ = util::scope_exit([&]() { _state = nullptr; });
-            _state = &state;
-
-            {
-                logging::DebugPushIndent _(logging::debug::Optimizer);
-                util::timing::Collector __(util::fmt("hilti/compiler/optimizer/%s", pinfo.name));
-
-                if ( (*pinfo.run)(this) == optimizer::Result::Modified ) {
-                    HILTI_DEBUG(logging::debug::Optimizer, "-> AST modified");
-                    modified = true;
-                    ever_modified = true;
-
-                    if ( logger().isEnabled(logging::debug::OptimizerDump) ) {
-                        const auto fname = util::fmt("%d-%d-%d-%d-%s", static_cast<int>(phase), outer_round,
-                                                     inner_round, phase_index, pinfo.name);
-                        const auto header =
-                            util::fmt("State after modifications by pass %s, round %d, phase index %d\n", pinfo.name,
-                                      inner_round, phase_index);
-                        _dumpAST(context(), fname, header);
-                    }
-                }
+        for ( const auto& [idx, pinfo] : util::enumerate(getPassRegistry()->passes(phase)) ) {
+            if ( _runPass(pinfo, outer_round, phase, idx, inner_round) ) {
+                modified |= true;
+                ever_modified |= true;
             }
-
-            ++phase_index;
         }
 
     } while ( iterate && modified );
@@ -108,27 +117,22 @@ hilti::Result<Nothing> Optimizer::run() {
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
         _dumpAST(context(), "0-0-0-0-initial", "Initial state before optimization");
 
-    int outer_round = 1;
+    size_t outer_round = 1;
     bool modified = false;
 
-    modified |= _runPhase(outer_round, Phase::Init, false);
-
     do {
-        if ( ++outer_round >= 50 )
-            logger().internalError("optimizer::run() didn't terminate, AST keeps changing");
+        modified = false;
+
+        if ( outer_round == 1 )
+            modified |= _runPhase(outer_round, Phase::Init, false);
 
         modified |= _runPhase(outer_round, Phase::Phase1, true);
         modified |= _runPhase(outer_round, Phase::Phase2, true);
         modified |= _runPhase(outer_round, Phase::Phase3, true);
         modified |= _runPhase(outer_round, Phase::Post, false);
 
-        if ( ! modified )
-            break;
-
-        if ( ! resolver::coerce(builder(), context()->root()) )
-            break;
-
-        ++outer_round;
+        if ( ++outer_round >= 50 )
+            logger().internalError("optimizer::run() didn't terminate, AST keeps changing");
     } while ( modified );
 
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
