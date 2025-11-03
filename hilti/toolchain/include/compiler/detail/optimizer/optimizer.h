@@ -17,6 +17,9 @@ inline const hilti::logging::DebugStream OptimizerDump("optimizer-dump");
 } // namespace hilti::logging::debug
 
 namespace hilti::detail {
+
+class Optimizer;
+
 namespace optimizer {
 
 enum class Phase {
@@ -49,6 +52,7 @@ struct ASTState {
 
     ASTContext* context = nullptr;
     const PassInfo* pass = nullptr;
+
     OperatorUses op_uses;
 
     const OperatorUses::mapped_type* uses(const Operator* x) const {
@@ -62,6 +66,34 @@ struct ASTState {
     void update();
 };
 
+enum class Requirements : uint16_t {
+    Coercer = (1U << 1U),
+    ConstantFolder = (1U << 2U),
+    FullResolver = (1U << 3U),
+    ScopeBuilder = (1U << 4U),
+    TypeUnifier = (1U << 5U),
+
+    None = 0U,
+    All = ((1U << 16U) - 1U)
+};
+
+extern std::string to_string(bitmask<Requirements> r);
+
+using Result = enum { Unchanged, Modified };
+
+struct PassInfo {
+    using Callback = Result (*)(Optimizer* opt);
+
+    std::string name;
+    Phase phase;
+    bitmask<Requirements> requires_afterwards = Requirements::All;
+    Callback run;
+
+    bool operator<(const PassInfo& other) const {
+        return phase != other.phase ? phase < other.phase : name < other.name;
+    }
+};
+
 } // namespace optimizer
 
 class Optimizer {
@@ -73,7 +105,7 @@ public:
      * before running optimization. This can be run multiple times if the same AST
      * needs to be re-optimized.
      */
-    Result<Nothing> run();
+    hilti::Result<Nothing> run();
 
     auto* builder() { return &_builder; }
     auto* context() { return _context; }
@@ -99,5 +131,6 @@ private:
     optimizer::ASTState* _state = nullptr;
 };
 
-
 } // namespace hilti::detail
+
+enableEnumClassBitmask(hilti::detail::optimizer::Requirements); // must be in global scope

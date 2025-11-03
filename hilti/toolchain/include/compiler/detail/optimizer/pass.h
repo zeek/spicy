@@ -2,7 +2,11 @@
 
 #pragma once
 
+#include <string>
 #include <utility>
+#include <vector>
+
+#include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
 
 #include <hilti/ast/forward.h>
 #include <hilti/ast/visitor.h>
@@ -15,7 +19,6 @@ namespace hilti::detail {
 class Optimizer;
 
 namespace optimizer {
-using Result = enum { Unchanged, Modified };
 
 namespace visitor {
 
@@ -70,18 +73,6 @@ private:
 };
 
 } // namespace visitor
-
-struct PassInfo {
-    using Callback = Result (*)(Optimizer* opt);
-
-    std::string name;
-    Phase phase;
-    Callback run;
-
-    bool operator<(const PassInfo& other) const {
-        return phase != other.phase ? phase < other.phase : name < other.name;
-    }
-};
 
 class Registry {
 public:

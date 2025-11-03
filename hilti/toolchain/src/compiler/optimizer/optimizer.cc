@@ -8,6 +8,7 @@
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/context.h>
+#include <hilti/compiler/detail/constant-folder.h>
 #include <hilti/compiler/detail/resolver.h>
 #include <hilti/compiler/detail/scope-builder.h>
 #include <hilti/compiler/type-unifier.h>
@@ -17,6 +18,30 @@
 using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
+
+std::string optimizer::to_string(bitmask<Requirements> r) {
+    std::vector<std::string> labels;
+
+    if ( r & Requirements::Coercer )
+        labels.emplace_back("coercer");
+
+    if ( r & Requirements::ConstantFolder )
+        labels.emplace_back("constant-folder");
+
+    if ( r & Requirements::FullResolver )
+        labels.emplace_back("full-resolver");
+
+    if ( r & Requirements::ScopeBuilder )
+        labels.emplace_back("scope-builder");
+
+    if ( r & Requirements::TypeUnifier )
+        labels.emplace_back("type-unifier");
+
+    if ( labels.empty() )
+        return "<none>";
+    else
+        return util::fmt("<%s>", util::join(labels, ","));
+}
 
 // Collects uses of resolved operators
 struct CollectUsesPass : public hilti::visitor::PreOrder {
@@ -40,31 +65,46 @@ Optimizer::Optimizer(ASTContext* ctx) : _context(ctx), _builder(ctx) {}
 void Optimizer::_updateState(const PassInfo& pinfo) {
     util::timing::Collector _("hilti/compiler/optimizer/update-state");
 
-    // TODO: This is currently a slimmed down version of
-    // ASTContext::_resolve(), just resolving everything everytime. We don't
-    // really *want* to do that on each round, but instead should recompute only
-    // what changed. Note that whatever we do here, we just need execute
-    // HILTI-side functionality, no other plugins.
+    // This mimics ASTContext::_resolve(), but skips steps that the pass
+    // doesn't require. It also needs to run only HILTI's versions, no need to
+    // consider other plugins.
+
+    if ( pinfo.requires_afterwards == bitmask<Requirements>(Requirements::None) )
+        return;
 
     int round = 1;
 
     while ( true ) {
         // Loop body mimics ASTContext::_resolve() for a single plugin.
-        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("re-resolving AST, round %d", round));
+        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("re-resolving AST, round %d (requires: %s)", round,
+                                                         to_string(pinfo.requires_afterwards)));
+        auto modified = false;
 
-        context()->clearErrors(builder());
+        if ( pinfo.requires_afterwards & Requirements::ScopeBuilder ) {
+            context()->clearScopes(builder());
+            scope_builder::build(builder(), context()->root()); // don't need/have modified tracking here
+        }
 
-        context()->clearScopes(builder());
+        if ( pinfo.requires_afterwards & Requirements::TypeUnifier )
+            modified = type_unifier::unify(builder(), context()->root());
 
-        scope_builder::build(builder(), context()->root());
-        type_unifier::unify(builder(), context()->root());
+        if ( pinfo.requires_afterwards & Requirements::FullResolver )
+            modified = resolver::resolve(builder(), context()->root());
 
-        // TODO: In the future, can also run only resolver::coerce() here.
-        // TODO: In the future, can also run only constant_folder::fold() here.
-        if ( ! resolver::resolve(builder(), context()->root()) )
+        else {
+            // These are implicitly also part of the full resolver, so only
+            // need to run if that one doesn't.
+            if ( pinfo.requires_afterwards & Requirements::Coercer )
+                modified = resolver::coerce(builder(), context()->root());
+
+            if ( pinfo.requires_afterwards & Requirements::ConstantFolder )
+                modified = constant_folder::fold(builder(), context()->root());
+        }
+
+        if ( ! modified )
             break;
 
-        HILTI_DEBUG(logging::debug::Optimizer, "-> AST modified");
+        HILTI_DEBUG(logging::debug::Optimizer, "    -> modified");
 
         if ( ++round >= 50 )
             logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
@@ -90,6 +130,14 @@ void Optimizer::_checkState(const PassInfo& pinfo) {
     if ( scope_builder::buildToValidate(builder(), context()->root()) )
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST scopes are not fully built after optimizer pass %s", pinfo.name));
+
+    if ( constant_folder::fold(builder(), context()->root()) )
+        logger().internalError(
+            util::fmt("Optimizer::_checkState: AST is not fully constant folded after optimizer pass %s", pinfo.name));
+
+    if ( resolver::coerce(builder(), context()->root()) )
+        logger().internalError(
+            util::fmt("Optimizer::_checkState: AST is not fully coerced after optimizer pass %s", pinfo.name));
 
     if ( resolver::resolve(builder(), context()->root()) )
         logger().internalError(
@@ -170,6 +218,9 @@ void Optimizer::_dumpAST(ASTContext* ctx, std::string_view fname, std::string_vi
 
 hilti::Result<Nothing> Optimizer::run() {
     util::timing::Collector _("hilti/compiler/optimizer");
+
+    // TODO: We could probably just assert there are no error set in the AST.
+    context()->clearErrors(builder());
 
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
         _dumpAST(context(), "0-0-0-0-initial", "Initial state before optimization");
