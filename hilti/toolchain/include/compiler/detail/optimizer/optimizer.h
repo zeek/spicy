@@ -74,7 +74,7 @@ public:
      * before running optimization. This can be run multiple times if the same AST
      * needs to be re-optimized.
      */
-    bool run();
+    Result<Nothing> run();
 
     auto* builder() { return &_builder; }
     auto* context() { return _context; }
@@ -86,14 +86,13 @@ public:
     bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
 
 private:
-    bool _runPhase(optimizer::Phase phase, bool iterate);
+    bool _runPhase(int outer_round, optimizer::Phase phase, bool iterate);
     void _dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header);
 
     ASTContext* _context;
     Builder _builder;
 
     optimizer::ASTState* _state = nullptr;
-    int _runs = 0;
 };
 
 

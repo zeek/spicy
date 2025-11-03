@@ -9,6 +9,8 @@
 #include <hilti/base/timing.h>
 #include <hilti/hilti/hilti/compiler/detail/optimizer/pass.h>
 
+#include "compiler/detail/resolver.h"
+
 using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
@@ -42,7 +44,7 @@ void Optimizer::_dumpAST(ASTContext* ctx, std::string_view fname, std::string_vi
     ctx->root()->print(out_hlt, false, true);
 }
 
-bool Optimizer::_runPhase(Phase phase, bool iterate) {
+bool Optimizer::_runPhase(int outer_round, Phase phase, bool iterate) {
     const auto& passes = getPassRegistry()->passes(phase);
     if ( passes.empty() )
         return false;
@@ -50,23 +52,23 @@ bool Optimizer::_runPhase(Phase phase, bool iterate) {
     HILTI_DEBUG(logging::debug::Optimizer, util::fmt("processing AST, %s", to_string(phase)));
     logging::DebugPushIndent _(logging::debug::Optimizer);
 
-    int round = 0;
+    int inner_round = 0;
     bool modified = false;
     bool ever_modified = false;
 
     do {
-        if ( ++round >= 50 )
+        if ( ++inner_round >= 50 )
             logger().internalError("optimizer::runPhase() didn't terminate, AST keeps changing");
 
         modified = false;
         int phase_index = 0;
         for ( const auto& pinfo : getPassRegistry()->passes(phase) ) {
             HILTI_DEBUG(logging::debug::Optimizer,
-                        util::fmt("pass: %s (round %d, phase index %d)", pinfo.name, round, phase_index));
+                        util::fmt("pass: %s (round %d, phase index %d)", pinfo.name, inner_round, phase_index));
 
             ASTState state(context());
             state.pass = &pinfo;
-            state.round = round; // TODO: Do we need this, and if so is this the right value?
+            state.round = inner_round; // TODO: Do we need this, and if so is this the right value?
 
             auto _ = util::scope_exit([&]() { _state = nullptr; });
             _state = &state;
@@ -81,11 +83,11 @@ bool Optimizer::_runPhase(Phase phase, bool iterate) {
                     ever_modified = true;
 
                     if ( logger().isEnabled(logging::debug::OptimizerDump) ) {
-                        const auto fname =
-                            util::fmt("%d-%d-%d-%d-%s", static_cast<int>(phase), _runs, round, phase_index, pinfo.name);
+                        const auto fname = util::fmt("%d-%d-%d-%d-%s", static_cast<int>(phase), outer_round,
+                                                     inner_round, phase_index, pinfo.name);
                         const auto header =
                             util::fmt("State after modifications by pass %s, round %d, phase index %d\n", pinfo.name,
-                                      round, phase_index);
+                                      inner_round, phase_index);
                         _dumpAST(context(), fname, header);
                     }
                 }
@@ -99,29 +101,39 @@ bool Optimizer::_runPhase(Phase phase, bool iterate) {
     return ever_modified;
 }
 
-bool Optimizer::run() {
+hilti::Result<Nothing> Optimizer::run() {
     util::timing::Collector _("hilti/compiler/optimizer");
 
-    ++_runs;
-    const bool first_run = (_runs == 1);
-
-    if ( first_run && logger().isEnabled(logging::debug::OptimizerDump) )
+    if ( logger().isEnabled(logging::debug::OptimizerDump) )
         _dumpAST(context(), "0-0-0-0-initial", "Initial state before optimization");
 
+    int outer_round = 1;
     bool modified = false;
 
-    if ( first_run )
-        modified |= _runPhase(Phase::Init, false);
+    modified |= _runPhase(outer_round, Phase::Init, false);
 
-    modified |= _runPhase(Phase::Phase1, true);
-    modified |= _runPhase(Phase::Phase2, true);
-    modified |= _runPhase(Phase::Phase3, true);
-    modified |= _runPhase(Phase::Post, false);
+    do {
+        if ( ++outer_round >= 50 )
+            logger().internalError("optimizer::run() didn't terminate, AST keeps changing");
+
+        modified |= _runPhase(outer_round, Phase::Phase1, true);
+        modified |= _runPhase(outer_round, Phase::Phase2, true);
+        modified |= _runPhase(outer_round, Phase::Phase3, true);
+        modified |= _runPhase(outer_round, Phase::Post, false);
+
+        if ( ! modified )
+            break;
+
+        if ( ! resolver::coerce(builder(), context()->root()) )
+            break;
+
+        ++outer_round;
+    } while ( modified );
 
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
-        _dumpAST(context(), util::fmt("%d-x-x-x-final", _runs), "Final state after optimization");
+        _dumpAST(context(), util::fmt("%d-x-x-x-final", outer_round), "Final state after optimization");
 
-    return modified;
+    return Nothing();
 }
 
 

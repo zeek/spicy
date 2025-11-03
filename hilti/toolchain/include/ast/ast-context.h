@@ -417,7 +417,7 @@ public:
     void clear();
 
 private:
-    // The following methods implement the corresponding phases of AST processing.
+    //  The following methods implement the corresponding phases of AST processing.
 
     Result<declaration::module::UID> _parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
                                                   const ID& scope,

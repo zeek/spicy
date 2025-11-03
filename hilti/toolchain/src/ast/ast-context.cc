@@ -790,20 +790,8 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
     Optimizer optimizer(builder->context());
-
-    while ( true ) {
-        // If the optimizer does not change anything, we are done.
-        if ( ! optimizer.run() )
-            break;
-
-        // Optimization may have left some computed node state unset, such as a
-        // canonical IDs. Some passes also require extra coercions, such as the
-        // constant propagation pass. Do another resolver run to get that in shape.
-        //
-        // TODO: This should move into the optimizer itself.
-        if ( ! resolver::coerce(builder, _root) )
-            break;
-    }
+    if ( auto rc = optimizer.run(); ! rc )
+        return rc;
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )
         hilti::detail::cfg::dump(logging::debug::CfgFinal, _root);
