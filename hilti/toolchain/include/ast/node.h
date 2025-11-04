@@ -643,6 +643,14 @@ public:
      */
     void replaceChild(ASTContext* ctx, Node* old, Node* new_);
 
+    void removeFromParent() {
+        if ( ! _parent )
+            return;
+
+        assert(_parent->hasChild(this));
+        _parent->removeChild(this);
+    }
+
     /** Returns true if a node is of a particular type (class). */
     template<typename T>
     bool isA() const {

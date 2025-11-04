@@ -157,6 +157,10 @@ optimizer::Result run(Optimizer* optimizer) {
     return Mutator(optimizer, &collector).run();
 }
 
-optimizer::RegisterPass members({.name = "members", .phase = optimizer::Phase::Phase1, .run = run});
+optimizer::RegisterPass members({.name = "members",
+                                 .phase = optimizer::Phase::Phase1,
+                                 .requires_afterwards = optimizer::Requirements::ScopeBuilder |
+                                                        optimizer::Requirements::TypeUnifier,
+                                 .run = run});
 
 } // namespace

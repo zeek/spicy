@@ -394,6 +394,11 @@ optimizer::Result run(Optimizer* optimizer) {
     return Mutator(optimizer, &collector).run();
 }
 
-optimizer::RegisterPass functions({.name = "functions", .phase = optimizer::Phase::Phase1, .run = run});
+optimizer::RegisterPass functions({.name = "functions",
+                                   .phase = optimizer::Phase::Phase1,
+                                   .requires_afterwards = optimizer::Requirements::ScopeBuilder |
+                                                          optimizer::Requirements::TypeUnifier |
+                                                          optimizer::Requirements::Coercer,
+                                   .run = run});
 
 } // namespace

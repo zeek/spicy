@@ -333,6 +333,7 @@ optimizer::Result run(Optimizer* optimizer) {
 
 optimizer::RegisterPass feature_requirements({.name = "feature-requirements",
                                               .phase = optimizer::Phase::Init,
+                                              .requires_afterwards = optimizer::Requirements::ConstantFolder,
                                               .run = run});
 
 } // namespace

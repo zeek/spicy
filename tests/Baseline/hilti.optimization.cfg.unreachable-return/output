@@ -13,7 +13,7 @@
 [debug/optimizer]     [unreachable-return.hlt:16:5-16:24] statement::Expression "hilti::print("bad!", True);" -> null (unreachable code)
 [debug/optimizer]     [unreachable-return.hlt:17:5-17:11] statement::Return "return;" -> null (unreachable code)
 [debug/optimizer]         -> modified
-[debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
 [debug/optimizer]   pass: cfg (round 2, phase index 0)

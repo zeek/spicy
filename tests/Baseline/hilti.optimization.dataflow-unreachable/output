@@ -12,7 +12,7 @@
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]     [dataflow-unreachable.hlt:14:5-14:25] statement::Declaration "local uint<64> c = a;" -> null (statement result unused)
 [debug/optimizer]         -> modified
-[debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]     [dataflow-unreachable.hlt:12:9-12:9] expression::Name "a" -> propagating constant value in a
 [debug/optimizer]     [dataflow-unreachable.hlt:12:9-12:9] expression::Name "a" -> expression::Ctor "1"
@@ -28,13 +28,13 @@
 [debug/optimizer]     [dataflow-unreachable.hlt:10:5-10:9] statement::Expression "a = 1;" -> null (statement result unused)
 [debug/optimizer]     [dataflow-unreachable.hlt:12:5-12:9] statement::Expression "b = 1;" -> null (statement result unused)
 [debug/optimizer]         -> modified
-[debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]   pass: constant-propagation (round 2, phase index 1)
 [debug/optimizer]   pass: remove_unused_params (round 2, phase index 2)
 [debug/optimizer]   pass: cfg (round 3, phase index 0)
 [debug/optimizer]     [dataflow-unreachable.hlt:11:5-11:25] statement::Declaration "local uint<64> b = 1;" -> null (statement result unused)
 [debug/optimizer]         -> modified
-[debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]   pass: constant-propagation (round 3, phase index 1)
 [debug/optimizer]   pass: remove_unused_params (round 3, phase index 2)
 [debug/optimizer]   pass: cfg (round 4, phase index 0)

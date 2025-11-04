@@ -8,6 +8,8 @@
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
 
+#include "compiler/detail/optimizer/optimizer.h"
+
 using namespace hilti;
 using namespace hilti::detail;
 
@@ -84,8 +86,24 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( auto* else_ = n->false_() ) {
             if ( ! bool_.value() )
                 replaceNode(n, else_);
-            else
-                replaceNode(n, builder()->statementIf(n->init(), n->condition(), n->true_(), nullptr));
+            else {
+                auto* init = n->init();
+                auto* condition = n->condition();
+                auto* true_ = n->true_();
+
+                // Unlink first so that we don't recreate the nodes (which
+                // would require new resolving).
+                if ( init )
+                    init->removeFromParent();
+
+                if ( condition )
+                    condition->removeFromParent();
+
+                if ( true_ )
+                    true_->removeFromParent();
+
+                replaceNode(n, builder()->statementIf(init, condition, true_, nullptr));
+            }
         }
         else {
             if ( ! bool_.value() )
@@ -162,9 +180,20 @@ optimizer::Result run(Optimizer* optimizer) {
     Collector collector(optimizer);
     collector.run();
 
-    return Mutator(optimizer, &collector).run();
+    auto modified = optimizer::Result::Unchanged;
+
+    while ( true ) {
+        if ( Mutator(optimizer, &collector).run() )
+            modified = optimizer::Result::Modified;
+        else
+            return modified;
+    }
 }
 
-optimizer::RegisterPass constant_folder({.name = "constant_folding", .phase = optimizer::Phase::Phase1, .run = run});
+optimizer::RegisterPass constant_folder(
+    {.name = "constant_folding",
+     .phase = optimizer::Phase::Phase1,
+     .requires_afterwards = optimizer::Requirements::ConstantFolder, // TODO: This shouldn't be neccearry
+     .run = run});
 
 } // namespace

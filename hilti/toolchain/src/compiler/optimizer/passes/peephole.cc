@@ -146,6 +146,9 @@ struct Mutator : public optimizer::visitor::Mutator {
 
 optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
-optimizer::RegisterPass peephole({.name = "peephole", .phase = optimizer::Phase::Phase2, .run = run});
+optimizer::RegisterPass peephole({.name = "peephole",
+                                  .phase = optimizer::Phase::Phase2,
+                                  .requires_afterwards = optimizer::Requirements::None,
+                                  .run = run});
 
 } // namespace

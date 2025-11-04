@@ -12,13 +12,13 @@
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]     [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x = 2;" -> null (statement result unused)
 [debug/optimizer]         -> modified
-[debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
 [debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
 [debug/optimizer]   pass: cfg (round 2, phase index 0)
 [debug/optimizer]     [dead-write-shadowed.hlt:14:9-14:30] statement::Declaration "local uint<64> x = 10;" -> null (statement result unused)
 [debug/optimizer]         -> modified
-[debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]   pass: constant-propagation (round 2, phase index 1)
 [debug/optimizer]   pass: remove_unused_params (round 2, phase index 2)
 [debug/optimizer]   pass: cfg (round 3, phase index 0)

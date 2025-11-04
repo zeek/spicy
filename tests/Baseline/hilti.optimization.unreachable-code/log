@@ -6,7 +6,7 @@
 [debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, phase 3
 [debug/optimizer] processing AST, pre-processing phase
-[debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: cfg (round 1, phase index 0)
 [debug/optimizer]   pass: cfg (round 2, phase index 0)
