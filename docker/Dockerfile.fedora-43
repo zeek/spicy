@@ -1,12 +1,12 @@
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-FROM fedora:41
+FROM fedora:43
 
 RUN echo 'LC_CTYPE="C"' >> /etc/locale.conf \
  && echo 'LC_ALL="C"' >> /etc/locale.conf \
  && echo 'LANG="C"' >> /etc/locale.conf \
  # Install Spicy build dependencies
- && dnf install -y ccache git ninja-build cmake flex bison gcc-c++ findutils diffutils python3-pip which openssl-devel zlib-devel glibc-langpack-de \
+ && dnf install -y ccache git ninja-build cmake flex bison gawk gcc-c++ findutils diffutils python3-pip which openssl-devel zlib-devel glibc-langpack-de \
  && pip3 install "btest>=0.66" \
  # Install rpmdevtools for packaging RPM files.
  && dnf install -y rpmdevtools
