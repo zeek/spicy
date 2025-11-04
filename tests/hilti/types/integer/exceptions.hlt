@@ -1,7 +1,7 @@
 # @TEST-EXEC: ${HILTIC} -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-DOC: Makes sure undefined integer operatios are caught
+# @TEST-DOC: Makes sure undefined integer operations are caught
 
 module Foo {
 

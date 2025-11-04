@@ -72,9 +72,9 @@ public type P2 = struct {
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_x(uint<8> __dd);
-    hook void __on_x_error(string __excpt);
+    hook void __on_x_error(string __except);
     hook void __on_y(uint<8> __dd);
-    hook void __on_y_error(string __excpt);
+    hook void __on_y_error(string __except);
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);

@@ -552,7 +552,9 @@ public:
 
     void addReturn(Meta m = Meta()) { block()->_add(context(), statementReturn(std::move(m))); }
 
-    void addThrow(Expression* excpt, Meta m = Meta()) { block()->_add(context(), statementThrow(excpt, std::move(m))); }
+    void addThrow(Expression* except, Meta m = Meta()) {
+        block()->_add(context(), statementThrow(except, std::move(m)));
+    }
 
     void addRethrow(Meta m = Meta()) { block()->_add(context(), statementThrow(std::move(m))); }
 

@@ -362,9 +362,9 @@ public:
     auto statementAssert(Expression* expr, Expression* msg = nullptr, Meta meta = {}) {
         return hilti::statement::Assert::create(context(), expr, msg, std::move(meta));
     }
-    auto statementAssert(statement::assert::Exception /* excpt */, Expression* expr, UnqualifiedType* excpt,
+    auto statementAssert(statement::assert::Exception /* except */, Expression* expr, UnqualifiedType* except,
                          Expression* msg = nullptr, Meta meta = {}) {
-        return hilti::statement::Assert::create(context(), statement::assert::Exception{}, expr, excpt, msg,
+        return hilti::statement::Assert::create(context(), statement::assert::Exception{}, expr, except, msg,
                                                 std::move(meta));
     }
     auto statementBlock(const Meta& meta = {}) { return hilti::statement::Block::create(context(), meta); }

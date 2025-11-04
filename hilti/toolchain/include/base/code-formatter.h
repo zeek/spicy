@@ -47,7 +47,7 @@ public:
     /** Inserts a comment line, prefixing it with the comment prefix. */
     void comment(const std::string& s);
 
-    /** Increates the indentation by one level.  */
+    /** Increases the indentation by one level.  */
     void indent() { _indent += 1; }
 
     /** Decreates the indentation by one level.  */

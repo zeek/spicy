@@ -1823,7 +1823,7 @@
 
   * Move `./ci/run-ci`'s clang-tidy check to CMake. (Benjamin Bannier, Corelight)
 
-    Instead of implementing this ourself instea use CMake with
+    Instead of implementing this ourself instead use CMake with
     `CMAKE_CXX_CLANG_TIDY`/`CMAKE_C_CLANG_TIDY`.
 
   * Update CMake version in CI for clang-tidy. (Benjamin Bannier, Corelight)
@@ -8744,7 +8744,7 @@ public
     expression. (Robin Sommer, Corelight)
 
   * GH-740: May address the unstable behavior by rewriting the code
-    surrrounding the `&while` parsing (but keeping semantics the
+    surrounding the `&while` parsing (but keeping semantics the
     same). (Robin Sommer, Corelight)
 
 0.4.0-1412 | 2021-02-16 10:07:45 +0000
@@ -9937,7 +9937,7 @@ x:
   * Switch to Zeek 3.2.0 release packages for CI. (Robin Sommer,
     Corelight)
 
-  * Add helper Makefile to build and run the CI docker image locallly.
+  * Add helper Makefile to build and run the CI docker image locally.
     (Robin Sommer, Corelight)
 
 0.4.0-725 | 2020-08-05 12:44:26 +0200

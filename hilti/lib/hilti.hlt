@@ -59,10 +59,10 @@ public type RecoverableFailure = [exception : Exception] &cxxname="hilti::rt::Re
 public type MissingData = [exception : Exception] &cxxname="hilti::rt::MissingData";
 
 # Returns the message associated with an exception.
-declare public string exception_what(SystemException excpt) &cxxname="hilti::rt::exception::what" &have_prototype;
-declare public string exception_what(RecoverableFailure excpt) &cxxname="hilti::rt::exception::what" &have_prototype;
+declare public string exception_what(SystemException except) &cxxname="hilti::rt::exception::what" &have_prototype;
+declare public string exception_what(RecoverableFailure except) &cxxname="hilti::rt::exception::what" &have_prototype;
 
 # Returns the location associated with an exception.
-declare public string exception_where(SystemException excpt) &cxxname="hilti::rt::exception::where" &have_prototype;
-declare public string exception_where(RecoverableFailure excpt) &cxxname="hilti::rt::exception::where" &have_prototype;
+declare public string exception_where(SystemException except) &cxxname="hilti::rt::exception::where" &have_prototype;
+declare public string exception_where(RecoverableFailure except) &cxxname="hilti::rt::exception::where" &have_prototype;
 }

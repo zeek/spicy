@@ -394,12 +394,12 @@
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [default-parser-functions.spicy:16:18-21:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [default-parser-functions.spicy:17:5-17:13] declaration::Field "hook void __on_x(uint<8> __dd);" -> null
-[debug/optimizer] [default-parser-functions.spicy:17:5-17:13] declaration::Field "hook void __on_x_error(string __excpt);" -> null
+[debug/optimizer] [default-parser-functions.spicy:17:5-17:13] declaration::Field "hook void __on_x_error(string __except);" -> null
 [debug/optimizer] [default-parser-functions.spicy:17:5-17:13] operator_::struct_::MemberCall "(*self).__on_x((*self).x)" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [default-parser-functions.spicy:17:5-17:13] operator_::struct_::MemberCall "(*self).__on_x_error(hilti::exception_what(__except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [default-parser-functions.spicy:17:5-17:13] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [default-parser-functions.spicy:17:5-17:13] statement::Expression "default<void>();" -> removing default<void> statement
-[debug/optimizer] [default-parser-functions.spicy:18:5-18:15] declaration::Field "hook void __on_y_error(string __excpt);" -> null
+[debug/optimizer] [default-parser-functions.spicy:18:5-18:15] declaration::Field "hook void __on_y_error(string __except);" -> null
 [debug/optimizer] [default-parser-functions.spicy:18:5-18:15] operator_::struct_::MemberCall "(*self).__on_y_error(hilti::exception_what(__except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer] [default-parser-functions.spicy:18:5-18:15] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer] [spicy_rt.hlt:27:5-27:78] declaration::Field "method void connect_mime_type(string mime_type, uint<64> scope) &internal;" -> null (removing unused member)
