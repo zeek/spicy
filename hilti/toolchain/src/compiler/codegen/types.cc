@@ -801,7 +801,7 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder {
     }
 };
 
-// Visitor creaating dynamic type information instances for types that do not provide predefined static ones.
+// Visitor creating dynamic type information instances for types that do not provide predefined static ones.
 struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
     VisitorTypeInfoDynamic(CodeGen* cg, QualifiedType* type) : cg(cg), type(type) {}
 

@@ -5,7 +5,7 @@ module X {
 
 import hilti;
 
-for ( indx in [1, -2, 3] )
-    hilti::print(indx);
+for ( index in [1, -2, 3] )
+    hilti::print(index);
 
 }

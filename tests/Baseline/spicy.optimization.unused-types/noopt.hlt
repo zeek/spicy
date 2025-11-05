@@ -128,7 +128,7 @@ type Priv4 = struct {
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_x(value_ref<const Priv3> __dd);
-    hook void __on_x_error(string __excpt);
+    hook void __on_x_error(string __except);
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);
@@ -216,7 +216,7 @@ public type Pub3 = struct {
     strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
     optional<hilti::RecoverableFailure> __error &always-emit &internal;
     hook void __on_x(value_ref<const Priv6> __dd);
-    hook void __on_x_error(string __excpt);
+    hook void __on_x_error(string __except);
     hook void __on_0x25_init();
     hook void __on_0x25_done();
     hook void __on_0x25_error(string __except);

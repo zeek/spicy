@@ -499,11 +499,11 @@ docker_ubuntu24_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora41_task:
+docker_fedora42_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.fedora-41
+    dockerfile: docker/Dockerfile.fedora-42
     cpu: 4
     memory: 12G
 
@@ -536,11 +536,11 @@ docker_fedora41_task:
     path: ./spicy*.{deb,rpm}
     type: application/gzip
 
-docker_fedora42_task:
+docker_fedora43_task:
   skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
 
   container:
-    dockerfile: docker/Dockerfile.fedora-42
+    dockerfile: docker/Dockerfile.fedora-43
     cpu: 4
     memory: 12G
 

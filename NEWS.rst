@@ -554,7 +554,7 @@ Version 1.11
   that e.g., ``const`` values cannot be initialized from other ``const`` values or
   function calls anymore.
 - ``result`` and ``network`` are now keywords and cannot be used anymore as
-  user-specified indentifiers.
+  user-specified identifiers.
 - GH-1661: Deprecate usage of ``&convert`` with ``&chunked``.
 - GH-1657: Reduce data copying when passing data to the driver.
 - GH-1501: Improve some error messages for runtime parse errors.
