@@ -52,7 +52,7 @@ static void hookDeclineInput(const std::string& reason) { declined = true; }
 
 class SpicyDriver : public spicy::Driver, public spicy::rt::Driver {
 public:
-    explicit SpicyDriver() : spicy::Driver("spicy-driver", hilti::util::currentExecutable()) {
+    explicit SpicyDriver(std::string_view argv) : spicy::Driver("spicy-driver", hilti::util::currentExecutable(argv)) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 
@@ -267,7 +267,7 @@ int main(int argc, char** argv) try {
     config.hook_decline_input = hookDeclineInput;
     spicy::rt::configuration::set(config);
 
-    SpicyDriver driver;
+    SpicyDriver driver(argv[0]);
 
     driver.parseOptions(argc, argv);
 
@@ -323,6 +323,6 @@ int main(int argc, char** argv) try {
 
     return 0;
 } catch ( const std::exception& e ) {
-    SpicyDriver().fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
-                                              hilti::util::demangle(typeid(e).name()), e.what()));
+    SpicyDriver(argv[0]).fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
+                                                     hilti::util::demangle(typeid(e).name()), e.what()));
 }
