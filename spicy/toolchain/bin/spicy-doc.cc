@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <exception>
+#include <string_view>
 
 #include <hilti/rt/json.h>
 
@@ -110,7 +111,7 @@ static json operandToJSON(const hilti::operator_::Operand& o, const std::string&
 
 class SpicyDoc : public spicy::Driver {
 public:
-    SpicyDoc() : spicy::Driver("spicy-doc", hilti::util::currentExecutable()) {
+    SpicyDoc(std::string_view argv0) : spicy::Driver("spicy-doc", hilti::util::currentExecutable(argv0)) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 };
@@ -120,7 +121,7 @@ int main(int argc, char** argv) try {
     spicy::init();
 
     // Initialize and run a driver so that our operators gets registered and resolved.
-    SpicyDoc driver;
+    SpicyDoc driver(argv[0]);
     if ( auto rc = driver.run(); ! rc ) {
         std::cerr << "driver error: " << rc.error() << '\n';
         exit(1);

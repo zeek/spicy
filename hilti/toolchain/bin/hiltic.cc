@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv) try {
     hilti::init();
-    hilti::Driver driver("hiltic", hilti::util::currentExecutable());
+    hilti::Driver driver("hiltic", hilti::util::currentExecutable(argv[0]));
 
     if ( auto rc = driver.parseOptions(argc, argv); ! rc ) {
         hilti::logger().error(rc.error().description());

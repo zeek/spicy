@@ -421,7 +421,7 @@ using hilti::rt::normalizePath; // NOLINT(misc-unused-using-decls)
 using hilti::rt::createTemporaryFile; // NOLINT(misc-unused-using-decls)
 
 /** Returns the path of the current executable. */
-hilti::rt::filesystem::path currentExecutable();
+hilti::rt::filesystem::path currentExecutable(const hilti::rt::filesystem::path& argv0);
 
 /** Dumps a backtrace to stderr and then aborts execution. */
 [[noreturn]] extern void abortWithBacktrace();

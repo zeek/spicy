@@ -11,38 +11,12 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <ranges>
 
 #include <hilti/rt/backtrace.h>
 #include <hilti/rt/util.h>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
-
-// We include pathfind directly here so we do not have to work
-// around it being installed by its default install target.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wpessimizing-move"
-
-// Pathfind relies on the presence of `BSD` to detect whether it is running on
-// FreeBSD. Since it is not always present define it if we detect FreeBSD
-// through other means.
-#ifdef __FreeBSD__
-#ifndef BSD
-#define BSD
-#define SPICY_BSD_DEFINED
-#endif
-#endif
-
-// NOLINTNEXTLINE(bugprone-suspicious-include)
-#include <pathfind/src/pathfind.cpp>
-
-#ifdef SPICY_BSD_DEFINED
-#undef BSD
-#undef SPICY_BSD_DEFINED
-#endif
-#pragma GCC diagnostic pop
 
 using namespace hilti;
 using namespace hilti::util;
@@ -199,21 +173,25 @@ hilti::Result<hilti::rt::filesystem::path> util::findInPaths(const hilti::rt::fi
     return hilti::result::Error(fmt("%s not found", file));
 }
 
-hilti::rt::filesystem::path util::currentExecutable() {
-    const auto exe = PathFind::FindExecutable();
+hilti::rt::filesystem::path util::currentExecutable(const hilti::rt::filesystem::path& argv0) {
+    // We only use the error code for calls to `exists` to prevent any
+    // exceptions. If that function returns `true` the file exists and one can
+    // ignore the error code.
+    std::error_code ec;
 
-    if ( exe.empty() ) {
-        auto msg = std::string("could not determine path of current executable");
+    // If `argv0` exists the executable was invoked directly.
+    if ( rt::filesystem::exists(argv0, ec) )
+        return argv0;
 
-#if defined(__FreeBSD__)
-        if ( ! rt::filesystem::exists("/proc") || rt::filesystem::is_empty("/proc") )
-            msg += ": /proc needs to be mounted";
-#endif
-
-        rt::internalError(msg);
+    // Otherwise it was found in `PATH` so look for it there.
+    if ( auto x = rt::getenv("PATH") ) {
+        for ( const auto& dir : split(*x, ":") ) {
+            if ( auto p = rt::filesystem::path(dir) / argv0; rt::filesystem::exists(p, ec) )
+                return p;
+        }
     }
 
-    return normalizePath(exe);
+    cannotBeReached();
 }
 
 void util::abortWithBacktrace() {

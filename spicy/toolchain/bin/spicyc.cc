@@ -11,7 +11,7 @@
 
 class Spicyc : public spicy::Driver {
 public:
-    Spicyc() : spicy::Driver("spicyc", hilti::util::currentExecutable()) {
+    Spicyc(std::string_view argv0) : spicy::Driver("spicyc", hilti::util::currentExecutable(argv0)) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 
@@ -23,7 +23,7 @@ int main(int argc, char** argv) try {
     hilti::init();
     spicy::init();
 
-    Spicyc driver;
+    Spicyc driver(argv[0]);
 
     if ( auto rc = driver.parseOptions(argc, argv); ! rc ) {
         hilti::logger().error(rc.error().description());

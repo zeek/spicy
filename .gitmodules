@@ -10,9 +10,6 @@
 [submodule "3rdparty/libb64"]
 	path = 3rdparty/libb64
 	url = https://github.com/libb64/libb64
-[submodule "3rdparty/pathfind"]
-	path = 3rdparty/pathfind
-	url = https://github.com/bkloppenborg/pathfind
 [submodule "3rdparty/tinyformat"]
 	path = 3rdparty/tinyformat
 	url = https://github.com/c42f/tinyformat
