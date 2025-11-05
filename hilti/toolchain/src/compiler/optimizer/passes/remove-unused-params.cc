@@ -9,17 +9,35 @@ using namespace hilti::detail;
 
 namespace {
 
-/** Collects function parameters not used within the function body. */
-struct Collector : public optimizer::visitor::Collector {
+/** Collects a mapping of all call operators to their uses. */
+struct CollectorCallers : public optimizer::visitor::Collector {
     using optimizer::visitor::Collector::Collector;
 
-    struct UnusedParams {
-        // Vector of positions for unused parameters
-        std::vector<std::size_t> unused_params;
-    };
+    // Maps the call operator to the places where's been used.
+    using Callers = std::map<const Operator*, std::vector<expression::ResolvedOperator*>>;
+    Callers callers;
+
+    const Callers::mapped_type* uses(const Operator* x) const {
+        if ( ! callers.contains(x) )
+            return nullptr;
+
+        return &callers.at(x);
+    }
+
+    void operator()(operator_::function::Call* n) final { callers[&n->operator_()].push_back(n); }
+
+    void operator()(operator_::struct_::MemberCall* n) final { callers[&n->operator_()].push_back(n); }
+};
+
+/** Collects function parameters not used within the function body. */
+struct CollectorUnusedParameters : public optimizer::visitor::Collector {
+    CollectorUnusedParameters(Optimizer* optimizer, const CollectorCallers* operators)
+        : optimizer::visitor::Collector(optimizer), collector_callers(operators) {}
+
+    const CollectorCallers* collector_callers;
 
     // The unused parameters for a given function ID
-    std::map<ID, UnusedParams> fn_unused_params;
+    std::map<ID, std::vector<std::size_t>> unused_params;
 
     /**
      * Determines if the uses of this operator contain any side effects.
@@ -27,7 +45,7 @@ struct Collector : public optimizer::visitor::Collector {
      * call as an argument.
      */
     bool usesContainSideEffects(const Operator* op) {
-        const auto* uses_of_op = state()->uses(op);
+        const auto* uses_of_op = collector_callers->uses(op);
         if ( ! uses_of_op )
             return false;
 
@@ -57,7 +75,7 @@ struct Collector : public optimizer::visitor::Collector {
 
     /** Removes the param_id as used within the function. */
     void removeUsed(type::Function* ftype, const ID& function_id, Expression* name) {
-        auto& unused = fn_unused_params.at(function_id);
+        auto& unused = unused_params.at(function_id);
 
         std::string_view id = {};
         const Declaration* resolved_declaration = nullptr;
@@ -83,7 +101,7 @@ struct Collector : public optimizer::visitor::Collector {
             util::detail::internalError(util::fmt("unexpected expression '%s'", name));
 
         const auto& params = ftype->parameters();
-        for ( auto it = unused.unused_params.begin(); it != unused.unused_params.end(); ++it ) {
+        for ( auto it = unused.begin(); it != unused.end(); ++it ) {
             auto param_num = *it;
             assert(params.size() >= param_num);
 
@@ -93,7 +111,7 @@ struct Collector : public optimizer::visitor::Collector {
             if ( resolved_declaration && resolved_declaration != params[param_num] )
                 continue;
 
-            unused.unused_params.erase(it, std::next(it));
+            unused.erase(it, std::next(it));
             break;
         }
     }
@@ -112,11 +130,11 @@ struct Collector : public optimizer::visitor::Collector {
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
 
-        if ( fn_unused_params.contains(function_id) )
+        if ( unused_params.contains(function_id) )
             return;
 
         // Create the unused params
-        auto& unused = fn_unused_params[function_id];
+        auto& unused = unused_params[function_id];
 
         if ( n->linkage() == declaration::Linkage::Public )
             return;
@@ -134,7 +152,7 @@ struct Collector : public optimizer::visitor::Collector {
         for ( std::size_t i = 0; i < n->function()->ftype()->parameters().size(); i++ )
             // Declare all as unused for now, we'll remove the used ones as we
             // encounter them inside the body.
-            unused.unused_params.push_back(i);
+            unused.push_back(i);
     }
 
     void operator()(declaration::Field* n) final {
@@ -144,11 +162,11 @@ struct Collector : public optimizer::visitor::Collector {
 
         const auto& function_id = n->fullyQualifiedID();
 
-        if ( fn_unused_params.contains(function_id) )
+        if ( unused_params.contains(function_id) )
             return;
 
         // Create the unused params
-        auto& unused = fn_unused_params[function_id];
+        auto& unused = unused_params[function_id];
 
         if ( n->attributes()->find(hilti::attribute::kind::Cxxname) ||
              n->attributes()->find(hilti::attribute::kind::AlwaysEmit) ||
@@ -170,7 +188,7 @@ struct Collector : public optimizer::visitor::Collector {
         for ( std::size_t i = 0; i < ftype->parameters().size(); i++ )
             // Declare all as unused for now, we'll remove the used ones as we
             // encounter them inside the body.
-            unused.unused_params.push_back(i);
+            unused.push_back(i);
     }
 
     void operator()(expression::Name* n) final {
@@ -180,8 +198,8 @@ struct Collector : public optimizer::visitor::Collector {
 
         auto [ftype, function_id] = *opt_enclosing_fn;
 
-        auto& unused = fn_unused_params.at(function_id);
-        if ( unused.unused_params.size() == 0 )
+        auto& unused = unused_params.at(function_id);
+        if ( unused.size() == 0 )
             return;
 
         removeUsed(ftype, function_id, n);
@@ -202,10 +220,10 @@ struct Collector : public optimizer::visitor::Collector {
 
 /** Removes unused function parameters. */
 struct Mutator : public optimizer::visitor::Mutator {
-    Mutator(Optimizer* optimizer, const Collector* collector)
-        : optimizer::visitor::Mutator(optimizer), collector(collector) {}
+    Mutator(Optimizer* optimizer, const CollectorUnusedParameters* collector_unused_parameters)
+        : optimizer::visitor::Mutator(optimizer), collector_unused_parameters(collector_unused_parameters) {}
 
-    const Collector* collector = nullptr;
+    const CollectorUnusedParameters* collector_unused_parameters = nullptr;
 
     std::set<const Operator*> processed_operators;
     std::set<type::Function*> processed_functions;
@@ -243,11 +261,11 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         processed_operators.insert(op);
 
-        const auto& unused = collector->fn_unused_params.at(function_id);
-        if ( unused.unused_params.empty() || ! op )
+        const auto& unused = collector_unused_parameters->unused_params.at(function_id);
+        if ( unused.empty() || ! op )
             return;
 
-        const auto* uses_of_op = state()->uses(op);
+        const auto* uses_of_op = collector_unused_parameters->collector_callers->uses(op);
 
         if ( ! uses_of_op )
             return;
@@ -256,7 +274,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             if ( ! use )
                 continue;
 
-            removeArgs(use, unused.unused_params);
+            removeArgs(use, unused);
         }
     }
 
@@ -266,15 +284,15 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         processed_functions.insert(ftype);
 
-        auto unused = collector->fn_unused_params.at(function_id); // copy, so that we can sort below
-        if ( unused.unused_params.empty() )
+        auto unused = collector_unused_parameters->unused_params.at(function_id); // copy, so that we can sort below
+        if ( unused.empty() )
             return;
 
         auto params = ftype->parameters();
 
         // Ensure they're sorted in descending order so we remove from the back.
-        std::ranges::sort(unused.unused_params, std::greater<>());
-        for ( std::size_t index : unused.unused_params ) {
+        std::ranges::sort(unused, std::greater<>());
+        for ( std::size_t index : unused ) {
             assert(index < params.size());
             params.erase(params.begin() + static_cast<std::ptrdiff_t>(index));
         }
@@ -301,7 +319,10 @@ struct Mutator : public optimizer::visitor::Mutator {
 };
 
 optimizer::Result run(Optimizer* optimizer) {
-    Collector collector(optimizer);
+    CollectorCallers collector_callers(optimizer);
+    collector_callers.run();
+
+    CollectorUnusedParameters collector(optimizer, &collector_callers);
     collector.run();
 
     return Mutator(optimizer, &collector).run();

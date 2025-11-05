@@ -43,23 +43,6 @@ std::string optimizer::to_string(bitmask<Requirements> r) {
         return util::fmt("<%s>", util::join(labels, ","));
 }
 
-// Collects uses of resolved operators
-struct CollectUsesPass : public hilti::visitor::PreOrder {
-    ASTState::OperatorUses result;
-
-    ASTState::OperatorUses collect(Node* node) {
-        hilti::visitor::visit(*this, node);
-        return result;
-    }
-
-    void operator()(expression::ResolvedOperator* node) override { result[&node->operator_()].push_back(node); }
-};
-
-void ASTState::update() {
-    CollectUsesPass collect_uses{};
-    op_uses = collect_uses.collect(context->root());
-}
-
 Optimizer::Optimizer(ASTContext* ctx) : _context(ctx), _builder(ctx) {}
 
 void Optimizer::_updateState(const PassInfo& pinfo) {

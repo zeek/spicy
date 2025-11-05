@@ -46,24 +46,10 @@ constexpr auto to_string(Phase p) { return util::enum_::to_string(p, detail::Pha
 struct PassInfo;
 
 struct ASTState {
-    using OperatorUses = std::map<const Operator*, std::vector<expression::ResolvedOperator*>>;
-
-    ASTState(ASTContext* ctx) : context(ctx) { update(); }
+    ASTState(ASTContext* ctx) : context(ctx) {}
 
     ASTContext* context = nullptr;
     const PassInfo* pass = nullptr;
-
-    OperatorUses op_uses;
-
-    const OperatorUses::mapped_type* uses(const Operator* x) const {
-        if ( ! op_uses.contains(x) )
-            return nullptr;
-
-        return &op_uses.at(x);
-    }
-
-    // TODO: This just recomputes everything, make this all smarter somehow.
-    void update();
 };
 
 enum class Requirements : uint16_t {
