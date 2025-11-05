@@ -1,5 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
+
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -9,40 +13,16 @@
 
 #include <algorithm>
 #include <cerrno>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <ranges>
 
 #include <hilti/rt/backtrace.h>
+#include <hilti/rt/filesystem.h>
 #include <hilti/rt/util.h>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
-
-// We include pathfind directly here so we do not have to work
-// around it being installed by its default install target.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wpessimizing-move"
-
-// Pathfind relies on the presence of `BSD` to detect whether it is running on
-// FreeBSD. Since it is not always present define it if we detect FreeBSD
-// through other means.
-#ifdef __FreeBSD__
-#ifndef BSD
-#define BSD
-#define SPICY_BSD_DEFINED
-#endif
-#endif
-
-// NOLINTNEXTLINE(bugprone-suspicious-include)
-#include <pathfind/src/pathfind.cpp>
-
-#ifdef SPICY_BSD_DEFINED
-#undef BSD
-#undef SPICY_BSD_DEFINED
-#endif
-#pragma GCC diagnostic pop
 
 using namespace hilti;
 using namespace hilti::util;
@@ -200,20 +180,46 @@ hilti::Result<hilti::rt::filesystem::path> util::findInPaths(const hilti::rt::fi
 }
 
 hilti::rt::filesystem::path util::currentExecutable() {
-    const auto exe = PathFind::FindExecutable();
+    std::string error = "could not determine path of current executable";
 
-    if ( exe.empty() ) {
-        auto msg = std::string("could not determine path of current executable");
+    std::error_code ec;
 
-#if defined(__FreeBSD__)
-        if ( ! rt::filesystem::exists("/proc") || rt::filesystem::is_empty("/proc") )
-            msg += ": /proc needs to be mounted";
+#if defined(__APPLE__)
+    // Get the length of the path.
+    uint32_t path_len = 0;
+    _NSGetExecutablePath(nullptr, &path_len);
+
+    // Get the actual value.
+    std::string path_(path_len, '\0');
+    if ( _NSGetExecutablePath(path_.data(), &path_len) != 0 )
+        // We already determined above that the path fits into the buffer, this
+        // should never fail.
+        rt::internalError(error);
+
+    auto path = rt::filesystem::path(std::move(path_));
+
+    if ( auto is_symlink = rt::filesystem::is_symlink(path, ec); ! ec && is_symlink )
+        if ( auto p = rt::filesystem::read_symlink(path, ec); ! ec )
+            path = p;
+
+    return path;
+
+#elif defined(__FreeBSD__)
+    const auto* exe = "/proc/curproc/file";
+
+    if ( ! rt::filesystem::exists(exe, ec) )
+        error += ": /proc needs to be mounted";
+
+    if ( auto path = rt::filesystem::read_symlink(exe, ec); ! ec )
+        return path;
+
+#elif defined(__linux__)
+    if ( auto path = rt::filesystem::read_symlink("/proc/self/exe", ec); ! ec )
+        return path;
+
 #endif
 
-        rt::internalError(msg);
-    }
-
-    return normalizePath(exe);
+    rt::internalError(error);
 }
 
 void util::abortWithBacktrace() {
