@@ -1,0 +1,23 @@
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+#
+# @TEST-DOC: Tests folding any value (even non-constant values) into the return.
+
+module Foo {
+
+import hilti;
+
+# Function so that it is not constant
+function uint<64> get_num() { return 1; }
+
+# CHECK: function uint<64> test()
+function uint<64> test() {
+    local uint<64> d = 5;
+    d = get_num();
+    # CHECK: return get_num()
+    return d;
+}
+
+test();
+
+}
