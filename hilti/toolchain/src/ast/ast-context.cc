@@ -694,9 +694,11 @@ Result<Nothing> ASTContext::clearErrors(Builder* builder) {
     return Nothing();
 }
 
-Result<Nothing> ASTContext::clearScopes(Builder* builder) {
+Result<Nothing> ASTContext::clearScopes(Builder* builder) { return clearScopes(builder, _root.get()); }
+
+Result<Nothing> ASTContext::clearScopes(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/clear-scope");
-    for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) )
+    for ( const auto& n : visitor::range(visitor::PreOrder(), node, {}) )
         n->clearScope();
 
     return Nothing();

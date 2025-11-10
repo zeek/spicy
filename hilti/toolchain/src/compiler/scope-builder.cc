@@ -23,9 +23,9 @@ using namespace hilti;
 namespace {
 
 struct Visitor : visitor::PostOrder {
-    explicit Visitor(Builder* builder, ASTRoot* root) : root(root), builder(builder) {}
+    explicit Visitor(Builder* builder, Node* root) : root(root), builder(builder) {}
 
-    ASTRoot* root = nullptr;
+    Node* root = nullptr;
     Builder* builder;
 
     bool modified = false;
@@ -196,14 +196,14 @@ struct Visitor : visitor::PostOrder {
 
 } // anonymous namespace
 
-void detail::scope_builder::build(Builder* builder, ASTRoot* root) {
+void detail::scope_builder::build(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/scope-builder");
-    ::hilti::visitor::visit(Visitor(builder, root), root);
+    ::hilti::visitor::visit(Visitor(builder, node), node);
 }
 
-bool detail::scope_builder::buildToValidate(Builder* builder, ASTRoot* root) {
+bool detail::scope_builder::buildToValidate(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/scope-builder");
-    Visitor v(builder, root);
-    ::hilti::visitor::visit(v, root);
+    Visitor v(builder, node);
+    ::hilti::visitor::visit(v, node);
     return v.modified;
 }

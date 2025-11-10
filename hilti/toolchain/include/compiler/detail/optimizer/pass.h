@@ -58,7 +58,10 @@ public:
     auto* context() const { return _optimizer->context(); }
     auto* optimizer() const { return _optimizer; }
 
+    void replaceNode(Node* old, Node* new_, const std::string& msg = "") override;
     void removeNode(Node* old, const std::string& msg = "") { replaceNode(old, nullptr, msg); }
+    void recordChange(const Node* old, const std::string& msg) override;
+    void recordChange(const Node* old, Node* changed, const std::string& msg = "") override;
 
     virtual void init() {};
     virtual Result run();
@@ -67,6 +70,7 @@ public:
     void operator()(declaration::Module* n) override { _current_module = n; }
 
 private:
+    void _trackASTChange(const Node* n);
     Optimizer* _optimizer = nullptr;
 
     declaration::Module* _current_module = nullptr;

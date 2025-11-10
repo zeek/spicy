@@ -3,10 +3,18 @@
 [debug/optimizer] pass: dead-code-static with order 10 (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole with order 20 (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg with order 30 (round 1, pass iteration 1)
+[debug/optimizer]     * new affected function: f
 [debug/optimizer]   [unreachable-return.hlt:16:5-16:24] statement::Expression "hilti::print("bad!", True);" -> null (unreachable code)
 [debug/optimizer]   [unreachable-return.hlt:17:5-17:11] statement::Return "return;" -> null (unreachable code)
-[debug/optimizer]       -> modified
-[debug/optimizer]   re-resolving AST with requirements: <scope-builder,type-unifier>
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST with requirements: <cfg,scope-builder,type-unifier>
+[debug/optimizer]   re-resolving AST, round 1
+[debug/optimizer]     * scope-builder
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * type-unifier
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation with order 40 (round 1, pass iteration 1)
 [debug/optimizer] pass: remove_unused_params with order 50 (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static with order 10 (round 2, pass iteration 1)

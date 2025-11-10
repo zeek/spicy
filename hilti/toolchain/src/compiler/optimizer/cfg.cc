@@ -65,6 +65,7 @@
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/ast/visitor.h>
+#include <hilti/base/timing.h>
 #include <hilti/base/util.h>
 #include <hilti/hilti/ast/types/bytes.h>
 #include <hilti/hilti/ast/types/list.h>
@@ -115,6 +116,8 @@ static bool contains(const Node& outer, const Node& inner) {
 
 CFG::CFG(const Node* root)
     : _begin(_getOrAddNode(_createMetaNode<Start>())), _end(_getOrAddNode(_createMetaNode<End>(root))) {
+    util::timing::Collector _1("hilti/compiler/optimizer/cfg-computation");
+
     assert(root && root->isA<statement::Block>() && "only building from blocks currently supported");
 
     _begin = _addGlobals(_begin, *root);
@@ -509,6 +512,7 @@ void CFG::_addEdge(const GraphNode& from, const GraphNode& to) {
     }
 }
 
+// TODO: Is this reliable?
 void detail::cfg::CFG::removeNode(Node* node) {
     auto id = node->identity();
 

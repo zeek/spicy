@@ -47,9 +47,4 @@ void visitor::MutatingVisitorBase::recordChange(const Node* old, const std::stri
     _modified = true;
 }
 
-void visitor::MutatingVisitorBase::recordChange(const std::string& msg) {
-    HILTI_DEBUG(_dbg, msg);
-    _modified = true;
-}
-
 ASTContext* visitor::MutatingVisitorBase::contextFromBuilder(Builder* builder) { return builder->context(); }

@@ -295,6 +295,7 @@ optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
 optimizer::RegisterPass constant_propagation({.name = "constant-propagation",
                                               .order = 40,
+                                              .iterate = true,
                                               .requires_afterwards = optimizer::Requirements::ConstantFolder |
                                                                      optimizer::Requirements::Coercer |
                                                                      optimizer::Requirements::CFG,

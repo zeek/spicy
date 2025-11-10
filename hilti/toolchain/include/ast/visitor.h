@@ -211,6 +211,16 @@ public:
      */
     auto isModified() const { return _modified; }
 
+    /**
+     * Sets the flag recording that modifications have taken place.
+     *
+     * This should only be used in rare cases; prefer `recordChange()` instead
+     * (or `replaceNode()` if appropriate). Use this only if you have to go
+     * around the visitor API for making AST changes directly--which could then
+     * lead to the visitor's state tracking not learning about that change.
+     */
+    void setModified() { _modified = true; }
+
     /** Clears the flag recording that modifications have taken place. */
     auto clearModified() { _modified = false; }
 
@@ -222,7 +232,7 @@ public:
      * @param new_ new node to replace it with
      * @param msg optional, additional debug message to add to log message
      */
-    void replaceNode(Node* old, Node* new_, const std::string& msg = "");
+    virtual void replaceNode(Node* old, Node* new_, const std::string& msg = "");
 
     /**
      * Records that an AST change has been performed.
@@ -230,7 +240,7 @@ public:
      * @param old node that was modified.
      * @param msg debug message describing the change
      */
-    void recordChange(const Node* old, const std::string& msg);
+    virtual void recordChange(const Node* old, const std::string& msg);
 
     /**
      * Records that an AST change has been performed.
@@ -239,14 +249,7 @@ public:
      * @param changed node reflecting the change; it'll be rendered into the debug message, but not otherwise used
      * @param msg message being added to debug log message
      */
-    void recordChange(const Node* old, Node* changed, const std::string& msg = "");
-
-    /**
-     * Records that an AST change has been performed.
-     *
-     * @param msg debug message describing the change
-     */
-    void recordChange(const std::string& msg);
+    virtual void recordChange(const Node* old, Node* changed, const std::string& msg = "");
 
 protected:
     /**

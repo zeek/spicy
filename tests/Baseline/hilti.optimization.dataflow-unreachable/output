@@ -32,6 +32,7 @@
 [debug/optimizer]       - updating function: fn
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: fn
+[debug/optimizer] pass: constant-propagation with order 40 (round 1, pass iteration 2)
 [debug/optimizer] pass: remove_unused_params with order 50 (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static with order 10 (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole with order 20 (round 2, pass iteration 1)

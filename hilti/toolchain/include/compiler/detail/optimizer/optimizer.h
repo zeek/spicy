@@ -27,9 +27,11 @@ struct PassInfo;
 
 class ASTState {
 public:
-    ASTState(ASTContext* ctx) : _context(ctx) {}
+    ASTState(ASTContext* ctx, Builder* builder) : _context(ctx), _builder(builder) {}
 
     auto* context() { return _context; }
+    auto* builder() { return _builder; }
+
     const auto& pass() const {
         assert(_pinfo);
         return *_pinfo;
@@ -37,13 +39,24 @@ public:
 
     void setPass(const PassInfo* pinfo) { _pinfo = pinfo; }
 
-    void invalidateCFGs() { _cfgs.clear(); }
+    void functionChanged(hilti::Function* function);
+    void moduleChanged(declaration::Module* module);
+
+    void updateState(const optimizer::PassInfo& pinfo);
+    void checkState(const optimizer::PassInfo& pinfo);
 
     cfg::CFG* cfg(statement::Block* block);
 
 private:
+    void _normalizeModificationState();
+
     ASTContext* _context = nullptr;
+    Builder* _builder = nullptr;
     const PassInfo* _pinfo = nullptr;
+
+    std::unordered_map<Function*, declaration::Module*>
+        _modified_functions; // mapping function to its containing module
+    std::unordered_set<declaration::Module*> _modified_modules;
 
     std::unordered_map<statement::Block*, std::unique_ptr<cfg::CFG>> _cfgs;
 };
@@ -103,9 +116,6 @@ public:
 
 private:
     bool _runPass(const optimizer::PassInfo& pinfo, size_t round);
-    void _updateState(const optimizer::PassInfo& pinfo);
-    void _checkState(const optimizer::PassInfo& pinfo);
-
     void _dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header);
 
     ASTContext* _context;

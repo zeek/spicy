@@ -4,6 +4,8 @@
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
 
+#include "compiler/detail/optimizer/optimizer.h"
+
 using namespace hilti;
 using namespace hilti::detail;
 
@@ -330,7 +332,8 @@ optimizer::Result run(Optimizer* optimizer) {
 
 optimizer::RegisterPass remove_unused_params({.name = "remove_unused_params",
                                               .order = 50,
-                                              .requires_afterwards = optimizer::Requirements::ScopeBuilder |
+                                              .requires_afterwards = optimizer::Requirements::FullResolver |
+                                                                     optimizer::Requirements::ScopeBuilder |
                                                                      optimizer::Requirements::TypeUnifier |
                                                                      optimizer::Requirements::CFG,
                                               .run = run});

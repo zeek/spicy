@@ -416,6 +416,8 @@ public:
     /** Clears out any scopes recorded in the AST. */
     Result<Nothing> clearScopes(Builder* builder);
 
+    Result<Nothing> clearScopes(Builder* builder, Node* node);
+
     /**
      * Reports any error recorded in the AST to the user.
      *

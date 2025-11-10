@@ -28,91 +28,174 @@ cfg::CFG* ASTState::cfg(statement::Block* block) {
         return _cfgs.emplace(block, std::make_unique<cfg::CFG>(block)).first->second.get();
 }
 
-std::string optimizer::to_string(bitmask<Requirements> r) {
-    std::vector<std::string> labels;
+void ASTState::functionChanged(hilti::Function* function) {
+    assert(function);
 
-    if ( r & Requirements::CFG )
-        labels.emplace_back("cfg");
+    if ( _modified_functions.contains(function) )
+        return;
 
-    if ( r & Requirements::Coercer )
-        labels.emplace_back("coercer");
-
-    if ( r & Requirements::ConstantFolder )
-        labels.emplace_back("constant-folder");
-
-    if ( r & Requirements::FullResolver )
-        labels.emplace_back("full-resolver");
-
-    if ( r & Requirements::ScopeBuilder )
-        labels.emplace_back("scope-builder");
-
-    if ( r & Requirements::TypeUnifier )
-        labels.emplace_back("type-unifier");
-
-    if ( labels.empty() )
-        return "<none>";
-    else
-        return util::fmt("<%s>", util::join(labels, ","));
+    logging::DebugPushIndent _(logging::debug::Optimizer);
+    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* new affected function: %s", function->id()));
+    _modified_functions.emplace(function, nullptr); // record without module for now, will set later
 }
 
-Optimizer::Optimizer(ASTContext* ctx) : _context(ctx), _builder(ctx), _state(ctx) {}
+void ASTState::moduleChanged(declaration::Module* module) {
+    assert(module);
 
-void Optimizer::_updateState(const PassInfo& pinfo) {
-    util::timing::Collector _("hilti/compiler/optimizer/update-state");
+    if ( _modified_modules.contains(module) )
+        return;
 
-    // This mimics ASTContext::_resolve(), but skips steps that the pass
-    // doesn't require. It also needs to run only HILTI's versions, no need to
-    // consider other plugins.
+    logging::DebugPushIndent _(logging::debug::Optimizer);
+    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* new affected module: %s", module->id()));
+    _modified_modules.insert(module);
+}
+
+void ASTState::_normalizeModificationState() {
+    // Remove any functions from modified set that are inside a modified
+    // module; they'll be taken care of when processing the module. For all
+    // others, set record their module along with the function for later use.
+    // TODO: Update comments
+    for ( auto& [function, module] : _modified_functions ) {
+        assert(! module);
+
+        module = function->parent<declaration::Module>(); // can be null if function has been removed in the meantime
+        if ( ! module )
+            HILTI_DEBUG(logging::debug::Optimizer,
+                        util::fmt("  - skipping function %s as its no longer part of the AST", function->id()));
+    }
+
+    for ( auto& [block, cfg] : _cfgs ) {
+        auto* module = block->parent<declaration::Module>();
+        if ( ! module )
+            cfg = nullptr; // block no longer part of AST
+    }
+}
+
+void ASTState::updateState(const PassInfo& pinfo) {
+    util::timing::Collector _1("hilti/compiler/optimizer/update-state");
+    util::timing::Collector _2(util::fmt("hilti/compiler/optimizer/update-state/%s", pinfo.name));
+
+    auto run_on_changed_nodes = [&](std::string_view requirement, const auto& callback) -> bool {
+        util::timing::Collector _(util::fmt("hilti/compiler/optimizer/update-state/%s/%s", pinfo.name, requirement));
+
+        bool modified = false;
+
+        logging::DebugPushIndent _1(logging::debug::Optimizer);
+        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* %s", requirement));
+        logging::DebugPushIndent _2(logging::debug::Optimizer);
+
+        for ( const auto& [function, module] : _modified_functions ) {
+            if ( ! module )
+                continue; // no longer in AST
+
+            if ( _modified_modules.contains(module) ) // will be handled when processing module
+                continue;
+
+            HILTI_DEBUG(logging::debug::Optimizer, util::fmt("- updating function: %s", function->id()));
+            modified |= callback(function->parent());
+        }
+
+        for ( const auto& m : _modified_modules ) {
+            HILTI_DEBUG(logging::debug::Optimizer, util::fmt("- updating module: %s", m->id()));
+            modified |= callback(m);
+        }
+
+        return modified;
+    };
 
     if ( pinfo.requires_afterwards == bitmask<Requirements>(Requirements::None) )
         return;
 
+    HILTI_DEBUG(logging::debug::Optimizer,
+                util::fmt("re-resolving AST with requirements: %s", to_string(pinfo.requires_afterwards)));
+
+    _normalizeModificationState();
+
     int round = 1;
 
     while ( true ) {
-        // Loop body mimics ASTContext::_resolve() for a single plugin.
-        HILTI_DEBUG(logging::debug::Optimizer,
-                    util::fmt("re-resolving AST with requirements: %s", to_string(pinfo.requires_afterwards)));
+        // The following mimics ASTContext::_resolve(), but skips steps that
+        // the pass doesn't require. It also needs to run only HILTI's versions, no
+        // need to consider other plugins.
+        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("re-resolving AST, round %d", round));
         auto modified = false;
 
         if ( pinfo.requires_afterwards & Requirements::ScopeBuilder ) {
-            context()->clearScopes(builder());
-            scope_builder::build(builder(), context()->root()); // don't need/have modified tracking here
+            run_on_changed_nodes("scope-builder", [&](auto* node) {
+                context()->clearScopes(builder(), node);
+                scope_builder::build(builder(), node);
+                return false; // no need to track modifications here
+            });
         }
 
         if ( pinfo.requires_afterwards & Requirements::TypeUnifier )
-            modified = type_unifier::unify(builder(), context()->root());
+            run_on_changed_nodes("type-unifier", [&](auto* node) { return type_unifier::unify(builder(), node); });
 
-        if ( pinfo.requires_afterwards & Requirements::FullResolver )
-            modified = resolver::resolve(builder(), context()->root());
+        if ( (pinfo.requires_afterwards & Requirements::FullResolver) )
+            run_on_changed_nodes("full-resolver", [&](auto* node) { return resolver::resolve(builder(), node); });
 
-        else {
-            // These are implicitly also part of the full resolver, so only
-            // need to run if that one doesn't.
-            if ( pinfo.requires_afterwards & Requirements::Coercer )
-                modified = resolver::coerce(builder(), context()->root());
+        else if ( pinfo.requires_afterwards & Requirements::Coercer )
+            // This is implicitly also part of the full resolver, so only need
+            // to run if that one doesn't.
+            run_on_changed_nodes("coercer", [&](auto* node) { return resolver::coerce(builder(), node); });
 
-            if ( pinfo.requires_afterwards & Requirements::ConstantFolder )
-                modified = constant_folder::fold(builder(), context()->root(),
-                                                 constant_folder::Style::InlineFeatureConstants |
-                                                     constant_folder::Style::InlineBooleanConstants |
-                                                     constant_folder::Style::FoldTernaryOperator);
+        if ( pinfo.requires_afterwards & Requirements::ConstantFolder )
+            run_on_changed_nodes("constant-folder", [&](auto* node) {
+                return constant_folder::fold(builder(), node,
+                                             constant_folder::Style::InlineFeatureConstants |
+                                                 constant_folder::Style::InlineBooleanConstants |
+                                                 constant_folder::Style::FoldTernaryOperator);
+            });
+
+        if ( pinfo.requires_afterwards & Requirements::CFG ) {
+            logging::DebugPushIndent _1(logging::debug::Optimizer);
+            HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* computed CFGs"));
+            logging::DebugPushIndent _2(logging::debug::Optimizer);
+
+            for ( const auto& [function, module] : _modified_functions ) {
+                if ( ! module )
+                    continue; // no longer in AST
+
+                if ( _modified_modules.contains(module) ) // will be handled when processing module
+                    continue;
+
+                if ( auto* block = function->body() )
+                    if ( _cfgs.erase(block->as<statement::Block>()) )
+                        HILTI_DEBUG(logging::debug::Optimizer,
+                                    util::fmt("- deleting function state: %s", function->id()));
+            }
+
+            for ( auto* module : _modified_modules ) {
+                if ( auto* block = module->statements() )
+                    if ( _cfgs.erase(block) )
+                        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("- deleting module state: %s", module->id()));
+
+                for ( const auto& [function, fmodule] : _modified_functions ) {
+                    if ( fmodule != module )
+                        continue;
+
+                    if ( auto* body = function->body(); body && _cfgs.erase(body->as<statement::Block>()) )
+                        HILTI_DEBUG(logging::debug::Optimizer,
+                                    util::fmt("  * deleting function state: %s (via module %s)", function->id(),
+                                              module->id()));
+                }
+            }
         }
-
-        if ( pinfo.requires_afterwards & Requirements::CFG )
-            state()->invalidateCFGs();
 
         if ( ! modified )
             break;
 
-        HILTI_DEBUG(logging::debug::Optimizer, "    -> modified");
+        HILTI_DEBUG(logging::debug::Optimizer, "  -> modified");
 
         if ( ++round >= 50 )
             logger().internalError("Optimizer::_updateState() didn't terminate, AST keeps changing");
     }
+
+    _modified_functions.clear();
+    _modified_modules.clear();
 }
 
-void Optimizer::_checkState(const PassInfo& pinfo) {
+void ASTState::checkState(const PassInfo& pinfo) {
     // In debug builds, we check the AST after each pass to enforce that it's
     // been left in good shape. In release builds, this is a no-op for performance.
 #ifndef NDEBUG
@@ -148,13 +231,60 @@ void Optimizer::_checkState(const PassInfo& pinfo) {
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST is not fully resolved after optimizer pass %s", pinfo.name));
 
-    // TODO: Later also check cfg.
+    for ( const auto& [block, cfg] : _cfgs ) {
+        assert(block);
+
+        if ( ! cfg )
+            continue; // block no longer part of AST
+
+        auto actual = cfg->dot(false);
+        auto expected = cfg::CFG(block).dot(false);
+        if ( actual != expected ) {
+            std::cerr << "==== ACTUAL   ===\n\n" << actual << "\n\n";
+            std::cerr << "==== EXPECTED ===\n\n" << expected << "\n\n";
+
+            auto* decl = block->parent<Declaration>();
+            assert(decl);
+
+            logger().internalError(
+                util::fmt("Optimizer::_checkState: CFG for %s \"%s\" is not up to date after optimizer pass %s",
+                          decl->typename_(), decl->id(), pinfo.name));
+        }
+    }
 #endif
 }
 
-bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, size_t round) {
-    util::timing::Collector __(util::fmt("hilti/compiler/optimizer/%s", pinfo.name));
 
+std::string optimizer::to_string(bitmask<Requirements> r) {
+    std::vector<std::string> labels;
+
+    if ( r & Requirements::CFG )
+        labels.emplace_back("cfg");
+
+    if ( r & Requirements::Coercer )
+        labels.emplace_back("coercer");
+
+    if ( r & Requirements::ConstantFolder )
+        labels.emplace_back("constant-folder");
+
+    if ( r & Requirements::FullResolver )
+        labels.emplace_back("full-resolver");
+
+    if ( r & Requirements::ScopeBuilder )
+        labels.emplace_back("scope-builder");
+
+    if ( r & Requirements::TypeUnifier )
+        labels.emplace_back("type-unifier");
+
+    if ( labels.empty() )
+        return "<none>";
+    else
+        return util::fmt("<%s>", util::join(labels, ","));
+}
+
+Optimizer::Optimizer(ASTContext* ctx) : _context(ctx), _builder(ctx), _state(ctx, &_builder) {}
+
+bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, size_t round) {
     size_t iteration = 1;
     bool modified = false;
 
@@ -166,21 +296,37 @@ bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, size_t round) {
         auto _guard = util::scope_exit([&]() { _state.setPass(nullptr); });
         _state.setPass(&pinfo);
 
-        auto modified_by_pass = ((*pinfo.run)(this) == optimizer::Result::Modified);
-        modified |= modified_by_pass;
+        bool modified_by_pass = false;
+        {
+            util::timing::Collector __(util::fmt("hilti/compiler/optimizer/pass/%s", pinfo.name));
+            modified_by_pass = ((*pinfo.run)(this) == optimizer::Result::Modified);
+            modified |= modified_by_pass;
+        }
 
         if ( modified_by_pass ) {
-            HILTI_DEBUG(logging::debug::Optimizer, "    -> modified");
-
-            _updateState(pinfo);
-            _checkState(pinfo);
+            HILTI_DEBUG(logging::debug::Optimizer, "  -> modified");
 
             if ( logger().isEnabled(logging::debug::OptimizerDump) ) {
                 const auto fname = util::fmt("%zu-%03zu-%zu-%s", round, pinfo.order, iteration, pinfo.name);
-                const auto header = util::fmt("State after modifications by pass %s, round %zu, pass iteration %zu",
-                                              pinfo.name, round, iteration);
+                const auto header = util::
+                    fmt("State after modifications by pass %s, round %zu, pass iteration %zu, before fixing "
+                        "requirements",
+                        pinfo.name, round, iteration);
                 _dumpAST(context(), fname, header);
             }
+
+            _state.updateState(pinfo);
+
+            if ( logger().isEnabled(logging::debug::OptimizerDump) ) {
+                const auto fname = util::fmt("%zu-%03zu-%zu-%s-fixed", round, pinfo.order, iteration, pinfo.name);
+                const auto header = util::
+                    fmt("State after modifications by pass %s, round %zu, pass iteration %zu, after fixing "
+                        "requirements",
+                        pinfo.name, round, iteration);
+                _dumpAST(context(), fname, header);
+            }
+
+            _state.checkState(pinfo);
         }
 
         if ( ! modified_by_pass || ! pinfo.iterate )

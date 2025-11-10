@@ -8,7 +8,7 @@
 namespace hilti::detail::scope_builder {
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-void build(Builder* builder, ASTRoot* root);
+void build(Builder* builder, Node* node);
 
 /**
  * Builds up the scope like build(), but also reports whether any changes have
@@ -19,7 +19,9 @@ void build(Builder* builder, ASTRoot* root);
  * changes were made beyond such IDs.
  *
  * @return true if any scopes were modified, false otherwise.
+ *
+ * TODO: Merge this with build() above.
  */
-bool buildToValidate(Builder* builder, ASTRoot* root);
+bool buildToValidate(Builder* builder, Node* node);
 
 } // namespace hilti::detail::scope_builder
