@@ -117,11 +117,19 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( isErrorPush(n) && n->parent() ) {
             auto* parent = n->parent();
             if ( auto* sibling = parent->sibling(n) ) {
-                if ( auto* stmt = sibling->tryAs<statement::Expression>(); stmt && isErrorPop(stmt) ) {
-                    recordChange(n, "removing unneeded error push/pop statements");
-                    parent->removeChild(n);
-                    parent->removeChild(sibling);
-                    return;
+                if ( auto* stmt = sibling->tryAs<statement::Expression>() ) {
+                    if ( auto* ctor = stmt->expression()->tryAs<expression::Ctor>();
+                         ctor && ctor->ctor()->isA<ctor::Default>() && ctor->type()->type()->isA<type::Void>() )
+                        // Skip over default<void> statements.
+                        sibling = parent->sibling(sibling);
+                }
+                if ( sibling ) {
+                    if ( auto* stmt = sibling->tryAs<statement::Expression>(); stmt && isErrorPop(stmt) ) {
+                        recordChange(n, "removing unneeded error push/pop statements");
+                        parent->removeChild(n);
+                        parent->removeChild(sibling);
+                        return;
+                    }
                 }
             }
         }
@@ -147,7 +155,8 @@ struct Mutator : public optimizer::visitor::Mutator {
 optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
 optimizer::RegisterPass peephole({.name = "peephole",
-                                  .phase = optimizer::Phase::Phase2,
+                                  .order = 20,
+                                  .iterate = false,
                                   .requires_afterwards = optimizer::Requirements::None,
                                   .run = run});
 

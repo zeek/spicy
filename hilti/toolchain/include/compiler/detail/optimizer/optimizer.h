@@ -22,27 +22,6 @@ class Optimizer;
 
 namespace optimizer {
 
-enum class Phase {
-    // Note: Keep these ordered in the sequence they will run, we're the enum values for debug output.
-    Init,   // Will run exactly once before we process any of the other phases for the first time.
-    Phase1, // Will run until convergence with all other passes of the same phase.
-    Phase2, // Will run until convergence with all other passes of the same phase.
-    Phase3, // Will run until convergence with all other passes of the same phase.
-    Post,   // Will run once each time the regular phases have finished.
-};
-
-namespace detail {
-constexpr util::enum_::Value<Phase> Phases[] = {
-    {.value = Phase::Init, .name = "pre-processing phase"},
-    {.value = Phase::Phase1, .name = "phase 1"},
-    {.value = Phase::Phase2, .name = "phase 2"},
-    {.value = Phase::Phase3, .name = "phase 3"},
-    {.value = Phase::Post, .name = "post-processing phase"},
-};
-}
-
-constexpr auto to_string(Phase p) { return util::enum_::to_string(p, detail::Phases); }
-
 struct PassInfo;
 
 struct ASTState {
@@ -71,12 +50,14 @@ struct PassInfo {
     using Callback = Result (*)(Optimizer* opt);
 
     std::string name;
-    Phase phase;
+    size_t order;
+    bool one_time = false;
+    bool iterate = false;
     bitmask<Requirements> requires_afterwards = Requirements::All;
     Callback run;
 
     bool operator<(const PassInfo& other) const {
-        return phase != other.phase ? phase < other.phase : name < other.name;
+        return order != other.order ? order < other.order : name < other.name;
     }
 };
 
@@ -103,9 +84,7 @@ public:
     bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
 
 private:
-    bool _runPass(const optimizer::PassInfo& pinfo, size_t outer_round, optimizer::Phase phase, size_t pindex,
-                  size_t inner_round);
-    bool _runPhase(size_t outer_round, optimizer::Phase phase, bool iterate);
+    bool _runPass(const optimizer::PassInfo& pinfo, size_t round);
     void _updateState(const optimizer::PassInfo& pinfo);
     void _checkState(const optimizer::PassInfo& pinfo);
 

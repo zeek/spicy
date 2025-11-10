@@ -294,8 +294,6 @@ optimizer::Result run(Optimizer* optimizer) {
     return Mutator(optimizer, &collector).run();
 }
 
-optimizer::RegisterPass constant_propagation({.name = "constant-propagation",
-                                              .phase = optimizer::Phase::Phase3,
-                                              .run = run});
+optimizer::RegisterPass constant_propagation({.name = "constant-propagation", .order = 40, .run = run});
 
 } // namespace

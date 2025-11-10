@@ -195,7 +195,7 @@ std::unordered_set<Node*> Mutator::unreachableNodes(const detail::cfg::CFG& cfg)
 optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
 optimizer::RegisterPass cfg({.name = "cfg",
-                             .phase = optimizer::Phase::Phase3,
+                             .order = 30,
                              .requires_afterwards = optimizer::Requirements::ScopeBuilder |
                                                     optimizer::Requirements::TypeUnifier,
                              .run = run});

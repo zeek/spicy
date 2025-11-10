@@ -76,19 +76,12 @@ private:
 
 class Registry {
 public:
-    const auto& passes(Phase phase) const {
-        if ( auto x = _pinfos.find(phase); x != _pinfos.end() )
-            return x->second;
-        else {
-            static const std::vector<PassInfo> empty;
-            return empty;
-        }
-    }
+    const auto& passes() const { return _pinfos; }
 
-    void register_(PassInfo pinfo) { _pinfos[pinfo.phase].push_back(std::move(pinfo)); }
+    void register_(PassInfo pinfo) { _pinfos.emplace(std::move(pinfo)); }
 
 private:
-    std::map<Phase, std::vector<PassInfo>> _pinfos;
+    std::set<PassInfo> _pinfos;
 };
 
 extern Registry* getPassRegistry();

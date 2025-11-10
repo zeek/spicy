@@ -41,16 +41,12 @@ digraph {
     0 -> 2 [label="0"];
     2 -> 1 [label="1"];
 }
-[debug/optimizer] processing AST, pre-processing phase
-[debug/optimizer]   pass: feature-requirements (round 1, phase index 0)
-[debug/optimizer] processing AST, phase 1
-[debug/optimizer]   pass: dead-code-static (round 1, phase index 0)
-[debug/optimizer] processing AST, phase 2
-[debug/optimizer]   pass: peephole (round 1, phase index 0)
-[debug/optimizer] processing AST, phase 3
-[debug/optimizer]   pass: cfg (round 1, phase index 0)
-[debug/optimizer]   pass: constant-propagation (round 1, phase index 1)
-[debug/optimizer]   pass: remove_unused_params (round 1, phase index 2)
+[debug/optimizer] pass: feature-requirements with order 0 (round 1, pass iteration 1)
+[debug/optimizer] pass: dead-code-static with order 10 (round 1, pass iteration 1)
+[debug/optimizer] pass: peephole with order 20 (round 1, pass iteration 1)
+[debug/optimizer] pass: cfg with order 30 (round 1, pass iteration 1)
+[debug/optimizer] pass: constant-propagation with order 40 (round 1, pass iteration 1)
+[debug/optimizer] pass: remove_unused_params with order 50 (round 1, pass iteration 1)
 0
 1
 2

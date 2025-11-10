@@ -704,18 +704,11 @@ optimizer::Result run(Optimizer* optimizer) {
     Collector collector(optimizer);
     collector.run();
 
-    auto modified = optimizer::Result::Unchanged;
-
-    while ( true ) {
-        if ( Mutator(optimizer, &collector).run() )
-            modified = optimizer::Result::Modified;
-        else
-            return modified;
-    }
+    return Mutator(optimizer, &collector).run();
 }
 
 optimizer::RegisterPass constant_folder({.name = "dead-code-static",
-                                         .phase = optimizer::Phase::Phase1,
+                                         .order = 10,
                                          .requires_afterwards = optimizer::Requirements::ScopeBuilder |
                                                                 optimizer::Requirements::TypeUnifier |
                                                                 optimizer::Requirements::Coercer,

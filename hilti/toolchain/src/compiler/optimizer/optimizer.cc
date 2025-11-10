@@ -59,8 +59,8 @@ void Optimizer::_updateState(const PassInfo& pinfo) {
 
     while ( true ) {
         // Loop body mimics ASTContext::_resolve() for a single plugin.
-        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("re-resolving AST, round %d (requires: %s)", round,
-                                                         to_string(pinfo.requires_afterwards)));
+        HILTI_DEBUG(logging::debug::Optimizer,
+                    util::fmt("re-resolving AST with requirements: %s", to_string(pinfo.requires_afterwards)));
         auto modified = false;
 
         if ( pinfo.requires_afterwards & Requirements::ScopeBuilder ) {
@@ -93,7 +93,7 @@ void Optimizer::_updateState(const PassInfo& pinfo) {
         HILTI_DEBUG(logging::debug::Optimizer, "    -> modified");
 
         if ( ++round >= 50 )
-            logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
+            logger().internalError("Optimizer::_updateState() didn't terminate, AST keeps changing");
     }
 }
 
@@ -137,63 +137,47 @@ void Optimizer::_checkState(const PassInfo& pinfo) {
 #endif
 }
 
-bool Optimizer::_runPass(const PassInfo& pinfo, size_t outer_round, Phase phase, size_t pindex, size_t inner_round) {
+bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, size_t round) {
     util::timing::Collector __(util::fmt("hilti/compiler/optimizer/%s", pinfo.name));
 
-    HILTI_DEBUG(logging::debug::Optimizer,
-                util::fmt("pass: %s (round %d, phase index %d)", pinfo.name, inner_round, pindex));
-
-    logging::DebugPushIndent _(logging::debug::Optimizer);
-
-    ASTState state(context());
-    state.pass = &pinfo;
-    _state = &state;
-
-    if ( (*pinfo.run)(this) == optimizer::Result::Unchanged )
-        return false;
-
-    HILTI_DEBUG(logging::debug::Optimizer, "    -> modified");
-
-    if ( logger().isEnabled(logging::debug::OptimizerDump) ) {
-        const auto fname =
-            util::fmt("%zu-%zu-%zu-%zu-%s", outer_round, static_cast<size_t>(phase), inner_round, pindex, pinfo.name);
-        const auto header = util::fmt("State after modifications by pass %s, round %zu/%zu, phase index %zu\n",
-                                      pinfo.name, outer_round, inner_round, pindex);
-        _dumpAST(context(), fname, header);
-    }
-
-    _updateState(pinfo);
-    _checkState(pinfo);
-
-    return true;
-}
-bool Optimizer::_runPhase(size_t outer_round, Phase phase, bool iterate) {
-    const auto& passes = getPassRegistry()->passes(phase);
-    if ( passes.empty() )
-        return false;
-
-    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("processing AST, %s", to_string(phase)));
-    logging::DebugPushIndent _(logging::debug::Optimizer);
-
-    size_t inner_round = 0;
+    size_t iteration = 1;
     bool modified = false;
-    bool ever_modified = false;
 
-    do {
-        if ( ++inner_round >= 50 )
-            logger().internalError("optimizer::runPhase() didn't terminate, AST keeps changing");
+    while ( true ) {
+        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("pass: %s with order %d (round %zu, pass iteration %zu)",
+                                                         pinfo.name, pinfo.order, round, iteration));
+        logging::DebugPushIndent _(logging::debug::Optimizer);
 
-        modified = false;
-        for ( const auto& [idx, pinfo] : util::enumerate(getPassRegistry()->passes(phase)) ) {
-            if ( _runPass(pinfo, outer_round, phase, idx, inner_round) ) {
-                modified |= true;
-                ever_modified |= true;
+        ASTState state(context());
+        state.pass = &pinfo;
+        _state = &state;
+
+        auto modified_by_pass = ((*pinfo.run)(this) == optimizer::Result::Modified);
+        modified |= modified_by_pass;
+
+        if ( modified_by_pass ) {
+            HILTI_DEBUG(logging::debug::Optimizer, "    -> modified");
+
+            _updateState(pinfo);
+            _checkState(pinfo);
+
+            if ( logger().isEnabled(logging::debug::OptimizerDump) ) {
+                const auto fname = util::fmt("%zu-%03zu-%zu-%s", round, pinfo.order, iteration, pinfo.name);
+                const auto header = util::fmt("State after modifications by pass %s, round %zu, pass iteration %zu",
+                                              pinfo.name, round, iteration);
+                _dumpAST(context(), fname, header);
             }
         }
 
-    } while ( iterate && modified );
+        if ( ! modified_by_pass || ! pinfo.iterate )
+            break;
 
-    return ever_modified;
+        if ( ++iteration >= 50 )
+            logger().internalError(
+                util::fmt("Optimizer::_runPass() didn't terminate, AST keeps changing in pass %s", pinfo.name));
+    };
+
+    return modified;
 }
 
 void Optimizer::_dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header) {
@@ -202,7 +186,7 @@ void Optimizer::_dumpAST(ASTContext* ctx, std::string_view fname, std::string_vi
     ctx->dump(out_ast, true);
 
     std::ofstream out_hlt(util::fmt("optimizer-hlt-%s.tmp", fname));
-    out_hlt << "# " << header;
+    out_hlt << "# " << header << "\n\n";
     ctx->root()->print(out_hlt, false, true);
 }
 
@@ -213,40 +197,42 @@ hilti::Result<Nothing> Optimizer::run() {
     context()->clearErrors(builder());
 
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
-        _dumpAST(context(), "0-0-0-0-initial", "Initial state before optimization");
+        _dumpAST(context(), "0-000-0-initial", "Initial state before optimization");
 
-    size_t outer_round = 1;
-    bool modified = false;
+    size_t round = 1;
 
-    do {
-        modified = false;
+    while ( true ) {
+        bool modified = false;
 
-        if ( outer_round == 1 ) {
-            modified |= _runPhase(outer_round, Phase::Init, false);
+        for ( const auto& pinfo : optimizer::getPassRegistry()->passes() ) {
+            if ( pinfo.one_time && round > 1 )
+                continue;
 
-            if ( ! modified )
+            auto modified_by_pass = _runPass(pinfo, round);
+            modified |= modified_by_pass;
+
+            if ( round == 1 && ! modified_by_pass && pinfo.name == "feature-requirements" ) {
                 // TODO: This is just in the interest not changing any output
                 // compared to before the refactoring of the optimizer.
                 // Specifically, hilti.output.optimization.const breaks without
                 // this. We should revisit whether we need to to keep this
                 // behavior once we have confidence the new optimizer is
                 // generally producing correct code.
-                modified |= constant_folder::fold(builder(), context()->root(),
-                                                  constant_folder::Style::InlineBooleanConstants |
-                                                      constant_folder::Style::FoldTernaryOperator);
-        }
+                modified_by_pass |= constant_folder::fold(builder(), context()->root(),
+                                                          constant_folder::Style::InlineBooleanConstants |
+                                                              constant_folder::Style::FoldTernaryOperator);
+            }
+        };
 
-        modified |= _runPhase(outer_round, Phase::Phase1, true);
-        modified |= _runPhase(outer_round, Phase::Phase2, true);
-        modified |= _runPhase(outer_round, Phase::Phase3, true);
-        modified |= _runPhase(outer_round, Phase::Post, false);
+        if ( ! modified )
+            break;
 
-        if ( ++outer_round >= 50 )
-            logger().internalError("optimizer::run() didn't terminate, AST keeps changing");
-    } while ( modified );
+        if ( ++round >= 50 )
+            logger().internalError("Optimizer::run() didn't terminate, optimizer keeps changing AST");
+    }
 
     if ( logger().isEnabled(logging::debug::OptimizerDump) )
-        _dumpAST(context(), util::fmt("%d-x-x-x-final", outer_round), "Final state after optimization");
+        _dumpAST(context(), util::fmt("%d-000-x-final", round), "Final state after optimization");
 
     if ( ! context()->compilerContext()->options().skip_validation ) {
         validator::detail::validatePost(builder(), context()->root());
