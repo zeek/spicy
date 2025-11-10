@@ -8,7 +8,7 @@
 namespace hilti::detail::resolver {
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
-bool resolve(Builder* builder, Node* root);
+bool resolve(Builder* builder, Node* node);
 
 /**
  * Implements just the type and expression coercion pass of the
@@ -21,6 +21,6 @@ bool resolve(Builder* builder, Node* root);
  * @param root root node to process.
  * @return true if any changes were made
  */
-bool coerce(Builder* builder, Node* root);
+bool coerce(Builder* builder, Node* node);
 
 } // namespace hilti::detail::resolver

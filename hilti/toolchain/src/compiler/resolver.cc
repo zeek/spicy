@@ -111,10 +111,8 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
 // Pass 2 is the main pass implementing most of the resolver's functionality:
 // Type inference, name/operator resolution, ID assignment (but not coercion yet).
 struct VisitorPass2 : visitor::MutatingPostOrder {
-    explicit VisitorPass2(Builder* builder, Node* root)
-        : visitor::MutatingPostOrder(builder, logging::debug::Resolver), root(root) {}
+    explicit VisitorPass2(Builder* builder) : visitor::MutatingPostOrder(builder, logging::debug::Resolver) {}
 
-    Node* root = nullptr;
     std::map<ID, QualifiedType*> auto_params; // mapping of `auto` parameters inferred, indexed by canonical ID
 
     // Sets a declaration fully qualified ID
@@ -1021,10 +1019,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 // resolution, and these uses the resolved types from the AST to apply
 // appropriate coercions.
 struct VisitorPass3 : visitor::MutatingPostOrder {
-    explicit VisitorPass3(Builder* builder, Node* root)
-        : visitor::MutatingPostOrder(builder, logging::debug::Resolver), root(root) {}
-
-    Node* root = nullptr;
+    explicit VisitorPass3(Builder* builder) : visitor::MutatingPostOrder(builder, logging::debug::Resolver) {}
 
     // Coerces an expression to a given type, returning the new value if it's
     // changed from the old one. Records an error with the node if coercion is
@@ -1658,33 +1653,33 @@ struct VisitorPass4 : visitor::MutatingPostOrder {
 
 } // anonymous namespace
 
-bool detail::resolver::resolve(Builder* builder, Node* root) {
+bool detail::resolver::resolve(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/resolver");
 
     auto v1 = VisitorPass1(builder);
-    hilti::visitor::visit(v1, root);
+    hilti::visitor::visit(v1, node);
 
-    auto v2 = VisitorPass2(builder, root);
-    hilti::visitor::visit(v2, root);
+    auto v2 = VisitorPass2(builder);
+    hilti::visitor::visit(v2, node);
 
-    auto v3 = VisitorPass3(builder, root);
-    hilti::visitor::visit(v3, root);
+    auto v3 = VisitorPass3(builder);
+    hilti::visitor::visit(v3, node);
 
     auto v4 = VisitorPass4(builder, v2);
-    hilti::visitor::visit(v4, root);
+    hilti::visitor::visit(v4, node);
 
     return v1.isModified() || v2.isModified() || v3.isModified() || v4.isModified();
 }
 
-bool detail::resolver::coerce(Builder* builder, Node* root) {
+bool detail::resolver::coerce(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/resolver");
 
     bool ever_modified = false;
 
     while ( true ) {
         // Pass 3 is in charge of coercion.
-        auto v3 = VisitorPass3(builder, root);
-        hilti::visitor::visit(v3, root);
+        auto v3 = VisitorPass3(builder);
+        hilti::visitor::visit(v3, node);
 
         if ( v3.isModified() )
             ever_modified = true;
