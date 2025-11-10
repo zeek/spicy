@@ -9,6 +9,7 @@
 #include <hilti/ast/visitor.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
+#include <hilti/compiler/detail/optimizer/cfg.h>
 
 namespace hilti::logging::debug {
 inline const hilti::logging::DebugStream Optimizer("optimizer");
@@ -24,11 +25,27 @@ namespace optimizer {
 
 struct PassInfo;
 
-struct ASTState {
-    ASTState(ASTContext* ctx) : context(ctx) {}
+class ASTState {
+public:
+    ASTState(ASTContext* ctx) : _context(ctx) {}
 
-    ASTContext* context = nullptr;
-    const PassInfo* pass = nullptr;
+    auto* context() { return _context; }
+    const auto& pass() const {
+        assert(_pinfo);
+        return *_pinfo;
+    }
+
+    void setPass(const PassInfo* pinfo) { _pinfo = pinfo; }
+
+    void invalidateCFGs() { _cfgs.clear(); }
+
+    cfg::CFG* cfg(statement::Block* block);
+
+private:
+    ASTContext* _context = nullptr;
+    const PassInfo* _pinfo = nullptr;
+
+    std::unordered_map<statement::Block*, std::unique_ptr<cfg::CFG>> _cfgs;
 };
 
 enum class Requirements : uint16_t {
@@ -37,6 +54,7 @@ enum class Requirements : uint16_t {
     FullResolver = (1U << 3U),
     ScopeBuilder = (1U << 4U),
     TypeUnifier = (1U << 5U),
+    CFG = (1U << 6U),
 
     None = 0U,
     All = ((1U << 16U) - 1U)
@@ -76,7 +94,7 @@ public:
 
     auto* builder() { return &_builder; }
     auto* context() { return _context; }
-    auto* state() { return _state; }
+    optimizer::ASTState* state() { return &_state; }
 
     // TODO: Figure out where to put these.
     QualifiedType* innermostType(QualifiedType* type);
@@ -92,8 +110,7 @@ private:
 
     ASTContext* _context;
     Builder _builder;
-
-    optimizer::ASTState* _state = nullptr;
+    optimizer::ASTState _state;
 };
 
 } // namespace hilti::detail

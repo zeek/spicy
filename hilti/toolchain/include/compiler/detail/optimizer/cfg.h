@@ -164,7 +164,7 @@ struct Transfer {
 /**
  * Infrastructure to compute control and dataflow facts about a AST (sub)tree.
  */
-class CFG {
+class CFG { // TODO: Move into optimizer namespace
 public:
     using NodeId = uint64_t;
 

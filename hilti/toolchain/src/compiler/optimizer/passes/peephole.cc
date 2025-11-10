@@ -157,7 +157,7 @@ optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 optimizer::RegisterPass peephole({.name = "peephole",
                                   .order = 20,
                                   .iterate = false,
-                                  .requires_afterwards = optimizer::Requirements::None,
+                                  .requires_afterwards = optimizer::Requirements::CFG,
                                   .run = run});
 
 } // namespace

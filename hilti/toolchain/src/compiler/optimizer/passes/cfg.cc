@@ -13,12 +13,12 @@ namespace {
 struct Mutator : public optimizer::visitor::Mutator {
     using optimizer::visitor::Mutator::Mutator;
 
-    std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG& cfg) const;
+    std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG* cfg) const;
 
-    std::vector<Node*> unusedStatements(const detail::cfg::CFG& cfg) const;
+    std::vector<Node*> unusedStatements(const detail::cfg::CFG* cfg) const;
 
     // Remove a given AST node from both the AST and the CFG.
-    bool remove(detail::cfg::CFG& cfg, Node* data, const std::string& msg = {}) {
+    bool remove(detail::cfg::CFG* cfg, Node* data, const std::string& msg = {}) {
         assert(data);
 
         Node* node = nullptr;
@@ -46,7 +46,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             removeNode(node, msg);
 
             // Make equivalent edit to control flow graph.
-            cfg.removeNode(node);
+            cfg->removeNode(node);
 
             return true;
         }
@@ -54,14 +54,9 @@ struct Mutator : public optimizer::visitor::Mutator {
         return false;
     }
 
-    void visitNode(Node* n) {
+    void visitStatement(Statement* n, cfg::CFG* cfg) {
         while ( true ) {
             bool modified = false;
-
-            // TODO(bbannier): In principal we should be able to reuse the
-            // flow through optimizations, but this currently fails due to
-            // edits not correctly changing the flow.
-            auto cfg = detail::cfg::CFG(n);
 
             for ( auto* x : unusedStatements(cfg) )
                 modified |= remove(cfg, x, "statement result unused");
@@ -81,22 +76,28 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
     }
 
-    void operator()(declaration::Function* f) override {
-        if ( auto* body = f->function()->body() )
-            visitNode(body);
+    void operator()(declaration::Function* n) override {
+        auto* body = n->function()->body();
+        if ( ! body )
+            return;
+
+        visitStatement(body, state()->cfg(n->function()->body()->as<statement::Block>()));
     }
 
-    void operator()(declaration::Module* m) override {
-        optimizer::visitor::Mutator::operator()(m);
+    void operator()(declaration::Module* n) override {
+        optimizer::visitor::Mutator::operator()(n);
 
-        if ( auto* body = m->statements() )
-            visitNode(body);
+        auto* stmts = n->statements();
+        if ( ! stmts )
+            return;
+
+        visitStatement(stmts, state()->cfg(n->statements()));
     }
 };
 
-std::vector<Node*> Mutator::unusedStatements(const detail::cfg::CFG& cfg) const {
+std::vector<Node*> Mutator::unusedStatements(const detail::cfg::CFG* cfg) const {
     // This can only be called after dataflow information has been populated.
-    const auto& dataflow = cfg.dataflow();
+    const auto& dataflow = cfg->dataflow();
     assert(! dataflow.empty());
 
     std::map<detail::cfg::GraphNode, uint64_t> uses;
@@ -149,7 +150,7 @@ std::vector<Node*> Mutator::unusedStatements(const detail::cfg::CFG& cfg) const 
                 // If the original node was a declaration and we wrote an
                 // update mark the declaration as used.
                 if ( t.write.contains(decl) ) {
-                    if ( const auto* node = cfg.graph().getNode(decl->identity()) )
+                    if ( const auto* node = cfg->graph().getNode(decl->identity()) )
                         ++uses[*node];
                 }
 
@@ -182,10 +183,10 @@ std::vector<Node*> Mutator::unusedStatements(const detail::cfg::CFG& cfg) const 
     return result;
 }
 
-std::unordered_set<Node*> Mutator::unreachableNodes(const detail::cfg::CFG& cfg) const {
+std::unordered_set<Node*> Mutator::unreachableNodes(const detail::cfg::CFG* cfg) const {
     std::unordered_set<Node*> result;
-    for ( const auto& [id, n] : cfg.graph().nodes() ) {
-        if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg.graph().neighborsUpstream(id).empty() )
+    for ( const auto& [id, n] : cfg->graph().nodes() ) {
+        if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg->graph().neighborsUpstream(id).empty() )
             result.insert(n.value());
     }
 
@@ -197,7 +198,8 @@ optimizer::Result run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 optimizer::RegisterPass cfg({.name = "cfg",
                              .order = 30,
                              .requires_afterwards = optimizer::Requirements::ScopeBuilder |
-                                                    optimizer::Requirements::TypeUnifier,
+                                                    optimizer::Requirements::TypeUnifier |
+                                                    optimizer::Requirements::CFG, // TODO: not sure if we need this?
                              .run = run});
 
 } // namespace

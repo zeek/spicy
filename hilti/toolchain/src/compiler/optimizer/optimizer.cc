@@ -19,8 +19,20 @@ using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
 
+cfg::CFG* ASTState::cfg(statement::Block* block) {
+    assert(block);
+
+    if ( auto it = _cfgs.find(block); it != _cfgs.end() )
+        return it->second.get();
+    else
+        return _cfgs.emplace(block, std::make_unique<cfg::CFG>(block)).first->second.get();
+}
+
 std::string optimizer::to_string(bitmask<Requirements> r) {
     std::vector<std::string> labels;
+
+    if ( r & Requirements::CFG )
+        labels.emplace_back("cfg");
 
     if ( r & Requirements::Coercer )
         labels.emplace_back("coercer");
@@ -43,7 +55,7 @@ std::string optimizer::to_string(bitmask<Requirements> r) {
         return util::fmt("<%s>", util::join(labels, ","));
 }
 
-Optimizer::Optimizer(ASTContext* ctx) : _context(ctx), _builder(ctx) {}
+Optimizer::Optimizer(ASTContext* ctx) : _context(ctx), _builder(ctx), _state(ctx) {}
 
 void Optimizer::_updateState(const PassInfo& pinfo) {
     util::timing::Collector _("hilti/compiler/optimizer/update-state");
@@ -86,6 +98,9 @@ void Optimizer::_updateState(const PassInfo& pinfo) {
                                                      constant_folder::Style::InlineBooleanConstants |
                                                      constant_folder::Style::FoldTernaryOperator);
         }
+
+        if ( pinfo.requires_afterwards & Requirements::CFG )
+            state()->invalidateCFGs();
 
         if ( ! modified )
             break;
@@ -148,9 +163,8 @@ bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, size_t round) {
                                                          pinfo.name, pinfo.order, round, iteration));
         logging::DebugPushIndent _(logging::debug::Optimizer);
 
-        ASTState state(context());
-        state.pass = &pinfo;
-        _state = &state;
+        auto _guard = util::scope_exit([&]() { _state.setPass(nullptr); });
+        _state.setPass(&pinfo);
 
         auto modified_by_pass = ((*pinfo.run)(this) == optimizer::Result::Modified);
         modified |= modified_by_pass;

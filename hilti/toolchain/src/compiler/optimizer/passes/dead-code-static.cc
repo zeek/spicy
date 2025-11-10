@@ -711,7 +711,8 @@ optimizer::RegisterPass constant_folder({.name = "dead-code-static",
                                          .order = 10,
                                          .requires_afterwards = optimizer::Requirements::ScopeBuilder |
                                                                 optimizer::Requirements::TypeUnifier |
-                                                                optimizer::Requirements::Coercer,
+                                                                optimizer::Requirements::Coercer |
+                                                                optimizer::Requirements::CFG,
                                          .run = run});
 
 } // namespace

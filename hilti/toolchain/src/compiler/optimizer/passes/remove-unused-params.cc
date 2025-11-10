@@ -331,7 +331,8 @@ optimizer::Result run(Optimizer* optimizer) {
 optimizer::RegisterPass remove_unused_params({.name = "remove_unused_params",
                                               .order = 50,
                                               .requires_afterwards = optimizer::Requirements::ScopeBuilder |
-                                                                     optimizer::Requirements::TypeUnifier,
+                                                                     optimizer::Requirements::TypeUnifier |
+                                                                     optimizer::Requirements::CFG,
                                               .run = run});
 
 } // namespace
