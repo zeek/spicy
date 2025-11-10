@@ -81,7 +81,9 @@ void Optimizer::_updateState(const PassInfo& pinfo) {
                 modified = resolver::coerce(builder(), context()->root());
 
             if ( pinfo.requires_afterwards & Requirements::ConstantFolder )
-                modified = constant_folder::fold(builder(), context()->root());
+                modified = constant_folder::fold(builder(), context()->root(),
+                                                 constant_folder::Style::FoldFeatureConstants |
+                                                     constant_folder::Style::InlineAllConstants);
         }
 
         if ( ! modified )
@@ -114,7 +116,9 @@ void Optimizer::_checkState(const PassInfo& pinfo) {
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST scopes are not fully built after optimizer pass %s", pinfo.name));
 
-    if ( constant_folder::fold(builder(), context()->root()) )
+    if ( constant_folder::fold(builder(), context()->root(),
+                               constant_folder::Style::FoldFeatureConstants |
+                                   constant_folder::Style::InlineAllConstants) )
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST is not fully constant folded after optimizer pass %s", pinfo.name));
 

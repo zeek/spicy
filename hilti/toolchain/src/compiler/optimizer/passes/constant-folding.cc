@@ -20,29 +20,6 @@ namespace {
 // computed/folded.
 struct Collector : public optimizer::visitor::Collector {
     using optimizer::visitor::Collector::Collector;
-
-    std::map<ID, bool> constants; // indexed by fully qualified ID
-
-    void done() final {
-        if ( logger().isEnabled(logging::debug::OptimizerDetail) ) {
-            HILTI_DEBUG(logging::debug::OptimizerDetail, "constants:");
-            std::vector<std::string> xs;
-            for ( const auto& [id, value] : constants )
-                HILTI_DEBUG(logging::debug::OptimizerDetail, util::fmt("    %s: value=%d", id, value));
-        }
-    }
-
-    void operator()(declaration::Constant* n) final {
-        if ( ! n->type()->type()->isA<type::Bool>() )
-            return;
-
-        const auto& id = n->fullyQualifiedID();
-        assert(id);
-
-        if ( auto* ctor = n->value()->tryAs<expression::Ctor>() )
-            if ( auto* bool_ = ctor->ctor()->tryAs<ctor::Bool>() )
-                constants[id] = bool_->value();
-    }
 };
 
 struct Mutator : public optimizer::visitor::Mutator {
@@ -63,19 +40,6 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
 
         return {};
-    }
-
-    void operator()(expression::Name* n) final {
-        auto* decl = n->resolvedDeclaration();
-        assert(decl);
-
-        const auto& id = decl->fullyQualifiedID();
-        assert(id);
-
-        if ( const auto& constant = collector->constants.find(id); constant != collector->constants.end() ) {
-            if ( n->type()->type()->isA<type::Bool>() )
-                replaceNode(n, builder()->bool_((constant->second)), "inlining constant");
-        }
     }
 
     void operator()(statement::If* n) final {
@@ -124,30 +88,6 @@ struct Mutator : public optimizer::visitor::Mutator {
             replaceNode(n, n->false_());
     }
 
-    void operator()(expression::LogicalOr* n) final {
-        auto lhs = tryAsBoolLiteral(n->op0());
-        auto rhs = tryAsBoolLiteral(n->op1());
-
-        if ( lhs && rhs )
-            replaceNode(n, builder()->bool_(lhs.value() || rhs.value()));
-    }
-
-    void operator()(expression::LogicalAnd* n) final {
-        auto lhs = tryAsBoolLiteral(n->op0());
-        auto rhs = tryAsBoolLiteral(n->op1());
-
-        if ( lhs && rhs )
-            replaceNode(n, builder()->bool_(lhs.value() && rhs.value()));
-    }
-
-    void operator()(expression::LogicalNot* n) final {
-        auto bool_ = tryAsBoolLiteral(n->expression());
-        if ( ! bool_ )
-            return;
-
-        replaceNode(n, builder()->bool_(! *bool_));
-    }
-
     void operator()(statement::While* n) final {
         auto* condition = n->condition();
         if ( ! condition )
@@ -190,10 +130,9 @@ optimizer::Result run(Optimizer* optimizer) {
     }
 }
 
-optimizer::RegisterPass constant_folder(
-    {.name = "constant_folding",
-     .phase = optimizer::Phase::Phase1,
-     .requires_afterwards = optimizer::Requirements::ConstantFolder, // TODO: This shouldn't be neccearry
-     .run = run});
+optimizer::RegisterPass constant_folder({.name = "constant_folding",
+                                         .phase = optimizer::Phase::Phase1,
+                                         .requires_afterwards = optimizer::Requirements::None,
+                                         .run = run});
 
 } // namespace

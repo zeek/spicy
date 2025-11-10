@@ -17,6 +17,7 @@
 [debug/optimizer]         -> modified
 [debug/optimizer]         -> modified
 [debug/optimizer]         -> modified
+[debug/optimizer]         -> modified
 [debug/optimizer]     [<no location>] declaration::Field "iterator<stream> __begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]     [<no location>] declaration::Field "iterator<stream> __begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]     [<no location>] declaration::Field "iterator<stream> __begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
@@ -77,234 +78,6 @@
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __begin, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __begin, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__data, __cur, __trim, __lah, __lahe, __error)" (removing unused arguments from method call)
 [debug/optimizer]     [<no location>] expression::Ctor "(__data, __cur, __trim, __lah, __lahe, __error)" -> expression::Ctor "(__cur, __lah, __lahe, __error)" (removing unused arguments from method call)
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::LogicalOr "False || False" -> expression::Ctor "False"
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%is_filter" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@A%uses_stream" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@B%uses_stream" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%is_filter" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@C%uses_stream" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@D%uses_stream" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%is_filter" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%is_filter" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%is_filter" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%supports_filters" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%supports_sinks" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_offset" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_random_access" -> expression::Ctor "False" (inlining constant)
-[debug/optimizer]     [<no location>] expression::Name "__feat%foo@@F%uses_stream" -> expression::Ctor "False" (inlining constant)
 [debug/optimizer]     [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
 [debug/optimizer]     [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); { hilti::debugIndent("spicy"); local iterator<stream> __begin = begin(__cur); local strong_ref<stream> filtered = Null; if ( ! Null ) __result = (*self).__parse_foo__B_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error); } return __result; }" -> constant propagation
 [debug/optimizer]     [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result(); hilti::debugDedent("spicy"); __result = (__cur, __lah, __lahe, __error); return (__cur, __lah, __lahe, __error); }" -> constant propagation
@@ -659,8 +432,6 @@
 [debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,scope-builder,type-unifier>)
 [debug/optimizer]     re-resolving AST, round 1 (requires: <coercer,scope-builder,type-unifier>)
 [debug/optimizer]     re-resolving AST, round 1 (requires: <constant-folder>)
-[debug/optimizer]     re-resolving AST, round 1 (requires: <constant-folder>)
-[debug/optimizer]     re-resolving AST, round 1 (requires: <constant-folder>)
 [debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
@@ -668,6 +439,7 @@
 [debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]     re-resolving AST, round 1 (requires: <scope-builder,type-unifier>)
 [debug/optimizer]     re-resolving AST, round 2 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
+[debug/optimizer]     re-resolving AST, round 2 (requires: <constant-folder>)
 [debug/optimizer]     re-resolving AST, round 3 (requires: <coercer,constant-folder,full-resolver,scope-builder,type-unifier>)
 [debug/optimizer]     removing field for unused method foo::A::__hook_to_string
 [debug/optimizer]     removing field for unused method foo::A::__on_0x25_confirmed
