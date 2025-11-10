@@ -115,8 +115,8 @@ set(SOURCES
     src/compiler/optimizer/cfg.cc
     src/compiler/optimizer/optimizer.cc
     src/compiler/optimizer/pass.cc
-    src/compiler/optimizer/passes/cfg.cc
     src/compiler/optimizer/passes/constant-propagation.cc
+    src/compiler/optimizer/passes/dead-code-cfg.cc
     src/compiler/optimizer/passes/dead-code-static.cc
     src/compiler/optimizer/passes/feature-requirements.cc
     src/compiler/optimizer/passes/peephole.cc

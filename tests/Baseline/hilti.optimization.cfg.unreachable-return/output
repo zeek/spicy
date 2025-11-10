@@ -2,7 +2,7 @@
 [debug/optimizer] pass: feature-requirements with order 0 (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static with order 10 (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole with order 20 (round 1, pass iteration 1)
-[debug/optimizer] pass: cfg with order 30 (round 1, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg with order 30 (round 1, pass iteration 1)
 [debug/optimizer]   [unreachable-return.hlt:16:5-16:24] statement::Expression "hilti::print("bad!", True);" -> null (unreachable code)
 [debug/optimizer]   [unreachable-return.hlt:17:5-17:11] statement::Return "return;" -> null (unreachable code)
 [debug/optimizer]       -> modified
@@ -11,7 +11,7 @@
 [debug/optimizer] pass: remove_unused_params with order 50 (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static with order 10 (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole with order 20 (round 2, pass iteration 1)
-[debug/optimizer] pass: cfg with order 30 (round 2, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg with order 30 (round 2, pass iteration 1)
 [debug/optimizer] pass: constant-propagation with order 40 (round 2, pass iteration 1)
 [debug/optimizer] pass: remove_unused_params with order 50 (round 2, pass iteration 1)
 [debug/cfg-final] Module 'Test'
