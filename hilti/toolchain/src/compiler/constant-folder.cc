@@ -131,7 +131,7 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         if ( ! n->resolvedDeclarationIndex() )
             return;
 
-        if ( ! (style & Style::FoldFeatureConstants) && util::startsWith(n->id().local(), "__feat") )
+        if ( util::startsWith(n->id().local(), "__feat") && ! (style & Style::InlineFeatureConstants) )
             return;
 
         auto* decl = n->resolvedDeclaration();
@@ -144,6 +144,18 @@ struct VisitorConstantFolder : public visitor::PreOrder {
             return;
 
         result = *x;
+    }
+
+    void operator()(expression::Ternary* n) final {
+        if ( ! (style & Style::FoldTernaryOperator) )
+            return;
+
+        if ( auto bool_ = foldConstant<ctor::Bool>(builder, n->condition(), style) ) {
+            auto* true_ = n->true_()->tryAs<expression::Ctor>();
+            auto* false_ = n->false_()->tryAs<expression::Ctor>();
+            if ( true_ && false_ )
+                result = ((*bool_)->value() ? true_->ctor() : false_->ctor());
+        }
     }
 
     void operator()(operator_::unsigned_integer::SignNeg* n) final {
@@ -343,8 +355,14 @@ Result<Ctor*> foldConstant(Builder* builder, Expression* expr, bitmask<Style> st
 } // anonymous namespace
 
 Result<Ctor*> detail::constant_folder::foldExpression(Builder* builder, Expression* expr, bitmask<Style> style) {
-    if ( ! (style & Style::InlineAllConstants) && expr->isA<expression::Name>() )
+    // By default, we don't fold away direct, top-level references to constant IDs. It's
+    // likely as least as efficient to leave them as is, and potentially more.
+    auto* n = expr->tryAs<expression::Name>();
+    if ( n && (! (style & Style::InlineBooleanConstants) || ! n->type()->type()->isA<type::Bool>()) )
         return {nullptr};
+
+    // if ( auto* n = expr->tryAs<expression::Name>(); n && ! util::startsWith(n->id().local(), "__feat") )
+    //     return {nullptr};
 
     try {
         if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder, style), expr,

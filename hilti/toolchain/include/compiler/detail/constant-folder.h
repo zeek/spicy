@@ -9,7 +9,12 @@
 
 namespace hilti::detail::constant_folder {
 
-enum class Style { FoldFeatureConstants = (1U << 0U), InlineAllConstants = (1U << 1U), Default = 0U };
+enum class Style {
+    InlineFeatureConstants = (1U << 0U),
+    InlineBooleanConstants = (1U << 1U),
+    FoldTernaryOperator = (1U << 2U),
+    Default = 0U
+};
 
 /**
  * Folds an expression into a constant value if that's possible. Note that the

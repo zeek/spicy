@@ -82,8 +82,9 @@ void Optimizer::_updateState(const PassInfo& pinfo) {
 
             if ( pinfo.requires_afterwards & Requirements::ConstantFolder )
                 modified = constant_folder::fold(builder(), context()->root(),
-                                                 constant_folder::Style::FoldFeatureConstants |
-                                                     constant_folder::Style::InlineAllConstants);
+                                                 constant_folder::Style::InlineFeatureConstants |
+                                                     constant_folder::Style::InlineBooleanConstants |
+                                                     constant_folder::Style::FoldTernaryOperator);
         }
 
         if ( ! modified )
@@ -116,9 +117,11 @@ void Optimizer::_checkState(const PassInfo& pinfo) {
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST scopes are not fully built after optimizer pass %s", pinfo.name));
 
-    if ( constant_folder::fold(builder(), context()->root(),
-                               constant_folder::Style::FoldFeatureConstants |
-                                   constant_folder::Style::InlineAllConstants) )
+    // We check folding here without the additional styles otherwise used
+    // inside the optimizer, because that's what the normal resolver does. If
+    // we checked for them here, we could trigger in case the original AST,
+    // which only went through that standard resolving, gets here.
+    if ( constant_folder::fold(builder(), context()->root()) )
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST is not fully constant folded after optimizer pass %s", pinfo.name));
 
@@ -218,8 +221,20 @@ hilti::Result<Nothing> Optimizer::run() {
     do {
         modified = false;
 
-        if ( outer_round == 1 )
+        if ( outer_round == 1 ) {
             modified |= _runPhase(outer_round, Phase::Init, false);
+
+            if ( ! modified )
+                // TODO: This is just in the interest not changing any output
+                // compared to before the refactoring of the optimizer.
+                // Specifically, hilti.output.optimization.const breaks without
+                // this. We should revisit whether we need to to keep this
+                // behavior once we have confidence the new optimizer is
+                // generally producing correct code.
+                modified |= constant_folder::fold(builder(), context()->root(),
+                                                  constant_folder::Style::InlineBooleanConstants |
+                                                      constant_folder::Style::FoldTernaryOperator);
+        }
 
         modified |= _runPhase(outer_round, Phase::Phase1, true);
         modified |= _runPhase(outer_round, Phase::Phase2, true);
