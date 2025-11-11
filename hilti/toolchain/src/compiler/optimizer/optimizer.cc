@@ -239,6 +239,16 @@ void ASTState::checkState(const PassInfo& pinfo) {
 
         auto actual = cfg->dot(false);
         auto expected = cfg::CFG(block).dot(false);
+
+        auto expected2 = cfg::CFG(block).dot(false);
+
+        if ( expected != expected2 ) {
+            // This should never trigger.
+            std::ofstream("cfg-1.dot") << expected << std::endl;
+            std::ofstream("cfg-2.dot") << expected2 << std::endl;
+            logger().internalError("Optimizer::_checkState: non-deterministic CFG generation");
+        }
+
         if ( actual != expected ) {
             std::cerr << "==== ACTUAL   ===\n\n" << actual << "\n\n";
             std::cerr << "==== EXPECTED ===\n\n" << expected << "\n\n";
