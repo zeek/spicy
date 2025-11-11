@@ -2,7 +2,7 @@
 
 #include <doctest/doctest.h>
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include <hilti/base/graph.h>
@@ -22,7 +22,7 @@ TEST_CASE("DirectedGraph") {
     auto e = g.addEdge(n1, n2);
 
     CHECK_EQ(g.nodes().size(), 2);
-    CHECK_EQ(g.nodes(), std::unordered_map<G::NodeId, int>{{n1, 11}, {n2, 22}});
+    CHECK_EQ(g.nodes(), std::map<G::NodeId, int>{{n1, 11}, {n2, 22}});
 
     auto n1_ = g.addNode(11, g.nodes().size() + 1);
     CHECK_EQ(n1, n1_);

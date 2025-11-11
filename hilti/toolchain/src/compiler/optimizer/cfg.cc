@@ -10,9 +10,8 @@
 #include <map>
 #include <optional>
 #include <ranges>
+#include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -79,7 +78,7 @@ namespace hilti::detail::cfg {
 std::deque<GraphNode> CFG::postorder() const {
     std::deque<GraphNode> sorted;
 
-    std::unordered_set<NodeId> visited;
+    std::set<NodeId> visited;
 
     std::function<void(NodeId)> dfs_visit = [&](NodeId node_id) {
         if ( visited.contains(node_id) )
@@ -533,7 +532,7 @@ std::string CFG::dot(bool omit_dataflow) const {
 
     ss << "digraph {\n";
 
-    std::unordered_map<uintptr_t, size_t> node_ids; // Deterministic node ids.
+    std::map<uintptr_t, size_t> node_ids; // Deterministic node ids.
 
     std::vector<GraphNode> sorted_nodes;
     std::transform(_graph.nodes().begin(), _graph.nodes().end(), std::back_inserter(sorted_nodes),
@@ -979,7 +978,7 @@ void CFG::_populateDataflow() {
                 util::detail::internalError(util::fmt(R"(could not determine ID of CFG node "%s")", n->print()));
 
             // Populate the in set.
-            std::unordered_map<Declaration*, std::unordered_set<GraphNode>> new_in;
+            std::map<Declaration*, std::set<GraphNode>> new_in;
             for ( auto& pid : _graph.neighborsUpstream(*id) ) {
                 const auto* p = _graph.getNode(pid);
                 if ( ! p )
@@ -1036,7 +1035,7 @@ void CFG::_populateDataflow() {
             }
 
             // Populate the out set.
-            std::unordered_map<Declaration*, std::unordered_set<GraphNode>> new_out;
+            std::map<Declaration*, std::set<GraphNode>> new_out;
 
             for ( const auto& [decl, g] : transfer.gen )
                 new_out[decl].insert(g);

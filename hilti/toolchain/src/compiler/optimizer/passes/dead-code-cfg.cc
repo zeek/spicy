@@ -13,7 +13,7 @@ namespace {
 struct Mutator : public optimizer::visitor::Mutator {
     using optimizer::visitor::Mutator::Mutator;
 
-    std::unordered_set<Node*> unreachableNodes(const detail::cfg::CFG* cfg) const;
+    std::vector<Node*> unreachableNodes(const detail::cfg::CFG* cfg) const;
 
     std::vector<Node*> unusedStatements(const detail::cfg::CFG* cfg) const;
 
@@ -183,13 +183,16 @@ std::vector<Node*> Mutator::unusedStatements(const detail::cfg::CFG* cfg) const 
     return result;
 }
 
-std::unordered_set<Node*> Mutator::unreachableNodes(const detail::cfg::CFG* cfg) const {
-    std::unordered_set<Node*> result;
+std::vector<Node*> Mutator::unreachableNodes(const detail::cfg::CFG* cfg) const {
+    std::unordered_set<Node*> tmp;
     for ( const auto& [id, n] : cfg->graph().nodes() ) {
         if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg->graph().neighborsUpstream(id).empty() )
-            result.insert(n.value());
+            tmp.insert(n.value());
     }
 
+    // Make sure we return a stable return value.
+    std::vector<Node*> result(tmp.begin(), tmp.end());
+    std::ranges::sort(result, [](Node* a, Node* b) { return a->identity() < b->identity(); });
     return result;
 }
 

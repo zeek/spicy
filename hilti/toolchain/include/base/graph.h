@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <concepts>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <set>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -135,8 +135,8 @@ public:
     std::vector<NodeId> neighborsUpstream(NodeId id) const { return _neighbors(id, Direction::In); }
 
 private:
-    std::unordered_map<NodeId, T> _nodes;                         //< nodes in the graph.
-    std::unordered_map<EdgeId, std::pair<NodeId, NodeId>> _edges; //< edges in the graph.
+    std::map<NodeId, T> _nodes;                         //< nodes in the graph.
+    std::map<EdgeId, std::pair<NodeId, NodeId>> _edges; //< edges in the graph.
 
     /**
      * Edge direction for edge filtering.
