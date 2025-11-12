@@ -186,8 +186,8 @@ std::vector<Node*> Mutator::unusedStatements(const detail::cfg::CFG* cfg) const 
 std::vector<Node*> Mutator::unreachableNodes(const detail::cfg::CFG* cfg) const {
     std::unordered_set<Node*> tmp;
     for ( const auto& [id, n] : cfg->graph().nodes() ) {
-        if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg->graph().neighborsUpstream(id).empty() )
-            tmp.insert(n.value());
+        if ( n.value.value() && ! n.value->isA<detail::cfg::MetaNode>() && n.neighbors_upstream.empty() )
+            tmp.insert(n.value.value());
     }
 
     // Make sure we return a stable return value.
