@@ -943,9 +943,9 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
             else
                 offset = "std::ptrdiff_t{-1}";
 
-            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, %s, %s, %s, %s%s }",
-                                 cxx::ID(f->id()), cg->typeInfo(f->type()), offset, f->isInternal(), f->isAnonymous(),
-                                 ! f->isNoEmit(), accessor));
+            fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, %s, %s, %s, %s%s }", f->id(),
+                                 cg->typeInfo(f->type()), offset, f->isInternal(), f->isAnonymous(), ! f->isNoEmit(),
+                                 accessor));
         }
 
         result = fmt("::hilti::rt::type_info::Struct(std::vector<::hilti::rt::type_info::struct_::Field>({%s}))",
