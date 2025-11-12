@@ -199,7 +199,7 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void populateDataflow(AnalysisResult& result, const ConstantMap& init, declaration::Function* function) {
-        const auto* cfg = state()->cfg(function->function()->body()->as<statement::Block>());
+        const auto* cfg = state()->cfg(function->function()->body());
         assert(cfg);
 
         auto worklist = cfg->postorder();
@@ -263,7 +263,7 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void applyPropagation(declaration::Function* function, const AnalysisResult& result) {
-        const auto* cfg = state()->cfg(function->function()->body()->as<statement::Block>());
+        const auto* cfg = state()->cfg(function->function()->body());
         assert(cfg);
 
         auto* body = function->function()->body();

@@ -174,7 +174,7 @@ void ASTState::updateState(const PassInfo& pinfo) {
                     if ( fmodule != module )
                         continue;
 
-                    if ( auto* body = function->body(); body && _cfgs.erase(body->as<statement::Block>()) )
+                    if ( auto* body = function->body(); body && _cfgs.erase(body) )
                         HILTI_DEBUG(logging::debug::Optimizer,
                                     util::fmt("  * deleting function state: %s (via module %s)", function->id(),
                                               module->id()));

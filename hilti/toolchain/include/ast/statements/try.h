@@ -10,6 +10,7 @@
 #include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
+#include <hilti/ast/statements/block.h>
 #include <hilti/base/logger.h>
 
 namespace hilti::statement {

@@ -9,6 +9,7 @@
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/statement.h>
+#include <hilti/ast/statements/block.h>
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/function.h>
 
@@ -20,11 +21,11 @@ public:
     const auto& id() const { return _id; }
     auto type() const { return child<QualifiedType>(0); }
     auto ftype() const { return child<QualifiedType>(0)->type()->as<type::Function>(); }
-    auto body() const { return child<Statement>(1); }
+    auto body() const { return child<statement::Block>(1); }
     auto attributes() const { return child<AttributeSet>(2); }
     auto isStatic() const { return attributes()->find(hilti::attribute::kind::Static) != nullptr; }
 
-    void setBody(ASTContext* ctx, Statement* b) { setChild(ctx, 1, b); }
+    void setBody(ASTContext* ctx, statement::Block* b) { setChild(ctx, 1, b); }
     void setID(ID id) { _id = std::move(id); }
     void setResultType(ASTContext* ctx, QualifiedType* t) { ftype()->setResultType(ctx, t); }
 
@@ -33,7 +34,7 @@ public:
         return Node::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, const ID& id, type::Function* ftype, Statement* body,
+    static auto create(ASTContext* ctx, const ID& id, type::Function* ftype, statement::Block* body,
                        AttributeSet* attrs = nullptr, const Meta& meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);

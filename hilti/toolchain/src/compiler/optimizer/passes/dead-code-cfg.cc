@@ -81,7 +81,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( ! body )
             return;
 
-        visitStatement(body, state()->cfg(n->function()->body()->as<statement::Block>()));
+        visitStatement(body, state()->cfg(n->function()->body()));
     }
 
     void operator()(declaration::Module* n) override {
