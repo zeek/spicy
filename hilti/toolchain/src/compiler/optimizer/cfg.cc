@@ -7,10 +7,8 @@
 #include <cstdint>
 #include <functional>
 #include <iterator>
-#include <map>
 #include <optional>
 #include <ranges>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -80,7 +78,7 @@ using namespace hilti::detail::optimizer::cfg;
 std::deque<GraphNode> CFG::postorder() const {
     std::deque<GraphNode> sorted;
 
-    std::set<NodeId> visited;
+    std::unordered_set<NodeId> visited;
 
     std::function<void(NodeId)> dfs_visit = [&](NodeId node_id) {
         if ( visited.contains(node_id) )
@@ -133,7 +131,7 @@ CFG::CFG(const Node* root)
     // - `End` nodes with no incoming edges. These can arise if blocks never
     //   flow through their end node, e.g., due to early return.
     while ( true ) {
-        std::set<uintptr_t> dead_ends;
+        std::unordered_set<uintptr_t> dead_ends;
 
         for ( const auto& [id, n] : _graph.nodes() ) {
             if ( n.value->isA<End>() && n.neighbors_upstream.empty() )
@@ -534,7 +532,7 @@ std::string CFG::dot(bool omit_dataflow) const {
 
     ss << "digraph {\n";
 
-    std::map<uintptr_t, size_t> node_ids; // Deterministic node ids.
+    std::unordered_map<uintptr_t, size_t> node_ids; // Deterministic node ids.
 
     std::vector<GraphNode> sorted_nodes;
     std::transform(_graph.nodes().begin(), _graph.nodes().end(), std::back_inserter(sorted_nodes),
@@ -653,7 +651,7 @@ std::string CFG::dot(bool omit_dataflow) const {
     }
 
     // Convert edge set into an ordinary map for deterministic sorting.
-    for ( const auto& [id, e] : std::map(_graph.edges().begin(), _graph.edges().end()) ) {
+    for ( const auto& [id, e] : std::unordered_map(_graph.edges().begin(), _graph.edges().end()) ) {
         const auto& [from_, to_] = e;
         const auto* from = _graph.getNode(from_);
         const auto* to = _graph.getNode(to_);
@@ -980,7 +978,7 @@ void CFG::_populateDataflow() {
                 util::detail::internalError(util::fmt(R"(could not determine ID of CFG node "%s")", n->print()));
 
             // Populate the in set.
-            std::map<Declaration*, std::set<GraphNode>> new_in;
+            std::unordered_map<Declaration*, std::unordered_set<GraphNode>> new_in;
             for ( const auto& pid : _graph.neighborsUpstream(*id) ) {
                 const auto* p = _graph.getNode(pid);
                 if ( ! p )
@@ -1037,7 +1035,7 @@ void CFG::_populateDataflow() {
             }
 
             // Populate the out set.
-            std::map<Declaration*, std::set<GraphNode>> new_out;
+            std::unordered_map<Declaration*, std::unordered_set<GraphNode>> new_out;
 
             for ( const auto& [decl, g] : transfer.gen )
                 new_out[decl].insert(g);

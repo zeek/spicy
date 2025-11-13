@@ -5,11 +5,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include <hilti/ast/all.h>
@@ -130,16 +130,16 @@ void dump(logging::DebugStream stream, ASTRoot* root);
  */
 struct Transfer {
     /** Incoming edges, ordered by declaration they work on. */
-    std::map<Declaration*, std::set<GraphNode>> in;
+    std::unordered_map<Declaration*, std::unordered_set<GraphNode>> in;
 
     /** Outgoing edges, ordered by declaration they work on. */
-    std::map<Declaration*, std::set<GraphNode>> out;
+    std::unordered_map<Declaration*, std::unordered_set<GraphNode>> out;
 
     /** The previous nodes killed by this node. */
-    std::map<Declaration*, std::set<GraphNode>> kill;
+    std::unordered_map<Declaration*, std::unordered_set<GraphNode>> kill;
 
     /** Set of declarations this node may alias. */
-    std::set<Declaration*> maybe_alias;
+    std::unordered_set<Declaration*> maybe_alias;
 
     /**
      * Declarations this graph node generates updates for.
@@ -147,13 +147,13 @@ struct Transfer {
      * For each updated declaration we return the graph node were this value
      * was last updated.
      */
-    std::map<Declaration*, GraphNode> gen;
+    std::unordered_map<Declaration*, GraphNode> gen;
 
     /** Set of declaration this node reads. */
-    std::set<Declaration*> read;
+    std::unordered_set<Declaration*> read;
 
     /** Set of declaration this node writes. */
-    std::set<Declaration*> write;
+    std::unordered_set<Declaration*> write;
 
     /**
      * Whether this node has side effects not modelled
@@ -255,8 +255,9 @@ private:
 
     Graph _graph;
 
-    std::set<std::unique_ptr<cfg::MetaNode>> _meta_nodes;
-    std::map<cfg::GraphNode, cfg::Transfer> _dataflow;
+    std::unordered_set<std::unique_ptr<cfg::MetaNode>> _meta_nodes;
+    std::map<cfg::GraphNode, cfg::Transfer>
+        _dataflow; // TODO: If we use an unordered_map here we get nondeterministic, and incorrect, behaviour
     cfg::GraphNode _begin;
     cfg::GraphNode _end;
 };
