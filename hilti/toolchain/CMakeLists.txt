@@ -119,6 +119,7 @@ set(SOURCES
     src/compiler/optimizer/passes/dead-code-cfg.cc
     src/compiler/optimizer/passes/dead-code-static.cc
     src/compiler/optimizer/passes/feature-requirements.cc
+    src/compiler/optimizer/passes/flatten-blocks.cc
     src/compiler/optimizer/passes/peephole.cc
     src/compiler/optimizer/passes/remove-unused-params.cc
     src/compiler/parser/driver.cc

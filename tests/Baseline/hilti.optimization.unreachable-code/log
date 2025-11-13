@@ -11,6 +11,8 @@
 [debug/optimizer]       - deleting function state: bar
 [debug/optimizer]       - deleting function state: foo
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: bar
 [debug/optimizer]     * function changed: foo
 [debug/optimizer]     -> modified
