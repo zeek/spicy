@@ -73,7 +73,9 @@
 #include <hilti/hilti/ast/types/stream.h>
 #include <hilti/hilti/ast/types/vector.h>
 
-namespace hilti::detail::cfg {
+using namespace hilti;
+using namespace hilti::detail::optimizer;
+using namespace hilti::detail::optimizer::cfg;
 
 std::deque<GraphNode> CFG::postorder() const {
     std::deque<GraphNode> sorted;
@@ -512,7 +514,7 @@ void CFG::_addEdge(const GraphNode& from, const GraphNode& to) {
 }
 
 // TODO: Is this reliable?
-void detail::cfg::CFG::removeNode(Node* node) {
+void CFG::removeNode(Node* node) {
     auto id = node->identity();
 
     const auto& out = _graph.neighborsDownstream(id);
@@ -979,7 +981,7 @@ void CFG::_populateDataflow() {
 
             // Populate the in set.
             std::map<Declaration*, std::set<GraphNode>> new_in;
-            for ( auto& pid : _graph.neighborsUpstream(*id) ) {
+            for ( const auto& pid : _graph.neighborsUpstream(*id) ) {
                 const auto* p = _graph.getNode(pid);
                 if ( ! p )
                     util::detail::internalError(util::fmt(R"(CFG node "%s" is unknown)", pid));
@@ -1063,7 +1065,7 @@ void CFG::_populateDataflow() {
 
 // Helper function to output control flow graphs for statements.
 static std::string dataflowDot(const hilti::Statement& stmt) {
-    auto cfg = hilti::detail::cfg::CFG(&stmt);
+    auto cfg = CFG(&stmt);
 
     auto omit_dataflow = false;
     if ( const auto& env = rt::getenv("HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW") )
@@ -1090,9 +1092,7 @@ public:
     }
 };
 
-void dump(logging::DebugStream stream, ASTRoot* root) {
+void cfg::dump(logging::DebugStream stream, ASTRoot* root) {
     auto v = PrintCfgVisitor(std::move(stream));
     visitor::visit(v, root);
 }
-
-} // namespace hilti::detail::cfg

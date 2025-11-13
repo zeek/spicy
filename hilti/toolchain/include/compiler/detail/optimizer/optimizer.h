@@ -45,7 +45,7 @@ public:
     void updateState(const optimizer::PassInfo& pinfo);
     void checkState(const optimizer::PassInfo& pinfo);
 
-    cfg::CFG* cfg(statement::Block* block);
+    CFG* cfg(statement::Block* block);
 
 private:
     void _normalizeModificationState();
@@ -58,7 +58,7 @@ private:
         _modified_functions; // mapping function to its containing module
     std::unordered_set<declaration::Module*> _modified_modules;
 
-    std::unordered_map<statement::Block*, std::unique_ptr<cfg::CFG>> _cfgs;
+    std::unordered_map<statement::Block*, std::unique_ptr<CFG>> _cfgs;
 };
 
 enum class Requirements : uint16_t {

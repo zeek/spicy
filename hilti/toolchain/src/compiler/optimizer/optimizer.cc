@@ -19,13 +19,13 @@ using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
 
-cfg::CFG* ASTState::cfg(statement::Block* block) {
+CFG* ASTState::cfg(statement::Block* block) {
     assert(block);
 
     if ( auto it = _cfgs.find(block); it != _cfgs.end() )
         return it->second.get();
     else
-        return _cfgs.emplace(block, std::make_unique<cfg::CFG>(block)).first->second.get();
+        return _cfgs.emplace(block, std::make_unique<CFG>(block)).first->second.get();
 }
 
 void ASTState::functionChanged(hilti::Function* function) {
@@ -238,9 +238,9 @@ void ASTState::checkState(const PassInfo& pinfo) {
             continue; // block no longer part of AST
 
         auto actual = cfg->dot(false);
-        auto expected = cfg::CFG(block).dot(false);
+        auto expected = CFG(block).dot(false);
 
-        auto expected2 = cfg::CFG(block).dot(false);
+        auto expected2 = CFG(block).dot(false);
 
         if ( expected != expected2 ) {
             // This should never trigger.

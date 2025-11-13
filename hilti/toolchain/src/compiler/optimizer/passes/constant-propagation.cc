@@ -7,6 +7,7 @@
 
 using namespace hilti;
 using namespace hilti::detail;
+using namespace hilti::detail::optimizer;
 
 namespace {
 
@@ -27,19 +28,19 @@ struct ConstantValue {
 using ConstantMap = std::map<Declaration*, ConstantValue>;
 
 struct AnalysisResult {
-    std::map<detail::cfg::GraphNode, ConstantMap> in;
-    std::map<detail::cfg::GraphNode, ConstantMap> out;
+    std::map<detail::optimizer::cfg::GraphNode, ConstantMap> in;
+    std::map<detail::optimizer::cfg::GraphNode, ConstantMap> out;
 };
 
 struct Replacer : optimizer::visitor::Mutator {
-    Replacer(Optimizer* optimizer, const cfg::CFG* cfg, const AnalysisResult& result)
+    Replacer(Optimizer* optimizer, const CFG* cfg, const AnalysisResult& result)
         : optimizer::visitor::Mutator(optimizer), cfg(cfg), result(result) {}
 
-    const cfg::CFG* cfg;
+    const CFG* cfg;
     const AnalysisResult& result;
 
     // Helper to find the CFG node for an AST node.
-    const detail::cfg::GraphNode* findCFGNode(Node* n) {
+    const detail::optimizer::cfg::GraphNode* findCFGNode(Node* n) {
         for ( auto* p = n; p; p = p->parent() ) {
             if ( const auto* graph_node = cfg->graph().getNode(p->identity()) )
                 return graph_node;
@@ -193,7 +194,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
     std::map<Node*, AnalysisResult> analysis_results;
 
-    void transfer(const detail::cfg::GraphNode& n, ConstantMap& new_out) {
+    void transfer(const detail::optimizer::cfg::GraphNode& n, ConstantMap& new_out) {
         TransferVisitor tv(optimizer(), &new_out);
         hilti::visitor::visit(tv, n.value());
     }

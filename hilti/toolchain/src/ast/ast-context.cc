@@ -790,7 +790,7 @@ Result<Nothing> ASTContext::_transform(Builder* builder, const Plugin& plugin) {
 
 Result<Nothing> ASTContext::_optimize(Builder* builder) {
     if ( logger().isEnabled(logging::debug::CfgInitial) )
-        hilti::detail::cfg::dump(logging::debug::CfgInitial, _root);
+        hilti::detail::optimizer::cfg::dump(logging::debug::CfgInitial, _root);
 
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
@@ -799,7 +799,7 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
         return rc;
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )
-        hilti::detail::cfg::dump(logging::debug::CfgFinal, _root);
+        hilti::detail::optimizer::cfg::dump(logging::debug::CfgFinal, _root);
 
     // Make sure we didn't leave anything odd during optimization.
     // TODO: Move consistency checks into the optimizer itself.

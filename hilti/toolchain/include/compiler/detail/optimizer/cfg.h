@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -26,7 +25,7 @@ constexpr Tag End = 20002;
 constexpr Tag Flow = 20003;
 } // namespace node::tag
 
-namespace detail::cfg {
+namespace detail::optimizer::cfg {
 
 /**
  * A "meta" node in a CFG.
@@ -109,20 +108,22 @@ private:
     Node* _node = nullptr;
 };
 
-/** Prints out the dot representation of the CFG to a debug stream. */
-void dump(logging::DebugStream stream, ASTRoot* root);
 
-} // namespace detail::cfg
+} // namespace detail::optimizer::cfg
+
 } // namespace hilti
-
 namespace std {
 template<>
-struct hash<hilti::detail::cfg::GraphNode> {
-    auto operator()(const hilti::detail::cfg::GraphNode& n) const { return n.value() ? n->identity() : 0; }
+struct hash<hilti::detail::optimizer::cfg::GraphNode> {
+    auto operator()(const hilti::detail::optimizer::cfg::GraphNode& n) const { return n.value() ? n->identity() : 0; }
 };
 } // namespace std
 
-namespace hilti::detail::cfg {
+namespace hilti::detail::optimizer {
+
+namespace cfg {
+/** Prints out the dot representation of the CFG to a debug stream. */
+void dump(logging::DebugStream stream, ASTRoot* root);
 
 /**
  * Dataflow facts about a node.
@@ -161,6 +162,8 @@ struct Transfer {
     bool keep = false;
 };
 
+} // namespace cfg
+
 /**
  * Infrastructure to compute control and dataflow facts about a AST (sub)tree.
  */
@@ -169,7 +172,7 @@ public:
     using NodeId = uint64_t;
 
     /** The underlying graph. */
-    using Graph = util::graph::DirectedGraph<GraphNode, NodeId>;
+    using Graph = util::graph::DirectedGraph<cfg::GraphNode, NodeId>;
 
     /**
      * Construct a new CFG.
@@ -208,28 +211,28 @@ public:
      * Sorts the graph in postorder, from the beginning node. Any nodes that are
      * unreachable downstream from the beginning node are excluded.
      */
-    std::deque<GraphNode> postorder() const;
+    std::deque<cfg::GraphNode> postorder() const;
 
 private:
-    GraphNode _getOrAddNode(GraphNode n);
-    void _addEdge(const GraphNode& from, const GraphNode& to);
+    cfg::GraphNode _getOrAddNode(cfg::GraphNode n);
+    void _addEdge(const cfg::GraphNode& from, const cfg::GraphNode& to);
     void _populateDataflow();
 
-    GraphNode _addBlock(GraphNode predecessor, const Nodes& stmts, const Node* scope);
-    GraphNode _addFor(GraphNode predecessor, const statement::For& for_);
-    GraphNode _addWhile(GraphNode predecessor, const statement::While& while_, GraphNode scope_end);
-    GraphNode _addIf(GraphNode predecessor, const statement::If& if_);
-    GraphNode _addSwitch(GraphNode predecessor, const statement::Switch& switch_);
-    GraphNode _addTryCatch(GraphNode predecessor, const statement::Try& try_);
-    GraphNode _addReturn(GraphNode predecessor, const statement::Return& return_);
-    GraphNode _addThrow(GraphNode predecessor, statement::Throw& throw_, GraphNode scope_end);
-    GraphNode _addCall(GraphNode predecessor, operator_::function::Call& call);
+    cfg::GraphNode _addBlock(cfg::GraphNode predecessor, const Nodes& stmts, const Node* scope);
+    cfg::GraphNode _addFor(cfg::GraphNode predecessor, const statement::For& for_);
+    cfg::GraphNode _addWhile(cfg::GraphNode predecessor, const statement::While& while_, cfg::GraphNode scope_end);
+    cfg::GraphNode _addIf(cfg::GraphNode predecessor, const statement::If& if_);
+    cfg::GraphNode _addSwitch(cfg::GraphNode predecessor, const statement::Switch& switch_);
+    cfg::GraphNode _addTryCatch(cfg::GraphNode predecessor, const statement::Try& try_);
+    cfg::GraphNode _addReturn(cfg::GraphNode predecessor, const statement::Return& return_);
+    cfg::GraphNode _addThrow(cfg::GraphNode predecessor, statement::Throw& throw_, cfg::GraphNode scope_end);
+    cfg::GraphNode _addCall(cfg::GraphNode predecessor, operator_::function::Call& call);
 
     // Add flow for globals if `root` corresponds to a global module block.
-    GraphNode _addGlobals(GraphNode predecessor, const Node& root);
+    cfg::GraphNode _addGlobals(cfg::GraphNode predecessor, const Node& root);
 
     // Add flow for function parameters if `root` corresponds to a function body.
-    GraphNode _addParameters(GraphNode predecessor, const Node& root);
+    cfg::GraphNode _addParameters(cfg::GraphNode predecessor, const Node& root);
 
     /**
      * Add a new `MetaNode` to the graph.
@@ -241,8 +244,8 @@ private:
      * @return a pointer to the added meta node
      */
     template<typename T, typename... Args>
-    MetaNode* _createMetaNode(Args... args)
-        requires(std::is_base_of_v<MetaNode, T>)
+    cfg::MetaNode* _createMetaNode(Args... args)
+        requires(std::is_base_of_v<cfg::MetaNode, T>)
     {
         auto n = std::make_unique<T>(args...);
         auto* r = n.get();
@@ -252,10 +255,10 @@ private:
 
     Graph _graph;
 
-    std::set<std::unique_ptr<MetaNode>> _meta_nodes;
-    std::map<GraphNode, Transfer> _dataflow;
-    GraphNode _begin;
-    GraphNode _end;
+    std::set<std::unique_ptr<cfg::MetaNode>> _meta_nodes;
+    std::map<cfg::GraphNode, cfg::Transfer> _dataflow;
+    cfg::GraphNode _begin;
+    cfg::GraphNode _end;
 };
 
-} // namespace hilti::detail::cfg
+} // namespace hilti::detail::optimizer
