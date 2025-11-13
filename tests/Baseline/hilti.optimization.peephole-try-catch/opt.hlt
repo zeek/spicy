@@ -3,9 +3,7 @@ module Test {
 
 
 public function void foo() {
-    
-        assert True;
-
+    assert True;
 }
 
 }

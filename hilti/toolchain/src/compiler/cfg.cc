@@ -104,8 +104,7 @@ std::deque<GraphNode> CFG::postorder() const {
     return sorted;
 }
 
-// Helper function to check whether some `inner` node is a child of an `outer` node.
-static bool contains(const Node& outer, const Node& inner) {
+bool cfg::contains(const Node& outer, const Node& inner) {
     const auto* n = &inner;
 
     do {

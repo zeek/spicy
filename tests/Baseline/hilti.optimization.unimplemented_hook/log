@@ -27,6 +27,7 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved,scopes-built,types-unified>
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]     * computed CFGs
+[debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
@@ -46,11 +47,13 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting module state: Foo
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)

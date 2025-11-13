@@ -50,6 +50,7 @@ digraph {
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)

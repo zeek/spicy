@@ -16,6 +16,7 @@ enum PassID {
     FeatureRequirements,
     DeadCodeStatic,
     Peephole,
+    FlattenBlocks,
     DeadCodeCFG,
     ConstantPropagation,
     RemoveUnusedParameters,
@@ -29,6 +30,7 @@ constexpr util::enum_::Value<PassID> PassIDs[] = {
     {.value = PassID::DeadCodeCFG, .name = "dead-code-cfg"},
     {.value = PassID::ConstantPropagation, .name = "constant-propagation"},
     {.value = PassID::RemoveUnusedParameters, .name = "remove-unused-parameters"},
+    {.value = PassID::FlattenBlocks, .name = "flatten-blocks"},
 };
 }
 
