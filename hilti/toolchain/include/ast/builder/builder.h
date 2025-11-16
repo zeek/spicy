@@ -165,7 +165,7 @@ public:
         return declarationFunction(f, linkage, m);
     }
 
-    auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params, Statement* body,
+    auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params, statement::Block* body,
                   type::function::Flavor flavor = type::function::Flavor::Function,
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   type::function::CallingConvention cc = type::function::CallingConvention::Standard,

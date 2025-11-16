@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -10,6 +9,7 @@
 #include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/statement.h>
+#include <hilti/ast/statements/block.h>
 #include <hilti/base/logger.h>
 
 namespace hilti::statement {

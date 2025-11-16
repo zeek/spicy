@@ -627,8 +627,9 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
 
 hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
                                                    declaration::hook::Type type, bool debug,
-                                                   hilti::type::function::Parameters params, Statement* body,
-                                                   Expression* priority, const hilti::Meta& meta) {
+                                                   hilti::type::function::Parameters params,
+                                                   hilti::statement::Block* body, Expression* priority,
+                                                   const hilti::Meta& meta) {
     if ( debug && ! options().debug )
         return {};
 
