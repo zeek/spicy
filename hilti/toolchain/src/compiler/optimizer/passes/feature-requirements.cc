@@ -3,16 +3,17 @@
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/base/logger.h>
-#include <hilti/compiler/detail/optimizer/optimizer.h>
+#include <hilti/compiler/detail/optimizer/pass.h>
 
 using namespace hilti;
-using namespace hilti::detail::optimizer;
+using namespace hilti::detail;
 
-// This visitor collects requirement attributes in the AST and toggles unused features.
-class FeatureRequirementsVisitor : public OptimizerVisitor {
-public:
-    using OptimizerVisitor::OptimizerVisitor;
-    using OptimizerVisitor::operator();
+namespace {
+
+// This visitor collects requirement attributes in the AST, determining which
+// ones are in use across code.
+struct Collector : public optimizer::visitor::Collector {
+    using optimizer::visitor::Collector::Collector;
 
     // Lookup table for feature name -> required.
     using Features = std::map<std::string, bool>;
@@ -20,238 +21,33 @@ public:
     // Lookup table for typename -> features.
     std::map<ID, Features> features;
 
-    enum class Stage { COLLECT, TRANSFORM };
-    Stage stage = Stage::COLLECT;
-
-    void collect(Node* node) override {
-        stage = Stage::COLLECT;
-
-        visitor::visit(*this, node);
-
-        if ( logger().isEnabled(logging::debug::OptimizerCollect) ) {
-            HILTI_DEBUG(logging::debug::OptimizerCollect, "feature requirements:");
-            for ( const auto& [id, features] : features ) {
-                std::stringstream ss;
-                ss << "    " << id << ':';
-                for ( const auto& [feature, enabled] : features )
-                    ss << util::fmt(" %s=%d", feature, enabled);
-                HILTI_DEBUG(logging::debug::OptimizerCollect, ss.str());
-            }
-        }
-    }
-
-    void transform(Node* node) override {
-        stage = Stage::TRANSFORM;
-        visitor::visit(*this, node);
-    }
-
-    void operator()(declaration::Constant* n) final {
-        const auto& id = n->id();
-
-        // We only work on feature flags.
-        if ( ! isFeatureFlag(id) )
+    void done() final {
+        if ( ! logger().isEnabled(logging::debug::OptimizerPasses) )
             return;
 
-        const auto& id_feature = idFeatureFromConstant(n->id());
-        if ( ! id_feature )
-            return;
+        HILTI_DEBUG(logging::debug::OptimizerPasses, "Feature requirements:");
 
-        const auto& [type_id, feature] = *id_feature;
+        for ( const auto& [id, features] : features ) {
+            std::stringstream ss;
+            ss << "    " << id << ':';
+            for ( const auto& [feature, enabled] : features )
+                ss << util::fmt(" %s=%d", feature, enabled);
 
-        switch ( stage ) {
-            case Stage::COLLECT: {
-                // Record the feature as unused for the type if it was not already recorded.
-                features[type_id].insert({feature, false});
-                break;
-            }
-
-            case Stage::TRANSFORM: {
-                const auto required = features.at(type_id).at(feature);
-                const auto value = n->value()->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value();
-
-                if ( required != value ) {
-                    n->setValue(builder()->context(), builder()->bool_(false));
-                    recordChange(n, util::fmt("disabled feature '%s' of type '%s' since it is not used", feature,
-                                              type_id));
-                }
-
-                break;
-            }
+            HILTI_DEBUG(logging::debug::OptimizerPasses, ss.str());
         }
     }
 
-    void operator()(operator_::function::Call* n) final {
-        switch ( stage ) {
-            case Stage::COLLECT: {
-                // Collect parameter requirements from the declaration of the called function.
-                std::vector<std::set<std::string>> requirements;
-
-                auto* rid = n->op0()->tryAs<expression::Name>();
-                if ( ! rid )
-                    return;
-
-                auto* decl = rid->resolvedDeclaration();
-                if ( ! decl )
-                    return;
-
-                const auto& fn = decl->tryAs<declaration::Function>();
-                if ( ! fn )
-                    return;
-
-                for ( const auto& parameter : fn->function()->ftype()->parameters() ) {
-                    // The requirements of this parameter.
-                    std::set<std::string> reqs;
-
-                    for ( const auto& requirement :
-                          parameter->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
-                        auto feature = *requirement->valueAsString();
-                        reqs.insert(std::move(feature));
-                    }
-
-                    requirements.push_back(std::move(reqs));
-                }
-
-                const auto ignored_features = conditionalFeatures(n);
-
-                // Collect the types of parameters from the actual arguments.
-                // We cannot get this information from the declaration since it
-                // might use `any` types. Correlate this with the requirement
-                // information collected previously and update the global list
-                // of feature requirements.
-                std::size_t i = 0;
-                for ( const auto& arg : n->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value() ) {
-                    // Instead of applying the type requirement only to the
-                    // potentially unref'd passed value's type, we also apply
-                    // it to the element type of list args. Since this
-                    // optimizer pass removes code worst case this could lead
-                    // to us optimizing less.
-                    auto* type = innermostType(arg->type());
-
-                    // Ignore arguments types without type ID (e.g., builtin types).
-                    const auto& type_id = type->type()->typeID();
-                    if ( ! type_id ) {
-                        ++i;
-                        continue;
-                    }
-
-                    for ( const auto& requirement : requirements[i] ) {
-                        if ( ! ignored_features.contains(type_id) ||
-                             ! ignored_features.at(type_id).contains(requirement) )
-                            // Enable the required feature.
-                            features[type_id][requirement] = true;
-                    }
-
-                    ++i;
-                }
-            }
-
-            case Stage::TRANSFORM: {
-                // Nothing.
-                break;
-            }
-        }
-    }
-
-    void operator()(operator_::struct_::MemberCall* n) final {
-        switch ( stage ) {
-            case Stage::COLLECT: {
-                auto* type = n->op0()->type();
-                while ( type->type()->isReferenceType() )
-                    type = type->type()->dereferencedType();
-
-                auto* const struct_ = type->type()->tryAs<type::Struct>();
-                if ( ! struct_ )
-                    break;
-
-                const auto& member = n->op1()->as<expression::Member>();
-
-                auto* const field = struct_->field(member->id());
-                if ( ! field )
-                    break;
-
-                const auto ignored_features = conditionalFeatures(n);
-
-                // Check if access to the field has type requirements.
-                if ( auto type_id = type->type()->typeID() )
-                    for ( const auto& requirement :
-                          field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
-                        const auto feature = *requirement->valueAsString();
-                        if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
-                            // Enable the required feature.
-                            features[type_id][*requirement->valueAsString()] = true;
-                    }
-
-                // Check if call imposes requirements on any of the types of the arguments.
-                const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
-                assert(op.declaration());
-                auto* ftype = op.declaration()->type()->type()->as<type::Function>();
-
-                const auto parameters = ftype->parameters();
-                if ( parameters.empty() )
-                    break;
-
-                const auto& args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
-
-                for ( size_t i = 0; i < parameters.size(); ++i ) {
-                    // Since the declaration might use `any` types, get the
-                    // type of the parameter from the passed argument.
-
-                    // Instead of applying the type requirement only to the
-                    // potentially unref'd passed value's type, we also apply
-                    // it to the element type of list args. Since this
-                    // optimizer pass removes code worst case this could lead
-                    // to us optimizing less.
-                    auto* const type = innermostType(args[i]->type());
-                    const auto& param = parameters[i];
-
-                    if ( auto type_id = type->type()->typeID() )
-                        for ( const auto& requirement :
-                              param->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
-                            const auto feature = *requirement->valueAsString();
-                            if ( ! ignored_features.contains(type_id) ||
-                                 ! ignored_features.at(type_id).contains(feature) ) {
-                                // Enable the required feature.
-                                features[type_id][feature] = true;
-                            }
-                        }
-                }
-
-                break;
-            }
-            case Stage::TRANSFORM:
-                // Nothing.
-                break;
-        }
-    }
-
-    // Helper function to compute all feature flags participating in an
+    // Helper function to compute all feature flags participating in a
     // condition. Feature flags are always combined with logical `or`.
-    static void featureFlagsFromCondition(Expression* condition, std::map<ID, std::set<std::string>>& result) {
-        // Helper to extract `(ID, feature)` from a feature constant.
-        auto id_feature_from_constant = [](const ID& feature_constant) -> std::optional<std::pair<ID, std::string>> {
-            // Split away the module part of the resolved ID.
-            auto id = util::split1(feature_constant, "::").second;
-
-            if ( ! util::startsWith(id, "__feat") )
-                return {};
-
-            const auto& tokens = util::split(std::move(id), "%");
-            assert(tokens.size() == 3);
-
-            auto type_id = ID(util::replace(tokens[1], "@@", "::"));
-            const auto& feature = tokens[2];
-
-            return {{type_id, feature}};
-        };
-
-        if ( auto* rid = condition->tryAs<expression::Name>() ) {
-            if ( auto id_feature = id_feature_from_constant(rid->id()) )
-                result[std::move(id_feature->first)].insert(std::move(id_feature->second));
+    static void featureFlagsFromCondition(Expression* condition, std::map<ID, std::set<std::string>>* result) {
+        if ( const auto* rid = condition->tryAs<expression::Name>() ) {
+            if ( auto id_feature = Optimizer::idFeatureFromConstant(rid->id()) )
+                (*result)[std::move(id_feature->first)].insert(std::move(id_feature->second));
         }
 
         // If we did not find a feature constant in the conditional, we
         // could also be dealing with a `OR` of feature constants.
-        else if ( auto* or_ = condition->tryAs<expression::LogicalOr>() ) {
+        else if ( const auto* or_ = condition->tryAs<expression::LogicalOr>() ) {
             featureFlagsFromCondition(or_->op0(), result);
             featureFlagsFromCondition(or_->op1(), result);
         }
@@ -268,61 +64,184 @@ public:
                 if ( ! condition )
                     continue;
 
-                featureFlagsFromCondition(condition, result);
+                featureFlagsFromCondition(condition, &result);
             }
 
-            else if ( const auto& ternary = parent->tryAs<expression::Ternary>() ) {
-                featureFlagsFromCondition(ternary->condition(), result);
-            }
+            else if ( const auto& ternary = parent->tryAs<expression::Ternary>() )
+                featureFlagsFromCondition(ternary->condition(), &result);
         }
 
         return result;
     }
 
-    void handleMemberAccess(expression::ResolvedOperator* x) {
-        switch ( stage ) {
-            case Stage::COLLECT: {
-                auto* type_ = x->op0()->type();
-                while ( type_->type()->isReferenceType() )
-                    type_ = type_->type()->dereferencedType();
+    void operator()(declaration::Constant* n) final {
+        const auto& id_feature = hilti::detail::Optimizer::idFeatureFromConstant(n->id());
+        if ( ! id_feature )
+            return;
 
-                auto type_id = type_->type()->typeID();
-                if ( ! type_id )
-                    return;
+        const auto& [type_id, feature] = *id_feature;
 
-                auto* member = x->op1()->tryAs<expression::Member>();
-                if ( ! member )
-                    return;
+        // Record the feature as unused for the type if it was not already recorded.
+        features[type_id].insert({feature, false});
+    }
 
-                auto lookup = scope::lookupID<declaration::Type>(type_id, x, "type");
-                if ( ! lookup )
-                    return;
+    void operator()(operator_::function::Call* n) final {
+        // Collect parameter requirements from the declaration of the called function.
+        std::vector<std::set<std::string>> requirements;
 
-                auto* type = lookup->first->template as<declaration::Type>();
-                auto* struct_ = type->type()->type()->template tryAs<type::Struct>();
-                if ( ! struct_ )
-                    return;
+        const auto* rid = n->op0()->tryAs<expression::Name>();
+        if ( ! rid )
+            return;
 
-                auto* field = struct_->field(member->id());
-                if ( ! field )
-                    return;
+        const auto* decl = rid->resolvedDeclaration();
+        if ( ! decl )
+            return;
 
-                const auto ignored_features = conditionalFeatures(x);
+        const auto& fn = decl->tryAs<declaration::Function>();
+        if ( ! fn )
+            return;
 
+        for ( const auto& parameter : fn->function()->ftype()->parameters() ) {
+            // The requirements of this parameter.
+            std::set<std::string> reqs;
+
+            for ( const auto& requirement :
+                  parameter->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
+                auto feature = *requirement->valueAsString();
+                reqs.insert(std::move(feature));
+            }
+
+            requirements.push_back(std::move(reqs));
+        }
+
+        const auto ignored_features = conditionalFeatures(n);
+
+        // Collect the types of parameters from the actual arguments.
+        // We cannot get this information from the declaration since it
+        // might use `any` types. Correlate this with the requirement
+        // information collected previously and update the global list
+        // of feature requirements.
+        std::size_t i = 0;
+        for ( const auto& arg : n->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value() ) {
+            // Instead of applying the type requirement only to the
+            // potentially unref'd passed value's type, we also apply
+            // it to the element type of list args. Since this
+            // optimizer pass removes code worst case this could lead
+            // to us optimizing less.
+            const auto* type = Optimizer::innermostType(arg->type());
+
+            // Ignore arguments types without type ID (e.g., builtin types).
+            const auto& type_id = type->type()->typeID();
+            if ( ! type_id ) {
+                ++i;
+                continue;
+            }
+
+            for ( const auto& requirement : requirements[i] ) {
+                if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(requirement) )
+                    // Enable the required feature.
+                    features[type_id][requirement] = true;
+            }
+
+            ++i;
+        }
+    }
+
+    void operator()(operator_::struct_::MemberCall* n) final {
+        const auto* type = n->op0()->type();
+        while ( type->type()->isReferenceType() )
+            type = type->type()->dereferencedType();
+
+        const auto* const struct_ = type->type()->tryAs<type::Struct>();
+        if ( ! struct_ )
+            return;
+
+        const auto& member = n->op1()->as<expression::Member>();
+
+        const auto* const field = struct_->field(member->id());
+        if ( ! field )
+            return;
+
+        const auto ignored_features = conditionalFeatures(n);
+
+        // Check if access to the field has type requirements.
+        if ( auto type_id = type->type()->typeID() )
+            for ( const auto& requirement : field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
+                const auto feature = *requirement->valueAsString();
+                if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
+                    // Enable the required feature.
+                    features[type_id][*requirement->valueAsString()] = true;
+            }
+
+        // Check if call imposes requirements on any of the types of the arguments.
+        const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
+        assert(op.declaration());
+        const auto* ftype = op.declaration()->type()->type()->as<type::Function>();
+
+        const auto parameters = ftype->parameters();
+        if ( parameters.empty() )
+            return;
+
+        const auto& args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+
+        for ( size_t i = 0; i < parameters.size(); ++i ) {
+            // Since the declaration might use `any` types, get the
+            // type of the parameter from the passed argument.
+
+            // Instead of applying the type requirement only to the
+            // potentially unref'd passed value's type, we also apply
+            // it to the element type of list args. Since this
+            // optimizer pass removes code worst case this could lead
+            // to us optimizing less.
+            const auto* const type = Optimizer::innermostType(args[i]->type());
+            const auto& param = parameters[i];
+
+            if ( auto type_id = type->type()->typeID() )
                 for ( const auto& requirement :
-                      field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
+                      param->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
                     const auto feature = *requirement->valueAsString();
-
-                    // Enable the required feature if it is not ignored here.
                     if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
+                        // Enable the required feature.
                         features[type_id][feature] = true;
                 }
+        }
+    }
 
-                break;
-            }
-            case Stage::TRANSFORM:
-                // Nothing.
-                break;
+    // Helper handling both const and non-const struct member access.
+    void handleMemberAccess(expression::ResolvedOperator* x) {
+        const auto* type_ = x->op0()->type();
+        while ( type_->type()->isReferenceType() )
+            type_ = type_->type()->dereferencedType();
+
+        auto type_id = type_->type()->typeID();
+        if ( ! type_id )
+            return;
+
+        const auto* member = x->op1()->tryAs<expression::Member>();
+        if ( ! member )
+            return;
+
+        auto lookup = scope::lookupID<declaration::Type>(type_id, x, "type");
+        if ( ! lookup )
+            return;
+
+        const auto* type = lookup->first->template as<declaration::Type>();
+        const auto* struct_ = type->type()->type()->template tryAs<type::Struct>();
+        if ( ! struct_ )
+            return;
+
+        const auto* field = struct_->field(member->id());
+        if ( ! field )
+            return;
+
+        const auto ignored_features = conditionalFeatures(x);
+
+        for ( const auto& requirement : field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
+            const auto feature = *requirement->valueAsString();
+
+            // Enable the required feature if it is not ignored here.
+            if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
+                features[type_id][feature] = true;
         }
     }
 
@@ -330,42 +249,69 @@ public:
     void operator()(operator_::struct_::MemberNonConst* n) final { handleMemberAccess(n); }
 
     void operator()(declaration::Type* n) final {
-        switch ( stage ) {
-            case Stage::COLLECT: {
-                // Collect feature requirements associated with type.
-                for ( const auto& requirement : n->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) )
-                    features[n->typeID()][*requirement->valueAsString()] = true;
-
-                break;
-            }
-
-            case Stage::TRANSFORM: {
-                if ( ! features.contains(n->fullyQualifiedID()) )
-                    break;
-
-                // Add type comment documenting enabled features.
-                auto meta = n->meta();
-                auto comments = meta.comments();
-
-                if ( auto enabled_features = util::filter(features.at(n->fullyQualifiedID()),
-                                                          [](const auto& feature) { return feature.second; });
-                     ! enabled_features.empty() ) {
-                    comments.push_back(util::fmt("Type %s supports the following features:", n->id()));
-                    for ( const auto& feature : enabled_features )
-                        comments.push_back(util::fmt("    - %s", feature.first));
-                }
-
-                meta.setComments(std::move(comments));
-                n->setMeta(std::move(meta));
-                break;
-            }
-        }
+        // Collect feature requirements associated with type.
+        for ( const auto& requirement : n->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) )
+            features[n->typeID()][*requirement->valueAsString()] = true;
     }
 };
 
-static RegisterPass constant_folder(
-    "feature-requirements",
-    {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-         return std::make_unique<FeatureRequirementsVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-     },
-     0});
+struct Mutator : public optimizer::visitor::Mutator {
+    Mutator(Optimizer* optimizer, const Collector* collector)
+        : optimizer::visitor::Mutator(optimizer), collector(collector) {}
+
+    const Collector* collector = nullptr;
+
+    void operator()(declaration::Constant* n) final {
+        const auto& id_feature = Optimizer::idFeatureFromConstant(n->id());
+        if ( ! id_feature )
+            return;
+
+        const auto& [type_id, feature] = *id_feature;
+
+        const auto required = collector->features.at(type_id).at(feature);
+        const auto value = n->value()->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value();
+
+        if ( ! required && value ) {
+            recordChange(n, util::fmt("disabling feature '%s' of type '%s' since it is not used", feature, type_id));
+            n->setValue(context(), builder()->bool_(false));
+        }
+    }
+
+    void operator()(declaration::Type* n) final {
+        if ( ! collector->features.contains(n->fullyQualifiedID()) )
+            return;
+
+        // Add type comment documenting enabled features.
+        auto meta = n->meta();
+        auto comments = meta.comments();
+
+        if ( auto enabled_features = util::filter(collector->features.at(n->fullyQualifiedID()),
+                                                  [](const auto& feature) { return feature.second; });
+             ! enabled_features.empty() ) {
+            comments.push_back(util::fmt("Type %s supports the following features:", n->id()));
+            for ( const auto& feature : enabled_features )
+                comments.push_back(util::fmt("    - %s", feature.first));
+        }
+
+        meta.setComments(std::move(comments));
+        n->setMeta(std::move(meta));
+
+        // No need to record a change here since comments do not affect any semantics.
+    }
+};
+
+bool run(Optimizer* optimizer) {
+    Collector collector(optimizer);
+    collector.run();
+
+    return Mutator(optimizer, &collector).run();
+}
+
+optimizer::RegisterPass feature_requirements({.name = "feature-requirements",
+                                              .order = 0,
+                                              .one_time = true,
+                                              .iterate = false,
+                                              .post_processors = optimizer::PostProcessors::ConstantFolder,
+                                              .run = run});
+
+} // namespace

@@ -211,6 +211,8 @@ find_package(GoldLinker)
 find_package(Threads)
 
 option(BUILD_TOOLCHAIN "Build the Spicy compiler toolchain" ON)
+option(HILTI_SKIP_EXPENSIVE_DEBUG_CHECKS
+       "In debug builds, skip particularly expensive consistency checks inside the compiler" OFF)
 
 if (BUILD_TOOLCHAIN)
     set(HAVE_TOOLCHAIN yes)

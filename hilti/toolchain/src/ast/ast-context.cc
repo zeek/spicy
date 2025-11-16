@@ -18,7 +18,7 @@
 #include <hilti/ast/visitor.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/detail/ast-dumper.h>
-#include <hilti/compiler/detail/cfg.h>
+#include <hilti/compiler/detail/optimizer/cfg.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/resolver.h>
 #include <hilti/compiler/detail/scope-builder.h>
@@ -327,7 +327,7 @@ void ASTContext::garbageCollect() {
     do {
         ++rounds;
         retained = 0;
-        new_nodes.reserve(_nodes.size()); // NOLINT(bugprone-use-after-move)
+        new_nodes.reserve(_nodes.size()); // NOLINT -- This can trigger various use-after-move warnings
         changed = false;
 
         for ( auto& n : _nodes ) {
@@ -792,30 +792,15 @@ Result<Nothing> ASTContext::_transform(Builder* builder, const Plugin& plugin) {
 
 Result<Nothing> ASTContext::_optimize(Builder* builder) {
     if ( logger().isEnabled(logging::debug::CfgInitial) )
-        hilti::detail::cfg::dump(logging::debug::CfgInitial, _root);
+        hilti::detail::optimizer::cfg::dump(logging::debug::CfgInitial, _root);
 
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
-    bool first = true;
-    while ( true ) {
-        // If the optimizer does not change anything, we are done.
-        if ( ! optimizer::optimize(builder, _root, first) )
-            break;
-
-        first = false;
-
-        // Optimization may have left some computed node state unset, such as a
-        // canonical IDs. Some passes also require extra coercions, such as the
-        // constant propagation pass. Do another resolver run to get that in shape.
-        if ( auto rc = _resolve(builder, plugin::registry().hiltiPlugin()); ! rc )
-            return rc;
-    }
+    if ( auto rc = Optimizer(builder->context()).run(); ! rc )
+        return rc;
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )
-        hilti::detail::cfg::dump(logging::debug::CfgFinal, _root);
-
-    // Make sure we didn't leave anything odd during optimization.
-    checkAST(true);
+        hilti::detail::optimizer::cfg::dump(logging::debug::CfgFinal, _root);
 
     return Nothing();
 }
