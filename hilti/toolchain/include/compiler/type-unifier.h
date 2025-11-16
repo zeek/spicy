@@ -14,7 +14,7 @@ namespace hilti::type_unifier {
  *
  * @returns true if at least one type was unified that wasn't before.
  */
-bool unify(Builder* builder, ASTRoot* root);
+bool unify(Builder* builder, Node* node);
 
 /**
  * Unifies an unqualified type, if possible. If it's already unified, no change
@@ -24,6 +24,15 @@ bool unify(Builder* builder, ASTRoot* root);
  * already or because it could be unified now.
  */
 bool unify(ASTContext* ctx, UnqualifiedType* type);
+
+/**
+ * Checks whether types in the AST are fully unified. That means that all
+ * relevant types must (1) have a type unification, and (2) that unification
+ * must be up to date (i.e., re-computing produces the same value).
+ *
+ * @returns true if all types are fully unified.
+ */
+bool check(Builder* builder, ASTRoot* root);
 
 /**
  * API class for implementing type unification for custom types by plugins.

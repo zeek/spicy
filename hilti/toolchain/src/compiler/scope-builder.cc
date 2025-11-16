@@ -23,14 +23,16 @@ using namespace hilti;
 namespace {
 
 struct Visitor : visitor::PostOrder {
-    explicit Visitor(Builder* builder, ASTRoot* root) : root(root), builder(builder) {}
+    explicit Visitor(Builder* builder, Node* root) : root(root), builder(builder) {}
 
-    ASTRoot* root = nullptr;
+    Node* root = nullptr;
     Builder* builder;
 
-    void operator()(declaration::Constant* n) final { n->parent()->getOrCreateScope()->insert(n); }
+    bool modified = false;
 
-    void operator()(declaration::Expression* n) final { n->parent()->getOrCreateScope()->insert(n); }
+    void operator()(declaration::Constant* n) final { modified |= n->parent()->getOrCreateScope()->insert(n); }
+
+    void operator()(declaration::Expression* n) final { modified |= n->parent()->getOrCreateScope()->insert(n); }
 
     void operator()(declaration::Function* n) final {
         auto* x = n->parent();
@@ -42,10 +44,10 @@ struct Visitor : visitor::PostOrder {
         auto* scope = n->function()->body() ? n->function()->body()->getOrCreateScope() : n->getOrCreateScope();
 
         if ( ! n->id().namespace_() || n->id().namespace_() == module->id().namespace_() )
-            x->getOrCreateScope()->insert(n->id().local(), n);
+            modified |= x->getOrCreateScope()->insert(n->id().local(), n);
 
         for ( auto* x : n->function()->ftype()->parameters() )
-            scope->insert(x);
+            modified |= scope->insert(x);
 
         if ( n->linkage() == declaration::Linkage::Struct ) {
             if ( ! n->id().namespace_() ) {
@@ -57,17 +59,17 @@ struct Visitor : visitor::PostOrder {
         if ( n->linkedDeclarationIndex() ) {
             if ( auto* decl = builder->context()->lookup(n->linkedDeclarationIndex())->as<declaration::Type>() ) {
                 auto* const t = decl->type()->type()->as<type::Struct>();
-                scope->insert(t->self());
+                modified |= scope->insert(t->self());
 
                 for ( auto* x : t->parameters() )
-                    scope->insert(x);
+                    modified |= scope->insert(x);
             }
         }
     }
 
     void operator()(declaration::GlobalVariable* n) final {
         if ( n->parent()->isA<declaration::Module>() )
-            n->parent()->getOrCreateScope()->insert(n);
+            modified |= n->parent()->getOrCreateScope()->insert(n);
     }
 
     void operator()(declaration::ImportedModule* n) final {
@@ -81,7 +83,7 @@ struct Visitor : visitor::PostOrder {
                 assert(current_module);
 
                 auto* decl = builder->context()->lookup(index)->as<declaration::Module>();
-                current_module->getOrCreateScope()->insert(decl);
+                modified |= current_module->getOrCreateScope()->insert(decl);
             }
         }
     }
@@ -93,79 +95,81 @@ struct Visitor : visitor::PostOrder {
         // be qualified with the module's own name. We insert it under
         // user-visible ID, even though declaration itself uses the unique ID
         // as its ID.
-        n->getOrCreateScope()->insert(m->scopeID(), m);
+        modified |= n->getOrCreateScope()->insert(m->scopeID(), m);
 
         // Also insert the module name into the global scope. We need this for
         // global look-ups that aren't associated with a specific location
         // inside the AST (like when resolving operator signatures).
-        root->getOrCreateScope()->insert(m->scopeID(), m);
+        modified |= root->getOrCreateScope()->insert(m->scopeID(), m);
     }
 
     void operator()(declaration::Type* n) final {
         if ( n->parent()->isA<declaration::Module>() )
-            n->parent()->getOrCreateScope()->insert(n);
+            modified |= n->parent()->getOrCreateScope()->insert(n);
     }
 
     void operator()(declaration::Field* n) final {
         if ( auto* func = n->inlineFunction() ) {
             for ( auto* x : func->ftype()->parameters() )
-                n->getOrCreateScope()->insert(x);
+                modified |= n->getOrCreateScope()->insert(x);
         }
 
         if ( n->isStatic() )
             // Insert static member into struct's namespace.
-            n->parent(3)->getOrCreateScope()->insert(n);
+            modified |= n->parent(3)->getOrCreateScope()->insert(n);
     }
 
-    void operator()(expression::ListComprehension* n) final { n->getOrCreateScope()->insert(n->local()); }
+    void operator()(expression::ListComprehension* n) final { modified |= n->getOrCreateScope()->insert(n->local()); }
 
-    void operator()(statement::Declaration* n) final { n->parent()->getOrCreateScope()->insert(n->declaration()); }
+    void operator()(statement::Declaration* n) final {
+        modified |= n->parent()->getOrCreateScope()->insert(n->declaration());
+    }
 
     void operator()(statement::For* n) final {
-        n->getOrCreateScope()->insert(n->local());
+        modified |= n->getOrCreateScope()->insert(n->local());
 
         // Also add this to the body to avoid redefinitions
-        n->body()->getOrCreateScope()->insert(n->local());
+        modified |= n->body()->getOrCreateScope()->insert(n->local());
     }
 
     void operator()(statement::If* n) final {
         if ( auto* init = n->init() ) {
-            n->getOrCreateScope()->insert(init);
+            modified |= n->getOrCreateScope()->insert(init);
 
             // Also add this to the true/false bodies to avoid redefinitions
-            n->true_()->getOrCreateScope()->insert(init);
+            modified |= n->true_()->getOrCreateScope()->insert(init);
             if ( auto* els = n->false_() )
-                els->getOrCreateScope()->insert(init);
+                modified |= els->getOrCreateScope()->insert(init);
         }
     }
 
     void operator()(statement::Switch* n) final {
-        n->getOrCreateScope()->insert(n->condition());
+        modified |= n->getOrCreateScope()->insert(n->condition());
 
         // Also add this to each case body to avoid redefinitions
         for ( auto* case_ : n->cases() )
-            case_->body()->getOrCreateScope()->insert(n->condition());
+            modified |= case_->body()->getOrCreateScope()->insert(n->condition());
     }
 
     void operator()(statement::try_::Catch* n) final {
         if ( auto* x = n->parameter() )
-            n->getOrCreateScope()->insert(x);
+            modified |= n->getOrCreateScope()->insert(x);
     }
 
     void operator()(statement::While* n) final {
         if ( auto* init = n->init() ) {
-            n->getOrCreateScope()->insert(init);
+            modified |= n->getOrCreateScope()->insert(init);
 
             // Also add this to the body and else condition to avoid redefinitions
-            n->body()->getOrCreateScope()->insert(init);
+            modified |= n->body()->getOrCreateScope()->insert(init);
             if ( auto* els = n->else_() )
-                els->getOrCreateScope()->insert(init);
+                modified |= els->getOrCreateScope()->insert(init);
         }
     }
 
     void operator()(type::bitfield::BitRange* n) final {
         if ( auto* d = n->dd() )
-            n->scope()->insert(d);
+            modified |= n->scope()->insert(d);
     }
 
     void operator()(type::Enum* n) final {
@@ -176,23 +180,25 @@ struct Visitor : visitor::PostOrder {
             return;
 
         for ( const auto& d : n->labelDeclarations() )
-            n->parent(2)->getOrCreateScope()->insert(d);
+            modified |= n->parent(2)->getOrCreateScope()->insert(d);
     }
 
     void operator()(type::Struct* n) final {
         for ( auto* x : n->parameters() )
-            n->getOrCreateScope()->insert(x);
+            modified |= n->getOrCreateScope()->insert(x);
 
         if ( n->typeID() )
             // We need to associate the type ID with the `self` declaration,
             // so wait for that to have been set by the resolver.
-            n->getOrCreateScope()->insert(n->self());
+            modified |= n->getOrCreateScope()->insert(n->self());
     }
 };
 
 } // anonymous namespace
 
-void detail::scope_builder::build(Builder* builder, ASTRoot* root) {
+bool detail::scope_builder::build(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/scope-builder");
-    ::hilti::visitor::visit(Visitor(builder, root), root);
+    Visitor v(builder, node);
+    ::hilti::visitor::visit(v, node);
+    return v.modified;
 }
