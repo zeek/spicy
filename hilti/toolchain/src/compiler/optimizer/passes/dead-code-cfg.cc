@@ -196,7 +196,8 @@ std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cf
 }
 
 static RegisterPass constant_folder(
-    "cfg", {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
-                return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer, op_uses);
-            },
-            2});
+    "dead-code-cfg", {[](Builder* builder, const OperatorUses* op_uses) -> std::unique_ptr<OptimizerVisitor> {
+                          return std::make_unique<FunctionBodyVisitor>(builder, hilti::logging::debug::Optimizer,
+                                                                       op_uses);
+                      },
+                      2});

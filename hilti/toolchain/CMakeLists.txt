@@ -114,7 +114,7 @@ set(SOURCES
     src/compiler/init.cc
     src/compiler/jit.cc
     src/compiler/optimizer/optimizer.cc
-    src/compiler/optimizer/passes/cfg.cc
+    src/compiler/optimizer/passes/dead-code-cfg.cc
     src/compiler/optimizer/passes/constant-folding.cc
     src/compiler/optimizer/passes/constant-propagation.cc
     src/compiler/optimizer/passes/feature-requirements.cc
