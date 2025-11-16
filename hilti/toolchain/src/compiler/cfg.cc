@@ -135,7 +135,7 @@ CFG::CFG(const Node* root)
         std::set<uintptr_t> dead_ends;
 
         for ( const auto& [id, n] : _graph.nodes() ) {
-            if ( n->isA<End>() && _graph.neighborsUpstream(id).empty() )
+            if ( n.value->isA<End>() && _graph.neighborsUpstream(id).empty() )
                 dead_ends.insert(id);
         }
 
@@ -536,7 +536,7 @@ std::string CFG::dot(bool omit_dataflow) const {
 
     std::vector<GraphNode> sorted_nodes;
     std::transform(_graph.nodes().begin(), _graph.nodes().end(), std::back_inserter(sorted_nodes),
-                   [](const auto& p) { return p.second; });
+                   [](const auto& p) { return p.second.value; });
     std::ranges::sort(sorted_nodes, [](const GraphNode& a, const GraphNode& b) {
         return a.value() && b.value() && a->identity() < b->identity();
     });
@@ -920,8 +920,8 @@ void CFG::_populateDataflow() {
 
     // Populate uses and the gen sets.
     for ( const auto& [id, n] : _graph.nodes() ) {
-        if ( n.value() )
-            _dataflow[n] = visit_node(n);
+        if ( n.value.value() )
+            _dataflow[n.value] = visit_node(n.value);
     }
 
     { // Encode aliasing information.

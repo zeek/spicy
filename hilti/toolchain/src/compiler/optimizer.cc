@@ -2414,8 +2414,8 @@ std::vector<Node*> FunctionBodyVisitor::unusedStatements(const detail::cfg::CFG&
 std::unordered_set<Node*> FunctionBodyVisitor::unreachableNodes(const detail::cfg::CFG& cfg) const {
     std::unordered_set<Node*> result;
     for ( const auto& [id, n] : cfg.graph().nodes() ) {
-        if ( n.value() && ! n->isA<detail::cfg::MetaNode>() && cfg.graph().neighborsUpstream(id).empty() )
-            result.insert(n.value());
+        if ( n.value.value() && ! n.value->isA<detail::cfg::MetaNode>() && cfg.graph().neighborsUpstream(id).empty() )
+            result.insert(n.value.value());
     }
 
     return result;

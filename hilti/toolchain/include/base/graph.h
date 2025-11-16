@@ -3,10 +3,11 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <concepts>
 #include <cstdint>
 #include <optional>
-#include <set>
+#include <stdexcept>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -26,6 +27,14 @@ public:
     using NodeId = NodeId_;
     using EdgeId = std::uint64_t;
 
+    /** Information stored for each node, accessible through `nodes()`. */
+    struct Node {
+        T value;                                  /**< value associated with the node */
+        std::vector<EdgeId> edges;                /**< IDs of edges connected to the node */
+        std::vector<NodeId> neighbors_upstream;   /**< IDs of upstream (outgoing) neighbor nodes */
+        std::vector<NodeId> neighbors_downstream; /**< IDs of downstream (incoming) neighbor nodes */
+    };
+
     const auto& nodes() const { return _nodes; }
     const auto& edges() const { return _edges; }
 
@@ -36,11 +45,10 @@ public:
      * @return the node ID of the the value if it is known, or a nullopt
      */
     std::optional<NodeId> getNodeId(const T& x) const {
-        if ( auto it = std::find_if(_nodes.begin(), _nodes.end(), [&](auto&& n) { return n.second == x; });
-             it != _nodes.end() )
-            return it->first;
-
-        return {};
+        if ( auto it = _values.find(x); it != _values.end() )
+            return it->second;
+        else
+            return {};
     }
 
     /**
@@ -54,7 +62,9 @@ public:
         if ( auto id = getNodeId(x) )
             return *id;
 
-        _nodes.insert({id, std::forward<T>(x)});
+        _values[x] = id;
+        _nodes.insert({id, {std::forward<T>(x), {}, {}}});
+
         return id;
     }
 
@@ -64,17 +74,18 @@ public:
      * @param id the node ID of the node to remove
      */
     void removeNode(NodeId id) {
-        _nodes.erase(id);
+        auto it = _nodes.find(id);
+        if ( it == _nodes.end() )
+            return;
 
-        std::set<EdgeId> edges_to_remove;
-        for ( auto&& [edge_id, nodes] : _edges ) {
-            auto&& [from, to] = nodes;
+        _deleteNodeFromNeighbors(id, it->second.neighbors_upstream, true);
+        _deleteNodeFromNeighbors(id, it->second.neighbors_downstream, false);
 
-            if ( from == id || to == id )
-                edges_to_remove.insert(edge_id);
-        }
-        for ( auto&& edge_id : edges_to_remove )
+        for ( auto edge_id : it->second.edges )
             _edges.erase(edge_id);
+
+        _values.erase(it->second.value);
+        _nodes.erase(it);
     }
 
     /**
@@ -85,7 +96,7 @@ public:
      */
     const T* getNode(NodeId id) const {
         if ( auto it = _nodes.find(id); it != _nodes.end() )
-            return &it->second;
+            return &it->second.value;
 
         return nullptr;
     }
@@ -100,6 +111,10 @@ public:
     EdgeId addEdge(NodeId from, NodeId to) {
         auto edge_id = _edges.size();
         _edges.insert({edge_id, {from, to}});
+        _nodes[from].edges.push_back(edge_id);
+        _nodes[from].neighbors_downstream.push_back(to);
+        _nodes[to].edges.push_back(edge_id);
+        _nodes[to].neighbors_upstream.push_back(from);
         return edge_id;
     }
 
@@ -123,7 +138,14 @@ public:
      * @param id the node ID of the node to query
      * @return a vector of node IDs of downstream neighbor nodes
      */
-    std::vector<NodeId> neighborsDownstream(NodeId id) const { return _neighbors(id, Direction::Out); }
+    const std::vector<NodeId>& neighborsDownstream(NodeId id) const {
+        try {
+            return _nodes.at(id).neighbors_downstream;
+        } catch ( const std::out_of_range& e ) {
+            static std::vector<NodeId> empty;
+            return empty;
+        }
+    }
 
     /**
      * Get upstream neighbors of a node, i.e., nodes connected to the node by
@@ -132,48 +154,37 @@ public:
      * @param id the node ID of the node to query
      * @return a vector of node IDs of upstream neighbor nodes
      */
-    std::vector<NodeId> neighborsUpstream(NodeId id) const { return _neighbors(id, Direction::In); }
+    const std::vector<NodeId>& neighborsUpstream(NodeId id) const {
+        try {
+            return _nodes.at(id).neighbors_upstream;
+        } catch ( const std::out_of_range& e ) {
+            static std::vector<NodeId> empty;
+            return empty;
+        }
+    }
 
 private:
-    std::unordered_map<NodeId, T> _nodes;                         //< nodes in the graph.
-    std::unordered_map<EdgeId, std::pair<NodeId, NodeId>> _edges; //< edges in the graph.
+    // Helper to remove references to a node from its neighbors.
+    void _deleteNodeFromNeighbors(NodeId id, const std::vector<NodeId>& neighbors, bool upstream) {
+        for ( auto nid : neighbors ) {
+            auto neighbor = _nodes.find(nid);
+            assert(neighbor != _nodes.end());
 
-    /**
-     * Edge direction for edge filtering.
-     */
-    enum class Direction : char {
-        Out, //< edge starts at the node.
-        In,  //< edge ends at the node.
-    };
-
-    /**
-     * Get neighbors of a node.
-     *
-     * @param id the node ID of the node to query
-     * @param dir edge selection
-     * @return a vector of node IDs of neighbor nodes
-     */
-    std::vector<NodeId> _neighbors(NodeId id, Direction dir) const {
-        std::vector<NodeId> xs;
-
-        for ( auto&& [edge_id, nodes] : _edges ) {
-            auto [from, to] = nodes;
-
-            switch ( dir ) {
-                case Direction::Out: {
-                    if ( id == from )
-                        xs.push_back(to);
-                    break;
-                }
-                case Direction::In: {
-                    if ( id == to )
-                        xs.push_back(from);
-                }
-            }
+            if ( upstream )
+                neighbor->second.neighbors_downstream.erase(std::remove(neighbor->second.neighbors_downstream.begin(),
+                                                                        neighbor->second.neighbors_downstream.end(),
+                                                                        id),
+                                                            neighbor->second.neighbors_downstream.end());
+            else
+                neighbor->second.neighbors_upstream.erase(std::remove(neighbor->second.neighbors_upstream.begin(),
+                                                                      neighbor->second.neighbors_upstream.end(), id),
+                                                          neighbor->second.neighbors_upstream.end());
         }
-
-        return xs;
     }
+
+    std::unordered_map<NodeId, Node> _nodes;                      //< nodes in the graph.
+    std::unordered_map<EdgeId, std::pair<NodeId, NodeId>> _edges; //< edges in the graph.
+    std::unordered_map<T, NodeId> _values;                        //< mapping from node values to node IDs.
 };
 
 } // namespace hilti::util::graph
