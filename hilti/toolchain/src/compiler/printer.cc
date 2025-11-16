@@ -358,8 +358,7 @@ struct Printer : visitor::PreOrder {
             _out << ' ' << attrs;
 
         if ( auto* f = n->inlineFunction(); f && f->body() ) {
-            const auto& block = f->body()->tryAs<statement::Block>();
-            if ( block && block->statements().empty() ) {
+            if ( const auto& block = f->body(); block && block->statements().empty() ) {
                 _out << " {}";
                 _out.endLine();
             }

@@ -345,7 +345,7 @@ public:
         return hilti::expression::UnresolvedOperator::create(context(), kind, operands, meta);
     }
     auto expressionVoid(const Meta& meta = {}) { return hilti::expression::Void::create(context(), meta); }
-    auto function(const ID& id, type::Function* ftype, Statement* body, AttributeSet* attrs = nullptr,
+    auto function(const ID& id, type::Function* ftype, statement::Block* body, AttributeSet* attrs = nullptr,
                   const Meta& meta = {}) {
         return hilti::Function::create(context(), id, ftype, body, attrs, meta);
     }

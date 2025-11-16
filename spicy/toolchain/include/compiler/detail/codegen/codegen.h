@@ -66,7 +66,7 @@ public:
 
     hilti::declaration::Function* compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
                                               declaration::hook::Type type, bool debug,
-                                              hilti::type::function::Parameters params, hilti::Statement* body,
+                                              hilti::type::function::Parameters params, hilti::statement::Block* body,
                                               Expression* priority, const hilti::Meta& meta);
 
     // These must be called only while a module is being compiled.

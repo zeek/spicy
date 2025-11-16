@@ -113,7 +113,7 @@ public:
     std::string_view displayName() const override { return "Spicy hook"; }
     node::Properties properties() const final;
 
-    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, Statement* body,
+    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, hilti::statement::Block* body,
                        AttributeSet* attrs, const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
