@@ -113,7 +113,7 @@ public:
     Stage stage = Stage::Collect;
     declaration::Module* current_module = nullptr;
 
-    void removeNode(Node* old, const std::string& msg = "") { replaceNode(old, nullptr, msg); }
+    void removeNode(Node* old, const std::string& msg = "") override { replaceNode(old, nullptr, msg); }
 
     OptimizerVisitor(Builder* builder, const logging::DebugStream& dbg, const OperatorUses* op_uses)
         : visitor::MutatingPreOrder(builder, dbg), _op_uses(op_uses) {}

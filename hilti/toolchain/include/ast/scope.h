@@ -28,24 +28,30 @@ public:
      * Inserts a declaration into the scope.
      *
      * @param d declaration to insert
+     * @return true if the insertion changed the scope (vs. having already
+     * existed in there before)
      */
-    void insert(Declaration* d);
+    bool insert(Declaration* d);
 
     /**
      * Inserts a declaration into it's scope under a given ID.
      *
      * @param id ID to insert the declaration under, which does not need to match the declaration's own ID
      * @param d declaration to insert
+     * @return true if the insertion changed the scope (vs. having already
+     * existed in there before)
      */
-    void insert(const ID& id, Declaration* d);
+    bool insert(const ID& id, Declaration* d);
 
     /**
      * Inserts a place-holder into the scope that let's lookup fail here if it
      * would normally return that ID.
      *
      * @param id ID to insert the place-holder under
+     * @return true if the insertion changed the scope (vs. having already
+     * existed in there before)
      */
-    void insertNotFound(const ID& id);
+    bool insertNotFound(const ID& id);
 
     /** Returns if there's at least one mapping for an ID.  */
     bool has(const ID& id) const { return ! _findID(id).empty(); }

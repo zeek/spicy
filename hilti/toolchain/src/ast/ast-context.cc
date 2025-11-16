@@ -609,7 +609,9 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
         if ( auto rc = _validate(builder, plugin, false); ! rc )
             return rc;
 
-        _checkAST(true);
+#ifndef NDEBUG
+        checkAST(true);
+#endif
 
         if ( plugin.ast_transform ) {
             // Make dependencies available for transformations.
@@ -651,8 +653,8 @@ struct VisitorCheckIDs : hilti::visitor::PreOrder {
     }
 };
 
-void ASTContext::_checkAST(bool finished) const {
 #ifndef NDEBUG
+void ASTContext::checkAST(bool finished) const {
     util::timing::Collector _("hilti/compiler/ast/check-ast");
 
     // Check parent pointering.
@@ -673,10 +675,10 @@ void ASTContext::_checkAST(bool finished) const {
     }
 
     if ( finished )
-        // Check that declaration IDs are are set.
+        // Check that declaration IDs are set.
         ::hilti::visitor::visit(VisitorCheckIDs(), root());
-#endif
 }
+#endif
 
 Result<Nothing> ASTContext::_init(Builder* builder, const Plugin& plugin) {
     _dumpAST(logging::debug::AstOrig, plugin, "Original AST", 0);
@@ -684,24 +686,23 @@ Result<Nothing> ASTContext::_init(Builder* builder, const Plugin& plugin) {
     return runHook(plugin, &Plugin::ast_init, "initializing", builder, _root);
 }
 
-Result<Nothing> ASTContext::_clearState(Builder* builder, const Plugin& plugin) {
-    util::timing::Collector _("hilti/compiler/ast/clear-state");
+void ASTContext::clearErrors(Node* node) {
+    util::timing::Collector _("hilti/compiler/ast/clear-errors");
 
-    for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) ) {
+    for ( const auto& n : visitor::range(visitor::PreOrder(), (node ? node : root()), {}) ) {
         assert(n); // walk() should not give us null pointer children.
         n->clearErrors();
     }
+}
 
-    return Nothing();
+void ASTContext::clearScopes(Node* node) {
+    util::timing::Collector _("hilti/compiler/ast/clear-scope");
+
+    for ( const auto& n : visitor::range(visitor::PreOrder(), (node ? node : root()), {}) )
+        n->clearScope();
 }
 
 Result<Nothing> ASTContext::_buildScopes(Builder* builder, const Plugin& plugin) {
-    {
-        util::timing::Collector _("hilti/compiler/ast/clear-scope");
-        for ( const auto& n : visitor::range(visitor::PreOrder(), _root.get(), {}) )
-            n->clearScope();
-    }
-
     bool modified;
     if ( auto rc = runHook(&modified, plugin, &Plugin::ast_build_scopes, "building scopes", builder, _root); ! rc )
         return rc.error();
@@ -728,8 +729,12 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
 
         ++_total_rounds;
 
-        _checkAST(false);
-        _clearState(builder, plugin);
+#ifndef NDEBUG
+        checkAST(false);
+#endif
+
+        clearErrors();
+        clearScopes();
         _buildScopes(builder, plugin);
         type_unifier::unify(builder, root());
         operator_::registry().initPending(builder);
@@ -753,7 +758,9 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
     _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
 
-    _checkAST(false);
+#ifndef NDEBUG
+    checkAST(false);
+#endif
 
 #ifndef NDEBUG
     // At this point, all built-in operators should be fully resolved. If not,
@@ -809,7 +816,7 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
         hilti::detail::cfg::dump(logging::debug::CfgFinal, _root);
 
     // Make sure we didn't leave anything odd during optimization.
-    _checkAST(true);
+    checkAST(true);
 
     return Nothing();
 }
@@ -825,7 +832,7 @@ Result<Nothing> ASTContext::_validate(Builder* builder, const Plugin& plugin, bo
     else
         runHook(&modified, plugin, &Plugin::ast_validate_post, "validating (post)", builder, _root);
 
-    return _collectErrors();
+    return collectErrors();
 }
 
 Result<Nothing> ASTContext::_computeDependencies() {
@@ -861,7 +868,7 @@ void ASTContext::_dumpAST(std::ostream& stream, const Plugin& plugin, const std:
     ast_dumper::dump(stream, root(), true);
 }
 
-void ASTContext::dump(const logging::DebugStream& stream, const std::string& prefix) {
+void ASTContext::dump(const logging::DebugStream& stream, const std::string& prefix) const {
     if ( ! logger().isEnabled(stream) )
         return;
 
@@ -869,7 +876,14 @@ void ASTContext::dump(const logging::DebugStream& stream, const std::string& pre
     ast_dumper::dump(stream, root(), true);
 }
 
-void ASTContext::_dumpState(const logging::DebugStream& stream) {
+void ASTContext::dump(std::ostream& out, bool include_state) const {
+    ast_dumper::dump(out, root(), true);
+
+    if ( include_state )
+        _dumpState(out);
+}
+
+void ASTContext::_dumpState(const logging::DebugStream& stream) const {
     if ( ! logger().isEnabled(stream) )
         return;
 
@@ -896,6 +910,28 @@ void ASTContext::_dumpState(const logging::DebugStream& stream) {
     }
 
     logger().debugPopIndent(stream);
+}
+
+void ASTContext::_dumpState(std::ostream& out) const {
+    // This mostly duplicates the code from above but for ostreams. Not clear
+    // how to nicely cover both cases with just one version of the code.
+    out << "\n# State tables:\n\n";
+
+    for ( auto idx = 1U; idx < _declarations_by_index.size(); idx++ ) {
+        auto n = _declarations_by_index[idx];
+        assert(n->isRetained());
+
+        auto id = n->canonicalID() ? n->canonicalID() : ID("<no-canon-id>");
+        out << fmt("  [%s] %s [%s] (%s)\n", ast::DeclarationIndex(idx), id, n->typename_(), n->location().dump(true));
+    }
+
+    for ( auto idx = 1U; idx < _types_by_index.size(); idx++ ) {
+        auto n = _types_by_index[idx];
+        assert(n->isRetained());
+
+        const auto& id = n->typeID() ? n->typeID() : ID("<no-type-id>");
+        out << fmt("  [%s] %s [%s] (%s)", ast::TypeIndex(idx), id, n->typename_(), n->location().dump(true));
+    }
 }
 
 void ASTContext::_dumpStats(const logging::DebugStream& stream, std::string_view tag) {
@@ -1037,7 +1073,7 @@ static void reportErrors(const std::vector<node::Error>& errors) {
     }
 }
 
-Result<Nothing> ASTContext::_collectErrors() {
+Result<Nothing> ASTContext::collectErrors() {
     std::vector<node::Error> errors;
     recursiveValidateAST(_root, Location(), node::ErrorPriority::NoError, 0, &errors);
 

@@ -228,7 +228,6 @@
 [debug/resolver] [hilti.hlt:42:50-42:60] declaration::Parameter "string name" -> set declaration's fully qualified ID to name
 [debug/resolver] [hilti.hlt:42:63-42:92] declaration::Parameter "optional<uint<64>> size = Null" -> set declaration's canonical ID to hilti::size
 [debug/resolver] [hilti.hlt:42:63-42:92] declaration::Parameter "optional<uint<64>> size = Null" -> set declaration's fully qualified ID to size
-[debug/resolver] [hilti.hlt:42:63-42:92] declaration::Parameter "optional<uint<64>> size = Null" -> expression::Ctor "Null" (default value)
 [debug/resolver] [hilti.hlt:42:95-42:131] Attribute "&cxxname="hilti::rt::profiler::start"" -> Attribute "&cxxname="::hilti::rt::profiler::start""
 [debug/resolver] [hilti.hlt:42:1-42:148] declaration::Function "declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype;" -> set declaration's canonical ID to hilti::profiler_start
 [debug/resolver] [hilti.hlt:42:1-42:148] declaration::Function "declare public function optional<Profiler> profiler_start(string name, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::start" &have_prototype;" -> set declaration's fully qualified ID to hilti::profiler_start
@@ -237,7 +236,6 @@
 [debug/resolver] [hilti.hlt:43:35-43:54] declaration::Parameter "optional<Profiler> p" -> set declaration's fully qualified ID to p
 [debug/resolver] [hilti.hlt:43:57-43:86] declaration::Parameter "optional<uint<64>> size = Null" -> set declaration's canonical ID to hilti::size_2
 [debug/resolver] [hilti.hlt:43:57-43:86] declaration::Parameter "optional<uint<64>> size = Null" -> set declaration's fully qualified ID to size
-[debug/resolver] [hilti.hlt:43:57-43:86] declaration::Parameter "optional<uint<64>> size = Null" -> expression::Ctor "Null" (default value)
 [debug/resolver] [hilti.hlt:43:89-43:124] Attribute "&cxxname="hilti::rt::profiler::stop"" -> Attribute "&cxxname="::hilti::rt::profiler::stop""
 [debug/resolver] [hilti.hlt:43:1-43:141] declaration::Function "declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype;" -> set declaration's canonical ID to hilti::profiler_stop
 [debug/resolver] [hilti.hlt:43:1-43:141] declaration::Function "declare public function void profiler_stop(optional<Profiler> p, optional<uint<64>> size = Null) &cxxname="::hilti::rt::profiler::stop" &have_prototype;" -> set declaration's fully qualified ID to hilti::profiler_stop
@@ -314,6 +312,8 @@
 [debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; } }" -> set module's canonical ID to Bar
 [debug/resolver] -> [D22] declaration::Module Bar | module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; } } (bar.hlt:2:1-11:1)
 [debug/resolver] [bar.hlt:2:1-11:1] declaration::Module "module Bar { import Foo; public type Bar1 = string; public type Bar2 = Foo::Foo1; function string bar(Bar1 bar, Foo::Foo1 foo) { return ""; } }" -> set module's declaration index to D22
+[debug/resolver] [hilti.hlt:42:63-42:92] declaration::Parameter "optional<uint<64>> size = Null" -> expression::Ctor "Null" (default value)
+[debug/resolver] [hilti.hlt:43:57-43:86] declaration::Parameter "optional<uint<64>> size = Null" -> expression::Ctor "Null" (default value)
 [debug/compiler]       -> modified
 [debug/compiler]   processing ASTs, round 2
 [debug/compiler]     [HILTI] building scopes

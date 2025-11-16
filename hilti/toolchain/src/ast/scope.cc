@@ -17,10 +17,33 @@
 
 using namespace hilti;
 
-void Scope::insert(const ID& id, Declaration* d) { _items[id].insert(d); }
-void Scope::insert(Declaration* d) { _items[d->id()].insert(d); }
+bool Scope::insert(const ID& id, Declaration* d) {
+    if ( const auto& i = _items.find(id); i != _items.end() ) {
+        if ( i->second.contains(d) )
+            return false;
+        else
+            i->second.insert(d);
+    }
+    else
+        _items[std::string(id)].insert(d);
 
-void Scope::insertNotFound(const ID& id) { _items[std::string(id)] = {nullptr}; }
+    return true;
+}
+
+bool Scope::insert(Declaration* d) { return insert(d->id(), d); }
+
+bool Scope::insertNotFound(const ID& id) {
+    if ( const auto& i = _items.find(id); i != _items.end() ) {
+        if ( i->second.contains(nullptr) )
+            return false;
+        else
+            i->second = {nullptr};
+    }
+    else
+        _items[id] = {nullptr};
+
+    return true;
+}
 
 static auto createRefs(const std::vector<Scope::Referee>& refs, const std::string& ns, bool external) {
     std::vector<Scope::Referee> result;

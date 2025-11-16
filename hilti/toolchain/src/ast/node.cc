@@ -122,6 +122,14 @@ void Node::replaceChild(ASTContext* ctx, Node* old, Node* new_) {
     logger().internalError("child not found");
 }
 
+void Node::removeFromParent() {
+    if ( ! _parent )
+        return;
+
+    assert(_parent->hasChild(this));
+    _parent->removeChild(this);
+}
+
 void Node::replaceChildren(ASTContext* ctx, const Nodes& children) {
     clearChildren();
 

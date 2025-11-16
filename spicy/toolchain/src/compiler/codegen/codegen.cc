@@ -577,7 +577,9 @@ void CodeGen::_updateDeclarations(visitor::MutatingPostOrder* v, hilti::declarat
         module->add(builder()->context(), n);
 
     _new_decls.clear();
-    v->recordChange("new declarations added");
+
+    HILTI_DEBUG(logging::debug::CodeGen, "new declarations added");
+    v->setModified();
 }
 
 bool CodeGen::compileAST(hilti::ASTRoot* root) {
