@@ -1,3 +1,11 @@
+1.15.0-dev.102 | 2025-11-17 21:06:51 +0100
+
+  * Bump 3rdparty/utfcpp from `961e7a3` to `7079562` (dependabot[bot])
+
+  * Bump 3rdparty/utf8proc from `d7bf128` to `96e9b86` (dependabot[bot])
+
+  * Bump CodSpeedHQ/action from 4.2.1 to 4.3.4 (dependabot[bot])
+
 1.15.0-dev.98 | 2025-11-05 17:38:06 +0100
 
   * Bump pre-commit hooks. (Benjamin Bannier, Corelight)
