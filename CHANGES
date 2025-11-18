@@ -1,3 +1,9 @@
+1.15.0-dev.104 | 2025-11-18 18:17:02 +0100
+
+  * Do not normalize ID names inside type information. (Robin Sommer)
+
+    Closes https://github.com/zeek/zeek/issues/5008.
+
 1.15.0-dev.102 | 2025-11-17 21:06:51 +0100
 
   * Bump 3rdparty/utfcpp from `961e7a3` to `7079562` (dependabot[bot])
