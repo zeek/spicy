@@ -29,6 +29,13 @@ void visitor::MutatingVisitorBase::replaceNode(Node* old, Node* new_, const std:
     _modified = true;
 }
 
+void visitor::MutatingVisitorBase::removeNode(Node* old, const std::string& msg) {
+    if ( ! old->parent() )
+        return;
+
+    replaceNode(old, nullptr, msg);
+}
+
 void visitor::MutatingVisitorBase::recordChange(const Node* old, Node* changed, const std::string& msg) {
     auto location = util::fmt("[%s] ", old->location().dump(true));
     std::string msg_;
@@ -44,11 +51,6 @@ void visitor::MutatingVisitorBase::recordChange(const Node* old, Node* changed, 
 void visitor::MutatingVisitorBase::recordChange(const Node* old, const std::string& msg) {
     auto location = util::fmt("[%s] ", old->location().dump(true));
     HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s", location, old->typename_(), old->printRaw(), msg))
-    _modified = true;
-}
-
-void visitor::MutatingVisitorBase::recordChange(const std::string& msg) {
-    HILTI_DEBUG(_dbg, msg);
     _modified = true;
 }
 

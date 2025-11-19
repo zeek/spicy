@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include <hilti/ast/ast-context.h>
@@ -24,7 +22,7 @@ public:
     const auto& fullyQualifiedID() const { return _fqid; }
 
     /** If the resolver has resolved the name to a declaration, returns it. */
-    Declaration* resolvedDeclaration() {
+    Declaration* resolvedDeclaration() const {
         if ( ! _resolved_declaration_index )
             return nullptr;
 

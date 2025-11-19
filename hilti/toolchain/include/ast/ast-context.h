@@ -349,12 +349,20 @@ public:
     ID uniqueCanononicalID(const ID& id) { return _canon_id_uniquer.get(id, false); }
 
     /**
-     * Dumps the current total AST of all modules to a debug stream.
+     * Dumps the current, complete AST of all modules to a debug stream.
      *
      * @param stream debug stream to write to
      * @param prefix prefix line to start output with
      */
-    void dump(const hilti::logging::DebugStream& stream, const std::string& prefix);
+    void dump(const hilti::logging::DebugStream& stream, const std::string& prefix) const;
+
+    /**
+     * Dumps the current, complete AST of all modules to an output stream.
+     *
+     * @param out output stream to write to
+     * @param include_state if true, also dumps the context's accumulated state
+     */
+    void dump(std::ostream& out, bool include_state) const;
 
     /**
      * Factory function creating a new node of type T. This allocates the new
@@ -408,7 +416,43 @@ public:
         return t;
     }
 
-    /** Clears up an AST nodes that are not currently retained by anybody. */
+    /**
+     * Clears out any error state recorded in the AST.
+     *
+     * @param node if given, only clears errors for subtree rooted at `node`; otherwise
+     * clears errors for the whole AST
+     */
+    void clearErrors(Node* node = nullptr);
+
+    /**
+     * Clears out scopes recorded in the AST.
+     *
+     * @param node if given, only clears scopes for subtree rooted at `node`; otherwise
+     * clears scopes for the whole AST
+     */
+    void clearScopes(Node* node = nullptr);
+
+    /**
+     * Reports any error recorded in the AST to the user.
+     *
+     * @return success if there are no errors (and hence nothing reported either)
+     */
+    Result<Nothing> collectErrors();
+
+#ifndef NDEBUG
+    /**
+     * Performs internal consistency checks on the AST.
+     *
+     * Available in debug builds only as it can affect performance.
+     *
+     * @param finished if true, indicates that AST processing has finished; it
+     * then runs some checks that might not hold while the AST is still being
+     * processed.
+     */
+    void checkAST(bool finished = true) const;
+#endif
+
+    /** Clears up any AST nodes that are not currently retained by anybody. */
     void garbageCollect();
 
     /** Release all state. */
@@ -422,23 +466,17 @@ private:
                                                   std::optional<hilti::rt::filesystem::path> process_extension = {});
     Result<Nothing> _init(Builder* builder, const Plugin& plugin);
     Result<Nothing> _buildScopes(Builder* builder, const Plugin& plugin);
-    Result<Nothing> _clearState(Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolve(Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolveUnresolvedNodes(bool* modified, Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolveRoot(bool* modified, Builder* builder, const Plugin& plugin);
     Result<Nothing> _validate(Builder* builder, const Plugin& plugin, bool pre_resolver);
     Result<Nothing> _transform(Builder* builder, const Plugin& plugin);
-    Result<Nothing> _collectErrors();
     Result<Nothing> _optimize(Builder* builder);
     Result<Nothing> _computeDependencies();
 
     // Adds a module to the AST. The module must not be part of any AST yet
     // (including the current one).
     declaration::module::UID _addModuleToAST(declaration::Module* module);
-
-    // Performs internal consistency checks on the AST. Meant to execute only
-    // in debug builds as it may affect performance.
-    void _checkAST(bool finished) const;
 
     // Dumps the AST to disk during AST processing, for debugging..
     void _saveIterationAST(const Plugin& plugin, const std::string& prefix, int round = 0);
@@ -454,7 +492,10 @@ private:
     void _dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix, int round);
 
     // Dumps the accumulated state tables of the context to a debugging stream.
-    void _dumpState(const logging::DebugStream& stream);
+    void _dumpState(const logging::DebugStream& stream) const;
+
+    // Dumps the accumulated state tables of the context to an output stream.
+    void _dumpState(std::ostream& out) const;
 
     // Dump statistics about the AST to a debugging stream.
     void _dumpStats(const logging::DebugStream& stream, std::string_view tag);

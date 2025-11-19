@@ -258,7 +258,8 @@ static int _field_width = 0;
 %type <hilti::type::function::CallingConvention> opt_func_cc
 %type <hilti::declaration::Linkage>             opt_linkage
 %type <hilti::type::function::Parameters>       func_params opt_func_params opt_struct_params
-%type <hilti::Statement*>                     stmt stmt_decl stmt_expr block braced_block opt_else_block
+%type <hilti::Statement*>                     stmt stmt_decl stmt_expr opt_else_block
+%type <hilti::statement::Block*>              block braced_block
 %type <hilti::Statements>                       stmts opt_stmts
 %type <hilti::Attribute*>                     attribute
 %type <hilti::AttributeSet*>                  opt_attributes
@@ -484,10 +485,11 @@ opt_func_default_expr : '=' expr                 { $$ = std::move($2); }
 
 /* Statements */
 
-block         : stmt                             { if ( ! $1->isA<hilti::statement::Block>() )
-                                                     $$ = builder->statementBlock({std::move($1)}, __loc__);
+block         : stmt                             {
+                                                   if ( auto* block = $1->tryAs<hilti::statement::Block>() )
+                                                       $$ = std::move(block);
                                                    else
-                                                     $$ = std::move($1);
+                                                       $$ = builder->statementBlock({std::move($1)}, __loc__);
                                                  }
               ;
 

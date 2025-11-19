@@ -3,3 +3,9 @@ x=[$b=False, $s="Foo!", $i=21]
 y=[$b=True, $s="NEW", $i=21]
 s1=[$b=False, $s="Foo!", $i=21]
 s2=[$b=True, $s="NEW", $i=21]
+[debug/optimizer] pass: feature-requirements with order 0 (round 1, pass iteration 1)
+[debug/optimizer] pass: dead-code-static with order 10 (round 1, pass iteration 1)
+[debug/optimizer] pass: peephole with order 20 (round 1, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg with order 30 (round 1, pass iteration 1)
+[debug/optimizer] pass: constant-propagation with order 40 (round 1, pass iteration 1)
+[debug/optimizer] pass: remove_unused_params with order 50 (round 1, pass iteration 1)

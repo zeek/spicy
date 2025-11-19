@@ -29,8 +29,8 @@ public:
     auto ctorUnit(const ctor::unit::Fields& fields, Meta meta = {}) {
         return spicy::ctor::Unit::create(context(), fields, std::move(meta));
     }
-    auto declarationHook(const hilti::declaration::Parameters& parameters, Statement* body, AttributeSet* attrs,
-                         const Meta& m = Meta()) {
+    auto declarationHook(const hilti::declaration::Parameters& parameters, hilti::statement::Block* body,
+                         AttributeSet* attrs, const Meta& m = Meta()) {
         return spicy::declaration::Hook::create(context(), parameters, body, attrs, m);
     }
     auto declarationUnitHook(const ID& id, declaration::Hook* hook, Meta meta = {}) {
