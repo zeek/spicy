@@ -975,7 +975,7 @@ void CFG::_populateDataflow() {
                 util::detail::internalError(util::fmt(R"(could not determine ID of CFG node "%s")", n->print()));
 
             // Populate the in set.
-            std::unordered_map<Declaration*, std::unordered_set<GraphNode>> new_in;
+            std::map<Declaration*, std::set<GraphNode>> new_in;
             for ( auto& pid : _graph.neighborsUpstream(*id) ) {
                 const auto* p = _graph.getNode(pid);
                 if ( ! p )
@@ -1032,7 +1032,7 @@ void CFG::_populateDataflow() {
             }
 
             // Populate the out set.
-            std::unordered_map<Declaration*, std::unordered_set<GraphNode>> new_out;
+            std::map<Declaration*, std::set<GraphNode>> new_out;
 
             for ( const auto& [decl, g] : transfer.gen )
                 new_out[decl].insert(g);

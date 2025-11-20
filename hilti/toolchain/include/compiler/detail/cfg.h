@@ -6,11 +6,11 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 #include <hilti/ast/all.h>
@@ -129,16 +129,16 @@ namespace hilti::detail::cfg {
  */
 struct Transfer {
     /** Incoming edges, ordered by declaration they work on. */
-    std::unordered_map<Declaration*, std::unordered_set<GraphNode>> in;
+    std::map<Declaration*, std::set<GraphNode>> in;
 
     /** Outgoing edges, ordered by declaration they work on. */
-    std::unordered_map<Declaration*, std::unordered_set<GraphNode>> out;
+    std::map<Declaration*, std::set<GraphNode>> out;
 
     /** The previous nodes killed by this node. */
-    std::unordered_map<Declaration*, std::unordered_set<GraphNode>> kill;
+    std::map<Declaration*, std::set<GraphNode>> kill;
 
     /** Set of declarations this node may alias. */
-    std::unordered_set<Declaration*> maybe_alias;
+    std::set<Declaration*> maybe_alias;
 
     /**
      * Declarations this graph node generates updates for.
@@ -146,13 +146,13 @@ struct Transfer {
      * For each updated declaration we return the graph node were this value
      * was last updated.
      */
-    std::unordered_map<Declaration*, GraphNode> gen;
+    std::map<Declaration*, GraphNode> gen;
 
     /** Set of declaration this node reads. */
-    std::unordered_set<Declaration*> read;
+    std::set<Declaration*> read;
 
     /** Set of declaration this node writes. */
-    std::unordered_set<Declaration*> write;
+    std::set<Declaration*> write;
 
     /**
      * Whether this node has side effects not modelled
@@ -252,8 +252,8 @@ private:
 
     Graph _graph;
 
-    std::unordered_set<std::unique_ptr<MetaNode>> _meta_nodes;
-    std::unordered_map<GraphNode, Transfer> _dataflow;
+    std::set<std::unique_ptr<MetaNode>> _meta_nodes;
+    std::map<GraphNode, Transfer> _dataflow;
     GraphNode _begin;
     GraphNode _end;
 };
