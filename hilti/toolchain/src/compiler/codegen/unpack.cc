@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <optional>
+#include <ranges>
 #include <string>
 #include <utility>
 
@@ -8,6 +9,7 @@
 #include <hilti/ast/type.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
 
@@ -87,7 +89,7 @@ struct Visitor : hilti::visitor::PreOrder {
 } // anonymous namespace
 
 cxx::Expression CodeGen::pack(Expression* data, const Expressions& args) {
-    auto cxx_args = util::transform(args, [&](const auto& e) { return compile(e, false); });
+    auto cxx_args = util::toVector(args | std::views::transform([&](const auto& e) { return compile(e, false); }));
     auto v = Visitor(this, Visitor::Kind::Pack, data->type(), nullptr, compile(data), cxx_args);
     if ( auto result =
              hilti::visitor::dispatch(v, data->type()->type(), [](const auto& v) -> const auto& { return v.result; }) )
@@ -106,7 +108,7 @@ cxx::Expression CodeGen::pack(QualifiedType* t, const cxx::Expression& data, con
 
 cxx::Expression CodeGen::unpack(QualifiedType* t, QualifiedType* data_type, Expression* data, const Expressions& args,
                                 bool throw_on_error) {
-    auto cxx_args = util::transform(args, [&](const auto& e) { return compile(e, false); });
+    auto cxx_args = util::toVector(args | std::views::transform([&](const auto& e) { return compile(e, false); }));
     auto v = Visitor(this, Visitor::Kind::Unpack, t, data_type, compile(data), cxx_args);
     if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; }) ) {
         if ( throw_on_error )

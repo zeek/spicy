@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include <ranges>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <hilti/rt/types/regexp.h>
 
@@ -37,7 +37,8 @@ public:
 
     node::Properties properties() const final {
         auto p = node::Properties{
-            {"pattern", util::join(util::transform(_patterns, [](const auto& p) { return to_string(p); }), " | ")}};
+            {"pattern",
+             util::join(_patterns | std::views::transform([](const auto& p) { return to_string(p); }), " | ")}};
         return Ctor::properties() + std::move(p);
     }
 

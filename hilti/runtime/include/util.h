@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <list>
 #include <memory>
-#include <new>
 #include <set>
 #include <string>
 #include <string_view>
@@ -258,6 +257,7 @@ bool endsWith(std::string_view s, std::string_view suffix);
 template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
          typename = decltype(std::end(std::declval<T>()))>
 constexpr auto enumerate(T&& iterable) {
+    // TODO(C++23): replace callers with `std::views::enumerate` in C++23 and remove this function.
     struct iterator {
         size_t i;
         TIter iter;
@@ -413,17 +413,6 @@ constexpr auto transform_result_value(const C&) {
 }
 
 } // namespace detail
-
-/** Applies a function to each element of container. */
-template<typename C, typename F>
-auto transform(const C& x, F f) {
-    using Y = typename std::invoke_result_t<F, typename C::value_type&>;
-
-    auto y = detail::transform_result_value<C, Y>(x);
-    std::transform(std::begin(x), std::end(x), std::inserter(y, std::end(y)), f);
-
-    return y;
-}
 
 class OutOfRange;
 

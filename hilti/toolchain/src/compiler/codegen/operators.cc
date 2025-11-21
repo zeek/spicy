@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <ranges>
+
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/operators/all.h>
@@ -36,7 +38,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     auto compileExpressions(const Expressions& exprs) {
-        return util::transform(exprs, [&](auto e) { return cg->compile(e); });
+        return util::toVector(exprs | std::views::transform([&](auto e) { return cg->compile(e); }));
     }
 
     auto compileExpressions(const node::Range<Expression>& exprs) {
@@ -898,10 +900,9 @@ struct Visitor : hilti::visitor::PreOrder {
 
         result = memberAccess(n,
                               fmt("%s(%s)", id,
-                                  util::join(util::transform(zipped,
-                                                             [this](const auto& x) {
-                                                                 return cg->compile(x.first, x.second);
-                                                             }),
+                                  util::join(zipped | std::views::transform([this](const auto& x) {
+                                                 return cg->compile(x.first, x.second);
+                                             }),
                                              ", ")),
                               false);
     }

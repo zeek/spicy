@@ -635,23 +635,6 @@ TEST_CASE("systemByteOrder") {
 #endif
 }
 
-TEST_CASE("transform") {
-    SUBCASE("set") {
-        CHECK_EQ(transform(std::set<int>(), [](auto&& x) { return x + x; }), std::set<int>());
-        CHECK_EQ(transform(std::set({1, 2, 3}), [](auto&& x) { return x + x; }), std::set({2, 4, 6}));
-    }
-
-    SUBCASE("Set") {
-        CHECK_EQ(transform(Set<int>(), [](auto&& x) { return x + x; }), Set<int>());
-        CHECK_EQ(transform(Set({1, 2, 3}), [](auto&& x) { return x + x; }), Set({2, 4, 6}));
-    }
-
-    SUBCASE("Vector") {
-        CHECK_EQ(transform(Vector<int>(), [](auto&& x) { return x + x; }), Vector<int>());
-        CHECK_EQ(transform(Vector({1, 2, 3}), [](auto&& x) { return x + x; }), Vector({2, 4, 6}));
-    }
-}
-
 TEST_CASE("trim") {
     CHECK_EQ(trim("", ""), "");
     CHECK_EQ(trim("aa123a", ""), "aa123a");

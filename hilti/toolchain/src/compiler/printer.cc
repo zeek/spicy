@@ -1,6 +1,8 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <cstdio>
+#include <ranges>
 
 #include <hilti/ast/all.h>
 #include <hilti/ast/function.h>
@@ -139,24 +141,29 @@ struct Printer : visitor::PreOrder {
 
         _out.pushScope(n->scopeID());
 
-        auto print_decls = [&](const node::Set<Declaration>& decls) {
-            for ( const auto& d : decls )
-                _out << d;
 
-            if ( decls.size() )
+        auto print_decls = [&](auto&& decls) {
+            bool empty = true;
+            for ( const auto& d : decls ) {
+                _out << d;
+                empty = false;
+            }
+
+            if ( ! empty )
                 _out.emptyLine();
         };
 
-        print_decls(util::filter(n->declarations(),
-                                 [](const auto& d) { return d->template isA<declaration::ImportedModule>(); }));
-        print_decls(
-            util::filter(n->declarations(), [](const auto& d) { return d->template isA<declaration::Type>(); }));
-        print_decls(
-            util::filter(n->declarations(), [](const auto& d) { return d->template isA<declaration::Constant>(); }));
-        print_decls(util::filter(n->declarations(),
-                                 [](const auto& d) { return d->template isA<declaration::GlobalVariable>(); }));
-        print_decls(
-            util::filter(n->declarations(), [](const auto& d) { return d->template isA<declaration::Function>(); }));
+
+        print_decls(n->declarations() |
+                    std::views::filter([](const auto& d) { return d->template isA<declaration::ImportedModule>(); }));
+        print_decls(n->declarations() |
+                    std::views::filter([](const auto& d) { return d->template isA<declaration::Type>(); }));
+        print_decls(n->declarations() |
+                    std::views::filter([](const auto& d) { return d->template isA<declaration::Constant>(); }));
+        print_decls(n->declarations() |
+                    std::views::filter([](const auto& d) { return d->template isA<declaration::GlobalVariable>(); }));
+        print_decls(n->declarations() |
+                    std::views::filter([](const auto& d) { return d->template isA<declaration::Function>(); }));
 
         for ( const auto& s : n->statements()->statements() )
             _out << s;
@@ -251,7 +258,8 @@ struct Printer : visitor::PreOrder {
     void operator()(ctor::StrongReference* n) final { _out << "Null"; }
 
     void operator()(ctor::RegExp* n) final {
-        _out << std::make_pair(util::transform(n->patterns(), [](const auto& p) { return to_string(p); }), " | ");
+        _out << std::make_pair(n->patterns() | std::views::transform([](const auto& p) { return to_string(p); }),
+                               " | ");
 
         if ( auto* attrs = n->attributes(); *attrs )
             _out << ' ' << std::make_pair(attrs->attributes(), " ");
@@ -825,10 +833,10 @@ struct Printer : visitor::PreOrder {
 
         _out.setExpandSubsequentType(false);
 
-        auto x = util::transform(util::filter(n->labels(), [](auto l) { return l->id() != ID("Undef"); }),
-                                 [](const auto& l) { return l->print(); });
+        auto x = n->labels() | std::views::filter([](auto l) { return l->id() != ID("Undef"); }) |
+                 std::views::transform([](const auto& l) { return l->print(); });
 
-        _out << "enum { " << std::make_pair(std::move(x), ", ") << " }";
+        _out << "enum { " << std::make_pair(util::toVector(std::move(x)), ", ") << " }";
     }
 
     void operator()(type::Error* n) final { _out << "error"; }
@@ -1015,16 +1023,18 @@ struct Printer : visitor::PreOrder {
         if ( n->parameters().size() )
             _out << " (" << std::make_pair(n->parameters(), ", ") << ')';
 
-        auto print_fields = [&](const auto& fields) {
+        auto print_fields = [&](auto&& fields) {
             for ( const auto& f : fields )
                 _out << f;
         };
 
         _out << " {" << _out.newline();
-        print_fields(util::filter(n->fields(),
-                                  [](const auto& f) { return ! f->type()->type()->template isA<type::Function>(); }));
-        print_fields(
-            util::filter(n->fields(), [](const auto& f) { return f->type()->type()->template isA<type::Function>(); }));
+        print_fields(n->fields() | std::views::filter([](const auto& f) {
+                         return ! f->type()->type()->template isA<type::Function>();
+                     }));
+        print_fields(n->fields() | std::views::filter([](const auto& f) {
+                         return f->type()->type()->template isA<type::Function>();
+                     }));
         _out << "}";
     }
 

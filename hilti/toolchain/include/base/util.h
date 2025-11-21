@@ -11,14 +11,12 @@
 #include <iostream>
 #include <iterator>
 #include <list>
-#include <map>
 #include <optional>
+#include <ranges>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -47,6 +45,12 @@ namespace util {
 /** Wrapper around the ABI's C++ demangle function. */
 using hilti::rt::demangle;
 
+/**
+ * Python-style enumerate() that returns an iterable yielding pairs `(index,
+ * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
+ */
+using hilti::rt::enumerate;
+
 /** Aborts with an internal error saying we should not be where we are. */
 extern void cannotBeReached() __attribute__((noreturn));
 
@@ -71,57 +75,14 @@ std::string fmt(const char* fmt, const Args&... args) {
     return tfm::format(fmt, args...);
 }
 
-using hilti::rt::transform; // NOLINT(misc-unused-using-decls)
-
 /** Collect a view into a vector. */
 template<std::ranges::input_range R>
 auto toVector(R&& xs) {
-    // TODO(bbannier): replace callers with `std::ranges::to` in C++23 and remove this function.
-    return std::vector(std::forward<R>(xs).begin(), std::forward<R>(xs).end());
-}
-
-/** Applies a function to each element of a set, returning a vector with the results. */
-template<typename X, typename F>
-auto transformToVector(const X& x, F f) {
-    using Y = typename std::invoke_result_t<F, typename X::value_type&>;
-    std::vector<Y> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        y.push_back(f(i));
-    return y;
-}
-
-/** Filters a container through a boolean predicate. */
-template<typename C, typename F>
-auto filter(const C& x, F f) {
-    C y;
-    std::copy_if(std::begin(x), std::end(x), std::inserter(y, std::end(y)), f);
-    return y;
-}
-
-/**
- * Python-style enumerate() that returns an iterable yielding pairs `(index,
- * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
- */
-template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
-         typename = decltype(std::end(std::declval<T>()))>
-constexpr auto enumerate(T&& iterable) {
-    struct Iterator {
-        size_t i;
-        TIter iter;
-        bool operator!=(const Iterator& other) const { return iter != other.iter; }
-        void operator++() {
-            ++i;
-            ++iter;
-        }
-        auto operator*() const { return std::tie(i, *iter); }
-    };
-    struct IterableWrapper {
-        T iterable;
-        auto begin() { return Iterator{0, std::begin(iterable)}; }
-        auto end() { return Iterator{0, std::end(iterable)}; }
-    };
-    return IterableWrapper{std::forward<T>(iterable)};
+    // TODO(C++23): replace callers with `std::ranges::to` in C++23 and remove this function.
+    if constexpr ( std::is_lvalue_reference_v<R> )
+        return std::vector(xs.begin(), xs.end());
+    else
+        return std::vector(std::make_move_iterator(xs.begin()), std::make_move_iterator(xs.end()));
 }
 
 /** Splits a string at all occurrences of a delimiter. */
@@ -183,11 +144,11 @@ std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
 }
 
 /**
- * Joins elements of a vector into a string, using a given delimiter to
+ * Joins elements of a range into a string, using a given delimiter to
  * separate them.
  */
 template<typename T>
-std::string join(const T& l, const std::string& delim = "") {
+std::string join(T&& l, const std::string& delim = "") {
     std::string result;
     bool first = true;
 
@@ -504,8 +465,8 @@ std::vector<T> concat(std::vector<T> v1, const std::vector<T>& v2) {
 }
 
 /** Appends a vector to another one. */
-template<typename T>
-std::vector<T>& append(std::vector<T>& v1, const std::vector<T>& v2) {
+template<typename T, std::ranges::input_range R>
+std::vector<T>& append(std::vector<T>& v1, R&& v2) {
     v1.reserve(v1.size() + v2.size());
     v1.insert(v1.end(), v2.begin(), v2.end());
     return v1;

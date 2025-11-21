@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <ranges>
 #include <string>
 #include <utility>
 
@@ -84,8 +85,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, const QualifiedTypes& types, Meta meta = {}) {
-        auto elements = util::transform(types, [&](const auto& t) { return tuple::Element::create(ctx, t, meta); });
-        return ctx->make<Tuple>(ctx, std::move(elements), std::move(meta));
+        auto elements =
+            types | std::views::transform([&](const auto& t) { return tuple::Element::create(ctx, t, meta); });
+        return ctx->make<Tuple>(ctx, util::toVector(elements), std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
