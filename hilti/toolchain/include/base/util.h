@@ -73,6 +73,13 @@ std::string fmt(const char* fmt, const Args&... args) {
 
 using hilti::rt::transform; // NOLINT(misc-unused-using-decls)
 
+/** Collect a view into a vector. */
+template<std::ranges::input_range R>
+auto toVector(R&& xs) {
+    // TODO(bbannier): replace callers with `std::ranges::to` in C++23 and remove this function.
+    return std::vector(std::forward<R>(xs).begin(), std::forward<R>(xs).end());
+}
+
 /** Applies a function to each element of a set, returning a vector with the results. */
 template<typename X, typename F>
 auto transformToVector(const X& x, F f) {
