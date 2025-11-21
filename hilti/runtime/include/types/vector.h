@@ -21,6 +21,7 @@
 #include <memory>
 #include <optional>
 #include <ostream>
+#include <ranges>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -579,7 +580,7 @@ namespace detail::adl {
 template<typename T, typename Allocator>
 inline std::string to_string(const Vector<T, Allocator>& x, adl::tag /*unused*/) {
     using detail::adl::to_string;
-    return fmt("[%s]", rt::join(rt::transform(x, [](const T& y) { return rt::to_string(y); }), ", "));
+    return fmt("[%s]", rt::join(x | std::views::transform([](const T& y) { return rt::to_string(y); }), ", "));
 }
 
 inline std::string to_string(const vector::Empty& /* x */, adl::tag /*unused*/) { return "[]"; }

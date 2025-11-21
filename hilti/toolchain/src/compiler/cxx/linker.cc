@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <ranges>
+
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/library.h>
 #include <hilti/rt/util.h>
@@ -90,7 +92,7 @@ void cxx::Linker::finalize() {
             if ( c.declare_only )
                 continue;
 
-            auto args = util::transform(impl->args, [](auto& a) { return a.id; });
+            auto args = impl->args | std::views::transform([](auto& a) { return a.id; });
 
             if ( std::string(c.callee.result) != "void" ) {
                 cxx::Block done_body;

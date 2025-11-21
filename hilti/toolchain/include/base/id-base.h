@@ -190,7 +190,7 @@ private:
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
     template<typename... T, typename enable = std::enable_if_t<(... && std::is_convertible_v<T, std::string_view>)>>
     explicit IDBase(const T&... s) {
-        _init((util::join<std::string>({s...}, "::")), false);
+        _init((util::join(std::initializer_list<std::string_view>{s...}, "::")), false);
     }
 
     /** Concatenates multiple strings into a single ID, separating them with `::`. */

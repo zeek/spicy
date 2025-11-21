@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <ranges>
 
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
@@ -441,8 +442,8 @@ std::string cxx::type::Struct::str() const {
     };
 
     std::vector<std::string> struct_fields;
-    util::append(struct_fields, util::transform(members, fmt_member));
-    util::append(struct_fields, util::transform(args, fmt_argument));
+    util::append(struct_fields, members | std::views::transform(fmt_member));
+    util::append(struct_fields, args | std::views::transform(fmt_argument));
 
     if ( add_ctors ) {
         auto dctor = fmt("%s();", type_name);
@@ -454,19 +455,17 @@ std::string cxx::type::Struct::str() const {
         for ( auto x : {std::move(dctor), std::move(cctor), std::move(mctor), std::move(cassign), std::move(massign)} )
             struct_fields.emplace_back(std::move(x));
 
-        auto locals_user = util::filter(members, [](const auto& m) {
-            auto l = std::get_if<declaration::Local>(&m);
-            return l && ! l->isInternal();
-        });
+        auto locals_user = members | std::views::filter([](const auto& m) {
+                               auto l = std::get_if<declaration::Local>(&m);
+                               return l && ! l->isInternal();
+                           });
 
-        if ( locals_user.size() ) {
-            auto locals_ctor_args =
-                util::join(util::transform(locals_user,
-                                           [&](const auto& x) {
-                                               auto& l = std::get<declaration::Local>(x);
-                                               return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
-                                           }),
-                           ", ");
+        if ( ! locals_user.empty() ) {
+            auto locals_ctor_args = util::join(locals_user | std::views::transform([&](const auto& x) {
+                                                   auto& l = std::get<declaration::Local>(x);
+                                                   return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
+                                               }),
+                                               ", ");
             auto locals_ctor = fmt("explicit %s(%s);", type_name, locals_ctor_args);
             struct_fields.emplace_back(std::move(locals_ctor));
         }
@@ -474,14 +473,15 @@ std::string cxx::type::Struct::str() const {
         if ( args.size() ) {
             // Add dedicated constructor to initialize the struct's arguments.
             auto params_ctor_args =
-                util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
+                util::join(args | std::views::transform([&](const auto& x) { return fmt("%s %s", x.type, x.id); }),
+                           ", ");
             auto params_ctor = fmt("%s(%s);", type_name, params_ctor_args);
             struct_fields.emplace_back(params_ctor);
         }
     }
 
     auto struct_fields_as_str =
-        util::join(util::transform(struct_fields, [&](const auto& x) { return fmt("    %s", x); }), "\n");
+        util::join(struct_fields | std::views::transform([&](const auto& x) { return fmt("    %s", x); }), "\n");
 
     std::string has_params;
     if ( args.size() )
@@ -501,15 +501,15 @@ std::string cxx::type::Struct::code() const {
     if ( ! add_ctors )
         return "";
 
-    auto locals_user = util::filter(members, [](const auto& m) {
-        auto l = std::get_if<declaration::Local>(&m);
-        return l && ! l->isInternal();
-    });
+    auto locals_user = members | std::views::filter([](const auto& m) {
+                           auto l = std::get_if<declaration::Local>(&m);
+                           return l && ! l->isInternal();
+                       });
 
-    auto locals_non_user = util::filter(members, [](const auto& m) {
-        auto l = std::get_if<declaration::Local>(&m);
-        return l && l->isInternal();
-    });
+    auto locals_non_user = members | std::views::filter([](const auto& m) {
+                               auto l = std::get_if<declaration::Local>(&m);
+                               return l && l->isInternal();
+                           });
 
     auto init_locals_user = [&]() {
         cxx::Formatter init;
@@ -517,30 +517,25 @@ std::string cxx::type::Struct::code() const {
         init.ensure_braces_for_block = false;
         init << ctor;
 
-        return init.str() + util::join(util::transform(locals_user,
-                                                       [&](const auto& x) {
-                                                           auto& l = std::get<declaration::Local>(x);
-                                                           return l.init ? fmt("    %s = %s;\n", l.id, *l.init) :
-                                                                           std::string();
-                                                       }),
+        return init.str() + util::join(locals_user | std::views::transform([&](const auto& x) {
+                                           auto& l = std::get<declaration::Local>(x);
+                                           return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
+                                       }),
                                        "");
     };
 
     auto init_locals_non_user = [&]() {
-        return util::join(util::transform(locals_non_user,
-                                          [&](const auto& x) {
-                                              auto& l = std::get<declaration::Local>(x);
-                                              return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
-                                          }),
+        return util::join(locals_non_user | std::views::transform([&](const auto& x) {
+                              auto& l = std::get<declaration::Local>(x);
+                              return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
+                          }),
                           "");
     };
 
     auto init_parameters = [&]() {
-        return util::join(util::transform(args,
-                                          [&](const auto& x) {
-                                              return x.default_ ? fmt("    %s = %s;\n", x.id, *x.default_) :
-                                                                  std::string();
-                                          }),
+        return util::join(args | std::views::transform([&](const auto& x) {
+                              return x.default_ ? fmt("    %s = %s;\n", x.id, *x.default_) : std::string();
+                          }),
                           "");
     };
 
@@ -561,36 +556,31 @@ std::string cxx::type::Struct::code() const {
     if ( args.size() ) {
         // Create constructor taking the struct's parameters.
         auto ctor_args =
-            util::join(util::transform(args, [&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
+            util::join(args | std::views::transform([&](const auto& x) { return fmt("%s %s", x.type, x.id); }), ", ");
 
-        auto ctor_inits =
-            util::join(util::transform(args,
-                                       [&](const auto& x) {
-                                           auto arg = x.isPassedByRef() ? fmt("%s", x.id) : fmt("std::move(%s)", x.id);
-                                           return fmt("%s(%s)", x.id, arg);
-                                       }),
-                       ", ");
+        auto ctor_inits = util::join(args | std::views::transform([&](const auto& x) {
+                                         auto arg = x.isPassedByRef() ? fmt("%s", x.id) : fmt("std::move(%s)", x.id);
+                                         return fmt("%s(%s)", x.id, arg);
+                                     }),
+                                     ", ");
 
         code += fmt("%s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits, init_locals_user(),
                     init_locals_non_user());
     }
 
-    if ( locals_user.size() ) {
+    if ( ! locals_user.empty() ) {
         // Create constructor taking the struct's (non-function) fields.
-        auto ctor_args = util::join(util::transform(locals_user,
-                                                    [&](const auto& x) {
-                                                        auto& l = std::get<declaration::Local>(x);
-                                                        return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
-                                                    }),
+        auto ctor_args = util::join(locals_user | std::views::transform([&](const auto& x) {
+                                        auto& l = std::get<declaration::Local>(x);
+                                        return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
+                                    }),
                                     ", ");
 
-        auto ctor_inits =
-            util::join(util::transform(locals_user,
-                                       [&](const auto& x) {
-                                           auto& l = std::get<declaration::Local>(x);
-                                           return fmt("    if ( %s ) this->%s = std::move(*%s);\n", l.id, l.id, l.id);
-                                       }),
-                       "");
+        auto ctor_inits = util::join(locals_user | std::views::transform([&](const auto& x) {
+                                         auto& l = std::get<declaration::Local>(x);
+                                         return fmt("    if ( %s ) this->%s = std::move(*%s);\n", l.id, l.id, l.id);
+                                     }),
+                                     "");
 
         code += fmt("%s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
     }
@@ -625,7 +615,8 @@ std::string cxx::type::Union::str() const {
 
 std::string cxx::type::Enum::str() const {
     auto vals =
-        util::join(util::transform(labels, [](const auto& l) { return fmt("%s = %d", l.first, l.second); }), ", ");
+        util::join(labels | std::views::transform([](const auto& l) { return fmt("%s = %d", l.first, l.second); }),
+                   ", ");
 
     return fmt("HILTI_RT_ENUM_WITH_DEFAULT(%s, Undef, %s);", type_name, vals);
 }

@@ -2,12 +2,9 @@
 
 #pragma once
 
-#include <algorithm>
 #include <iostream>
-#include <memory>
-#include <optional>
+#include <ranges>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
@@ -272,9 +269,9 @@ public:
      */
     bool supportsExtension(const hilti::rt::filesystem::path& ext) const { return pluginForExtension(ext).hasValue(); }
 
-    /** Returns a vector of all extensions that registered set of plugins handles. */
+    /** Returns a range of all extensions that registered set of plugins handles. */
     auto supportedExtensions() const {
-        return util::transform(_plugins, [](auto& p) { return p.extension; });
+        return _plugins | std::views::transform([](auto& p) { return p.extension; });
     }
 
     /**

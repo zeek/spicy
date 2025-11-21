@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <iomanip>
+#include <ranges>
 #include <sstream>
 
 #include <hilti/ast/builder/builder.h>
@@ -23,7 +24,7 @@ using namespace hilti::detail;
 uint64_t hilti::Node::_instances = 0;
 
 std::string node::to_string(const Tags& ti) {
-    return util::join(util::transform(ti, [](auto i) { return std::to_string(i); }), ",");
+    return util::join(ti | std::views::transform([](auto i) { return std::to_string(i); }), ",");
 }
 
 Node::~Node() {

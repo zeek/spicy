@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <ranges>
 #include <string>
 #include <utility>
 #include <vector>
@@ -45,18 +46,19 @@ public:
 
     std::vector<std::vector<Production*>> rhss() const final {
         std::vector<std::vector<Production*>> rhss = {
-            hilti::util::transform(_prods, [](const auto& p) { return p.get(); })};
+            hilti::util::toVector(_prods | std::views::transform([](const auto& p) { return p.get(); }))};
 
         if ( ! _else_prods.empty() )
-            rhss.push_back(hilti::util::transform(_else_prods, [](const auto& p) { return p.get(); }));
+            rhss.emplace_back(
+                hilti::util::toVector(_else_prods | std::views::transform([](const auto& p) { return p.get(); })));
 
         return rhss;
     }
 
     std::string dump() const final {
-        auto true_ = hilti::util::join(hilti::util::transform(_prods, [](const auto& p) { return p->symbol(); }), " ");
+        auto true_ = hilti::util::join(_prods | std::views::transform([](const auto& p) { return p->symbol(); }), " ");
         auto false_ =
-            hilti::util::join(hilti::util::transform(_else_prods, [](const auto& p) { return p->symbol(); }), " ");
+            hilti::util::join(_else_prods | std::views::transform([](const auto& p) { return p->symbol(); }), " ");
 
         if ( false_.empty() )
             return true_;

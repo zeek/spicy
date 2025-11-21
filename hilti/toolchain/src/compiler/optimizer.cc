@@ -3,9 +3,11 @@
 #include "hilti/compiler/detail/optimizer.h"
 
 #include <algorithm>
+#include <initializer_list>
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -1719,8 +1721,8 @@ public:
                 auto meta = n->meta();
                 auto comments = meta.comments();
 
-                if ( auto enabled_features = util::filter(features.at(n->fullyQualifiedID()),
-                                                          [](const auto& feature) { return feature.second; });
+                if ( auto enabled_features = features.at(n->fullyQualifiedID()) |
+                                             std::views::filter([](const auto& feature) { return feature.second; });
                      ! enabled_features.empty() ) {
                     comments.push_back(util::fmt("Type %s supports the following features:", n->id()));
                     for ( const auto& feature : enabled_features )
@@ -1801,7 +1803,7 @@ struct MemberVisitor : OptimizerVisitor {
         if ( ! n->attributes()->find(hilti::attribute::kind::Internal) )
             return;
 
-        auto member_id = util::join({type_id, n->id()}, "::");
+        auto member_id = util::join(std::initializer_list<ID>{type_id, n->id()}, "::");
 
         switch ( stage ) {
             case Stage::Collect: {
@@ -1858,7 +1860,7 @@ struct MemberVisitor : OptimizerVisitor {
                 if ( ! type_id )
                     break;
 
-                auto member_id = util::join({std::move(type_id), n->id()}, "::");
+                auto member_id = util::join(std::initializer_list<ID>{std::move(type_id), n->id()}, "::");
 
                 // Record the member as used.
                 used[member_id] = true;

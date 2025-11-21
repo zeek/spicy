@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <optional>
+#include <ranges>
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/builder/builder.h>
@@ -160,7 +161,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                                    fmt("__hook_%s_%s", id_class, id_local));
                             auto id_type = cxx::ID(id_module, id_class);
 
-                            auto args = util::transform(d.args, [](auto& a) { return a.id; });
+                            auto args = util::toVector(d.args | std::views::transform([](auto& a) { return a.id; }));
                             args.emplace_back("__self");
 
                             auto method_body = cxx::Block();
@@ -313,8 +314,9 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
             scope = scope.namespace_();
 
         auto id = cxx::ID(scope, sid);
-        auto labels = util::transform(n->labels(), [](auto l) { return std::make_pair(cxx::ID(l->id()), l->value()); });
-        auto t = cxx::type::Enum{.labels = std::move(labels), .type_name = cxx::ID(id.local())};
+        auto labels =
+            n->labels() | std::views::transform([](auto l) { return std::make_pair(cxx::ID(l->id()), l->value()); });
+        auto t = cxx::type::Enum{.labels = util::toVector(std::move(labels)), .type_name = cxx::ID(id.local())};
         auto decl = cxx::declaration::Type(std::move(id), t, {}, true);
         dependencies.push_back(decl);
         result = decl;
@@ -404,17 +406,17 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         auto id = cxx::ID(scope, sid);
 
         // Add tailored to_string() function.
-        auto cases = util::transform(n->uniqueLabels(), [&](auto l) {
-            auto b = cxx::Block();
-            b.addReturn(fmt("\"%s::%s\"", tid.local(), l->id()));
-            return std::make_pair(cxx::Expression(cxx::ID(id, l->id())), std::move(b));
-        });
+        auto cases = n->uniqueLabels() | std::views::transform([&](auto l) {
+                         auto b = cxx::Block();
+                         b.addReturn(fmt("\"%s::%s\"", tid.local(), l->id()));
+                         return std::make_pair(cxx::Expression(cxx::ID(id, l->id())), std::move(b));
+                     });
 
         auto default_ = cxx::Block();
         default_.addReturn(fmt(R"(::hilti::rt::fmt("%s::<unknown-%%" PRIu64 ">", x.value()))", id.local()));
 
         auto body = cxx::Block();
-        body.addSwitch("x.value()", cases, std::move(default_));
+        body.addSwitch("x.value()", util::toVector(std::move(cases)), std::move(default_));
 
         auto ts = cxx::declaration::Function(cxx::declaration::Function::Free, "std::string",
                                              {"::hilti::rt::detail::adl", "to_string"},
@@ -704,31 +706,31 @@ struct VisitorStorage : hilti::visitor::PreOrder {
     }
 
     void operator()(type::Tuple* n) final {
-        auto types =
-            util::join(util::transform(n->elements(),
-                                       [this](auto e) { return cg->compile(e->type(), codegen::TypeUsage::Storage); }),
-                       ", ");
+        auto types = util::join(n->elements() | std::views::transform([this](auto e) {
+                                    return cg->compile(e->type(), codegen::TypeUsage::Storage);
+                                }),
+                                ", ");
 
-        auto defaults =
-            util::join(util::transform(n->elements(),
-                                       [this](auto e) {
-                                           if ( auto d = cg->typeDefaultValue(e->type()) )
-                                               // Engage the optional with the element's explicit default value.
-                                               return fmt("{%s}", *d);
-                                           else {
-                                               // No explicit default (e.g., Bool, integers, etc.).
-                                               // If the element type itself is an Optional<T>, leave it unset.
-                                               if ( e->type()->type()->template isA<type::Optional>() )
-                                                   return fmt("::hilti::rt::optional::make<%s>({})",
-                                                              cg->compile(e->type(), codegen::TypeUsage::Storage));
+        auto defaults = util::join(n->elements() | std::views::transform([this](auto e) {
+                                       if ( auto d = cg->typeDefaultValue(e->type()) )
+                                           // Engage the optional with the element's explicit default
+                                           // value.
+                                           return fmt("{%s}", *d);
+                                       else {
+                                           // No explicit default (e.g., Bool, integers, etc.).
+                                           // If the element type itself is an Optional<T>, leave it
+                                           // unset.
+                                           if ( e->type()->type()->template isA<type::Optional>() )
+                                               return fmt("::hilti::rt::optional::make<%s>({})",
+                                                          cg->compile(e->type(), codegen::TypeUsage::Storage));
 
-                                               // Otherwise engage the optional with a value-initialized T{} so
-                                               // required (non-optional) tuple elements start as set.
-                                               auto t = cg->compile(e->type(), codegen::TypeUsage::Storage);
-                                               return fmt("::hilti::rt::Optional<%s>(%s{})", t, t);
-                                           }
-                                       }),
-                       ", ");
+                                           // Otherwise engage the optional with a value-initialized T{}
+                                           // so required (non-optional) tuple elements start as set.
+                                           auto t = cg->compile(e->type(), codegen::TypeUsage::Storage);
+                                           return fmt("::hilti::rt::Optional<%s>(%s{})", t, t);
+                                       }
+                                   }),
+                                   ", ");
 
         auto base_type = fmt("::hilti::rt::Tuple<%s>", types);
         auto default_ = fmt("::hilti::rt::tuple::make_from_optionals<%s>(%s)", types, defaults);

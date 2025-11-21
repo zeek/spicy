@@ -11,14 +11,13 @@
 #include <iostream>
 #include <iterator>
 #include <list>
-#include <map>
 #include <optional>
+#include <ranges>
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -47,6 +46,12 @@ namespace util {
 /** Wrapper around the ABI's C++ demangle function. */
 using hilti::rt::demangle;
 
+/**
+ * Python-style enumerate() that returns an iterable yielding pairs `(index,
+ * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
+ */
+using hilti::rt::enumerate;
+
 /** Aborts with an internal error saying we should not be where we are. */
 extern void cannotBeReached() __attribute__((noreturn));
 
@@ -71,50 +76,14 @@ std::string fmt(const char* fmt, const Args&... args) {
     return tfm::format(fmt, args...);
 }
 
-using hilti::rt::transform; // NOLINT(misc-unused-using-decls)
-
-/** Applies a function to each element of a set, returning a vector with the results. */
-template<typename X, typename F>
-auto transformToVector(const X& x, F f) {
-    using Y = typename std::invoke_result_t<F, typename X::value_type&>;
-    std::vector<Y> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        y.push_back(f(i));
-    return y;
-}
-
-/** Filters a container through a boolean predicate. */
-template<typename C, typename F>
-auto filter(const C& x, F f) {
-    C y;
-    std::copy_if(std::begin(x), std::end(x), std::inserter(y, std::end(y)), f);
-    return y;
-}
-
-/**
- * Python-style enumerate() that returns an iterable yielding pairs `(index,
- * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
- */
-template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
-         typename = decltype(std::end(std::declval<T>()))>
-constexpr auto enumerate(T&& iterable) {
-    struct Iterator {
-        size_t i;
-        TIter iter;
-        bool operator!=(const Iterator& other) const { return iter != other.iter; }
-        void operator++() {
-            ++i;
-            ++iter;
-        }
-        auto operator*() const { return std::tie(i, *iter); }
-    };
-    struct IterableWrapper {
-        T iterable;
-        auto begin() { return Iterator{0, std::begin(iterable)}; }
-        auto end() { return Iterator{0, std::end(iterable)}; }
-    };
-    return IterableWrapper{std::forward<T>(iterable)};
+/** Collect a view into a vector. */
+template<std::ranges::input_range R>
+auto toVector(R&& xs) {
+    // TODO(C++23): replace callers with `std::ranges::to` in C++23 and remove this function.
+    if constexpr ( std::is_lvalue_reference_v<R> )
+        return std::vector(xs.begin(), xs.end());
+    else
+        return std::vector(std::make_move_iterator(xs.begin()), std::make_move_iterator(xs.end()));
 }
 
 /** Splits a string at all occurrences of a delimiter. */
@@ -147,92 +116,29 @@ extern std::pair<std::string, std::string> rsplit1(std::string s, const std::str
 Result<std::vector<std::string>> splitShellUnsafe(const std::string& s);
 
 /**
- * Returns a subrange of a vector, specified through zero-based indices. If
+ * Returns a subview of a range, specified through zero-based indices. If
  * indices are out of range, they are cut back to start/end of input.
  *
- * @param v vector to slice
+ * @param v range to slice
  * @param begin 1st index; if negative, counts from end Python-style
  * @param end one beyond last index; if negative, counts from end Python-style
  */
-template<typename T>
-std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
-    if ( begin < 0 )
-        begin = v.size() + begin;
-
-    if ( static_cast<size_t>(begin) > v.size() )
-        return {};
-
+template<std::ranges::sized_range R>
+auto slice(R&& v, int begin, int end = -1) {
     if ( end < 0 )
         end = v.size() + end + 1;
 
     begin = std::max(begin, 0);
-
     end = std::max(end, 0);
 
-    if ( static_cast<size_t>(end) > v.size() )
-        end = v.size();
-
-    return std::vector<T>(v.begin() + begin, v.begin() + end);
+    return v | std::views::drop(begin) | std::views::take(end - begin);
 }
 
 /**
- * Joins elements of a vector into a string, using a given delimiter to
+ * Joins elements of a range into a string, using a given delimiter to
  * separate them.
  */
-template<typename T>
-std::string join(const T& l, const std::string& delim = "") {
-    std::string result;
-    bool first = true;
-
-    for ( const auto& i : l ) {
-        if ( not first )
-            result += delim;
-
-        result += std::string(i);
-        first = false;
-    }
-
-    return result;
-}
-
-/**
- * Joins elements of an initializer list into a string, using a given
- * delimiter to separate them.
- */
-template<typename T>
-std::string join(const std::initializer_list<T>& l, const std::string& delim = "") {
-    std::string result;
-    bool first = true;
-
-    for ( const auto& i : l ) {
-        if ( not first )
-            result += delim;
-        result += std::string(i);
-        first = false;
-    }
-
-    return result;
-}
-
-/**
- * Joins elements of an iterable range into a string, using a given delimiter
- * to separate then.
- */
-template<typename iterator>
-std::string join(const iterator& begin, const iterator& end, const std::string& delim = "") {
-    std::string result;
-    bool first = true;
-
-    for ( iterator i = begin; i != end; i++ ) {
-        if ( not first )
-            result += delim;
-        result += std::string(*i);
-        first = false;
-    }
-
-    return result;
-}
-
+using hilti::rt::join;
 
 /**
  * Splits a string into white-space-delimited pieces, prefixes each piece
@@ -497,8 +403,8 @@ std::vector<T> concat(std::vector<T> v1, const std::vector<T>& v2) {
 }
 
 /** Appends a vector to another one. */
-template<typename T>
-std::vector<T>& append(std::vector<T>& v1, const std::vector<T>& v2) {
+template<typename T, std::ranges::input_range R>
+std::vector<T>& append(std::vector<T>& v1, R&& v2) {
     v1.reserve(v1.size() + v2.size());
     v1.insert(v1.end(), v2.begin(), v2.end());
     return v1;

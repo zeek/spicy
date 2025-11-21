@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <ranges>
+
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/ctors/string.h>
@@ -513,13 +515,11 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             auto body = cxx::Block();
             auto cb = cxx::Block();
 
-            auto outer_args =
-                util::join(util::transform(cxx_func.args,
-                                           [](auto& x) {
-                                               return fmt("::hilti::rt::resumable::detail::copyArg(%s)", x.id);
-                                           }),
+            auto outer_args = util::join(cxx_func.args | std::views::transform([](auto& x) {
+                                             return fmt("::hilti::rt::resumable::detail::copyArg(%s)", x.id);
+                                         }),
 
-                           ", ");
+                                         ", ");
 
             body.addLocal({"args", "auto", {}, fmt("std::make_tuple(%s)", outer_args)});
 
@@ -530,10 +530,10 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             body.addLocal({"args_on_heap", "auto", {}, "std::make_shared<decltype(args)>(std::move(args))"});
 
             int idx = 0;
-            auto inner_args =
-                util::join(util::transform(cxx_func.args,
-                                           [&idx](auto& x) { return fmt("std::get<%d>(*args_on_heap)", idx++); }),
-                           ", ");
+            auto inner_args = util::join(cxx_func.args | std::views::transform([&idx](auto& x) {
+                                             return fmt("std::get<%d>(*args_on_heap)", idx++);
+                                         }),
+                                         ", ");
 
             // If the function returns void synthesize a `Nothing` return value here.
             if ( ! ft->result()->type()->isA<type::Void>() )

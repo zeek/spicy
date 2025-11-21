@@ -1,3 +1,13 @@
+1.15.0-dev.111 | 2025-11-21 17:05:03 +0100
+
+  * Change `util:slice` to return a range instead of a `vector`. (Benjamin Bannier, Corelight)
+
+  * Make `util::join` range-aware. (Benjamin Bannier, Corelight)
+
+  * Replace transform and filter utility functions with range adaptors. (Benjamin Bannier, Corelight)
+
+  * Add a helper to convert a range to a vector. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.106 | 2025-11-21 16:07:29 +0100
 
   * GH-2199: Fix non-determinism in computation of CFG data flow facts. (Benjamin Bannier, Corelight)

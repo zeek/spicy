@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <ranges>
 
 #include <hilti/rt/libhilti.h>
 
@@ -279,7 +280,7 @@ int main(int argc, char** argv) try {
 
     for ( const auto& parser : driver.opt_parser_aliases ) {
         auto m =
-            hilti::util::transform(hilti::util::split(parser, "="), [](const auto& x) { return hilti::util::trim(x); });
+            hilti::util::split(parser, "=") | std::views::transform([](const auto& x) { return hilti::util::trim(x); });
 
         if ( m.size() != 2 )
             driver.fatalError("invalid alias specification: must be of form '<alias>=<parser-name>'");

@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <cstdio>
+#include <ranges>
 
 #include <hilti/rt/util.h>
 
@@ -218,17 +219,14 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->isNoSub() )
             flags.emplace_back(".no_sub = true");
 
-        result =
-            fmt("::hilti::rt::RegExp({%s}, {%s})",
-                util::join(util::transform(n->patterns(),
-                                           [&](const auto& p) {
-                                               return fmt("::hilti::rt::regexp::Pattern{\"%s\", %s, %s}",
-                                                          util::escapeUTF8(p.value(),
-                                                                           hilti::rt::render_style::UTF8::EscapeQuotes),
-                                                          (p.isCaseInsensitive() ? "true" : "false"), p.matchID());
-                                           }),
-                           ", "),
-                util::join(flags, ", "));
+        result = fmt("::hilti::rt::RegExp({%s}, {%s})",
+                     util::join(n->patterns() | std::views::transform([&](const auto& p) {
+                                    return fmt("::hilti::rt::regexp::Pattern{\"%s\", %s, %s}",
+                                               util::escapeUTF8(p.value(), hilti::rt::render_style::UTF8::EscapeQuotes),
+                                               (p.isCaseInsensitive() ? "true" : "false"), p.matchID());
+                                }),
+                                ", "),
+                     util::join(flags, ", "));
     }
 
     void operator()(ctor::Set* n) final {

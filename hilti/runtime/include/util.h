@@ -8,11 +8,12 @@
 #include <algorithm>
 #include <list>
 #include <memory>
-#include <new>
+#include <ranges>
 #include <set>
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -258,6 +259,7 @@ bool endsWith(std::string_view s, std::string_view suffix);
 template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
          typename = decltype(std::end(std::declval<T>()))>
 constexpr auto enumerate(T&& iterable) {
+    // TODO(C++23): replace callers with `std::views::enumerate` in C++23 and remove this function.
     struct iterator {
         size_t i;
         TIter iter;
@@ -362,18 +364,21 @@ std::string escapeBytes(std::string_view s, bitmask<render_style::Bytes> style =
 std::string escapeUTF8(std::string_view s, bitmask<render_style::UTF8> style = render_style::UTF8::Default);
 
 /**
- * Joins elements of a container into a string, using a specified delimiter
+ * Joins elements of a range into a string, using a specified delimiter
  * to separate them.
  */
-template<typename T>
-std::string join(const T& l, const std::string& delim = "") {
+template<std::ranges::input_range T>
+std::string join(T&& l, std::string_view delim = "")
+    requires(std::is_constructible_v<std::string, std::ranges::range_value_t<T>>)
+{
     std::string result;
     bool first = true;
 
     for ( const auto& i : l ) {
-        if ( not first )
-            result += delim;
-        result += std::string(i);
+        if ( ! first )
+            result.append(delim);
+
+        result.append(i);
         first = false;
     }
 
@@ -413,17 +418,6 @@ constexpr auto transform_result_value(const C&) {
 }
 
 } // namespace detail
-
-/** Applies a function to each element of container. */
-template<typename C, typename F>
-auto transform(const C& x, F f) {
-    using Y = typename std::invoke_result_t<F, typename C::value_type&>;
-
-    auto y = detail::transform_result_value<C, Y>(x);
-    std::transform(std::begin(x), std::end(x), std::inserter(y, std::end(y)), f);
-
-    return y;
-}
 
 class OutOfRange;
 
