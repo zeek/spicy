@@ -1,3 +1,7 @@
+1.15.0-dev.106 | 2025-11-21 16:07:29 +0100
+
+  * GH-2199: Fix non-determinism in computation of CFG data flow facts. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.104 | 2025-11-18 18:17:02 +0100
 
   * Do not normalize ID names inside type information. (Robin Sommer)
