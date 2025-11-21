@@ -16,6 +16,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -147,60 +148,7 @@ std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
  * Joins elements of a range into a string, using a given delimiter to
  * separate them.
  */
-template<typename T>
-std::string join(T&& l, const std::string& delim = "") {
-    std::string result;
-    bool first = true;
-
-    for ( const auto& i : l ) {
-        if ( not first )
-            result += delim;
-
-        result += std::string(i);
-        first = false;
-    }
-
-    return result;
-}
-
-/**
- * Joins elements of an initializer list into a string, using a given
- * delimiter to separate them.
- */
-template<typename T>
-std::string join(const std::initializer_list<T>& l, const std::string& delim = "") {
-    std::string result;
-    bool first = true;
-
-    for ( const auto& i : l ) {
-        if ( not first )
-            result += delim;
-        result += std::string(i);
-        first = false;
-    }
-
-    return result;
-}
-
-/**
- * Joins elements of an iterable range into a string, using a given delimiter
- * to separate then.
- */
-template<typename iterator>
-std::string join(const iterator& begin, const iterator& end, const std::string& delim = "") {
-    std::string result;
-    bool first = true;
-
-    for ( iterator i = begin; i != end; i++ ) {
-        if ( not first )
-            result += delim;
-        result += std::string(*i);
-        first = false;
-    }
-
-    return result;
-}
-
+using hilti::rt::join;
 
 /**
  * Splits a string into white-space-delimited pieces, prefixes each piece

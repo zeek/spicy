@@ -3,6 +3,7 @@
 #include "hilti/compiler/detail/optimizer.h"
 
 #include <algorithm>
+#include <initializer_list>
 #include <memory>
 #include <numeric>
 #include <optional>
@@ -1802,7 +1803,7 @@ struct MemberVisitor : OptimizerVisitor {
         if ( ! n->attributes()->find(hilti::attribute::kind::Internal) )
             return;
 
-        auto member_id = util::join({type_id, n->id()}, "::");
+        auto member_id = util::join(std::initializer_list<ID>{type_id, n->id()}, "::");
 
         switch ( stage ) {
             case Stage::Collect: {
@@ -1859,7 +1860,7 @@ struct MemberVisitor : OptimizerVisitor {
                 if ( ! type_id )
                     break;
 
-                auto member_id = util::join({std::move(type_id), n->id()}, "::");
+                auto member_id = util::join(std::initializer_list<ID>{std::move(type_id), n->id()}, "::");
 
                 // Record the member as used.
                 used[member_id] = true;

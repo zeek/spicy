@@ -221,7 +221,7 @@ int main(int argc, char** argv) try {
         return 1;
     }
 
-    cout << hilti::util::join(result.begin(), result.end(), " ") << '\n';
+    cout << hilti::util::join(result, " ") << '\n';
 
     return 0;
 } catch ( const std::exception& e ) {

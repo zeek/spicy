@@ -8,10 +8,12 @@
 #include <algorithm>
 #include <list>
 #include <memory>
+#include <ranges>
 #include <set>
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -362,18 +364,21 @@ std::string escapeBytes(std::string_view s, bitmask<render_style::Bytes> style =
 std::string escapeUTF8(std::string_view s, bitmask<render_style::UTF8> style = render_style::UTF8::Default);
 
 /**
- * Joins elements of a container into a string, using a specified delimiter
+ * Joins elements of a range into a string, using a specified delimiter
  * to separate them.
  */
-template<typename T>
-std::string join(const T& l, const std::string& delim = "") {
+template<std::ranges::input_range T>
+std::string join(T&& l, std::string_view delim = "")
+    requires(std::is_constructible_v<std::string, std::ranges::range_value_t<T>>)
+{
     std::string result;
     bool first = true;
 
     for ( const auto& i : l ) {
-        if ( not first )
-            result += delim;
-        result += std::string(i);
+        if ( ! first )
+            result.append(delim);
+
+        result.append(i);
         first = false;
     }
 
