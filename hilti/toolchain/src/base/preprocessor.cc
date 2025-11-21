@@ -58,7 +58,7 @@ hilti::Result<bool> hilti::util::SourceCodePreprocessor::_parseIf(const std::str
 
     if ( m.size() >= 1 && m[0] == "!" ) {
         negate = true;
-        m = util::slice(m, 1); // "shift m"
+        m = toVector(util::slice(m, 1)); // "shift m"
     }
 
     if ( m.size() != 1 && m.size() != 3 )

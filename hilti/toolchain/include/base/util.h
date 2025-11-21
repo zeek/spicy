@@ -116,32 +116,22 @@ extern std::pair<std::string, std::string> rsplit1(std::string s, const std::str
 Result<std::vector<std::string>> splitShellUnsafe(const std::string& s);
 
 /**
- * Returns a subrange of a vector, specified through zero-based indices. If
+ * Returns a subview of a range, specified through zero-based indices. If
  * indices are out of range, they are cut back to start/end of input.
  *
- * @param v vector to slice
+ * @param v range to slice
  * @param begin 1st index; if negative, counts from end Python-style
  * @param end one beyond last index; if negative, counts from end Python-style
  */
-template<typename T>
-std::vector<T> slice(const std::vector<T>& v, int begin, int end = -1) {
-    if ( begin < 0 )
-        begin = v.size() + begin;
-
-    if ( static_cast<size_t>(begin) > v.size() )
-        return {};
-
+template<std::ranges::sized_range R>
+auto slice(R&& v, int begin, int end = -1) {
     if ( end < 0 )
         end = v.size() + end + 1;
 
     begin = std::max(begin, 0);
-
     end = std::max(end, 0);
 
-    if ( static_cast<size_t>(end) > v.size() )
-        end = v.size();
-
-    return std::vector<T>(v.begin() + begin, v.begin() + end);
+    return v | std::views::drop(begin) | std::views::take(end - begin);
 }
 
 /**

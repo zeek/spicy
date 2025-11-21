@@ -520,14 +520,14 @@ struct Visitor : hilti::visitor::PreOrder {
         const auto& ctor = n->op0()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         const auto& type = ctor[0]->type();
         auto args = tupleArguments(n, n->op0());
-        result = cg->pack(type, args[0], util::slice(args, 1, -1));
+        result = cg->pack(type, args[0], util::toVector(util::slice(args, 1, -1)));
     }
 
     void operator()(operator_::generic::Unpack* n) final {
         auto args = tupleArguments(n, n->op1());
         auto throw_on_error = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value();
         result = cg->unpack(n->op0()->type()->type()->as<type::Type_>()->typeValue(), tupleArgumentType(n->op1(), 0),
-                            args[0], util::slice(args, 1, -1), throw_on_error);
+                            args[0], util::toVector(util::slice(args, 1, -1)), throw_on_error);
     }
 
     void operator()(operator_::generic::Begin* n) final {
