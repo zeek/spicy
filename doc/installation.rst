@@ -202,7 +202,7 @@ To build Spicy from source, you will need:
 
     - For compiling the toolchain:
 
-        * A C++ compiler that supports C++20 (known to work are Clang >= 9 and GCC >= 9)
+        * A C++ compiler that supports C++20 (known to work are Clang >= 9 and GCC >= 12)
         * `CMake <https://cmake.org>`_  >= 3.15
         * `Bison <https://www.gnu.org/software/bison>`_  >= 3.0
         * `Flex <https://www.gnu.org/software/flex>`_  >= 2.6
