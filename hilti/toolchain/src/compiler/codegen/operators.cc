@@ -42,7 +42,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     auto compileExpressions(const node::Range<Expression>& exprs) {
-        return node::transform(exprs, [&](auto e) { return cg->compile(e); });
+        return util::toVector(exprs | std::views::transform([&](auto e) { return cg->compile(e); }));
     }
 
     auto methodArguments(const expression::ResolvedOperator* o) {
@@ -794,7 +794,7 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( auto* ctor = n->op1()->tryAs<expression::Ctor>() ) {
                 auto t = ctor->ctor()->as<ctor::Tuple>()->value();
                 result = fmt("::hilti::rt::fmt(%s, %s)", op0(n),
-                             util::join(node::transform(t, [this](auto x) { return cg->compile(x); }), ", "));
+                             util::join(t | std::views::transform([this](auto x) { return cg->compile(x); }), ", "));
                 return;
             }
         }
@@ -1108,7 +1108,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::tuple::CustomAssign* n) final {
         auto t = n->operands()[0]->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
-        auto l = util::join(node::transform(t, [this](auto x) { return cg->compile(x, true); }), ", ");
+        auto l = util::join(t | std::views::transform([this](auto x) { return cg->compile(x, true); }), ", ");
         result = {fmt("::hilti::rt::tuple::assign(std::tie(%s), %s)", l, op1(n)), Side::LHS};
     }
 

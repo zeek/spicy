@@ -373,9 +373,9 @@ struct VisitorStorage : hilti::visitor::PreOrder {
     void operator()(type::Bool* n) final { result = CxxTypes{.base_type = "::hilti::rt::Bool"}; }
 
     void operator()(type::Bitfield* n) final {
-        auto x = node::transform(n->bits(true), [this](const auto& b) {
-            return cg->compile(b->itemType(), codegen::TypeUsage::Storage);
-        });
+        auto x = n->bits(true) | std::views::transform([this](const auto& b) {
+                     return cg->compile(b->itemType(), codegen::TypeUsage::Storage);
+                 });
 
         auto t = fmt("::hilti::rt::Bitfield<%s>", util::join(x, ", "));
         auto ti = cg->typeInfo(type);

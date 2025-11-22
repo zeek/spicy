@@ -255,7 +255,7 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( exprs.size() == 1 )
                 cond = cg->compile(*exprs.begin());
             else
-                cond = util::join(node::transform(exprs, [&](auto e) { return cg->compile(e); }), " || ");
+                cond = util::join(exprs | std::views::transform([&](auto e) { return cg->compile(e); }), " || ");
 
             auto body = cg->compile(c->body());
 

@@ -231,11 +231,11 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
     }
 
     void operator()(declaration::GlobalVariable* n) final {
-        auto args = node::transform(n->typeArguments(), [this](auto a) { return cg->compile(a); });
+        auto args = n->typeArguments() | std::views::transform([this](auto a) { return cg->compile(a); });
         auto init = n->init() ? cg->compile(n->init()) : cg->typeDefaultValue(n->type());
         auto x =
             cxx::declaration::Global({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                     std::move(args), std::move(init),
+                                     util::toVector(args), std::move(init),
                                      (n->linkage() == declaration::Linkage::Public ? "" : "static"));
 
         // Record the global for now, final declarations will be added later
@@ -705,8 +705,6 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
                                                            const node::Set<declaration::Parameter>& params) {
-    auto kinds = node::transform(params, [](const auto& x) { return x->kind(); });
-
     std::vector<cxx::Expression> x;
     x.reserve(args.size());
 
@@ -731,8 +729,6 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
                                                            const node::Range<declaration::Parameter>& params) {
     assert(args.size() == params.size());
-
-    auto kinds = node::transform(params, [](auto x) { return x->kind(); });
 
     std::vector<cxx::Expression> x;
     x.reserve(args.size());

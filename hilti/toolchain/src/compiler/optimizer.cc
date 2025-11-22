@@ -1819,10 +1819,6 @@ struct MemberVisitor : OptimizerVisitor {
                     if ( features.contains(type_id) ) {
                         const auto& features_ = features.at(type_id);
 
-                        auto dependent_features =
-                            hilti::node::transform(n->attributes()->findAll(hilti::attribute::kind::NeededByFeature),
-                                                   [](const auto& attr) { return *attr->valueAsString(); });
-
                         for ( const auto& dependent_feature_ :
                               n->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                             auto dependent_feature = *dependent_feature_->valueAsString();

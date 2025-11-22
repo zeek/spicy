@@ -55,12 +55,10 @@ std::string codegen::to_string(const Production& p) {
         std::string args;
 
         if ( auto x = f->arguments(); x.size() ) {
-            args = hilti::util::fmt(", args: (%s)",
-                                    hilti::util::join(hilti::node::transform(x,
-                                                                             [](auto a) {
-                                                                                 return hilti::util::fmt("%s", *a);
-                                                                             }),
-                                                      ", "));
+            args = hilti::util::fmt(", args: (%s)", hilti::util::join(x | std::views::transform([](auto a) {
+                                                                          return hilti::util::fmt("%s", *a);
+                                                                      }),
+                                                                      ", "));
 
             field = hilti::util::fmt(" (field '%s', id %s, parser%s)", f->id(), id, args);
         }

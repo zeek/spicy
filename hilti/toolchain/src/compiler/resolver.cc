@@ -673,8 +673,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(ctor::Tuple* n) final {
         if ( ! n->type()->isResolved() && expression::areResolved(n->value()) ) {
-            auto elems = node::transform(n->value(), [](const auto& e) { return e->type(); });
-            auto* t = builder()->qualifiedType(builder()->typeTuple(elems, n->meta()), Constness::Const);
+            auto elems = n->value() | std::views::transform([](const auto& e) { return e->type(); });
+            auto* t =
+                builder()->qualifiedType(builder()->typeTuple(util::toVector(elems), n->meta()), Constness::Const);
             recordChange(n, t, "type");
             n->setType(context(), t);
         }

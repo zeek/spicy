@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <algorithm>
+#include <ranges>
 #include <utility>
 
 #include <hilti/ast/builder/all.h>
@@ -17,6 +18,8 @@
 #include <spicy/ast/types/sink.h>
 #include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
+
+#include "base/util.h"
 
 using namespace spicy;
 using namespace spicy::detail;
@@ -405,24 +408,25 @@ void CodeGen::compilePublicUnitAlias(hilti::declaration::Module* module, const I
 
 void CodeGen::_compileParserRegistration(const ID& public_id, const ID& struct_id, type::Unit* unit) {
     auto* description = unit->propertyItem("%description");
-    auto mime_types =
-        hilti::node::transform(unit->propertyItems("%mime-type"), [](const auto& p) { return p->expression(); });
-    auto ports = hilti::node::transform(unit->propertyItems("%port"), [this](auto p) -> Expression* {
-        auto dir = ID("spicy_rt::Direction::Both");
+    auto mime_types = hilti::util::toVector(unit->propertyItems("%mime-type") |
+                                            std::views::transform([](const auto& p) { return p->expression(); }));
+    auto ports =
+        hilti::util::toVector(unit->propertyItems("%port") | std::views::transform([this](auto p) -> Expression* {
+                                  auto dir = ID("spicy_rt::Direction::Both");
 
-        if ( const auto& attrs = p->attributes() ) {
-            auto orig = attrs->find(attribute::kind::Originator);
-            auto resp = attrs->find(attribute::kind::Responder);
+                                  if ( const auto& attrs = p->attributes() ) {
+                                      auto orig = attrs->find(attribute::kind::Originator);
+                                      auto resp = attrs->find(attribute::kind::Responder);
 
-            if ( orig && ! resp )
-                dir = ID("spicy_rt::Direction::Originator");
+                                      if ( orig && ! resp )
+                                          dir = ID("spicy_rt::Direction::Originator");
 
-            else if ( resp && ! orig )
-                dir = ID("spicy_rt::Direction::Responder");
-        }
+                                      else if ( resp && ! orig )
+                                          dir = ID("spicy_rt::Direction::Responder");
+                                  }
 
-        return builder()->tuple({p->expression(), builder()->expressionName(dir)});
-    });
+                                  return builder()->tuple({p->expression(), builder()->expressionName(dir)});
+                              }));
 
     Expression* parse1 = builder()->null();
     Expression* parse3 = builder()->null();
