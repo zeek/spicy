@@ -1,3 +1,7 @@
+1.15.0-dev.113 | 2025-11-24 19:31:57 +0100
+
+  * Reimplement `rt::currentExecutable`. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.111 | 2025-11-21 17:05:03 +0100
 
   * Change `util:slice` to return a range instead of a `vector`. (Benjamin Bannier, Corelight)
