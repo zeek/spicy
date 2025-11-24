@@ -1,3 +1,9 @@
+1.15.0-dev.116 | 2025-11-24 19:32:57 +0100
+
+  * Bump CodSpeedHQ/action from 4.3.4 to 4.4.1 (dependabot[bot])
+
+  * Bump actions/checkout from 5 to 6 (dependabot[bot])
+
 1.15.0-dev.113 | 2025-11-24 19:31:57 +0100
 
   * Reimplement `rt::currentExecutable`. (Benjamin Bannier, Corelight)
