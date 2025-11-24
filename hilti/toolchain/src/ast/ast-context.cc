@@ -171,7 +171,8 @@ void DependencyTracker::computeAllDependencies(ASTRoot* root) {
                 continue;
 
             auto decl_ = fmt("[%s] %s", decl->displayName(), decl->canonicalID());
-            auto deps_ = util::join(deps | std::views::transform([](const auto* d) { return d->canonicalID(); }), ", ");
+            auto deps_ =
+                util::join(std::ranges::transform_view(deps, [](const auto* d) { return d->canonicalID(); }), ", ");
             HILTI_DEBUG(logging::debug::AstDeclarations, fmt("- %s -> %s", decl_, deps_));
         }
     }

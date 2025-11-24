@@ -69,17 +69,17 @@ void spicy::rt::init() {
 
     HILTI_RT_DEBUG("libspicy", "registered parsers (w/ aliases):");
     for ( const auto& i : globalState()->parsers_by_name ) {
-        auto names = i.second | std::views::transform([](const auto& p) {
-                         return fmt("%s (scope 0x%" PRIx64 ")", p->name, p->linker_scope);
-                     });
+        auto names = std::ranges::transform_view(i.second, [](const auto& p) {
+            return fmt("%s (scope 0x%" PRIx64 ")", p->name, p->linker_scope);
+        });
         HILTI_RT_DEBUG("libspicy", hilti::rt::fmt("  %s -> %s", i.first, hilti::rt::join(names, ", ")));
     }
 
     HILTI_RT_DEBUG("libspicy", "registered parsers for MIME types:");
     for ( const auto& i : globalState()->parsers_by_mime_type ) {
-        auto names = i.second | std::views::transform([](const auto& p) {
-                         return fmt("%s (scope 0x%" PRIx64 ")", p->name, p->linker_scope);
-                     });
+        auto names = std::ranges::transform_view(i.second, [](const auto& p) {
+            return fmt("%s (scope 0x%" PRIx64 ")", p->name, p->linker_scope);
+        });
         HILTI_RT_DEBUG("libspicy", hilti::rt::fmt("  %s -> %s", i.first, hilti::rt::join(names, ", ")));
     }
 

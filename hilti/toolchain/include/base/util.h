@@ -131,7 +131,7 @@ auto slice(R&& v, int begin, int end = -1) {
     begin = std::max(begin, 0);
     end = std::max(end, 0);
 
-    return v | std::views::drop(begin) | std::views::take(end - begin);
+    return std::ranges::take_view(std::ranges::drop_view(v, begin), end - begin);
 }
 
 /**

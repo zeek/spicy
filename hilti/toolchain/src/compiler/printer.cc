@@ -154,16 +154,18 @@ struct Printer : visitor::PreOrder {
         };
 
 
-        print_decls(n->declarations() |
-                    std::views::filter([](const auto& d) { return d->template isA<declaration::ImportedModule>(); }));
-        print_decls(n->declarations() |
-                    std::views::filter([](const auto& d) { return d->template isA<declaration::Type>(); }));
-        print_decls(n->declarations() |
-                    std::views::filter([](const auto& d) { return d->template isA<declaration::Constant>(); }));
-        print_decls(n->declarations() |
-                    std::views::filter([](const auto& d) { return d->template isA<declaration::GlobalVariable>(); }));
-        print_decls(n->declarations() |
-                    std::views::filter([](const auto& d) { return d->template isA<declaration::Function>(); }));
+        print_decls(std::ranges::filter_view(n->declarations(), [](const auto& d) {
+            return d->template isA<declaration::ImportedModule>();
+        }));
+        print_decls(std::ranges::filter_view(n->declarations(),
+                                             [](const auto& d) { return d->template isA<declaration::Type>(); }));
+        print_decls(std::ranges::filter_view(n->declarations(),
+                                             [](const auto& d) { return d->template isA<declaration::Constant>(); }));
+        print_decls(std::ranges::filter_view(n->declarations(), [](const auto& d) {
+            return d->template isA<declaration::GlobalVariable>();
+        }));
+        print_decls(std::ranges::filter_view(n->declarations(),
+                                             [](const auto& d) { return d->template isA<declaration::Function>(); }));
 
         for ( const auto& s : n->statements()->statements() )
             _out << s;
@@ -258,7 +260,7 @@ struct Printer : visitor::PreOrder {
     void operator()(ctor::StrongReference* n) final { _out << "Null"; }
 
     void operator()(ctor::RegExp* n) final {
-        _out << std::make_pair(n->patterns() | std::views::transform([](const auto& p) { return to_string(p); }),
+        _out << std::make_pair(std::ranges::transform_view(n->patterns(), [](const auto& p) { return to_string(p); }),
                                " | ");
 
         if ( auto* attrs = n->attributes(); *attrs )
@@ -833,8 +835,9 @@ struct Printer : visitor::PreOrder {
 
         _out.setExpandSubsequentType(false);
 
-        auto x = n->labels() | std::views::filter([](auto l) { return l->id() != ID("Undef"); }) |
-                 std::views::transform([](const auto& l) { return l->print(); });
+        auto x = std::ranges::transform_view(std::ranges::filter_view(n->labels(),
+                                                                      [](auto l) { return l->id() != ID("Undef"); }),
+                                             [](const auto& l) { return l->print(); });
 
         _out << "enum { " << std::make_pair(util::toVector(std::move(x)), ", ") << " }";
     }
@@ -1029,12 +1032,12 @@ struct Printer : visitor::PreOrder {
         };
 
         _out << " {" << _out.newline();
-        print_fields(n->fields() | std::views::filter([](const auto& f) {
-                         return ! f->type()->type()->template isA<type::Function>();
-                     }));
-        print_fields(n->fields() | std::views::filter([](const auto& f) {
-                         return f->type()->type()->template isA<type::Function>();
-                     }));
+        print_fields(std::ranges::filter_view(n->fields(), [](const auto& f) {
+            return ! f->type()->type()->template isA<type::Function>();
+        }));
+        print_fields(std::ranges::filter_view(n->fields(), [](const auto& f) {
+            return f->type()->type()->template isA<type::Function>();
+        }));
         _out << "}";
     }
 

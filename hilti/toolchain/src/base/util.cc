@@ -282,27 +282,27 @@ std::string util::prefixParts(const std::string& in, const std::string& prefix, 
     if ( in.empty() )
         return "";
 
-    auto x = split(in, " ") | std::views::transform([&](auto s) {
-                 if ( s.empty() )
-                     return std::string();
+    auto x = std::ranges::transform_view(split(in, " "), [&](auto s) {
+        if ( s.empty() )
+            return std::string();
 
-                 if ( include_tag.size() ) {
-                     auto x = split(s, "!");
-                     if ( x.size() == 3 ) {
-                         if ( x[1] != include_tag )
-                             return std::string();
+        if ( include_tag.size() ) {
+            auto x = split(s, "!");
+            if ( x.size() == 3 ) {
+                if ( x[1] != include_tag )
+                    return std::string();
 
-                         s = x[2];
-                     }
-                 }
+                s = x[2];
+            }
+        }
 
-                 if ( auto x = trim(s); ! util::startsWith(s, "-") )
-                     return prefix + x;
-                 else
-                     return x;
-             });
+        if ( auto x = trim(s); ! util::startsWith(s, "-") )
+            return prefix + x;
+        else
+            return x;
+    });
 
-    return join(std::move(x) | std::views::filter([](const auto& s) -> bool { return s.size(); }), " ");
+    return join(std::ranges::filter_view(std::move(x), [](const auto& s) -> bool { return s.size(); }), " ");
 }
 
 std::vector<std::string> util::flattenParts(const std::vector<std::string>& in) {

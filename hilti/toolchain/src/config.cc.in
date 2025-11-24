@@ -98,31 +98,35 @@ void Configuration::init(bool use_build_directory) {
     std::vector<std::string> library_paths;
 
     if ( auto* hilti_library_paths = std::getenv("HILTI_PATH") ) {
-        library_paths = util::toVector(hilti::rt::split(hilti_library_paths, ":") |
-                                       std::views::transform([](auto s) { return std::string(s); }));
+        library_paths = util::toVector(std::ranges::transform_view(hilti::rt::split(hilti_library_paths, ":"),
+                                                                   [](auto s) { return std::string(s); }));
     }
     else {
         library_paths = flatten({".", prefix("${HILTI_CONFIG_LIBRARY_DIRS}", "", installation_tag)});
     }
 
     hilti_library_paths = util::toVector(
-        library_paths | std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        std::ranges::transform_view(library_paths, [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     runtime_cxx_include_paths =
-        util::toVector(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "", installation_tag)) |
-                       std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        util::toVector(std::ranges::transform_view(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}",
+                                                                             "", installation_tag)),
+                                                   [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     runtime_cxx_library_paths =
-        util::toVector(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "", installation_tag)) |
-                       std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        util::toVector(std::ranges::transform_view(hilti::util::split(prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}",
+                                                                             "", installation_tag)),
+                                                   [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
-    toolchain_cxx_include_paths =
-        util::toVector(hilti::util::split(prefix("${HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS}", "", installation_tag)) |
-                       std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+    toolchain_cxx_include_paths = util::toVector(
+        std::ranges::transform_view(hilti::util::split(
+                                        prefix("${HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS}", "", installation_tag)),
+                                    [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
-    toolchain_cxx_library_paths =
-        util::toVector(hilti::util::split(prefix("${HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS}", "", installation_tag)) |
-                       std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+    toolchain_cxx_library_paths = util::toVector(
+        std::ranges::transform_view(hilti::util::split(
+                                        prefix("${HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS}", "", installation_tag)),
+                                    [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     // We hardcode the main compiler flags here instead of injecting them from
     // CMake to make it clear that they are really independent on what CMake

@@ -272,9 +272,10 @@ void regexp::detail::CompiledRegExp::_compileOne(regexp::Pattern pattern, int id
 
 RegExp::RegExp(const regexp::Patterns& patterns, regexp::Flags flags) {
     const auto& key =
-        (patterns.empty() ? std::string() :
-                            join(patterns | std::views::transform([](const auto& p) { return to_string(p); }), "|") +
-                                "|" + flags.cacheKey());
+        (patterns.empty() ?
+             std::string() :
+             join(std::ranges::transform_view(patterns, [](const auto& p) { return to_string(p); }), "|") + "|" +
+                 flags.cacheKey());
     auto& ptr = detail::globalState()->regexp_cache[key];
 
     if ( ! ptr )
@@ -443,7 +444,7 @@ std::string hilti::rt::detail::adl::to_string(const RegExp& x, adl::tag /*unused
     if ( x.patterns().empty() )
         return "<regexp w/o pattern>";
 
-    auto p = join(x.patterns() | std::views::transform([&](const auto& s) { return to_string(s); }), " | ");
+    auto p = join(std::ranges::transform_view(x.patterns(), [&](const auto& s) { return to_string(s); }), " | ");
     auto f = std::vector<std::string>();
 
     if ( x.flags().no_sub )

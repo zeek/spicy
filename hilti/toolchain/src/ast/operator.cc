@@ -78,7 +78,8 @@ std::string printOperator(operator_::Kind kind, const std::vector<std::string>& 
 
 std::string printOperator(operator_::Kind kind, const Expressions& operands, bool print_signature, const Meta& meta) {
     if ( ! print_signature )
-        return printOperator(kind, toVector(operands | std::views::transform([](const auto& x) { return x->print(); })),
+        return printOperator(kind,
+                             toVector(std::ranges::transform_view(operands, [](const auto& x) { return x->print(); })),
                              meta);
 
     auto render_one = [](QualifiedType* t) {
@@ -93,9 +94,10 @@ std::string printOperator(operator_::Kind kind, const Expressions& operands, boo
             assert(operands.size() == 3);
             std::string args;
             if ( auto* ttype = operands[2]->type()->type()->tryAs<type::Tuple>() )
-                args = util::join(ttype->elements() | std::views::transform([&render_one](const auto& x) {
-                                      return render_one(x->type());
-                                  }),
+                args = util::join(std::ranges::transform_view(ttype->elements(),
+                                                              [&render_one](const auto& x) {
+                                                                  return render_one(x->type());
+                                                              }),
                                   ", ");
             else
                 args = render_one(operands[2]->type());
@@ -108,9 +110,10 @@ std::string printOperator(operator_::Kind kind, const Expressions& operands, boo
             assert(operands.size() == 2);
             std::string args;
             if ( auto* ttype = operands[1]->type()->type()->tryAs<type::Tuple>() )
-                args = util::join(ttype->elements() | std::views::transform([&render_one](const auto& x) {
-                                      return render_one(x->type());
-                                  }),
+                args = util::join(std::ranges::transform_view(ttype->elements(),
+                                                              [&render_one](const auto& x) {
+                                                                  return render_one(x->type());
+                                                              }),
                                   ", ");
             else
                 args = render_one(operands[1]->type());
@@ -120,9 +123,11 @@ std::string printOperator(operator_::Kind kind, const Expressions& operands, boo
 
 
         default:
-            return printOperator(kind, toVector(operands | std::views::transform([&render_one](const auto& op) {
-                                                    return render_one(op->type());
-                                                })),
+            return printOperator(kind,
+                                 toVector(std::ranges::transform_view(operands,
+                                                                      [&render_one](const auto& op) {
+                                                                          return render_one(op->type());
+                                                                      })),
                                  meta);
     }
 }
@@ -142,8 +147,9 @@ std::string printOperator(operator_::Kind kind, const Operands& operands, const 
             assert(operands.size() == 3);
             std::string args;
             if ( auto* ttype = operands[2]->type()->type()->tryAs<type::OperandList>() )
-                args = util::join(ttype->operands() | std::views::transform([](const auto& x) { return x->print(); }),
-                                  ", ");
+                args =
+                    util::join(std::ranges::transform_view(ttype->operands(), [](const auto& x) { return x->print(); }),
+                               ", ");
             else
                 args = render_one(operands[2]);
 
@@ -155,8 +161,9 @@ std::string printOperator(operator_::Kind kind, const Operands& operands, const 
             assert(operands.size() == 2);
             std::string args;
             if ( auto* ttype = operands[1]->type()->type()->tryAs<type::OperandList>() )
-                args = util::join(ttype->operands() | std::views::transform([](const auto& x) { return x->print(); }),
-                                  ", ");
+                args =
+                    util::join(std::ranges::transform_view(ttype->operands(), [](const auto& x) { return x->print(); }),
+                               ", ");
             else
                 args = render_one(operands[1]);
 
@@ -164,7 +171,7 @@ std::string printOperator(operator_::Kind kind, const Operands& operands, const 
         }
 
 
-        default: return printOperator(kind, toVector(operands | std::views::transform(render_one)), meta);
+        default: return printOperator(kind, toVector(std::ranges::transform_view(operands, render_one)), meta);
     }
 }
 

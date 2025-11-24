@@ -1721,8 +1721,9 @@ public:
                 auto meta = n->meta();
                 auto comments = meta.comments();
 
-                if ( auto enabled_features = features.at(n->fullyQualifiedID()) |
-                                             std::views::filter([](const auto& feature) { return feature.second; });
+                if ( auto enabled_features =
+                         std::ranges::filter_view(features.at(n->fullyQualifiedID()),
+                                                  [](const auto& feature) { return feature.second; });
                      ! enabled_features.empty() ) {
                     comments.push_back(util::fmt("Type %s supports the following features:", n->id()));
                     for ( const auto& feature : enabled_features )

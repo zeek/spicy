@@ -33,11 +33,11 @@ public:
     bool isTerminal() const final { return false; };
 
     std::vector<std::vector<Production*>> rhss() const final {
-        return {hilti::util::toVector(_prods | std::views::transform([](const auto& p) { return p.get(); }))};
+        return {hilti::util::toVector(std::ranges::transform_view(_prods, [](const auto& p) { return p.get(); }))};
     }
 
     std::string dump() const final {
-        return hilti::util::join(_prods | std::views::transform([](const auto& p) { return p->symbol(); }), " ");
+        return hilti::util::join(std::ranges::transform_view(_prods, [](const auto& p) { return p->symbol(); }), " ");
     }
 
     SPICY_PRODUCTION

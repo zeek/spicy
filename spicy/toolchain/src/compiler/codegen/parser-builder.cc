@@ -1089,13 +1089,13 @@ struct ProductionVisitor : public production::Visitor {
                 first_token = false;
 
                 // Create the joint regular expression. The token IDs become the regexps' IDs.
-                auto patterns = regexps | std::views::transform([](const auto& c) {
-                                    return std::make_pair(c->template as<production::Ctor>()
-                                                              ->ctor()
-                                                              ->template as<hilti::ctor::RegExp>()
-                                                              ->patterns(),
-                                                          c->tokenID());
-                                });
+                auto patterns = std::ranges::transform_view(regexps, [](const auto& c) {
+                    return std::make_pair(c->template as<production::Ctor>()
+                                              ->ctor()
+                                              ->template as<hilti::ctor::RegExp>()
+                                              ->patterns(),
+                                          c->tokenID());
+                });
 
                 auto flattened = hilti::ctor::regexp::Patterns();
 
@@ -1854,14 +1854,16 @@ struct ProductionVisitor : public production::Visitor {
         // Now use the freshly set look-ahead symbol to switch accordingly.
         const auto& lahs = p.lookAheads();
 
-        auto alts1 = lahs.first | std::views::filter([](const auto& p) { return p->isLiteral(); });
-        auto alts2 = lahs.second | std::views::filter([](const auto& p) { return p->isLiteral(); });
-        auto exprs_alt1 = hilti::util::toVector(alts1 | std::views::transform([this](const auto& p) -> Expression* {
-                                                    return builder()->integer(p->tokenID());
-                                                }));
-        auto exprs_alt2 = hilti::util::toVector(alts2 | std::views::transform([this](const auto& p) -> Expression* {
-                                                    return builder()->integer(p->tokenID());
-                                                }));
+        auto alts1 = std::ranges::filter_view(lahs.first, [](const auto& p) { return p->isLiteral(); });
+        auto alts2 = std::ranges::filter_view(lahs.second, [](const auto& p) { return p->isLiteral(); });
+        auto exprs_alt1 =
+            hilti::util::toVector(std::ranges::transform_view(alts1, [this](const auto& p) -> Expression* {
+                return builder()->integer(p->tokenID());
+            }));
+        auto exprs_alt2 =
+            hilti::util::toVector(std::ranges::transform_view(alts2, [this](const auto& p) -> Expression* {
+                return builder()->integer(p->tokenID());
+            }));
 
         switch ( p.default_() ) {
             case production::look_ahead::Default::First: {
@@ -2946,7 +2948,7 @@ void ParserBuilder::syncAdvanceHook(std::shared_ptr<Builder> cond) {
 std::shared_ptr<Builder> ParserBuilder::_featureCodeIf(const type::Unit* unit,
                                                        const std::vector<std::string_view>& features) {
     auto flags = hilti::util::toVector(
-        features | std::views::transform([&](const auto& feature) { return featureConstant(unit, feature); }));
+        std::ranges::transform_view(features, [&](const auto& feature) { return featureConstant(unit, feature); }));
 
 
     auto* cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),

@@ -44,13 +44,13 @@ public:
     bool isTerminal() const final { return false; };
 
     std::vector<std::vector<Production*>> rhss() const final {
-        return {hilti::util::toVector(_fields | std::views::transform([](const auto& p) { return p.get(); }))};
+        return {hilti::util::toVector(std::ranges::transform_view(_fields, [](const auto& p) { return p.get(); }))};
     }
 
     QualifiedType* type() const final { return _type; };
 
     std::string dump() const final {
-        return hilti::util::join(_fields | std::views::transform([](const auto& p) { return p->symbol(); }), " ");
+        return hilti::util::join(std::ranges::transform_view(_fields, [](const auto& p) { return p->symbol(); }), " ");
     }
 
     SPICY_PRODUCTION

@@ -106,23 +106,27 @@ void Configuration::init(bool use_build_directory) {
         library_paths = flatten({".", prefix("${SPICY_CONFIG_LIBRARY_DIRS}", "", installation_tag)});
 
     spicy_library_paths = hilti::util::toVector(
-        library_paths | std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        std::ranges::transform_view(library_paths, [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     runtime_cxx_include_paths = hilti::util::toVector(
-        hilti::util::split(prefix("${SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "", installation_tag)) |
-        std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        std::ranges::transform_view(hilti::util::split(
+                                        prefix("${SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "", installation_tag)),
+                                    [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     runtime_cxx_library_paths = hilti::util::toVector(
-        hilti::util::split(prefix("${SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "", installation_tag)) |
-        std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        std::ranges::transform_view(hilti::util::split(
+                                        prefix("${SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "", installation_tag)),
+                                    [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     toolchain_cxx_include_paths = hilti::util::toVector(
-        hilti::util::split(prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS}", "", installation_tag)) |
-        std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        std::ranges::transform_view(hilti::util::split(
+                                        prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS}", "", installation_tag)),
+                                    [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     toolchain_cxx_library_paths = hilti::util::toVector(
-        hilti::util::split(prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS}", "", installation_tag)) |
-        std::views::transform([](const auto& s) { return hilti::rt::filesystem::path(s); }));
+        std::ranges::transform_view(hilti::util::split(
+                                        prefix("${SPICY_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS}", "", installation_tag)),
+                                    [](const auto& s) { return hilti::rt::filesystem::path(s); }));
 
     runtime_cxx_flags_debug = flatten({prefix("${SPICY_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
                                        prefix("${SPICY_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag)});

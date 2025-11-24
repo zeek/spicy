@@ -549,8 +549,8 @@ std::string CFG::dot(bool omit_dataflow) const {
             const auto& transfer = it->second;
 
             auto read = [&]() {
-                auto xs = util::toVector(transfer.read |
-                                         std::views::transform([&](auto* decl) { return escape(decl->id()); }));
+                auto xs = util::toVector(
+                    std::ranges::transform_view(transfer.read, [&](auto* decl) { return escape(decl->id()); }));
                 std::ranges::sort(xs);
                 if ( ! xs.empty() )
                     return util::fmt("read: [%s]", util::join(xs, ", "));
@@ -559,8 +559,8 @@ std::string CFG::dot(bool omit_dataflow) const {
             }();
 
             auto write = [&]() {
-                auto xs = util::toVector(transfer.write |
-                                         std::views::transform([&](auto* decl) { return escape(decl->id()); }));
+                auto xs = util::toVector(
+                    std::ranges::transform_view(transfer.write, [&](auto* decl) { return escape(decl->id()); }));
                 std::ranges::sort(xs);
                 if ( ! xs.empty() )
                     return util::fmt("write: [%s]", util::join(xs, ", "));
@@ -569,10 +569,10 @@ std::string CFG::dot(bool omit_dataflow) const {
             }();
 
             auto gen = [&]() {
-                auto xs = util::toVector(transfer.gen | std::views::transform([&](const auto& kv) {
-                                             const auto& [decl, node] = kv;
-                                             return util::fmt("%s: %s", escape(decl->id()), escape(node->print()));
-                                         }));
+                auto xs = util::toVector(std::ranges::transform_view(transfer.gen, [&](const auto& kv) {
+                    const auto& [decl, node] = kv;
+                    return util::fmt("%s: %s", escape(decl->id()), escape(node->print()));
+                }));
                 std::ranges::sort(xs);
                 if ( ! xs.empty() )
                     return util::fmt("gen: [%s]", util::join(xs, ", "));
@@ -605,8 +605,8 @@ std::string CFG::dot(bool omit_dataflow) const {
             }();
 
             auto aliases = [&]() {
-                auto xs = util::toVector(transfer.maybe_alias |
-                                         std::views::transform([&](auto* decl) { return escape(decl->id()); }));
+                auto xs = util::toVector(
+                    std::ranges::transform_view(transfer.maybe_alias, [&](auto* decl) { return escape(decl->id()); }));
                 std::ranges::sort(xs);
                 if ( ! xs.empty() )
                     return util::fmt("aliases: [%s]", util::join(xs, ", "));
@@ -616,17 +616,18 @@ std::string CFG::dot(bool omit_dataflow) const {
 
             auto keep = [&]() -> std::string { return transfer.keep ? "keep" : ""; }();
 
-            xlabel = util::fmt("xlabel=\"%s\"", util::join(
-                                                    std::vector{
-                                                        std::move(read),
-                                                        std::move(write),
-                                                        std::move(gen),
-                                                        std::move(kill),
-                                                        std::move(in_out),
-                                                        std::move(aliases),
-                                                        std::move(keep),
-                                                    } | std::views::filter([](const auto& x) { return ! x.empty(); }),
-                                                    " "));
+            xlabel = util::fmt("xlabel=\"%s\"", util::join(std::ranges::filter_view(
+                                                               std::vector{
+                                                                   std::move(read),
+                                                                   std::move(write),
+                                                                   std::move(gen),
+                                                                   std::move(kill),
+                                                                   std::move(in_out),
+                                                                   std::move(aliases),
+                                                                   std::move(keep),
+                                                               },
+                                                               [](const auto& x) { return ! x.empty(); }),
+                                                           " "));
         }
 
         if ( const auto* meta = n->tryAs<MetaNode>() ) {

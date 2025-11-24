@@ -271,7 +271,7 @@ public:
 
     /** Returns a range of all extensions that registered set of plugins handles. */
     auto supportedExtensions() const {
-        return _plugins | std::views::transform([](auto& p) { return p.extension; });
+        return std::ranges::transform_view(_plugins, [](auto& p) { return p.extension; });
     }
 
     /**

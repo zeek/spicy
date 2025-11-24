@@ -18,7 +18,7 @@ static std::string fmtAlt(const codegen::Production* alt, const spicy::detail::c
             return hilti::util::fmt("%s (not a literal)", str);
     };
 
-    return hilti::util::fmt("{%s}: %s", hilti::util::join(lahs | std::views::transform(fmt), ", "), alt->symbol());
+    return hilti::util::fmt("{%s}: %s", hilti::util::join(std::ranges::transform_view(lahs, fmt), ", "), alt->symbol());
 }
 
 std::string codegen::production::LookAhead::dump() const {

@@ -24,7 +24,7 @@ using namespace hilti::detail;
 uint64_t hilti::Node::_instances = 0;
 
 std::string node::to_string(const Tags& ti) {
-    return util::join(ti | std::views::transform([](auto i) { return std::to_string(i); }), ",");
+    return util::join(std::ranges::transform_view(ti, [](auto i) { return std::to_string(i); }), ",");
 }
 
 Node::~Node() {

@@ -92,7 +92,7 @@ void cxx::Linker::finalize() {
             if ( c.declare_only )
                 continue;
 
-            auto args = impl->args | std::views::transform([](auto& a) { return a.id; });
+            auto args = std::ranges::transform_view(impl->args, [](auto& a) { return a.id; });
 
             if ( std::string(c.callee.result) != "void" ) {
                 cxx::Block done_body;

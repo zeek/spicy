@@ -86,7 +86,7 @@ public:
 
     static auto create(ASTContext* ctx, const QualifiedTypes& types, Meta meta = {}) {
         auto elements =
-            types | std::views::transform([&](const auto& t) { return tuple::Element::create(ctx, t, meta); });
+            std::ranges::transform_view(types, [&](const auto& t) { return tuple::Element::create(ctx, t, meta); });
         return ctx->make<Tuple>(ctx, util::toVector(elements), std::move(meta));
     }
 

@@ -38,7 +38,7 @@ public:
     node::Properties properties() const final {
         auto p = node::Properties{
             {"pattern",
-             util::join(_patterns | std::views::transform([](const auto& p) { return to_string(p); }), " | ")}};
+             util::join(std::ranges::transform_view(_patterns, [](const auto& p) { return to_string(p); }), " | ")}};
         return Ctor::properties() + std::move(p);
     }
 
