@@ -76,3 +76,7 @@ Checks: '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z-]+/include/([a-zA-Z-]+/)*[a-zA-Z-]+\.h'
 WarningsAsErrors: '*'
+
+CheckOptions:
+  readability-operators-representation.BinaryOperators: '&&;&=;&;|;~;!;!=;||;|=;^;^='
+  readability-operators-representation.OverloadedOperators: '&&;&=;&;|;~;!;!=;||;|=;^;^='

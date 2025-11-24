@@ -463,7 +463,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
             return error("must use --debug with --cgdebug");
     }
 
-    if ( _driver_options.execute_code and ! _driver_options.output_path.empty() ) {
+    if ( _driver_options.execute_code && ! _driver_options.output_path.empty() ) {
         if ( ! util::endsWith(_driver_options.output_path, ".hlto") )
             return error("output will be a precompiled object file and must have '.hlto' extension");
     }
