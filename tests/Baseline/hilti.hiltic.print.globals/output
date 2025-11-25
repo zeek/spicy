@@ -6,9 +6,9 @@
 
 #include <hilti/rt/libhilti.h>
 
-extern uint64_t __hlt_hlto_scope;
+extern uint64_t $hlt_hlto_scope;
 
-namespace __hlt::Foo {
+namespace $hlt::Foo {
     struct __globals_t;
     struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
         std::string X{};
@@ -25,21 +25,21 @@ namespace __hlt::Foo {
     extern void __register_module();
 }
 
-HILTI_PRE_INIT(__hlt::Foo::__register_module)
+HILTI_PRE_INIT($hlt::Foo::__register_module)
 
-extern void __hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
+extern void $hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
     ::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index);
     __globals()->X = {"Hello, world!"s};
 }
 
-extern void __hlt::Foo::__init_module() {
+extern void $hlt::Foo::__init_module() {
       __location__("<...>/globals.hlt:16:1-16:15");
     ::hilti::rt::print(Foo::__globals()->X, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void __hlt::Foo::__register_module() {
-    ::hilti::rt::Library::setScope(&__hlt_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, &__init_globals, nullptr, &__globals_index});
+extern void $hlt::Foo::__register_module() {
+    ::hilti::rt::Library::setScope(&$hlt_hlto_scope);
+    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &__init_module, &__init_globals, nullptr, &__globals_index});
 }
 
 // Begin of __linker__
@@ -53,7 +53,7 @@ extern void __hlt::Foo::__register_module() {
 
 #include <hilti/rt/libhilti.h>
 
-const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_library_version = <...>
-const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_bind_to_version = <...>
-HILTI_HIDDEN uint64_t __hlt_hlto_scope = 0;
+const char HILTI_EXPORT HILTI_WEAK * $hlt_hlto_library_version = <...>
+const char HILTI_EXPORT HILTI_WEAK * $hlt_hlto_bind_to_version = <...>
+HILTI_HIDDEN uint64_t $hlt_hlto_scope = 0;
 
