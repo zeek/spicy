@@ -48,7 +48,7 @@ struct Visitor : hilti::visitor::PreOrder {
         cxx::Block block;
         cg->pushCxxBlock(&block);
         auto arguments =
-            util::join(node::transform(n->arguments(), [this](auto x) { return cg->compile(x, lhs); }), ", ");
+            util::join(n->arguments() | std::views::transform([this](auto x) { return cg->compile(x, lhs); }), ", ");
         cg->popCxxBlock();
 
         block.addStatement(fmt("%s(%s)", cxx::ID(n->cxxname()), arguments));

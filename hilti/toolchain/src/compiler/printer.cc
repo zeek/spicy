@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <ranges>
 
+#include <hilti/rt/util.h>
+
 #include <hilti/ast/all.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/type.h>
@@ -226,10 +228,10 @@ struct Printer : visitor::PreOrder {
     void operator()(ctor::List* n) final { _out << '[' << std::make_pair(n->value(), ", ") << ']'; }
 
     void operator()(ctor::Map* n) final {
-        auto elems = node::transform(n->value(), [](const auto& e) -> std::string {
-            return fmt("%s: %s", *e->key(), *e->value());
-        });
-        _out << "map(" << std::make_pair(elems, ", ") << ')';
+        auto elems = n->value() | std::views::transform([](const auto& e) -> std::string {
+                         return fmt("%s: %s", *e->key(), *e->value());
+                     });
+        _out << "map(" << std::make_pair(util::toVector(elems), ", ") << ')';
     }
 
     void operator()(ctor::Network* n) final { _out << n->value(); }
@@ -483,7 +485,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(expression::BuiltInFunction* n) final {
         _out << n->name() << "("
-             << util::join(node::transform(n->arguments(), [](auto p) { return fmt("%s", p); }), ", ") << ")";
+             << util::join(n->arguments() | std::views::transform([](auto p) { return fmt("%s", p); }), ", ") << ")";
     }
 
     void operator()(expression::Coerced* n) final { _out << n->expression(); }

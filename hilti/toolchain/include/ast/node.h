@@ -1189,66 +1189,6 @@ Nodes flatten(T t, Ts... ts)
     return util::concat(std::move(flatten(std::move(t))), flatten(std::move(ts)...));
 }
 
-/**
- * Filters a node vector through a boolean predicate, returning a set
- * containing the matching ones.
- */
-template<typename X, typename F>
-auto filter(const hilti::node::Range<X>& x, F f) {
-    hilti::node::Set<X> y;
-    for ( const auto& i : x ) {
-        if ( f(i) )
-            y.push_back(i);
-    }
-
-    return y;
-}
-
-/**
- * Filters a node set through a boolean predicate, returning a new set
- * containing the matching ones.
- */
-template<typename X, typename F>
-auto filter(const hilti::node::Set<X>& x, F f) {
-    hilti::node::Set<X> y;
-    for ( const auto& i : x ) {
-        if ( f(i) )
-            y.push_back(i);
-    }
-
-    return y;
-}
-
-/**
- * Applies a function to each element of a node range, returning a new vector
- * with the results.
- */
-template<typename X, typename F>
-auto transform(const hilti::node::Range<X>& x, F f) {
-    using Y = std::invoke_result_t<F, X*>;
-    std::vector<Y> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        y.push_back(f(i));
-
-    return y;
-}
-
-/**
- * Applies a function to each element of a node set, returning a new vector of
- * with the results.
- */
-template<typename X, typename F>
-auto transform(const hilti::node::Set<X>& x, F f) {
-    using Y = std::invoke_result_t<F, X*>;
-    std::vector<Y> y;
-    y.reserve(x.size());
-    for ( const auto& i : x )
-        y.push_back(f(i));
-
-    return y;
-}
-
 } // namespace node
 
 /** Renders a node as HILTI source code. */

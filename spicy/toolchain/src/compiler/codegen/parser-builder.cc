@@ -2273,10 +2273,11 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
-                                                        hilti::node::transform(t->parameters(),
-                                                                               [](const auto& p) -> Expression* {
-                                                                                   return p->default_();
-                                                                               }))));
+                                                        hilti::util::toVector(
+                                                            t->parameters() |
+                                                            std::views::transform([](const auto& p) -> Expression* {
+                                                                return p->default_();
+                                                            })))));
             builder()
                 ->addLocal("__ncur", builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable),
                            builder()->ternary(builder()->id("__cur"), builder()->deref(builder()->id("__cur")),
@@ -2325,10 +2326,11 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             builder()->addLocal("__unit",
                                 builder()->valueReference(
                                     builder()->default_(builder()->typeName(t->typeID()),
-                                                        hilti::node::transform(t->parameters(),
-                                                                               [](const auto& p) -> Expression* {
-                                                                                   return p->default_();
-                                                                               }))));
+                                                        hilti::util::toVector(
+                                                            t->parameters() |
+                                                            std::views::transform([](const auto& p) -> Expression* {
+                                                                return p->default_();
+                                                            })))));
 
             builder()->addCall(ID("spicy_rt::initializeParsedUnit"),
                                {builder()->id("__gunit"), builder()->id("__unit")});

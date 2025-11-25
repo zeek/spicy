@@ -1,3 +1,9 @@
+1.15.0-dev.124 | 2025-11-25 16:12:57 +0100
+
+  * Remove `nodes::transform` and `nodes::filter`. (Benjamin Bannier, Corelight)
+
+  * Bump 3rdparty/utf8proc from `96e9b86` to `90daf9f` (dependabot[bot])
+
 1.15.0-dev.120 | 2025-11-25 15:28:26 +0100
 
   * GH-2204: Bump minimal GCC version to gcc-12. (Benjamin Bannier, Corelight)

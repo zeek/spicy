@@ -129,9 +129,10 @@ struct Visitor : hilti::visitor::PreOrder {
             result = "::hilti::rt::vector::Empty()";
         else {
             auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
-            result = fmt("%s({%s}%s)", cxx_type,
-                         util::join(node::transform(n->value(), [this](auto e) { return cg->compile(e); }), ", "),
-                         cxx_default);
+            result =
+                fmt("%s({%s}%s)", cxx_type,
+                    util::join(n->value() | std::views::transform([this](auto e) { return cg->compile(e); }), ", "),
+                    cxx_default);
         }
     }
 
@@ -146,12 +147,11 @@ struct Visitor : hilti::visitor::PreOrder {
         auto v = cg->compile(n->valueType(), codegen::TypeUsage::Storage);
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
-            auto elems = util::join(node::transform(n->value(),
-                                                    [this](const auto& e) {
-                                                        return fmt("__xs.index_assign(%s, %s);", cg->compile(e->key()),
-                                                                   cg->compile(e->value()));
-                                                    }),
-                                    " ");
+            auto elems =
+                util::join(n->value() | std::views::transform([this](const auto& e) {
+                               return fmt("__xs.index_assign(%s, %s);", cg->compile(e->key()), cg->compile(e->value()));
+                           }),
+                           " ");
 
             // If we are at block scope capture other variables so they can be
             // used in the ctr. Outside of block scope we are emitting a
@@ -164,11 +164,9 @@ struct Visitor : hilti::visitor::PreOrder {
 
         else
             result = fmt("::hilti::rt::Map<%s, %s>({%s})", k, v,
-                         util::join(node::transform(n->value(),
-                                                    [this](const auto& e) {
-                                                        return fmt("{%s, %s}", cg->compile(e->key()),
-                                                                   cg->compile(e->value()));
-                                                    }),
+                         util::join(n->value() | std::views::transform([this](const auto& e) {
+                                        return fmt("{%s, %s}", cg->compile(e->key()), cg->compile(e->value()));
+                                    }),
                                     ", "));
     }
 
@@ -239,10 +237,10 @@ struct Visitor : hilti::visitor::PreOrder {
         const auto k = cg->compile(n->elementType(), codegen::TypeUsage::Storage);
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
-            auto elems =
-                util::join(node::transform(n->value(),
-                                           [this](const auto& e) { return fmt("__xs.insert(%s);", cg->compile(e)); }),
-                           " ");
+            auto elems = util::join(n->value() | std::views::transform([this](const auto& e) {
+                                        return fmt("__xs.insert(%s);", cg->compile(e));
+                                    }),
+                                    " ");
 
             // If we are at block scope capture other variables so they can be
             // used in the ctr. Outside of block scope we are emitting a
@@ -254,10 +252,10 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         else
-            result =
-                fmt("::hilti::rt::Set<%s>({%s})", k,
-                    util::join(node::transform(n->value(), [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
-                               ", "));
+            result = fmt("::hilti::rt::Set<%s>({%s})", k,
+                         util::join(n->value() | std::views::transform(
+                                                     [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
+                                    ", "));
     }
 
     void operator()(ctor::SignedInteger* n) final {
@@ -283,17 +281,15 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(ctor::Tuple* n) final {
         result = fmt("::hilti::rt::tuple::make_from_optionals(%s)",
-                     util::join(node::transform(n->value(),
-                                                [this](auto e) -> std::string {
-                                                    if ( e->type()->type()->template isA<type::Null>() )
-                                                        return "::hilti::rt::optional::make<hilti::rt::Null>()";
-                                                    else if ( mayThrowAttributeNotSet(e) )
-                                                        return fmt(
-                                                            "::hilti::rt::tuple::wrap_expression([&]() { return %s; })",
-                                                            cg->compile(e));
-                                                    else
-                                                        return fmt("::hilti::rt::optional::make(%s)", cg->compile(e));
-                                                }),
+                     util::join(n->value() | std::views::transform([this](auto e) -> std::string {
+                                    if ( e->type()->type()->template isA<type::Null>() )
+                                        return "::hilti::rt::optional::make<hilti::rt::Null>()";
+                                    else if ( mayThrowAttributeNotSet(e) )
+                                        return fmt("::hilti::rt::tuple::wrap_expression([&]() { return %s; })",
+                                                   cg->compile(e));
+                                    else
+                                        return fmt("::hilti::rt::optional::make(%s)", cg->compile(e));
+                                }),
                                 ", "));
     }
 
@@ -311,9 +307,10 @@ struct Visitor : hilti::visitor::PreOrder {
             return cxx::Expression("{}");
         };
 
-        result =
-            fmt("%s(%s)", id,
-                util::join(node::transform(node::filter(n->stype()->fields(), is_public_field), convert_field), ", "));
+        result = fmt("%s(%s)", id,
+                     util::join(n->stype()->fields() | std::views::filter(is_public_field) |
+                                    std::views::transform(convert_field),
+                                ", "));
     }
 
     void operator()(ctor::Time* n) final {
@@ -340,10 +337,9 @@ struct Visitor : hilti::visitor::PreOrder {
         auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
-            auto elems = util::join(node::transform(n->value(),
-                                                    [this](const auto& e) {
-                                                        return fmt("__xs.push_back(%s);", cg->compile(e));
-                                                    }),
+            auto elems = util::join(n->value() | std::views::transform([this](const auto& e) {
+                                        return fmt("__xs.push_back(%s);", cg->compile(e));
+                                    }),
                                     " ");
 
             // If we are at block scope capture other variables so they can be
@@ -357,11 +353,11 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         else
-            result =
-                fmt("%s({%s}%s)", cxx_type,
-                    util::join(node::transform(n->value(), [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
-                               ", "),
-                    cxx_default);
+            result = fmt("%s({%s}%s)", cxx_type,
+                         util::join(n->value() | std::views::transform(
+                                                     [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
+                                    ", "),
+                         cxx_default);
     }
 
     void operator()(ctor::UnsignedInteger* n) final {
