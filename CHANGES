@@ -1,3 +1,7 @@
+1.15.0-dev.120 | 2025-11-25 15:28:26 +0100
+
+  * GH-2204: Bump minimal GCC version to gcc-12. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.118 | 2025-11-25 09:18:29 -0500
 
   * Enable clang-tidy enforce traditional ops. (Evan Typanski, Corelight)
