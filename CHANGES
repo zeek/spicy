@@ -1,3 +1,14 @@
+1.15.0-dev.118 | 2025-11-25 09:18:29 -0500
+
+  * Enable clang-tidy enforce traditional ops. (Evan Typanski, Corelight)
+
+    This enforces that `&&` be preferred over `and` for all of the possible
+    operators. It's pretty confusing to mix them, and Spicy almost always
+    prefers the traditional versions, so seeing one-off keywords is weird.
+
+    I've also seen some compilers (MSVC, though we don't support it) disable
+    this by default in an extension. It's not worth the trouble for us.
+
 1.15.0-dev.116 | 2025-11-24 19:32:57 +0100
 
   * Bump CodSpeedHQ/action from 4.3.4 to 4.4.1 (dependabot[bot])
