@@ -34,6 +34,9 @@
 #include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/keyword.h>
+#include <hilti/ast/expressions/logical-and.h>
+#include <hilti/ast/expressions/logical-not.h>
+#include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
@@ -100,8 +103,7 @@ std::deque<GraphNode> CFG::postorder() const {
     return sorted;
 }
 
-// Helper function to check whether some `inner` node is a child of an `outer` node.
-static bool contains(const Node& outer, const Node& inner) {
+bool contains(const Node& outer, const Node& inner) {
     const auto* n = &inner;
 
     do {
@@ -793,7 +795,9 @@ struct DataflowVisitor : visitor::PreOrder {
                 transfer.maybe_alias.insert(decl);
         }
 
-        else if ( node->isA<statement::Return>() )
+        else if ( node->isA<statement::Return>() || node->isA<expression::LogicalOr>() ||
+                  node->isA<expression::LogicalAnd>() || node->isA<expression::LogicalNot>() ||
+                  node->isA<expression::Name>() )
             // Simply flows a value but does not generate or kill any.
             transfer.read.insert(decl);
 
