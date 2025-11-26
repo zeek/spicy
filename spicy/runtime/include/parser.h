@@ -92,7 +92,7 @@ struct has_on_gap {
     // If `->` gets wrapped to the next line cpplint misdetects this as a C-style cast.
     // clang-format off
     static auto test(int) -> decltype(
-        std::declval<U>().__on_0x25_gap(std::declval<uint64_t>(), std::declval<uint64_t>()), std::true_type());
+        std::declval<U>().$on_0x25_gap(std::declval<uint64_t>(), std::declval<uint64_t>()), std::true_type());
     // clang-format on
     template<typename U>
     static std::false_type test(...);
@@ -102,7 +102,7 @@ struct has_on_gap {
 template<typename P>
 struct has_on_skipped {
     template<typename U>
-    static auto test(int) -> decltype(std::declval<U>().__on_0x25_skipped(std::declval<uint64_t>()), std::true_type());
+    static auto test(int) -> decltype(std::declval<U>().$on_0x25_skipped(std::declval<uint64_t>()), std::true_type());
     template<typename U>
     static std::false_type test(...);
     static constexpr bool value = std::is_same_v<decltype(test<P>(0)), std::true_type>;
@@ -111,9 +111,9 @@ struct has_on_skipped {
 template<typename P>
 struct has_on_overlap {
     template<typename U>
-    static auto test(int) -> decltype(std::declval<U>().__on_0x25_overlap(std::declval<uint64_t>(),
-                                                                          std::declval<const hilti::rt::Bytes&>(),
-                                                                          std::declval<const hilti::rt::Bytes&>()),
+    static auto test(int) -> decltype(std::declval<U>().$on_0x25_overlap(std::declval<uint64_t>(),
+                                                                         std::declval<const hilti::rt::Bytes&>(),
+                                                                         std::declval<const hilti::rt::Bytes&>()),
                                       std::true_type());
     template<typename U>
     static std::false_type test(...);
@@ -123,8 +123,8 @@ struct has_on_overlap {
 template<typename P>
 struct has_on_undelivered {
     template<typename U>
-    static auto test(int) -> decltype(std::declval<U>().__on_0x25_undelivered(std::declval<uint64_t>(),
-                                                                              std::declval<const hilti::rt::Bytes&>()),
+    static auto test(int) -> decltype(std::declval<U>().$on_0x25_undelivered(std::declval<uint64_t>(),
+                                                                             std::declval<const hilti::rt::Bytes&>()),
                                       std::true_type());
     template<typename U>
     static std::false_type test(...);
@@ -419,24 +419,24 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
 
     if constexpr ( detail::has_on_gap<unit_type>::value )
         p.__hook_gap = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq, uint64_t len) -> void {
-            (u.as<unit_type>()->__on_0x25_gap)(seq, len);
+            (u.as<unit_type>()->$on_0x25_gap)(seq, len);
         };
 
     if constexpr ( detail::has_on_skipped<unit_type>::value )
         p.__hook_skipped = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq) -> void {
-            (u.as<unit_type>()->__on_0x25_skipped)(seq);
+            (u.as<unit_type>()->$on_0x25_skipped)(seq);
         };
 
     if constexpr ( detail::has_on_overlap<unit_type>::value )
         p.__hook_overlap = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq, const hilti::rt::Bytes& old,
                               const hilti::rt::Bytes& new_) -> void {
-            (u.as<unit_type>()->__on_0x25_overlap)(seq, old, new_);
+            (u.as<unit_type>()->$on_0x25_overlap)(seq, old, new_);
         };
 
     if constexpr ( detail::has_on_undelivered<unit_type>::value )
         p.__hook_undelivered = [](const hilti::rt::StrongReferenceGeneric& u, uint64_t seq,
                                   const hilti::rt::Bytes& bytes) -> void {
-            (u.as<unit_type>()->__on_0x25_undelivered)(seq, bytes);
+            (u.as<unit_type>()->$on_0x25_undelivered)(seq, bytes);
         };
 }
 

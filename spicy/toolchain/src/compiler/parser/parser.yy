@@ -1062,7 +1062,7 @@ expr_1        : expr_1 '=' expr_1                { $$ = builder->expressionAssig
               | '[' expr FOR local_id IN expr IF expr ']'   { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
               | '(' expr ')'                     { $$ = builder->expressionGrouping(std::move($2)); }
               | scoped_id                        { $$ = builder->expressionName(std::move($1), __loc__); }
-              | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("__dd"), __loc__);}
+              | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("$dd"), __loc__);}
               | DOLLAR_NUMBER                    { // $N -> $@[N] (with $@ being available internally only, not exposed to users)
                                                    auto captures = builder->expressionKeyword(hilti::expression::keyword::Kind::Captures, builder->qualifiedType(builder->typeName("~hilti::Captures"), hilti::Constness::Mutable), __loc__);
                                                    auto index = builder->expressionCtor(builder->ctorUnsignedInteger($1, 64, __loc__), __loc__);

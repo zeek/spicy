@@ -40,7 +40,7 @@ template<typename T, typename = int>
 struct supports_sinks : std::false_type {};
 
 template<typename T>
-struct supports_sinks<T, decltype((void)T::__sink, 0)> : std::true_type {};
+struct supports_sinks<T, decltype((void)T::$sink, 0)> : std::true_type {};
 
 /** State for a sink stored the unit it's connected to. */
 struct State {
@@ -63,19 +63,19 @@ struct State {
  */
 template<typename U>
 auto connectUnit(UnitRef<U>& unit) {
-    auto parse2 = hilti::rt::any_cast<spicy::rt::Parse2Function<U>>(U::__parser.parse2);
+    auto parse2 = hilti::rt::any_cast<spicy::rt::Parse2Function<U>>(U::$parser.parse2);
 
     auto self = hilti::rt::ValueReference<U>::self(&*unit);
 
-    auto& state = unit->__sink;
+    auto& state = unit->$sink;
     state = new sink::detail::State();                       // NOLINT
     state->resumable = (*parse2)(self, state->data, {}, {}); // Kick-off parsing with empty data.
-    state->parser = &U::__parser;
+    state->parser = &U::$parser;
     return state;
 }
 
 // Name used as template parameter for sink's filter state. */
-inline const char sink_name[] = "__sink__";
+inline const char sink_name[] = "$sink__";
 } // namespace sink::detail
 
 /**
@@ -109,7 +109,7 @@ public:
      */
     template<typename T>
     void connect(spicy::rt::UnitRef<T> unit) {
-        SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("connecting parser %s [%p] to sink %p", T::__parser.name, &*unit, this));
+        SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("connecting parser %s [%p] to sink %p", T::$parser.name, &*unit, this));
         auto state = spicy::rt::sink::detail::connectUnit(unit);
         _units.emplace_back(std::move(unit));
         _states.emplace_back(std::move(state));
@@ -130,7 +130,7 @@ public:
             throw SinkError("cannot connect filter after data has been forwarded already");
 
         SPICY_RT_DEBUG_VERBOSE(
-            hilti::rt::fmt("connecting filter unit %s [%p] to sink %p", T::__parser.name, &*filter_unit, this));
+            hilti::rt::fmt("connecting filter unit %s [%p] to sink %p", T::$parser.name, &*filter_unit, this));
         spicy::rt::filter::detail::connect(_filter, filter_unit);
     }
 

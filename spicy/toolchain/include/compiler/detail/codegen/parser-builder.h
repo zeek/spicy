@@ -571,10 +571,10 @@ public:
     void syncAdvanceHook(std::shared_ptr<Builder> cond = {});
 
     /**
-     * Returns an expression referencing the current parse object's `__filters`
+     * Returns an expression referencing the current parse object's `$filters`
      * member if that exists; otherwises return a `Null` expression. The result
      * of this method can be passed to runtime functions expecting a
-     * `__filters` argument.
+     * `$filters` argument.
      *
      * @param state current parser state
      */
