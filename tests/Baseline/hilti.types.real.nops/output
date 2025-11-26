@@ -19,33 +19,33 @@ extern uint64_t $hlt_hlto_scope;
 namespace $hlt::Foo {
     static ::hilti::rt::Optional<double> d = {};
     static ::hilti::rt::Optional<double> r = {};
-    extern void __init_globals(::hilti::rt::Context* ctx);
-    extern void __destroy_globals(::hilti::rt::Context* ctx);
-    extern void __init_module();
-    extern void __register_module();
+    extern void $init_globals(::hilti::rt::Context* ctx);
+    extern void $destroy_globals(::hilti::rt::Context* ctx);
+    extern void $init_module();
+    extern void $register_module();
 }
 
-HILTI_PRE_INIT($hlt::Foo::__register_module)
+HILTI_PRE_INIT($hlt::Foo::$register_module)
 
-extern void $hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) {
+extern void $hlt::Foo::$destroy_globals(::hilti::rt::Context* ctx) {
     ::$hlt::Foo::d.reset();;
     ::$hlt::Foo::r.reset();;
 }
 
-extern void $hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
+extern void $hlt::Foo::$init_globals(::hilti::rt::Context* ctx) {
     ::$hlt::Foo::d = hilti::rt::optional::make(double{});
     ::$hlt::Foo::r = hilti::rt::optional::make(0x1.999999999999ap-4);
 }
 
-extern void $hlt::Foo::__init_module() {
-      __location__("<...>/nops.hlt:11:1-11:35");
+extern void $hlt::Foo::$init_module() {
+      $location("<...>/nops.hlt:11:1-11:35");
     if ( ! (0x1.999999999999ap-4 == 0x1.999999999999ap-4) ) {
         throw ::hilti::rt::AssertionFailure("failed expression '0x1.999999999999ap-4 == 0x1.999999999999ap-4'", "<...>/nops.hlt:11:1-11:35");
     }
 }
 
-extern void $hlt::Foo::__register_module() {
+extern void $hlt::Foo::$register_module() {
     ::hilti::rt::Library::setScope(&$hlt_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &__init_module, &__init_globals, &__destroy_globals, nullptr});
+    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &$init_module, &$init_globals, &$destroy_globals, nullptr});
 }
 

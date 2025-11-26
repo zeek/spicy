@@ -9,8 +9,8 @@
 extern uint64_t $hlt_hlto_scope;
 
 namespace $hlt::Foo {
-    struct __globals_t;
-    struct __globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<__globals_t> {
+    struct $globals_t;
+    struct $globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<$globals_t> {
         std::string X{};
 
         std::string __to_string() const {
@@ -18,28 +18,28 @@ namespace $hlt::Foo {
         }
     };
 
-    inline unsigned int __globals_index;
-    static inline auto __globals() { return ::hilti::rt::detail::moduleGlobals<__globals_t>(__globals_index); }
-    extern void __init_globals(::hilti::rt::Context* ctx);
-    extern void __init_module();
-    extern void __register_module();
+    inline unsigned int $globals_index;
+    static inline auto $globals() { return ::hilti::rt::detail::moduleGlobals<$globals_t>($globals_index); }
+    extern void $init_globals(::hilti::rt::Context* ctx);
+    extern void $init_module();
+    extern void $register_module();
 }
 
-HILTI_PRE_INIT($hlt::Foo::__register_module)
+HILTI_PRE_INIT($hlt::Foo::$register_module)
 
-extern void $hlt::Foo::__init_globals(::hilti::rt::Context* ctx) {
-    ::hilti::rt::detail::initModuleGlobals<__globals_t>(__globals_index);
-    __globals()->X = {"Hello, world!"s};
+extern void $hlt::Foo::$init_globals(::hilti::rt::Context* ctx) {
+    ::hilti::rt::detail::initModuleGlobals<$globals_t>($globals_index);
+    $globals()->X = {"Hello, world!"s};
 }
 
-extern void $hlt::Foo::__init_module() {
-      __location__("<...>/globals.hlt:16:1-16:15");
-    ::hilti::rt::print(Foo::__globals()->X, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+extern void $hlt::Foo::$init_module() {
+      $location("<...>/globals.hlt:16:1-16:15");
+    ::hilti::rt::print(Foo::$globals()->X, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void $hlt::Foo::__register_module() {
+extern void $hlt::Foo::$register_module() {
     ::hilti::rt::Library::setScope(&$hlt_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &__init_module, &__init_globals, nullptr, &__globals_index});
+    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &$init_module, &$init_globals, nullptr, &$globals_index});
 }
 
 // Begin of __linker__

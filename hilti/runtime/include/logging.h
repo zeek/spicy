@@ -38,7 +38,7 @@ void warning(std::string_view msg);
     }
 
 /** Shortcut to `hilti::rt::debug::setLocation`. */
-#define __location__(x) ::hilti::rt::debug::setLocation(x);
+#define $location(x) ::hilti::rt::debug::setLocation(x);
 
 namespace debug {
 

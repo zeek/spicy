@@ -144,7 +144,7 @@ TEST_CASE("internal fields") {
                          new type_info::Struct(
                              {type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false, false, true},
                               type_info::struct_::Field{"f2", &type_info::string, offsetof(A, f2), false, false, true},
-                              type_info::struct_::Field{"__internal", &type_info::bool_, offsetof(A, __internal), true,
+                              type_info::struct_::Field{"$internal", &type_info::bool_, offsetof(A, __internal), true,
                                                         false, true}})};
 
     auto sx = StrongReference<A>({42, "foo", true});

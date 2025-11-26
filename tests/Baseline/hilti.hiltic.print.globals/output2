@@ -10,26 +10,26 @@ extern uint64_t $hlt_hlto_scope;
 
 namespace $hlt::Foo {
     static ::hilti::rt::Optional<std::string> X = {};
-    extern void __init_globals(::hilti::rt::Context* ctx);
-    extern void __destroy_globals(::hilti::rt::Context* ctx);
-    extern void __init_module();
-    extern void __register_module();
+    extern void $init_globals(::hilti::rt::Context* ctx);
+    extern void $destroy_globals(::hilti::rt::Context* ctx);
+    extern void $init_module();
+    extern void $register_module();
 }
 
-HILTI_PRE_INIT($hlt::Foo::__register_module)
+HILTI_PRE_INIT($hlt::Foo::$register_module)
 
-extern void $hlt::Foo::__destroy_globals(::hilti::rt::Context* ctx) { ::$hlt::Foo::X.reset();; }
+extern void $hlt::Foo::$destroy_globals(::hilti::rt::Context* ctx) { ::$hlt::Foo::X.reset();; }
 
-extern void $hlt::Foo::__init_globals(::hilti::rt::Context* ctx) { ::$hlt::Foo::X = hilti::rt::optional::make("Hello, world!"s); }
+extern void $hlt::Foo::$init_globals(::hilti::rt::Context* ctx) { ::$hlt::Foo::X = hilti::rt::optional::make("Hello, world!"s); }
 
-extern void $hlt::Foo::__init_module() {
-      __location__("<...>/globals.hlt:16:1-16:15");
+extern void $hlt::Foo::$init_module() {
+      $location("<...>/globals.hlt:16:1-16:15");
     ::hilti::rt::print((*$hlt::Foo::X), &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void $hlt::Foo::__register_module() {
+extern void $hlt::Foo::$register_module() {
     ::hilti::rt::Library::setScope(&$hlt_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &__init_module, &__init_globals, &__destroy_globals, nullptr});
+    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &$init_module, &$init_globals, &$destroy_globals, nullptr});
 }
 
 // Begin of __linker__

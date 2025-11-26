@@ -14,7 +14,7 @@ namespace MyLibrary {
 }
 
 namespace $hlt_mylib::MyLibrary {
-    extern void __register_module();
+    extern void $register_module();
 }
 
 #endif

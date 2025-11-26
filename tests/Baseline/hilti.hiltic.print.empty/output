@@ -9,12 +9,12 @@
 extern uint64_t $hlt_hlto_scope;
 
 namespace $hlt::Foo {
-    extern void __register_module();
+    extern void $register_module();
 }
 
-HILTI_PRE_INIT($hlt::Foo::__register_module)
+HILTI_PRE_INIT($hlt::Foo::$register_module)
 
-extern void $hlt::Foo::__register_module() {
+extern void $hlt::Foo::$register_module() {
     ::hilti::rt::Library::setScope(&$hlt_hlto_scope);
     ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, nullptr, nullptr, nullptr, nullptr});
 }

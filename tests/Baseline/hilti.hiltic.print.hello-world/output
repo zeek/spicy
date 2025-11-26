@@ -9,20 +9,20 @@
 extern uint64_t $hlt_hlto_scope;
 
 namespace $hlt::Foo {
-    extern void __init_module();
-    extern void __register_module();
+    extern void $init_module();
+    extern void $register_module();
 }
 
-HILTI_PRE_INIT($hlt::Foo::__register_module)
+HILTI_PRE_INIT($hlt::Foo::$register_module)
 
-extern void $hlt::Foo::__init_module() {
-      __location__("<...>/hello-world.hlt:10:1-10:29");
+extern void $hlt::Foo::$init_module() {
+      $location("<...>/hello-world.hlt:10:1-10:29");
     ::hilti::rt::print("Hello, world!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void $hlt::Foo::__register_module() {
+extern void $hlt::Foo::$register_module() {
     ::hilti::rt::Library::setScope(&$hlt_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &__init_module, nullptr, nullptr, nullptr});
+    ::hilti::rt::detail::registerModule({ "Foo", $hlt_hlto_scope, &$init_module, nullptr, nullptr, nullptr});
 }
 
 // Begin of __linker__

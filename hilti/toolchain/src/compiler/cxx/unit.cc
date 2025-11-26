@@ -60,13 +60,13 @@ void Unit::_addModuleInitFunction() {
     };
 
     if ( _init_globals )
-        add_init_function(context().get(), _init_globals, "__init_globals");
+        add_init_function(context().get(), _init_globals, "$init_globals");
 
     if ( _init_module )
-        add_init_function(context().get(), _init_module, "__init_module");
+        add_init_function(context().get(), _init_module, "$init_module");
 
     if ( _preinit_module )
-        add_init_function(context().get(), _preinit_module, "__preinit_module");
+        add_init_function(context().get(), _preinit_module, "$preinit_module");
 
     if ( cxxModuleID() != cxx::ID("__linker__") ) {
         auto scope = fmt("%s_hlto_scope", context()->options().cxx_namespace_intern);
@@ -77,14 +77,14 @@ void Unit::_addModuleInitFunction() {
         register_.addStatement(fmt("::hilti::rt::Library::setScope(&%s)", scope));
         register_.addStatement(
             fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})", cxxModuleID(), scope,
-                _init_module ? "&__init_module" : "nullptr", _uses_globals ? "&__init_globals" : "nullptr",
-                _uses_globals && ! context()->options().cxx_enable_dynamic_globals ? "&__destroy_globals" : "nullptr",
-                _uses_globals && context()->options().cxx_enable_dynamic_globals ? "&__globals_index" : "nullptr"));
+                _init_module ? "&$init_module" : "nullptr", _uses_globals ? "&$init_globals" : "nullptr",
+                _uses_globals && ! context()->options().cxx_enable_dynamic_globals ? "&$destroy_globals" : "nullptr",
+                _uses_globals && context()->options().cxx_enable_dynamic_globals ? "&$globals_index" : "nullptr"));
 
         if ( _preinit_module )
-            register_.addStatement(fmt("__preinit_module()"));
+            register_.addStatement(fmt("$preinit_module()"));
 
-        auto id = add_init_function(context().get(), std::move(register_), "__register_module");
+        auto id = add_init_function(context().get(), std::move(register_), "$register_module");
         add(fmt("HILTI_PRE_INIT(%s)", id));
     }
 }

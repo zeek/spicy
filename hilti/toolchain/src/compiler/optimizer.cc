@@ -73,7 +73,7 @@ static QualifiedType* innermostType(QualifiedType* type) {
     return type;
 }
 
-static bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
+static bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "$feat%"); }
 
 // Helper to extract `(ID, feature)` from a feature constant.
 static auto idFeatureFromConstant(const ID& feature_constant) -> std::optional<std::pair<ID, std::string>> {
@@ -1255,8 +1255,13 @@ struct ConstantPropagationVisitor : OptimizerVisitor {
 struct PeepholeOptimizer : visitor::MutatingPostOrder {
     using visitor::MutatingPostOrder::MutatingPostOrder;
 
-    // Returns true if statement is `(*self).__error = __error`.
-    bool isErrorPush(statement::Expression* n) {
+    static bool isErrorId(std::string_view id) {
+        // Nominally the ID of the error field is `$error`, but we also allow `__error` for testing.
+        return id == "$error" || id == "__error";
+    }
+
+    // Returns true if statement is `(*self).$error = $error`.
+    static bool isErrorPush(statement::Expression* n) {
         auto* assign = n->expression()->tryAs<expression::Assign>();
         if ( ! assign )
             return false;
@@ -1282,7 +1287,7 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
         assert(deref0);
 
         auto* op1 = lhs->op1()->tryAs<expression::Member>();
-        if ( ! (op1 && op1->id() == "__error") )
+        if ( ! (op1 && isErrorId(op1->id())) )
             return false;
 
         auto* self = deref0->op0()->tryAs<expression::Name>();
@@ -1290,20 +1295,20 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
             return false;
 
         auto* rhs = assign->source()->tryAs<expression::Name>();
-        if ( ! (rhs && rhs->id() == "__error") )
+        if ( ! (rhs && isErrorId(rhs->id())) )
             return false;
 
         return true;
     }
 
-    // Returns true if statement is `__error == (*self).__error`.
-    bool isErrorPop(statement::Expression* n) {
+    // Returns true if statement is `$error == (*self).$error`.
+    static bool isErrorPop(statement::Expression* n) {
         auto* assign = n->expression()->tryAs<expression::Assign>();
         if ( ! assign )
             return false;
 
         auto* lhs = assign->target()->tryAs<expression::Name>();
-        if ( ! (lhs && lhs->id() == "__error") )
+        if ( ! (lhs && isErrorId(lhs->id())) )
             return false;
 
         auto* rhs = assign->source()->tryAs<operator_::struct_::MemberNonConst>();
@@ -1327,7 +1332,7 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
         assert(deref0);
 
         auto* op1 = rhs->op1()->tryAs<expression::Member>();
-        if ( ! (op1 && op1->id() == "__error") )
+        if ( ! (op1 && isErrorId(op1->id())) )
             return false;
 
         auto* self = deref0->op0()->tryAs<expression::Name>();
@@ -1348,8 +1353,8 @@ struct PeepholeOptimizer : visitor::MutatingPostOrder {
 
         // Remove statement pairs of the form:
         //
-        //    (*self).__error = __error;
-        //    __error = (*self).__error;
+        //    (*self).$error = $error;
+        //    $error = (*self).$error;
         //
         // These will be left behind by the optimizer if a hook call got
         // optimized out in between them.
@@ -1606,7 +1611,7 @@ public:
             // Split away the module part of the resolved ID.
             auto id = util::split1(feature_constant, "::").second;
 
-            if ( ! util::startsWith(id, "__feat") )
+            if ( ! util::startsWith(id, "$feat") )
                 return {};
 
             const auto& tokens = util::split(std::move(id), "%");
@@ -1889,7 +1894,7 @@ struct MemberVisitor : OptimizerVisitor {
         switch ( stage ) {
             case Stage::Collect: {
                 // Check whether the feature flag matches the type of the field.
-                if ( ! util::startsWith(n->id(), "__feat%") )
+                if ( ! util::startsWith(n->id(), "$feat%") )
                     break;
 
                 auto tokens = util::split(n->id(), "%");
@@ -2168,7 +2173,7 @@ struct FunctionParamVisitor : OptimizerVisitor {
         else if ( auto* x = name->tryAs<expression::Keyword>() ) {
             switch ( x->kind() ) {
                 case expression::keyword::Kind::Captures: {
-                    id = "__captures";
+                    id = "$captures";
                     break;
                 }
                 case expression::keyword::Kind::Self:

@@ -234,12 +234,12 @@ struct Visitor : public hilti::visitor::PreOrder {
             // Coerce individual fields. We do this in a lambda to avoid
             // emitting multiple full tupled constructors for temporaries.
             for ( auto i = 0U; i < n->elements().size(); i++ ) {
-                exprs.push_back(cg->coerce(fmt("::hilti::rt::tuple::get<%d>(__t)", i), n->elements()[i]->type(),
+                exprs.push_back(cg->coerce(fmt("::hilti::rt::tuple::get<%d>($t)", i), n->elements()[i]->type(),
                                            x->elements()[i]->type()));
             }
 
             result =
-                fmt("[&](const auto& __t) { return hilti::rt::tuple::make(%s); }(%s)", util::join(exprs, ", "), expr);
+                fmt("[&](const auto& $t) { return hilti::rt::tuple::make(%s); }(%s)", util::join(exprs, ", "), expr);
         }
 
         else

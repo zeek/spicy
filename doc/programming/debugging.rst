@@ -178,11 +178,11 @@ Here's an example stack trace taken during an execution of
 value, as shown by ``lldb``::
 
     frame #0:  void hilti::rt::print<hilti::rt::ValueReference<$hlt::Test::Foo>>
-    frame #1:  $hlt::Test::__hook_Foo___on_0x25_done_7fba
-    frame #2:  $hlt::Test::__hook_Foo___on_0x25_done
-    frame #3:  $hlt::Test::Foo::__on_0x25_done
-    frame #4:  $hlt::Test::Foo::__parse_Test__Foo_stage2
-    frame #5:  $hlt::Test::Foo::__parse_stage1
+    frame #1:  $hlt::Test::$hook_Foo___on_0x25_done_7fba
+    frame #2:  $hlt::Test::$hook_Foo___on_0x25_done
+    frame #3:  $hlt::Test::Foo::$on_0x25_done
+    frame #4:  $hlt::Test::Foo::$parse_Test__Foo_stage2
+    frame #5:  $hlt::Test::Foo::$parse_stage1
     frame #6:  $hlt::Test::Foo::parse3
     frame #7:  hlt::Test::Foo::parse3
     frame #8:  hilti::rt::detail::Callback::Callback<hlt::Test::Foo::parse3>
