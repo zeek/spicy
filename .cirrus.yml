@@ -650,7 +650,7 @@ freebsd13_task:
 
 freebsd14_task:
   freebsd_instance:
-    image_family: freebsd-14-2
+    image_family: freebsd-14-3
     cpu: 8
     memory: 8GB
 
