@@ -101,7 +101,7 @@ public:
     Node* value() const { return _node; }
 
     friend bool operator==(const GraphNode& a, const GraphNode& b) { return a._node == b._node; }
-    friend bool operator!=(const GraphNode& a, const GraphNode& b) { return ! (a._node == b._node); }
+    friend bool operator!=(const GraphNode& a, const GraphNode& b) { return ! (a == b); }
 
     friend bool operator<(const GraphNode& a, const GraphNode& b) { return a._node < b._node; }
 
@@ -118,7 +118,10 @@ void dump(logging::DebugStream stream, ASTRoot* root);
 namespace std {
 template<>
 struct hash<hilti::detail::cfg::GraphNode> {
-    auto operator()(const hilti::detail::cfg::GraphNode& n) const { return n.value() ? n->identity() : 0; }
+    auto operator()(const hilti::detail::cfg::GraphNode& n) const {
+        assert(n.value());
+        return reinterpret_cast<std::uintptr_t>(n.value());
+    }
 };
 } // namespace std
 
