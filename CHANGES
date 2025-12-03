@@ -1,3 +1,12 @@
+1.15.0-dev.126 | 2025-12-03 14:33:05 +0100
+
+  * GH-2199: GH-2202: Consistently use underlying `Node` when hashing `GraphNode`. (Benjamin Bannier, Corelight)
+
+    This is a follow-up for #2202. I was initially hoping that the
+    inconsistency between `GraphNode` equality and hash operators was a
+    cause for the behavior seen in #2199, but this seems to be unrelated. It
+    is still something which we should fix.
+
 1.15.0-dev.124 | 2025-11-25 16:12:57 +0100
 
   * Remove `nodes::transform` and `nodes::filter`. (Benjamin Bannier, Corelight)
