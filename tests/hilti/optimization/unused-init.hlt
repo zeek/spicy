@@ -1,0 +1,25 @@
+# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt -D cfg-initial -D optimizer >>output 2>&1
+# xTEST-EXEC: btest-diff opt.hlt
+# @TEST-EXEC: btest-diff output
+
+module foo {
+
+import hilti;
+
+function bool fn() {
+    local bool x = False;
+    x = x || True;
+
+    if ( ! x )
+        hilti::print(1, True);
+
+
+    if ( x )
+        hilti::print(2, True);
+
+    return x;
+}
+
+fn();
+
+}

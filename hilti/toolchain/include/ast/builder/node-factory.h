@@ -169,10 +169,6 @@ public:
                              declaration::Linkage linkage = declaration::Linkage::Private, Meta meta = {}) {
         return hilti::declaration::Constant::create(context(), std::move(id), type, value, linkage, std::move(meta));
     }
-    auto declarationExpression(ID id, Expression* expr, AttributeSet* attrs, declaration::Linkage linkage,
-                               Meta meta = {}) {
-        return hilti::declaration::Expression::create(context(), std::move(id), expr, attrs, linkage, std::move(meta));
-    }
     auto declarationExpression(ID id, Expression* expr, declaration::Linkage linkage, Meta meta = {}) {
         return hilti::declaration::Expression::create(context(), std::move(id), expr, linkage, std::move(meta));
     }
