@@ -1,3 +1,9 @@
+1.15.0-dev.130 | 2025-12-03 14:33:43 +0100
+
+  * Bump hendrikmuhs/ccache-action from 1.2.19 to 1.2.20 (dependabot[bot])
+
+  * Bump 3rdparty/libb64 from `ce864b1` to `d86057c` (dependabot[bot])
+
 1.15.0-dev.126 | 2025-12-03 14:33:05 +0100
 
   * GH-2199: GH-2202: Consistently use underlying `Node` when hashing `GraphNode`. (Benjamin Bannier, Corelight)
