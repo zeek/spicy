@@ -828,6 +828,7 @@ expr_1        : expr_1 '=' expr_1                { $$ = builder->expressionAssig
               | '[' expr FOR local_id IN expr ']'{ $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), {},  __loc__); }
               | '[' expr FOR local_id IN expr IF expr ']'   { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
               | '(' expr ')'                     { $$ = builder->expressionGrouping(std::move($2)); }
+              | '(' '{' local_decl '}' expr ')'  { $$ = builder->expressionGrouping(std::move($3)->as<declaration::LocalVariable>(), std::move($5)); }
               | scoped_id                        { $$ = builder->expressionName(std::move($1), __loc__); }
               | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("__dd"), __loc__); }
               | SCOPE                            { $$ = builder->expressionKeyword(hilti::expression::keyword::Kind::Scope, __loc__); }

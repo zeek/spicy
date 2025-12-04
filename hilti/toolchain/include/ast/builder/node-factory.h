@@ -288,6 +288,9 @@ public:
     auto expressionGrouping(Expression* expr, Meta meta = {}) {
         return hilti::expression::Grouping::create(context(), expr, std::move(meta));
     }
+    auto expressionGrouping(declaration::LocalVariable* local, Expression* expr, Meta meta = {}) {
+        return hilti::expression::Grouping::create(context(), local, expr, std::move(meta));
+    }
     auto expressionKeyword(expression::keyword::Kind kind, const Meta& meta = {}) {
         return hilti::expression::Keyword::create(context(), kind, meta);
     }
