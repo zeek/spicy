@@ -440,6 +440,23 @@ public:
 
     auto grouping(Expression* e, const Meta& m = Meta()) { return expressionGrouping(e, m); }
 
+
+    /**
+     * Creates a grouping expression that declares a temporary variable that
+     * will be valid inside the group. The temporary variable will be created
+     * with a unique name and initialized with a given expression.
+     *
+     * @param prefix prefix for the temporary variable's ID.
+     * @param init expression initializing the temporary variable
+     * @param m meta data for the grouping expression.
+     * @return A pair consisting of (1) an expression referring to the
+     * temporary variable's ID and (2) a grouping expression with that
+     * temporary initialized, yet the contained expression still unset (it can
+     * be set later via `expression::Grouping::setExpression()`)
+     */
+    std::pair<expression::Name*, expression::Grouping*> groupingWithTmp(const std::string& prefix, Expression* init,
+                                                                        const Meta& m = Meta());
+
     auto move(Expression* e, const Meta& m = Meta()) { return expressionMove(e, m); }
 
     auto typeinfo(QualifiedType* t, const Meta& m = Meta()) { return expressionTypeInfo(expressionType(t, m), m); }
@@ -576,6 +593,9 @@ protected:
     Builder(Builder* parent) : NodeFactory(parent->context()), _state(parent->_state) {}
 
 private:
+    // Helper to create unique temporary IDs.
+    ID _makeTmpID(const std::string& prefix);
+
     struct State {
         statement::Block* block = nullptr;
         std::map<std::string, int> tmps;
