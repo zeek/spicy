@@ -119,6 +119,11 @@ struct Visitor : visitor::PostOrder {
 
     void operator()(expression::ListComprehension* n) final { n->getOrCreateScope()->insert(n->local()); }
 
+    void operator()(expression::Grouping* n) final {
+        if ( auto* local = n->local() )
+            n->getOrCreateScope()->insert(local);
+    }
+
     void operator()(statement::Declaration* n) final { n->parent()->getOrCreateScope()->insert(n->declaration()); }
 
     void operator()(statement::For* n) final {
