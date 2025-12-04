@@ -1347,11 +1347,12 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
                 if ( rhs_type && lhs_type->elements().size() ==
                                      rhs_type->elements().size() ) { // validator will report if not same size
-                    bool changed = false;
                     Expressions new_elems;
 
                     const auto& lhs_type_elements = lhs_type->elements();
                     const auto& rhs_type_elements = rhs_type->elements();
+
+                    auto [op1, new_rhs] = builder()->groupingWithTmp("tuple", n->op1());
 
                     for ( auto i = 0U; i < lhs_type->elements().size(); i++ ) {
                         static const auto* op = operator_::get("tuple::Index");
@@ -1359,24 +1360,22 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
                         auto* rhs_elem_type = rhs_type_elements[i]->type();
                         auto* rhs_elem =
                             builder()->expressionTypeWrapped(*op->instantiate(builder(),
-                                                                              {n->op1(), builder()->integer(i)},
+                                                                              {builder()->typeWrapped(op1,
+                                                                                                      n->op1()->type()),
+                                                                               builder()->integer(i)},
                                                                               n->meta()),
                                                              rhs_elem_type);
 
 
-                        if ( auto* x = coerceTo(n, rhs_elem, lhs_elem_type, false, true) ) {
-                            changed = true;
+                        if ( auto* x = coerceTo(n, rhs_elem, lhs_elem_type, false, true) )
                             new_elems.push_back(x);
-                        }
                         else
-                            new_elems.emplace_back(rhs_elem);
+                            new_elems.push_back(rhs_elem);
                     }
 
-                    if ( changed ) {
-                        auto* new_rhs = builder()->tuple(new_elems);
-                        recordChange(n, new_rhs, "tuple assign");
-                        n->setOp1(context(), new_rhs);
-                    }
+                    new_rhs->setExpression(context(), builder()->tuple(new_elems));
+                    recordChange(n->op1(), new_rhs, "tuple assign");
+                    n->setOp1(context(), new_rhs);
                 }
             }
         }

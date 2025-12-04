@@ -527,7 +527,7 @@ public:
 
         n = _newChild(ctx, n);
 
-        if ( ! n->location() && _meta->location() )
+        if ( ! n->location() && _meta && _meta->location() )
             n->_meta = _meta;
 
         _children.emplace_back(n);

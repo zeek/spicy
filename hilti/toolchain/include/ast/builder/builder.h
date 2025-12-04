@@ -463,6 +463,10 @@ public:
 
     auto typeinfo(Expression* e, const Meta& m = Meta()) { return expressionTypeInfo(e, m); }
 
+    auto typeWrapped(Expression* e, QualifiedType* t, const Meta& m = Meta()) {
+        return expression::TypeWrapped::create(context(), e, t, m);
+    }
+
     auto assign(Expression* target, Expression* src, const Meta& m = Meta()) {
         return expressionAssign(target, src, m);
     }
