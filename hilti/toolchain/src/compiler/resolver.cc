@@ -737,7 +737,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(declaration::Expression* n) final {
         if ( ! n->fullyQualifiedID() ) {
-            if ( n->id() == ID("self") || n->id() == ID("__dd") )
+            if ( n->id() == ID("self") || n->id() == ID("$dd") )
                 setFqID(n, n->id()); // local scope
             else if ( n->parent<Function>() )
                 setFqID(n, n->id()); // local scope
@@ -1187,7 +1187,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // resolving to figure that out and don't report an error here.
                 auto* op = n->parent()->tryAs<expression::UnresolvedOperator>();
                 if ( ! op || op->kind() != operator_::Kind::Call ) {
-                    if ( n->id() == ID("__dd") )
+                    if ( n->id() == ID("$dd") )
                         // Provide better error message
                         n->addError("$$ is not available in this context", node::ErrorPriority::High);
                     else if ( n->id() == ID("self") )

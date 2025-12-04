@@ -40,6 +40,7 @@ exclude_patterns = [
     ".DS_Store",
     "3rdparty/*",
     "_old-content",
+    ".venv",
 ]
 
 templates_path = ["_templates"]

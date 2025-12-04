@@ -131,7 +131,7 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         // optimizer handle expressions involving these.
         //
         // TODO(robin): Can we unify this?
-        if ( util::startsWith(n->id().local(), "__feat") )
+        if ( util::startsWith(n->id().local(), "$feat") )
             return;
 
         auto* decl = n->resolvedDeclaration();
