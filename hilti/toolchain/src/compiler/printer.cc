@@ -491,7 +491,14 @@ struct Printer : visitor::PreOrder {
 
     void operator()(expression::Ctor* n) final { _out << n->ctor(); }
 
-    void operator()(expression::Grouping* n) final { _out << '(' << n->expression() << ')'; }
+    void operator()(expression::Grouping* n) final {
+        _out << '(';
+
+        if ( auto* local = n->local() )
+            _out << "{" << local << ";} ";
+
+        _out << n->expression() << ')';
+    }
 
     void operator()(expression::Keyword* n) final {
         switch ( n->kind() ) {
