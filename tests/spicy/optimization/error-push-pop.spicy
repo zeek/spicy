@@ -4,12 +4,12 @@
 
 # @TEST-DOC: Tests optimizations performing removal unneeded error push/pop for unused synchronization.
 
-# Basic units without synchronization. We do not expect any updates to `self.__error` here.
+# Basic units without synchronization. We do not expect any updates to `self.$error` here.
 ###########################################################################################
 module foo;
 
-# CHECK-NOT: = __error;
-# CHECK-NOT: .__error = __error;
+# CHECK-NOT: = $error;
+# CHECK-NOT: .$error = $error;
 
 public type P0 = unit {};
 
@@ -26,9 +26,9 @@ public type P2 = unit {
     x: uint8;
     y: uint8 {}
 
-# CHECK: (*self).__error = __error;
-# CHECK-NEXT: (*self).__on_y((*self).y);
-# CHECK-NEXT: __error = (*self).__error;
+# CHECK: (*self)._error = _error;
+# CHECK-NEXT: (*self)._on_y((*self).y);
+# CHECK-NEXT: _error = (*self)._error;
     on %error {}
 };
 
@@ -42,8 +42,8 @@ public type Datas = unit {
 };
 
 # CHECK: End parsing production: Unit: foo__Data -> ty
-# CHECK-NOT: (*self).__error = __error;
-# CHECK-NOT: __error = __error;
+# CHECK-NOT: (*self).$error = $error;
+# CHECK-NOT: $error = $error;
 # Go until next method
 # CHECK: method
 type Data = unit {

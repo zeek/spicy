@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <string_view>
+
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
@@ -10,12 +12,19 @@ using namespace hilti::detail::optimizer;
 
 namespace {
 
+// Helper function to detect whether an ID refers to a generated error variable.
+bool isErrorId(std::string_view id) {
+    // Nominally the ID of the error field is `HILTI_INTERNAL_ID("error")`,
+    // but we also allow `__error` for testing.
+    return id == HILTI_INTERNAL_ID("error") || id == "__error";
+}
+
 // Visitor running on the final, optimized AST to perform additional peephole
 // optimizations. Will run repeatedly until it performs no further changes.
 struct Mutator : public optimizer::visitor::Mutator {
     using optimizer::visitor::Mutator::Mutator;
 
-    // Returns true if statement is `(*self).__error = __error`.
+    // Returns true if statement is `(*self)._error = _error`.
     bool isErrorPush(const statement::Expression* n) const {
         const auto* assign = n->expression()->tryAs<expression::Assign>();
         if ( ! assign )
@@ -43,7 +52,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         assert(deref0);
 
         const auto* op1 = lhs->op1()->tryAs<expression::Member>();
-        if ( ! (op1 && op1->id() == "__error") )
+        if ( ! (op1 && isErrorId(op1->id())) )
             return false;
 
         const auto* self = deref0->op0()->tryAs<expression::Name>();
@@ -51,20 +60,20 @@ struct Mutator : public optimizer::visitor::Mutator {
             return false;
 
         const auto* rhs = assign->source()->tryAs<expression::Name>();
-        if ( ! (rhs && rhs->id() == "__error") )
+        if ( ! (rhs && isErrorId(rhs->id())) )
             return false;
 
         return true;
     }
 
-    // Returns true if statement is `__error == (*self).__error`.
+    // Returns true if statement is `_error == (*self)._error`.
     bool isErrorPop(const statement::Expression* n) const {
         const auto* assign = n->expression()->tryAs<expression::Assign>();
         if ( ! assign )
             return false;
 
         const auto* lhs = assign->target()->tryAs<expression::Name>();
-        if ( ! (lhs && lhs->id() == "__error") )
+        if ( ! (lhs && isErrorId(lhs->id())) )
             return false;
 
         const auto* rhs = assign->source()->tryAs<operator_::struct_::MemberNonConst>();
@@ -89,7 +98,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         assert(deref0);
 
         const auto* op1 = rhs->op1()->tryAs<expression::Member>();
-        if ( ! (op1 && op1->id() == "__error") )
+        if ( ! (op1 && isErrorId(op1->id())) )
             return false;
 
         const auto* self = deref0->op0()->tryAs<expression::Name>();
@@ -118,8 +127,8 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         // Remove statement pairs of the form:
         //
-        //    (*self).__error = __error;
-        //    __error = (*self).__error;
+        //    (*self)._error = _error;
+        //    _error = (*self)._error;
         //
         // These will be left behind by the optimizer if a hook call got
         // optimized out in between them.

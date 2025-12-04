@@ -690,7 +690,7 @@ struct Printer : visitor::PreOrder {
         _out.beginLine();
         _out << "switch ( ";
 
-        if ( const auto& cond = n->condition(); cond->id().str() != "__x" )
+        if ( const auto& cond = n->condition(); cond->id().str() != HILTI_INTERNAL_ID("x") )
             _out << cond;
         else
             _out << cond->init();
@@ -945,7 +945,7 @@ struct Printer : visitor::PreOrder {
         if ( auto id = n->typeID() )
             _out << id;
         else
-            _out << fmt("__library_type(\"%s\")", n->cxxName());
+            _out << fmt(HILTI_INTERNAL_ID("library_type(\"%s\")"), n->cxxName());
     }
 
     void operator()(type::List* n) final {

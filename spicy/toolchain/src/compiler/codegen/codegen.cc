@@ -255,27 +255,29 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         replaceNode(n, builder()->memberCall(n->op0(), id, args, n->meta()));
     }
 
-    void operator()(operator_::unit::Offset* n) final { replaceNode(n, builder()->member(n->op0(), ID("__offset"))); }
+    void operator()(operator_::unit::Offset* n) final {
+        replaceNode(n, builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("offset"))));
+    }
 
     void operator()(operator_::unit::Position* n) final {
-        auto* begin = builder()->member(n->op0(), ID("__begin"));
-        auto* offset = builder()->member(n->op0(), ID("__offset"));
+        auto* begin = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("begin")));
+        auto* offset = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("offset")));
         replaceNode(n, builder()->grouping(builder()->sum(begin, offset)));
     }
 
     void operator()(operator_::unit::Input* n) final {
-        auto* begin = builder()->member(n->op0(), ID("__begin"));
+        auto* begin = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("begin")));
         replaceNode(n, begin);
     }
 
     void operator()(operator_::unit::SetInput* n) final {
-        auto* cur = builder()->member(n->op0(), ID("__position_update"));
+        auto* cur = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("position_update")));
         replaceNode(n, builder()->assign(cur, argument(n->op2(), 0)));
     }
 
     void operator()(operator_::unit::Find* n) final {
-        auto* begin = builder()->member(n->op0(), ID("__begin"));
-        auto* offset = builder()->member(n->op0(), ID("__offset"));
+        auto* begin = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("begin")));
+        auto* offset = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("offset")));
         auto* end = builder()->sum(begin, offset);
         auto* needle = argument(n->op2(), 0);
         auto* direction = argument(n->op2(), 1, builder()->id("spicy::Direction::Forward"));
@@ -285,12 +287,12 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::unit::ContextConst* n) final {
-        auto* x = builder()->member(n->op0(), ID("__context"));
+        auto* x = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("context")));
         replaceNode(n, x);
     }
 
     void operator()(operator_::unit::ContextNonConst* n) final {
-        auto* x = builder()->member(n->op0(), ID("__context"));
+        auto* x = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("context")));
         replaceNode(n, x);
     }
 
@@ -321,7 +323,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::unit::Stream* n) final {
-        replaceNode(n, builder()->deref(builder()->member(n->op0(), ID("__stream"))));
+        replaceNode(n, builder()->deref(builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("stream")))));
     }
 
     void operator()(hilti::operator_::tuple::Index* n) final {
@@ -449,7 +451,7 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
 
     void operator()(statement::Stop* n) final {
         auto b = builder()->newBlock();
-        b->addAssign(builder()->id("__stop"), builder()->bool_(true), n->meta());
+        b->addAssign(builder()->id(HILTI_INTERNAL_ID("stop")), builder()->bool_(true), n->meta());
         b->addReturn(n->meta());
         replaceNode(n, b->block());
     }
@@ -665,35 +667,38 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     if ( type == declaration::hook::Type::ForEach ) {
         assert_field();
 
+        params.push_back(builder()->parameter(HILTI_INTERNAL_ID("dd"), field->ddType()->type()->elementType()->type(),
+                                              hilti::parameter::Kind::In));
         params.push_back(
-            builder()->parameter("__dd", field->ddType()->type()->elementType()->type(), hilti::parameter::Kind::In));
-        params.push_back(builder()->parameter("__stop", builder()->typeBool(), hilti::parameter::Kind::InOut));
+            builder()->parameter(HILTI_INTERNAL_ID("stop"), builder()->typeBool(), hilti::parameter::Kind::InOut));
     }
     else if ( type == declaration::hook::Type::Error ) {
         if ( params.empty() )
-            params.push_back(builder()->parameter("__except", builder()->typeString(), hilti::parameter::Kind::In));
+            params.push_back(
+                builder()->parameter(HILTI_INTERNAL_ID("except"), builder()->typeString(), hilti::parameter::Kind::In));
     }
     else if ( original_field_type ) {
         assert_field();
 
-        params.push_back(builder()->parameter("__dd", field->itemType()->type(), hilti::parameter::Kind::In));
+        params.push_back(
+            builder()->parameter(HILTI_INTERNAL_ID("dd"), field->itemType()->type(), hilti::parameter::Kind::In));
 
         // Pass on captures for fields of type regexp, which are the only
         // ones that have it (for vector of regexps, it wouldn't be clear what
         // to bind to).
         if ( original_field_type->type()->isA<hilti::type::RegExp>() && ! is_container )
-            params.push_back(
-                builder()->parameter("__captures", builder()->typeName("hilti::Captures"), hilti::parameter::Kind::In));
+            params.push_back(builder()->parameter(HILTI_INTERNAL_ID("captures"), builder()->typeName("hilti::Captures"),
+                                                  hilti::parameter::Kind::In));
     }
 
     std::string hid;
     QualifiedType* result = nullptr;
 
     if ( id.local().str() == "0x25_print" ) {
-        // Special-case: We simply translate this into HILTI's __hook_to_string hook.
+        // Special-case: We simply translate this into HILTI's `$hook_to_string` hook.
         auto* string_ = builder()->qualifiedType(builder()->typeString(), hilti::Constness::Const);
         result = builder()->qualifiedType(builder()->typeOptional(string_), hilti::Constness::Const);
-        hid = "__hook_to_string";
+        hid = HILTI_INTERNAL_ID("hook_to_string");
     }
     else {
         std::string postfix;
@@ -704,7 +709,7 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
             case declaration::hook::Type::ForEach: postfix = "_foreach"; break;
         }
 
-        hid = fmt("__on_%s%s", id.local(), postfix);
+        hid = fmt(HILTI_INTERNAL_ID("on_%s%s"), id.local(), postfix);
         result = builder()->qualifiedType(builder()->typeVoid(), hilti::Constness::Const);
     }
 
@@ -731,7 +736,7 @@ Expression* CodeGen::addGlobalConstant(Ctor* ctor) {
     auto& [uniquer, cache] = _global_constants[type];
 
     return cache.getOrCreate(ctor->print(), [&, &uniquer = uniquer]() { // need to capture `u` explicitly with C++17
-        auto id = uniquer.get(ID(fmt("__%s", type)));
+        auto id = uniquer.get(ID(fmt(HILTI_INTERNAL_ID("%s"), type)));
         auto* d = builder()->constant(id, builder()->expression(ctor));
         _hilti_module->add(context(), d);
         return builder()->id(id);

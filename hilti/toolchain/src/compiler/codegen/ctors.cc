@@ -147,11 +147,11 @@ struct Visitor : hilti::visitor::PreOrder {
         auto v = cg->compile(n->valueType(), codegen::TypeUsage::Storage);
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
-            auto elems =
-                util::join(n->value() | std::views::transform([this](const auto& e) {
-                               return fmt("__xs.index_assign(%s, %s);", cg->compile(e->key()), cg->compile(e->value()));
-                           }),
-                           " ");
+            auto elems = util::join(n->value() | std::views::transform([this](const auto& e) {
+                                        return fmt("%s.index_assign(%s, %s);", HILTI_INTERNAL_ID("xs"),
+                                                   cg->compile(e->key()), cg->compile(e->value()));
+                                    }),
+                                    " ");
 
             // If we are at block scope capture other variables so they can be
             // used in the ctr. Outside of block scope we are emitting a
@@ -159,7 +159,9 @@ struct Visitor : hilti::visitor::PreOrder {
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
             const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
-            result = fmt("[%s]() { auto __xs = ::hilti::rt::Map<%s, %s>(); %s return __xs; }()", captures, k, v, elems);
+            const auto* xs = HILTI_INTERNAL_ID("xs");
+            result =
+                fmt("[%s]() { auto %s = ::hilti::rt::Map<%s, %s>(); %s return %s; }()", captures, xs, k, v, elems, xs);
         }
 
         else
@@ -238,7 +240,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
             auto elems = util::join(n->value() | std::views::transform([this](const auto& e) {
-                                        return fmt("__xs.insert(%s);", cg->compile(e));
+                                        return fmt("%s.insert(%s);", HILTI_INTERNAL_ID("xs"), cg->compile(e));
                                     }),
                                     " ");
 
@@ -248,7 +250,8 @@ struct Visitor : hilti::visitor::PreOrder {
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
             const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
-            result = fmt("[%s]() { auto __xs = ::hilti::rt::Set<%s>(); %s return __xs; }()", captures, k, elems);
+            const auto* xs = HILTI_INTERNAL_ID("xs");
+            result = fmt("[%s]() { auto %s = ::hilti::rt::Set<%s>(); %s return %s; }()", captures, xs, k, elems, xs);
         }
 
         else
@@ -338,7 +341,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
             auto elems = util::join(n->value() | std::views::transform([this](const auto& e) {
-                                        return fmt("__xs.push_back(%s);", cg->compile(e));
+                                        return fmt("%s.push_back(%s);", HILTI_INTERNAL_ID("xs"), cg->compile(e));
                                     }),
                                     " ");
 
@@ -348,8 +351,9 @@ struct Visitor : hilti::visitor::PreOrder {
             // other `const` variables which since they are non-locals as well
             // can be referenced without capturing.
             const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
-            result = fmt("[%s]() { auto __xs = %s({}%s); __xs.reserve(%d); %s return __xs; }()", captures, cxx_type,
-                         cxx_default, size, elems);
+            const auto* xs = HILTI_INTERNAL_ID("xs");
+            result = fmt("[%s]() { auto %s = %s({}%s); %s.reserve(%d); %s return %s; }()", captures, xs, cxx_type,
+                         cxx_default, xs, size, elems, xs);
         }
 
         else

@@ -37,9 +37,6 @@ void warning(std::string_view msg);
             ::hilti::rt::debug::detail::print(stream, msg);                                                            \
     }
 
-/** Shortcut to `hilti::rt::debug::setLocation`. */
-#define __location__(x) ::hilti::rt::debug::setLocation(x);
-
 namespace debug {
 
 namespace detail {
@@ -124,4 +121,8 @@ inline void print(std::string_view stream, T&& msg, const TypeInfo* /* type */) 
 }
 
 } // namespace debug
+
+/** Shortcut to `hilti::rt::debug::setLocation`. */
+inline void location(const char* x) { hilti::rt::debug::setLocation(x); }
+
 } // namespace hilti::rt

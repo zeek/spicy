@@ -56,8 +56,10 @@ void cxx::Linker::finalize() {
     // Note we don't qualify the two subsequent globals with
     // `cxx_namespace_intern` because we need these exact names; that's what
     // the runtime lbirary is likewise hard-coded to expect.
-    unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_library_version = R\"(%s)\";", version.toJSON()));
-    unit->add("const char HILTI_EXPORT HILTI_WEAK * __hlt_hlto_bind_to_version = " HILTI_VERSION_FUNCTION_STRING "();");
+    unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s = R\"(%s)\";",
+                  HILTI_INTERNAL_GLOBAL_ID("hlto_library_version"), version.toJSON()));
+    unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s = " HILTI_VERSION_FUNCTION_STRING "();",
+                  HILTI_INTERNAL_GLOBAL_ID("hlto_bind_to_version")));
 
     // Create a variable for the linker scope, but initialize it to magic value
     // `0` encoding unset. We will inject the actual scope at runtime when the

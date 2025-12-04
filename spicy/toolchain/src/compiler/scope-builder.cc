@@ -53,7 +53,7 @@ struct VisitorScopeBuilder : visitor::PostOrder {
         else
             // Force the scope lookup to stop here so that we don't find any
             // higher-level `$$`, which may have a different type.
-            n->getOrCreateScope()->insertNotFound(ID("__dd"));
+            n->getOrCreateScope()->insertNotFound(ID(HILTI_INTERNAL_ID("dd")));
 
         for ( auto&& x : n->ftype()->parameters() )
             n->getOrCreateScope()->insert(x);

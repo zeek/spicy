@@ -454,7 +454,8 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     // Atomically move the temporary file to its final location. With that
     // even with concurrent saves to the same final path other processes should
     // always see a consistent version of the contents of that file.
-    auto lib = hilti::rt::filesystem::temp_directory_path() / util::fmt("__library__%" PRIx64 ".hlto", _hash);
+    auto lib =
+        hilti::rt::filesystem::temp_directory_path() / util::fmt(HILTI_INTERNAL_ID("library__%") PRIx64 ".hlto", _hash);
     std::error_code ec;
     hilti::rt::filesystem::rename(lib0, lib, ec);
     if ( ec )

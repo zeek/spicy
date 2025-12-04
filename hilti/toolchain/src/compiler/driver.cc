@@ -261,7 +261,7 @@ Result<Nothing> Driver::_setCxxNamespacesFromPrefix(const char* prefix) {
 
     if ( ! isdigit(s[0]) && std::ranges::all_of(s, [](auto c) { return std::isalnum(c) || c == '_'; }) ) {
         _compiler_options.cxx_namespace_extern = hilti::util::fmt("hlt_%s", s);
-        _compiler_options.cxx_namespace_intern = hilti::util::fmt("__hlt_%s", s);
+        _compiler_options.cxx_namespace_intern = hilti::util::fmt(HILTI_INTERNAL_GLOBAL_ID("%s"), s);
         return Nothing();
     }
 

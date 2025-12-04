@@ -10,6 +10,6 @@
          addl library_paths   "x/x/x/x"
                               "y/y/y/y/y"
        cxx_namespace_extern   hlt
-       cxx_namespace_intern   __hlt
+       cxx_namespace_intern   hlt_internal
      addl cxx_include_paths   <empty>
 

@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     stream->freeze();
 
     // Instantiate unit.
-    auto request = hilti::rt::reference::make_value<__hlt_my_http::MyHTTP::RequestLine>();
+    auto request = hilti::rt::reference::make_value<HILTI_INTERNAL_GLOBAL(my_http)::MyHTTP::RequestLine>();
 
     // Feed data.
     hlt_my_http::MyHTTP::RequestLine::parse2(request, stream, {}, {});

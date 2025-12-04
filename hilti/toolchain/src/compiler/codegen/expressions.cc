@@ -70,7 +70,7 @@ struct Visitor : hilti::visitor::PreOrder {
         switch ( n->kind() ) {
             case expression::keyword::Kind::Self: result = {cg->self(), Side::LHS}; break;
             case expression::keyword::Kind::DollarDollar: result = {cg->dollardollar(), Side::LHS}; break;
-            case expression::keyword::Kind::Captures: result = {"__captures", Side::LHS}; break;
+            case expression::keyword::Kind::Captures: result = {HILTI_INTERNAL_ID("captures"), Side::LHS}; break;
             case expression::keyword::Kind::Scope: {
                 auto scope = fmt("%s_hlto_scope", cg->options().cxx_namespace_intern);
                 auto extern_scope = cxx::declaration::Global(cxx::ID(scope), "uint64_t", {}, {}, "extern");
@@ -133,9 +133,10 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( decl->isA<declaration::GlobalVariable>() ) {
             if ( cg->options().cxx_enable_dynamic_globals ) {
                 if ( auto ns = fqid.namespace_(); ! ns.empty() )
-                    result = {fmt("%s->%s", cxx::ID(ns, "__globals()"), cxx::ID(fqid.local())), Side::LHS};
+                    result = {fmt("%s->%s", cxx::ID(ns, HILTI_INTERNAL_ID("globals()")), cxx::ID(fqid.local())),
+                              Side::LHS};
                 else
-                    result = {fmt("__globals()->%s", cxx::ID(fqid)), Side::LHS};
+                    result = {fmt("%s()->%s", HILTI_INTERNAL_ID("globals"), cxx::ID(fqid)), Side::LHS};
             }
             else
                 result = {fmt("(*%s)", cxx::ID(cg->options().cxx_namespace_intern, cxx::ID(fqid))), Side::LHS};
@@ -181,7 +182,7 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         if ( auto* param = decl->tryAs<declaration::Parameter>(); param && param->isTypeParameter() ) {
-            auto arg = fmt("%s->__p_%s", cg->self(), param->id());
+            auto arg = fmt("%s->%s_%s", cg->self(), HILTI_INTERNAL_ID("p"), param->id());
             if ( param->type()->type()->isReferenceType() ) {
                 auto derefed = fmt("%s.derefAsValue()", arg);
                 if ( auto* strong_ref = param->type()->type()->tryAs<type::StrongReference>() )

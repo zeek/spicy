@@ -1,6 +1,6 @@
 [...]
 
-namespace __hlt_my_http::MyHTTP {
+    namespace hlt_internal_my_http::MyHTTP {
     struct Version;
 
     struct RequestLine : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<RequestLine> {
@@ -14,15 +14,15 @@ namespace __hlt_my_http::MyHTTP {
 }
 
 namespace hlt_my_http::MyHTTP::RequestLine {
-    using Type = __hlt_my_http::MyHTTP::RequestLine;
+using Type = hlt_internal_my_http::MyHTTP::RequestLine;
 
     [...]
 
-    extern auto parse1(::hilti::rt::ValueReference<::hilti::rt::Stream>& __data, const std::optional<::hilti::rt::stream::View>& __cur, const std::optional<::spicy::rt::UnitContext>
-    extern auto parse2(::hilti::rt::ValueReference<__hlt_my_http::MyHTTP::RequestLine>& __unit, ::hilti::rt::ValueReference<::hilti::rt::Stream>& __data, const std::optional<::hilt>
-    extern auto parse3(::hilti::rt::ValueReference<::spicy::rt::ParsedUnit>& __gunit, ::hilti::rt::ValueReference<::hilti::rt::Stream>& __data, const std::optional<::hilti::rt::str>
+    extern auto parse1(::hilti::rt::ValueReference<::hilti::rt::Stream>& _data, const std::optional<::hilti::rt::stream::View>& _cur, const std::optional<::spicy::rt::UnitContext>
+    extern auto parse2(::hilti::rt::ValueReference<hlt_internal_my_http::MyHTTP::RequestLine>& _unit, ::hilti::rt::ValueReference<::hilti::rt::Stream>& _data, const std::optional<::hilt>
+    extern auto parse3(::hilti::rt::ValueReference<::spicy::rt::ParsedUnit>& _gunit, ::hilti::rt::ValueReference<::hilti::rt::Stream>& _data, const std::optional<::hilti::rt::str>
 
     [...]
-}
+    } // namespace hlt_my_http::MyHTTP::RequestLine
 
-[...]
+    [...]

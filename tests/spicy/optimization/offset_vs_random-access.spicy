@@ -4,7 +4,7 @@
 # @TEST-EXEC: spicyc -p offset.spicy -o offset.hlt
 # @TEST-EXEC:   grep -q '#     - uses_offset' offset.hlt
 # @TEST-EXEC: ! grep -q '#     - uses_random_access' offset.hlt
-# @TEST-EXEC: ! grep -q '__trim = False;' offset.hlt
+# @TEST-EXEC: ! grep -q '_trim = False;' offset.hlt
 
 # @TEST-START-FILE offset.spicy
 module foo;
@@ -18,7 +18,7 @@ public type X = unit {
 # @TEST-EXEC: spicyc -p random-access.spicy -o random-access.hlt
 # @TEST-EXEC: ! grep -q '#     - uses_offset' random-access.hlt
 # @TEST-EXEC:   grep -q '#     - uses_random_access' random-access.hlt
-# @TEST-EXEC:   grep -q '__trim = False;' random-access.hlt
+# @TEST-EXEC:   grep -q '_trim = False;' random-access.hlt
 
 # @TEST-START-FILE random-access.spicy
 module foo;
@@ -32,7 +32,7 @@ public type X = unit {
 # @TEST-EXEC: spicyc -p both.spicy -o both.hlt
 # @TEST-EXEC: grep -q '#     - uses_offset' both.hlt
 # @TEST-EXEC: grep -q '#     - uses_random_access' both.hlt
-# @TEST-EXEC: grep -q '__trim = False;' both.hlt
+# @TEST-EXEC: grep -q '_trim = False;' both.hlt
 
 # @TEST-START-FILE both.spicy
 module foo;

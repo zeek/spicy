@@ -5,188 +5,188 @@ import hilti;
 import spicy_rt;
 
 type A = struct {
-    weak_ref<stream> __stream &internal &needed-by-feature="uses_stream";
-    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_offset";
-    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
-    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
-    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    hook void __on_0x25_init();
-    hook void __on_0x25_done();
-    hook void __on_0x25_error(string __except);
-    hook optional<string> __hook_to_string();
-    hook void __on_0x25_finally();
-    hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
-    hook void __on_0x25_rejected() &needed-by-feature="synchronization";
-    hook void __on_0x25_synced() &needed-by-feature="synchronization";
-    hook void __on_0x25_gap(uint<64> seq, uint<64> len);
-    hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
-    hook void __on_0x25_skipped(uint<64> seq);
-    hook void __on_0x25_undelivered(uint<64> seq, bytes data);
-    hook void __on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method view<stream> parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse2(inout value_ref<A> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__A_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    weak_ref<stream> _stream &internal &needed-by-feature="uses_stream";
+    iterator<stream> _begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> _position_update &internal &needed-by-feature="uses_random_access";
+    uint<64> _offset &internal &needed-by-feature="uses_offset";
+    spicy_rt::Parser _parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
+    spicy_rt::SinkState _sink &internal &needed-by-feature="supports_sinks";
+    strong_ref<spicy_rt::Filters> _filters &internal &needed-by-feature="supports_filters";
+    optional<hilti::RecoverableFailure> _error &always-emit &internal;
+    hook void _on_0x25_init();
+    hook void _on_0x25_done();
+    hook void _on_0x25_error(string _except);
+    hook optional<string> _hook_to_string();
+    hook void _on_0x25_finally();
+    hook void _on_0x25_confirmed() &needed-by-feature="synchronization";
+    hook void _on_0x25_rejected() &needed-by-feature="synchronization";
+    hook void _on_0x25_synced() &needed-by-feature="synchronization";
+    hook void _on_0x25_gap(uint<64> seq, uint<64> len);
+    hook void _on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
+    hook void _on_0x25_skipped(uint<64> seq);
+    hook void _on_0x25_undelivered(uint<64> seq, bytes data);
+    hook void _on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
+    method view<stream> parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse2(inout value_ref<A> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_foo__A_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
 } &on-heap;
 public type B = struct {
-    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
-    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_offset";
-    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
-    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
-    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    hook void __on_0x25_init();
-    hook void __on_0x25_done();
-    hook void __on_0x25_error(string __except);
-    hook optional<string> __hook_to_string();
-    hook void __on_0x25_finally();
-    hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
-    hook void __on_0x25_rejected() &needed-by-feature="synchronization";
-    hook void __on_0x25_synced() &needed-by-feature="synchronization";
-    hook void __on_0x25_gap(uint<64> seq, uint<64> len);
-    hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
-    hook void __on_0x25_skipped(uint<64> seq);
-    hook void __on_0x25_undelivered(uint<64> seq, bytes data);
-    hook void __on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method view<stream> parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse2(inout value_ref<B> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__B_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    weak_ref<const stream> _stream &internal &needed-by-feature="uses_stream";
+    iterator<stream> _begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> _position_update &internal &needed-by-feature="uses_random_access";
+    uint<64> _offset &internal &needed-by-feature="uses_offset";
+    spicy_rt::Parser _parser &static &internal &needed-by-feature="supports_filters" &always-emit;
+    spicy_rt::SinkState _sink &internal &needed-by-feature="supports_sinks";
+    strong_ref<spicy_rt::Filters> _filters &internal &needed-by-feature="supports_filters";
+    optional<hilti::RecoverableFailure> _error &always-emit &internal;
+    hook void _on_0x25_init();
+    hook void _on_0x25_done();
+    hook void _on_0x25_error(string _except);
+    hook optional<string> _hook_to_string();
+    hook void _on_0x25_finally();
+    hook void _on_0x25_confirmed() &needed-by-feature="synchronization";
+    hook void _on_0x25_rejected() &needed-by-feature="synchronization";
+    hook void _on_0x25_synced() &needed-by-feature="synchronization";
+    hook void _on_0x25_gap(uint<64> seq, uint<64> len);
+    hook void _on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
+    hook void _on_0x25_skipped(uint<64> seq);
+    hook void _on_0x25_undelivered(uint<64> seq, bytes data);
+    hook void _on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
+    method view<stream> parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse2(inout value_ref<B> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_foo__B_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
 } &on-heap;
 type C = struct {
-    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
-    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_offset";
-    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
-    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
-    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    hook void __on_0x25_init();
-    hook void __on_0x25_done();
-    hook void __on_0x25_error(string __except);
-    hook optional<string> __hook_to_string();
-    hook void __on_0x25_finally();
-    hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
-    hook void __on_0x25_rejected() &needed-by-feature="synchronization";
-    hook void __on_0x25_synced() &needed-by-feature="synchronization";
-    hook void __on_0x25_gap(uint<64> seq, uint<64> len);
-    hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
-    hook void __on_0x25_skipped(uint<64> seq);
-    hook void __on_0x25_undelivered(uint<64> seq, bytes data);
-    hook void __on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method view<stream> parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse2(inout value_ref<C> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__C_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    weak_ref<const stream> _stream &internal &needed-by-feature="uses_stream";
+    iterator<stream> _begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> _position_update &internal &needed-by-feature="uses_random_access";
+    uint<64> _offset &internal &needed-by-feature="uses_offset";
+    spicy_rt::Parser _parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks";
+    spicy_rt::SinkState _sink &internal &needed-by-feature="supports_sinks";
+    strong_ref<spicy_rt::Filters> _filters &internal &needed-by-feature="supports_filters";
+    optional<hilti::RecoverableFailure> _error &always-emit &internal;
+    hook void _on_0x25_init();
+    hook void _on_0x25_done();
+    hook void _on_0x25_error(string _except);
+    hook optional<string> _hook_to_string();
+    hook void _on_0x25_finally();
+    hook void _on_0x25_confirmed() &needed-by-feature="synchronization";
+    hook void _on_0x25_rejected() &needed-by-feature="synchronization";
+    hook void _on_0x25_synced() &needed-by-feature="synchronization";
+    hook void _on_0x25_gap(uint<64> seq, uint<64> len);
+    hook void _on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
+    hook void _on_0x25_skipped(uint<64> seq);
+    hook void _on_0x25_undelivered(uint<64> seq, bytes data);
+    hook void _on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
+    method view<stream> parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse2(inout value_ref<C> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_foo__C_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
 } &on-heap;
 public type D = struct {
     value_ref<C> _anon &optional &anonymous &no-emit;
-    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
-    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_offset";
-    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &always-emit;
-    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
-    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    hook void __on_0x25_init();
-    hook void __on_0x25_done();
-    hook void __on_0x25_error(string __except);
-    hook optional<string> __hook_to_string();
-    hook void __on_0x25_finally();
-    hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
-    hook void __on_0x25_rejected() &needed-by-feature="synchronization";
-    hook void __on_0x25_synced() &needed-by-feature="synchronization";
-    hook void __on_0x25_gap(uint<64> seq, uint<64> len);
-    hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
-    hook void __on_0x25_skipped(uint<64> seq);
-    hook void __on_0x25_undelivered(uint<64> seq, bytes data);
-    hook void __on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method view<stream> parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse2(inout value_ref<D> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__D_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    weak_ref<const stream> _stream &internal &needed-by-feature="uses_stream";
+    iterator<stream> _begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> _position_update &internal &needed-by-feature="uses_random_access";
+    uint<64> _offset &internal &needed-by-feature="uses_offset";
+    spicy_rt::Parser _parser &static &internal &needed-by-feature="supports_filters" &always-emit;
+    spicy_rt::SinkState _sink &internal &needed-by-feature="supports_sinks";
+    strong_ref<spicy_rt::Filters> _filters &internal &needed-by-feature="supports_filters";
+    optional<hilti::RecoverableFailure> _error &always-emit &internal;
+    hook void _on_0x25_init();
+    hook void _on_0x25_done();
+    hook void _on_0x25_error(string _except);
+    hook optional<string> _hook_to_string();
+    hook void _on_0x25_finally();
+    hook void _on_0x25_confirmed() &needed-by-feature="synchronization";
+    hook void _on_0x25_rejected() &needed-by-feature="synchronization";
+    hook void _on_0x25_synced() &needed-by-feature="synchronization";
+    hook void _on_0x25_gap(uint<64> seq, uint<64> len);
+    hook void _on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
+    hook void _on_0x25_skipped(uint<64> seq);
+    hook void _on_0x25_undelivered(uint<64> seq, bytes data);
+    hook void _on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
+    method view<stream> parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse2(inout value_ref<D> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_foo__D_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
 } &on-heap;
 type F = struct {
-    weak_ref<const stream> __stream &internal &needed-by-feature="uses_stream";
-    iterator<stream> __begin &internal &needed-by-feature="uses_random_access";
-    optional<iterator<stream>> __position_update &internal &needed-by-feature="uses_random_access";
-    uint<64> __offset &internal &needed-by-feature="uses_offset";
-    spicy_rt::Parser __parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks" &needed-by-feature="is_filter";
-    spicy_rt::SinkState __sink &internal &needed-by-feature="supports_sinks";
-    strong_ref<spicy_rt::Filters> __filters &internal &needed-by-feature="supports_filters";
-    weak_ref<spicy_rt::Forward> __forward &internal &needed-by-feature="is_filter";
-    optional<hilti::RecoverableFailure> __error &always-emit &internal;
-    hook void __on_0x25_init();
-    hook void __on_0x25_done();
-    hook void __on_0x25_error(string __except);
-    hook optional<string> __hook_to_string();
-    hook void __on_0x25_finally();
-    hook void __on_0x25_confirmed() &needed-by-feature="synchronization";
-    hook void __on_0x25_rejected() &needed-by-feature="synchronization";
-    hook void __on_0x25_synced() &needed-by-feature="synchronization";
-    hook void __on_0x25_gap(uint<64> seq, uint<64> len);
-    hook void __on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
-    hook void __on_0x25_skipped(uint<64> seq);
-    hook void __on_0x25_undelivered(uint<64> seq, bytes data);
-    hook void __on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
-    method view<stream> parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse2(inout value_ref<F> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __parse_foo__F_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error);
+    weak_ref<const stream> _stream &internal &needed-by-feature="uses_stream";
+    iterator<stream> _begin &internal &needed-by-feature="uses_random_access";
+    optional<iterator<stream>> _position_update &internal &needed-by-feature="uses_random_access";
+    uint<64> _offset &internal &needed-by-feature="uses_offset";
+    spicy_rt::Parser _parser &static &internal &needed-by-feature="supports_filters" &needed-by-feature="supports_sinks" &needed-by-feature="is_filter";
+    spicy_rt::SinkState _sink &internal &needed-by-feature="supports_sinks";
+    strong_ref<spicy_rt::Filters> _filters &internal &needed-by-feature="supports_filters";
+    weak_ref<spicy_rt::Forward> _forward &internal &needed-by-feature="is_filter";
+    optional<hilti::RecoverableFailure> _error &always-emit &internal;
+    hook void _on_0x25_init();
+    hook void _on_0x25_done();
+    hook void _on_0x25_error(string _except);
+    hook optional<string> _hook_to_string();
+    hook void _on_0x25_finally();
+    hook void _on_0x25_confirmed() &needed-by-feature="synchronization";
+    hook void _on_0x25_rejected() &needed-by-feature="synchronization";
+    hook void _on_0x25_synced() &needed-by-feature="synchronization";
+    hook void _on_0x25_gap(uint<64> seq, uint<64> len);
+    hook void _on_0x25_overlap(uint<64> seq, bytes old, bytes new_);
+    hook void _on_0x25_skipped(uint<64> seq);
+    hook void _on_0x25_undelivered(uint<64> seq, bytes data);
+    hook void _on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
+    method view<stream> parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse2(inout value_ref<F> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _parse_foo__F_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error);
 } &on-heap;
 
-const bool __feat%foo@@A%uses_offset = True;
-const bool __feat%foo@@A%uses_random_access = True;
-const bool __feat%foo@@A%uses_stream = True;
-const bool __feat%foo@@A%uses_sync_advance = True;
-const bool __feat%foo@@A%is_filter = False;
-const bool __feat%foo@@A%supports_filters = True;
-const bool __feat%foo@@A%supports_sinks = True;
-const bool __feat%foo@@A%synchronization = True;
-const bool __feat%foo@@B%uses_offset = True;
-const bool __feat%foo@@B%uses_random_access = True;
-const bool __feat%foo@@B%uses_stream = True;
-const bool __feat%foo@@B%uses_sync_advance = True;
-const bool __feat%foo@@B%is_filter = False;
-const bool __feat%foo@@B%supports_filters = True;
-const bool __feat%foo@@B%supports_sinks = True;
-const bool __feat%foo@@B%synchronization = True;
-const bool __feat%foo@@C%uses_offset = True;
-const bool __feat%foo@@C%uses_random_access = True;
-const bool __feat%foo@@C%uses_stream = True;
-const bool __feat%foo@@C%uses_sync_advance = True;
-const bool __feat%foo@@C%is_filter = False;
-const bool __feat%foo@@C%supports_filters = True;
-const bool __feat%foo@@C%supports_sinks = True;
-const bool __feat%foo@@C%synchronization = True;
-const bool __feat%foo@@D%uses_offset = True;
-const bool __feat%foo@@D%uses_random_access = True;
-const bool __feat%foo@@D%uses_stream = True;
-const bool __feat%foo@@D%uses_sync_advance = True;
-const bool __feat%foo@@D%is_filter = False;
-const bool __feat%foo@@D%supports_filters = True;
-const bool __feat%foo@@D%supports_sinks = True;
-const bool __feat%foo@@D%synchronization = True;
-const bool __feat%foo@@F%uses_offset = True;
-const bool __feat%foo@@F%uses_random_access = True;
-const bool __feat%foo@@F%uses_stream = True;
-const bool __feat%foo@@F%uses_sync_advance = True;
-const bool __feat%foo@@F%is_filter = True;
-const bool __feat%foo@@F%supports_filters = True;
-const bool __feat%foo@@F%supports_sinks = True;
-const bool __feat%foo@@F%synchronization = True;
+const bool _feat%foo@@A%uses_offset = True;
+const bool _feat%foo@@A%uses_random_access = True;
+const bool _feat%foo@@A%uses_stream = True;
+const bool _feat%foo@@A%uses_sync_advance = True;
+const bool _feat%foo@@A%is_filter = False;
+const bool _feat%foo@@A%supports_filters = True;
+const bool _feat%foo@@A%supports_sinks = True;
+const bool _feat%foo@@A%synchronization = True;
+const bool _feat%foo@@B%uses_offset = True;
+const bool _feat%foo@@B%uses_random_access = True;
+const bool _feat%foo@@B%uses_stream = True;
+const bool _feat%foo@@B%uses_sync_advance = True;
+const bool _feat%foo@@B%is_filter = False;
+const bool _feat%foo@@B%supports_filters = True;
+const bool _feat%foo@@B%supports_sinks = True;
+const bool _feat%foo@@B%synchronization = True;
+const bool _feat%foo@@C%uses_offset = True;
+const bool _feat%foo@@C%uses_random_access = True;
+const bool _feat%foo@@C%uses_stream = True;
+const bool _feat%foo@@C%uses_sync_advance = True;
+const bool _feat%foo@@C%is_filter = False;
+const bool _feat%foo@@C%supports_filters = True;
+const bool _feat%foo@@C%supports_sinks = True;
+const bool _feat%foo@@C%synchronization = True;
+const bool _feat%foo@@D%uses_offset = True;
+const bool _feat%foo@@D%uses_random_access = True;
+const bool _feat%foo@@D%uses_stream = True;
+const bool _feat%foo@@D%uses_sync_advance = True;
+const bool _feat%foo@@D%is_filter = False;
+const bool _feat%foo@@D%supports_filters = True;
+const bool _feat%foo@@D%supports_sinks = True;
+const bool _feat%foo@@D%synchronization = True;
+const bool _feat%foo@@F%uses_offset = True;
+const bool _feat%foo@@F%uses_random_access = True;
+const bool _feat%foo@@F%uses_stream = True;
+const bool _feat%foo@@F%uses_sync_advance = True;
+const bool _feat%foo@@F%is_filter = True;
+const bool _feat%foo@@F%supports_filters = True;
+const bool _feat%foo@@F%supports_sinks = True;
+const bool _feat%foo@@F%synchronization = True;
 
 function void f1() {
 }
@@ -194,1257 +194,1257 @@ function void f1() {
 public function void f2() {
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::_parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:18:10-18:16"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     try {
 
-        if ( ::__feat%foo@@A%uses_random_access ) 
-            __trim = False;
+        if ( ::_feat%foo@@A%uses_random_access ) 
+            _trim = False;
 
         hilti::debugIndent("spicy");
-        local iterator<stream> __begin = begin(__cur);
+        local iterator<stream> _begin = begin(_cur);
 
-        if ( ::__feat%foo@@A%uses_stream ) 
-            (*self).__stream = __data;
-
-
-        if ( ::__feat%foo@@A%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@A%uses_stream ) 
+            (*self)._stream = _data;
 
 
-        if ( ::__feat%foo@@A%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@A%uses_random_access ) 
+            (*self)._begin = _begin;
 
-        (*self).__error = __error;
 
-        if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@A%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_init();
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
+        if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
+            (*self)._position_update = Null;
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+        (*self)._on_0x25_init();
+
+        if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
+
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         local strong_ref<stream> filtered = Null;
 
-        if ( ::__feat%foo@@A%supports_filters ) {
-            local uint<64> __offset1 = begin((*__data)).offset();
+        if ( ::_feat%foo@@A%supports_filters ) {
+            local uint<64> _offset1 = begin((*_data)).offset();
 
-            if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> __filtered_data = filtered;
-                self.__parse_foo__A_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
-                local uint<64> __offset2 = begin((*__data)).offset();
-                __cur = __cur.advance(__offset2 - __offset1);
+            if ( filtered = spicy_rt::filter_init(self, _data, _cur) ) {
+                local value_ref<stream> _filtered_data = filtered;
+                self._parse_foo__A_stage2(_filtered_data, begin((*_filtered_data)), (*_filtered_data), _trim, _lah, _lahe, _error);
+                local uint<64> _offset2 = begin((*_data)).offset();
+                _cur = _cur.advance(_offset2 - _offset1);
 
-                if ( __trim ) 
-                    (*__data).trim(begin(__cur));
+                if ( _trim ) 
+                    (*_data).trim(begin(_cur));
 
-                __result = (__cur, __lah, __lahe, __error);
+                _result = (_cur, _lah, _lahe, _error);
             }
 
         }
 
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__A_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            _result = (*self)._parse_foo__A_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
 
     }
-    catch ( hilti::SystemException __except ) {
+    catch ( hilti::SystemException _except ) {
 
-        if ( ::__feat%foo@@A%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@A%uses_random_access ) 
+            (*self)._begin = _begin;
 
 
-        if ( ::__feat%foo@@A%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@A%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_error(hilti::exception_what(__except));
+        (*self)._on_0x25_error(hilti::exception_what(_except));
 
-        if ( ::__feat%foo@@A%supports_filters ) 
+        if ( ::_feat%foo@@A%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@A%supports_sinks ) {
+        if ( ::_feat%foo@@A%supports_sinks ) {
         }
 
-        (*self).__error = __error;
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
+            (*self)._position_update = Null;
 
-        (*self).__on_0x25_finally();
+        (*self)._on_0x25_finally();
 
-        if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
+        if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         throw;
     }
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_finally();
+    (*self)._on_0x25_finally();
 
-    if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
+    if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
-    return __result;
+    _error = (*self)._error;
+    return _result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::__parse_foo__A_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::_parse_foo__A_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:18:10-18:16"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
 
-    if ( ::__feat%foo@@A%uses_random_access ) 
-        (*self).__begin = __begin;
+    if ( ::_feat%foo@@A%uses_random_access ) 
+        (*self)._begin = _begin;
 
 
-    if ( ::__feat%foo@@A%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+    if ( ::_feat%foo@@A%uses_offset ) 
+        (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_done();
+    (*self)._on_0x25_done();
 
-    if ( ::__feat%foo@@A%uses_random_access || ::__feat%foo@@A%uses_offset ) 
+    if ( ::_feat%foo@@A%uses_random_access || ::_feat%foo@@A%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
+    _error = (*self)._error;
 
-    if ( ::__feat%foo@@A%supports_filters ) 
+    if ( ::_feat%foo@@A%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@A%supports_sinks ) {
+    if ( ::_feat%foo@@A%supports_sinks ) {
     }
 
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe, __error);
-    return __result;
+    _result = (_cur, _lah, _lahe, _error);
+    return _result;
 }
 
-method view<stream> foo::A::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::A::parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:18:10-18:16"
-    local value_ref<A> __unit = default<A>();
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<A> _unit = default<A>();
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:18:10-18:16"
 
     # Begin parsing production: Unit: foo__A ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__A ->
 
-    if ( ::__feat%foo@@A%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@A%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@A%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@A%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::A::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::A::parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:18:10-18:16"
-    local value_ref<A> __unit = default<A>();
-    spicy_rt::initializeParsedUnit((*__gunit), __unit);
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<A> _unit = default<A>();
+    spicy_rt::initializeParsedUnit((*_gunit), _unit);
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:18:10-18:16"
 
     # Begin parsing production: Unit: foo__A ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__A ->
 
-    if ( ::__feat%foo@@A%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@A%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@A%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@A%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::A::parse2(inout value_ref<A> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::A::parse2(inout value_ref<A> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:18:10-18:16"
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:18:10-18:16"
 
     # Begin parsing production: Unit: foo__A ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__A ->
 
-    if ( ::__feat%foo@@A%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@A%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@A%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@A%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-init function void __register_foo_A() {
+init function void _register_foo_A() {
 
-    if ( ::__feat%foo@@A%is_filter || ::__feat%foo@@A%supports_sinks ) {
-        foo::A::__parser = [$name="foo::A", $is_public=False, $parse1=foo::A::parse1, $parse2=foo::A::parse2, $parse3=foo::A::parse3, $context_new=Null, $type_=A, $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::A::__parser, $scope, Null);
+    if ( ::_feat%foo@@A%is_filter || ::_feat%foo@@A%supports_sinks ) {
+        foo::A::_parser = [$name="foo::A", $is_public=False, $parse1=foo::A::parse1, $parse2=foo::A::parse2, $parse3=foo::A::parse3, $context_new=Null, $type_=A, $description="", $mime_types=vector(), $ports=vector()];
+        spicy_rt::registerParser(foo::A::_parser, $scope, Null);
     }
 
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::_parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:21:17-21:23"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     try {
 
-        if ( ::__feat%foo@@B%uses_random_access ) 
-            __trim = False;
+        if ( ::_feat%foo@@B%uses_random_access ) 
+            _trim = False;
 
         hilti::debugIndent("spicy");
-        local iterator<stream> __begin = begin(__cur);
+        local iterator<stream> _begin = begin(_cur);
 
-        if ( ::__feat%foo@@B%uses_stream ) 
-            (*self).__stream = __data;
-
-
-        if ( ::__feat%foo@@B%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@B%uses_stream ) 
+            (*self)._stream = _data;
 
 
-        if ( ::__feat%foo@@B%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@B%uses_random_access ) 
+            (*self)._begin = _begin;
 
-        (*self).__error = __error;
 
-        if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@B%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_init();
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
+        if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
+            (*self)._position_update = Null;
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+        (*self)._on_0x25_init();
+
+        if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
+
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         local strong_ref<stream> filtered = Null;
 
-        if ( ::__feat%foo@@B%supports_filters ) {
-            local uint<64> __offset1 = begin((*__data)).offset();
+        if ( ::_feat%foo@@B%supports_filters ) {
+            local uint<64> _offset1 = begin((*_data)).offset();
 
-            if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> __filtered_data = filtered;
-                self.__parse_foo__B_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
-                local uint<64> __offset2 = begin((*__data)).offset();
-                __cur = __cur.advance(__offset2 - __offset1);
+            if ( filtered = spicy_rt::filter_init(self, _data, _cur) ) {
+                local value_ref<stream> _filtered_data = filtered;
+                self._parse_foo__B_stage2(_filtered_data, begin((*_filtered_data)), (*_filtered_data), _trim, _lah, _lahe, _error);
+                local uint<64> _offset2 = begin((*_data)).offset();
+                _cur = _cur.advance(_offset2 - _offset1);
 
-                if ( __trim ) 
-                    (*__data).trim(begin(__cur));
+                if ( _trim ) 
+                    (*_data).trim(begin(_cur));
 
-                __result = (__cur, __lah, __lahe, __error);
+                _result = (_cur, _lah, _lahe, _error);
             }
 
         }
 
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__B_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            _result = (*self)._parse_foo__B_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
 
     }
-    catch ( hilti::SystemException __except ) {
+    catch ( hilti::SystemException _except ) {
 
-        if ( ::__feat%foo@@B%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@B%uses_random_access ) 
+            (*self)._begin = _begin;
 
 
-        if ( ::__feat%foo@@B%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@B%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_error(hilti::exception_what(__except));
+        (*self)._on_0x25_error(hilti::exception_what(_except));
 
-        if ( ::__feat%foo@@B%supports_filters ) 
+        if ( ::_feat%foo@@B%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@B%supports_sinks ) {
+        if ( ::_feat%foo@@B%supports_sinks ) {
         }
 
-        (*self).__error = __error;
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
+            (*self)._position_update = Null;
 
-        (*self).__on_0x25_finally();
+        (*self)._on_0x25_finally();
 
-        if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
+        if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         throw;
     }
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_finally();
+    (*self)._on_0x25_finally();
 
-    if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
+    if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
-    return __result;
+    _error = (*self)._error;
+    return _result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::__parse_foo__B_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::_parse_foo__B_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:21:17-21:23"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
 
-    if ( ::__feat%foo@@B%uses_random_access ) 
-        (*self).__begin = __begin;
+    if ( ::_feat%foo@@B%uses_random_access ) 
+        (*self)._begin = _begin;
 
 
-    if ( ::__feat%foo@@B%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+    if ( ::_feat%foo@@B%uses_offset ) 
+        (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_done();
+    (*self)._on_0x25_done();
 
-    if ( ::__feat%foo@@B%uses_random_access || ::__feat%foo@@B%uses_offset ) 
+    if ( ::_feat%foo@@B%uses_random_access || ::_feat%foo@@B%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
+    _error = (*self)._error;
 
-    if ( ::__feat%foo@@B%supports_filters ) 
+    if ( ::_feat%foo@@B%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@B%supports_sinks ) {
+    if ( ::_feat%foo@@B%supports_sinks ) {
     }
 
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe, __error);
-    return __result;
+    _result = (_cur, _lah, _lahe, _error);
+    return _result;
 }
 
-method view<stream> foo::B::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::B::parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:21:17-21:23"
-    local value_ref<B> __unit = default<B>();
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<B> _unit = default<B>();
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__B ->
 
-    if ( ::__feat%foo@@B%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@B%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@B%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@B%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::B::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::B::parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:21:17-21:23"
-    local value_ref<B> __unit = default<B>();
-    spicy_rt::initializeParsedUnit((*__gunit), __unit);
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<B> _unit = default<B>();
+    spicy_rt::initializeParsedUnit((*_gunit), _unit);
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__B ->
 
-    if ( ::__feat%foo@@B%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@B%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@B%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@B%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::B::parse2(inout value_ref<B> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::B::parse2(inout value_ref<B> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:21:17-21:23"
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__B ->
 
-    if ( ::__feat%foo@@B%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@B%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@B%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@B%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-init function void __register_foo_B() {
-    foo::B::__parser = [$name="foo::B", $is_public=True, $parse1=foo::B::parse1, $parse2=foo::B::parse2, $parse3=foo::B::parse3, $context_new=Null, $type_=B, $description="", $mime_types=vector(), $ports=vector()];
-    spicy_rt::registerParser(foo::B::__parser, $scope, Null);
+init function void _register_foo_B() {
+    foo::B::_parser = [$name="foo::B", $is_public=True, $parse1=foo::B::parse1, $parse2=foo::B::parse2, $parse3=foo::B::parse3, $context_new=Null, $type_=B, $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::B::_parser, $scope, Null);
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::_parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     try {
 
-        if ( ::__feat%foo@@C%uses_random_access ) 
-            __trim = False;
+        if ( ::_feat%foo@@C%uses_random_access ) 
+            _trim = False;
 
         hilti::debugIndent("spicy");
-        local iterator<stream> __begin = begin(__cur);
+        local iterator<stream> _begin = begin(_cur);
 
-        if ( ::__feat%foo@@C%uses_stream ) 
-            (*self).__stream = __data;
-
-
-        if ( ::__feat%foo@@C%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@C%uses_stream ) 
+            (*self)._stream = _data;
 
 
-        if ( ::__feat%foo@@C%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@C%uses_random_access ) 
+            (*self)._begin = _begin;
 
-        (*self).__error = __error;
 
-        if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@C%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_init();
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
+        if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
+            (*self)._position_update = Null;
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+        (*self)._on_0x25_init();
+
+        if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
+
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         local strong_ref<stream> filtered = Null;
 
-        if ( ::__feat%foo@@C%supports_filters ) {
-            local uint<64> __offset1 = begin((*__data)).offset();
+        if ( ::_feat%foo@@C%supports_filters ) {
+            local uint<64> _offset1 = begin((*_data)).offset();
 
-            if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> __filtered_data = filtered;
-                self.__parse_foo__C_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
-                local uint<64> __offset2 = begin((*__data)).offset();
-                __cur = __cur.advance(__offset2 - __offset1);
+            if ( filtered = spicy_rt::filter_init(self, _data, _cur) ) {
+                local value_ref<stream> _filtered_data = filtered;
+                self._parse_foo__C_stage2(_filtered_data, begin((*_filtered_data)), (*_filtered_data), _trim, _lah, _lahe, _error);
+                local uint<64> _offset2 = begin((*_data)).offset();
+                _cur = _cur.advance(_offset2 - _offset1);
 
-                if ( __trim ) 
-                    (*__data).trim(begin(__cur));
+                if ( _trim ) 
+                    (*_data).trim(begin(_cur));
 
-                __result = (__cur, __lah, __lahe, __error);
+                _result = (_cur, _lah, _lahe, _error);
             }
 
         }
 
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__C_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            _result = (*self)._parse_foo__C_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
 
     }
-    catch ( hilti::SystemException __except ) {
+    catch ( hilti::SystemException _except ) {
 
-        if ( ::__feat%foo@@C%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@C%uses_random_access ) 
+            (*self)._begin = _begin;
 
 
-        if ( ::__feat%foo@@C%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@C%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_error(hilti::exception_what(__except));
+        (*self)._on_0x25_error(hilti::exception_what(_except));
 
-        if ( ::__feat%foo@@C%supports_filters ) 
+        if ( ::_feat%foo@@C%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@C%supports_sinks ) {
+        if ( ::_feat%foo@@C%supports_sinks ) {
         }
 
-        (*self).__error = __error;
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
+            (*self)._position_update = Null;
 
-        (*self).__on_0x25_finally();
+        (*self)._on_0x25_finally();
 
-        if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
+        if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         throw;
     }
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_finally();
+    (*self)._on_0x25_finally();
 
-    if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
+    if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
-    return __result;
+    _error = (*self)._error;
+    return _result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::__parse_foo__C_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::_parse_foo__C_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
 
-    if ( ::__feat%foo@@C%uses_random_access ) 
-        (*self).__begin = __begin;
+    if ( ::_feat%foo@@C%uses_random_access ) 
+        (*self)._begin = _begin;
 
 
-    if ( ::__feat%foo@@C%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+    if ( ::_feat%foo@@C%uses_offset ) 
+        (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_done();
+    (*self)._on_0x25_done();
 
-    if ( ::__feat%foo@@C%uses_random_access || ::__feat%foo@@C%uses_offset ) 
+    if ( ::_feat%foo@@C%uses_random_access || ::_feat%foo@@C%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
+    _error = (*self)._error;
 
-    if ( ::__feat%foo@@C%supports_filters ) 
+    if ( ::_feat%foo@@C%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@C%supports_sinks ) {
+    if ( ::_feat%foo@@C%supports_sinks ) {
     }
 
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe, __error);
-    return __result;
+    _result = (_cur, _lah, _lahe, _error);
+    return _result;
 }
 
-method view<stream> foo::C::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::C::parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:24:10-24:16"
-    local value_ref<C> __unit = default<C>();
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<C> _unit = default<C>();
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:24:10-24:16"
 
     # Begin parsing production: Unit: foo__C ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__C ->
 
-    if ( ::__feat%foo@@C%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@C%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@C%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@C%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::C::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::C::parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:24:10-24:16"
-    local value_ref<C> __unit = default<C>();
-    spicy_rt::initializeParsedUnit((*__gunit), __unit);
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<C> _unit = default<C>();
+    spicy_rt::initializeParsedUnit((*_gunit), _unit);
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:24:10-24:16"
 
     # Begin parsing production: Unit: foo__C ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__C ->
 
-    if ( ::__feat%foo@@C%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@C%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@C%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@C%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::C::parse2(inout value_ref<C> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::C::parse2(inout value_ref<C> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:24:10-24:16"
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:24:10-24:16"
 
     # Begin parsing production: Unit: foo__C ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__C ->
 
-    if ( ::__feat%foo@@C%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@C%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@C%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@C%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-init function void __register_foo_C() {
+init function void _register_foo_C() {
 
-    if ( ::__feat%foo@@C%is_filter || ::__feat%foo@@C%supports_sinks ) {
-        foo::C::__parser = [$name="foo::C", $is_public=False, $parse1=foo::C::parse1, $parse2=foo::C::parse2, $parse3=foo::C::parse3, $context_new=Null, $type_=C, $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::C::__parser, $scope, Null);
+    if ( ::_feat%foo@@C%is_filter || ::_feat%foo@@C%supports_sinks ) {
+        foo::C::_parser = [$name="foo::C", $is_public=False, $parse1=foo::C::parse1, $parse2=foo::C::parse2, $parse3=foo::C::parse3, $context_new=Null, $type_=C, $description="", $mime_types=vector(), $ports=vector()];
+        spicy_rt::registerParser(foo::C::_parser, $scope, Null);
     }
 
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::_parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:25:17-27:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     try {
 
-        if ( ::__feat%foo@@D%uses_random_access ) 
-            __trim = False;
+        if ( ::_feat%foo@@D%uses_random_access ) 
+            _trim = False;
 
         hilti::debugIndent("spicy");
-        local iterator<stream> __begin = begin(__cur);
+        local iterator<stream> _begin = begin(_cur);
 
-        if ( ::__feat%foo@@D%uses_stream ) 
-            (*self).__stream = __data;
-
-
-        if ( ::__feat%foo@@D%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@D%uses_stream ) 
+            (*self)._stream = _data;
 
 
-        if ( ::__feat%foo@@D%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@D%uses_random_access ) 
+            (*self)._begin = _begin;
 
-        (*self).__error = __error;
 
-        if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@D%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_init();
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
+        if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
+            (*self)._position_update = Null;
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+        (*self)._on_0x25_init();
+
+        if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
+
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         local strong_ref<stream> filtered = Null;
 
-        if ( ::__feat%foo@@D%supports_filters ) {
-            local uint<64> __offset1 = begin((*__data)).offset();
+        if ( ::_feat%foo@@D%supports_filters ) {
+            local uint<64> _offset1 = begin((*_data)).offset();
 
-            if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> __filtered_data = filtered;
-                self.__parse_foo__D_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
-                local uint<64> __offset2 = begin((*__data)).offset();
-                __cur = __cur.advance(__offset2 - __offset1);
+            if ( filtered = spicy_rt::filter_init(self, _data, _cur) ) {
+                local value_ref<stream> _filtered_data = filtered;
+                self._parse_foo__D_stage2(_filtered_data, begin((*_filtered_data)), (*_filtered_data), _trim, _lah, _lahe, _error);
+                local uint<64> _offset2 = begin((*_data)).offset();
+                _cur = _cur.advance(_offset2 - _offset1);
 
-                if ( __trim ) 
-                    (*__data).trim(begin(__cur));
+                if ( _trim ) 
+                    (*_data).trim(begin(_cur));
 
-                __result = (__cur, __lah, __lahe, __error);
+                _result = (_cur, _lah, _lahe, _error);
             }
 
         }
 
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__D_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            _result = (*self)._parse_foo__D_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
 
     }
-    catch ( hilti::SystemException __except ) {
+    catch ( hilti::SystemException _except ) {
 
-        if ( ::__feat%foo@@D%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@D%uses_random_access ) 
+            (*self)._begin = _begin;
 
 
-        if ( ::__feat%foo@@D%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@D%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_error(hilti::exception_what(__except));
+        (*self)._on_0x25_error(hilti::exception_what(_except));
 
-        if ( ::__feat%foo@@D%supports_filters ) 
+        if ( ::_feat%foo@@D%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@D%supports_sinks ) {
+        if ( ::_feat%foo@@D%supports_sinks ) {
         }
 
-        (*self).__error = __error;
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
+            (*self)._position_update = Null;
 
-        (*self).__on_0x25_finally();
+        (*self)._on_0x25_finally();
 
-        if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
+        if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         throw;
     }
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_finally();
+    (*self)._on_0x25_finally();
 
-    if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
+    if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
-    return __result;
+    _error = (*self)._error;
+    return _result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::__parse_foo__D_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::_parse_foo__D_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:25:17-27:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
-    local value_ref<C> __transient__anon;
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
+    local value_ref<C> _transient__anon;
     # "<...>/unused-functions.spicy:24:10-24:16"
 
     # Begin parsing production: Unit: foo__C_2 ->
-    __transient__anon = default<C>();
-    (__cur, __lah, __lahe, __error) = (*__transient__anon).__parse_stage1(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+    _transient__anon = default<C>();
+    (_cur, _lah, _lahe, _error) = (*_transient__anon)._parse_stage1(_data, _begin, _cur, _trim, _lah, _lahe, _error);
     # End parsing production: Unit: foo__C_2 ->
 
-    if ( ::__feat%foo@@D%uses_random_access ) 
-        (*self).__begin = __begin;
+    if ( ::_feat%foo@@D%uses_random_access ) 
+        (*self)._begin = _begin;
 
 
-    if ( ::__feat%foo@@D%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+    if ( ::_feat%foo@@D%uses_offset ) 
+        (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
 
-    if ( ::__feat%foo@@D%uses_random_access ) 
-        (*self).__begin = __begin;
+    if ( ::_feat%foo@@D%uses_random_access ) 
+        (*self)._begin = _begin;
 
 
-    if ( ::__feat%foo@@D%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+    if ( ::_feat%foo@@D%uses_offset ) 
+        (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_done();
+    (*self)._on_0x25_done();
 
-    if ( ::__feat%foo@@D%uses_random_access || ::__feat%foo@@D%uses_offset ) 
+    if ( ::_feat%foo@@D%uses_random_access || ::_feat%foo@@D%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
+    _error = (*self)._error;
 
-    if ( ::__feat%foo@@D%supports_filters ) 
+    if ( ::_feat%foo@@D%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@D%supports_sinks ) {
+    if ( ::_feat%foo@@D%supports_sinks ) {
     }
 
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe, __error);
-    return __result;
+    _result = (_cur, _lah, _lahe, _error);
+    return _result;
 }
 
-method view<stream> foo::D::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::D::parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:25:17-27:1"
-    local value_ref<D> __unit = default<D>();
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<D> _unit = default<D>();
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
-    if ( ::__feat%foo@@D%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@D%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@D%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@D%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::D::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::D::parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:25:17-27:1"
-    local value_ref<D> __unit = default<D>();
-    spicy_rt::initializeParsedUnit((*__gunit), __unit);
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<D> _unit = default<D>();
+    spicy_rt::initializeParsedUnit((*_gunit), _unit);
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
-    if ( ::__feat%foo@@D%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@D%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@D%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@D%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::D::parse2(inout value_ref<D> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::D::parse2(inout value_ref<D> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:25:17-27:1"
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
-    if ( ::__feat%foo@@D%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@D%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@D%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@D%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-init function void __register_foo_D() {
-    foo::D::__parser = [$name="foo::D", $is_public=True, $parse1=foo::D::parse1, $parse2=foo::D::parse2, $parse3=foo::D::parse3, $context_new=Null, $type_=D, $description="", $mime_types=vector(), $ports=vector()];
-    spicy_rt::registerParser(foo::D::__parser, $scope, Null);
+init function void _register_foo_D() {
+    foo::D::_parser = [$name="foo::D", $is_public=True, $parse1=foo::D::parse1, $parse2=foo::D::parse2, $parse3=foo::D::parse3, $context_new=Null, $type_=D, $description="", $mime_types=vector(), $ports=vector()];
+    spicy_rt::registerParser(foo::D::_parser, $scope, Null);
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::__parse_stage1(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::_parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:30:10-32:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     try {
 
-        if ( ::__feat%foo@@F%uses_random_access ) 
-            __trim = False;
+        if ( ::_feat%foo@@F%uses_random_access ) 
+            _trim = False;
 
         hilti::debugIndent("spicy");
-        local iterator<stream> __begin = begin(__cur);
+        local iterator<stream> _begin = begin(_cur);
 
-        if ( ::__feat%foo@@F%uses_stream ) 
-            (*self).__stream = __data;
-
-
-        if ( ::__feat%foo@@F%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@F%uses_stream ) 
+            (*self)._stream = _data;
 
 
-        if ( ::__feat%foo@@F%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@F%uses_random_access ) 
+            (*self)._begin = _begin;
 
-        (*self).__error = __error;
 
-        if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@F%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_init();
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
+        if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
+            (*self)._position_update = Null;
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+        (*self)._on_0x25_init();
+
+        if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
+
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         local strong_ref<stream> filtered = Null;
 
-        if ( ::__feat%foo@@F%supports_filters ) {
-            local uint<64> __offset1 = begin((*__data)).offset();
+        if ( ::_feat%foo@@F%supports_filters ) {
+            local uint<64> _offset1 = begin((*_data)).offset();
 
-            if ( filtered = spicy_rt::filter_init(self, __data, __cur) ) {
-                local value_ref<stream> __filtered_data = filtered;
-                self.__parse_foo__F_stage2(__filtered_data, begin((*__filtered_data)), (*__filtered_data), __trim, __lah, __lahe, __error);
-                local uint<64> __offset2 = begin((*__data)).offset();
-                __cur = __cur.advance(__offset2 - __offset1);
+            if ( filtered = spicy_rt::filter_init(self, _data, _cur) ) {
+                local value_ref<stream> _filtered_data = filtered;
+                self._parse_foo__F_stage2(_filtered_data, begin((*_filtered_data)), (*_filtered_data), _trim, _lah, _lahe, _error);
+                local uint<64> _offset2 = begin((*_data)).offset();
+                _cur = _cur.advance(_offset2 - _offset1);
 
-                if ( __trim ) 
-                    (*__data).trim(begin(__cur));
+                if ( _trim ) 
+                    (*_data).trim(begin(_cur));
 
-                __result = (__cur, __lah, __lahe, __error);
+                _result = (_cur, _lah, _lahe, _error);
             }
 
         }
 
 
         if ( ! filtered ) 
-            __result = (*self).__parse_foo__F_stage2(__data, __begin, __cur, __trim, __lah, __lahe, __error);
+            _result = (*self)._parse_foo__F_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
 
     }
-    catch ( hilti::SystemException __except ) {
+    catch ( hilti::SystemException _except ) {
 
-        if ( ::__feat%foo@@F%uses_random_access ) 
-            (*self).__begin = __begin;
+        if ( ::_feat%foo@@F%uses_random_access ) 
+            (*self)._begin = _begin;
 
 
-        if ( ::__feat%foo@@F%uses_offset ) 
-            (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+        if ( ::_feat%foo@@F%uses_offset ) 
+            (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-        (*self).__on_0x25_error(hilti::exception_what(__except));
+        (*self)._on_0x25_error(hilti::exception_what(_except));
 
-        if ( ::__feat%foo@@F%supports_filters ) 
+        if ( ::_feat%foo@@F%supports_filters ) 
             spicy_rt::filter_disconnect(self);
 
 
-        if ( ::__feat%foo@@F%is_filter ) 
+        if ( ::_feat%foo@@F%is_filter ) 
             spicy_rt::filter_forward_eod(self);
 
 
-        if ( ::__feat%foo@@F%supports_sinks ) {
+        if ( ::_feat%foo@@F%supports_sinks ) {
         }
 
-        (*self).__error = __error;
+        (*self)._error = _error;
 
-        if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
-            (*self).__position_update = Null;
+        if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
+            (*self)._position_update = Null;
 
-        (*self).__on_0x25_finally();
+        (*self)._on_0x25_finally();
 
-        if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
+        if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
 
-            if ( (*self).__position_update ) {
-                __cur = __cur.advance((*(*self).__position_update));
-                (*self).__position_update = Null;
+            if ( (*self)._position_update ) {
+                _cur = _cur.advance((*(*self)._position_update));
+                (*self)._position_update = Null;
             }
 
 
-        __error = (*self).__error;
+        _error = (*self)._error;
         throw;
     }
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_finally();
+    (*self)._on_0x25_finally();
 
-    if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
+    if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
-    return __result;
+    _error = (*self)._error;
+    return _result;
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::__parse_foo__F_stage2(inout value_ref<stream> __data, iterator<stream> __begin, copy view<stream> __cur, copy bool __trim, copy int<64> __lah, copy iterator<stream> __lahe, copy optional<hilti::RecoverableFailure> __error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::_parse_foo__F_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:30:10-32:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> __result();
+    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
 
-    if ( ::__feat%foo@@F%uses_random_access ) 
-        (*self).__begin = __begin;
+    if ( ::_feat%foo@@F%uses_random_access ) 
+        (*self)._begin = _begin;
 
 
-    if ( ::__feat%foo@@F%uses_offset ) 
-        (*self).__offset = cast<uint<64>>(begin(__cur).offset() - __begin.offset());
+    if ( ::_feat%foo@@F%uses_offset ) 
+        (*self)._offset = cast<uint<64>>(begin(_cur).offset() - _begin.offset());
 
-    (*self).__error = __error;
+    (*self)._error = _error;
 
-    if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
-        (*self).__position_update = Null;
+    if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
+        (*self)._position_update = Null;
 
-    (*self).__on_0x25_done();
+    (*self)._on_0x25_done();
 
-    if ( ::__feat%foo@@F%uses_random_access || ::__feat%foo@@F%uses_offset ) 
+    if ( ::_feat%foo@@F%uses_random_access || ::_feat%foo@@F%uses_offset ) 
 
-        if ( (*self).__position_update ) {
-            __cur = __cur.advance((*(*self).__position_update));
-            (*self).__position_update = Null;
+        if ( (*self)._position_update ) {
+            _cur = _cur.advance((*(*self)._position_update));
+            (*self)._position_update = Null;
         }
 
 
-    __error = (*self).__error;
+    _error = (*self)._error;
 
-    if ( ::__feat%foo@@F%supports_filters ) 
+    if ( ::_feat%foo@@F%supports_filters ) 
         spicy_rt::filter_disconnect(self);
 
 
-    if ( ::__feat%foo@@F%is_filter ) 
+    if ( ::_feat%foo@@F%is_filter ) 
         spicy_rt::filter_forward_eod(self);
 
 
-    if ( ::__feat%foo@@F%supports_sinks ) {
+    if ( ::_feat%foo@@F%supports_sinks ) {
     }
 
     hilti::debugDedent("spicy");
-    __result = (__cur, __lah, __lahe, __error);
-    return __result;
+    _result = (_cur, _lah, _lahe, _error);
+    return _result;
 }
 
-method view<stream> foo::F::parse1(inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::F::parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:30:10-32:1"
-    local value_ref<F> __unit = default<F>();
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<F> _unit = default<F>();
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:30:10-32:1"
 
     # Begin parsing production: Unit: foo__F ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__F ->
 
-    if ( ::__feat%foo@@F%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@F%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@F%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@F%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::F::parse3(inout value_ref<spicy_rt::ParsedUnit> __gunit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::F::parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:30:10-32:1"
-    local value_ref<F> __unit = default<F>();
-    spicy_rt::initializeParsedUnit((*__gunit), __unit);
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local value_ref<F> _unit = default<F>();
+    spicy_rt::initializeParsedUnit((*_gunit), _unit);
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:30:10-32:1"
 
     # Begin parsing production: Unit: foo__F ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__F ->
 
-    if ( ::__feat%foo@@F%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@F%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@F%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@F%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-method view<stream> foo::F::parse2(inout value_ref<F> __unit, inout value_ref<stream> __data, optional<view<stream>> __cur = Null, optional<spicy_rt::UnitContext> __context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
+method view<stream> foo::F::parse2(inout value_ref<F> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-functions.spicy:30:10-32:1"
-    local view<stream> __ncur = __cur ? (*__cur) : cast<view<stream>>((*__data));
-    local int<64> __lahead = 0;
-    local iterator<stream> __lahead_end;
-    local optional<hilti::RecoverableFailure> __error = Null;
+    local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data));
+    local int<64> _lahead = 0;
+    local iterator<stream> _lahead_end;
+    local optional<hilti::RecoverableFailure> _error = Null;
     # "<...>/unused-functions.spicy:30:10-32:1"
 
     # Begin parsing production: Unit: foo__F ->
-    (__ncur, __lahead, __lahead_end, __error) = (*__unit).__parse_stage1(__data, begin(__ncur), __ncur, True, __lahead, __lahead_end, __error);
+    (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error);
     # End parsing production: Unit: foo__F ->
 
-    if ( ::__feat%foo@@F%uses_random_access ) 
-        (*__unit).__begin = begin(__ncur);
+    if ( ::_feat%foo@@F%uses_random_access ) 
+        (*_unit)._begin = begin(_ncur);
 
 
-    if ( ::__feat%foo@@F%uses_offset ) 
-        (*__unit).__offset = cast<uint<64>>(begin(__ncur).offset() - begin(__ncur).offset());
+    if ( ::_feat%foo@@F%uses_offset ) 
+        (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset());
 
 
-    if ( __error ) 
-        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*__error)));
+    if ( _error ) 
+        throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error)));
 
-    return __ncur;
+    return _ncur;
 }
 
-init function void __register_foo_F() {
+init function void _register_foo_F() {
 
-    if ( ::__feat%foo@@F%is_filter || ::__feat%foo@@F%supports_sinks ) {
-        foo::F::__parser = [$name="foo::F", $is_public=False, $parse1=foo::F::parse1, $parse2=foo::F::parse2, $parse3=foo::F::parse3, $context_new=Null, $type_=F, $description="", $mime_types=vector(), $ports=vector()];
-        spicy_rt::registerParser(foo::F::__parser, $scope, Null);
+    if ( ::_feat%foo@@F%is_filter || ::_feat%foo@@F%supports_sinks ) {
+        foo::F::_parser = [$name="foo::F", $is_public=False, $parse1=foo::F::parse1, $parse2=foo::F::parse2, $parse3=foo::F::parse3, $context_new=Null, $type_=F, $description="", $mime_types=vector(), $ports=vector()];
+        spicy_rt::registerParser(foo::F::_parser, $scope, Null);
     }
 
 }

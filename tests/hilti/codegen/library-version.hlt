@@ -1,6 +1,6 @@
 # @TEST-EXEC: hiltic -x foo %INPUT
-# @TEST-EXEC: grep -q _hlt_hlto_library_version foo___linker__.cc
-# @TEST-EXEC: grep -q _hlt_hlto_bind_to_version foo___linker__.cc
+# @TEST-EXEC: grep -q hlt_internal_hlto_library_version foo___linker__.cc
+# @TEST-EXEC: grep -q hlt_internal_hlto_bind_to_version foo___linker__.cc
 #
 # A hand-built HLTO file has all symbols needed to load correctly.
 # @TEST-EXEC: $(spicy-config --cxx --cxxflags-hlto --ldflags-hlto --debug) -o foo.hlto foo*cc

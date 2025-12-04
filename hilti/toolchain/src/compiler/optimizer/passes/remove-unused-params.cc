@@ -92,7 +92,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         else if ( const auto* x = name->tryAs<expression::Keyword>() ) {
             switch ( x->kind() ) {
                 case expression::keyword::Kind::Captures: {
-                    id = "__captures";
+                    id = HILTI_INTERNAL_ID("captures");
                     break;
                 }
                 case expression::keyword::Kind::Self:

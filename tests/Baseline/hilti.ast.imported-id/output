@@ -23,7 +23,7 @@
 [debug/resolver] [foo.hlt:9:21-9:24] type::Name "Foo1" -> set resolved type to T11
 [debug/resolver] -> [T12] type::Vector <no-type-id> | vector<bytes> (hilti.hlt:16:24-16:36)
 [debug/resolver] [hilti.hlt:20:12-20:19] type::Name "Captures" -> set resolved type to T12
-[debug/resolver] -> [T13] type::Library <no-type-id> | __library_type("::hilti::rt::Profiler") (hilti.hlt:17:24-17:60)
+[debug/resolver] -> [T13] type::Library <no-type-id> | _library_type("::hilti::rt::Profiler") (hilti.hlt:17:24-17:60)
 [debug/resolver] [hilti.hlt:42:25-42:32] type::Name "Profiler" -> set resolved type to T13
 [debug/resolver] [hilti.hlt:43:44-43:51] type::Name "Profiler" -> set resolved type to T13
 [debug/resolver] -> [T14] type::Exception <no-type-id> | exception (hilti.hlt:46:25-46:33)
@@ -134,8 +134,8 @@
 [debug/resolver] [hilti.hlt:16:1-16:37] declaration::Type "public type Captures = vector<bytes>;" -> set declaration's fully qualified ID to hilti::Captures
 [debug/resolver] -> [D11] declaration::Type hilti::Captures | public type Captures = vector<bytes>; (hilti.hlt:16:1-16:37)
 [debug/resolver] [hilti.hlt:16:24-16:36] type::Vector "vector<bytes>" -> set type's declaration to D11
-[debug/resolver] [hilti.hlt:17:1-17:61] declaration::Type "public type Profiler = __library_type("::hilti::rt::Profiler");" -> set declaration's canonical ID to hilti::Profiler
-[debug/resolver] [hilti.hlt:17:1-17:61] declaration::Type "public type Profiler = __library_type("::hilti::rt::Profiler");" -> set declaration's fully qualified ID to hilti::Profiler
+[debug/resolver] [hilti.hlt:17:1-17:61] declaration::Type "public type Profiler = _library_type("::hilti::rt::Profiler");" -> set declaration's canonical ID to hilti::Profiler
+[debug/resolver] [hilti.hlt:17:1-17:61] declaration::Type "public type Profiler = _library_type("::hilti::rt::Profiler");" -> set declaration's fully qualified ID to hilti::Profiler
 [debug/resolver] -> [D12] declaration::Type hilti::Profiler | public type Profiler = hilti::Profiler; (hilti.hlt:17:1-17:61)
 [debug/resolver] [hilti.hlt:17:24-17:60] type::Library "hilti::Profiler" -> set type's declaration to D12
 [debug/resolver] [hilti.hlt:19:26-21:1] declaration::Expression "self" -> set declaration's canonical ID to hilti::self
@@ -1366,16 +1366,16 @@
 
 #include <hilti/rt/libhilti.h>
 
-extern uint64_t __hlt_hlto_scope;
+extern uint64_t hlt_internal_hlto_scope;
 
-namespace __hlt::Foo {
-    extern void __register_module();
+namespace hlt_internal::Foo {
+    extern void _register_module();
 }
 
-HILTI_PRE_INIT(__hlt::Foo::__register_module)
+HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
 
-extern void __hlt::Foo::__register_module() {
-    ::hilti::rt::Library::setScope(&__hlt_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, nullptr, nullptr, nullptr, nullptr});
+extern void hlt_internal::Foo::_register_module() {
+    ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
+    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, nullptr, nullptr, nullptr, nullptr});
 }
 

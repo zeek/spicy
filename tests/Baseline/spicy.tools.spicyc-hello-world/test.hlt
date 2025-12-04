@@ -7,24 +7,24 @@
 #include <spicy/rt/libspicy.h>
 #include <hilti/rt/libhilti.h>
 
-extern uint64_t __hlt_hlto_scope;
+extern uint64_t hlt_internal_hlto_scope;
 
-namespace __hlt::Foo {
-    extern void __init_module();
-    extern void __register_module();
+namespace hlt_internal::Foo {
+    extern void _init_module();
+    extern void _register_module();
 }
 
-HILTI_PRE_INIT(__hlt::Foo::__register_module)
+HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
 
-extern void __hlt::Foo::__init_module() {
-      __location__("<...>/spicyc-hello-world.spicy:8:1-8:22");
+extern void hlt_internal::Foo::_init_module() {
+      ::hilti::rt::location("<...>/spicyc-hello-world.spicy:8:1-8:22");
     ::hilti::rt::print("Hello, world!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
-      __location__("<...>/spicyc-hello-world.spicy:9:1-9:24");
+      ::hilti::rt::location("<...>/spicyc-hello-world.spicy:9:1-9:24");
     ::hilti::rt::tuple::print(::hilti::rt::tuple::make_from_optionals(::hilti::rt::optional::make("Hello"s), ::hilti::rt::optional::make("world!"s)), ::hilti::rt::Bool(true));
 }
 
-extern void __hlt::Foo::__register_module() {
-    ::hilti::rt::Library::setScope(&__hlt_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", __hlt_hlto_scope, &__init_module, nullptr, nullptr, nullptr});
+extern void hlt_internal::Foo::_register_module() {
+    ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
+    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, &_init_module, nullptr, nullptr, nullptr});
 }
 

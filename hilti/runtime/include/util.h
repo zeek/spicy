@@ -25,6 +25,24 @@
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/vector_fwd.h>
 
+/** Helper to construct an internal identifier. */
+#define HILTI_INTERNAL(id) _##id
+
+/** Helper to construct an internal identifier string. */
+#define HILTI_INTERNAL_ID(id) "_" id
+
+/** Helper to refer to the generated global namespace. */
+#define HILTI_INTERNAL_NS hlt_internal
+
+/** Helper to refer to the generated global namespace. */
+#define HILTI_INTERNAL_NS_ID "hlt_internal"
+
+/** Helper to construct an internal identifier string. */
+#define HILTI_INTERNAL_GLOBAL(id) hlt_internal_##id
+
+/** Helper to construct an internal identifier string. */
+#define HILTI_INTERNAL_GLOBAL_ID(id) "hlt_internal_" id
+
 /**
  * Helper to create runtime type with enum semantics.
  *

@@ -177,13 +177,13 @@ Here's an example stack trace taken during an execution of
 ``spicy-driver`` with a small Spicy grammar printing some parsed
 value, as shown by ``lldb``::
 
-    frame #0:  void hilti::rt::print<hilti::rt::ValueReference<__hlt::Test::Foo>>
-    frame #1:  __hlt::Test::__hook_Foo___on_0x25_done_7fba
-    frame #2:  __hlt::Test::__hook_Foo___on_0x25_done
-    frame #3:  __hlt::Test::Foo::__on_0x25_done
-    frame #4:  __hlt::Test::Foo::__parse_Test__Foo_stage2
-    frame #5:  __hlt::Test::Foo::__parse_stage1
-    frame #6:  __hlt::Test::Foo::parse3
+    frame #0:  void hilti::rt::print<hilti::rt::ValueReference<hlt_internal::Test::Foo>>
+    frame #1:  hlt_internal::Test::_hook_Foo___on_0x25_done_7fba
+    frame #2:  hlt_internal::Test::_hook_Foo___on_0x25_done
+    frame #3:  hlt_internal::Test::Foo::_on_0x25_done
+    frame #4:  hlt_internal::Test::Foo::_parse_Test__Foo_stage2
+    frame #5:  hlt_internal::Test::Foo::_parse_stage1
+    frame #6:  hlt_internal::Test::Foo::parse3
     frame #7:  hlt::Test::Foo::parse3
     frame #8:  hilti::rt::detail::Callback::Callback<hlt::Test::Foo::parse3>
     frame #9:  hilti::rt::detail::Callback::Callback<hlt::Test::Foo::parse3>

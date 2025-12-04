@@ -154,7 +154,7 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        auto* value = bitfield::BitRange::create(ctx, ID("__value__"), 0, width - 1, width, {}, m);
+        auto* value = bitfield::BitRange::create(ctx, ID(HILTI_INTERNAL_ID("value")), 0, width - 1, width, {}, m);
         return ctx->make<Bitfield>(ctx, node::flatten(attrs, bits, value), width, m);
     }
 

@@ -175,9 +175,9 @@ struct Local : public DeclarationBase {
     Linkage linkage;
     std::optional<cxx::Expression> typeinfo_bitfield; // for rendering anonymous bitfields inside structs
 
-    // Returns true if the ID starts with two underscores, which is the
-    // namespace reserved for internal IDs.
-    bool isInternal() const { return util::startsWith(id.local(), "__"); }
+    // Returns true if the ID starts with the prefix for internal IDs, which is
+    // the namespace reserved for internal IDs.
+    bool isInternal() const { return util::startsWith(id.local(), HILTI_INTERNAL_ID("")); }
 
     // Returns true if the ID starts with "_anon", which is the marker we use
     // for anonymous fields that make it out into the generated struct.
