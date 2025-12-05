@@ -84,9 +84,11 @@ public:
     cxx::declaration::Function compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
                                        AttributeSet* fattrs = {}, std::optional<cxx::ID> namespace_ = {});
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
-                                                      const hilti::node::Set<declaration::Parameter>& params);
+                                                      const hilti::node::Set<declaration::Parameter>& params,
+                                                      bool is_struct = false);
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
-                                                      const hilti::node::Range<declaration::Parameter>& params);
+                                                      const hilti::node::Range<declaration::Parameter>& params,
+                                                      bool is_struct = false);
     std::optional<cxx::Expression> typeDefaultValue(QualifiedType* t);
     codegen::TypeUsage parameterKindToTypeUsage(parameter::Kind);
 

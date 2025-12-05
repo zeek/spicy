@@ -118,7 +118,8 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                 if ( g.init )
                     body.addStatement(fmt("__globals()->%s = {%s}", g.id.local(), *g.init));
                 else if ( g.args.size() )
-                    body.addStatement(fmt("__globals()->%s = {%s}", g.id.local(), util::join(g.args, ", ")));
+                    body.addStatement(fmt("__globals()->%s = {::hilti::rt::struct_::Args(), %s}", g.id.local(),
+                                          util::join(g.args, ", ")));
             }
         }
         else {
@@ -128,12 +129,13 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
                 if ( g.init )
                     // Initialize to actual value
-                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make(%s)", ns, g.id.local(), *g.init));
+                    body.addStatement(fmt("::%s::%s = ::hilti::rt::optional::make(%s)", ns, g.id.local(), *g.init));
                 else if ( g.args.size() )
-                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make<%s>(%s)", ns, g.id.local(), g.type,
-                                          util::join(g.args, ", ")));
+                    body.addStatement(
+                        fmt("::%s::%s = ::hilti::rt::optional::make<%s>(::hilti::rt::struct_::Args(), %s)", ns,
+                            g.id.local(), g.type, util::join(g.args, ", ")));
                 else
-                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make(%s{})", ns, g.id.local(), g.type));
+                    body.addStatement(fmt("::%s::%s = ::hilti::rt::optional::make(%s{})", ns, g.id.local(), g.type));
             }
         }
 
@@ -704,9 +706,17 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
 }
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
-                                                           const node::Set<declaration::Parameter>& params) {
+                                                           const node::Set<declaration::Parameter>& params,
+                                                           bool is_struct) {
     std::vector<cxx::Expression> x;
-    x.reserve(args.size());
+
+    if ( params.empty() )
+        return x;
+
+    if ( is_struct )
+        x.emplace_back("::hilti::rt::struct_::Args()");
+
+    x.reserve(x.size() + args.size());
 
     unsigned int i = 0;
     for ( const auto& p : params ) {
@@ -727,10 +737,20 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
 }
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
-                                                           const node::Range<declaration::Parameter>& params) {
+                                                           const node::Range<declaration::Parameter>& params,
+                                                           bool is_struct) {
     assert(args.size() == params.size());
 
     std::vector<cxx::Expression> x;
+
+    if ( params.empty() )
+        return x;
+
+    if ( is_struct )
+        x.emplace_back("::hilti::rt::struct_::Args()");
+
+    x.reserve(x.size() + args.size());
+
     x.reserve(args.size());
     for ( auto i = 0U; i < args.size(); i++ )
         x.emplace_back(compile(args[i], params[i]->kind() == parameter::Kind::InOut));
