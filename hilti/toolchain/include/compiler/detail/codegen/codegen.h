@@ -83,10 +83,14 @@ public:
     cxx::Block compile(hilti::Statement* s, cxx::Block* b = nullptr);
     cxx::declaration::Function compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
                                        AttributeSet* fattrs = {}, std::optional<cxx::ID> namespace_ = {});
+
+    enum class CtorKind { Inits, Parameters };
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
-                                                      const hilti::node::Set<declaration::Parameter>& params);
+                                                      const hilti::node::Set<declaration::Parameter>& params,
+                                                      std::optional<CtorKind> struct_ctor = {});
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
-                                                      const hilti::node::Range<declaration::Parameter>& params);
+                                                      const hilti::node::Range<declaration::Parameter>& params,
+                                                      std::optional<CtorKind> struct_ctor = {});
     std::optional<cxx::Expression> typeDefaultValue(QualifiedType* t);
     codegen::TypeUsage parameterKindToTypeUsage(parameter::Kind);
 

@@ -18,6 +18,20 @@ struct hasParameters {};
 
 namespace struct_ {
 
+namespace tag {
+/**
+ * Tag for struct constructors receiving type parameters as its arguments, to
+ * disambiguate them from other constructors.
+ */
+struct Parameters {};
+
+/**
+ * Tag for struct constructors receiving values for field initialization, to
+ * disambiguate them from other constructors.
+ */
+struct Inits {};
+} // namespace tag
+
 template<class T>
 inline auto& value_or_exception(const hilti::rt::Optional<T>& t) {
     if ( t.hasValue() )

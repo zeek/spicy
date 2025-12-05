@@ -1,0 +1,24 @@
+# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: A struct where parameters and fields end up having the same C++ type; ensures constructors aren't ambiguous.
+
+module Foo {
+
+import hilti;
+
+type F = struct(optional<string> arg) {
+    string s &default="foo";
+};
+
+x();
+
+function void x() {
+    local value_ref<F> f1 = new F("bar");
+    hilti::print(f1);
+
+    local value_ref<F> f2 = [$s="bar"];
+    hilti::print(f2);
+}
+
+}
