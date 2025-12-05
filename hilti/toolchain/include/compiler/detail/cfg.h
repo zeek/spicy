@@ -122,6 +122,9 @@ struct hash<hilti::detail::cfg::GraphNode> {
 namespace hilti::detail {
 
 namespace cfg {
+/** Helper function to check whether some `inner` node is a child of an `outer` node. */
+bool contains(const Node& outer, const Node& inner);
+
 /** Prints out the dot representation of the CFG to a debug stream. */
 void dump(logging::DebugStream stream, ASTRoot* root);
 

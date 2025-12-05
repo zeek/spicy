@@ -1,0 +1,105 @@
+# @TEST-DOC: Validates identifier renaming when flattening blocks.
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p >>output 2>&1
+# @TEST-EXEC: FileCheck %INPUT < output
+
+# CHECK: module foo {
+module foo {
+
+import hilti;
+
+public function bool fn() {
+    local bool my_stop = False;
+    # CHECK: local uint<8> x = 0;
+    local uint<8> x = 0;
+    x = x + 1;
+
+    {
+        # CHECK: local uint<8> [[X2:x_]] = 1;
+        local uint<8> x = 1;
+        x = x + 1;
+
+        # CHECK: local uint<8> [[Y:y]] = [[X2]] + 1;
+        local uint<8> y = x + 1;
+
+        {
+            # CHECK: local uint<8> [[Y2:y_]] = [[X2]] + 2;
+            local uint<8> y = x + 2;
+            hilti::print(y, True);
+        }
+
+        my_stop = my_stop || cast<bool>(x) || cast<bool>(y);
+    }
+
+    return my_stop || cast<bool>(x);
+}
+
+}
+
+# @TEST-START-NEXT
+module test {
+
+# A setup where variables are shadowed and each instances has slightly different usage patterns.
+
+public function void fn(bool flag) {
+    local bool x = False;
+
+    # CHECK: local bool c = flag;
+    local bool c = flag;
+    if ( c )
+        return;
+
+    {
+        # CHECK: local bool [[C2:c_]] = flag;
+        local bool c = flag;
+        # CHECK: x = [[C2]];
+        x = c;
+
+        {
+            # CHECK: local bool [[C3:c__]] = x;
+            local bool c = x;
+            # CHECK: if ( [[C3]] )
+            if ( c )
+                return;
+        }
+    }
+}
+
+}
+
+# @TEST-START-NEXT
+
+module test {
+
+# Validate that we do not accidentally promote locals into global scope. Right
+# now the pass simply skips global blocks.
+
+# CHECK: global uint<64> a = 1;
+global uint<64> a = 1;
+
+{
+    # CHECK: local uint<64> b = 1;
+    local uint<64> b = 1;
+    {
+        # CHECK: local uint<64> b = 2;
+        local uint<64> b = 2;
+        a = b;
+    }
+    a = b;
+}
+}
+
+# @TEST-START-NEXT
+
+module test {
+public function void fn(bool flag) {
+    # CHECK-NOT: stop
+    local bool stop = False;
+    {
+        # CHECK-NOT: dd
+        local dd = flag;
+        stop = stop || dd;
+    }
+}
+}
