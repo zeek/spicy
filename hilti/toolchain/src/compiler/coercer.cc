@@ -143,6 +143,11 @@ struct VisitorCtor : visitor::PreOrder {
             }
             result = builder->ctorSet(dt, nexprs, n->meta());
         }
+
+        if ( dst->type()->isA<type::Struct>() ) {
+            if ( n->value().empty() )
+                result = builder->ctorStruct({}, dst, n->meta());
+        }
     }
 
     void operator()(ctor::Real* n) final {

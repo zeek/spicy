@@ -13,8 +13,10 @@ type X = struct {
 
 global X x = [$b=True, $s="Foo!", $i=21];
 global X y = [$b=True];
+global X z = [];
 
 hilti::print(x);
 hilti::print(y);
+hilti::print(z);
 
 }
