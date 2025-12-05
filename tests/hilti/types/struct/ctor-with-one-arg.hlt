@@ -1,0 +1,19 @@
+# @TEST-EXEC: hiltic -j %INPUT
+# @TEST=DOC: Test structs with a single field; this is a regression test where in the past the C++ generated constructor could become ambiguous
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    int<64> i;
+};
+
+function int<64> f(X x) {
+    return x.i;
+}
+
+assert f([]) == 0;
+assert f([$i = 42]) == 42;
+
+}
